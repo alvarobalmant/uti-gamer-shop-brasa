@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ShoppingCart, Search, User, Heart, Menu, X, Star, Shield, Truck, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -85,9 +84,9 @@ const Index = () => {
       case 'ps4/ps5':
         return 'bg-blue-600';
       case 'xbox series x':
-        return 'bg-green-600';
-      case 'nintendo switch':
         return 'bg-red-600';
+      case 'nintendo switch':
+        return 'bg-red-500';
       case 'pc':
         return 'bg-orange-600';
       default:
@@ -149,13 +148,13 @@ const Index = () => {
             {/* Search Bar */}
             <div className="flex-1 max-w-2xl mx-8 hidden md:block">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   type="text"
                   placeholder="Buscar jogos, consoles, acessórios..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-3 w-full border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-0"
+                  className="search-field pl-12 pr-4 py-3 w-full text-base"
                 />
               </div>
             </div>
@@ -169,7 +168,7 @@ const Index = () => {
                       onClick={() => navigate('/admin')}
                       variant="outline"
                       size="sm"
-                      className="hidden md:flex border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                      className="hidden md:flex border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-xl"
                     >
                       Admin
                     </Button>
@@ -178,7 +177,7 @@ const Index = () => {
                     onClick={signOut}
                     variant="ghost"
                     size="sm"
-                    className="hidden md:flex text-gray-600 hover:text-red-600"
+                    className="hidden md:flex text-gray-600 hover:text-red-600 rounded-xl"
                   >
                     <User className="w-4 h-4 mr-1" />
                     Sair
@@ -189,7 +188,7 @@ const Index = () => {
                   onClick={() => setShowAuthModal(true)}
                   variant="outline"
                   size="sm"
-                  className="hidden md:flex border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                  className="hidden md:flex border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-xl"
                 >
                   <User className="w-4 h-4 mr-1" />
                   Entrar
@@ -198,7 +197,7 @@ const Index = () => {
 
               <Button
                 onClick={() => setShowCart(true)}
-                className="bg-red-600 hover:bg-red-700 text-white relative"
+                className="bg-red-600 hover:bg-red-700 text-white relative rounded-xl shadow-lg"
               >
                 <ShoppingCart className="w-5 h-5" />
                 {cart.length > 0 && (
@@ -212,7 +211,7 @@ const Index = () => {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 variant="ghost"
                 size="sm"
-                className="md:hidden"
+                className="md:hidden rounded-xl"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
@@ -222,13 +221,13 @@ const Index = () => {
           {/* Mobile Search */}
           <div className="md:hidden mt-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="text"
                 placeholder="Buscar produtos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-3 w-full border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-0"
+                className="search-field pl-12 pr-4 py-3 w-full"
               />
             </div>
           </div>
@@ -242,9 +241,9 @@ const Index = () => {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
                     selectedCategory === category
-                      ? 'bg-red-600 text-white'
+                      ? 'bg-red-600 text-white shadow-lg'
                       : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
                   }`}
                 >
@@ -264,7 +263,7 @@ const Index = () => {
                         setSelectedCategory(category);
                         setMobileMenuOpen(false);
                       }}
-                      className={`px-4 py-3 rounded-lg font-medium text-left transition-all duration-200 ${
+                      className={`px-4 py-3 rounded-xl font-medium text-left transition-all duration-200 ${
                         selectedCategory === category
                           ? 'bg-red-600 text-white'
                           : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
@@ -279,7 +278,7 @@ const Index = () => {
                         setShowAuthModal(true);
                         setMobileMenuOpen(false);
                       }}
-                      className="bg-red-600 hover:bg-red-700 text-white mt-2"
+                      className="bg-red-600 hover:bg-red-700 text-white mt-2 rounded-xl"
                     >
                       <User className="w-4 h-4 mr-2" />
                       Entrar
@@ -297,7 +296,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <Badge className="bg-yellow-500 text-black font-bold mb-4 px-4 py-2">
+              <Badge className="bg-yellow-500 text-black font-bold mb-4 px-4 py-2 rounded-full">
                 🔥 MEGA PROMOÇÃO!
               </Badge>
               <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
@@ -310,7 +309,7 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 px-8 text-lg rounded-xl"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 px-8 text-lg rounded-xl shadow-lg hover:scale-105 transition-all duration-300"
                   onClick={() => document.getElementById('produtos')?.scrollIntoView({ behavior: 'smooth' })}
                 >
                   Ver Ofertas
@@ -328,7 +327,7 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/b20762ad-323a-48fd-a114-f618c180f903.png" 
                 alt="Mascote UTI DOS GAMES" 
-                className="w-80 h-80 object-contain animate-pulse"
+                className="w-80 h-80 object-contain animate-bounce-soft"
               />
             </div>
           </div>
@@ -492,10 +491,10 @@ const Index = () => {
                 preços justos e atendimento excepcional.
               </p>
               <div className="flex gap-4">
-                <Button variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white">
+                <Button variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white rounded-xl">
                   Instagram
                 </Button>
-                <Button variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white">
+                <Button variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white rounded-xl">
                   WhatsApp
                 </Button>
               </div>

@@ -5,33 +5,33 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 142.1 76.2% 36.3%;
-    --primary-foreground: 355.7 100% 97.3%;
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142.1 76.2% 36.3%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 0 72% 51%;
 
     --radius: 0.75rem;
 
@@ -96,7 +96,15 @@
   }
 
   .gamestop-card {
-    @apply bg-white rounded-lg border border-gray-200 hover:border-red-300 hover:shadow-xl transition-all duration-300;
+    @apply bg-white rounded-xl border border-gray-200 hover:border-red-300 hover:shadow-xl transition-all duration-300;
+  }
+
+  .search-field {
+    @apply bg-white border-2 border-gray-200 rounded-full px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-red-500 focus:ring-0 focus:outline-none transition-all duration-200;
+  }
+
+  .search-field:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
   }
 }
 
@@ -106,7 +114,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f8f9fa;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -206,11 +214,11 @@
 
 /* Enhanced button styles GameStop Style */
 .btn-primary {
-  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-500/25;
+  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-500/25;
 }
 
 .btn-secondary {
-  @apply bg-white text-red-600 border-2 border-red-600 hover:bg-red-600 hover:text-white font-bold py-3 px-6 rounded-lg transition-all duration-300;
+  @apply bg-white text-red-600 border-2 border-red-600 hover:bg-red-600 hover:text-white font-bold py-3 px-6 rounded-xl transition-all duration-300;
 }
 
 /* Typography enhancements GameStop Style */
@@ -266,35 +274,26 @@
   @apply focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
 }
 
-/* Success states (only green allowed for positive status) */
-.status-success {
-  @apply text-green-600 bg-green-50 border-green-200;
-}
-
-.status-online {
-  @apply text-green-500;
-}
-
 /* Card enhancements GameStop Style */
 .card-hover {
   @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-2;
 }
 
 .card-product {
-  @apply bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-red-300;
+  @apply bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-red-300;
 }
 
 /* GameStop specific styles */
 .gamestop-card-product {
-  @apply bg-white rounded-lg border border-gray-200 hover:border-red-300 hover:shadow-xl transition-all duration-300 overflow-hidden;
+  @apply bg-white rounded-xl border border-gray-200 hover:border-red-300 hover:shadow-xl transition-all duration-300 overflow-hidden;
 }
 
 .gamestop-button-primary {
-  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg;
+  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg;
 }
 
 .gamestop-button-secondary {
-  @apply bg-white text-red-600 border-2 border-red-600 hover:bg-red-600 hover:text-white font-bold py-3 px-6 rounded-lg transition-all duration-300;
+  @apply bg-white text-red-600 border-2 border-red-600 hover:bg-red-600 hover:text-white font-bold py-3 px-6 rounded-xl transition-all duration-300;
 }
 
 .gamestop-header {
