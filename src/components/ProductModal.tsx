@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Heart, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,7 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
   const isOutOfStock = product.stock === 0;
 
   // Initialize selected options when product changes
-  useState(() => {
+  useEffect(() => {
     if (product) {
       setSelectedSize(product.sizes[0] || '');
       setSelectedColor(product.colors[0] || '');
