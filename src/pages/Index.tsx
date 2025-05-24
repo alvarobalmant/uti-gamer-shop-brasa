@@ -1,12 +1,13 @@
 
 import { useState } from 'react';
-import { ShoppingCart, Plus, Minus, Settings } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Settings, LogIn, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { AuthModal } from '@/components/Auth/AuthModal';
 
 interface CartItem {
   product: any;
@@ -17,10 +18,11 @@ interface CartItem {
 
 const Index = () => {
   const { products, loading } = useProducts();
-  const { isAdmin } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const addToCart = (product: any, size: string, color: string) => {
     const existingItem = cart.find(
@@ -100,14 +102,43 @@ const Index = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            {isAdmin && (
+            {user ? (
+              <>
+                {isAdmin && (
+                  <Button
+                    onClick={() => navigate('/admin')}
+                    variant="outline"
+                    className="border-green-500 text-green-400 hover:bg-green-500 hover:text-black"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Admin
+                  </Button>
+                )}
+                
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 text-green-400">
+                    <User className="w-4 h-4" />
+                    <span className="text-sm">{user.email}</span>
+                  </div>
+                  
+                  <Button
+                    onClick={signOut}
+                    variant="outline"
+                    size="sm"
+                    className="border-red-500 text-red-400 hover:bg-red-500 hover:text-white"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </div>
+              </>
+            ) : (
               <Button
-                onClick={() => navigate('/admin')}
+                onClick={() => setShowAuthModal(true)}
                 variant="outline"
                 className="border-green-500 text-green-400 hover:bg-green-500 hover:text-black"
               >
-                <Settings className="w-4 h-4 mr-2" />
-                Admin
+                <LogIn className="w-4 h-4 mr-2" />
+                Login
               </Button>
             )}
             
@@ -233,6 +264,12 @@ const Index = () => {
           </div>
         )}
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
     </div>
   );
 };
