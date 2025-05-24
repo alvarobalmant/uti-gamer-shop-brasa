@@ -1,96 +1,28 @@
 
 import { useState } from 'react';
-import { ShoppingCart, Plus, Minus } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  sizes: string[];
-  colors: string[];
-  platform: string;
-}
+import { useProducts } from '@/hooks/useProducts';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface CartItem {
-  product: Product;
+  product: any;
   size: string;
   color: string;
   quantity: number;
 }
 
-const mockProducts: Product[] = [
-  {
-    id: 1,
-    name: "God of War Ragnarök",
-    description: "Embarque na jornada épica de Kratos e Atreus em Midgard!",
-    price: 149.90,
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop",
-    sizes: ["Físico", "Digital"],
-    colors: [],
-    platform: "PS5"
-  },
-  {
-    id: 2,
-    name: "Controle DualSense",
-    description: "Controle wireless oficial PlayStation 5 com feedback háptico",
-    price: 399.90,
-    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&h=300&fit=crop",
-    sizes: ["Único"],
-    colors: ["Branco", "Preto", "Azul", "Rosa"],
-    platform: "PS5"
-  },
-  {
-    id: 3,
-    name: "Mario Kart 8 Deluxe",
-    description: "O melhor jogo de corrida com os personagens da Nintendo!",
-    price: 299.90,
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop",
-    sizes: ["Físico", "Digital"],
-    colors: [],
-    platform: "Nintendo Switch"
-  },
-  {
-    id: 4,
-    name: "Halo Infinite",
-    description: "A maior aventura do Master Chief em mundo aberto!",
-    price: 199.90,
-    image: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=400&h=300&fit=crop",
-    sizes: ["Físico", "Digital"],
-    colors: [],
-    platform: "Xbox Series X"
-  },
-  {
-    id: 5,
-    name: "Headset Gamer RGB",
-    description: "Som surround 7.1 com iluminação RGB customizável",
-    price: 249.90,
-    image: "https://images.unsplash.com/photo-1500673922987-e212871fec22?w=400&h=300&fit=crop",
-    sizes: ["Único"],
-    colors: ["Preto", "Branco", "Verde"],
-    platform: "Multi"
-  },
-  {
-    id: 6,
-    name: "The Last of Us Part II",
-    description: "Continue a jornada emocional de Ellie neste exclusivo PS4/PS5",
-    price: 129.90,
-    image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop",
-    sizes: ["Físico", "Digital"],
-    colors: [],
-    platform: "PS4/PS5"
-  }
-];
-
 const Index = () => {
+  const { products, loading } = useProducts();
+  const { isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
 
-  const addToCart = (product: Product, size: string, color: string) => {
+  const addToCart = (product: any, size: string, color: string) => {
     const existingItem = cart.find(
       item => item.product.id === product.id && item.size === size && item.color === color
     );
@@ -135,7 +67,7 @@ const Index = () => {
   };
 
   const getPlatformColor = (platform: string) => {
-    switch (platform.toLowerCase()) {
+    switch (platform?.toLowerCase()) {
       case 'ps5':
       case 'ps4/ps5':
         return 'bg-blue-600';
@@ -143,6 +75,8 @@ const Index = () => {
         return 'bg-green-600';
       case 'nintendo switch':
         return 'bg-red-600';
+      case 'pc':
+        return 'bg-orange-600';
       default:
         return 'bg-purple-600';
     }
@@ -165,13 +99,26 @@ const Index = () => {
             </div>
           </div>
           
-          <Button
-            onClick={() => setShowCart(!showCart)}
-            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-green-500/25"
-          >
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            Meu Pedido ({cart.reduce((sum, item) => sum + item.quantity, 0)})
-          </Button>
+          <div className="flex items-center gap-4">
+            {isAdmin && (
+              <Button
+                onClick={() => navigate('/admin')}
+                variant="outline"
+                className="border-green-500 text-green-400 hover:bg-green-500 hover:text-black"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Admin
+              </Button>
+            )}
+            
+            <Button
+              onClick={() => setShowCart(!showCart)}
+              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-green-500/25"
+            >
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              Meu Pedido ({cart.reduce((sum, item) => sum + item.quantity, 0)})
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -192,16 +139,26 @@ const Index = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-          {mockProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={addToCart}
-              getPlatformColor={getPlatformColor}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="text-xl text-gray-400">Carregando produtos...</div>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-xl text-gray-400">Nenhum produto disponível no momento.</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={addToCart}
+                getPlatformColor={getPlatformColor}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Cart Sidebar */}
         {showCart && (
@@ -281,12 +238,12 @@ const Index = () => {
 };
 
 const ProductCard = ({ product, onAddToCart, getPlatformColor }: {
-  product: Product;
-  onAddToCart: (product: Product, size: string, color: string) => void;
+  product: any;
+  onAddToCart: (product: any, size: string, color: string) => void;
   getPlatformColor: (platform: string) => string;
 }) => {
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
-  const [selectedColor, setSelectedColor] = useState(product.colors[0] || '');
+  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || 'Único');
+  const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || '');
 
   return (
     <Card className="bg-gray-800/50 border-gray-700 hover:border-green-500/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/10 backdrop-blur-sm">
@@ -296,46 +253,53 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: {
             src={product.image}
             alt={product.name}
             className="w-full h-48 object-cover rounded-lg"
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
+            }}
           />
-          <Badge className={`absolute top-2 right-2 ${getPlatformColor(product.platform)} text-white font-semibold`}>
-            {product.platform}
-          </Badge>
+          {product.platform && (
+            <Badge className={`absolute top-2 right-2 ${getPlatformColor(product.platform)} text-white font-semibold`}>
+              {product.platform}
+            </Badge>
+          )}
         </div>
 
         <h3 className="text-xl font-bold text-white mb-2">{product.name}</h3>
-        <p className="text-gray-400 text-sm mb-4">{product.description}</p>
+        <p className="text-gray-400 text-sm mb-4 line-clamp-3">{product.description}</p>
 
         <div className="space-y-4">
           {/* Sizes */}
-          <div>
-            <label className="text-sm font-semibold text-gray-300 mb-2 block">
-              {product.sizes[0] === 'Físico' ? 'Formato:' : 'Tamanho:'}
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {product.sizes.map((size) => (
-                <Button
-                  key={size}
-                  variant={selectedSize === size ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedSize(size)}
-                  className={`${
-                    selectedSize === size 
-                      ? 'bg-green-500 text-white' 
-                      : 'border-gray-600 text-gray-300 hover:border-green-500'
-                  }`}
-                >
-                  {size}
-                </Button>
-              ))}
+          {product.sizes && product.sizes.length > 0 && (
+            <div>
+              <label className="text-sm font-semibold text-gray-300 mb-2 block">
+                {product.sizes[0] === 'Físico' ? 'Formato:' : 'Tamanho:'}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {product.sizes.map((size: string) => (
+                  <Button
+                    key={size}
+                    variant={selectedSize === size ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedSize(size)}
+                    className={`${
+                      selectedSize === size 
+                        ? 'bg-green-500 text-white' 
+                        : 'border-gray-600 text-gray-300 hover:border-green-500'
+                    }`}
+                  >
+                    {size}
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Colors */}
-          {product.colors.length > 0 && (
+          {product.colors && product.colors.length > 0 && (
             <div>
               <label className="text-sm font-semibold text-gray-300 mb-2 block">Cor:</label>
               <div className="flex flex-wrap gap-2">
-                {product.colors.map((color) => (
+                {product.colors.map((color: string) => (
                   <Button
                     key={color}
                     variant={selectedColor === color ? "default" : "outline"}

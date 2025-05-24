@@ -9,13 +9,84 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      products: {
+        Row: {
+          category: string | null
+          colors: string[] | null
+          created_at: string
+          description: string | null
+          id: string
+          image: string | null
+          name: string
+          platform: string | null
+          price: number
+          sizes: string[] | null
+          stock: number | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          colors?: string[] | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          name: string
+          platform?: string | null
+          price: number
+          sizes?: string[] | null
+          stock?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          colors?: string[] | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          name?: string
+          platform?: string | null
+          price?: number
+          sizes?: string[] | null
+          stock?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          name?: string | null
+          role?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          role?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
