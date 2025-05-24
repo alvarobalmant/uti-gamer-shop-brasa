@@ -83,174 +83,44 @@
     transform: translateY(-2px);
   }
 
-  .gamestop-gradient {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
-  .gamestop-shadow {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  /* Marquee animation for rotating banner */
+  @keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
   }
 
-  .gamestop-shadow-lg {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  }
-
-  .gamestop-card {
-    @apply bg-white rounded-xl border border-gray-200 hover:border-red-300 hover:shadow-xl transition-all duration-300;
-  }
-
-  .search-field {
-    @apply bg-white border-2 border-gray-200 rounded-full px-4 py-3 text-gray-800 placeholder-gray-500 focus:border-red-500 focus:ring-0 focus:outline-none transition-all duration-200;
-  }
-
-  .search-field:focus {
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  .animate-marquee {
+    animation: marquee 20s linear infinite;
   }
 }
 
 /* Custom scrollbar GameStop Style */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f8f9fa;
+  background: #f1f1f1;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #dc2626;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #b91c1c;
-}
-
-/* Enhanced animations GameStop Style */
-@keyframes bounce-soft {
-  0%, 20%, 53%, 80%, 100% {
-    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
-    transform: translate3d(0,0,0);
-  }
-  40%, 43% {
-    animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060);
-    transform: translate3d(0, -8px, 0);
-  }
-  70% {
-    animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060);
-    transform: translate3d(0, -4px, 0);
-  }
-  90% {
-    transform: translate3d(0,-1px,0);
-  }
-}
-
-.animate-bounce-soft {
-  animation: bounce-soft 4s infinite;
-}
-
-@keyframes scale-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.animate-scale-in {
-  animation: scale-in 0.3s ease-out;
-}
-
-@keyframes fade-in-up {
-  0% {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out;
-}
-
-/* Pulse animation for urgency elements */
-@keyframes pulse-red {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
-  }
-}
-
-.pulse-red {
-  animation: pulse-red 2s infinite;
-}
-
-/* Hover effects for cards GameStop Style */
-.hover-lift {
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.hover-lift:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
-
-/* Custom gradient backgrounds GameStop Style */
-.bg-gradient-red {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-}
-
-.bg-gradient-red-light {
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-}
-
-/* Enhanced button styles GameStop Style */
-.btn-primary {
-  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-500/25;
-}
-
-.btn-secondary {
-  @apply bg-white text-red-600 border-2 border-red-600 hover:bg-red-600 hover:text-white font-bold py-3 px-6 rounded-xl transition-all duration-300;
-}
-
-/* Typography enhancements GameStop Style */
-.heading-primary {
-  @apply text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight;
-}
-
-.heading-secondary {
-  @apply text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800;
-}
-
-.text-gradient {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Loading animations */
-@keyframes shimmer {
-  0% {
-    background-position: -468px 0;
-  }
-  100% {
-    background-position: 468px 0;
-  }
-}
-
-.shimmer {
-  animation: shimmer 1.6s linear infinite;
-  background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
-  background-size: 800px 104px;
 }
 
 /* Mobile optimizations */
@@ -259,60 +129,86 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
-  .heading-primary {
-    @apply text-3xl md:text-4xl;
+}
+
+/* GameStop specific mobile styles */
+.gamestop-mobile-card {
+  @apply bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200;
+}
+
+.gamestop-mobile-button {
+  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-all duration-200;
+}
+
+.gamestop-search-input {
+  @apply w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none;
+}
+
+/* Category scroll indicators */
+.category-scroll::before,
+.category-scroll::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.category-scroll::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(249, 250, 251, 1), rgba(249, 250, 251, 0));
+}
+
+.category-scroll::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(249, 250, 251, 1), rgba(249, 250, 251, 0));
+}
+
+/* Enhanced mobile animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  .heading-secondary {
-    @apply text-xl md:text-2xl;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Focus states for accessibility */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
 }
 
-/* Card enhancements GameStop Style */
-.card-hover {
-  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-2;
+/* Product card enhancements for mobile */
+.mobile-product-card {
+  @apply bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm;
+  transition: all 0.3s ease;
 }
 
-.card-product {
-  @apply bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-red-300;
+.mobile-product-card:hover {
+  @apply shadow-lg border-red-200;
+  transform: translateY(-2px);
 }
 
-/* GameStop specific styles */
-.gamestop-card-product {
-  @apply bg-white rounded-xl border border-gray-200 hover:border-red-300 hover:shadow-xl transition-all duration-300 overflow-hidden;
+/* Button styles matching GameStop */
+.gamestop-primary-btn {
+  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg;
 }
 
-.gamestop-button-primary {
-  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg;
+.gamestop-secondary-btn {
+  @apply bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg transition-all duration-200;
 }
 
-.gamestop-button-secondary {
-  @apply bg-white text-red-600 border-2 border-red-600 hover:bg-red-600 hover:text-white font-bold py-3 px-6 rounded-xl transition-all duration-300;
-}
-
+/* Header styling */
 .gamestop-header {
-  @apply bg-white shadow-lg border-b border-gray-200;
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.gamestop-nav {
-  @apply bg-red-600 text-white;
-}
-
-.gamestop-footer {
-  @apply bg-gray-900 text-white;
-}
-
-/* Interactive elements */
-.interactive-hover {
-  @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
-}
-
-.badge-glow {
-  @apply shadow-lg animate-pulse;
+/* Banner gradient matching GameStop style */
+.gamestop-hero-gradient {
+  background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 25%, #db2777 50%, #dc2626 75%, #ea580c 100%);
 }

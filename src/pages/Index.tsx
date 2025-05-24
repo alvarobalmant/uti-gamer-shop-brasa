@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { ShoppingCart, Search, User, Heart, Menu, X, Star, Shield, Truck, Zap } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, Star, Shield, Truck, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,7 +33,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
 
-  const categories = ['Todos', 'Xbox', 'PlayStation', 'Nintendo', 'PC', 'Acessórios'];
+  const categories = ['PlayStation', 'Nintendo', 'Xbox', 'PC', 'Colecionáveis', 'Acessórios', 'Jogos Físicos', 'Jogos Digitais', 'Ofertas', 'Novidades'];
 
   const addToCart = (product: Product, size: string, color: string) => {
     const existingItem = cart.find(
@@ -82,10 +83,13 @@ const Index = () => {
     switch (platform?.toLowerCase()) {
       case 'ps5':
       case 'ps4/ps5':
+      case 'playstation':
         return 'bg-blue-600';
       case 'xbox series x':
+      case 'xbox':
         return 'bg-red-600';
       case 'nintendo switch':
+      case 'nintendo':
         return 'bg-red-500';
       case 'pc':
         return 'bg-orange-600';
@@ -101,107 +105,63 @@ const Index = () => {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'Todos' || product.platform?.toLowerCase().includes(selectedCategory.toLowerCase());
+    const matchesCategory = selectedCategory === 'Todos' || 
+      product.platform?.toLowerCase().includes(selectedCategory.toLowerCase()) ||
+      product.category?.toLowerCase().includes(selectedCategory.toLowerCase());
     return matchesSearch && matchesCategory;
   });
 
   const featuredProducts = products.slice(0, 4);
-  const newProducts = products.slice(0, 6);
-  const bestSellers = products.slice(2, 8);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header GameStop Style */}
-      <header className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-40">
-        {/* Top Bar */}
-        <div className="bg-red-600 text-white py-2">
-          <div className="container mx-auto px-4">
-            <div className="flex justify-between items-center text-sm">
-              <div className="flex items-center gap-4">
-                <span>📱 WhatsApp: (27) 99688-2090</span>
-                <span>🚚 Frete grátis acima de R$ 200</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <span>💳 Parcelamos em até 12x</span>
-                <span>⚡ +10 anos no mercado</span>
-              </div>
-            </div>
+      {/* Mobile Header - GameStop Style */}
+      <header className="bg-white shadow-lg sticky top-0 z-50">
+        {/* Top rotating banner */}
+        <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-2 overflow-hidden">
+          <div className="animate-marquee whitespace-nowrap">
+            <span className="mx-8">📱 WhatsApp: (27) 99688-2090</span>
+            <span className="mx-8">🚚 Frete grátis acima de R$ 200</span>
+            <span className="mx-8">💳 Parcelamos em até 12x</span>
+            <span className="mx-8">⚡ +10 anos no mercado</span>
           </div>
         </div>
 
         {/* Main Header */}
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between mb-3">
             {/* Logo */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center">
               <img 
                 src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
                 alt="UTI DOS GAMES" 
-                className="h-12 w-12"
+                className="h-8 w-8 mr-2"
               />
-              <div className="hidden md:block">
-                <h1 className="text-2xl font-bold text-red-600">UTI DOS GAMES</h1>
-                <p className="text-xs text-gray-600">A loja de games mais tradicional de Colatina</p>
-              </div>
+              <h1 className="text-xl font-bold text-gray-900">GameStop</h1>
             </div>
 
-            {/* Search Bar */}
-            <div className="flex-1 max-w-2xl mx-8 hidden md:block">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="text"
-                  placeholder="Buscar jogos, consoles, acessórios..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-field pl-12 pr-4 py-3 w-full text-base"
-                />
-              </div>
-            </div>
-
-            {/* Right Actions */}
+            {/* Right Icons */}
             <div className="flex items-center gap-3">
-              {user ? (
-                <div className="flex items-center gap-2">
-                  {isAdmin && (
-                    <Button
-                      onClick={() => navigate('/admin')}
-                      variant="outline"
-                      size="sm"
-                      className="hidden md:flex border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-xl"
-                    >
-                      Admin
-                    </Button>
-                  )}
-                  <Button
-                    onClick={signOut}
-                    variant="ghost"
-                    size="sm"
-                    className="hidden md:flex text-gray-600 hover:text-red-600 rounded-xl"
-                  >
-                    <User className="w-4 h-4 mr-1" />
-                    Sair
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  onClick={() => setShowAuthModal(true)}
-                  variant="outline"
-                  size="sm"
-                  className="hidden md:flex border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-xl"
-                >
-                  <User className="w-4 h-4 mr-1" />
-                  Entrar
-                </Button>
-              )}
+              <Button
+                onClick={() => setShowAuthModal(true)}
+                variant="ghost"
+                size="sm"
+                className="flex flex-col items-center p-2 text-gray-700"
+              >
+                <User className="w-5 h-5" />
+                <span className="text-xs">Sign In</span>
+              </Button>
 
               <Button
                 onClick={() => setShowCart(true)}
-                className="bg-red-600 hover:bg-red-700 text-white relative rounded-xl shadow-lg"
+                variant="ghost"
+                size="sm"
+                className="flex flex-col items-center p-2 text-gray-700 relative"
               >
                 <ShoppingCart className="w-5 h-5" />
+                <span className="text-xs">Cart</span>
                 {cart.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs px-1 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                  <Badge className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 min-w-[16px] h-4 flex items-center justify-center rounded-full">
                     {cart.reduce((sum, item) => sum + item.quantity, 0)}
                   </Badge>
                 )}
@@ -211,236 +171,154 @@ const Index = () => {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 variant="ghost"
                 size="sm"
-                className="md:hidden rounded-xl"
+                className="flex flex-col items-center p-2 text-gray-700"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                <Menu className="w-5 h-5" />
+                <span className="text-xs">Menu</span>
               </Button>
             </div>
           </div>
 
-          {/* Mobile Search */}
-          <div className="md:hidden mt-4">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input
-                type="text"
-                placeholder="Buscar produtos..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-field pl-12 pr-4 py-3 w-full"
-              />
+          {/* Search Bar */}
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              type="text"
+              placeholder="Search games, consoles & more"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Categories Horizontal Scroll */}
+        <div className="border-t border-gray-200 bg-gray-50">
+          <div className="flex overflow-x-auto scrollbar-hide px-4 py-3 gap-6">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`flex-shrink-0 text-sm font-medium whitespace-nowrap ${
+                  selectedCategory === category
+                    ? 'text-red-600 border-b-2 border-red-600 pb-1'
+                    : 'text-gray-600'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile Menu Overlay */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)}>
+            <div className="bg-white w-80 h-full ml-auto p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold">Menu</h3>
+                <Button
+                  onClick={() => setMobileMenuOpen(false)}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="space-y-4">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left py-2 text-gray-700 hover:text-red-600"
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Navigation Menu */}
-        <div className="border-t border-gray-200 bg-white">
-          <div className="container mx-auto px-4">
-            <nav className="hidden md:flex items-center gap-8 py-3">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
-                    selectedCategory === category
-                      ? 'bg-red-600 text-white shadow-lg'
-                      : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </nav>
-
-            {/* Mobile Menu */}
-            {mobileMenuOpen && (
-              <div className="md:hidden py-4 border-t border-gray-200">
-                <div className="flex flex-col gap-2">
-                  {categories.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => {
-                        setSelectedCategory(category);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`px-4 py-3 rounded-xl font-medium text-left transition-all duration-200 ${
-                        selectedCategory === category
-                          ? 'bg-red-600 text-white'
-                          : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                  {!user && (
-                    <Button
-                      onClick={() => {
-                        setShowAuthModal(true);
-                        setMobileMenuOpen(false);
-                      }}
-                      className="bg-red-600 hover:bg-red-700 text-white mt-2 rounded-xl"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Entrar
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        )}
       </header>
 
-      {/* Hero Banner */}
-      <section className="relative bg-gradient-to-r from-red-600 to-red-800 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <Badge className="bg-yellow-500 text-black font-bold mb-4 px-4 py-2 rounded-full">
-                🔥 MEGA PROMOÇÃO!
-              </Badge>
-              <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                OS MELHORES
-                <span className="block text-yellow-400">GAMES</span>
-                ESTÃO AQUI!
-              </h2>
-              <p className="text-xl mb-8 text-red-100">
-                Descubra os últimos lançamentos e ofertas exclusivas para sua setup gamer
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 px-8 text-lg rounded-xl shadow-lg hover:scale-105 transition-all duration-300"
-                  onClick={() => document.getElementById('produtos')?.scrollIntoView({ behavior: 'smooth' })}
-                >
-                  Ver Ofertas
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="border-2 border-white text-white hover:bg-white hover:text-red-600 font-bold py-4 px-8 text-lg rounded-xl"
-                  onClick={() => window.open('https://wa.me/5527996882090', '_blank')}
-                >
-                  Falar no WhatsApp
-                </Button>
-              </div>
-            </div>
-            <div className="flex justify-center">
-              <img 
-                src="/lovable-uploads/b20762ad-323a-48fd-a114-f618c180f903.png" 
-                alt="Mascote UTI DOS GAMES" 
-                className="w-80 h-80 object-contain animate-bounce-soft"
-              />
-            </div>
+      {/* Hero Banner - GameStop Style */}
+      <section className="relative bg-gradient-to-br from-purple-900 via-blue-900 to-red-900 text-white">
+        <div className="px-4 py-12">
+          <div className="text-center mb-8">
+            <Badge className="bg-pink-600 text-white font-bold mb-4 px-4 py-2 rounded-full text-sm">
+              ♦ PROS GET 5% EXTRA OFF + 5% EXTRA TRADE CREDIT
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+              Pre-Owned, Phone Home!
+            </h2>
+            <p className="text-lg text-gray-200 mb-6">
+              Explore the best pre-owned deals in the universe.
+            </p>
+            <Button 
+              className="bg-white text-gray-900 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg"
+              onClick={() => document.getElementById('produtos')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Shop Pre-Owned Now
+            </Button>
           </div>
-        </div>
-      </section>
-
-      {/* Trust Badges */}
-      <section className="bg-white py-12 border-b border-gray-200">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="flex items-center justify-center gap-3 p-4">
-              <Shield className="w-8 h-8 text-red-600" />
-              <div className="text-center">
-                <h3 className="font-bold text-gray-800">Compra Segura</h3>
-                <p className="text-sm text-gray-600">100% Protegida</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-3 p-4">
-              <Truck className="w-8 h-8 text-red-600" />
-              <div className="text-center">
-                <h3 className="font-bold text-gray-800">Frete Grátis</h3>
-                <p className="text-sm text-gray-600">Acima de R$ 200</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-3 p-4">
-              <Zap className="w-8 h-8 text-red-600" />
-              <div className="text-center">
-                <h3 className="font-bold text-gray-800">Entrega Rápida</h3>
-                <p className="text-sm text-gray-600">Em Colatina e região</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-3 p-4">
-              <Star className="w-8 h-8 text-red-600" />
-              <div className="text-center">
-                <h3 className="font-bold text-gray-800">+10 Anos</h3>
-                <p className="text-sm text-gray-600">No mercado</p>
+          
+          {/* Hero Image */}
+          <div className="flex justify-center">
+            <div className="relative">
+              <div className="w-80 h-48 bg-gradient-to-br from-blue-600 to-purple-800 rounded-lg flex items-center justify-center">
+                <div className="text-6xl">🎮</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Products Carousel */}
-      {featuredProducts.length > 0 && (
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-4xl font-bold text-center mb-12">
-              🔥 <span className="text-red-600">OFERTAS</span> EM DESTAQUE
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={addToCart}
-                  getPlatformColor={getPlatformColor}
-                  onProductClick={handleProductClick}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Promotional Banner */}
+      <section className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-6">
+        <div className="px-4 text-center">
+          <h3 className="text-xl font-bold mb-2">
+            Buy & Sell Your Graded Cards At GameStop!
+          </h3>
+          <Button 
+            variant="outline" 
+            className="border-2 border-white text-white hover:bg-white hover:text-purple-600 font-bold py-2 px-6 rounded-lg"
+          >
+            Buy & Sell Graded Cards Now
+          </Button>
+        </div>
+      </section>
 
-      {/* New Arrivals */}
-      {newProducts.length > 0 && (
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-4xl font-bold text-center mb-12">
-              🚀 <span className="text-red-600">LANÇAMENTOS</span>
+      {/* Collectibles Section */}
+      <section className="py-12 bg-white">
+        <div className="px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Treat Yo Shelf
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-              {newProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={addToCart}
-                  getPlatformColor={getPlatformColor}
-                  onProductClick={handleProductClick}
-                />
-              ))}
-            </div>
+            <p className="text-gray-600 text-lg">
+              Snag all the latest and greatest collectibles!
+            </p>
           </div>
-        </section>
-      )}
-
-      {/* Best Sellers */}
-      {bestSellers.length > 0 && (
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-4xl font-bold text-center mb-12">
-              ⭐ <span className="text-red-600">MAIS VENDIDOS</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-              {bestSellers.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={addToCart}
-                  getPlatformColor={getPlatformColor}
-                  onProductClick={handleProductClick}
-                />
-              ))}
-            </div>
+          
+          {/* Collectibles showcase */}
+          <div className="flex justify-center items-center gap-4 mb-8">
+            <div className="text-6xl">🕷️</div>
+            <div className="text-6xl">🦸‍♂️</div>
+            <div className="text-6xl">🤖</div>
+            <div className="text-6xl">👾</div>
+            <div className="text-6xl">🎯</div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* All Products */}
-      <section id="produtos" className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-12">
-            🎮 <span className="text-red-600">TODOS OS PRODUTOS</span>
+      {/* Products Grid */}
+      <section id="produtos" className="py-12 bg-gray-50">
+        <div className="px-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+            🎮 Todos os Produtos
           </h2>
 
           {loading ? (
@@ -454,7 +332,7 @@ const Index = () => {
               <p className="text-gray-500">Tente ajustar os filtros de busca</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 gap-4">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -469,84 +347,49 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer GameStop Style */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Company Info */}
-            <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center gap-4 mb-6">
-                <img 
-                  src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
-                  alt="UTI DOS GAMES" 
-                  className="h-16 w-16"
-                />
-                <div>
-                  <h3 className="text-2xl font-bold text-red-400">UTI DOS GAMES</h3>
-                  <p className="text-gray-400">A loja de games mais tradicional de Colatina</p>
-                </div>
-              </div>
-              <p className="text-gray-400 mb-6 max-w-md">
-                Há mais de 10 anos oferecendo os melhores produtos gamer com qualidade garantida, 
-                preços justos e atendimento excepcional.
-              </p>
-              <div className="flex gap-4">
-                <Button variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white rounded-xl">
-                  Instagram
-                </Button>
-                <Button variant="outline" className="border-red-400 text-red-400 hover:bg-red-400 hover:text-white rounded-xl">
-                  WhatsApp
-                </Button>
+      {/* Footer - GameStop Style */}
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="px-4">
+          <div className="text-center mb-6">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <img 
+                src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
+                alt="UTI DOS GAMES" 
+                className="h-12 w-12"
+              />
+              <div>
+                <h3 className="text-xl font-bold text-red-400">UTI DOS GAMES</h3>
+                <p className="text-gray-400 text-sm">A loja de games mais tradicional de Colatina</p>
               </div>
             </div>
-            
-            {/* Quick Links */}
+          </div>
+          
+          <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
-              <h4 className="text-xl font-bold mb-6 text-red-400">Links Úteis</h4>
-              <ul className="space-y-3">
-                <li><a href="#produtos" className="text-gray-400 hover:text-white transition-colors">Produtos</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Xbox</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">PlayStation</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Nintendo</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">PC</a></li>
+              <h4 className="font-bold mb-3 text-red-400">Links Úteis</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="text-gray-400 hover:text-white">PlayStation</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">Xbox</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">Nintendo</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">PC</a></li>
               </ul>
             </div>
             
-            {/* Contact */}
             <div>
-              <h4 className="text-xl font-bold mb-6 text-red-400">Contato</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li className="flex items-center">
-                  <span className="mr-2">📱</span>
-                  WhatsApp: (27) 99688-2090
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2">📧</span>
-                  contato@utidosgames.com
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2">🕒</span>
-                  Seg à Sex: 9h às 18h
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2">📍</span>
-                  Colatina - ES
-                </li>
+              <h4 className="font-bold mb-3 text-red-400">Contato</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>📱 (27) 99688-2090</li>
+                <li>📧 contato@utidosgames.com</li>
+                <li>🕒 Seg à Sex: 9h às 18h</li>
+                <li>📍 Colatina - ES</li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-gray-800 mt-12 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-400 text-center md:text-left">
-                © 2024 UTI DOS GAMES. Todos os direitos reservados.
-              </p>
-              <img 
-                src="/lovable-uploads/103e7d18-a70a-497f-a476-e6c513079b69.png" 
-                alt="Revenda Oficial Sony PlayStation" 
-                className="h-12 object-contain mt-4 md:mt-0"
-              />
-            </div>
+          <div className="border-t border-gray-800 pt-6 text-center">
+            <p className="text-gray-400 text-sm">
+              © 2024 UTI DOS GAMES. Todos os direitos reservados.
+            </p>
           </div>
         </div>
       </footer>
