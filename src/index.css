@@ -54,7 +54,7 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   }
 }
 
@@ -71,20 +71,36 @@
   }
 
   .bg-gradient-gaming {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
   }
 
   .border-glow {
-    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
   }
 
   .hover-glow:hover {
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
     transform: translateY(-2px);
+  }
+
+  .gamestop-gradient {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  }
+
+  .gamestop-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .gamestop-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .gamestop-card {
+    @apply bg-white rounded-lg border border-gray-200 hover:border-red-300 hover:shadow-xl transition-all duration-300;
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar GameStop Style */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -102,27 +118,27 @@
   background: #b91c1c;
 }
 
-/* Enhanced animations */
-@keyframes bounce-slow {
+/* Enhanced animations GameStop Style */
+@keyframes bounce-soft {
   0%, 20%, 53%, 80%, 100% {
     animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
     transform: translate3d(0,0,0);
   }
   40%, 43% {
     animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060);
-    transform: translate3d(0, -15px, 0);
+    transform: translate3d(0, -8px, 0);
   }
   70% {
     animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060);
-    transform: translate3d(0, -7px, 0);
+    transform: translate3d(0, -4px, 0);
   }
   90% {
-    transform: translate3d(0,-2px,0);
+    transform: translate3d(0,-1px,0);
   }
 }
 
-.animate-bounce-slow {
-  animation: bounce-slow 3s infinite;
+.animate-bounce-soft {
+  animation: bounce-soft 4s infinite;
 }
 
 @keyframes scale-in {
@@ -140,6 +156,21 @@
   animation: scale-in 0.3s ease-out;
 }
 
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
 /* Pulse animation for urgency elements */
 @keyframes pulse-red {
   0%, 100% {
@@ -154,17 +185,17 @@
   animation: pulse-red 2s infinite;
 }
 
-/* Hover effects for cards */
+/* Hover effects for cards GameStop Style */
 .hover-lift {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .hover-lift:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-/* Custom gradient backgrounds */
+/* Custom gradient backgrounds GameStop Style */
 .bg-gradient-red {
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
 }
@@ -173,16 +204,16 @@
   background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
 }
 
-/* Enhanced button styles */
+/* Enhanced button styles GameStop Style */
 .btn-primary {
-  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-500/25;
+  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-500/25;
 }
 
 .btn-secondary {
-  @apply bg-white text-red-600 border-2 border-red-600 hover:bg-red-600 hover:text-white font-bold py-3 px-6 rounded-xl transition-all duration-300;
+  @apply bg-white text-red-600 border-2 border-red-600 hover:bg-red-600 hover:text-white font-bold py-3 px-6 rounded-lg transition-all duration-300;
 }
 
-/* Typography enhancements */
+/* Typography enhancements GameStop Style */
 .heading-primary {
   @apply text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight;
 }
@@ -235,7 +266,7 @@
   @apply focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
 }
 
-/* Success states (only green allowed) */
+/* Success states (only green allowed for positive status) */
 .status-success {
   @apply text-green-600 bg-green-50 border-green-200;
 }
@@ -244,11 +275,45 @@
   @apply text-green-500;
 }
 
-/* Card enhancements */
+/* Card enhancements GameStop Style */
 .card-hover {
-  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-2;
 }
 
 .card-product {
-  @apply bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-red-200;
+  @apply bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-red-300;
+}
+
+/* GameStop specific styles */
+.gamestop-card-product {
+  @apply bg-white rounded-lg border border-gray-200 hover:border-red-300 hover:shadow-xl transition-all duration-300 overflow-hidden;
+}
+
+.gamestop-button-primary {
+  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg;
+}
+
+.gamestop-button-secondary {
+  @apply bg-white text-red-600 border-2 border-red-600 hover:bg-red-600 hover:text-white font-bold py-3 px-6 rounded-lg transition-all duration-300;
+}
+
+.gamestop-header {
+  @apply bg-white shadow-lg border-b border-gray-200;
+}
+
+.gamestop-nav {
+  @apply bg-red-600 text-white;
+}
+
+.gamestop-footer {
+  @apply bg-gray-900 text-white;
+}
+
+/* Interactive elements */
+.interactive-hover {
+  @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+}
+
+.badge-glow {
+  @apply shadow-lg animate-pulse;
 }
