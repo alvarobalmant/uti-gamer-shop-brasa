@@ -14,10 +14,11 @@ interface ProductModalProps {
 }
 
 const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor }: ProductModalProps) => {
+  // Early return BEFORE any hooks to avoid hooks order violation
+  if (!product || !isOpen) return null;
+
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
-
-  if (!product || !isOpen) return null;
 
   const isLowStock = product.stock && product.stock <= 5;
   const isOutOfStock = product.stock === 0;
