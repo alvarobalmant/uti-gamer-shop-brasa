@@ -33,7 +33,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
 
-  const categories = ['PlayStation', 'Nintendo', 'Xbox', 'PC', 'Colecionáveis', 'Acessórios', 'Jogos Físicos', 'Jogos Digitais', 'Ofertas', 'Novidades'];
+  const categories = ['Todos', 'PlayStation', 'Nintendo', 'Xbox', 'PC', 'Colecionáveis', 'Acessórios', 'Jogos Físicos', 'Jogos Digitais', 'Ofertas', 'Novidades'];
 
   const addToCart = (product: Product, size: string, color: string) => {
     const existingItem = cart.find(
@@ -103,15 +103,31 @@ const Index = () => {
     setShowProductModal(true);
   };
 
+  // Sistema de busca funcional
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         product.platform?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         product.category?.toLowerCase().includes(searchQuery.toLowerCase());
+    
     const matchesCategory = selectedCategory === 'Todos' || 
       product.platform?.toLowerCase().includes(selectedCategory.toLowerCase()) ||
       product.category?.toLowerCase().includes(selectedCategory.toLowerCase());
+    
     return matchesSearch && matchesCategory;
   });
 
-  const featuredProducts = products.slice(0, 4);
+  const handleLogin = () => {
+    if (user) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        setShowAuthModal(true);
+      }
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -137,19 +153,21 @@ const Index = () => {
                 alt="UTI DOS GAMES" 
                 className="h-8 w-8 mr-2"
               />
-              <h1 className="text-xl font-bold text-gray-900">GameStop</h1>
+              <h1 className="text-xl font-bold text-gray-900">UTI DOS GAMES</h1>
             </div>
 
             {/* Right Icons */}
             <div className="flex items-center gap-3">
               <Button
-                onClick={() => setShowAuthModal(true)}
+                onClick={handleLogin}
                 variant="ghost"
                 size="sm"
                 className="flex flex-col items-center p-2 text-gray-700"
               >
                 <User className="w-5 h-5" />
-                <span className="text-xs">Sign In</span>
+                <span className="text-xs">
+                  {user ? (isAdmin ? 'Admin' : 'Conta') : 'Entrar'}
+                </span>
               </Button>
 
               <Button
@@ -159,7 +177,7 @@ const Index = () => {
                 className="flex flex-col items-center p-2 text-gray-700 relative"
               >
                 <ShoppingCart className="w-5 h-5" />
-                <span className="text-xs">Cart</span>
+                <span className="text-xs">Carrinho</span>
                 {cart.length > 0 && (
                   <Badge className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 min-w-[16px] h-4 flex items-center justify-center rounded-full">
                     {cart.reduce((sum, item) => sum + item.quantity, 0)}
@@ -184,7 +202,7 @@ const Index = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               type="text"
-              placeholder="Search games, consoles & more"
+              placeholder="Buscar jogos, consoles e mais"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none"
@@ -226,6 +244,32 @@ const Index = () => {
                 </Button>
               </div>
               <div className="space-y-4">
+                {user && (
+                  <div className="pb-4 border-b border-gray-200">
+                    <p className="text-sm text-gray-600 mb-2">Olá, {user.email}</p>
+                    {isAdmin && (
+                      <Button
+                        onClick={() => {
+                          navigate('/admin');
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full bg-red-600 hover:bg-red-700 text-white mb-2"
+                      >
+                        Painel Admin
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => {
+                        signOut();
+                        setMobileMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Sair
+                    </Button>
+                  </div>
+                )}
                 {categories.map((category) => (
                   <button
                     key={category}
@@ -245,30 +289,30 @@ const Index = () => {
       </header>
 
       {/* Hero Banner - GameStop Style */}
-      <section className="relative bg-gradient-to-br from-purple-900 via-blue-900 to-red-900 text-white">
+      <section className="relative bg-gradient-to-br from-red-900 via-red-800 to-red-700 text-white">
         <div className="px-4 py-12">
           <div className="text-center mb-8">
-            <Badge className="bg-pink-600 text-white font-bold mb-4 px-4 py-2 rounded-full text-sm">
-              ♦ PROS GET 5% EXTRA OFF + 5% EXTRA TRADE CREDIT
+            <Badge className="bg-red-600 text-white font-bold mb-4 px-4 py-2 rounded-full text-sm">
+              ♦ MAIS DE 10 ANOS NO MERCADO
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-              Pre-Owned, Phone Home!
+              Os Melhores Games e Consoles!
             </h2>
             <p className="text-lg text-gray-200 mb-6">
-              Explore the best pre-owned deals in the universe.
+              Explore os melhores produtos de games do mercado.
             </p>
             <Button 
-              className="bg-white text-gray-900 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg"
+              className="bg-white text-red-900 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg"
               onClick={() => document.getElementById('produtos')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              Shop Pre-Owned Now
+              Ver Produtos
             </Button>
           </div>
           
           {/* Hero Image */}
           <div className="flex justify-center">
             <div className="relative">
-              <div className="w-80 h-48 bg-gradient-to-br from-blue-600 to-purple-800 rounded-lg flex items-center justify-center">
+              <div className="w-80 h-48 bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center">
                 <div className="text-6xl">🎮</div>
               </div>
             </div>
@@ -277,40 +321,17 @@ const Index = () => {
       </section>
 
       {/* Promotional Banner */}
-      <section className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-6">
+      <section className="bg-gradient-to-r from-red-600 to-red-700 text-white py-6">
         <div className="px-4 text-center">
           <h3 className="text-xl font-bold mb-2">
-            Buy & Sell Your Graded Cards At GameStop!
+            Compre e Venda Seus Games na UTI DOS GAMES!
           </h3>
           <Button 
             variant="outline" 
-            className="border-2 border-white text-white hover:bg-white hover:text-purple-600 font-bold py-2 px-6 rounded-lg"
+            className="border-2 border-white text-white hover:bg-white hover:text-red-600 font-bold py-2 px-6 rounded-lg"
           >
-            Buy & Sell Graded Cards Now
+            Entre em Contato
           </Button>
-        </div>
-      </section>
-
-      {/* Collectibles Section */}
-      <section className="py-12 bg-white">
-        <div className="px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Treat Yo Shelf
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Snag all the latest and greatest collectibles!
-            </p>
-          </div>
-          
-          {/* Collectibles showcase */}
-          <div className="flex justify-center items-center gap-4 mb-8">
-            <div className="text-6xl">🕷️</div>
-            <div className="text-6xl">🦸‍♂️</div>
-            <div className="text-6xl">🤖</div>
-            <div className="text-6xl">👾</div>
-            <div className="text-6xl">🎯</div>
-          </div>
         </div>
       </section>
 
@@ -318,7 +339,7 @@ const Index = () => {
       <section id="produtos" className="py-12 bg-gray-50">
         <div className="px-4">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            🎮 Todos os Produtos
+            🎮 {searchQuery ? `Resultados para "${searchQuery}"` : selectedCategory === 'Todos' ? 'Todos os Produtos' : selectedCategory}
           </h2>
 
           {loading ? (
@@ -328,8 +349,12 @@ const Index = () => {
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-16">
-              <div className="text-2xl text-gray-400 mb-2">Nenhum produto encontrado</div>
-              <p className="text-gray-500">Tente ajustar os filtros de busca</p>
+              <div className="text-2xl text-gray-400 mb-2">
+                {searchQuery ? 'Nenhum produto encontrado' : 'Nenhum produto disponível'}
+              </div>
+              <p className="text-gray-500">
+                {searchQuery ? 'Tente buscar por outro termo' : 'Produtos serão adicionados em breve'}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">

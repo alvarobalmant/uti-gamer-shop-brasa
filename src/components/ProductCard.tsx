@@ -33,16 +33,16 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
   const isOutOfStock = product.stock === 0;
 
   return (
-    <Card className="mobile-product-card h-full flex flex-col">
+    <Card className="mobile-product-card h-full flex flex-col group">
       <CardContent className="p-0 flex flex-col h-full">
         <div 
-          className="relative"
+          className="relative cursor-pointer"
           onClick={() => onProductClick?.(product)}
         >
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-32 sm:h-40 object-cover"
+            className="w-full h-32 sm:h-40 object-cover rounded-t-lg"
             onError={(e) => {
               e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
             }}
@@ -122,7 +122,7 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
                     }}
                     className={`text-xs px-2 py-1 h-6 transition-all duration-200 font-medium ${
                       selectedSize === size 
-                        ? 'bg-red-600 text-white border-red-600' 
+                        ? 'bg-red-600 text-white border-red-600 hover:bg-red-700' 
                         : 'border-gray-300 text-gray-700 bg-white hover:border-red-500 hover:text-red-600 hover:bg-red-50'
                     }`}
                   >
@@ -158,10 +158,10 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
                 }
               }}
               disabled={isOutOfStock}
-              className={`w-full font-bold py-2 text-xs transition-all duration-300 ${
+              className={`w-full font-bold py-2 text-xs transition-all duration-300 min-h-[32px] ${
                 isOutOfStock 
                   ? 'bg-gray-400 cursor-not-allowed text-white' 
-                  : 'gamestop-primary-btn'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
               }`}
             >
               <ShoppingCart className="w-3 h-3 mr-1 flex-shrink-0" />

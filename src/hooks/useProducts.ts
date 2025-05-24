@@ -24,13 +24,19 @@ export const useProducts = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      console.log('Buscando produtos...');
+      
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar produtos:', error);
+        throw error;
+      }
 
+      console.log('Produtos encontrados:', data);
       setProducts(data || []);
     } catch (error: any) {
       console.error('Erro ao carregar produtos:', error);
