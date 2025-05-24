@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 
 export interface Product {
-  id: number;
+  id: string; // Changed from number to string to match Supabase
   name: string;
   description: string;
   price: number;
@@ -14,22 +14,30 @@ export interface Product {
   colors: string[];
   platform: string;
   category: string;
+  stock?: number;
 }
 
 interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product, size: string, color: string) => void;
   getPlatformColor: (platform: string) => string;
+  onProductClick?: (product: Product) => void;
 }
 
-const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProps) => {
+const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }: ProductCardProps) => {
   const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
   const [selectedColor, setSelectedColor] = useState(product.colors[0] || '');
 
+  const isLowStock = product.stock && product.stock <= 5;
+  const isOutOfStock = product.stock === 0;
+
   return (
-    <Card className="bg-white border-2 border-gray-200 hover:border-red-500 transition-all duration-300 hover:scale-105 hover:shadow-xl group overflow-hidden">
+    <Card className="group bg-white border border-gray-100 hover:border-red-200 transition-all duration-300 hover:scale-105 hover:shadow-xl overflow-hidden cursor-pointer">
       <CardContent className="p-0">
-        <div className="relative overflow-hidden">
+        <div 
+          className="relative overflow-hidden"
+          onClick={() => onProductClick?.(product)}
+        >
           <img
             src={product.image}
             alt={product.name}
@@ -38,16 +46,37 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
               e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
+          {/* Badges de Status */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2">
+            <Badge className="bg-red-600 text-white font-bold text-xs px-3 py-1 shadow-lg">
+              NOVO
+            </Badge>
+            {isLowStock && !isOutOfStock && (
+              <Badge className="bg-orange-500 text-white font-bold text-xs px-3 py-1 shadow-lg animate-pulse">
+                🔥 Apenas {product.stock} unidades!
+              </Badge>
+            )}
+            {isOutOfStock && (
+              <Badge className="bg-gray-500 text-white font-bold text-xs px-3 py-1 shadow-lg">
+                ESGOTADO
+              </Badge>
+            )}
+          </div>
+
           {product.platform && (
-            <Badge className={`absolute top-4 right-4 ${getPlatformColor(product.platform)} text-white font-bold text-xs px-3 py-1 shadow-lg`}>
+            <Badge className={`absolute top-3 right-3 ${getPlatformColor(product.platform)} text-white font-bold text-xs px-3 py-1 shadow-lg`}>
               {product.platform}
             </Badge>
           )}
           
-          <div className="absolute top-4 left-4 bg-red-600 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">
-            NOVO
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Overlay com botão */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <Button className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-lg shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+              Ver Produto
+            </Button>
           </div>
         </div>
 
@@ -69,7 +98,10 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
                     key={size}
                     variant={selectedSize === size ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSelectedSize(size)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedSize(size);
+                    }}
                     className={`transition-all duration-200 font-medium ${
                       selectedSize === size 
                         ? 'bg-red-600 text-white border-red-600 shadow-md scale-105' 
@@ -92,7 +124,10 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
                       key={color}
                       variant={selectedColor === color ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setSelectedColor(color)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedColor(color);
+                      }}
                       className={`transition-all duration-200 font-medium ${
                         selectedColor === color 
                           ? 'bg-red-600 text-white border-red-600 shadow-md scale-105' 
@@ -114,10 +149,20 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
                 <p className="text-xs text-gray-500 font-medium">À vista no PIX</p>
               </div>
               <Button
-                onClick={() => onAddToCart(product, selectedSize, selectedColor)}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-500/25"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isOutOfStock) {
+                    onAddToCart(product, selectedSize, selectedColor);
+                  }
+                }}
+                disabled={isOutOfStock}
+                className={`font-bold px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg ${
+                  isOutOfStock 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-red-500/25'
+                }`}
               >
-                Adicionar
+                {isOutOfStock ? 'Esgotado' : 'Adicionar'}
               </Button>
             </div>
           </div>
