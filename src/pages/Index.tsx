@@ -1,21 +1,25 @@
-import { useState } from 'react';
+
+import { useState, useRef } from 'react';
+import { ShoppingCart, Search, User, Menu, X, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import { Product } from '@/components/ProductCard';
 import Cart from '@/components/Cart';
+import SearchSuggestions from '@/components/SearchSuggestions';
+import ServiceCards from '@/components/ServiceCards';
 import { CartItem, useCart } from '@/hooks/useCart';
 import PremiumHeader from '@/components/Header/PremiumHeader';
-import MobileHeader from '@/components/Header/MobileHeader';
-import BottomNavigation from '@/components/Navigation/BottomNavigation';
-import ResponsiveHeroBanner from '@/components/Hero/ResponsiveHeroBanner';
-import ProductGrid from '@/components/Product/ProductGrid';
-import ServiceCards from '@/components/ServiceCards';
+import PremiumHeroBanner from '@/components/Hero/PremiumHeroBanner';
+import PremiumProductCard from '@/components/Product/PremiumProductCard';
 
 const Index = () => {
   const { products, loading } = useProducts();
-  const { user } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const [showCart, setShowCart] = useState(false);
@@ -38,27 +42,35 @@ const Index = () => {
     const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];
     
     if (tags.some(tag => tag.includes('playstation'))) {
-      return 'bg-blue-600';
+      return 'platform-playstation';
     }
     if (tags.some(tag => tag.includes('xbox'))) {
-      return 'bg-green-600';
+      return 'platform-xbox';
     }
     if (tags.some(tag => tag.includes('nintendo'))) {
-      return 'bg-red-500';
+      return 'platform-nintendo';
     }
     if (tags.some(tag => tag.includes('pc'))) {
-      return 'bg-orange-600';
+      return 'platform-pc';
     }
-    return 'bg-gray-600';
+    return 'bg-uti-dark';
   };
 
-  const handleSearchSubmit = (query: string) => {
-    navigate(`/busca?q=${encodeURIComponent(query)}`);
+  const handleLogin = () => {
+    if (user) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        setShowAuthModal(true);
+      }
+    } else {
+      setShowAuthModal(true);
+    }
   };
 
-  const featuredProducts = products.slice(0, 10);
-  const newProducts = products.filter(p => p.tags?.some(tag => tag.name.toLowerCase().includes('novo'))).slice(0, 8);
-  const bestSellers = products.filter(p => p.tags?.some(tag => tag.name.toLowerCase().includes('bestseller'))).slice(0, 8);
+  const featuredProducts = products.slice(0, 8);
+  const newProducts = products.filter(p => p.tags?.some(tag => tag.name.toLowerCase().includes('novo'))).slice(0, 6);
+  const bestSellers = products.filter(p => p.tags?.some(tag => tag.name.toLowerCase().includes('bestseller'))).slice(0, 6);
 
   // Premium categories with enhanced visuals
   const premiumCategories = [
@@ -113,64 +125,63 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white pb-16 lg:pb-0">
-      {/* Headers */}
+    <div className="min-h-screen bg-white">
+      {/* Premium Header */}
       <PremiumHeader />
-      <MobileHeader onSearchSubmit={handleSearchSubmit} />
 
-      {/* Hero Banner */}
-      <ResponsiveHeroBanner />
+      {/* Premium Hero Banner */}
+      <PremiumHeroBanner />
 
       {/* Premium Benefits Section */}
-      <section className="py-8 lg:py-16 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
+      <section className="py-16 bg-gradient-mesh">
+        <div className="container-premium">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
               { icon: '🏪', title: 'Loja Física', desc: 'Colatina - ES' },
               { icon: '⚡', title: '+10 Anos', desc: 'De Tradição' },
               { icon: '🔧', title: 'Assistência', desc: 'Especializada' },
               { icon: '💳', title: 'Parcelamento', desc: 'Em até 12x' }
             ].map((benefit, index) => (
-              <div key={index} className="text-center p-4 lg:p-6 animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="text-3xl lg:text-4xl mb-2 lg:mb-3">{benefit.icon}</div>
-                <h3 className="font-bold text-gray-900 text-sm lg:text-base mb-1">{benefit.title}</h3>
-                <p className="text-xs lg:text-sm text-gray-600">{benefit.desc}</p>
+              <div key={index} className="text-center animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className="text-4xl mb-3">{benefit.icon}</div>
+                <h3 className="font-bold text-uti-dark mb-1">{benefit.title}</h3>
+                <p className="text-sm text-uti-gray">{benefit.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-8 lg:py-16 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 lg:mb-16 animate-fade-in-up">
-            <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 mb-4 lg:mb-6">
-              Explore Nossa Coleção
+      {/* Premium Categories */}
+      <section className="section-padding bg-white">
+        <div className="container-premium">
+          <div className="text-center mb-16 animate-fade-in-up">
+            <h2 className="text-section-title text-uti-dark mb-6">
+              Explore Nossa Coleção Premium
             </h2>
-            <p className="text-base lg:text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-body-large text-uti-gray max-w-3xl mx-auto">
               Descubra os melhores produtos gaming com a qualidade e tradição que você já conhece
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6">
+          <div className="grid-categories-premium">
             {premiumCategories.map((category, index) => (
               <div
                 key={category.id}
                 onClick={() => navigate(category.path)}
-                className="bg-white rounded-xl lg:rounded-2xl border border-gray-200 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 animate-fade-in-up"
+                className="card-premium cursor-pointer overflow-hidden animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="relative aspect-square overflow-hidden">
+                <div className="relative aspect-[4/3] overflow-hidden">
                   <img
                     src={category.image}
                     alt={category.name}
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className={`absolute inset-0 bg-gradient-to-t ${category.gradient} opacity-80`}></div>
-                  <div className="absolute inset-0 p-3 lg:p-6 flex flex-col justify-end text-white">
-                    <h3 className="text-sm lg:text-xl font-bold mb-1 lg:mb-2">{category.name}</h3>
-                    <p className="text-xs lg:text-sm opacity-90 hidden lg:block">{category.description}</p>
+                  <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
+                    <h3 className="text-xl font-bold mb-2">{category.name}</h3>
+                    <p className="text-sm opacity-90">{category.description}</p>
                   </div>
                 </div>
               </div>
@@ -183,52 +194,76 @@ const Index = () => {
       <ServiceCards />
 
       {/* Featured Products */}
-      <section className="py-8 lg:py-16 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-8 lg:mb-12 animate-fade-in-up">
-            <div className="mb-4 lg:mb-0">
-              <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 mb-2 lg:mb-4">
+      <section className="section-padding bg-gradient-mesh">
+        <div className="container-premium">
+          <div className="flex justify-between items-center mb-12 animate-fade-in-up">
+            <div>
+              <h2 className="text-section-title text-uti-dark mb-4">
                 🔥 Produtos em Destaque
               </h2>
-              <p className="text-base lg:text-xl text-gray-600">
+              <p className="text-body-large text-uti-gray">
                 Os melhores produtos selecionados especialmente para você
               </p>
             </div>
-            <button 
-              onClick={() => navigate('/categoria/inicio')} 
-              className="text-red-600 hover:text-red-700 font-semibold text-sm lg:text-base"
-            >
-              Ver Todos →
-            </button>
+            <Button onClick={() => navigate('/categoria/inicio')} className="btn-secondary">
+              Ver Todos os Produtos
+            </Button>
           </div>
 
-          <ProductGrid
-            products={featuredProducts}
-            onAddToCart={(product, size, color) => addToCart(product, size, color)}
-            getPlatformColor={getPlatformColor}
-            loading={loading}
-          />
+          {loading ? (
+            <div className="text-center py-20">
+              <div className="w-16 h-16 border-4 border-uti-red border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+              <div className="text-xl text-uti-gray font-medium">Carregando produtos premium...</div>
+            </div>
+          ) : featuredProducts.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-6">🎮</div>
+              <div className="text-2xl text-uti-gray mb-4">
+                Nenhum produto disponível
+              </div>
+              <p className="text-uti-gray">
+                Produtos serão adicionados em breve
+              </p>
+            </div>
+          ) : (
+            <div className="grid-products-premium">
+              {featuredProducts.map((product, index) => (
+                <PremiumProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
+                  getPlatformColor={() => getPlatformColor(product)}
+                  priority={index < 4}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* New Products */}
       {newProducts.length > 0 && (
-        <section className="py-8 lg:py-16 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 lg:mb-12 animate-fade-in-up">
-              <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 mb-2 lg:mb-4">
+        <section className="section-padding bg-white">
+          <div className="container-premium">
+            <div className="text-center mb-12 animate-fade-in-up">
+              <h2 className="text-section-title text-uti-dark mb-4">
                 ⚡ Novidades
               </h2>
-              <p className="text-base lg:text-xl text-gray-600">
+              <p className="text-body-large text-uti-gray">
                 Os lançamentos mais recentes chegaram na UTI dos Games
               </p>
             </div>
 
-            <ProductGrid
-              products={newProducts}
-              onAddToCart={(product, size, color) => addToCart(product, size, color)}
-              getPlatformColor={getPlatformColor}
-            />
+            <div className="grid-products-premium">
+              {newProducts.map((product) => (
+                <PremiumProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
+                  getPlatformColor={() => getPlatformColor(product)}
+                />
+              ))}
+            </div>
           </div>
         </section>
       )}
@@ -374,9 +409,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-
-      {/* Bottom Navigation */}
-      <BottomNavigation />
 
       {/* Cart Component */}
       <Cart
