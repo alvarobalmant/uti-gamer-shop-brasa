@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
-import { SearchSuggestions } from '@/components/SearchSuggestions';
+import SearchSuggestions from '@/components/SearchSuggestions';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const PremiumHeader = () => {
@@ -15,7 +15,7 @@ const PremiumHeader = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
   const { getCartItemsCount } = useCart();
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const searchRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -141,9 +141,10 @@ const PremiumHeader = () => {
             {/* Search Suggestions */}
             {showSuggestions && searchTerm && (
               <SearchSuggestions
-                query={searchTerm}
-                onSelect={handleSearchSelect}
-                onClose={() => setShowSuggestions(false)}
+                searchQuery={searchTerm}
+                onSelectSuggestion={handleSearchSelect}
+                onSearch={() => setShowSuggestions(false)}
+                isVisible={showSuggestions}
               />
             )}
           </div>
@@ -170,7 +171,7 @@ const PremiumHeader = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={logout}
+                  onClick={signOut}
                   className="text-gray-700 hover:text-red-600"
                 >
                   <User className="h-4 w-4 mr-1" />
