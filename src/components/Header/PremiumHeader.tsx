@@ -44,6 +44,14 @@ const PremiumHeader = () => {
     }
   };
 
+  const handleSearchWithoutEvent = () => {
+    if (searchTerm.trim()) {
+      navigate(`/busca?q=${encodeURIComponent(searchTerm.trim())}`);
+      setShowSearchSuggestions(false);
+      setShowMobileSearch(false);
+    }
+  };
+
   const handleUserAction = () => {
     if (user) {
       if (isAdmin) {
@@ -187,7 +195,7 @@ const PremiumHeader = () => {
                     setShowSearchSuggestions(false);
                     navigate(`/busca?q=${encodeURIComponent(term)}`);
                   }}
-                  onSearch={handleSearch}
+                  onSearch={handleSearchWithoutEvent}
                   isVisible={showSearchSuggestions}
                 />
               </div>
@@ -296,7 +304,7 @@ const PremiumHeader = () => {
                 setShowMobileSearch(false);
                 navigate(`/busca?q=${encodeURIComponent(term)}`);
               }}
-              onSearch={handleSearch}
+              onSearch={handleSearchWithoutEvent}
               isVisible={showSearchSuggestions}
             />
           </div>
