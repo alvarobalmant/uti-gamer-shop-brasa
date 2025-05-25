@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, Plus, Settings, Info } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Dialog,
   DialogContent,
@@ -100,7 +101,8 @@ export const ServiceCardManager = () => {
           <AlertDescription>
             <strong>Tamanho recomendado:</strong> 400x300px (proporção 4:3)<br />
             <strong>Formatos:</strong> JPG, PNG, WebP<br />
-            <strong>Cards padrão:</strong> Consoles, Assistência Técnica, Avaliação, Serviços Gerais
+            <strong>Cards padrão:</strong> Consoles, Assistência Técnica, Avaliação, Serviços Gerais<br />
+            <strong>Upload:</strong> Arraste e solte ou clique para selecionar
           </AlertDescription>
         </Alert>
       </CardHeader>
@@ -169,16 +171,12 @@ export const ServiceCardManager = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="image_url">URL da Imagem *</Label>
-                  <Input
-                    id="image_url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                    placeholder="https://exemplo.com/imagem.jpg"
-                    required
-                  />
-                </div>
+                <ImageUpload
+                  onImageUploaded={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
+                  currentImage={formData.image_url}
+                  label="Imagem do Card *"
+                  folder="service-cards"
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="link_url">Link de Destino *</Label>

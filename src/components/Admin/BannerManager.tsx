@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, Plus, Image, Info } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ export const BannerManager = () => {
     image_url: '',
     button_image_url: '',
     gradient: 'from-red-600 via-red-600 to-red-700',
+    background_type: 'gradient',
     position: 1,
     is_active: true,
   });
@@ -46,6 +48,7 @@ export const BannerManager = () => {
       image_url: '',
       button_image_url: '',
       gradient: 'from-red-600 via-red-600 to-red-700',
+      background_type: 'gradient',
       position: (banners.length + 1),
       is_active: true,
     });
@@ -57,11 +60,12 @@ export const BannerManager = () => {
     setFormData({
       title: banner.title || '',
       subtitle: banner.subtitle || '',
-      button_text: banner.button_text,
-      button_link: banner.button_link,
+      button_text: banner.button_text || '',
+      button_link: banner.button_link || '',
       image_url: banner.image_url || '',
       button_image_url: banner.button_image_url || '',
       gradient: banner.gradient,
+      background_type: (banner as any).background_type || 'gradient',
       position: banner.position,
       is_active: banner.is_active,
     });
@@ -71,8 +75,15 @@ export const BannerManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.button_text || !formData.button_link) {
-      alert('Texto e link do botão são obrigatórios.');
+    // Verificar se há pelo menos um título, subtítulo ou botão
+    if (!formData.title && !formData.subtitle && !formData.button_text) {
+      alert('É necessário pelo menos um título, subtítulo ou botão.');
+      return;
+    }
+
+    // Se há texto do botão, deve haver link
+    if (formData.button_text && !formData.button_link) {
+      alert('Se há texto do botão, o link é obrigatório.');
       return;
     }
 
@@ -96,6 +107,11 @@ export const BannerManager = () => {
     }
   };
 
+  const backgroundOptions = [
+    { value: 'gradient', label: 'Gradiente' },
+    { value: 'image-only', label: 'Somente Imagem' },
+  ];
+
   const gradientOptions = [
     { value: 'from-purple-600 via-red-600 to-orange-500', label: 'Roxo para Laranja' },
     { value: 'from-red-700 via-red-600 to-red-500', label: 'Vermelho Intenso' },
@@ -118,7 +134,8 @@ export const BannerManager = () => {
           <AlertDescription>
             <strong>Tamanho recomendado:</strong> 1920x600px (proporção 16:5)<br />
             <strong>Limite:</strong> Máximo 5 banners rotativos<br />
-            <strong>Formatos:</strong> JPG, PNG, WebP
+            <strong>Formatos:</strong> JPG, PNG, WebP<br />
+            <strong>Upload:</strong> Arraste e solte ou clique para selecionar
           </AlertDescription>
         </Alert>
       </CardHeader>
@@ -164,13 +181,14 @@ export const BannerManager = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="button_text">Texto do Botão *</Label>
+                    <Label htmlFor="position">Posição</Label>
                     <Input
-                      id="button_text"
-                      value={formData.button_text}
-                      onChange={(e) => setFormData(prev => ({ ...prev, button_text: e.target.value }))}
-                      placeholder="Ex: Entre em Contato"
-                      required
+                      id="position"
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={formData.position}
+                      onChange={(e) => setFormData(prev => ({ ...prev, position: parseInt(e.target.value) }))}
                     />
                   </div>
                 </div>
@@ -186,63 +204,80 @@ export const BannerManager = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="button_link">Link do Botão *</Label>
-                  <Input
-                    id="button_link"
-                    value={formData.button_link}
-                    onChange={(e) => setFormData(prev => ({ ...prev, button_link: e.target.value }))}
-                    placeholder="Ex: /categoria/ofertas ou https://wa.me/5527996882090"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="image_url">URL da Imagem do Banner (Opcional)</Label>
-                  <Input
-                    id="image_url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                    placeholder="https://exemplo.com/banner.jpg"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="button_image_url">URL da Imagem do Botão (Opcional)</Label>
-                  <Input
-                    id="button_image_url"
-                    value={formData.button_image_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, button_image_url: e.target.value }))}
-                    placeholder="https://exemplo.com/icone-botao.png"
-                  />
-                </div>
+                <ImageUpload
+                  onImageUploaded={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
+                  currentImage={formData.image_url}
+                  label="Imagem do Banner"
+                  folder="banners"
+                />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="gradient">Cor do Fundo</Label>
+                    <Label htmlFor="background_type">Tipo de Fundo</Label>
                     <select
-                      id="gradient"
-                      value={formData.gradient}
-                      onChange={(e) => setFormData(prev => ({ ...prev, gradient: e.target.value }))}
+                      id="background_type"
+                      value={formData.background_type}
+                      onChange={(e) => setFormData(prev => ({ ...prev, background_type: e.target.value }))}
                       className="w-full p-2 border border-gray-300 rounded-lg"
                     >
-                      {gradientOptions.map((option) => (
+                      {backgroundOptions.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
                       ))}
                     </select>
                   </div>
+
+                  {formData.background_type === 'gradient' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="gradient">Cor do Fundo</Label>
+                      <select
+                        id="gradient"
+                        value={formData.gradient}
+                        onChange={(e) => setFormData(prev => ({ ...prev, gradient: e.target.value }))}
+                        className="w-full p-2 border border-gray-300 rounded-lg"
+                      >
+                        {gradientOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t pt-4">
+                  <h4 className="text-lg font-semibold mb-3">Botão (Opcional)</h4>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="position">Posição</Label>
-                    <Input
-                      id="position"
-                      type="number"
-                      min="1"
-                      max="5"
-                      value={formData.position}
-                      onChange={(e) => setFormData(prev => ({ ...prev, position: parseInt(e.target.value) }))}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="button_text">Texto do Botão</Label>
+                      <Input
+                        id="button_text"
+                        value={formData.button_text}
+                        onChange={(e) => setFormData(prev => ({ ...prev, button_text: e.target.value }))}
+                        placeholder="Ex: Entre em Contato"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="button_link">Link do Botão</Label>
+                      <Input
+                        id="button_link"
+                        value={formData.button_link}
+                        onChange={(e) => setFormData(prev => ({ ...prev, button_link: e.target.value }))}
+                        placeholder="Ex: /categoria/ofertas ou https://wa.me/5527996882090"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <ImageUpload
+                      onImageUploaded={(url) => setFormData(prev => ({ ...prev, button_image_url: url }))}
+                      currentImage={formData.button_image_url}
+                      label="Imagem do Botão (Opcional)"
+                      folder="buttons"
                     />
                   </div>
                 </div>
@@ -281,8 +316,18 @@ export const BannerManager = () => {
             banners.map((banner) => (
               <Card key={banner.id} className="border-2 border-gray-200">
                 <CardContent className="p-4">
-                  <div className={`relative bg-gradient-to-br ${banner.gradient} text-white p-4 rounded-lg mb-4`}>
-                    <div className="text-center">
+                  <div className={`relative text-white p-4 rounded-lg mb-4 ${
+                    (banner as any).background_type === 'image-only' 
+                      ? 'bg-gray-800' 
+                      : `bg-gradient-to-br ${banner.gradient}`
+                  }`}>
+                    {banner.image_url && (banner as any).background_type === 'image-only' && (
+                      <div 
+                        className="absolute inset-0 bg-cover bg-center rounded-lg"
+                        style={{ backgroundImage: `url(${banner.image_url})` }}
+                      />
+                    )}
+                    <div className="relative text-center">
                       {banner.title && (
                         <div className="bg-red-600 text-white font-bold mb-2 px-2 py-1 rounded text-xs inline-block">
                           ♦ {banner.title}
@@ -291,18 +336,22 @@ export const BannerManager = () => {
                       {banner.subtitle && (
                         <h3 className="font-bold mb-2 text-sm">{banner.subtitle}</h3>
                       )}
-                      <div className="bg-white text-gray-900 px-3 py-1 rounded text-xs inline-block">
-                        {banner.button_text}
-                      </div>
+                      {banner.button_text && banner.button_link && (
+                        <div className="bg-white text-gray-900 px-3 py-1 rounded text-xs inline-flex items-center gap-1">
+                          {banner.button_image_url && (
+                            <img src={banner.button_image_url} alt="" className="w-3 h-3" />
+                          )}
+                          {banner.button_text}
+                        </div>
+                      )}
                     </div>
                   </div>
                   
                   <div className="space-y-2 text-sm">
                     <div><strong>Posição:</strong> {banner.position}</div>
-                    <div><strong>Link:</strong> {banner.button_link}</div>
-                    {banner.image_url && (
-                      <div><strong>Imagem:</strong> Configurada</div>
-                    )}
+                    <div><strong>Tipo:</strong> {(banner as any).background_type === 'image-only' ? 'Somente Imagem' : 'Gradiente'}</div>
+                    {banner.button_link && <div><strong>Link:</strong> {banner.button_link}</div>}
+                    {banner.image_url && <div><strong>Imagem:</strong> Configurada</div>}
                     <Badge className={banner.is_active ? "bg-green-600" : "bg-gray-600"}>
                       {banner.is_active ? 'Ativo' : 'Inativo'}
                     </Badge>

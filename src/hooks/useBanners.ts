@@ -12,6 +12,7 @@ export interface Banner {
   image_url?: string;
   button_image_url?: string;
   gradient: string;
+  background_type?: string;
   position: number;
   is_active: boolean;
   created_at: string;

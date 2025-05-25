@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       banners: {
         Row: {
+          background_type: string | null
           button_image_url: string | null
           button_link: string
           button_text: string
@@ -25,6 +26,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          background_type?: string | null
           button_image_url?: string | null
           button_link: string
           button_text: string
@@ -39,6 +41,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          background_type?: string | null
           button_image_url?: string | null
           button_link?: string
           button_text?: string

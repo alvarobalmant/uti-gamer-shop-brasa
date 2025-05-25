@@ -1,5 +1,6 @@
+
 import { useState, useRef } from 'react';
-import { ShoppingCart, Search, User, Menu, X } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import ProductCard, { Product } from '@/components/ProductCard';
 import Cart from '@/components/Cart';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
+import ServiceCards from '@/components/ServiceCards';
 import { CartItem, useCart } from '@/hooks/useCart';
 
 const Index = () => {
@@ -21,6 +23,7 @@ const Index = () => {
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showCategories, setShowCategories] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -53,7 +56,6 @@ const Index = () => {
   };
 
   const getPlatformColor = (product: Product) => {
-    // Verificar tags para determinar a cor
     const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];
     
     if (tags.some(tag => tag.includes('playstation'))) {
@@ -102,7 +104,6 @@ const Index = () => {
     }
   };
 
-  // Mostrar apenas os primeiros 6 produtos na página inicial
   const featuredProducts = products.slice(0, 6);
 
   return (
@@ -139,9 +140,11 @@ const Index = () => {
               <Button onClick={() => setShowCart(true)} variant="ghost" size="sm" className="flex flex-col items-center p-2 text-gray-700 relative">
                 <ShoppingCart className="w-5 h-5" />
                 <span className="text-xs">Carrinho</span>
-                {getCartItemsCount() > 0 && <Badge className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 min-w-[16px] h-4 flex items-center justify-center rounded-full">
+                {getCartItemsCount() > 0 && (
+                  <Badge className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 min-w-[16px] h-4 flex items-center justify-center rounded-full">
                     {getCartItemsCount()}
-                  </Badge>}
+                  </Badge>
+                )}
               </Button>
 
               <Button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} variant="ghost" size="sm" className="flex flex-col items-center p-2 text-gray-700">
@@ -154,26 +157,62 @@ const Index = () => {
           {/* Search Bar with Suggestions */}
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input ref={searchInputRef} type="text" placeholder="Buscar jogos, consoles e mais" value={searchQuery} onChange={e => {
-            setSearchQuery(e.target.value);
-            setShowSuggestions(e.target.value.length > 1);
-          }} onKeyPress={handleSearchKeyPress} onFocus={() => setShowSuggestions(searchQuery.length > 1)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none" />
+            <Input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Buscar jogos, consoles e mais"
+              value={searchQuery}
+              onChange={e => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(e.target.value.length > 1);
+              }}
+              onKeyPress={handleSearchKeyPress}
+              onFocus={() => setShowSuggestions(searchQuery.length > 1)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none"
+            />
             
-            <SearchSuggestions searchQuery={searchQuery} onSelectSuggestion={handleSuggestionSelect} onSearch={handleSearchSubmit} isVisible={showSuggestions} />
+            <SearchSuggestions
+              searchQuery={searchQuery}
+              onSelectSuggestion={handleSuggestionSelect}
+              onSearch={handleSearchSubmit}
+              isVisible={showSuggestions}
+            />
+          </div>
+
+          {/* Mobile Categories Toggle */}
+          <div className="md:hidden mb-2">
+            <Button
+              onClick={() => setShowCategories(!showCategories)}
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 text-sm"
+            >
+              Categorias <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${showCategories ? 'rotate-180' : ''}`} />
+            </Button>
           </div>
         </div>
 
         {/* Categories Horizontal Scroll */}
-        <div className="border-t border-gray-200 bg-gray-50">
-          <div className="flex overflow-x-auto scrollbar-hide px-4 py-3 gap-6">
-            {categories.map(category => <button key={category.id} onClick={() => navigate(category.path)} className="flex-shrink-0 text-sm font-medium whitespace-nowrap text-gray-600 hover:text-red-600">
-                {category.name}
-              </button>)}
+        {(showCategories || window.innerWidth >= 768) && (
+          <div className="border-t border-gray-200 bg-gray-50">
+            <div className="flex overflow-x-auto scrollbar-hide px-4 py-3 gap-6">
+              {categories.map(category => (
+                <button
+                  key={category.id}
+                  onClick={() => navigate(category.path)}
+                  className="flex-shrink-0 text-sm font-medium whitespace-nowrap text-gray-600 hover:text-red-600"
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Mobile Menu Overlay */}
-        {mobileMenuOpen && <div className="fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)}>
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)}>
             <div className="bg-white w-80 h-full ml-auto p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold">Menu</h3>
@@ -182,46 +221,55 @@ const Index = () => {
                 </Button>
               </div>
               <div className="space-y-4">
-                {user && <div className="pb-4 border-b border-gray-200">
+                {user && (
+                  <div className="pb-4 border-b border-gray-200">
                     <p className="text-sm text-gray-600 mb-2">Olá, {user.email}</p>
-                    {isAdmin && <Button onClick={() => {
-                navigate('/admin');
-                setMobileMenuOpen(false);
-              }} className="w-full bg-red-600 hover:bg-red-700 text-white mb-2">
+                    {isAdmin && (
+                      <Button
+                        onClick={() => {
+                          navigate('/admin');
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full bg-red-600 hover:bg-red-700 text-white mb-2"
+                      >
                         Painel Admin
-                      </Button>}
-                    <Button onClick={() => {
-                signOut();
-                setMobileMenuOpen(false);
-              }} variant="outline" className="w-full">
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => {
+                        signOut();
+                        setMobileMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
                       Sair
                     </Button>
-                  </div>}
-                {categories.map(category => <button key={category.id} onClick={() => {
-              navigate(category.path);
-              setMobileMenuOpen(false);
-            }} className="block w-full text-left py-2 text-gray-700 hover:text-red-600">
+                  </div>
+                )}
+                {categories.map(category => (
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      navigate(category.path);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left py-2 text-gray-700 hover:text-red-600"
+                  >
                     {category.name}
-                  </button>)}
+                  </button>
+                ))}
               </div>
             </div>
-          </div>}
+          </div>
+        )}
       </header>
 
       {/* Hero Banner Carousel */}
       <HeroBannerCarousel />
 
-      {/* Promotional Banner */}
-      <section className="bg-gradient-to-r from-red-600 to-red-700 text-white py-6">
-        <div className="px-4 text-center">
-          <h3 className="text-xl font-bold mb-2">
-            Compre e Venda Seus Games na UTI DOS GAMES!
-          </h3>
-          <Button variant="outline" onClick={() => window.open('https://wa.me/5527996882090', '_blank')} className="border-2 border-white hover:bg-white font-bold py-2 px-6 rounded-lg text-zinc-950">
-            Entre em Contato
-          </Button>
-        </div>
-      </section>
+      {/* Service Cards */}
+      <ServiceCards />
 
       {/* Featured Products */}
       <section id="produtos" className="py-12 bg-gray-50">
@@ -235,19 +283,32 @@ const Index = () => {
             </Button>
           </div>
 
-          {loading ? <div className="text-center py-16">
+          {loading ? (
+            <div className="text-center py-16">
               <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
               <div className="text-xl text-gray-500">Carregando produtos...</div>
-            </div> : featuredProducts.length === 0 ? <div className="text-center py-16">
+            </div>
+          ) : featuredProducts.length === 0 ? (
+            <div className="text-center py-16">
               <div className="text-2xl text-gray-400 mb-2">
                 Nenhum produto disponível
               </div>
               <p className="text-gray-500">
                 Produtos serão adicionados em breve
               </p>
-            </div> : <div className="grid grid-cols-2 gap-4">
-              {featuredProducts.map(product => <ProductCard key={product.id} product={product} onAddToCart={(product, size, color) => addToCart(product, size, color)} getPlatformColor={() => getPlatformColor(product)} />)}
-            </div>}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {featuredProducts.map(product => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
+                  getPlatformColor={() => getPlatformColor(product)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -295,7 +356,13 @@ const Index = () => {
       </footer>
 
       {/* Cart Component */}
-      <Cart cart={cart} showCart={showCart} setShowCart={setShowCart} updateQuantity={updateCartQuantity} sendToWhatsApp={sendToWhatsApp} />
+      <Cart
+        cart={cart}
+        showCart={showCart}
+        setShowCart={setShowCart}
+        updateQuantity={updateCartQuantity}
+        sendToWhatsApp={sendToWhatsApp}
+      />
 
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
