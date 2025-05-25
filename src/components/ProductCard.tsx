@@ -16,6 +16,7 @@ export interface Product {
   platform: string;
   category: string;
   stock?: number;
+  created_at?: string;
 }
 
 interface ProductCardProps {
@@ -32,13 +33,34 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
   const isLowStock = product.stock && product.stock <= 5;
   const isOutOfStock = product.stock === 0;
 
+  const handleCardClick = () => {
+    onProductClick?.(product);
+  };
+
+  const handleSizeClick = (e: React.MouseEvent, size: string) => {
+    e.stopPropagation();
+    setSelectedSize(size);
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isOutOfStock) {
+      onAddToCart(product, selectedSize, selectedColor);
+    }
+  };
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Add wishlist functionality here
+  };
+
   return (
-    <Card className="mobile-product-card h-full flex flex-col group">
+    <Card 
+      className="mobile-product-card h-full flex flex-col group cursor-pointer"
+      onClick={handleCardClick}
+    >
       <CardContent className="p-0 flex flex-col h-full">
-        <div 
-          className="relative cursor-pointer"
-          onClick={() => onProductClick?.(product)}
-        >
+        <div className="relative">
           <img
             src={product.image}
             alt={product.name}
@@ -76,10 +98,7 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
             variant="ghost"
             size="sm"
             className="absolute bottom-2 right-2 bg-white/90 hover:bg-white text-gray-600 hover:text-red-600 rounded-full w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md"
-            onClick={(e) => {
-              e.stopPropagation();
-              // Add wishlist functionality here
-            }}
+            onClick={handleWishlistClick}
           >
             <Heart className="w-3 h-3" />
           </Button>
@@ -116,10 +135,7 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
                     key={size}
                     variant={selectedSize === size ? "default" : "outline"}
                     size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedSize(size);
-                    }}
+                    onClick={(e) => handleSizeClick(e, size)}
                     className={`text-xs px-2 py-1 h-6 transition-all duration-200 font-medium ${
                       selectedSize === size 
                         ? 'bg-red-600 text-white border-red-600 hover:bg-red-700' 
@@ -151,12 +167,7 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
             </div>
 
             <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!isOutOfStock) {
-                  onAddToCart(product, selectedSize, selectedColor);
-                }
-              }}
+              onClick={handleAddToCart}
               disabled={isOutOfStock}
               className={`w-full font-bold py-2 text-xs transition-all duration-300 min-h-[32px] ${
                 isOutOfStock 

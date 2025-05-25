@@ -1,9 +1,7 @@
-
-import { useState } from 'react';
-import { ShoppingCart, Search, User, Menu, X, Star, Shield, Truck, Zap } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ShoppingCart, Search, User, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +10,8 @@ import { AuthModal } from '@/components/Auth/AuthModal';
 import ProductCard, { Product } from '@/components/ProductCard';
 import ProductModal from '@/components/ProductModal';
 import Cart from '@/components/Cart';
+import SearchSuggestions from '@/components/SearchSuggestions';
+import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 
 interface CartItem {
   product: Product;
@@ -31,9 +31,22 @@ const Index = () => {
   const [showProductModal, setShowProductModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const categories = ['Todos', 'PlayStation', 'Nintendo', 'Xbox', 'PC', 'Colecionáveis', 'Acessórios', 'Jogos Físicos', 'Jogos Digitais', 'Ofertas', 'Novidades'];
+  const categories = [
+    { id: 'inicio', name: 'Início', path: '/' },
+    { id: 'playstation', name: 'PlayStation', path: '/categoria/playstation' },
+    { id: 'nintendo', name: 'Nintendo', path: '/categoria/nintendo' },
+    { id: 'xbox', name: 'Xbox', path: '/categoria/xbox' },
+    { id: 'pc', name: 'PC', path: '/categoria/pc' },
+    { id: 'colecionaveis', name: 'Colecionáveis', path: '/categoria/colecionaveis' },
+    { id: 'acessorios', name: 'Acessórios', path: '/categoria/acessorios' },
+    { id: 'jogos-fisicos', name: 'Jogos Físicos', path: '/categoria/jogos-fisicos' },
+    { id: 'jogos-digitais', name: 'Jogos Digitais', path: '/categoria/jogos-digitais' },
+    { id: 'ofertas', name: 'Ofertas', path: '/categoria/ofertas' },
+    { id: 'novidades', name: 'Novidades', path: '/categoria/novidades' }
+  ];
 
   const addToCart = (product: Product, size: string, color: string) => {
     const existingItem = cart.find(
@@ -103,19 +116,24 @@ const Index = () => {
     setShowProductModal(true);
   };
 
-  // Sistema de busca funcional
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.platform?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.category?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory = selectedCategory === 'Todos' || 
-      product.platform?.toLowerCase().includes(selectedCategory.toLowerCase()) ||
-      product.category?.toLowerCase().includes(selectedCategory.toLowerCase());
-    
-    return matchesSearch && matchesCategory;
-  });
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim()) {
+      navigate(`/busca?q=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit();
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    navigate(`/busca?q=${encodeURIComponent(suggestion)}`);
+  };
 
   const handleLogin = () => {
     if (user) {
@@ -128,6 +146,9 @@ const Index = () => {
       setShowAuthModal(true);
     }
   };
+
+  // Mostrar apenas os primeiros 6 produtos na página inicial
+  const featuredProducts = products.slice(0, 6);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -197,15 +218,29 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Search Bar */}
+          {/* Search Bar with Suggestions */}
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
+              ref={searchInputRef}
               type="text"
               placeholder="Buscar jogos, consoles e mais"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(e.target.value.length > 1);
+              }}
+              onKeyPress={handleSearchKeyPress}
+              onFocus={() => setShowSuggestions(searchQuery.length > 1)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none"
+            />
+            
+            <SearchSuggestions
+              searchQuery={searchQuery}
+              onSelectSuggestion={handleSuggestionSelect}
+              onSearch={handleSearchSubmit}
+              isVisible={showSuggestions}
             />
           </div>
         </div>
@@ -215,15 +250,11 @@ const Index = () => {
           <div className="flex overflow-x-auto scrollbar-hide px-4 py-3 gap-6">
             {categories.map((category) => (
               <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`flex-shrink-0 text-sm font-medium whitespace-nowrap ${
-                  selectedCategory === category
-                    ? 'text-red-600 border-b-2 border-red-600 pb-1'
-                    : 'text-gray-600'
-                }`}
+                key={category.id}
+                onClick={() => navigate(category.path)}
+                className="flex-shrink-0 text-sm font-medium whitespace-nowrap text-gray-600 hover:text-red-600"
               >
-                {category}
+                {category.name}
               </button>
             ))}
           </div>
@@ -272,14 +303,14 @@ const Index = () => {
                 )}
                 {categories.map((category) => (
                   <button
-                    key={category}
+                    key={category.id}
                     onClick={() => {
-                      setSelectedCategory(category);
+                      navigate(category.path);
                       setMobileMenuOpen(false);
                     }}
                     className="block w-full text-left py-2 text-gray-700 hover:text-red-600"
                   >
-                    {category}
+                    {category.name}
                   </button>
                 ))}
               </div>
@@ -288,37 +319,8 @@ const Index = () => {
         )}
       </header>
 
-      {/* Hero Banner - GameStop Style */}
-      <section className="relative bg-gradient-to-br from-red-900 via-red-800 to-red-700 text-white">
-        <div className="px-4 py-12">
-          <div className="text-center mb-8">
-            <Badge className="bg-red-600 text-white font-bold mb-4 px-4 py-2 rounded-full text-sm">
-              ♦ MAIS DE 10 ANOS NO MERCADO
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-              Os Melhores Games e Consoles!
-            </h2>
-            <p className="text-lg text-gray-200 mb-6">
-              Explore os melhores produtos de games do mercado.
-            </p>
-            <Button 
-              className="bg-white text-red-900 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg"
-              onClick={() => document.getElementById('produtos')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              Ver Produtos
-            </Button>
-          </div>
-          
-          {/* Hero Image */}
-          <div className="flex justify-center">
-            <div className="relative">
-              <div className="w-80 h-48 bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center">
-                <div className="text-6xl">🎮</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Banner Carousel - GameStop Style */}
+      <HeroBannerCarousel />
 
       {/* Promotional Banner */}
       <section className="bg-gradient-to-r from-red-600 to-red-700 text-white py-6">
@@ -329,36 +331,46 @@ const Index = () => {
           <Button 
             variant="outline" 
             className="border-2 border-white text-white hover:bg-white hover:text-red-600 font-bold py-2 px-6 rounded-lg"
+            onClick={() => window.open('https://wa.me/5527996882090', '_blank')}
           >
             Entre em Contato
           </Button>
         </div>
       </section>
 
-      {/* Products Grid */}
+      {/* Featured Products */}
       <section id="produtos" className="py-12 bg-gray-50">
         <div className="px-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            🎮 {searchQuery ? `Resultados para "${searchQuery}"` : selectedCategory === 'Todos' ? 'Todos os Produtos' : selectedCategory}
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              🎮 Produtos em Destaque
+            </h2>
+            <Button
+              onClick={() => navigate('/categoria/inicio')}
+              variant="outline"
+              className="text-red-600 border-red-600 hover:bg-red-50"
+            >
+              Ver Todos
+            </Button>
+          </div>
 
           {loading ? (
             <div className="text-center py-16">
               <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
               <div className="text-xl text-gray-500">Carregando produtos...</div>
             </div>
-          ) : filteredProducts.length === 0 ? (
+          ) : featuredProducts.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-2xl text-gray-400 mb-2">
-                {searchQuery ? 'Nenhum produto encontrado' : 'Nenhum produto disponível'}
+                Nenhum produto disponível
               </div>
               <p className="text-gray-500">
-                {searchQuery ? 'Tente buscar por outro termo' : 'Produtos serão adicionados em breve'}
+                Produtos serão adicionados em breve
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
-              {filteredProducts.map((product) => (
+              {featuredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
@@ -393,10 +405,10 @@ const Index = () => {
             <div>
               <h4 className="font-bold mb-3 text-red-400">Links Úteis</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-gray-400 hover:text-white">PlayStation</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Xbox</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Nintendo</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">PC</a></li>
+                <li><button onClick={() => navigate('/categoria/playstation')} className="text-gray-400 hover:text-white">PlayStation</button></li>
+                <li><button onClick={() => navigate('/categoria/xbox')} className="text-gray-400 hover:text-white">Xbox</button></li>
+                <li><button onClick={() => navigate('/categoria/nintendo')} className="text-gray-400 hover:text-white">Nintendo</button></li>
+                <li><button onClick={() => navigate('/categoria/pc')} className="text-gray-400 hover:text-white">PC</button></li>
               </ul>
             </div>
             
