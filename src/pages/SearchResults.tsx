@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard, { Product } from '@/components/ProductCard';
 import { useAuth } from '@/hooks/useAuth';
+import { searchProducts } from '@/utils/fuzzySearch';
 
 interface CartItem {
   product: Product;
@@ -22,13 +23,8 @@ const SearchResults = () => {
   const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const filteredProducts = products.filter(product => {
-    const searchLower = query.toLowerCase();
-    return product.name.toLowerCase().includes(searchLower) ||
-           product.description?.toLowerCase().includes(searchLower) ||
-           product.platform?.toLowerCase().includes(searchLower) ||
-           product.category?.toLowerCase().includes(searchLower);
-  });
+  // Usar busca fuzzy para filtrar produtos
+  const filteredProducts = searchProducts(products, query);
 
   const addToCart = (product: Product, size: string, color: string) => {
     const existingItem = cart.find(
@@ -66,7 +62,6 @@ const SearchResults = () => {
   };
 
   const handleProductClick = (product: Product) => {
-    // Implementar modal do produto
     console.log('Produto clicado:', product);
   };
 
@@ -118,7 +113,7 @@ const SearchResults = () => {
                 Nenhum produto encontrado
               </div>
               <p className="text-gray-500 mb-4">
-                Tente buscar por outro termo
+                Tente buscar por outro termo ou verifique a ortografia
               </p>
               <Button
                 onClick={() => navigate('/')}

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -48,21 +48,104 @@ const banners = [
 
 const HeroBannerCarousel = () => {
   const [currentBanner, setCurrentBanner] = useState(0);
+  const [isUserInteracting, setIsUserInteracting] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startAutoPlay = () => {
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    autoPlayRef.current = setInterval(() => {
+      if (!isUserInteracting) {
+        setCurrentBanner((prev) => (prev + 1) % banners.length);
+      }
+    }, 4000);
+  };
+
+  const stopAutoPlay = () => {
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
+      autoPlayRef.current = null;
+    }
+  };
+
+  const resumeAutoPlayAfterDelay = () => {
+    setIsUserInteracting(true);
+    stopAutoPlay();
+    setTimeout(() => {
+      setIsUserInteracting(false);
+      startAutoPlay();
+    }, 10000);
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBanner((prev) => (prev + 1) % banners.length);
-    }, 4000); // Muda a cada 4 segundos
-
-    return () => clearInterval(interval);
-  }, []);
+    startAutoPlay();
+    return () => stopAutoPlay();
+  }, [isUserInteracting]);
 
   const nextBanner = () => {
     setCurrentBanner((prev) => (prev + 1) % banners.length);
+    resumeAutoPlayAfterDelay();
   };
 
   const prevBanner = () => {
     setCurrentBanner((prev) => (prev - 1 + banners.length) % banners.length);
+    resumeAutoPlayAfterDelay();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setStartX(e.touches[0].clientX);
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const endX = e.changedTouches[0].clientX;
+    const diffX = startX - endX;
+    
+    if (Math.abs(diffX) > 50) { // Minimum swipe distance
+      if (diffX > 0) {
+        nextBanner();
+      } else {
+        prevBanner();
+      }
+    }
+    
+    setIsDragging(false);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setStartX(e.clientX);
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    
+    const endX = e.clientX;
+    const diffX = startX - endX;
+    
+    if (Math.abs(diffX) > 50) {
+      if (diffX > 0) {
+        nextBanner();
+      } else {
+        prevBanner();
+      }
+    }
+    
+    setIsDragging(false);
   };
 
   const banner = banners[currentBanner];
@@ -70,14 +153,25 @@ const HeroBannerCarousel = () => {
   return (
     <section className="relative bg-gray-900 overflow-hidden">
       {/* Banner Principal */}
-      <div className={`relative bg-gradient-to-br ${banner.gradient} text-white transition-all duration-500`}>
-        <div className="px-4 py-12 relative">
+      <div 
+        ref={carouselRef}
+        className={`relative bg-gradient-to-br ${banner.gradient} text-white transition-all duration-500 ease-in-out transform`}
+        style={{ height: 'clamp(120px, 25vh, 200px)' }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={() => setIsDragging(false)}
+      >
+        <div className="px-4 py-6 relative h-full flex flex-col justify-center">
           {/* Controles de navegação */}
           <Button
             onClick={prevBanner}
             variant="ghost"
             size="sm"
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white rounded-full w-8 h-8 p-0 z-10"
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white rounded-full w-8 h-8 p-0 z-10 transition-all duration-200"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
@@ -86,23 +180,23 @@ const HeroBannerCarousel = () => {
             onClick={nextBanner}
             variant="ghost"
             size="sm"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white rounded-full w-8 h-8 p-0 z-10"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white rounded-full w-8 h-8 p-0 z-10 transition-all duration-200"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
 
-          <div className="text-center mb-8">
+          <div className="text-center flex-1 flex flex-col justify-center">
             {/* Badge do topo */}
-            <div className="inline-block bg-red-600 text-white font-bold mb-4 px-4 py-2 rounded-full text-sm">
+            <div className="inline-block bg-red-600 text-white font-bold mb-2 px-3 py-1 rounded-full text-xs mx-auto">
               ♦ {banner.title}
             </div>
             
-            <h2 className="text-2xl md:text-3xl font-bold mb-4 leading-tight">
+            <h2 className="text-lg md:text-2xl font-bold mb-3 leading-tight px-4">
               {banner.subtitle}
             </h2>
             
             <Button 
-              className="bg-white text-gray-900 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg"
+              className="bg-white text-gray-900 hover:bg-gray-100 font-bold py-2 px-6 rounded-lg text-sm mx-auto transition-all duration-200"
               onClick={() => {
                 if (banner.id === 5) {
                   window.open('https://wa.me/5527996882090', '_blank');
@@ -115,18 +209,18 @@ const HeroBannerCarousel = () => {
             </Button>
           </div>
           
-          {/* Imagem/Emoji do banner */}
-          <div className="flex justify-center">
+          {/* Imagem/Emoji do banner - oculto no mobile para economizar espaço */}
+          <div className="hidden md:flex justify-center mt-4">
             <div className="relative">
               {banner.image.startsWith('/') ? (
                 <img 
                   src={banner.image} 
                   alt={banner.subtitle}
-                  className="w-80 h-32 object-cover rounded-lg"
+                  className="w-60 h-20 object-cover rounded-lg"
                 />
               ) : (
-                <div className="w-80 h-32 bg-gradient-to-br from-red-600/20 to-red-800/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                  <div className="text-6xl">{banner.image}</div>
+                <div className="w-60 h-20 bg-gradient-to-br from-red-600/20 to-red-800/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                  <div className="text-4xl">{banner.image}</div>
                 </div>
               )}
             </div>
@@ -135,11 +229,14 @@ const HeroBannerCarousel = () => {
       </div>
 
       {/* Indicadores de paginação */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
         {banners.map((_, index) => (
           <button
             key={index}
-            onClick={() => setCurrentBanner(index)}
+            onClick={() => {
+              setCurrentBanner(index);
+              resumeAutoPlayAfterDelay();
+            }}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
               index === currentBanner ? 'bg-white' : 'bg-white/50'
             }`}

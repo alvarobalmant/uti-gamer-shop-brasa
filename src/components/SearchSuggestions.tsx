@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/components/ProductCard';
+import { normalizeText, fuzzySearch } from '@/utils/fuzzySearch';
 
 interface SearchSuggestionsProps {
   searchQuery: string;
@@ -21,28 +22,45 @@ const SearchSuggestions = ({ searchQuery, onSelectSuggestion, onSearch, isVisibl
       return;
     }
 
-    // Gerar sugestões baseadas nos produtos
     const uniqueSuggestions = new Set<string>();
+    const normalizedQuery = normalizeText(searchQuery);
     
     products.forEach((product: Product) => {
-      // Adicionar nome do produto se contém a busca
-      if (product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      // Adicionar nome do produto se corresponde à busca fuzzy
+      if (fuzzySearch(normalizedQuery, product.name, 0.4) || 
+          normalizeText(product.name).includes(normalizedQuery)) {
         uniqueSuggestions.add(product.name);
       }
       
-      // Adicionar plataforma se contém a busca
-      if (product.platform?.toLowerCase().includes(searchQuery.toLowerCase())) {
+      // Adicionar plataforma se corresponde à busca
+      if (product.platform && 
+          (fuzzySearch(normalizedQuery, product.platform, 0.4) || 
+           normalizeText(product.platform).includes(normalizedQuery))) {
         uniqueSuggestions.add(product.platform);
       }
       
-      // Adicionar categoria se contém a busca
-      if (product.category?.toLowerCase().includes(searchQuery.toLowerCase())) {
+      // Adicionar categoria se corresponde à busca
+      if (product.category && 
+          (fuzzySearch(normalizedQuery, product.category, 0.4) || 
+           normalizeText(product.category).includes(normalizedQuery))) {
         uniqueSuggestions.add(product.category);
       }
     });
 
-    // Limitar a 5 sugestões
-    setSuggestions(Array.from(uniqueSuggestions).slice(0, 5));
+    // Limitar a 5 sugestões e priorizar por relevância
+    const sortedSuggestions = Array.from(uniqueSuggestions)
+      .sort((a, b) => {
+        const aIncludes = normalizeText(a).includes(normalizedQuery);
+        const bIncludes = normalizeText(b).includes(normalizedQuery);
+        
+        if (aIncludes && !bIncludes) return -1;
+        if (!aIncludes && bIncludes) return 1;
+        
+        return a.length - b.length; // Preferir sugestões mais curtas
+      })
+      .slice(0, 5);
+
+    setSuggestions(sortedSuggestions);
   }, [searchQuery, products]);
 
   if (!isVisible || suggestions.length === 0) {
@@ -55,7 +73,7 @@ const SearchSuggestions = ({ searchQuery, onSelectSuggestion, onSearch, isVisibl
         <button
           key={index}
           onClick={() => onSelectSuggestion(suggestion)}
-          className="w-full px-4 py-3 text-left hover:bg-gray-100 border-b border-gray-100 last:border-b-0 flex items-center gap-2"
+          className="w-full px-4 py-3 text-left hover:bg-gray-100 border-b border-gray-100 last:border-b-0 flex items-center gap-2 transition-colors duration-150"
         >
           <Search className="w-4 h-4 text-gray-400" />
           <span className="text-gray-700">{suggestion}</span>

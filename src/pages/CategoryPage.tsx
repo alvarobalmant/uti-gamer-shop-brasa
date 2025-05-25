@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard, { Product } from '@/components/ProductCard';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CartItem {
   product: Product;
@@ -17,18 +18,30 @@ const CategoryPage = () => {
   const { category } = useParams();
   const navigate = useNavigate();
   const { products, loading } = useProducts();
+  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const categoryName = category?.replace('-', ' ') || '';
-  
+  const getCategoryTitle = (cat: string) => {
+    const categoryMap: { [key: string]: string } = {
+      'inicio': 'Início',
+      'playstation': 'PlayStation',
+      'nintendo': 'Nintendo',
+      'xbox': 'Xbox',
+      'pc': 'PC',
+      'colecionaveis': 'Colecionáveis',
+      'acessorios': 'Acessórios',
+      'jogos-fisicos': 'Jogos Físicos',
+      'jogos-digitais': 'Jogos Digitais',
+      'ofertas': 'Ofertas',
+      'novidades': 'Novidades'
+    };
+    return categoryMap[cat] || cat;
+  };
+
   const filteredProducts = products.filter(product => {
     if (category === 'inicio') return true;
-    
-    const categoryLower = categoryName.toLowerCase();
-    return product.platform?.toLowerCase().includes(categoryLower) ||
-           product.category?.toLowerCase().includes(categoryLower) ||
-           (category === 'ofertas' && product.price < 100) ||
-           (category === 'novidades' && new Date(product.created_at || '').getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000);
+    return product.category?.toLowerCase().includes(category?.toLowerCase() || '') ||
+           product.platform?.toLowerCase().includes(category?.toLowerCase() || '');
   });
 
   const addToCart = (product: Product, size: string, color: string) => {
@@ -70,23 +83,6 @@ const CategoryPage = () => {
     console.log('Produto clicado:', product);
   };
 
-  const getDisplayName = () => {
-    switch (category) {
-      case 'inicio': return 'Início';
-      case 'playstation': return 'PlayStation';
-      case 'nintendo': return 'Nintendo';
-      case 'xbox': return 'Xbox';
-      case 'pc': return 'PC';
-      case 'colecionaveis': return 'Colecionáveis';
-      case 'acessorios': return 'Acessórios';
-      case 'jogos-fisicos': return 'Jogos Físicos';
-      case 'jogos-digitais': return 'Jogos Digitais';
-      case 'ofertas': return 'Ofertas';
-      case 'novidades': return 'Novidades';
-      default: return categoryName;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header fixo */}
@@ -117,10 +113,10 @@ const CategoryPage = () => {
         <div className="px-4">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-2">
-              {getDisplayName()}
+              {getCategoryTitle(category || '')}
             </h2>
             <p className="text-gray-600">
-              {loading ? 'Carregando...' : `${filteredProducts.length} produtos disponíveis`}
+              {loading ? 'Carregando...' : `${filteredProducts.length} produtos encontrados`}
             </p>
           </div>
 
@@ -132,10 +128,10 @@ const CategoryPage = () => {
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-2xl text-gray-400 mb-2">
-                Nenhum produto disponível
+                Nenhum produto encontrado
               </div>
               <p className="text-gray-500 mb-4">
-                Produtos desta categoria serão adicionados em breve
+                Tente navegar por outras categorias
               </p>
               <Button
                 onClick={() => navigate('/')}

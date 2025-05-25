@@ -1,9 +1,9 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, Star, ShoppingCart } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export interface Product {
   id: string;
@@ -29,6 +29,7 @@ interface ProductCardProps {
 const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }: ProductCardProps) => {
   const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
   const [selectedColor, setSelectedColor] = useState(product.colors[0] || '');
+  const { toast } = useToast();
 
   const isLowStock = product.stock && product.stock <= 5;
   const isOutOfStock = product.stock === 0;
@@ -46,17 +47,29 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
     e.stopPropagation();
     if (!isOutOfStock) {
       onAddToCart(product, selectedSize, selectedColor);
+      
+      // Animação de sucesso
+      toast({
+        title: "✅ Produto adicionado!",
+        description: `${product.name} foi adicionado ao carrinho`,
+        duration: 2000,
+        className: "bg-green-50 border-green-200 text-green-800",
+      });
     }
   };
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Add wishlist functionality here
+    toast({
+      title: "❤️ Adicionado aos favoritos!",
+      description: "Produto salvo na sua lista de desejos",
+      duration: 2000,
+    });
   };
 
   return (
     <Card 
-      className="mobile-product-card h-full flex flex-col group cursor-pointer"
+      className="mobile-product-card h-full flex flex-col group cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 active:scale-95"
       onClick={handleCardClick}
     >
       <CardContent className="p-0 flex flex-col h-full">
@@ -69,39 +82,25 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
               e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
             }}
           />
-          
-          {/* Status Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            <Badge className="bg-red-600 text-white font-bold text-xs px-2 py-1 rounded-full">
-              NOVO
-            </Badge>
-            {isLowStock && !isOutOfStock && (
-              <Badge className="bg-orange-500 text-white font-bold text-xs px-2 py-1 animate-pulse rounded-full">
-                🔥 {product.stock} restantes!
-              </Badge>
-            )}
-            {isOutOfStock && (
-              <Badge className="bg-gray-500 text-white font-bold text-xs px-2 py-1 rounded-full">
-                ESGOTADO
-              </Badge>
-            )}
-          </div>
-
-          {product.platform && (
-            <Badge className={`absolute top-2 right-2 ${getPlatformColor(product.platform)} text-white font-bold text-xs px-2 py-1 rounded-full`}>
-              {product.platform}
-            </Badge>
-          )}
 
           {/* Wishlist Button */}
           <Button
             variant="ghost"
             size="sm"
-            className="absolute bottom-2 right-2 bg-white/90 hover:bg-white text-gray-600 hover:text-red-600 rounded-full w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md"
+            className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-600 hover:text-red-600 rounded-full w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md"
             onClick={handleWishlistClick}
           >
             <Heart className="w-3 h-3" />
           </Button>
+
+          {/* Status apenas para esgotado */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-t-lg">
+              <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-bold">
+                ESGOTADO
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="p-3 flex flex-col flex-1 space-y-2">
@@ -172,7 +171,7 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
               className={`w-full font-bold py-2 text-xs transition-all duration-300 min-h-[32px] ${
                 isOutOfStock 
                   ? 'bg-gray-400 cursor-not-allowed text-white' 
-                  : 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-lg active:scale-95'
               }`}
             >
               <ShoppingCart className="w-3 h-3 mr-1 flex-shrink-0" />
