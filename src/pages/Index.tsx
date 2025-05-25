@@ -1,11 +1,9 @@
-
 import { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import { Product } from '@/components/ProductCard';
-import { Button } from '@/components/ui/button';
 import Cart from '@/components/Cart';
 import { CartItem, useCart } from '@/hooks/useCart';
 import PremiumHeader from '@/components/Header/PremiumHeader';
