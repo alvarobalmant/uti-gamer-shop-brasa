@@ -11,19 +11,13 @@ import ProductCard, { Product } from '@/components/ProductCard';
 import Cart from '@/components/Cart';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
-
-interface CartItem {
-  product: Product;
-  size?: string;
-  color?: string;
-  quantity: number;
-}
+import { CartItem, useCart } from '@/hooks/useCart';
 
 const Index = () => {
   const { products, loading } = useProducts();
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -45,44 +39,14 @@ const Index = () => {
     { id: 'novidades', name: 'Novidades', path: '/categoria/novidades' }
   ];
 
-  const addToCart = (product: Product, size?: string, color?: string) => {
-    const existingItem = cart.find(
-      item => 
-        item.product.id === product.id && 
-        item.size === size && 
-        item.color === color
-    );
-
-    if (existingItem) {
-      setCart(cart.map(item =>
-        item === existingItem
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
-    } else {
-      setCart([...cart, { product, size, color, quantity: 1 }]);
-    }
-  };
-
-  const updateQuantity = (item: CartItem, change: number) => {
+  const updateCartQuantity = (item: CartItem, change: number) => {
     const newQuantity = item.quantity + change;
-    if (newQuantity <= 0) {
-      setCart(cart.filter(cartItem => cartItem !== item));
-    } else {
-      setCart(cart.map(cartItem => cartItem === item ? {
-        ...cartItem,
-        quantity: newQuantity
-      } : cartItem));
-    }
-  };
-
-  const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
+    updateQuantity(item.product.id, item.size, item.color, newQuantity);
   };
 
   const sendToWhatsApp = () => {
-    const itemsList = cart.map(item => `• ${item.product.name} (${item.size}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`).join('\n');
-    const total = getTotalPrice();
+    const itemsList = cart.map(item => `• ${item.product.name} (${item.size || 'Padrão'}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`).join('\n');
+    const total = getCartTotal();
     const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*`;
     const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -175,8 +139,8 @@ const Index = () => {
               <Button onClick={() => setShowCart(true)} variant="ghost" size="sm" className="flex flex-col items-center p-2 text-gray-700 relative">
                 <ShoppingCart className="w-5 h-5" />
                 <span className="text-xs">Carrinho</span>
-                {cart.length > 0 && <Badge className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 min-w-[16px] h-4 flex items-center justify-center rounded-full">
-                    {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                {getCartItemsCount() > 0 && <Badge className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 min-w-[16px] h-4 flex items-center justify-center rounded-full">
+                    {getCartItemsCount()}
                   </Badge>}
               </Button>
 
@@ -331,7 +295,7 @@ const Index = () => {
       </footer>
 
       {/* Cart Component */}
-      <Cart cart={cart} showCart={showCart} setShowCart={setShowCart} updateQuantity={updateQuantity} sendToWhatsApp={sendToWhatsApp} />
+      <Cart cart={cart} showCart={showCart} setShowCart={setShowCart} updateQuantity={updateCartQuantity} sendToWhatsApp={sendToWhatsApp} />
 
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>

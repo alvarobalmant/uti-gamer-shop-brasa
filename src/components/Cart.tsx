@@ -1,14 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Plus, Minus, ShoppingCart, X } from 'lucide-react';
-import { Product } from './ProductCard';
-
-export interface CartItem {
-  product: Product;
-  size: string;
-  color: string;
-  quantity: number;
-}
+import { CartItem } from '@/hooks/useCart';
 
 interface CartProps {
   cart: CartItem[];
@@ -80,7 +73,7 @@ const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: C
                       <div className="flex-1">
                         <h4 className="text-gray-800 font-bold text-sm leading-tight mb-1">{item.product.name}</h4>
                         <p className="text-gray-500 text-xs mb-3">
-                          {item.size}{item.color ? `, ${item.color}` : ''}
+                          {item.size || 'Padrão'}{item.color ? `, ${item.color}` : ''}
                         </p>
                         
                         <div className="flex justify-between items-center">
