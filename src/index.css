@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Circular+Std:wght@400;500;600;700;800&family=Gilroy:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
@@ -254,7 +255,7 @@
   }
 
   .card-product-premium {
-    @apply bg-white rounded-2xl border border-uti-border overflow-hidden transition-all duration-400;
+    @apply bg-white rounded-2xl border border-uti-border overflow-hidden transition-all duration-300;
     box-shadow: var(--shadow-sm);
   }
 
