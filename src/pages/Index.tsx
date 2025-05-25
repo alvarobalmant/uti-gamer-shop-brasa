@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import { useCart } from '@/hooks/useCart';
 import Cart from '@/components/Cart';
@@ -15,38 +16,9 @@ const Index = () => {
   const { products, loading } = useProducts();
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-
-  // Scroll position persistence
-  useEffect(() => {
-    const savedScrollPosition = sessionStorage.getItem('homeScrollPosition');
-    if (savedScrollPosition && location.state?.fromProduct) {
-      window.scrollTo(0, parseInt(savedScrollPosition));
-      // Clear the state so it doesn't interfere with normal navigation
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
-
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      sessionStorage.setItem('homeScrollPosition', window.scrollY.toString());
-    };
-
-    const handleScroll = () => {
-      sessionStorage.setItem('homeScrollPosition', window.scrollY.toString());
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('scroll', handleScroll);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
 
   const updateCartQuantity = (item: any, change: number) => {
     const newQuantity = item.quantity + change;
