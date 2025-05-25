@@ -1,8 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import { useCart } from '@/hooks/useCart';
 import Cart from '@/components/Cart';
@@ -11,14 +11,24 @@ import PremiumHeader from '@/components/Header/PremiumHeader';
 import PremiumHeroBanner from '@/components/Hero/PremiumHeroBanner';
 import PremiumProductCard from '@/components/Product/PremiumProductCard';
 import FeaturedProducts from '@/components/FeaturedProducts';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 
 const Index = () => {
   const { products, loading } = useProducts();
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { restoreScrollPosition } = useScrollPosition();
+
+  // Restaurar posição do scroll quando voltar para esta página
+  useEffect(() => {
+    if (location.state?.from) {
+      restoreScrollPosition('/');
+    }
+  }, [location, restoreScrollPosition]);
 
   const updateCartQuantity = (item: any, change: number) => {
     const newQuantity = item.quantity + change;

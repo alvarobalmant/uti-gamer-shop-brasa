@@ -85,30 +85,14 @@ const PremiumHeader = () => {
 
   return (
     <>
-      {/* Info Bar */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 text-white py-2">
+      {/* Info Bar - Layout anterior com scroll horizontal */}
+      <div className="bg-gradient-to-r from-slate-800 to-slate-700 text-white py-2 overflow-hidden">
         <div className="container-premium">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <span>📱</span>
-                <span>WhatsApp: (27) 99688-2090</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span>📍</span>
-                <span>Colatina - ES</span>
-              </div>
-            </div>
-            <div className="hidden md:flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <span>🕒</span>
-                <span>Seg à Sex: 9h às 18h</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span>⚡</span>
-                <span>+10 Anos de Tradição</span>
-              </div>
-            </div>
+          <div className="flex animate-marquee whitespace-nowrap text-sm">
+            <span className="mx-8">📱 WhatsApp: (27) 99688-2090</span>
+            <span className="mx-8">📍 Colatina - ES</span>
+            <span className="mx-8">🕒 Seg à Sex: 9h às 18h</span>
+            <span className="mx-8">⚡ +10 Anos de Tradição</span>
           </div>
         </div>
       </div>
@@ -128,6 +112,13 @@ const PremiumHeader = () => {
                 <div>
                   <h1 className="text-xl md:text-2xl font-bold text-red-600">UTI DOS GAMES</h1>
                   <p className="text-xs text-gray-600 hidden md:block">A vanguarda gamer de Colatina</p>
+                </div>
+              )}
+              {/* Mobile - título reduzido */}
+              {isMobile && (
+                <div>
+                  <h1 className="text-sm font-bold text-red-600">UTI DOS GAMES</h1>
+                  <p className="text-xs text-gray-600">A vanguarda gamer de Colatina</p>
                 </div>
               )}
             </div>
