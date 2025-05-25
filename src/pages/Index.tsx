@@ -14,7 +14,6 @@ import BottomNavigation from '@/components/Navigation/BottomNavigation';
 import ResponsiveHeroBanner from '@/components/Hero/ResponsiveHeroBanner';
 import ProductGrid from '@/components/Product/ProductGrid';
 import ServiceCards from '@/components/ServiceCards';
-import PremiumCategoryCard from '@/components/Category/PremiumCategoryCard';
 
 const Index = () => {
   const { products, loading } = useProducts();
@@ -61,49 +60,56 @@ const Index = () => {
 
   const featuredProducts = products.slice(0, 10);
   const newProducts = products.filter(p => p.tags?.some(tag => tag.name.toLowerCase().includes('novo'))).slice(0, 8);
+  const bestSellers = products.filter(p => p.tags?.some(tag => tag.name.toLowerCase().includes('bestseller'))).slice(0, 8);
 
-  // Premium categories with clean, high-quality images
+  // Premium categories with enhanced visuals
   const premiumCategories = [
     {
       id: 'playstation',
       name: 'PlayStation',
-      description: 'PS5, PS4 e acessórios oficiais',
-      image: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=600&h=600&fit=crop&auto=format&q=80',
+      description: 'PS5, PS4 e acessórios',
+      image: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=400&h=300&fit=crop',
+      gradient: 'from-blue-600 to-blue-800',
       path: '/categoria/playstation'
     },
     {
       id: 'xbox',
       name: 'Xbox',
-      description: 'Series X|S, One e Game Pass',
-      image: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&h=600&fit=crop&auto=format&q=80',
+      description: 'Series X|S, One e GamePass',
+      image: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400&h=300&fit=crop',
+      gradient: 'from-green-600 to-green-800',
       path: '/categoria/xbox'
     },
     {
       id: 'nintendo',
       name: 'Nintendo',
-      description: 'Switch, OLED e exclusivos',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=600&fit=crop&auto=format&q=80',
+      description: 'Switch, OLED e Lite',
+      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
+      gradient: 'from-red-500 to-red-700',
       path: '/categoria/nintendo'
     },
     {
       id: 'pc',
       name: 'PC Gaming',
-      description: 'Periféricos e componentes',
-      image: 'https://images.unsplash.com/photo-1599669454699-248893623440?w=600&h=600&fit=crop&auto=format&q=80',
+      description: 'Periféricos e acessórios',
+      image: 'https://images.unsplash.com/photo-1599669454699-248893623440?w=400&h=300&fit=crop',
+      gradient: 'from-orange-600 to-orange-800',
       path: '/categoria/pc'
     },
     {
       id: 'acessorios',
       name: 'Acessórios',
-      description: 'Controles, headsets e mais',
-      image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&h=600&fit=crop&auto=format&q=80',
+      description: 'Controles, fones e mais',
+      image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=300&fit=crop',
+      gradient: 'from-purple-600 to-purple-800',
       path: '/categoria/acessorios'
     },
     {
       id: 'colecionaveis',
       name: 'Colecionáveis',
-      description: 'Figuras, cards e edições especiais',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=600&fit=crop&auto=format&q=80',
+      description: 'Figuras, Cards e Edições Especiais',
+      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
+      gradient: 'from-yellow-600 to-yellow-800',
       path: '/categoria/colecionaveis'
     }
   ];
@@ -118,20 +124,19 @@ const Index = () => {
       <ResponsiveHeroBanner />
 
       {/* Premium Benefits Section */}
-      <section className="section-premium bg-uti-gray-50">
-        <div className="container-premium">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+      <section className="py-8 lg:py-16 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
             {[
-              { icon: '🏪', title: 'Loja Física', desc: 'Colatina - ES', subtitle: 'Visite nossa loja' },
-              { icon: '⚡', title: '+10 Anos', desc: 'De Tradição', subtitle: 'Experiência comprovada' },
-              { icon: '🔧', title: 'Assistência', desc: 'Especializada', subtitle: 'Técnicos qualificados' },
-              { icon: '💳', title: 'Parcelamento', desc: 'Em até 12x', subtitle: 'Sem juros no cartão' }
+              { icon: '🏪', title: 'Loja Física', desc: 'Colatina - ES' },
+              { icon: '⚡', title: '+10 Anos', desc: 'De Tradição' },
+              { icon: '🔧', title: 'Assistência', desc: 'Especializada' },
+              { icon: '💳', title: 'Parcelamento', desc: 'Em até 12x' }
             ].map((benefit, index) => (
-              <div key={index} className="text-center p-6 animate-fade-in-premium" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="text-4xl mb-4">{benefit.icon}</div>
-                <h3 className="text-card-title mb-2">{benefit.title}</h3>
-                <p className="text-body-secondary mb-1">{benefit.desc}</p>
-                <p className="text-xs text-uti-gray-600">{benefit.subtitle}</p>
+              <div key={index} className="text-center p-4 lg:p-6 animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className="text-3xl lg:text-4xl mb-2 lg:mb-3">{benefit.icon}</div>
+                <h3 className="font-bold text-gray-900 text-sm lg:text-base mb-1">{benefit.title}</h3>
+                <p className="text-xs lg:text-sm text-gray-600">{benefit.desc}</p>
               </div>
             ))}
           </div>
@@ -139,24 +144,38 @@ const Index = () => {
       </section>
 
       {/* Categories */}
-      <section className="section-premium bg-white">
-        <div className="container-premium">
-          <div className="text-center mb-12 lg:mb-16 animate-fade-in-premium">
-            <h2 className="text-section-title mb-6">
-              Explore Nossa Coleção Premium
+      <section className="py-8 lg:py-16 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 lg:mb-16 animate-fade-in-up">
+            <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 mb-4 lg:mb-6">
+              Explore Nossa Coleção
             </h2>
-            <p className="text-body text-uti-gray-600 max-w-3xl mx-auto">
+            <p className="text-base lg:text-xl text-gray-600 max-w-3xl mx-auto">
               Descubra os melhores produtos gaming com a qualidade e tradição que você já conhece
             </p>
           </div>
 
-          <div className="grid-categories-premium">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6">
             {premiumCategories.map((category, index) => (
-              <PremiumCategoryCard
+              <div
                 key={category.id}
-                category={category}
-                index={index}
-              />
+                onClick={() => navigate(category.path)}
+                className="bg-white rounded-xl lg:rounded-2xl border border-gray-200 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="relative aspect-square overflow-hidden">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-t ${category.gradient} opacity-80`}></div>
+                  <div className="absolute inset-0 p-3 lg:p-6 flex flex-col justify-end text-white">
+                    <h3 className="text-sm lg:text-xl font-bold mb-1 lg:mb-2">{category.name}</h3>
+                    <p className="text-xs lg:text-sm opacity-90 hidden lg:block">{category.description}</p>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -166,22 +185,22 @@ const Index = () => {
       <ServiceCards />
 
       {/* Featured Products */}
-      <section className="section-premium bg-uti-gray-50">
-        <div className="container-premium">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-12 lg:mb-16 animate-fade-in-premium">
-            <div className="mb-6 lg:mb-0">
-              <h2 className="text-section-title mb-4">
+      <section className="py-8 lg:py-16 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-8 lg:mb-12 animate-fade-in-up">
+            <div className="mb-4 lg:mb-0">
+              <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 mb-2 lg:mb-4">
                 🔥 Produtos em Destaque
               </h2>
-              <p className="text-body text-uti-gray-600">
+              <p className="text-base lg:text-xl text-gray-600">
                 Os melhores produtos selecionados especialmente para você
               </p>
             </div>
             <button 
               onClick={() => navigate('/categoria/inicio')} 
-              className="btn-secondary-premium"
+              className="text-red-600 hover:text-red-700 font-semibold text-sm lg:text-base"
             >
-              Ver Todos os Produtos
+              Ver Todos →
             </button>
           </div>
 
@@ -196,13 +215,13 @@ const Index = () => {
 
       {/* New Products */}
       {newProducts.length > 0 && (
-        <section className="section-premium bg-white">
-          <div className="container-premium">
-            <div className="text-center mb-12 lg:mb-16 animate-fade-in-premium">
-              <h2 className="text-section-title mb-6">
+        <section className="py-8 lg:py-16 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 lg:mb-12 animate-fade-in-up">
+              <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 mb-2 lg:mb-4">
                 ⚡ Novidades
               </h2>
-              <p className="text-body text-uti-gray-600">
+              <p className="text-base lg:text-xl text-gray-600">
                 Os lançamentos mais recentes chegaram na UTI dos Games
               </p>
             </div>
@@ -217,14 +236,14 @@ const Index = () => {
       )}
 
       {/* Omnichannel Section */}
-      <section className="section-premium bg-uti-gray-900 text-white">
+      <section className="section-padding bg-uti-dark text-white">
         <div className="container-premium">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="animate-fade-in-premium">
-              <h2 className="text-section-title text-white mb-6">
+            <div className="animate-fade-in-left">
+              <h2 className="text-section-title mb-6">
                 Loja Física em Colatina
               </h2>
-              <p className="text-body text-white opacity-90 mb-8">
+              <p className="text-body-large mb-8 text-white/90">
                 Visite nossa loja física e experimente os produtos antes de comprar. 
                 Mais de 10 anos servindo a comunidade gamer de Colatina e região.
               </p>
@@ -245,28 +264,28 @@ const Index = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="btn-primary-premium">
+                <Button className="btn-primary">
                   Como Chegar
-                </button>
-                <button 
+                </Button>
+                <Button 
                   onClick={() => window.open('https://wa.me/5527996882090', '_blank')}
-                  className="btn-secondary-premium border-white text-white hover:bg-white hover:text-uti-gray-900"
+                  className="btn-ghost border-2 border-white/30 hover:bg-white/10"
                 >
                   WhatsApp: (27) 99688-2090
-                </button>
+                </Button>
               </div>
             </div>
 
-            <div className="animate-fade-in-premium">
+            <div className="animate-fade-in-right">
               <div className="card-premium overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop&auto=format&q=80"
+                  src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop"
                   alt="Loja UTI dos Games"
                   className="w-full h-80 object-cover"
                 />
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-uti-black mb-2">UTI DOS GAMES</h3>
-                  <p className="text-uti-gray-600">Colatina - Espírito Santo</p>
+                  <h3 className="text-xl font-bold text-uti-dark mb-2">UTI DOS GAMES</h3>
+                  <p className="text-uti-gray">Colatina - Espírito Santo</p>
                 </div>
               </div>
             </div>
@@ -275,7 +294,7 @@ const Index = () => {
       </section>
 
       {/* Premium Footer */}
-      <footer className="footer-premium py-16">
+      <footer className="bg-uti-dark text-white py-16">
         <div className="container-premium">
           <div className="grid lg:grid-cols-5 gap-8 mb-12">
             {/* Brand */}
@@ -284,19 +303,28 @@ const Index = () => {
                 <img src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" alt="UTI DOS GAMES" className="h-12 w-12" />
                 <div>
                   <h3 className="text-xl font-bold text-uti-red">UTI DOS GAMES</h3>
-                  <p className="text-gray-300 text-sm">A vanguarda gamer de Colatina</p>
+                  <p className="text-white/70 text-sm">A vanguarda gamer de Colatina</p>
                 </div>
               </div>
-              <p className="text-gray-300 mb-6 leading-relaxed">
+              <p className="text-white/80 mb-6 leading-relaxed">
                 Mais de 10 anos oferecendo os melhores produtos em games para Colatina e região. 
                 Tradição, qualidade e atendimento especializado.
               </p>
+              <div className="flex space-x-4">
+                {/* Social Media Icons */}
+                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-uti-red transition-colors duration-300">
+                  📱
+                </div>
+                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-uti-red transition-colors duration-300">
+                  📧
+                </div>
+              </div>
             </div>
 
             {/* Categories */}
             <div>
-              <h4 className="font-semibold mb-4 text-white">Categorias</h4>
-              <ul className="space-y-2 text-sm text-gray-300">
+              <h4 className="font-bold mb-4 text-white">Categorias</h4>
+              <ul className="space-y-2 text-sm text-white/70">
                 <li><button onClick={() => navigate('/categoria/playstation')} className="hover:text-uti-red transition-colors">PlayStation</button></li>
                 <li><button onClick={() => navigate('/categoria/xbox')} className="hover:text-uti-red transition-colors">Xbox</button></li>
                 <li><button onClick={() => navigate('/categoria/nintendo')} className="hover:text-uti-red transition-colors">Nintendo</button></li>
@@ -307,8 +335,8 @@ const Index = () => {
 
             {/* Services */}
             <div>
-              <h4 className="font-semibold mb-4 text-white">Serviços</h4>
-              <ul className="space-y-2 text-sm text-gray-300">
+              <h4 className="font-bold mb-4 text-white">Serviços</h4>
+              <ul className="space-y-2 text-sm text-white/70">
                 <li><button className="hover:text-uti-red transition-colors">Assistência Técnica</button></li>
                 <li><button className="hover:text-uti-red transition-colors">Avaliação de Produtos</button></li>
                 <li><button className="hover:text-uti-red transition-colors">Trade-in</button></li>
@@ -319,8 +347,8 @@ const Index = () => {
 
             {/* Contact */}
             <div>
-              <h4 className="font-semibold mb-4 text-white">Contato</h4>
-              <ul className="space-y-2 text-sm text-gray-300">
+              <h4 className="font-bold mb-4 text-white">Contato</h4>
+              <ul className="space-y-2 text-sm text-white/70">
                 <li className="flex items-center space-x-2">
                   <span>📱</span>
                   <span>(27) 99688-2090</span>
@@ -341,8 +369,8 @@ const Index = () => {
             </div>
           </div>
           
-          <div className="border-t border-gray-700 pt-8 text-center">
-            <p className="text-gray-400 text-sm">
+          <div className="border-t border-white/20 pt-8 text-center">
+            <p className="text-white/60 text-sm">
               © 2024 UTI DOS GAMES. Todos os direitos reservados. Desenvolvido com ❤️ em Colatina.
             </p>
           </div>
