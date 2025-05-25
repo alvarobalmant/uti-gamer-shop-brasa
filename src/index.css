@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,24 +9,54 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
+
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
+
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
+
     --primary: 0 84.2% 60.2%;
     --primary-foreground: 0 0% 98%;
+
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
+
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
+
     --accent: 240 4.8% 95.9%;
     --accent-foreground: 240 5.9% 10%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
+
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 0 84.2% 60.2%;
-    --radius: 0.5rem;
+
+    --radius: 1rem;
+
+    /* UTI Games Premium Brand Colors */
+    --uti-red: 0 89% 45%;           /* #E60012 - Vermelho UTI Games Premium */
+    --uti-red-hover: 0 89% 40%;     /* Hover state */
+    --uti-red-light: 0 89% 95%;     /* Background subtle */
+    
+    /* Neutral Palette */
+    --uti-black: 0 0% 10%;          /* #1A1A1A - Texto principal */
+    --uti-white: 0 0% 100%;         /* #FFFFFF - Fundos limpos */
+    --uti-gray-50: 0 0% 96%;        /* #F5F5F5 - Fundos secundários */
+    --uti-gray-100: 0 0% 88%;       /* #E0E0E0 - Bordas sutis */
+    --uti-gray-300: 0 0% 74%;       /* #BDBDBD - Elementos secundários */
+    --uti-gray-600: 0 0% 46%;       /* #757575 - Texto secundário */
+    --uti-gray-900: 0 0% 15%;       /* #262626 - Footer dark */
+
+    /* Professional Shadows */
+    --shadow-premium-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    --shadow-premium-md: 0 4px 12px 0 rgba(0, 0, 0, 0.08), 0 2px 4px 0 rgba(0, 0, 0, 0.04);
+    --shadow-premium-lg: 0 10px 25px 0 rgba(0, 0, 0, 0.12), 0 4px 6px 0 rgba(0, 0, 0, 0.06);
+    --shadow-premium-xl: 0 20px 40px 0 rgba(0, 0, 0, 0.15), 0 8px 16px 0 rgba(0, 0, 0, 0.08);
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -44,7 +74,7 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 15% 8%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 100% 58%;
+    --primary: 0 89% 45%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 12% 10%;
     --secondary-foreground: 0 0% 98%;
@@ -56,7 +86,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 12% 15%;
     --input: 240 12% 15%;
-    --ring: 0 100% 58%;
+    --ring: 0 89% 45%;
   }
 }
 
@@ -66,344 +96,234 @@
   }
 
   body {
-    @apply bg-background text-foreground font-roboto;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-white text-uti-black;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-weight: 400;
     line-height: 1.6;
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-montserrat;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.025em;
     text-rendering: optimizeLegibility;
-  }
-
-  /* Scrollbar Styling */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #E63946;
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #D32A38;
+    color: hsl(var(--uti-black));
   }
 }
 
-@layer components {
+@layer utilities {
   /* Premium Typography System */
   .text-hero {
-    @apply text-hero md:text-hero-md lg:text-hero-lg font-bold font-montserrat;
-    text-shadow: 0px 1px 2px rgba(0,0,0,0.1);
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    color: hsl(var(--uti-black));
   }
 
   .text-display {
-    @apply text-display md:text-display-md lg:text-display-lg font-semibold font-montserrat;
-    text-shadow: 0px 1px 2px rgba(0,0,0,0.1);
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    color: hsl(var(--uti-black));
   }
 
   .text-section-title {
-    @apply text-h1 md:text-h1-md lg:text-h1-lg font-semibold font-montserrat;
-    text-shadow: 0px 1px 2px rgba(0,0,0,0.1);
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    color: hsl(var(--uti-black));
   }
 
   .text-card-title {
-    @apply text-h3 md:text-h3-md lg:text-h3-lg font-medium font-montserrat;
+    @apply text-base sm:text-lg md:text-xl font-medium tracking-tight;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    color: hsl(var(--uti-black));
   }
 
-  .text-body-primary {
-    @apply text-body md:text-body-md lg:text-body-lg font-roboto font-normal;
+  .text-body {
+    @apply text-sm sm:text-base font-normal;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    color: hsl(var(--uti-black));
   }
 
   .text-body-secondary {
-    @apply text-sm font-roboto font-normal text-gray-system-500;
+    @apply text-sm font-normal;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    color: hsl(var(--uti-gray-600));
+  }
+
+  .text-button {
+    @apply text-sm font-medium;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.01em;
   }
 
   /* Premium Button System */
-  .btn-primary {
-    @apply bg-uti-red hover:bg-uti-red-600 active:bg-uti-red-700 text-white font-medium py-3 px-6 rounded-button transition-all duration-200 shadow-level-1 hover:shadow-level-2 active:shadow-level-1;
-    min-height: 48px;
+  .btn-primary-premium {
+    @apply bg-uti-red hover:bg-uti-red-hover text-white font-medium py-3 px-6 sm:py-4 sm:px-8 rounded-lg transition-all duration-200;
+    min-height: 44px;
+    box-shadow: var(--shadow-premium-sm);
+    border: none;
+  }
+
+  .btn-primary-premium:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-premium-md);
+  }
+
+  .btn-primary-premium:active {
     transform: translateY(0);
+    box-shadow: var(--shadow-premium-sm);
   }
 
-  .btn-primary:hover {
-    transform: translateY(-1px) scale(1.02);
+  .btn-secondary-premium {
+    @apply bg-white text-uti-red border border-uti-red hover:bg-uti-red-light font-medium py-3 px-6 sm:py-4 sm:px-8 rounded-lg transition-all duration-200;
+    min-height: 44px;
+    box-shadow: var(--shadow-premium-sm);
   }
 
-  .btn-primary:active {
-    transform: translateY(0) scale(0.98);
+  .btn-secondary-premium:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-premium-md);
   }
 
-  .btn-secondary {
-    @apply bg-white text-uti-red border border-uti-red hover:bg-uti-red-50 font-medium py-3 px-6 rounded-button transition-all duration-200 shadow-level-1 hover:shadow-level-2;
-    min-height: 48px;
-  }
-
-  .btn-ghost {
-    @apply bg-transparent text-uti-black hover:bg-gray-system-50 font-medium py-3 px-6 rounded-button transition-all duration-200;
-    min-height: 48px;
-  }
-
-  .btn-platform-playstation {
-    @apply bg-playstation hover:bg-playstation-dark text-white font-medium py-3 px-6 rounded-button transition-all duration-200 shadow-level-1 hover:shadow-level-2;
-    min-height: 48px;
-  }
-
-  .btn-platform-xbox {
-    @apply bg-xbox hover:bg-xbox-dark text-white font-medium py-3 px-6 rounded-button transition-all duration-200 shadow-level-1 hover:shadow-level-2;
-    min-height: 48px;
-  }
-
-  .btn-platform-nintendo {
-    @apply bg-nintendo hover:bg-nintendo-dark text-white font-medium py-3 px-6 rounded-button transition-all duration-200 shadow-level-1 hover:shadow-level-2;
-    min-height: 48px;
-  }
-
-  .btn-platform-pc {
-    @apply bg-pc-gaming hover:bg-pc-gaming-dark text-white font-medium py-3 px-6 rounded-button transition-all duration-200 shadow-level-1 hover:shadow-level-2;
-    min-height: 48px;
+  .btn-ghost-premium {
+    @apply bg-transparent text-uti-black hover:bg-uti-gray-50 font-medium py-3 px-6 sm:py-4 sm:px-8 rounded-lg transition-all duration-200;
+    min-height: 44px;
   }
 
   /* Premium Card System */
   .card-premium {
-    @apply bg-white rounded-card border border-gray-system-200 shadow-level-1 transition-all duration-300 overflow-hidden;
+    @apply bg-white rounded-xl border border-uti-gray-100 overflow-hidden transition-all duration-300;
+    box-shadow: var(--shadow-premium-sm);
   }
 
   .card-premium:hover {
-    @apply shadow-level-2;
-    transform: translateY(-2px) scale(1.01);
-  }
-
-  .card-product {
-    @apply card-premium cursor-pointer;
-    width: 280px;
-    min-height: 420px;
-  }
-
-  .card-product:hover {
-    @apply shadow-level-3;
-    transform: translateY(-3px) scale(1.02);
-  }
-
-  .card-category {
-    @apply card-premium cursor-pointer;
-  }
-
-  .card-category:hover {
-    @apply shadow-level-2;
     transform: translateY(-2px);
+    box-shadow: var(--shadow-premium-lg);
   }
 
-  .card-category:hover .category-image {
+  .card-product-premium {
+    @apply bg-white rounded-xl border border-uti-gray-100 overflow-hidden transition-all duration-300;
+    box-shadow: var(--shadow-premium-sm);
+  }
+
+  .card-product-premium:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-premium-xl);
+  }
+
+  .card-category-premium {
+    @apply bg-white rounded-xl border border-uti-gray-100 overflow-hidden transition-all duration-300 cursor-pointer;
+    box-shadow: var(--shadow-premium-sm);
+  }
+
+  .card-category-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-premium-lg);
+  }
+
+  .card-category-premium:hover .category-image {
     transform: scale(1.05);
-  }
-
-  /* Premium Input System */
-  .input-premium {
-    @apply w-full px-4 py-3 border border-gray-system-300 rounded-lg focus:ring-2 focus:ring-uti-red focus:border-transparent transition-all duration-200 bg-white text-uti-black placeholder-gray-system-500 shadow-inset-soft;
-  }
-
-  .input-premium:focus {
-    @apply shadow-level-1;
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.12), 0 0 0 3px rgba(230, 57, 70, 0.1);
-  }
-
-  /* Premium Header */
-  .header-premium {
-    @apply bg-white border-b border-gray-system-200 shadow-level-1 backdrop-blur-sm;
-  }
-
-  .header-info-bar {
-    background: linear-gradient(90deg, #1D3557 0%, #2A4A73 100%);
   }
 
   /* Premium Layout System */
   .section-premium {
-    @apply py-12 md:py-16 lg:py-20;
+    @apply py-12 sm:py-16 md:py-20 lg:py-24;
   }
 
   .container-premium {
-    @apply max-w-7xl mx-auto px-4 md:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
   /* Premium Grid Systems */
-  .grid-products {
-    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6;
+  .grid-products-premium {
+    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6;
   }
 
-  .grid-categories {
-    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6;
+  .grid-categories-premium {
+    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6;
   }
 
-  .grid-services {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8;
+  .grid-services-premium {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8;
+  }
+
+  /* Premium Input System */
+  .input-premium {
+    @apply w-full px-4 py-3 border border-uti-gray-100 rounded-lg focus:ring-2 focus:ring-uti-red focus:border-transparent transition-all duration-200 bg-white text-uti-black placeholder-uti-gray-600;
+    box-shadow: var(--shadow-premium-sm);
+  }
+
+  .input-premium:focus {
+    box-shadow: var(--shadow-premium-md), 0 0 0 3px hsl(var(--uti-red) / 0.1);
+  }
+
+  /* Premium Header */
+  .header-premium {
+    @apply bg-white border-b border-uti-gray-100;
+    box-shadow: var(--shadow-premium-sm);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Premium Footer */
+  .footer-premium {
+    @apply bg-uti-gray-900 text-white;
   }
 
   /* Premium Tags */
   .tag-premium {
-    @apply text-xs font-medium px-2.5 py-1 rounded-pill;
+    @apply text-xs font-medium px-2.5 py-1 rounded-md;
   }
 
-  .tag-new {
-    @apply tag-premium bg-success text-white;
+  .tag-new-premium {
+    @apply tag-premium bg-green-100 text-green-800;
   }
 
-  .tag-used {
-    @apply tag-premium bg-warning text-white;
+  .tag-used-premium {
+    @apply tag-premium bg-amber-100 text-amber-800;
   }
 
-  .tag-offer {
-    @apply tag-premium bg-uti-red text-white animate-pulse-glow;
-  }
-
-  .tag-platform-playstation {
-    @apply tag-premium bg-playstation text-white;
-  }
-
-  .tag-platform-xbox {
-    @apply tag-premium bg-xbox text-white;
-  }
-
-  .tag-platform-nintendo {
-    @apply tag-premium bg-nintendo text-white;
-  }
-
-  .tag-platform-pc {
-    @apply tag-premium bg-pc-gaming text-white;
-  }
-
-  /* Premium Gradients */
-  .gradient-hero {
-    background: linear-gradient(135deg, #E63946 0%, #1D3557 100%);
-  }
-
-  .gradient-playstation {
-    background: linear-gradient(135deg, #0070CC 0%, #003791 100%);
-  }
-
-  .gradient-xbox {
-    background: linear-gradient(135deg, #107C10 0%, #0E5E0E 100%);
-  }
-
-  .gradient-nintendo {
-    background: linear-gradient(135deg, #E60012 0%, #AC000E 100%);
-  }
-
-  .gradient-overlay {
-    background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);
+  .tag-offer-premium {
+    @apply tag-premium bg-uti-red-light text-uti-red;
   }
 
   /* Premium Focus States */
   .focus-premium:focus {
     @apply outline-none;
-    box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
+    box-shadow: 0 0 0 3px hsl(var(--uti-red) / 0.15);
   }
 
   .focus-premium:focus-visible {
     @apply outline-none;
-    box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
+    box-shadow: 0 0 0 3px hsl(var(--uti-red) / 0.15);
   }
 
-  /* Premium Footer */
-  .footer-premium {
-    @apply bg-uti-blue text-white;
+  /* Premium Animations */
+  .animate-fade-in-premium {
+    animation: fadeInPremium 0.6s ease-out forwards;
   }
 
-  /* Premium Mobile Optimizations */
-  @media (max-width: 768px) {
-    .card-product {
-      width: 100%;
-      min-height: 380px;
-    }
-
-    .btn-primary,
-    .btn-secondary,
-    .btn-ghost {
-      @apply w-full text-center;
-    }
-
-    .grid-products {
-      @apply grid-cols-2 gap-3;
-    }
-
-    .grid-categories {
-      @apply grid-cols-2 gap-3;
-    }
-
-    .section-premium {
-      @apply py-8 md:py-12;
-    }
+  .animate-slide-up-premium {
+    animation: slideUpPremium 0.5s ease-out forwards;
   }
 
-  /* Hover effects and microinteractions */
-  .hover-lift {
-    @apply transition-transform duration-200;
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-2px);
-  }
-
-  .hover-scale {
-    @apply transition-transform duration-200;
-  }
-
-  .hover-scale:hover {
-    transform: scale(1.02);
-  }
-
-  .hover-glow {
-    @apply transition-shadow duration-200;
-  }
-
-  .hover-glow:hover {
-    box-shadow: 0px 0px 20px rgba(230, 57, 70, 0.3);
-  }
-
-  /* Loading states */
-  .loading-skeleton {
-    @apply bg-gray-system-200 animate-pulse rounded;
-  }
-
-  .loading-shimmer {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
-
-  /* Utility classes */
-  .text-shadow {
-    text-shadow: 0px 1px 2px rgba(0,0,0,0.1);
-  }
-
-  .text-shadow-strong {
-    text-shadow: 0px 2px 4px rgba(0,0,0,0.3);
-  }
-
+  /* Utility Classes */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -430,7 +350,55 @@
   }
 }
 
-/* Accessibility improvements */
+/* Premium Keyframes */
+@keyframes fadeInPremium {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpPremium {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Optimizations */
+@media (max-width: 768px) {
+  .container-premium {
+    @apply px-4;
+  }
+
+  .section-premium {
+    @apply py-8 sm:py-12;
+  }
+
+  .btn-primary-premium,
+  .btn-secondary-premium,
+  .btn-ghost-premium {
+    @apply w-full text-center;
+  }
+
+  .grid-products-premium {
+    @apply grid-cols-2 gap-3;
+  }
+
+  .grid-categories-premium {
+    @apply grid-cols-2 gap-3;
+  }
+}
+
+/* Accessibility & Performance */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
@@ -442,26 +410,13 @@
 }
 
 @media (prefers-contrast: high) {
-  .btn-primary {
+  .btn-primary-premium {
     @apply border-2 border-white;
   }
 
-  .card-premium {
+  .card-premium,
+  .card-product-premium,
+  .card-category-premium {
     @apply border-2 border-uti-black;
-  }
-}
-
-/* Print styles */
-@media print {
-  .btn-primary,
-  .btn-secondary {
-    @apply bg-white text-black border border-black;
-  }
-
-  .gradient-hero,
-  .gradient-playstation,
-  .gradient-xbox,
-  .gradient-nintendo {
-    background: white !important;
   }
 }
