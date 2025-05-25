@@ -56,12 +56,16 @@ const Index = () => {
     return 'bg-uti-dark';
   };
 
-  const handleCartOpen = () => {
-    setShowCart(true);
-  };
-
-  const handleAuthOpen = () => {
-    setShowAuthModal(true);
+  const handleLogin = () => {
+    if (user) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        setShowAuthModal(true);
+      }
+    } else {
+      setShowAuthModal(true);
+    }
   };
 
   const featuredProducts = products.slice(0, 8);
@@ -123,7 +127,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Premium Header */}
-      <PremiumHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
+      <PremiumHeader />
 
       {/* Premium Hero Banner */}
       <PremiumHeroBanner />
