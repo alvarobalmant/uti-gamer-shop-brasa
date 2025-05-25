@@ -9,6 +9,92 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      banners: {
+        Row: {
+          button_image_url: string | null
+          button_link: string
+          button_text: string
+          created_at: string
+          gradient: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          position: number
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          button_image_url?: string | null
+          button_link: string
+          button_text: string
+          created_at?: string
+          gradient?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          position?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          button_image_url?: string | null
+          button_link?: string
+          button_text?: string
+          created_at?: string
+          gradient?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          position?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cart_items: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          size: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          size?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          size?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_tags: {
         Row: {
           created_at: string
@@ -108,6 +194,42 @@ export type Database = {
           id?: string
           name?: string | null
           role?: string
+        }
+        Relationships: []
+      }
+      service_cards: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_url: string
+          is_active: boolean
+          link_url: string
+          position: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link_url: string
+          position?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link_url?: string
+          position?: number
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

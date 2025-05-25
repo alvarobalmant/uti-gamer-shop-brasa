@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useTags } from '@/hooks/useTags';
@@ -20,6 +19,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { TagManager } from './TagManager';
+import { BannerManager } from './BannerManager';
+import { ServiceCardManager } from './ServiceCardManager';
 
 export const AdminPanel = () => {
   const { products, loading, addProduct, updateProduct, deleteProduct } = useProducts();
@@ -28,6 +29,7 @@ export const AdminPanel = () => {
   const navigate = useNavigate();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('products');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -129,6 +131,13 @@ export const AdminPanel = () => {
     }
   };
 
+  const tabs = [
+    { id: 'products', label: 'Produtos' },
+    { id: 'banners', label: 'Banners' },
+    { id: 'services', label: 'Cards de Serviços' },
+    { id: 'tags', label: 'Tags' },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header Administrativo */}
@@ -217,279 +226,306 @@ export const AdminPanel = () => {
                 />
                 <div>
                   <h3 className="text-sm lg:text-lg font-bold text-gray-800">Gerenciamento</h3>
-                  <p className="text-xs lg:text-sm text-gray-600">Sistema de Tags</p>
+                  <p className="text-xs lg:text-sm text-gray-600">Sistema Completo</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Tag Manager */}
-        <div className="mb-8">
-          <TagManager />
-        </div>
-
-        {/* Botões de Ação */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
+        {/* Navigation Tabs */}
+        <div className="bg-white rounded-lg border-2 border-red-200 mb-8">
+          <div className="flex flex-wrap gap-2 p-4 border-b border-gray-200">
+            {tabs.map((tab) => (
               <Button
-                onClick={() => {
-                  resetForm();
-                  setIsDialogOpen(true);
-                }}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:scale-105 transition-all duration-300"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                variant={activeTab === tab.id ? "default" : "outline"}
+                className={activeTab === tab.id ? 
+                  "bg-red-600 hover:bg-red-700 text-white" : 
+                  "border-red-300 text-red-600 hover:bg-red-50"
+                }
               >
-                <Plus className="w-5 h-5 mr-2" />
-                Adicionar Produto
+                {tab.label}
               </Button>
-            </DialogTrigger>
+            ))}
+          </div>
+
+          <div className="p-6">
+            {/* Tab Content */}
+            {activeTab === 'banners' && <BannerManager />}
+            {activeTab === 'services' && <ServiceCardManager />}
+            {activeTab === 'tags' && <TagManager />}
             
-            <DialogContent className="bg-white border-2 border-red-200 text-gray-800 max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-xl lg:text-2xl font-bold text-red-600">
-                  {editingProduct ? 'Editar Produto' : 'Novo Produto'}
-                </DialogTitle>
-              </DialogHeader>
-              
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="font-medium text-gray-700">
-                      Nome do Produto *
-                    </Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
-                      required
-                    />
-                  </div>
+            {activeTab === 'products' && (
+              <>
+                {/* Botão de Adicionar Produto */}
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-red-600">Gerenciar Produtos</h3>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="price" className="font-medium text-gray-700">
-                      Preço (R$) *
-                    </Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                      className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="image" className="font-medium text-gray-700">
-                    Imagem de Capa *
-                  </Label>
-                  <Input
-                    id="image"
-                    value={formData.image}
-                    onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                    className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
-                    placeholder="https://..."
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="font-medium text-gray-700">Tags *</Label>
-                  <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-3 border-2 border-gray-200 rounded-lg">
-                    {tags.map((tag) => (
-                      <div key={tag.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`tag-${tag.id}`}
-                          checked={formData.tagIds.includes(tag.id)}
-                          onCheckedChange={(checked) => handleTagChange(tag.id, checked as boolean)}
-                        />
-                        <Label htmlFor={`tag-${tag.id}`} className="text-sm font-medium">
-                          {tag.name}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="font-medium text-gray-700">
-                    Descrição
-                  </Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="additional_images" className="font-medium text-gray-700">
-                    Fotos Adicionais
-                  </Label>
-                  <Textarea
-                    id="additional_images"
-                    value={formData.additional_images}
-                    onChange={(e) => setFormData(prev => ({ ...prev, additional_images: e.target.value }))}
-                    className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
-                    placeholder="URLs separadas por vírgula"
-                    rows={2}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="sizes" className="font-medium text-gray-700">
-                      Tamanhos
-                    </Label>
-                    <Input
-                      id="sizes"
-                      value={formData.sizes}
-                      onChange={(e) => setFormData(prev => ({ ...prev, sizes: e.target.value }))}
-                      className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
-                      placeholder="Físico, Digital"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="colors" className="font-medium text-gray-700">
-                      Cores
-                    </Label>
-                    <Input
-                      id="colors"
-                      value={formData.colors}
-                      onChange={(e) => setFormData(prev => ({ ...prev, colors: e.target.value }))}
-                      className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
-                      placeholder="Preto, Branco"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="stock" className="font-medium text-gray-700">
-                      Estoque
-                    </Label>
-                    <Input
-                      id="stock"
-                      type="number"
-                      value={formData.stock}
-                      onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
-                      className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <Button
-                    type="submit"
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg"
-                  >
-                    {editingProduct ? 'Atualizar' : 'Adicionar'}
-                  </Button>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                    className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100 font-bold py-3 rounded-lg"
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* Lista de Produtos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {loading ? (
-            <div className="col-span-full text-center text-gray-400 py-12">
-              <img 
-                src="/lovable-uploads/8cf1f59f-91ee-4e94-b333-02445409df1a.png" 
-                alt="Carregando" 
-                className="w-16 h-16 mx-auto mb-4 opacity-50"
-              />
-              <p>Carregando produtos...</p>
-            </div>
-          ) : products.length === 0 ? (
-            <div className="col-span-full text-center text-gray-400 py-12">
-              <img 
-                src="/lovable-uploads/ad940e09-b6fc-44a8-98a5-3247986d6f98.png" 
-                alt="Nenhum produto" 
-                className="w-16 h-16 mx-auto mb-4 opacity-50"
-              />
-              <p>Nenhum produto cadastrado ainda.</p>
-            </div>
-          ) : (
-            products.map((product) => (
-              <Card key={product.id} className="bg-white border-2 border-gray-200 hover:border-red-300 transition-all duration-300 hover:shadow-lg">
-                <CardContent className="p-4">
-                  <div className="relative mb-4">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded-lg"
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
-                      }}
-                    />
-                    <div className="absolute top-2 right-2 flex flex-wrap gap-1">
-                      {product.tags?.slice(0, 2).map((tag) => (
-                        <Badge key={tag.id} className="bg-red-600 text-white font-bold text-xs">
-                          {tag.name}
-                        </Badge>
-                      ))}
-                      {(product.tags?.length || 0) > 2 && (
-                        <Badge className="bg-gray-600 text-white font-bold text-xs">
-                          +{(product.tags?.length || 0) - 2}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">{product.name}</h3>
-                  {product.description && (
-                    <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>
-                  )}
-                  
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-xl font-bold text-red-600">
-                      R$ {product.price.toFixed(2)}
-                    </span>
-                    <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      Estoque: {product.stock || 0}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button
-                      onClick={() => handleEdit(product)}
-                      size="sm"
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Editar
-                    </Button>
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        onClick={() => {
+                          resetForm();
+                          setIsDialogOpen(true);
+                        }}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:scale-105 transition-all duration-300"
+                      >
+                        <Plus className="w-5 h-5 mr-2" />
+                        Adicionar Produto
+                      </Button>
+                    </DialogTrigger>
                     
-                    <Button
-                      onClick={() => handleDelete(product.id)}
-                      size="sm"
-                      variant="destructive"
-                      className="flex-1 bg-red-600 hover:bg-red-700 font-medium"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Excluir
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+                    <DialogContent className="bg-white border-2 border-red-200 text-gray-800 max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="text-xl lg:text-2xl font-bold text-red-600">
+                          {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+                        </DialogTitle>
+                      </DialogHeader>
+                      
+                      <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="name" className="font-medium text-gray-700">
+                              Nome do Produto *
+                            </Label>
+                            <Input
+                              id="name"
+                              value={formData.name}
+                              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                              className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
+                              required
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="price" className="font-medium text-gray-700">
+                              Preço (R$) *
+                            </Label>
+                            <Input
+                              id="price"
+                              type="number"
+                              step="0.01"
+                              value={formData.price}
+                              onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                              className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="image" className="font-medium text-gray-700">
+                            Imagem de Capa *
+                          </Label>
+                          <Input
+                            id="image"
+                            value={formData.image}
+                            onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                            className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
+                            placeholder="https://..."
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="font-medium text-gray-700">Tags *</Label>
+                          <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-3 border-2 border-gray-200 rounded-lg">
+                            {tags.map((tag) => (
+                              <div key={tag.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`tag-${tag.id}`}
+                                  checked={formData.tagIds.includes(tag.id)}
+                                  onCheckedChange={(checked) => handleTagChange(tag.id, checked as boolean)}
+                                />
+                                <Label htmlFor={`tag-${tag.id}`} className="text-sm font-medium">
+                                  {tag.name}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="description" className="font-medium text-gray-700">
+                            Descrição
+                          </Label>
+                          <Textarea
+                            id="description"
+                            value={formData.description}
+                            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                            className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
+                            rows={3}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="additional_images" className="font-medium text-gray-700">
+                            Fotos Adicionais
+                          </Label>
+                          <Textarea
+                            id="additional_images"
+                            value={formData.additional_images}
+                            onChange={(e) => setFormData(prev => ({ ...prev, additional_images: e.target.value }))}
+                            className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
+                            placeholder="URLs separadas por vírgula"
+                            rows={2}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="sizes" className="font-medium text-gray-700">
+                              Tamanhos
+                            </Label>
+                            <Input
+                              id="sizes"
+                              value={formData.sizes}
+                              onChange={(e) => setFormData(prev => ({ ...prev, sizes: e.target.value }))}
+                              className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
+                              placeholder="Físico, Digital"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="colors" className="font-medium text-gray-700">
+                              Cores
+                            </Label>
+                            <Input
+                              id="colors"
+                              value={formData.colors}
+                              onChange={(e) => setFormData(prev => ({ ...prev, colors: e.target.value }))}
+                              className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
+                              placeholder="Preto, Branco"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="stock" className="font-medium text-gray-700">
+                              Estoque
+                            </Label>
+                            <Input
+                              id="stock"
+                              type="number"
+                              value={formData.stock}
+                              onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
+                              className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                          <Button
+                            type="submit"
+                            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg"
+                          >
+                            {editingProduct ? 'Atualizar' : 'Adicionar'}
+                          </Button>
+                          
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsDialogOpen(false)}
+                            className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100 font-bold py-3 rounded-lg"
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                {/* Lista de Produtos */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {loading ? (
+                    <div className="col-span-full text-center text-gray-400 py-12">
+                      <img 
+                        src="/lovable-uploads/8cf1f59f-91ee-4e94-b333-02445409df1a.png" 
+                        alt="Carregando" 
+                        className="w-16 h-16 mx-auto mb-4 opacity-50"
+                      />
+                      <p>Carregando produtos...</p>
+                    </div>
+                  ) : products.length === 0 ? (
+                    <div className="col-span-full text-center text-gray-400 py-12">
+                      <img 
+                        src="/lovable-uploads/ad940e09-b6fc-44a8-98a5-3247986d6f98.png" 
+                        alt="Nenhum produto" 
+                        className="w-16 h-16 mx-auto mb-4 opacity-50"
+                      />
+                      <p>Nenhum produto cadastrado ainda.</p>
+                    </div>
+                  ) : (
+                    products.map((product) => (
+                      <Card key={product.id} className="bg-white border-2 border-gray-200 hover:border-red-300 transition-all duration-300 hover:shadow-lg">
+                        <CardContent className="p-4">
+                          <div className="relative mb-4">
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-48 object-cover rounded-lg"
+                              onError={(e) => {
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
+                              }}
+                            />
+                            <div className="absolute top-2 right-2 flex flex-wrap gap-1">
+                              {product.tags?.slice(0, 2).map((tag) => (
+                                <Badge key={tag.id} className="bg-red-600 text-white font-bold text-xs">
+                                  {tag.name}
+                                </Badge>
+                              ))}
+                              {(product.tags?.length || 0) > 2 && (
+                                <Badge className="bg-gray-600 text-white font-bold text-xs">
+                                  +{(product.tags?.length || 0) - 2}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">{product.name}</h3>
+                          {product.description && (
+                            <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>
+                          )}
+                          
+                          <div className="flex justify-between items-center mb-4">
+                            <span className="text-xl font-bold text-red-600">
+                              R$ {product.price.toFixed(2)}
+                            </span>
+                            <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                              Estoque: {product.stock || 0}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                              onClick={() => handleEdit(product)}
+                              size="sm"
+                              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Editar
+                            </Button>
+                            
+                            <Button
+                              onClick={() => handleDelete(product.id)}
+                              size="sm"
+                              variant="destructive"
+                              className="flex-1 bg-red-600 hover:bg-red-700 font-medium"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Excluir
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
