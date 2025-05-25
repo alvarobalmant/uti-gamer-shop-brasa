@@ -63,19 +63,61 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Gaming theme colors
-				neon: {
-					green: '#00ff41',
-					purple: '#b300ff',
-					pink: '#ff00c8',
-					blue: '#00b3ff',
-					yellow: '#ffff00'
+				// UTI Games Professional Colors
+				uti: {
+					red: 'hsl(var(--uti-red))',
+					dark: 'hsl(var(--uti-dark))',
+					gray: 'hsl(var(--uti-gray))',
+					'light-gray': 'hsl(var(--uti-light-gray))',
+					border: 'hsl(var(--uti-border))'
+				},
+				// Platform Colors
+				platform: {
+					playstation: '#0070f3',
+					xbox: '#107c10',
+					nintendo: '#e60012',
+					pc: '#ff6600',
+					steam: '#1b2838'
 				}
+			},
+			fontFamily: {
+				sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+				heading: ['Montserrat', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+				display: ['Montserrat', 'sans-serif']
+			},
+			fontSize: {
+				'hero': ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+				'section-title': ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.025em' }],
+				'card-title': ['1.25rem', { lineHeight: '1.3', letterSpacing: '-0.015em' }]
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				'professional': '0.75rem',
+				'card': '1rem',
+				'button': '0.5rem'
+			},
+			spacing: {
+				'section': '6rem',
+				'section-sm': '4rem',
+				'section-lg': '8rem'
+			},
+			boxShadow: {
+				'professional': '0 10px 40px rgba(0, 0, 0, 0.1)',
+				'professional-hover': '0 20px 60px rgba(0, 0, 0, 0.15)',
+				'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
+				'card-hover': '0 8px 40px rgba(0, 0, 0, 0.12)'
+			},
+			animation: {
+				'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+				'fade-in-left': 'fadeInLeft 0.8s ease-out forwards',
+				'fade-in-right': 'fadeInRight 0.8s ease-out forwards',
+				'scale-in': 'scaleIn 0.6s ease-out forwards',
+				'bounce-in': 'bounceIn 1s ease-out forwards',
+				'accordion-down': 'accordion-down 0.2s ease-out',
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'professional-hover': 'professionalHover 0.3s ease-out'
 			},
 			keyframes: {
 				'accordion-down': {
@@ -94,41 +136,77 @@ export default {
 						height: '0'
 					}
 				},
-				'fade-in': {
+				fadeInUp: {
 					'0%': {
 						opacity: '0',
-						transform: 'translateY(10px)'
+						transform: 'translateY(30px)'
 					},
 					'100%': {
 						opacity: '1',
 						transform: 'translateY(0)'
 					}
 				},
-				'scale-in': {
+				fadeInLeft: {
 					'0%': {
-						transform: 'scale(0.95)',
-						opacity: '0'
+						opacity: '0',
+						transform: 'translateX(-30px)'
 					},
 					'100%': {
-						transform: 'scale(1)',
-						opacity: '1'
+						opacity: '1',
+						transform: 'translateX(0)'
 					}
 				},
-				'glow': {
-					'0%, 100%': {
-						boxShadow: '0 0 5px rgba(0, 255, 65, 0.5)'
+				fadeInRight: {
+					'0%': {
+						opacity: '0',
+						transform: 'translateX(30px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateX(0)'
+					}
+				},
+				scaleIn: {
+					'0%': {
+						opacity: '0',
+						transform: 'scale(0.9)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'scale(1)'
+					}
+				},
+				bounceIn: {
+					'0%': {
+						opacity: '0',
+						transform: 'scale(0.3)'
 					},
 					'50%': {
-						boxShadow: '0 0 20px rgba(0, 255, 65, 0.8)'
+						opacity: '1',
+						transform: 'scale(1.05)'
+					},
+					'70%': {
+						transform: 'scale(0.9)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'scale(1)'
+					}
+				},
+				professionalHover: {
+					'0%': {
+						transform: 'translateY(0) scale(1)'
+					},
+					'100%': {
+						transform: 'translateY(-4px) scale(1.02)'
 					}
 				}
 			},
-			animation: {
-				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out',
-				'fade-in': 'fade-in 0.5s ease-out',
-				'scale-in': 'scale-in 0.3s ease-out',
-				'glow': 'glow 2s ease-in-out infinite alternate'
+			backdropBlur: {
+				'professional': '16px'
+			},
+			transitionDuration: {
+				'professional': '300ms'
 			}
 		}
 	},
