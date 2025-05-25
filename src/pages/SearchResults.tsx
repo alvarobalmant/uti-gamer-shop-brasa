@@ -61,10 +61,6 @@ const SearchResults = () => {
     }
   };
 
-  const handleProductClick = (product: Product) => {
-    console.log('Produto clicado:', product);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header fixo */}
@@ -130,7 +126,6 @@ const SearchResults = () => {
                   product={product}
                   onAddToCart={addToCart}
                   getPlatformColor={getPlatformColor}
-                  onProductClick={handleProductClick}
                 />
               ))}
             </div>

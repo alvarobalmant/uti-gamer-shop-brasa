@@ -1,0 +1,347 @@
+
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Star, Heart, ShoppingCart, Truck, Store, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useProducts } from '@/hooks/useProducts';
+import { Product } from '@/components/ProductCard';
+import { useToast } from '@/hooks/use-toast';
+
+const ProductPage = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { products, loading } = useProducts();
+  const { toast } = useToast();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
+  const [selectedEdition, setSelectedEdition] = useState('Standard');
+  const [selectedDelivery, setSelectedDelivery] = useState<'pickup' | 'same-day' | 'ship'>('ship');
+
+  useEffect(() => {
+    if (products.length > 0 && id) {
+      const foundProduct = products.find(p => p.id === id);
+      setProduct(foundProduct || null);
+    }
+  }, [products, id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Produto não encontrado</h2>
+          <Button onClick={() => navigate('/')} className="bg-red-600 hover:bg-red-700">
+            Voltar à loja
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const originalPrice = product.price * 1.2;
+  const memberPrice = product.price * 0.95;
+  const newPrice = product.price + 1.71;
+  const digitalPrice = product.price + 6.65;
+
+  const getCurrentPrice = () => {
+    switch (selectedCondition) {
+      case 'new': return newPrice;
+      case 'digital': return digitalPrice;
+      default: return product.price;
+    }
+  };
+
+  const handleAddToCart = () => {
+    toast({
+      title: "✅ Produto adicionado!",
+      description: `${product.name} foi adicionado ao carrinho`,
+      duration: 2000,
+      className: "bg-green-50 border-green-200 text-green-800",
+    });
+  };
+
+  const handleWhatsAppContact = () => {
+    const message = `Olá! Gostaria de mais informações sobre:\n\n${product.name}\nPreço: R$ ${getCurrentPrice().toFixed(2)}\nCondição: ${selectedCondition === 'new' ? 'Novo' : selectedCondition === 'digital' ? 'Digital' : 'Usado'}`;
+    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-40">
+        <div className="px-4 py-3 flex items-center gap-3">
+          <Button
+            onClick={() => navigate('/')}
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
+              alt="UTI DOS GAMES" 
+              className="h-8 w-8"
+            />
+            <h1 className="text-lg font-bold text-gray-900">UTI DOS GAMES</h1>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="px-4 py-6">
+        {/* Product Image Carousel */}
+        <div className="relative mb-6">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-80 object-cover rounded-lg"
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
+            }}
+          />
+          
+          {/* Image indicators */}
+          <div className="flex justify-center gap-2 mt-4">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-gray-800' : 'bg-gray-300'}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Product Info */}
+        <div className="space-y-4">
+          {/* Brand and Rating */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">{product.platform}</span>
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star 
+                  key={i} 
+                  className={`w-4 h-4 ${i < 2 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                />
+              ))}
+              <span className="text-sm text-gray-600 ml-1">2.3 (6) Escrever avaliação</span>
+            </div>
+          </div>
+
+          {/* Product Title */}
+          <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+            {product.name}
+          </h1>
+
+          {/* Pricing */}
+          <div className="space-y-2">
+            <div className="text-3xl font-bold text-gray-900">
+              R$ {getCurrentPrice().toFixed(2)}
+            </div>
+            <div className="text-lg font-bold text-purple-600">
+              R$ {(getCurrentPrice() * 0.95).toFixed(2)} for Pros
+            </div>
+          </div>
+
+          {/* Pro Member Banner */}
+          <div className="bg-gradient-to-r from-purple-100 to-orange-100 border border-purple-200 rounded-lg p-4">
+            <div className="text-purple-700 font-semibold text-sm">
+              Pros, Economize R$ {(getCurrentPrice() * 0.05).toFixed(2)} Quando Comprar R$ 250+ 
+              na loja ou online - <span className="underline">Saiba mais</span>
+            </div>
+          </div>
+
+          {/* Payment Option */}
+          <div className="flex items-center gap-2">
+            <div className="bg-purple-700 text-white px-2 py-1 rounded text-xs font-bold">ZIP</div>
+            <span className="text-sm text-gray-600">
+              pague em 4 parcelas de R$ {(getCurrentPrice() / 4).toFixed(2)}
+            </span>
+          </div>
+
+          {/* Platform Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700">Plataforma</label>
+            <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <span className="font-medium">{product.platform}</span>
+              <span className="text-sm text-gray-500">+4 mais</span>
+            </div>
+          </div>
+
+          {/* Condition Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700">Condição: <span className="font-normal">{selectedCondition === 'new' ? 'Novo' : selectedCondition === 'digital' ? 'Digital' : 'Usado'}</span></label>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant={selectedCondition === 'digital' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCondition('digital')}
+                className="text-xs py-2"
+              >
+                <div className="text-center">
+                  <div>Digital</div>
+                  <div className="text-purple-600 font-bold">+R$ 6.65</div>
+                </div>
+              </Button>
+              <Button
+                variant={selectedCondition === 'new' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCondition('new')}
+                className="text-xs py-2"
+              >
+                <div className="text-center">
+                  <div>Novo</div>
+                  <div className="text-purple-600 font-bold">+R$ 1.71</div>
+                </div>
+              </Button>
+              <Button
+                variant={selectedCondition === 'pre-owned' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCondition('pre-owned')}
+                className="text-xs py-2"
+              >
+                <div className="text-center">
+                  <div>Usado</div>
+                  <div className="text-purple-600 font-bold">R$ {memberPrice.toFixed(2)}</div>
+                </div>
+              </Button>
+            </div>
+          </div>
+
+          {/* Edition */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700">Edição: <span className="font-normal">Standard</span></label>
+            <Button variant="outline" className="w-20 h-10 text-sm">
+              Standard
+            </Button>
+          </div>
+
+          {/* Delivery Options */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700">Entrega: <span className="font-normal">Envio para Casa</span></label>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant={selectedDelivery === 'pickup' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedDelivery('pickup')}
+                className="flex flex-col items-center py-3 h-auto"
+              >
+                <Store className="w-4 h-4 mb-1" />
+                <div className="text-xs text-center">
+                  <div className="font-semibold">Retirar</div>
+                  <div className="font-semibold">na loja</div>
+                  <div className="text-gray-500">Encontrar loja</div>
+                </div>
+              </Button>
+              <Button
+                variant={selectedDelivery === 'same-day' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedDelivery('same-day')}
+                className="flex flex-col items-center py-3 h-auto"
+              >
+                <Clock className="w-4 h-4 mb-1" />
+                <div className="text-xs text-center">
+                  <div className="font-semibold">Entrega</div>
+                  <div className="font-semibold">no Mesmo Dia</div>
+                  <div className="text-gray-500">Hoje</div>
+                </div>
+              </Button>
+              <Button
+                variant={selectedDelivery === 'ship' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedDelivery('ship')}
+                className="flex flex-col items-center py-3 h-auto"
+              >
+                <Truck className="w-4 h-4 mb-1" />
+                <div className="text-xs text-center">
+                  <div className="font-semibold">Envio para</div>
+                  <div className="font-semibold">Casa</div>
+                  <div className="text-gray-500">1-3 dias úteis</div>
+                </div>
+              </Button>
+            </div>
+          </div>
+
+          {/* Free Shipping Info */}
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div className="font-semibold text-sm">Frete GRÁTIS em Pedidos R$ 79+</div>
+            <div className="text-sm text-gray-600">1-3 dias úteis</div>
+          </div>
+
+          {/* Pro Member Banner 2 */}
+          <div className="bg-gradient-to-r from-purple-100 to-orange-100 border border-purple-200 rounded-lg p-4">
+            <div className="text-purple-700 font-semibold text-sm">
+              Pros, Economize R$ 25 Quando Comprar R$ 250+ na loja ou online & retirar na loja - <span className="underline">Saiba mais</span>
+            </div>
+          </div>
+
+          {/* Add to Cart Button */}
+          <Button
+            onClick={handleAddToCart}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 text-lg rounded-lg"
+          >
+            Adicionar ao Carrinho
+          </Button>
+
+          {/* WhatsApp Contact */}
+          <Button
+            onClick={handleWhatsAppContact}
+            variant="outline"
+            className="w-full border-green-600 text-green-600 hover:bg-green-50 font-bold py-3"
+          >
+            💬 Entrar em Contato via WhatsApp
+          </Button>
+
+          {/* Additional Options */}
+          <div className="space-y-4 pt-4">
+            <div className="flex items-center justify-between py-3 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="bg-black text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold">
+                  UTI
+                </div>
+                <div>
+                  <div className="font-semibold text-sm">Obtenha Membership UTI GRÁTIS (R$ 85+ em economia)</div>
+                  <div className="text-xs text-gray-600">+ 4% de volta em todas as compras.</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between py-3 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="bg-yellow-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold">
+                  GS
+                </div>
+                <div>
+                  <div className="font-semibold text-sm">Proteger & Economizar</div>
+                  <div className="text-xs text-gray-600">Adicione um Plano de Proteção & substitua sua compra sem perguntas.</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between py-3">
+              <div className="flex items-center gap-3">
+                <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold">
+                  E
+                </div>
+                <div>
+                  <div className="font-semibold text-sm">Classificação ESRB: E (Para Todos)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductPage;

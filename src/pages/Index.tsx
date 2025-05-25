@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { ShoppingCart, Search, User, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import ProductCard, { Product } from '@/components/ProductCard';
-import ProductModal from '@/components/ProductModal';
 import Cart from '@/components/Cart';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
@@ -27,8 +27,6 @@ const Index = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [showProductModal, setShowProductModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -109,11 +107,6 @@ const Index = () => {
       default:
         return 'bg-gray-600';
     }
-  };
-
-  const handleProductClick = (product: Product) => {
-    setSelectedProduct(product);
-    setShowProductModal(true);
   };
 
   const handleSearchSubmit = () => {
@@ -376,7 +369,6 @@ const Index = () => {
                   product={product}
                   onAddToCart={addToCart}
                   getPlatformColor={getPlatformColor}
-                  onProductClick={handleProductClick}
                 />
               ))}
             </div>
@@ -431,15 +423,7 @@ const Index = () => {
         </div>
       </footer>
 
-      {/* Modals */}
-      <ProductModal
-        product={selectedProduct}
-        isOpen={showProductModal}
-        onClose={() => setShowProductModal(false)}
-        onAddToCart={addToCart}
-        getPlatformColor={getPlatformColor}
-      />
-
+      {/* Cart Component */}
       <Cart 
         cart={cart}
         showCart={showCart}

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, Star, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 export interface Product {
   id: string;
@@ -23,32 +24,34 @@ interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product, size: string, color: string) => void;
   getPlatformColor: (platform: string) => string;
-  onProductClick?: (product: Product) => void;
 }
 
-const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }: ProductCardProps) => {
+const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProps) => {
   const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
   const [selectedColor, setSelectedColor] = useState(product.colors[0] || '');
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const isLowStock = product.stock && product.stock <= 5;
   const isOutOfStock = product.stock === 0;
+  
+  // Calcular preços
+  const originalPrice = product.price * 1.2;
+  const memberPrice = product.price * 0.95;
+  const discount = Math.round(((originalPrice - product.price) / originalPrice) * 100);
 
-  const handleCardClick = () => {
-    onProductClick?.(product);
-  };
-
-  const handleSizeClick = (e: React.MouseEvent, size: string) => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    setSelectedSize(size);
+    navigate(`/produto/${product.id}`);
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (!isOutOfStock) {
       onAddToCart(product, selectedSize, selectedColor);
       
-      // Animação de sucesso
       toast({
         title: "✅ Produto adicionado!",
         description: `${product.name} foi adicionado ao carrinho`,
@@ -59,6 +62,7 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
   };
 
   const handleWishlistClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     toast({
       title: "❤️ Adicionado aos favoritos!",
@@ -68,121 +72,102 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor, onProductClick }:
   };
 
   return (
-    <Card 
-      className="mobile-product-card h-full flex flex-col group cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 active:scale-95"
+    <div 
+      className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer touch-manipulation"
       onClick={handleCardClick}
+      style={{ touchAction: 'manipulation' }}
     >
-      <CardContent className="p-0 flex flex-col h-full">
-        <div className="relative">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-32 sm:h-40 object-cover rounded-t-lg"
-            onError={(e) => {
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
-            }}
-          />
+      {/* RIG DEAL Badge */}
+      {discount > 15 && (
+        <div className="bg-green-700 text-white text-xs font-bold px-2 py-1 text-center">
+          RIG DEAL
+        </div>
+      )}
 
-          {/* Wishlist Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-600 hover:text-red-600 rounded-full w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md"
-            onClick={handleWishlistClick}
-          >
-            <Heart className="w-3 h-3" />
-          </Button>
+      <div className="relative">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-40 object-cover"
+          onError={(e) => {
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
+          }}
+        />
 
-          {/* Status apenas para esgotado */}
-          {isOutOfStock && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-t-lg">
-              <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-bold">
-                ESGOTADO
-              </span>
+        {/* Wishlist Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-600 hover:text-red-600 rounded-full w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md"
+          onClick={handleWishlistClick}
+        >
+          <Heart className="w-3 h-3" />
+        </Button>
+
+        {/* Status apenas para esgotado */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-bold">
+              ESGOTADO
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-3 space-y-2">
+        {/* Product Name */}
+        <h3 className="text-sm font-bold text-gray-800 line-clamp-2 leading-tight">
+          {product.name}
+        </h3>
+
+        {/* Pricing - GameStop Style */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <div className="text-lg font-bold text-gray-900">
+              R$ {product.price.toFixed(2)}
             </div>
+            {discount > 0 && (
+              <div className="text-xs text-gray-500 line-through">
+                R$ {originalPrice.toFixed(2)}
+              </div>
+            )}
+          </div>
+          
+          {/* Member Price */}
+          <div className="text-sm font-bold text-purple-600">
+            R$ {memberPrice.toFixed(2)} for Pros
+          </div>
+        </div>
+
+        {/* Platform Badge */}
+        <div className="flex items-center gap-2">
+          <span className={`text-xs text-white px-2 py-1 rounded ${getPlatformColor(product.platform)}`}>
+            {product.platform}
+          </span>
+          {product.category && (
+            <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+              {product.category}
+            </span>
           )}
         </div>
 
-        <div className="p-3 flex flex-col flex-1 space-y-2">
-          <div className="flex-1">
-            <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2 leading-tight">
-              {product.name}
-            </h3>
-            
-            <p className="text-gray-600 text-xs mb-2 line-clamp-2">
-              {product.description}
-            </p>
-
-            {/* Rating */}
-            <div className="flex items-center gap-1 mb-2">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-              ))}
-              <span className="text-xs text-gray-500 ml-1">(4.8)</span>
-            </div>
-          </div>
-
-          {/* Size Selection */}
-          {product.sizes.length > 0 && (
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-700 block">
-                {product.sizes[0] === 'Físico' || product.sizes[0] === 'Digital' ? 'Formato:' : 'Tamanho:'}
-              </label>
-              <div className="flex flex-wrap gap-1">
-                {product.sizes.slice(0, 2).map((size) => (
-                  <Button
-                    key={size}
-                    variant={selectedSize === size ? "default" : "outline"}
-                    size="sm"
-                    onClick={(e) => handleSizeClick(e, size)}
-                    className={`text-xs px-2 py-1 h-6 transition-all duration-200 font-medium ${
-                      selectedSize === size 
-                        ? 'bg-red-600 text-white border-red-600 hover:bg-red-700' 
-                        : 'border-gray-300 text-gray-700 bg-white hover:border-red-500 hover:text-red-600 hover:bg-red-50'
-                    }`}
-                  >
-                    {size}
-                  </Button>
-                ))}
-                {product.sizes.length > 2 && (
-                  <span className="text-xs text-gray-500 px-1 py-1 flex items-center">+{product.sizes.length - 2}</span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Price and Action */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="text-lg font-bold text-red-600">
-                  R$ {product.price.toFixed(2)}
-                </div>
-                <p className="text-xs text-gray-400 line-through">R$ {(product.price * 1.2).toFixed(2)}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-red-600 font-semibold">17% OFF</p>
-              </div>
-            </div>
-
-            <Button
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              className={`w-full font-bold py-2 text-xs transition-all duration-300 min-h-[32px] ${
-                isOutOfStock 
-                  ? 'bg-gray-400 cursor-not-allowed text-white' 
-                  : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-lg active:scale-95'
-              }`}
-            >
-              <ShoppingCart className="w-3 h-3 mr-1 flex-shrink-0" />
-              <span className="truncate">
-                {isOutOfStock ? 'Esgotado' : 'Adicionar'}
-              </span>
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        {/* Add to Cart Button */}
+        <Button
+          onClick={handleAddToCart}
+          disabled={isOutOfStock}
+          className={`w-full font-bold py-2 text-xs transition-all duration-300 min-h-[32px] ${
+            isOutOfStock 
+              ? 'bg-gray-400 cursor-not-allowed text-white' 
+              : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-lg'
+          }`}
+        >
+          <ShoppingCart className="w-3 h-3 mr-1 flex-shrink-0" />
+          <span className="truncate">
+            {isOutOfStock ? 'Esgotado' : 'Add to Cart'}
+          </span>
+        </Button>
+      </div>
+    </div>
   );
 };
 
