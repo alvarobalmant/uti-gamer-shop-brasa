@@ -169,6 +169,59 @@
     letter-spacing: 0.01em;
   }
 
+  /* Premium Color System */
+  .bg-uti-red {
+    background-color: hsl(var(--uti-red));
+  }
+
+  .text-uti-red {
+    color: hsl(var(--uti-red));
+  }
+
+  .hover\\:bg-uti-red-hover:hover {
+    background-color: hsl(var(--uti-red-hover));
+  }
+
+  .bg-uti-red-light {
+    background-color: hsl(var(--uti-red-light));
+  }
+
+  .bg-uti-black {
+    background-color: hsl(var(--uti-black));
+  }
+
+  .text-uti-black {
+    color: hsl(var(--uti-black));
+  }
+
+  .bg-uti-white {
+    background-color: hsl(var(--uti-white));
+  }
+
+  .bg-uti-gray-50 {
+    background-color: hsl(var(--uti-gray-50));
+  }
+
+  .bg-uti-gray-100 {
+    background-color: hsl(var(--uti-gray-100));
+  }
+
+  .border-uti-gray-100 {
+    border-color: hsl(var(--uti-gray-100));
+  }
+
+  .border-uti-gray-300 {
+    border-color: hsl(var(--uti-gray-300));
+  }
+
+  .text-uti-gray-600 {
+    color: hsl(var(--uti-gray-600));
+  }
+
+  .bg-uti-gray-900 {
+    background-color: hsl(var(--uti-gray-900));
+  }
+
   /* Premium Button System */
   .btn-primary-premium {
     @apply bg-uti-red hover:bg-uti-red-hover text-white font-medium py-3 px-6 sm:py-4 sm:px-8 rounded-lg transition-all duration-200;
