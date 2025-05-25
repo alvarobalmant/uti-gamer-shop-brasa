@@ -1,33 +1,31 @@
 
-import { useState, useRef, useEffect } from 'react';
-import { Search, User, ShoppingCart, Menu, X, ChevronDown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, ShoppingCart, Menu, X, User, MapPin, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/hooks/useCart';
 import { useNavigate } from 'react-router-dom';
-import { AuthModal } from '@/components/Auth/AuthModal';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
 import SearchSuggestions from '@/components/SearchSuggestions';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const PremiumHeader = () => {
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
-  const { user, isAdmin, signOut } = useAuth();
-  const { getCartItemsCount } = useCart();
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
+  const { getCartItemsCount } = useCart();
+  const { user, signOut } = useAuth();
+  const searchRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
   const cartItemsCount = getCartItemsCount();
 
+  // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowSearchSuggestions(false);
+        setShowSuggestions(false);
       }
     };
 
@@ -39,328 +37,221 @@ const PremiumHeader = () => {
     e.preventDefault();
     if (searchTerm.trim()) {
       navigate(`/busca?q=${encodeURIComponent(searchTerm.trim())}`);
-      setShowSearchSuggestions(false);
-      setShowMobileSearch(false);
+      setShowSuggestions(false);
     }
   };
 
-  const handleSearchWithoutEvent = () => {
-    if (searchTerm.trim()) {
-      navigate(`/busca?q=${encodeURIComponent(searchTerm.trim())}`);
-      setShowSearchSuggestions(false);
-      setShowMobileSearch(false);
-    }
+  const handleSearchSelect = (term: string) => {
+    setSearchTerm(term);
+    navigate(`/busca?q=${encodeURIComponent(term)}`);
+    setShowSuggestions(false);
   };
 
-  const handleUserAction = () => {
-    if (user) {
-      if (isAdmin) {
-        navigate('/admin');
-      } else {
-        signOut();
-      }
-    } else {
-      setShowAuthModal(true);
-    }
-  };
+  const navigationItems = [
+    { name: 'PlayStation', path: '/categoria/playstation' },
+    { name: 'Xbox', path: '/categoria/xbox' },
+    { name: 'Nintendo', path: '/categoria/nintendo' },
+    { name: 'PC Gaming', path: '/categoria/pc' },
+    { name: 'Acessórios', path: '/categoria/acessorios' },
+    { name: 'Colecionáveis', path: '/categoria/colecionaveis' }
+  ];
 
-  const categories = [
-    {
-      name: 'PlayStation',
-      subcategories: ['PlayStation 5', 'PlayStation 4', 'Jogos PS5', 'Jogos PS4', 'Acessórios PS']
-    },
-    {
-      name: 'Xbox',
-      subcategories: ['Xbox Series X/S', 'Xbox One', 'Jogos Xbox', 'Game Pass', 'Acessórios Xbox']
-    },
-    {
-      name: 'Nintendo',
-      subcategories: ['Nintendo Switch', 'Nintendo Switch OLED', 'Nintendo Switch Lite', 'Jogos Nintendo', 'Acessórios Nintendo']
-    },
-    {
-      name: 'PC Gaming',
-      subcategories: ['Periféricos', 'Headsets', 'Teclados', 'Mouses', 'Mousepads']
-    }
+  const announcements = [
+    '🎮 Mais de 10 anos servindo a comunidade gamer de Colatina',
+    '🏪 Loja física com assistência técnica especializada',
+    '📱 WhatsApp: (27) 99688-2090 - Atendimento de Seg à Sex',
+    '🚚 Entrega rápida em Colatina e região',
+    '💳 Parcelamento em até 12x sem juros'
   ];
 
   return (
-    <>
-      {/* Info Bar */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 text-white py-2">
-        <div className="container-premium">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <span>📱</span>
-                <span>WhatsApp: (27) 99688-2090</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span>📍</span>
-                <span>Colatina - ES</span>
-              </div>
-            </div>
-            <div className="hidden md:flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <span>🕒</span>
-                <span>Seg à Sex: 9h às 18h</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span>⚡</span>
-                <span>+10 Anos de Tradição</span>
-              </div>
-            </div>
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      {/* Top Announcement Bar */}
+      <div className="bg-red-600 text-white py-2 overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="flex animate-marquee whitespace-nowrap">
+            {announcements.map((announcement, index) => (
+              <span key={index} className="mx-8 text-sm font-medium">
+                {announcement}
+              </span>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Main Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
-        <div className="container-premium">
-          <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Logo */}
-            <div className="flex items-center space-x-3">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <button onClick={() => navigate('/')} className="flex items-center space-x-3">
               <img 
                 src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
                 alt="UTI DOS GAMES" 
-                className="h-10 w-10 md:h-12 md:w-12"
+                className="h-8 w-8 md:h-10 md:w-10" 
               />
-              {!isMobile && (
-                <div>
-                  <h1 className="text-xl md:text-2xl font-bold text-red-600">UTI DOS GAMES</h1>
-                  <p className="text-xs text-gray-600 hidden md:block">A vanguarda gamer de Colatina</p>
-                </div>
-              )}
-            </div>
+              <div className="hidden sm:block">
+                <h1 className="text-lg md:text-xl font-bold text-red-600">UTI DOS GAMES</h1>
+                <p className="text-xs text-gray-600">A vanguarda gamer de Colatina</p>
+              </div>
+              {/* Mobile Title - Smaller Size */}
+              <div className="block sm:hidden">
+                <h1 className="text-sm font-bold text-red-600">UTI DOS GAMES</h1>
+              </div>
+            </button>
+          </div>
 
-            {/* Desktop Navigation */}
-            {!isMobile && (
-              <nav className="hidden lg:flex items-center space-x-8">
-                {categories.map((category) => (
-                  <div key={category.name} className="relative group">
-                    <button 
-                      onClick={() => navigate(`/categoria/${category.name.toLowerCase()}`)}
-                      className="flex items-center space-x-1 text-gray-700 hover:text-red-600 font-medium py-2 transition-colors duration-200"
-                    >
-                      <span>{category.name}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </button>
-                    
-                    {/* Dropdown */}
-                    <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                      <div className="py-2">
-                        {category.subcategories.map((sub) => (
-                          <button
-                            key={sub}
-                            onClick={() => navigate(`/categoria/${sub.toLowerCase().replace(/\s+/g, '-')}`)}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-150"
-                          >
-                            {sub}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </nav>
+          {/* Desktop Navigation */}
+          {!isMobile && (
+            <nav className="hidden lg:flex space-x-8">
+              {navigationItems.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => navigate(item.path)}
+                  className="text-gray-700 hover:text-red-600 font-medium transition-colors duration-200"
+                >
+                  {item.name}
+                </button>
+              ))}
+            </nav>
+          )}
+
+          {/* Search Bar */}
+          <div className="flex-1 max-w-md mx-4 relative" ref={searchRef}>
+            <form onSubmit={handleSearch} className="relative">
+              <Input
+                type="text"
+                placeholder="Buscar produtos..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-600"
+              >
+                <Search className="h-4 w-4" />
+              </button>
+            </form>
+
+            {/* Search Suggestions */}
+            {showSuggestions && searchTerm && (
+              <SearchSuggestions
+                searchQuery={searchTerm}
+                onSelectSuggestion={handleSearchSelect}
+                onSearch={() => setShowSuggestions(false)}
+                isVisible={showSuggestions}
+              />
             )}
+          </div>
 
-            {/* Search Bar - Desktop */}
+          {/* Right Side Actions */}
+          <div className="flex items-center space-x-2 md:space-x-4">
+            {/* Contact Info - Desktop Only */}
             {!isMobile && (
-              <div className="flex-1 max-w-md mx-8 relative" ref={searchRef}>
-                <form onSubmit={handleSearch} className="relative">
-                  <Input
-                    type="text"
-                    placeholder="Buscar jogos, consoles e mais..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setShowSearchSuggestions(e.target.value.length > 0);
-                    }}
-                    onFocus={() => searchTerm.length > 0 && setShowSearchSuggestions(true)}
-                    className="w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  />
-                  <Button
-                    type="submit"
-                    size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-600 hover:bg-red-700 text-white px-3"
-                  >
-                    <Search className="w-4 h-4" />
-                  </Button>
-                </form>
-                
-                <SearchSuggestions 
-                  searchQuery={searchTerm}
-                  onSelectSuggestion={(term) => {
-                    setSearchTerm(term);
-                    setShowSearchSuggestions(false);
-                    navigate(`/busca?q=${encodeURIComponent(term)}`);
-                  }}
-                  onSearch={handleSearchWithoutEvent}
-                  isVisible={showSearchSuggestions}
-                />
+              <div className="hidden lg:flex items-center space-x-4 text-sm text-gray-600">
+                <div className="flex items-center space-x-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>Colatina - ES</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Phone className="h-4 w-4" />
+                  <span>(27) 99688-2090</span>
+                </div>
               </div>
             )}
 
-            {/* Right Actions */}
-            <div className="flex items-center space-x-3">
-              {/* Mobile Search Button */}
-              {isMobile && (
+            {/* User Account */}
+            {user ? (
+              <div className="flex items-center space-x-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowMobileSearch(true)}
-                  className="p-2"
+                  onClick={signOut}
+                  className="text-gray-700 hover:text-red-600"
                 >
-                  <Search className="w-5 h-5" />
+                  <User className="h-4 w-4 mr-1" />
+                  {!isMobile && 'Sair'}
                 </Button>
-              )}
-
-              {/* User Button */}
+              </div>
+            ) : (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleUserAction}
-                className="flex items-center space-x-2 p-2"
+                onClick={() => navigate('/login')}
+                className="text-gray-700 hover:text-red-600"
               >
-                <User className="w-5 h-5" />
-                {!isMobile && (
-                  <span className="text-sm">
-                    {user ? (isAdmin ? 'Admin' : 'Sair') : 'Entrar'}
-                  </span>
-                )}
+                <User className="h-4 w-4 mr-1" />
+                {!isMobile && 'Entrar'}
               </Button>
+            )}
 
-              {/* Cart Button */}
+            {/* Cart */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/carrinho')}
+              className="relative text-gray-700 hover:text-red-600"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cartItemsCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartItemsCount}
+                </span>
+              )}
+            </Button>
+
+            {/* Mobile Menu Toggle */}
+            {isMobile && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/carrinho')}
-                className="relative p-2"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-gray-700 hover:text-red-600"
               >
-                <ShoppingCart className="w-5 h-5" />
-                {cartItemsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                    {cartItemsCount}
-                  </span>
-                )}
-                {!isMobile && <span className="text-sm ml-2">Carrinho</span>}
+                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
-
-              {/* Mobile Menu Button */}
-              {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowMobileMenu(true)}
-                  className="p-2"
-                >
-                  <Menu className="w-5 h-5" />
-                </Button>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Mobile Search Overlay */}
-        {showMobileSearch && (
-          <div className="fixed inset-0 bg-white z-50">
-            <div className="flex items-center p-4 border-b">
-              <div className="flex-1 relative" ref={searchRef}>
-                <form onSubmit={handleSearch} className="relative">
-                  <Input
-                    type="text"
-                    placeholder="Buscar jogos, consoles e mais..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setShowSearchSuggestions(e.target.value.length > 0);
-                    }}
-                    className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg"
-                    autoFocus
-                  />
-                  <Button
-                    type="submit"
-                    size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-600 hover:bg-red-700 text-white px-3"
-                  >
-                    <Search className="w-4 h-4" />
-                  </Button>
-                </form>
-              </div>
-              <Button
-                variant="ghost"
-                onClick={() => setShowMobileSearch(false)}
-                className="ml-2 p-2"
-              >
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-            
-            <SearchSuggestions 
-              searchQuery={searchTerm}
-              onSelectSuggestion={(term) => {
-                setSearchTerm(term);
-                setShowSearchSuggestions(false);
-                setShowMobileSearch(false);
-                navigate(`/busca?q=${encodeURIComponent(term)}`);
-              }}
-              onSearch={handleSearchWithoutEvent}
-              isVisible={showSearchSuggestions}
-            />
-          </div>
-        )}
-
         {/* Mobile Menu */}
-        {showMobileMenu && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
-            <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-lg overflow-y-auto">
-              <div className="p-4 border-b flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Menu</h2>
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowMobileMenu(false)}
-                  className="p-2"
+        {isMobile && isMenuOpen && (
+          <div className="lg:hidden mt-4 pb-4 border-t border-gray-200">
+            <nav className="flex flex-col space-y-2 pt-4">
+              {navigationItems.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => {
+                    navigate(item.path);
+                    setIsMenuOpen(false);
+                  }}
+                  className="text-left px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
                 >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
+                  {item.name}
+                </button>
+              ))}
               
-              <div className="p-4 space-y-4">
-                {categories.map((category) => (
-                  <div key={category.name} className="space-y-2">
-                    <button
-                      onClick={() => {
-                        navigate(`/categoria/${category.name.toLowerCase()}`);
-                        setShowMobileMenu(false);
-                      }}
-                      className="block w-full text-left font-medium text-gray-900 py-2"
-                    >
-                      {category.name}
-                    </button>
-                    <div className="pl-4 space-y-1">
-                      {category.subcategories.map((sub) => (
-                        <button
-                          key={sub}
-                          onClick={() => {
-                            navigate(`/categoria/${sub.toLowerCase().replace(/\s+/g, '-')}`);
-                            setShowMobileMenu(false);
-                          }}
-                          className="block w-full text-left text-sm text-gray-600 py-1 hover:text-red-600"
-                        >
-                          {sub}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              {/* Mobile Contact Info */}
+              <div className="px-4 py-2 text-sm text-gray-600 border-t border-gray-200 mt-2 pt-4">
+                <div className="flex items-center space-x-2 mb-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>Colatina - ES</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Phone className="h-4 w-4" />
+                  <span>(27) 99688-2090</span>
+                </div>
               </div>
-            </div>
+            </nav>
           </div>
         )}
-      </header>
-
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
-    </>
+      </div>
+    </header>
   );
 };
 

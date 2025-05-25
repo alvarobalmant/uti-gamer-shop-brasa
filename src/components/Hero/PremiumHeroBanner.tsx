@@ -52,13 +52,13 @@ const PremiumHeroBanner = () => {
     }
   ];
 
-  const currentData = premiumBanners[currentBanner] || premiumBanners[0];
+  const totalBanners = premiumBanners.length;
 
   const startAutoPlay = () => {
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     autoPlayRef.current = setInterval(() => {
       if (!isUserInteracting && isPlaying) {
-        setCurrentBanner(prev => (prev + 1) % premiumBanners.length);
+        setCurrentBanner(prev => (prev + 1) % totalBanners);
       }
     }, 6000);
   };
@@ -88,19 +88,24 @@ const PremiumHeroBanner = () => {
     return () => stopAutoPlay();
   }, [isPlaying, isUserInteracting]);
 
+  // Funções de navegação corrigidas
   const nextBanner = () => {
-    setCurrentBanner(prev => (prev + 1) % premiumBanners.length);
+    setCurrentBanner(prev => (prev + 1) % totalBanners);
     resumeAutoPlayAfterDelay();
   };
 
   const prevBanner = () => {
-    setCurrentBanner(prev => (prev - 1 + premiumBanners.length) % premiumBanners.length);
+    setCurrentBanner(prev => (prev - 1 + totalBanners) % totalBanners);
     resumeAutoPlayAfterDelay();
   };
 
   const goToBanner = (index: number) => {
     setCurrentBanner(index);
     resumeAutoPlayAfterDelay();
+  };
+
+  const togglePlayPause = () => {
+    setIsPlaying(!isPlaying);
   };
 
   const handleButtonClick = (link: string) => {
@@ -111,9 +116,11 @@ const PremiumHeroBanner = () => {
     }
   };
 
+  const currentData = premiumBanners[currentBanner] || premiumBanners[0];
+
   if (loading) {
     return (
-      <section className={`relative ${isMobile ? 'h-[400px]' : 'h-screen'} bg-gradient-to-r from-red-600 to-purple-600 overflow-hidden`}>
+      <section className={`relative ${isMobile ? 'h-[300px]' : 'h-screen'} bg-gradient-to-r from-red-600 to-purple-600 overflow-hidden`}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white">
             <div className="w-20 h-20 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
@@ -125,7 +132,7 @@ const PremiumHeroBanner = () => {
   }
 
   return (
-    <section className={`relative ${isMobile ? 'h-[400px]' : 'h-screen'} overflow-hidden`}>
+    <section className={`relative ${isMobile ? 'h-[300px]' : 'h-screen'} overflow-hidden`}>
       {/* Background */}
       <div className="absolute inset-0">
         {currentData.type === 'image' ? (
@@ -163,12 +170,12 @@ const PremiumHeroBanner = () => {
             </div>
 
             {/* Main Heading */}
-            <h1 className={`${isMobile ? 'text-3xl' : 'text-5xl md:text-6xl'} font-bold text-white mb-4 md:mb-6 leading-tight animate-fade-in-up`} style={{ animationDelay: '0.2s' }}>
+            <h1 className={`${isMobile ? 'text-2xl' : 'text-5xl md:text-6xl'} font-bold text-white mb-4 md:mb-6 leading-tight animate-fade-in-up`} style={{ animationDelay: '0.2s' }}>
               {currentData.subtitle}
             </h1>
 
             {/* Description */}
-            <p className={`${isMobile ? 'text-base' : 'text-lg md:text-xl'} text-white/90 mb-6 md:mb-10 max-w-2xl animate-fade-in-up`} style={{ animationDelay: '0.4s' }}>
+            <p className={`${isMobile ? 'text-sm' : 'text-lg md:text-xl'} text-white/90 mb-6 md:mb-10 max-w-2xl animate-fade-in-up`} style={{ animationDelay: '0.4s' }}>
               {currentData.description}
             </p>
 
@@ -194,7 +201,7 @@ const PremiumHeroBanner = () => {
 
       {/* Navigation Controls */}
       <div className="absolute bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-6">
-        {/* Indicators */}
+        {/* Indicators - Funcionais */}
         <div className="flex space-x-3">
           {premiumBanners.map((_, index) => (
             <button
@@ -209,16 +216,16 @@ const PremiumHeroBanner = () => {
           ))}
         </div>
 
-        {/* Play/Pause */}
+        {/* Play/Pause - Funcional */}
         <button
-          onClick={() => setIsPlaying(!isPlaying)}
+          onClick={togglePlayPause}
           className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-all duration-300"
         >
           {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Side Navigation */}
+      {/* Side Navigation - Funcionais */}
       <button
         onClick={prevBanner}
         className="absolute left-4 md:left-8 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm text-white p-3 md:p-4 rounded-full hover:bg-white/30 transition-all duration-300"
