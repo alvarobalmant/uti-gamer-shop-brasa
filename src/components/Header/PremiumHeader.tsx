@@ -180,17 +180,16 @@ const PremiumHeader = () => {
                   </Button>
                 </form>
                 
-                {showSearchSuggestions && (
-                  <SearchSuggestions 
-                    searchTerm={searchTerm}
-                    onSelect={(term) => {
-                      setSearchTerm(term);
-                      setShowSearchSuggestions(false);
-                      navigate(`/busca?q=${encodeURIComponent(term)}`);
-                    }}
-                    onClose={() => setShowSearchSuggestions(false)}
-                  />
-                )}
+                <SearchSuggestions 
+                  searchQuery={searchTerm}
+                  onSelectSuggestion={(term) => {
+                    setSearchTerm(term);
+                    setShowSearchSuggestions(false);
+                    navigate(`/busca?q=${encodeURIComponent(term)}`);
+                  }}
+                  onSearch={handleSearch}
+                  isVisible={showSearchSuggestions}
+                />
               </div>
             )}
 
@@ -289,18 +288,17 @@ const PremiumHeader = () => {
               </Button>
             </div>
             
-            {showSearchSuggestions && (
-              <SearchSuggestions 
-                searchTerm={searchTerm}
-                onSelect={(term) => {
-                  setSearchTerm(term);
-                  setShowSearchSuggestions(false);
-                  setShowMobileSearch(false);
-                  navigate(`/busca?q=${encodeURIComponent(term)}`);
-                }}
-                onClose={() => setShowSearchSuggestions(false)}
-              />
-            )}
+            <SearchSuggestions 
+              searchQuery={searchTerm}
+              onSelectSuggestion={(term) => {
+                setSearchTerm(term);
+                setShowSearchSuggestions(false);
+                setShowMobileSearch(false);
+                navigate(`/busca?q=${encodeURIComponent(term)}`);
+              }}
+              onSearch={handleSearch}
+              isVisible={showSearchSuggestions}
+            />
           </div>
         )}
 
