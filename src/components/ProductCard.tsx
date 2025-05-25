@@ -9,26 +9,25 @@ import { useNavigate } from 'react-router-dom';
 export interface Product {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   price: number;
   image: string;
-  sizes: string[];
-  colors: string[];
-  platform: string;
-  category: string;
+  additional_images?: string[];
+  sizes?: string[];
+  colors?: string[];
   stock?: number;
-  created_at?: string;
+  tags?: { id: string; name: string; }[];
 }
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart: (product: Product, size: string, color: string) => void;
-  getPlatformColor: (platform: string) => string;
+  onAddToCart: (product: Product, size?: string, color?: string) => void;
+  getPlatformColor: (product: Product) => string;
 }
 
 const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProps) => {
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
-  const [selectedColor, setSelectedColor] = useState(product.colors[0] || '');
+  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || '');
+  const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || '');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -51,13 +50,6 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
     e.stopPropagation();
     if (!isOutOfStock) {
       onAddToCart(product, selectedSize, selectedColor);
-      
-      toast({
-        title: "✅ Produto adicionado!",
-        description: `${product.name} foi adicionado ao carrinho`,
-        duration: 2000,
-        className: "bg-green-50 border-green-200 text-green-800",
-      });
     }
   };
 
@@ -70,6 +62,9 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
       duration: 2000,
     });
   };
+
+  // Obter a primeira tag para exibição
+  const primaryTag = product.tags?.[0]?.name || '';
 
   return (
     <div 
@@ -141,12 +136,14 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
 
         {/* Platform Badge */}
         <div className="flex items-center gap-2">
-          <span className={`text-xs text-white px-2 py-1 rounded ${getPlatformColor(product.platform)}`}>
-            {product.platform}
-          </span>
-          {product.category && (
+          {primaryTag && (
+            <span className={`text-xs text-white px-2 py-1 rounded ${getPlatformColor(product)}`}>
+              {primaryTag}
+            </span>
+          )}
+          {product.tags && product.tags.length > 1 && (
             <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
-              {product.category}
+              +{product.tags.length - 1}
             </span>
           )}
         </div>

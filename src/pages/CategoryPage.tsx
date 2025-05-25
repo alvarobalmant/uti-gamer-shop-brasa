@@ -126,7 +126,7 @@ const CategoryPage = () => {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={addToCart}
+                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
                   getPlatformColor={() => getPlatformColor(product)}
                 />
               ))}

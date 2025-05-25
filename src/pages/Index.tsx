@@ -11,22 +11,17 @@ import ProductCard, { Product } from '@/components/ProductCard';
 import Cart from '@/components/Cart';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
+
 interface CartItem {
   product: Product;
-  size: string;
-  color: string;
+  size?: string;
+  color?: string;
   quantity: number;
 }
+
 const Index = () => {
-  const {
-    products,
-    loading
-  } = useProducts();
-  const {
-    user,
-    isAdmin,
-    signOut
-  } = useAuth();
+  const { products, loading } = useProducts();
+  const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
@@ -35,67 +30,40 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const categories = [{
-    id: 'inicio',
-    name: 'Início',
-    path: '/'
-  }, {
-    id: 'playstation',
-    name: 'PlayStation',
-    path: '/categoria/playstation'
-  }, {
-    id: 'nintendo',
-    name: 'Nintendo',
-    path: '/categoria/nintendo'
-  }, {
-    id: 'xbox',
-    name: 'Xbox',
-    path: '/categoria/xbox'
-  }, {
-    id: 'pc',
-    name: 'PC',
-    path: '/categoria/pc'
-  }, {
-    id: 'colecionaveis',
-    name: 'Colecionáveis',
-    path: '/categoria/colecionaveis'
-  }, {
-    id: 'acessorios',
-    name: 'Acessórios',
-    path: '/categoria/acessorios'
-  }, {
-    id: 'jogos-fisicos',
-    name: 'Jogos Físicos',
-    path: '/categoria/jogos-fisicos'
-  }, {
-    id: 'jogos-digitais',
-    name: 'Jogos Digitais',
-    path: '/categoria/jogos-digitais'
-  }, {
-    id: 'ofertas',
-    name: 'Ofertas',
-    path: '/categoria/ofertas'
-  }, {
-    id: 'novidades',
-    name: 'Novidades',
-    path: '/categoria/novidades'
-  }];
-  const addToCart = (product: Product, size: string, color: string) => {
-    const existingItem = cart.find(item => item.product.id === product.id && item.size === size && item.color === color);
+
+  const categories = [
+    { id: 'inicio', name: 'Início', path: '/' },
+    { id: 'playstation', name: 'PlayStation', path: '/categoria/playstation' },
+    { id: 'nintendo', name: 'Nintendo', path: '/categoria/nintendo' },
+    { id: 'xbox', name: 'Xbox', path: '/categoria/xbox' },
+    { id: 'pc', name: 'PC', path: '/categoria/pc' },
+    { id: 'colecionaveis', name: 'Colecionáveis', path: '/categoria/colecionaveis' },
+    { id: 'acessorios', name: 'Acessórios', path: '/categoria/acessorios' },
+    { id: 'jogos-fisicos', name: 'Jogos Físicos', path: '/categoria/jogos-fisicos' },
+    { id: 'jogos-digitais', name: 'Jogos Digitais', path: '/categoria/jogos-digitais' },
+    { id: 'ofertas', name: 'Ofertas', path: '/categoria/ofertas' },
+    { id: 'novidades', name: 'Novidades', path: '/categoria/novidades' }
+  ];
+
+  const addToCart = (product: Product, size?: string, color?: string) => {
+    const existingItem = cart.find(
+      item => 
+        item.product.id === product.id && 
+        item.size === size && 
+        item.color === color
+    );
+
     if (existingItem) {
-      setCart(cart.map(item => item === existingItem ? {
-        ...item,
-        quantity: item.quantity + 1
-      } : item));
+      setCart(cart.map(item =>
+        item === existingItem
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
     } else {
-      setCart([...cart, {
-        product,
-        size,
-        color,
-        quantity: 1
-      }]);
+      setCart([...cart, { product, size, color, quantity: 1 }]);
     }
   };
+
   const updateQuantity = (item: CartItem, change: number) => {
     const newQuantity = item.quantity + change;
     if (newQuantity <= 0) {
@@ -107,9 +75,11 @@ const Index = () => {
       } : cartItem));
     }
   };
+
   const getTotalPrice = () => {
     return cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
   };
+
   const sendToWhatsApp = () => {
     const itemsList = cart.map(item => `• ${item.product.name} (${item.size}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`).join('\n');
     const total = getTotalPrice();
@@ -117,40 +87,45 @@ const Index = () => {
     const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
-  const getPlatformColor = (platform: string) => {
-    switch (platform?.toLowerCase()) {
-      case 'ps5':
-      case 'ps4/ps5':
-      case 'playstation':
-        return 'bg-blue-600';
-      case 'xbox series x':
-      case 'xbox':
-        return 'bg-red-600';
-      case 'nintendo switch':
-      case 'nintendo':
-        return 'bg-red-500';
-      case 'pc':
-        return 'bg-orange-600';
-      default:
-        return 'bg-gray-600';
+
+  const getPlatformColor = (product: Product) => {
+    // Verificar tags para determinar a cor
+    const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];
+    
+    if (tags.some(tag => tag.includes('playstation'))) {
+      return 'bg-blue-600';
     }
+    if (tags.some(tag => tag.includes('xbox'))) {
+      return 'bg-green-600';
+    }
+    if (tags.some(tag => tag.includes('nintendo'))) {
+      return 'bg-red-500';
+    }
+    if (tags.some(tag => tag.includes('pc'))) {
+      return 'bg-orange-600';
+    }
+    return 'bg-gray-600';
   };
+
   const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
       navigate(`/busca?q=${encodeURIComponent(searchQuery.trim())}`);
       setShowSuggestions(false);
     }
   };
+
   const handleSearchKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearchSubmit();
     }
   };
+
   const handleSuggestionSelect = (suggestion: string) => {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
     navigate(`/busca?q=${encodeURIComponent(suggestion)}`);
   };
+
   const handleLogin = () => {
     if (user) {
       if (isAdmin) {
@@ -165,8 +140,9 @@ const Index = () => {
 
   // Mostrar apenas os primeiros 6 produtos na página inicial
   const featuredProducts = products.slice(0, 6);
-  return <div className="min-h-screen bg-gray-50">
-      {/* Mobile Header - GameStop Style */}
+
+  return (
+    <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-lg sticky top-0 z-50">
         {/* Top rotating banner */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-2 overflow-hidden">
@@ -268,7 +244,7 @@ const Index = () => {
           </div>}
       </header>
 
-      {/* Hero Banner Carousel - GameStop Style */}
+      {/* Hero Banner Carousel */}
       <HeroBannerCarousel />
 
       {/* Promotional Banner */}
@@ -306,7 +282,7 @@ const Index = () => {
                 Produtos serão adicionados em breve
               </p>
             </div> : <div className="grid grid-cols-2 gap-4">
-              {featuredProducts.map(product => <ProductCard key={product.id} product={product} onAddToCart={addToCart} getPlatformColor={getPlatformColor} />)}
+              {featuredProducts.map(product => <ProductCard key={product.id} product={product} onAddToCart={(product, size, color) => addToCart(product, size, color)} getPlatformColor={() => getPlatformColor(product)} />)}
             </div>}
         </div>
       </section>
@@ -358,6 +334,8 @@ const Index = () => {
       <Cart cart={cart} showCart={showCart} setShowCart={setShowCart} updateQuantity={updateQuantity} sendToWhatsApp={sendToWhatsApp} />
 
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
