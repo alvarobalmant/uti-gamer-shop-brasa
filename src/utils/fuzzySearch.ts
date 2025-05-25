@@ -26,7 +26,7 @@ export const calculateSimilarity = (str1: string, str2: string): number => {
   if (len1 === 0) return len2;
   if (len2 === 0) return len1;
   
-  const matrix = Array(len2 + 1).fill().map(() => Array(len1 + 1).fill(0));
+  const matrix = Array(len2 + 1).fill(null).map(() => Array(len1 + 1).fill(0));
   
   for (let i = 0; i <= len1; i++) matrix[0][i] = i;
   for (let j = 0; j <= len2; j++) matrix[j][0] = j;
