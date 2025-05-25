@@ -15,7 +15,6 @@ const PremiumHeroBanner = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Premium banner data with responsive considerations
   const premiumBanners = [
     {
       id: 1,
@@ -80,7 +79,7 @@ const PremiumHeroBanner = () => {
   };
 
   useEffect(() => {
-    if (isPlaying) {
+    if (isPlaying && !isUserInteracting) {
       startAutoPlay();
     } else {
       stopAutoPlay();
@@ -143,7 +142,6 @@ const PremiumHeroBanner = () => {
           />
         )}
         
-        {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent"></div>
       </div>
 
@@ -155,24 +153,20 @@ const PremiumHeroBanner = () => {
             currentData.textPosition === 'right' ? 'ml-auto text-right' :
             'text-left'
           }`}>
-            {/* Badge */}
             <div className="inline-block mb-4 md:mb-6 animate-fade-in-up">
               <div className="bg-white/20 backdrop-blur-sm text-white px-4 md:px-6 py-2 md:py-3 rounded-full text-sm font-medium">
                 ✨ {currentData.title}
               </div>
             </div>
 
-            {/* Main Heading */}
             <h1 className={`${isMobile ? 'text-3xl' : 'text-5xl md:text-6xl'} font-bold text-white mb-4 md:mb-6 leading-tight animate-fade-in-up`} style={{ animationDelay: '0.2s' }}>
               {currentData.subtitle}
             </h1>
 
-            {/* Description */}
             <p className={`${isMobile ? 'text-base' : 'text-lg md:text-xl'} text-white/90 mb-6 md:mb-10 max-w-2xl animate-fade-in-up`} style={{ animationDelay: '0.4s' }}>
               {currentData.description}
             </p>
 
-            {/* CTA Buttons */}
             <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'flex-col sm:flex-row gap-4'} animate-fade-in-up`} style={{ animationDelay: '0.6s' }}>
               <Button
                 onClick={() => handleButtonClick(currentData.ctaLink)}
@@ -194,7 +188,6 @@ const PremiumHeroBanner = () => {
 
       {/* Navigation Controls */}
       <div className="absolute bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-6">
-        {/* Indicators */}
         <div className="flex space-x-3">
           {premiumBanners.map((_, index) => (
             <button
@@ -209,7 +202,6 @@ const PremiumHeroBanner = () => {
           ))}
         </div>
 
-        {/* Play/Pause */}
         <button
           onClick={() => setIsPlaying(!isPlaying)}
           className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-all duration-300"
@@ -233,7 +225,6 @@ const PremiumHeroBanner = () => {
         <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
       </button>
 
-      {/* Scroll Indicator - Desktop Only */}
       {!isMobile && (
         <div className="absolute bottom-8 right-8 text-white animate-bounce">
           <div className="flex flex-col items-center space-y-2">

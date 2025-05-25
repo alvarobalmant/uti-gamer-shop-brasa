@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Search, User, ShoppingCart, Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -128,6 +127,11 @@ const PremiumHeader = () => {
                 <div>
                   <h1 className="text-xl md:text-2xl font-bold text-red-600">UTI DOS GAMES</h1>
                   <p className="text-xs text-gray-600 hidden md:block">A vanguarda gamer de Colatina</p>
+                </div>
+              )}
+              {isMobile && (
+                <div>
+                  <h1 className="text-sm font-bold text-red-600">UTI DOS GAMES</h1>
                 </div>
               )}
             </div>
