@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Circular+Std:wght@400;500;600;700;800&family=Gilroy:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
@@ -185,8 +186,14 @@
   }
 
   .card-premium:hover {
-    transform: translateY(-4px) lg:translateY(-8px);
+    transform: translateY(-4px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  @media (min-width: 1024px) {
+    .card-premium:hover {
+      transform: translateY(-8px);
+    }
   }
 
   /* Responsive Spacing */
