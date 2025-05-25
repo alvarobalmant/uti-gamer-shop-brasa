@@ -8,12 +8,14 @@ import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { AuthModal } from '@/components/Auth/AuthModal';
-import ProductCard, { Product } from '@/components/ProductCard';
+import { Product } from '@/components/ProductCard';
 import Cart from '@/components/Cart';
 import SearchSuggestions from '@/components/SearchSuggestions';
-import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import ServiceCards from '@/components/ServiceCards';
 import { CartItem, useCart } from '@/hooks/useCart';
+import PremiumHeader from '@/components/Header/PremiumHeader';
+import PremiumHeroBanner from '@/components/Hero/PremiumHeroBanner';
+import PremiumProductCard from '@/components/Product/PremiumProductCard';
 
 const Index = () => {
   const { products, loading } = useProducts();
@@ -22,25 +24,6 @@ const Index = () => {
   const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showCategories, setShowCategories] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  const categories = [
-    { id: 'inicio', name: 'Início', path: '/' },
-    { id: 'playstation', name: 'PlayStation', path: '/categoria/playstation' },
-    { id: 'nintendo', name: 'Nintendo', path: '/categoria/nintendo' },
-    { id: 'xbox', name: 'Xbox', path: '/categoria/xbox' },
-    { id: 'pc', name: 'PC', path: '/categoria/pc' },
-    { id: 'colecionaveis', name: 'Colecionáveis', path: '/categoria/colecionaveis' },
-    { id: 'acessorios', name: 'Acessórios', path: '/categoria/acessorios' },
-    { id: 'jogos-fisicos', name: 'Jogos Físicos', path: '/categoria/jogos-fisicos' },
-    { id: 'jogos-digitais', name: 'Jogos Digitais', path: '/categoria/jogos-digitais' },
-    { id: 'ofertas', name: 'Ofertas', path: '/categoria/ofertas' },
-    { id: 'novidades', name: 'Novidades', path: '/categoria/novidades' }
-  ];
 
   const updateCartQuantity = (item: CartItem, change: number) => {
     const newQuantity = item.quantity + change;
@@ -59,37 +42,18 @@ const Index = () => {
     const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];
     
     if (tags.some(tag => tag.includes('playstation'))) {
-      return 'bg-blue-600';
+      return 'platform-playstation';
     }
     if (tags.some(tag => tag.includes('xbox'))) {
-      return 'bg-green-600';
+      return 'platform-xbox';
     }
     if (tags.some(tag => tag.includes('nintendo'))) {
-      return 'bg-red-500';
+      return 'platform-nintendo';
     }
     if (tags.some(tag => tag.includes('pc'))) {
-      return 'bg-orange-600';
+      return 'platform-pc';
     }
-    return 'bg-gray-600';
-  };
-
-  const handleSearchSubmit = () => {
-    if (searchQuery.trim()) {
-      navigate(`/busca?q=${encodeURIComponent(searchQuery.trim())}`);
-      setShowSuggestions(false);
-    }
-  };
-
-  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearchSubmit();
-    }
-  };
-
-  const handleSuggestionSelect = (suggestion: string) => {
-    setSearchQuery(suggestion);
-    setShowSuggestions(false);
-    navigate(`/busca?q=${encodeURIComponent(suggestion)}`);
+    return 'bg-uti-dark';
   };
 
   const handleLogin = () => {
@@ -104,207 +68,172 @@ const Index = () => {
     }
   };
 
-  const featuredProducts = products.slice(0, 6);
+  const featuredProducts = products.slice(0, 8);
+  const newProducts = products.filter(p => p.tags?.some(tag => tag.name.toLowerCase().includes('novo'))).slice(0, 6);
+  const bestSellers = products.filter(p => p.tags?.some(tag => tag.name.toLowerCase().includes('bestseller'))).slice(0, 6);
+
+  // Premium categories with enhanced visuals
+  const premiumCategories = [
+    {
+      id: 'playstation',
+      name: 'PlayStation',
+      description: 'PS5, PS4 e acessórios',
+      image: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=400&h=300&fit=crop',
+      gradient: 'from-blue-600 to-blue-800',
+      path: '/categoria/playstation'
+    },
+    {
+      id: 'xbox',
+      name: 'Xbox',
+      description: 'Series X|S, One e GamePass',
+      image: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400&h=300&fit=crop',
+      gradient: 'from-green-600 to-green-800',
+      path: '/categoria/xbox'
+    },
+    {
+      id: 'nintendo',
+      name: 'Nintendo',
+      description: 'Switch, OLED e Lite',
+      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
+      gradient: 'from-red-500 to-red-700',
+      path: '/categoria/nintendo'
+    },
+    {
+      id: 'pc',
+      name: 'PC Gaming',
+      description: 'Periféricos e acessórios',
+      image: 'https://images.unsplash.com/photo-1599669454699-248893623440?w=400&h=300&fit=crop',
+      gradient: 'from-orange-600 to-orange-800',
+      path: '/categoria/pc'
+    },
+    {
+      id: 'acessorios',
+      name: 'Acessórios',
+      description: 'Controles, fones e mais',
+      image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=300&fit=crop',
+      gradient: 'from-purple-600 to-purple-800',
+      path: '/categoria/acessorios'
+    },
+    {
+      id: 'colecionaveis',
+      name: 'Colecionáveis',
+      description: 'Figuras, Cards e Edições Especiais',
+      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
+      gradient: 'from-yellow-600 to-yellow-800',
+      path: '/categoria/colecionaveis'
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-lg sticky top-0 z-50">
-        {/* Top rotating banner */}
-        <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-2 overflow-hidden">
-          <div className="animate-marquee whitespace-nowrap">
-            <span className="mx-8">📱 WhatsApp: (27) 99688-2090</span>
-            <span className="mx-8">🚚 Frete grátis acima de R$ 200</span>
-            <span className="mx-8">💳 Parcelamos em até 12x</span>
-            <span className="mx-8">⚡ +10 anos no mercado</span>
-          </div>
-        </div>
+    <div className="min-h-screen bg-white">
+      {/* Premium Header */}
+      <PremiumHeader />
 
-        {/* Main Header */}
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between mb-3">
-            {/* Logo */}
-            <div className="flex items-center">
-              <img src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" alt="UTI DOS GAMES" className="h-8 w-8 mr-2" />
-              <h1 className="text-xl font-bold text-gray-900">UTI DOS GAMES</h1>
-            </div>
+      {/* Premium Hero Banner */}
+      <PremiumHeroBanner />
 
-            {/* Right Icons */}
-            <div className="flex items-center gap-3">
-              <Button onClick={handleLogin} variant="ghost" size="sm" className="flex flex-col items-center p-2 text-gray-700">
-                <User className="w-5 h-5" />
-                <span className="text-xs">
-                  {user ? isAdmin ? 'Admin' : 'Conta' : 'Entrar'}
-                </span>
-              </Button>
-
-              <Button onClick={() => setShowCart(true)} variant="ghost" size="sm" className="flex flex-col items-center p-2 text-gray-700 relative">
-                <ShoppingCart className="w-5 h-5" />
-                <span className="text-xs">Carrinho</span>
-                {getCartItemsCount() > 0 && (
-                  <Badge className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 min-w-[16px] h-4 flex items-center justify-center rounded-full">
-                    {getCartItemsCount()}
-                  </Badge>
-                )}
-              </Button>
-
-              <Button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} variant="ghost" size="sm" className="flex flex-col items-center p-2 text-gray-700">
-                <Menu className="w-5 h-5" />
-                <span className="text-xs">Menu</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Search Bar with Suggestions */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Buscar jogos, consoles e mais"
-              value={searchQuery}
-              onChange={e => {
-                setSearchQuery(e.target.value);
-                setShowSuggestions(e.target.value.length > 1);
-              }}
-              onKeyPress={handleSearchKeyPress}
-              onFocus={() => setShowSuggestions(searchQuery.length > 1)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none"
-            />
-            
-            <SearchSuggestions
-              searchQuery={searchQuery}
-              onSelectSuggestion={handleSuggestionSelect}
-              onSearch={handleSearchSubmit}
-              isVisible={showSuggestions}
-            />
-          </div>
-
-          {/* Mobile Categories Toggle */}
-          <div className="md:hidden mb-2">
-            <Button
-              onClick={() => setShowCategories(!showCategories)}
-              variant="ghost"
-              size="sm"
-              className="text-gray-600 text-sm"
-            >
-              Categorias <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${showCategories ? 'rotate-180' : ''}`} />
-            </Button>
-          </div>
-        </div>
-
-        {/* Categories Horizontal Scroll */}
-        {(showCategories || window.innerWidth >= 768) && (
-          <div className="border-t border-gray-200 bg-gray-50">
-            <div className="flex overflow-x-auto scrollbar-hide px-4 py-3 gap-6">
-              {categories.map(category => (
-                <button
-                  key={category.id}
-                  onClick={() => navigate(category.path)}
-                  className="flex-shrink-0 text-sm font-medium whitespace-nowrap text-gray-600 hover:text-red-600"
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Menu Overlay */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)}>
-            <div className="bg-white w-80 h-full ml-auto p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold">Menu</h3>
-                <Button onClick={() => setMobileMenuOpen(false)} variant="ghost" size="sm">
-                  <X className="w-5 h-5" />
-                </Button>
+      {/* Premium Benefits Section */}
+      <section className="py-16 bg-gradient-mesh">
+        <div className="container-premium">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { icon: '🏪', title: 'Loja Física', desc: 'Colatina - ES' },
+              { icon: '⚡', title: '+10 Anos', desc: 'De Tradição' },
+              { icon: '🔧', title: 'Assistência', desc: 'Especializada' },
+              { icon: '💳', title: 'Parcelamento', desc: 'Em até 12x' }
+            ].map((benefit, index) => (
+              <div key={index} className="text-center animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className="text-4xl mb-3">{benefit.icon}</div>
+                <h3 className="font-bold text-uti-dark mb-1">{benefit.title}</h3>
+                <p className="text-sm text-uti-gray">{benefit.desc}</p>
               </div>
-              <div className="space-y-4">
-                {user && (
-                  <div className="pb-4 border-b border-gray-200">
-                    <p className="text-sm text-gray-600 mb-2">Olá, {user.email}</p>
-                    {isAdmin && (
-                      <Button
-                        onClick={() => {
-                          navigate('/admin');
-                          setMobileMenuOpen(false);
-                        }}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white mb-2"
-                      >
-                        Painel Admin
-                      </Button>
-                    )}
-                    <Button
-                      onClick={() => {
-                        signOut();
-                        setMobileMenuOpen(false);
-                      }}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      Sair
-                    </Button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Premium Categories */}
+      <section className="section-padding bg-white">
+        <div className="container-premium">
+          <div className="text-center mb-16 animate-fade-in-up">
+            <h2 className="text-section-title text-uti-dark mb-6">
+              Explore Nossa Coleção Premium
+            </h2>
+            <p className="text-body-large text-uti-gray max-w-3xl mx-auto">
+              Descubra os melhores produtos gaming com a qualidade e tradição que você já conhece
+            </p>
+          </div>
+
+          <div className="grid-categories-premium">
+            {premiumCategories.map((category, index) => (
+              <div
+                key={category.id}
+                onClick={() => navigate(category.path)}
+                className="card-premium cursor-pointer overflow-hidden animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-t ${category.gradient} opacity-80`}></div>
+                  <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
+                    <h3 className="text-xl font-bold mb-2">{category.name}</h3>
+                    <p className="text-sm opacity-90">{category.description}</p>
                   </div>
-                )}
-                {categories.map(category => (
-                  <button
-                    key={category.id}
-                    onClick={() => {
-                      navigate(category.path);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left py-2 text-gray-700 hover:text-red-600"
-                  >
-                    {category.name}
-                  </button>
-                ))}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        )}
-      </header>
-
-      {/* Hero Banner Carousel */}
-      <HeroBannerCarousel />
+        </div>
+      </section>
 
       {/* Service Cards */}
       <ServiceCards />
 
       {/* Featured Products */}
-      <section id="produtos" className="py-12 bg-gray-50">
-        <div className="px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">
-              🎮 Produtos em Destaque
-            </h2>
-            <Button onClick={() => navigate('/categoria/inicio')} variant="outline" className="text-red-600 border-red-600 hover:bg-red-50">
-              Ver Todos
+      <section className="section-padding bg-gradient-mesh">
+        <div className="container-premium">
+          <div className="flex justify-between items-center mb-12 animate-fade-in-up">
+            <div>
+              <h2 className="text-section-title text-uti-dark mb-4">
+                🔥 Produtos em Destaque
+              </h2>
+              <p className="text-body-large text-uti-gray">
+                Os melhores produtos selecionados especialmente para você
+              </p>
+            </div>
+            <Button onClick={() => navigate('/categoria/inicio')} className="btn-secondary">
+              Ver Todos os Produtos
             </Button>
           </div>
 
           {loading ? (
-            <div className="text-center py-16">
-              <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <div className="text-xl text-gray-500">Carregando produtos...</div>
+            <div className="text-center py-20">
+              <div className="w-16 h-16 border-4 border-uti-red border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+              <div className="text-xl text-uti-gray font-medium">Carregando produtos premium...</div>
             </div>
           ) : featuredProducts.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-2xl text-gray-400 mb-2">
+            <div className="text-center py-20">
+              <div className="text-6xl mb-6">🎮</div>
+              <div className="text-2xl text-uti-gray mb-4">
                 Nenhum produto disponível
               </div>
-              <p className="text-gray-500">
+              <p className="text-uti-gray">
                 Produtos serão adicionados em breve
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
-              {featuredProducts.map(product => (
-                <ProductCard
+            <div className="grid-products-premium">
+              {featuredProducts.map((product, index) => (
+                <PremiumProductCard
                   key={product.id}
                   product={product}
                   onAddToCart={(product, size, color) => addToCart(product, size, color)}
                   getPlatformColor={() => getPlatformColor(product)}
+                  priority={index < 4}
                 />
               ))}
             </div>
@@ -312,44 +241,170 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer - GameStop Style */}
-      <footer className="bg-gray-900 text-white py-8">
-        <div className="px-4">
-          <div className="text-center mb-6">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <img src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" alt="UTI DOS GAMES" className="h-12 w-12" />
-              <div>
-                <h3 className="text-xl font-bold text-red-400">UTI DOS GAMES</h3>
-                <p className="text-gray-400 text-sm">A loja de games mais tradicional de Colatina</p>
+      {/* New Products */}
+      {newProducts.length > 0 && (
+        <section className="section-padding bg-white">
+          <div className="container-premium">
+            <div className="text-center mb-12 animate-fade-in-up">
+              <h2 className="text-section-title text-uti-dark mb-4">
+                ⚡ Novidades
+              </h2>
+              <p className="text-body-large text-uti-gray">
+                Os lançamentos mais recentes chegaram na UTI dos Games
+              </p>
+            </div>
+
+            <div className="grid-products-premium">
+              {newProducts.map((product) => (
+                <PremiumProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
+                  getPlatformColor={() => getPlatformColor(product)}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Omnichannel Section */}
+      <section className="section-padding bg-uti-dark text-white">
+        <div className="container-premium">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="animate-fade-in-left">
+              <h2 className="text-section-title mb-6">
+                Loja Física em Colatina
+              </h2>
+              <p className="text-body-large mb-8 text-white/90">
+                Visite nossa loja física e experimente os produtos antes de comprar. 
+                Mais de 10 anos servindo a comunidade gamer de Colatina e região.
+              </p>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-uti-red rounded-full"></div>
+                  <span>Retirada grátis na loja</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-uti-red rounded-full"></div>
+                  <span>Assistência técnica especializada</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-uti-red rounded-full"></div>
+                  <span>Avaliação e trade-in de produtos</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button className="btn-primary">
+                  Como Chegar
+                </Button>
+                <Button 
+                  onClick={() => window.open('https://wa.me/5527996882090', '_blank')}
+                  className="btn-ghost border-2 border-white/30 hover:bg-white/10"
+                >
+                  WhatsApp: (27) 99688-2090
+                </Button>
+              </div>
+            </div>
+
+            <div className="animate-fade-in-right">
+              <div className="card-premium overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop"
+                  alt="Loja UTI dos Games"
+                  className="w-full h-80 object-cover"
+                />
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-uti-dark mb-2">UTI DOS GAMES</h3>
+                  <p className="text-uti-gray">Colatina - Espírito Santo</p>
+                </div>
               </div>
             </div>
           </div>
-          
-          <div className="grid grid-cols-2 gap-6 mb-6">
+        </div>
+      </section>
+
+      {/* Premium Footer */}
+      <footer className="bg-uti-dark text-white py-16">
+        <div className="container-premium">
+          <div className="grid lg:grid-cols-5 gap-8 mb-12">
+            {/* Brand */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center space-x-3 mb-6">
+                <img src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" alt="UTI DOS GAMES" className="h-12 w-12" />
+                <div>
+                  <h3 className="text-xl font-bold text-uti-red">UTI DOS GAMES</h3>
+                  <p className="text-white/70 text-sm">A vanguarda gamer de Colatina</p>
+                </div>
+              </div>
+              <p className="text-white/80 mb-6 leading-relaxed">
+                Mais de 10 anos oferecendo os melhores produtos em games para Colatina e região. 
+                Tradição, qualidade e atendimento especializado.
+              </p>
+              <div className="flex space-x-4">
+                {/* Social Media Icons */}
+                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-uti-red transition-colors duration-300">
+                  📱
+                </div>
+                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-uti-red transition-colors duration-300">
+                  📧
+                </div>
+              </div>
+            </div>
+
+            {/* Categories */}
             <div>
-              <h4 className="font-bold mb-3 text-red-400">Links Úteis</h4>
-              <ul className="space-y-2 text-sm">
-                <li><button onClick={() => navigate('/categoria/playstation')} className="text-gray-400 hover:text-white">PlayStation</button></li>
-                <li><button onClick={() => navigate('/categoria/xbox')} className="text-gray-400 hover:text-white">Xbox</button></li>
-                <li><button onClick={() => navigate('/categoria/nintendo')} className="text-gray-400 hover:text-white">Nintendo</button></li>
-                <li><button onClick={() => navigate('/categoria/pc')} className="text-gray-400 hover:text-white">PC</button></li>
+              <h4 className="font-bold mb-4 text-white">Categorias</h4>
+              <ul className="space-y-2 text-sm text-white/70">
+                <li><button onClick={() => navigate('/categoria/playstation')} className="hover:text-uti-red transition-colors">PlayStation</button></li>
+                <li><button onClick={() => navigate('/categoria/xbox')} className="hover:text-uti-red transition-colors">Xbox</button></li>
+                <li><button onClick={() => navigate('/categoria/nintendo')} className="hover:text-uti-red transition-colors">Nintendo</button></li>
+                <li><button onClick={() => navigate('/categoria/pc')} className="hover:text-uti-red transition-colors">PC Gaming</button></li>
+                <li><button onClick={() => navigate('/categoria/acessorios')} className="hover:text-uti-red transition-colors">Acessórios</button></li>
               </ul>
             </div>
-            
+
+            {/* Services */}
             <div>
-              <h4 className="font-bold mb-3 text-red-400">Contato</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>📱 (27) 99688-2090</li>
-                <li>📧 contato@utidosgames.com</li>
-                <li>🕒 Seg à Sex: 9h às 18h</li>
-                <li>📍 Colatina - ES</li>
+              <h4 className="font-bold mb-4 text-white">Serviços</h4>
+              <ul className="space-y-2 text-sm text-white/70">
+                <li><button className="hover:text-uti-red transition-colors">Assistência Técnica</button></li>
+                <li><button className="hover:text-uti-red transition-colors">Avaliação de Produtos</button></li>
+                <li><button className="hover:text-uti-red transition-colors">Trade-in</button></li>
+                <li><button className="hover:text-uti-red transition-colors">Instalação</button></li>
+                <li><button className="hover:text-uti-red transition-colors">Suporte</button></li>
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h4 className="font-bold mb-4 text-white">Contato</h4>
+              <ul className="space-y-2 text-sm text-white/70">
+                <li className="flex items-center space-x-2">
+                  <span>📱</span>
+                  <span>(27) 99688-2090</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span>📧</span>
+                  <span>contato@utidosgames.com</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span>🕒</span>
+                  <span>Seg à Sex: 9h às 18h</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span>📍</span>
+                  <span>Colatina - ES</span>
+                </li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-gray-800 pt-6 text-center">
-            <p className="text-gray-400 text-sm">
-              © 2024 UTI DOS GAMES. Todos os direitos reservados.
+          <div className="border-t border-white/20 pt-8 text-center">
+            <p className="text-white/60 text-sm">
+              © 2024 UTI DOS GAMES. Todos os direitos reservados. Desenvolvido com ❤️ em Colatina.
             </p>
           </div>
         </div>
