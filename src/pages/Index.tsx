@@ -1,31 +1,26 @@
 
-import { useState, useRef } from 'react';
-import { ShoppingCart, Search, User, Menu, X, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { AuthModal } from '@/components/Auth/AuthModal';
-import { Product } from '@/components/ProductCard';
+import { useCart } from '@/hooks/useCart';
 import Cart from '@/components/Cart';
-import SearchSuggestions from '@/components/SearchSuggestions';
 import ServiceCards from '@/components/ServiceCards';
-import { CartItem, useCart } from '@/hooks/useCart';
 import PremiumHeader from '@/components/Header/PremiumHeader';
 import PremiumHeroBanner from '@/components/Hero/PremiumHeroBanner';
 import PremiumProductCard from '@/components/Product/PremiumProductCard';
+import FeaturedProducts from '@/components/FeaturedProducts';
 
 const Index = () => {
   const { products, loading } = useProducts();
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const updateCartQuantity = (item: CartItem, change: number) => {
+  const updateCartQuantity = (item: any, change: number) => {
     const newQuantity = item.quantity + change;
     updateQuantity(item.product.id, item.size, item.color, newQuantity);
   };
@@ -38,39 +33,26 @@ const Index = () => {
     window.open(whatsappUrl, '_blank');
   };
 
-  const getPlatformColor = (product: Product) => {
-    const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];
+  const getPlatformColor = (product: any) => {
+    const tags = product.tags?.map((tag: any) => tag.name.toLowerCase()) || [];
     
-    if (tags.some(tag => tag.includes('playstation'))) {
-      return 'platform-playstation';
+    if (tags.some((tag: string) => tag.includes('playstation'))) {
+      return 'bg-blue-600';
     }
-    if (tags.some(tag => tag.includes('xbox'))) {
-      return 'platform-xbox';
+    if (tags.some((tag: string) => tag.includes('xbox'))) {
+      return 'bg-green-600';
     }
-    if (tags.some(tag => tag.includes('nintendo'))) {
-      return 'platform-nintendo';
+    if (tags.some((tag: string) => tag.includes('nintendo'))) {
+      return 'bg-red-600';
     }
-    if (tags.some(tag => tag.includes('pc'))) {
-      return 'platform-pc';
+    if (tags.some((tag: string) => tag.includes('pc'))) {
+      return 'bg-orange-600';
     }
-    return 'bg-uti-dark';
-  };
-
-  const handleLogin = () => {
-    if (user) {
-      if (isAdmin) {
-        navigate('/admin');
-      } else {
-        setShowAuthModal(true);
-      }
-    } else {
-      setShowAuthModal(true);
-    }
+    return 'bg-gray-600';
   };
 
   const featuredProducts = products.slice(0, 8);
-  const newProducts = products.filter(p => p.tags?.some(tag => tag.name.toLowerCase().includes('novo'))).slice(0, 6);
-  const bestSellers = products.filter(p => p.tags?.some(tag => tag.name.toLowerCase().includes('bestseller'))).slice(0, 6);
+  const newProducts = products.filter(p => p.tags?.some((tag: any) => tag.name.toLowerCase().includes('novo'))).slice(0, 6);
 
   // Premium categories with enhanced visuals
   const premiumCategories = [
@@ -133,55 +115,57 @@ const Index = () => {
       <PremiumHeroBanner />
 
       {/* Premium Benefits Section */}
-      <section className="py-16 bg-gradient-mesh">
-        <div className="container-premium">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <section className="py-8 md:py-16 bg-gradient-to-br from-gray-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {[
               { icon: '🏪', title: 'Loja Física', desc: 'Colatina - ES' },
               { icon: '⚡', title: '+10 Anos', desc: 'De Tradição' },
               { icon: '🔧', title: 'Assistência', desc: 'Especializada' },
               { icon: '💳', title: 'Parcelamento', desc: 'Em até 12x' }
             ].map((benefit, index) => (
-              <div key={index} className="text-center animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="text-4xl mb-3">{benefit.icon}</div>
-                <h3 className="font-bold text-uti-dark mb-1">{benefit.title}</h3>
-                <p className="text-sm text-uti-gray">{benefit.desc}</p>
+              <div key={index} className="text-center p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="text-3xl md:text-4xl mb-3">{benefit.icon}</div>
+                <h3 className="font-bold text-gray-900 mb-1 text-sm md:text-base">{benefit.title}</h3>
+                <p className="text-xs md:text-sm text-gray-600">{benefit.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Featured Products Section */}
+      <FeaturedProducts />
+
       {/* Premium Categories */}
-      <section className="section-padding bg-white">
-        <div className="container-premium">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <h2 className="text-section-title text-uti-dark mb-6">
+      <section className="py-8 md:py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8 md:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
               Explore Nossa Coleção Premium
             </h2>
-            <p className="text-body-large text-uti-gray max-w-3xl mx-auto">
+            <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto">
               Descubra os melhores produtos gaming com a qualidade e tradição que você já conhece
             </p>
           </div>
 
-          <div className="grid-categories-premium">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
             {premiumCategories.map((category, index) => (
               <div
                 key={category.id}
                 onClick={() => navigate(category.path)}
-                className="card-premium cursor-pointer overflow-hidden animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="group cursor-pointer bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-square overflow-hidden">
                   <img
                     src={category.image}
                     alt={category.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className={`absolute inset-0 bg-gradient-to-t ${category.gradient} opacity-80`}></div>
-                  <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
-                    <h3 className="text-xl font-bold mb-2">{category.name}</h3>
-                    <p className="text-sm opacity-90">{category.description}</p>
+                  <div className="absolute inset-0 p-3 md:p-6 flex flex-col justify-end text-white">
+                    <h3 className="text-sm md:text-xl font-bold mb-1 md:mb-2">{category.name}</h3>
+                    <p className="text-xs md:text-sm opacity-90 hidden md:block">{category.description}</p>
                   </div>
                 </div>
               </div>
@@ -193,68 +177,20 @@ const Index = () => {
       {/* Service Cards */}
       <ServiceCards />
 
-      {/* Featured Products */}
-      <section className="section-padding bg-gradient-mesh">
-        <div className="container-premium">
-          <div className="flex justify-between items-center mb-12 animate-fade-in-up">
-            <div>
-              <h2 className="text-section-title text-uti-dark mb-4">
-                🔥 Produtos em Destaque
-              </h2>
-              <p className="text-body-large text-uti-gray">
-                Os melhores produtos selecionados especialmente para você
-              </p>
-            </div>
-            <Button onClick={() => navigate('/categoria/inicio')} className="btn-secondary">
-              Ver Todos os Produtos
-            </Button>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-20">
-              <div className="w-16 h-16 border-4 border-uti-red border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-              <div className="text-xl text-uti-gray font-medium">Carregando produtos premium...</div>
-            </div>
-          ) : featuredProducts.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="text-6xl mb-6">🎮</div>
-              <div className="text-2xl text-uti-gray mb-4">
-                Nenhum produto disponível
-              </div>
-              <p className="text-uti-gray">
-                Produtos serão adicionados em breve
-              </p>
-            </div>
-          ) : (
-            <div className="grid-products-premium">
-              {featuredProducts.map((product, index) => (
-                <PremiumProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
-                  getPlatformColor={() => getPlatformColor(product)}
-                  priority={index < 4}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* New Products */}
       {newProducts.length > 0 && (
-        <section className="section-padding bg-white">
-          <div className="container-premium">
-            <div className="text-center mb-12 animate-fade-in-up">
-              <h2 className="text-section-title text-uti-dark mb-4">
+        <section className="py-8 md:py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4">
                 ⚡ Novidades
               </h2>
-              <p className="text-body-large text-uti-gray">
+              <p className="text-base md:text-xl text-gray-600">
                 Os lançamentos mais recentes chegaram na UTI dos Games
               </p>
             </div>
 
-            <div className="grid-products-premium">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
               {newProducts.map((product) => (
                 <PremiumProductCard
                   key={product.id}
@@ -269,56 +205,56 @@ const Index = () => {
       )}
 
       {/* Omnichannel Section */}
-      <section className="section-padding bg-uti-dark text-white">
-        <div className="container-premium">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="animate-fade-in-left">
-              <h2 className="text-section-title mb-6">
+      <section className="py-8 md:py-16 bg-slate-800 text-white">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+            <div>
+              <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6">
                 Loja Física em Colatina
               </h2>
-              <p className="text-body-large mb-8 text-white/90">
+              <p className="text-base md:text-xl mb-6 md:mb-8 text-white/90">
                 Visite nossa loja física e experimente os produtos antes de comprar. 
                 Mais de 10 anos servindo a comunidade gamer de Colatina e região.
               </p>
               
-              <div className="space-y-4 mb-8">
+              <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-uti-red rounded-full"></div>
-                  <span>Retirada grátis na loja</span>
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-sm md:text-base">Retirada grátis na loja</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-uti-red rounded-full"></div>
-                  <span>Assistência técnica especializada</span>
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-sm md:text-base">Assistência técnica especializada</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-uti-red rounded-full"></div>
-                  <span>Avaliação e trade-in de produtos</span>
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-sm md:text-base">Avaliação e trade-in de produtos</span>
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="btn-primary">
+                <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300">
                   Como Chegar
-                </Button>
-                <Button 
+                </button>
+                <button 
                   onClick={() => window.open('https://wa.me/5527996882090', '_blank')}
-                  className="btn-ghost border-2 border-white/30 hover:bg-white/10"
+                  className="border-2 border-white/30 text-white hover:bg-white/10 font-bold py-3 px-6 rounded-lg transition-all duration-300"
                 >
                   WhatsApp: (27) 99688-2090
-                </Button>
+                </button>
               </div>
             </div>
 
-            <div className="animate-fade-in-right">
-              <div className="card-premium overflow-hidden">
+            <div>
+              <div className="bg-white rounded-lg overflow-hidden shadow-lg">
                 <img
                   src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop"
                   alt="Loja UTI dos Games"
-                  className="w-full h-80 object-cover"
+                  className="w-full h-60 md:h-80 object-cover"
                 />
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-uti-dark mb-2">UTI DOS GAMES</h3>
-                  <p className="text-uti-gray">Colatina - Espírito Santo</p>
+                <div className="p-4 md:p-6">
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">UTI DOS GAMES</h3>
+                  <p className="text-gray-600">Colatina - Espírito Santo</p>
                 </div>
               </div>
             </div>
@@ -327,28 +263,27 @@ const Index = () => {
       </section>
 
       {/* Premium Footer */}
-      <footer className="bg-uti-dark text-white py-16">
-        <div className="container-premium">
-          <div className="grid lg:grid-cols-5 gap-8 mb-12">
+      <footer className="bg-slate-900 text-white py-8 md:py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 md:gap-8 mb-8 md:mb-12">
             {/* Brand */}
             <div className="lg:col-span-2">
-              <div className="flex items-center space-x-3 mb-6">
-                <img src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" alt="UTI DOS GAMES" className="h-12 w-12" />
+              <div className="flex items-center space-x-3 mb-4 md:mb-6">
+                <img src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" alt="UTI DOS GAMES" className="h-10 w-10 md:h-12 md:w-12" />
                 <div>
-                  <h3 className="text-xl font-bold text-uti-red">UTI DOS GAMES</h3>
-                  <p className="text-white/70 text-sm">A vanguarda gamer de Colatina</p>
+                  <h3 className="text-lg md:text-xl font-bold text-red-500">UTI DOS GAMES</h3>
+                  <p className="text-white/70 text-xs md:text-sm">A vanguarda gamer de Colatina</p>
                 </div>
               </div>
-              <p className="text-white/80 mb-6 leading-relaxed">
+              <p className="text-white/80 mb-4 md:mb-6 leading-relaxed text-sm md:text-base">
                 Mais de 10 anos oferecendo os melhores produtos em games para Colatina e região. 
                 Tradição, qualidade e atendimento especializado.
               </p>
               <div className="flex space-x-4">
-                {/* Social Media Icons */}
-                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-uti-red transition-colors duration-300">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors duration-300 cursor-pointer">
                   📱
                 </div>
-                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-uti-red transition-colors duration-300">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors duration-300 cursor-pointer">
                   📧
                 </div>
               </div>
@@ -356,32 +291,32 @@ const Index = () => {
 
             {/* Categories */}
             <div>
-              <h4 className="font-bold mb-4 text-white">Categorias</h4>
-              <ul className="space-y-2 text-sm text-white/70">
-                <li><button onClick={() => navigate('/categoria/playstation')} className="hover:text-uti-red transition-colors">PlayStation</button></li>
-                <li><button onClick={() => navigate('/categoria/xbox')} className="hover:text-uti-red transition-colors">Xbox</button></li>
-                <li><button onClick={() => navigate('/categoria/nintendo')} className="hover:text-uti-red transition-colors">Nintendo</button></li>
-                <li><button onClick={() => navigate('/categoria/pc')} className="hover:text-uti-red transition-colors">PC Gaming</button></li>
-                <li><button onClick={() => navigate('/categoria/acessorios')} className="hover:text-uti-red transition-colors">Acessórios</button></li>
+              <h4 className="font-bold mb-3 md:mb-4 text-white">Categorias</h4>
+              <ul className="space-y-1 md:space-y-2 text-xs md:text-sm text-white/70">
+                <li><button onClick={() => navigate('/categoria/playstation')} className="hover:text-red-500 transition-colors">PlayStation</button></li>
+                <li><button onClick={() => navigate('/categoria/xbox')} className="hover:text-red-500 transition-colors">Xbox</button></li>
+                <li><button onClick={() => navigate('/categoria/nintendo')} className="hover:text-red-500 transition-colors">Nintendo</button></li>
+                <li><button onClick={() => navigate('/categoria/pc')} className="hover:text-red-500 transition-colors">PC Gaming</button></li>
+                <li><button onClick={() => navigate('/categoria/acessorios')} className="hover:text-red-500 transition-colors">Acessórios</button></li>
               </ul>
             </div>
 
             {/* Services */}
             <div>
-              <h4 className="font-bold mb-4 text-white">Serviços</h4>
-              <ul className="space-y-2 text-sm text-white/70">
-                <li><button className="hover:text-uti-red transition-colors">Assistência Técnica</button></li>
-                <li><button className="hover:text-uti-red transition-colors">Avaliação de Produtos</button></li>
-                <li><button className="hover:text-uti-red transition-colors">Trade-in</button></li>
-                <li><button className="hover:text-uti-red transition-colors">Instalação</button></li>
-                <li><button className="hover:text-uti-red transition-colors">Suporte</button></li>
+              <h4 className="font-bold mb-3 md:mb-4 text-white">Serviços</h4>
+              <ul className="space-y-1 md:space-y-2 text-xs md:text-sm text-white/70">
+                <li><button className="hover:text-red-500 transition-colors">Assistência Técnica</button></li>
+                <li><button className="hover:text-red-500 transition-colors">Avaliação de Produtos</button></li>
+                <li><button className="hover:text-red-500 transition-colors">Trade-in</button></li>
+                <li><button className="hover:text-red-500 transition-colors">Instalação</button></li>
+                <li><button className="hover:text-red-500 transition-colors">Suporte</button></li>
               </ul>
             </div>
 
             {/* Contact */}
             <div>
-              <h4 className="font-bold mb-4 text-white">Contato</h4>
-              <ul className="space-y-2 text-sm text-white/70">
+              <h4 className="font-bold mb-3 md:mb-4 text-white">Contato</h4>
+              <ul className="space-y-1 md:space-y-2 text-xs md:text-sm text-white/70">
                 <li className="flex items-center space-x-2">
                   <span>📱</span>
                   <span>(27) 99688-2090</span>
@@ -402,8 +337,8 @@ const Index = () => {
             </div>
           </div>
           
-          <div className="border-t border-white/20 pt-8 text-center">
-            <p className="text-white/60 text-sm">
+          <div className="border-t border-white/20 pt-6 md:pt-8 text-center">
+            <p className="text-white/60 text-xs md:text-sm">
               © 2024 UTI DOS GAMES. Todos os direitos reservados. Desenvolvido com ❤️ em Colatina.
             </p>
           </div>

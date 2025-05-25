@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBanners } from '@/hooks/useBanners';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const PremiumHeroBanner = () => {
   const { banners, loading } = useBanners();
@@ -12,13 +13,14 @@ const PremiumHeroBanner = () => {
   const [isUserInteracting, setIsUserInteracting] = useState(false);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
-  // Premium banner data with video backgrounds
+  // Premium banner data with responsive considerations
   const premiumBanners = [
     {
       id: 1,
-      type: 'video',
-      background: 'https://player.vimeo.com/external/373424663.sd.mp4?s=e90dcaba73c19c6c9d0ee2ecc2b8fb82e6e2da9a&profile_id=164&oauth2_token_id=57447761',
+      type: 'image',
+      background: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1920&h=1080&fit=crop',
       title: 'Nova Geração',
       subtitle: 'PlayStation 5 & Xbox Series X/S',
       description: 'Experimente o futuro dos jogos com gráficos 4K, Ray Tracing e carregamento ultra-rápido',
@@ -29,7 +31,7 @@ const PremiumHeroBanner = () => {
     {
       id: 2,
       type: 'image',
-      background: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1920&h=1080&fit=crop',
+      background: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1920&h=1080&fit=crop',
       title: 'Assistência Especializada',
       subtitle: 'Mais de 10 anos de experiência',
       description: 'Conserto, manutenção e upgrade para todos os tipos de consoles',
@@ -96,6 +98,11 @@ const PremiumHeroBanner = () => {
     resumeAutoPlayAfterDelay();
   };
 
+  const goToBanner = (index: number) => {
+    setCurrentBanner(index);
+    resumeAutoPlayAfterDelay();
+  };
+
   const handleButtonClick = (link: string) => {
     if (link.startsWith('http')) {
       window.open(link, '_blank');
@@ -106,7 +113,7 @@ const PremiumHeroBanner = () => {
 
   if (loading) {
     return (
-      <section className="relative h-screen bg-gradient-hero overflow-hidden">
+      <section className={`relative ${isMobile ? 'h-[400px]' : 'h-screen'} bg-gradient-to-r from-red-600 to-purple-600 overflow-hidden`}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white">
             <div className="w-20 h-20 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
@@ -118,20 +125,10 @@ const PremiumHeroBanner = () => {
   }
 
   return (
-    <section className="relative h-screen overflow-hidden">
+    <section className={`relative ${isMobile ? 'h-[400px]' : 'h-screen'} overflow-hidden`}>
       {/* Background */}
       <div className="absolute inset-0">
-        {currentData.type === 'video' ? (
-          <video
-            key={currentData.id}
-            autoPlay
-            muted
-            loop
-            className="w-full h-full object-cover"
-          >
-            <source src={currentData.background} type="video/mp4" />
-          </video>
-        ) : currentData.type === 'image' ? (
+        {currentData.type === 'image' ? (
           <img
             key={currentData.id}
             src={currentData.background}
@@ -152,40 +149,41 @@ const PremiumHeroBanner = () => {
 
       {/* Content */}
       <div className="relative z-10 h-full flex items-center">
-        <div className="container-premium">
+        <div className="container mx-auto px-4">
           <div className={`max-w-4xl ${
             currentData.textPosition === 'center' ? 'mx-auto text-center' :
             currentData.textPosition === 'right' ? 'ml-auto text-right' :
             'text-left'
           }`}>
             {/* Badge */}
-            <div className="inline-block mb-6 animate-fade-in-up">
-              <div className="glass-effect text-white px-6 py-3 rounded-full text-sm font-medium backdrop-blur-xl">
+            <div className="inline-block mb-4 md:mb-6 animate-fade-in-up">
+              <div className="bg-white/20 backdrop-blur-sm text-white px-4 md:px-6 py-2 md:py-3 rounded-full text-sm font-medium">
                 ✨ {currentData.title}
               </div>
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-hero text-white mb-6 leading-none animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <h1 className={`${isMobile ? 'text-3xl' : 'text-5xl md:text-6xl'} font-bold text-white mb-4 md:mb-6 leading-tight animate-fade-in-up`} style={{ animationDelay: '0.2s' }}>
               {currentData.subtitle}
             </h1>
 
             {/* Description */}
-            <p className="text-body-large text-white/90 mb-10 max-w-2xl animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <p className={`${isMobile ? 'text-base' : 'text-lg md:text-xl'} text-white/90 mb-6 md:mb-10 max-w-2xl animate-fade-in-up`} style={{ animationDelay: '0.4s' }}>
               {currentData.description}
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+            <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'flex-col sm:flex-row gap-4'} animate-fade-in-up`} style={{ animationDelay: '0.6s' }}>
               <Button
                 onClick={() => handleButtonClick(currentData.ctaLink)}
-                className="btn-primary text-lg px-10 py-6 shadow-2xl"
+                className={`bg-red-600 hover:bg-red-700 text-white font-semibold ${isMobile ? 'py-3 px-6' : 'text-lg px-10 py-6'} shadow-2xl transition-all duration-300 hover:scale-105`}
               >
                 {currentData.cta}
               </Button>
               <Button
                 onClick={() => navigate('/categoria/inicio')}
-                className="btn-ghost text-white border-2 border-white/30 hover:bg-white/10 text-lg px-10 py-6 backdrop-blur-xl"
+                variant="outline"
+                className={`border-2 border-white/30 text-white hover:bg-white/10 font-semibold ${isMobile ? 'py-3 px-6' : 'text-lg px-10 py-6'} backdrop-blur-xl transition-all duration-300`}
               >
                 Ver Catálogo
               </Button>
@@ -195,16 +193,13 @@ const PremiumHeroBanner = () => {
       </div>
 
       {/* Navigation Controls */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-6">
+      <div className="absolute bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-6">
         {/* Indicators */}
         <div className="flex space-x-3">
           {premiumBanners.map((_, index) => (
             <button
               key={index}
-              onClick={() => {
-                setCurrentBanner(index);
-                resumeAutoPlayAfterDelay();
-              }}
+              onClick={() => goToBanner(index)}
               className={`w-3 h-3 rounded-full transition-all duration-500 ${
                 index === currentBanner 
                   ? 'bg-white scale-125 shadow-lg' 
@@ -217,7 +212,7 @@ const PremiumHeroBanner = () => {
         {/* Play/Pause */}
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="glass-effect text-white p-3 rounded-full hover:bg-white/20 transition-all duration-300"
+          className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-all duration-300"
         >
           {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
         </button>
@@ -226,25 +221,27 @@ const PremiumHeroBanner = () => {
       {/* Side Navigation */}
       <button
         onClick={prevBanner}
-        className="absolute left-8 top-1/2 transform -translate-y-1/2 glass-effect text-white p-4 rounded-full hover:bg-white/20 transition-all duration-300 backdrop-blur-xl"
+        className="absolute left-4 md:left-8 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm text-white p-3 md:p-4 rounded-full hover:bg-white/30 transition-all duration-300"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
       </button>
 
       <button
         onClick={nextBanner}
-        className="absolute right-8 top-1/2 transform -translate-y-1/2 glass-effect text-white p-4 rounded-full hover:bg-white/20 transition-all duration-300 backdrop-blur-xl"
+        className="absolute right-4 md:right-8 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm text-white p-3 md:p-4 rounded-full hover:bg-white/30 transition-all duration-300"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
       </button>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 right-8 text-white animate-bounce">
-        <div className="flex flex-col items-center space-y-2">
-          <span className="text-sm opacity-70">Role para explorar</span>
-          <div className="w-px h-8 bg-white/40"></div>
+      {/* Scroll Indicator - Desktop Only */}
+      {!isMobile && (
+        <div className="absolute bottom-8 right-8 text-white animate-bounce">
+          <div className="flex flex-col items-center space-y-2">
+            <span className="text-sm opacity-70">Role para explorar</span>
+            <div className="w-px h-8 bg-white/40"></div>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 };
