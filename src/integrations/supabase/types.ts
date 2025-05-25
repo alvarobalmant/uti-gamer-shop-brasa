@@ -9,44 +9,77 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      product_tags: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string | null
+          tag_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          tag_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          tag_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_tags_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
-          category: string | null
+          additional_images: string[] | null
           colors: string[] | null
           created_at: string
           description: string | null
           id: string
           image: string | null
           name: string
-          platform: string | null
           price: number
           sizes: string[] | null
           stock: number | null
           updated_at: string
         }
         Insert: {
-          category?: string | null
+          additional_images?: string[] | null
           colors?: string[] | null
           created_at?: string
           description?: string | null
           id?: string
           image?: string | null
           name: string
-          platform?: string | null
           price: number
           sizes?: string[] | null
           stock?: number | null
           updated_at?: string
         }
         Update: {
-          category?: string | null
+          additional_images?: string[] | null
           colors?: string[] | null
           created_at?: string
           description?: string | null
           id?: string
           image?: string | null
           name?: string
-          platform?: string | null
           price?: number
           sizes?: string[] | null
           stock?: number | null
@@ -75,6 +108,24 @@ export type Database = {
           id?: string
           name?: string | null
           role?: string
+        }
+        Relationships: []
+      }
+      tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
         }
         Relationships: []
       }

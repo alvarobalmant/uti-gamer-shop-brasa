@@ -1,26 +1,38 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, Heart, ShoppingCart, Truck, Store, Clock } from 'lucide-react';
+import { ArrowLeft, Star, ShoppingCart, Truck, Store, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
-import { Product } from '@/components/ProductCard';
-import { useToast } from '@/hooks/use-toast';
+import { Product } from '@/hooks/useProducts';
+import { useCart } from '@/hooks/useCart';
 
 const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products, loading } = useProducts();
-  const { toast } = useToast();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
-  const [selectedEdition, setSelectedEdition] = useState('Standard');
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
   const [selectedDelivery, setSelectedDelivery] = useState<'pickup' | 'same-day' | 'ship'>('ship');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (products.length > 0 && id) {
       const foundProduct = products.find(p => p.id === id);
       setProduct(foundProduct || null);
+      
+      if (foundProduct) {
+        // Definir valores padrão se disponíveis
+        if (foundProduct.sizes && foundProduct.sizes.length > 0) {
+          setSelectedSize(foundProduct.sizes[0]);
+        }
+        if (foundProduct.colors && foundProduct.colors.length > 0) {
+          setSelectedColor(foundProduct.colors[0]);
+        }
+      }
     }
   }, [products, id]);
 
@@ -45,6 +57,7 @@ const ProductPage = () => {
     );
   }
 
+  const allImages = [product.image, ...(product.additional_images || [])];
   const originalPrice = product.price * 1.2;
   const memberPrice = product.price * 0.95;
   const newPrice = product.price + 1.71;
@@ -59,12 +72,11 @@ const ProductPage = () => {
   };
 
   const handleAddToCart = () => {
-    toast({
-      title: "✅ Produto adicionado!",
-      description: `${product.name} foi adicionado ao carrinho`,
-      duration: 2000,
-      className: "bg-green-50 border-green-200 text-green-800",
-    });
+    addToCart(
+      product, 
+      selectedSize || undefined, 
+      selectedColor || undefined
+    );
   };
 
   const handleWhatsAppContact = () => {
@@ -102,7 +114,7 @@ const ProductPage = () => {
         {/* Product Image Carousel */}
         <div className="relative mb-6">
           <img
-            src={product.image}
+            src={allImages[currentImageIndex]}
             alt={product.name}
             className="w-full h-80 object-cover rounded-lg"
             onError={(e) => {
@@ -112,10 +124,11 @@ const ProductPage = () => {
           
           {/* Image indicators */}
           <div className="flex justify-center gap-2 mt-4">
-            {[...Array(5)].map((_, i) => (
-              <div
+            {allImages.map((_, i) => (
+              <button
                 key={i}
-                className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-gray-800' : 'bg-gray-300'}`}
+                onClick={() => setCurrentImageIndex(i)}
+                className={`w-2 h-2 rounded-full ${i === currentImageIndex ? 'bg-gray-800' : 'bg-gray-300'}`}
               />
             ))}
           </div>
@@ -125,7 +138,13 @@ const ProductPage = () => {
         <div className="space-y-4">
           {/* Brand and Rating */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">{product.platform}</span>
+            <div className="flex flex-wrap gap-1">
+              {product.tags?.map((tag) => (
+                <span key={tag.id} className="text-sm bg-red-100 text-red-700 px-2 py-1 rounded">
+                  {tag.name}
+                </span>
+              ))}
+            </div>
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (
                 <Star 
@@ -141,6 +160,14 @@ const ProductPage = () => {
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">
             {product.name}
           </h1>
+
+          {/* Description - só aparece se existir */}
+          {product.description && (
+            <div className="space-y-2">
+              <h3 className="font-semibold text-gray-700">Descrição</h3>
+              <p className="text-gray-600">{product.description}</p>
+            </div>
+          )}
 
           {/* Pricing */}
           <div className="space-y-2">
@@ -166,15 +193,6 @@ const ProductPage = () => {
             <span className="text-sm text-gray-600">
               pague em 4 parcelas de R$ {(getCurrentPrice() / 4).toFixed(2)}
             </span>
-          </div>
-
-          {/* Platform Selection */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Plataforma</label>
-            <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <span className="font-medium">{product.platform}</span>
-              <span className="text-sm text-gray-500">+4 mais</span>
-            </div>
           </div>
 
           {/* Condition Selection */}
@@ -217,13 +235,45 @@ const ProductPage = () => {
             </div>
           </div>
 
-          {/* Edition */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Edição: <span className="font-normal">Standard</span></label>
-            <Button variant="outline" className="w-20 h-10 text-sm">
-              Standard
-            </Button>
-          </div>
+          {/* Size Selection - só aparece se existir */}
+          {product.sizes && product.sizes.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Tamanho: <span className="font-normal">{selectedSize}</span></label>
+              <div className="flex gap-2 flex-wrap">
+                {product.sizes.map((size) => (
+                  <Button
+                    key={size}
+                    variant={selectedSize === size ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedSize(size)}
+                    className="text-sm"
+                  >
+                    {size}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Color Selection - só aparece se existir */}
+          {product.colors && product.colors.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Cor: <span className="font-normal">{selectedColor}</span></label>
+              <div className="flex gap-2 flex-wrap">
+                {product.colors.map((color) => (
+                  <Button
+                    key={color}
+                    variant={selectedColor === color ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedColor(color)}
+                    className="text-sm"
+                  >
+                    {color}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Delivery Options */}
           <div className="space-y-2">
@@ -277,18 +327,12 @@ const ProductPage = () => {
             <div className="text-sm text-gray-600">1-3 dias úteis</div>
           </div>
 
-          {/* Pro Member Banner 2 */}
-          <div className="bg-gradient-to-r from-purple-100 to-orange-100 border border-purple-200 rounded-lg p-4">
-            <div className="text-purple-700 font-semibold text-sm">
-              Pros, Economize R$ 25 Quando Comprar R$ 250+ na loja ou online & retirar na loja - <span className="underline">Saiba mais</span>
-            </div>
-          </div>
-
           {/* Add to Cart Button */}
           <Button
             onClick={handleAddToCart}
             className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 text-lg rounded-lg"
           >
+            <ShoppingCart className="w-5 h-5 mr-2" />
             Adicionar ao Carrinho
           </Button>
 
@@ -301,43 +345,14 @@ const ProductPage = () => {
             💬 Entrar em Contato via WhatsApp
           </Button>
 
-          {/* Additional Options */}
-          <div className="space-y-4 pt-4">
-            <div className="flex items-center justify-between py-3 border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="bg-black text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold">
-                  UTI
-                </div>
-                <div>
-                  <div className="font-semibold text-sm">Obtenha Membership UTI GRÁTIS (R$ 85+ em economia)</div>
-                  <div className="text-xs text-gray-600">+ 4% de volta em todas as compras.</div>
-                </div>
+          {/* Stock Info - só aparece se existir */}
+          {product.stock !== undefined && product.stock > 0 && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="font-semibold text-sm text-green-700">
+                ✅ Em estoque: {product.stock} unidades disponíveis
               </div>
             </div>
-
-            <div className="flex items-center justify-between py-3 border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="bg-yellow-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold">
-                  GS
-                </div>
-                <div>
-                  <div className="font-semibold text-sm">Proteger & Economizar</div>
-                  <div className="text-xs text-gray-600">Adicione um Plano de Proteção & substitua sua compra sem perguntas.</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between py-3">
-              <div className="flex items-center gap-3">
-                <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold">
-                  E
-                </div>
-                <div>
-                  <div className="font-semibold text-sm">Classificação ESRB: E (Para Todos)</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

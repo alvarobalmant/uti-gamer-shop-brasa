@@ -6,14 +6,14 @@ import { useToast } from '@/hooks/use-toast';
 export interface Product {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   price: number;
   image: string;
-  sizes: string[];
-  colors: string[];
-  platform: string;
-  category: string;
-  stock: number;
+  additional_images?: string[];
+  sizes?: string[];
+  colors?: string[];
+  stock?: number;
+  tags?: { id: string; name: string; }[];
 }
 
 export const useProducts = () => {
@@ -28,7 +28,15 @@ export const useProducts = () => {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          product_tags!inner (
+            tags (
+              id,
+              name
+            )
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -37,7 +45,13 @@ export const useProducts = () => {
       }
 
       console.log('Produtos encontrados:', data);
-      setProducts(data || []);
+      
+      const productsWithTags = data?.map(product => ({
+        ...product,
+        tags: product.product_tags?.map((pt: any) => pt.tags) || []
+      })) || [];
+
+      setProducts(productsWithTags);
     } catch (error: any) {
       console.error('Erro ao carregar produtos:', error);
       toast({
@@ -50,22 +64,38 @@ export const useProducts = () => {
     }
   };
 
-  const addProduct = async (product: Omit<Product, 'id'>) => {
+  const addProduct = async (productData: Omit<Product, 'id' | 'tags'> & { tagIds: string[] }) => {
     try {
-      const { data, error } = await supabase
+      const { tagIds, ...product } = productData;
+      
+      const { data: productResult, error: productError } = await supabase
         .from('products')
         .insert([product])
         .select()
         .single();
 
-      if (error) throw error;
+      if (productError) throw productError;
 
-      setProducts(prev => [data, ...prev]);
+      // Adicionar relacionamentos com tags
+      if (tagIds.length > 0) {
+        const tagRelations = tagIds.map(tagId => ({
+          product_id: productResult.id,
+          tag_id: tagId
+        }));
+
+        const { error: tagError } = await supabase
+          .from('product_tags')
+          .insert(tagRelations);
+
+        if (tagError) throw tagError;
+      }
+
+      await fetchProducts(); // Recarregar para obter as tags
       toast({
         title: "Produto adicionado com sucesso!",
       });
       
-      return data;
+      return productResult;
     } catch (error: any) {
       toast({
         title: "Erro ao adicionar produto",
@@ -76,18 +106,43 @@ export const useProducts = () => {
     }
   };
 
-  const updateProduct = async (id: string, updates: Partial<Product>) => {
+  const updateProduct = async (id: string, updates: Partial<Product> & { tagIds?: string[] }) => {
     try {
+      const { tagIds, tags, ...productUpdates } = updates;
+
       const { data, error } = await supabase
         .from('products')
-        .update(updates)
+        .update(productUpdates)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
 
-      setProducts(prev => prev.map(p => p.id === id ? data : p));
+      // Atualizar tags se fornecidas
+      if (tagIds !== undefined) {
+        // Remover relacionamentos existentes
+        await supabase
+          .from('product_tags')
+          .delete()
+          .eq('product_id', id);
+
+        // Adicionar novos relacionamentos
+        if (tagIds.length > 0) {
+          const tagRelations = tagIds.map(tagId => ({
+            product_id: id,
+            tag_id: tagId
+          }));
+
+          const { error: tagError } = await supabase
+            .from('product_tags')
+            .insert(tagRelations);
+
+          if (tagError) throw tagError;
+        }
+      }
+
+      await fetchProducts(); // Recarregar para obter as tags atualizadas
       toast({
         title: "Produto atualizado com sucesso!",
       });

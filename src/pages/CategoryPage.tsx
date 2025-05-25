@@ -6,20 +6,14 @@ import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard, { Product } from '@/components/ProductCard';
 import { useAuth } from '@/hooks/useAuth';
-
-interface CartItem {
-  product: Product;
-  size: string;
-  color: string;
-  quantity: number;
-}
+import { useCart } from '@/hooks/useCart';
 
 const CategoryPage = () => {
   const { category } = useParams();
   const navigate = useNavigate();
   const { products, loading } = useProducts();
   const { user } = useAuth();
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const { addToCart } = useCart();
 
   const getCategoryTitle = (cat: string) => {
     const categoryMap: { [key: string]: string } = {
@@ -40,43 +34,33 @@ const CategoryPage = () => {
 
   const filteredProducts = products.filter(product => {
     if (category === 'inicio') return true;
-    return product.category?.toLowerCase().includes(category?.toLowerCase() || '') ||
-           product.platform?.toLowerCase().includes(category?.toLowerCase() || '');
+    
+    const categoryLower = category?.toLowerCase() || '';
+    
+    // Verificar se alguma das tags do produto contém a categoria
+    return product.tags?.some(tag => 
+      tag.name.toLowerCase().includes(categoryLower) ||
+      categoryLower.includes(tag.name.toLowerCase())
+    );
   });
 
-  const addToCart = (product: Product, size: string, color: string) => {
-    const existingItem = cart.find(
-      item => item.product.id === product.id && item.size === size && item.color === color
-    );
-
-    if (existingItem) {
-      setCart(cart.map(item =>
-        item === existingItem
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
-    } else {
-      setCart([...cart, { product, size, color, quantity: 1 }]);
+  const getPlatformColor = (product: Product) => {
+    // Verificar tags para determinar a cor
+    const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];
+    
+    if (tags.some(tag => tag.includes('playstation'))) {
+      return 'bg-blue-600';
     }
-  };
-
-  const getPlatformColor = (platform: string) => {
-    switch (platform?.toLowerCase()) {
-      case 'ps5':
-      case 'ps4/ps5':
-      case 'playstation':
-        return 'bg-blue-600';
-      case 'xbox series x':
-      case 'xbox':
-        return 'bg-red-600';
-      case 'nintendo switch':
-      case 'nintendo':
-        return 'bg-red-500';
-      case 'pc':
-        return 'bg-orange-600';
-      default:
-        return 'bg-gray-600';
+    if (tags.some(tag => tag.includes('xbox'))) {
+      return 'bg-green-600';
     }
+    if (tags.some(tag => tag.includes('nintendo'))) {
+      return 'bg-red-500';
+    }
+    if (tags.some(tag => tag.includes('pc'))) {
+      return 'bg-orange-600';
+    }
+    return 'bg-gray-600';
   };
 
   return (
@@ -143,7 +127,7 @@ const CategoryPage = () => {
                   key={product.id}
                   product={product}
                   onAddToCart={addToCart}
-                  getPlatformColor={getPlatformColor}
+                  getPlatformColor={() => getPlatformColor(product)}
                 />
               ))}
             </div>
