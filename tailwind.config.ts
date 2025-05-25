@@ -63,13 +63,22 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// UTI Games Professional Colors
+				// UTI Games Premium Colors
 				uti: {
-					red: 'hsl(var(--uti-red))',
-					dark: 'hsl(var(--uti-dark))',
-					gray: 'hsl(var(--uti-gray))',
-					'light-gray': 'hsl(var(--uti-light-gray))',
-					border: 'hsl(var(--uti-border))'
+					red: {
+						DEFAULT: 'hsl(var(--uti-red))',
+						hover: 'hsl(var(--uti-red-hover))',
+						light: 'hsl(var(--uti-red-light))'
+					},
+					black: 'hsl(var(--uti-black))',
+					white: 'hsl(var(--uti-white))',
+					gray: {
+						50: 'hsl(var(--uti-gray-50))',
+						100: 'hsl(var(--uti-gray-100))',
+						300: 'hsl(var(--uti-gray-300))',
+						600: 'hsl(var(--uti-gray-600))',
+						900: 'hsl(var(--uti-gray-900))'
+					}
 				},
 				// Platform Colors
 				platform: {
