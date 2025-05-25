@@ -10,9 +10,8 @@ export const dummyProducts: Product[] = [
     image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=400&fit=crop',
     sizes: ['Físico', 'Digital'],
     colors: ['Standard'],
-    platform: 'PS5',
-    category: 'Jogos',
-    stock: 3
+    stock: 3,
+    tags: [{ id: '1', name: 'PlayStation' }, { id: '8', name: 'Jogos Físicos' }]
   },
   {
     id: '2',
@@ -22,9 +21,8 @@ export const dummyProducts: Product[] = [
     image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400&h=400&fit=crop',
     sizes: ['Físico', 'Digital'],
     colors: ['Standard', 'Deluxe'],
-    platform: 'PS5',
-    category: 'Jogos',
-    stock: 15
+    stock: 15,
+    tags: [{ id: '1', name: 'PlayStation' }, { id: '8', name: 'Jogos Físicos' }]
   },
   {
     id: '3',
@@ -34,9 +32,8 @@ export const dummyProducts: Product[] = [
     image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=400&fit=crop',
     sizes: ['Físico', 'Digital'],
     colors: ['Standard'],
-    platform: 'Xbox Series X',
-    category: 'Jogos',
-    stock: 8
+    stock: 8,
+    tags: [{ id: '3', name: 'Xbox' }, { id: '8', name: 'Jogos Físicos' }]
   },
   {
     id: '4',
@@ -46,9 +43,8 @@ export const dummyProducts: Product[] = [
     image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
     sizes: ['Físico', 'Digital'],
     colors: ['Standard'],
-    platform: 'Nintendo Switch',
-    category: 'Jogos',
-    stock: 12
+    stock: 12,
+    tags: [{ id: '2', name: 'Nintendo' }, { id: '8', name: 'Jogos Físicos' }]
   },
   {
     id: '5',
@@ -58,9 +54,8 @@ export const dummyProducts: Product[] = [
     image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=400&fit=crop',
     sizes: ['Único'],
     colors: ['Branco', 'Preto', 'Azul'],
-    platform: 'PS5',
-    category: 'Acessórios',
-    stock: 25
+    stock: 25,
+    tags: [{ id: '1', name: 'PlayStation' }, { id: '6', name: 'Acessórios' }]
   },
   {
     id: '6',
@@ -70,9 +65,8 @@ export const dummyProducts: Product[] = [
     image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=400&fit=crop',
     sizes: ['Único'],
     colors: ['Preto', 'Branco', 'Verde'],
-    platform: 'Xbox Series X',
-    category: 'Acessórios',
-    stock: 18
+    stock: 18,
+    tags: [{ id: '3', name: 'Xbox' }, { id: '6', name: 'Acessórios' }]
   },
   {
     id: '7',
@@ -82,9 +76,8 @@ export const dummyProducts: Product[] = [
     image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
     sizes: ['Único'],
     colors: ['Preto'],
-    platform: 'Nintendo Switch',
-    category: 'Acessórios',
-    stock: 7
+    stock: 7,
+    tags: [{ id: '2', name: 'Nintendo' }, { id: '6', name: 'Acessórios' }]
   },
   {
     id: '8',
@@ -94,9 +87,8 @@ export const dummyProducts: Product[] = [
     image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=400&fit=crop',
     sizes: ['Digital', 'Físico'],
     colors: ['Standard', 'Deluxe'],
-    platform: 'PC',
-    category: 'Jogos',
-    stock: 0
+    stock: 0,
+    tags: [{ id: '4', name: 'PC' }, { id: '9', name: 'Jogos Digitais' }]
   },
   {
     id: '9',
@@ -106,8 +98,7 @@ export const dummyProducts: Product[] = [
     image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400&h=400&fit=crop',
     sizes: ['Único'],
     colors: ['Preto', 'Vermelho', 'Azul'],
-    platform: 'Multi',
-    category: 'Acessórios',
-    stock: 22
+    stock: 22,
+    tags: [{ id: '6', name: 'Acessórios' }]
   }
 ];

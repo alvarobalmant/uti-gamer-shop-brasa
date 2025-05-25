@@ -6,14 +6,8 @@ import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard, { Product } from '@/components/ProductCard';
 import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/useCart';
 import { searchProducts } from '@/utils/fuzzySearch';
-
-interface CartItem {
-  product: Product;
-  size: string;
-  color: string;
-  quantity: number;
-}
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -21,44 +15,28 @@ const SearchResults = () => {
   const query = searchParams.get('q') || '';
   const { products, loading } = useProducts();
   const { user } = useAuth();
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const { addToCart } = useCart();
 
   // Usar busca fuzzy para filtrar produtos
   const filteredProducts = searchProducts(products, query);
 
-  const addToCart = (product: Product, size: string, color: string) => {
-    const existingItem = cart.find(
-      item => item.product.id === product.id && item.size === size && item.color === color
-    );
-
-    if (existingItem) {
-      setCart(cart.map(item =>
-        item === existingItem
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
-    } else {
-      setCart([...cart, { product, size, color, quantity: 1 }]);
+  const getPlatformColor = (product: Product) => {
+    // Verificar tags para determinar a cor
+    const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];
+    
+    if (tags.some(tag => tag.includes('playstation'))) {
+      return 'bg-blue-600';
     }
-  };
-
-  const getPlatformColor = (platform: string) => {
-    switch (platform?.toLowerCase()) {
-      case 'ps5':
-      case 'ps4/ps5':
-      case 'playstation':
-        return 'bg-blue-600';
-      case 'xbox series x':
-      case 'xbox':
-        return 'bg-red-600';
-      case 'nintendo switch':
-      case 'nintendo':
-        return 'bg-red-500';
-      case 'pc':
-        return 'bg-orange-600';
-      default:
-        return 'bg-gray-600';
+    if (tags.some(tag => tag.includes('xbox'))) {
+      return 'bg-green-600';
     }
+    if (tags.some(tag => tag.includes('nintendo'))) {
+      return 'bg-red-500';
+    }
+    if (tags.some(tag => tag.includes('pc'))) {
+      return 'bg-orange-600';
+    }
+    return 'bg-gray-600';
   };
 
   return (
@@ -124,8 +102,8 @@ const SearchResults = () => {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={addToCart}
-                  getPlatformColor={getPlatformColor}
+                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
+                  getPlatformColor={() => getPlatformColor(product)}
                 />
               ))}
             </div>

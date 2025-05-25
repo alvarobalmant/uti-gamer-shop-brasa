@@ -10,7 +10,7 @@ interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: Product, size: string, color: string) => void;
-  getPlatformColor: (platform: string) => string;
+  getPlatformColor: (product: Product) => string;
 }
 
 const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor }: ProductModalProps) => {
@@ -26,8 +26,8 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
   // Initialize selected options when product changes
   useEffect(() => {
     if (product) {
-      setSelectedSize(product.sizes[0] || '');
-      setSelectedColor(product.colors[0] || '');
+      setSelectedSize(product.sizes?.[0] || '');
+      setSelectedColor(product.colors?.[0] || '');
     }
   }, [product]);
 
@@ -37,6 +37,9 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
       onClose();
     }
   };
+
+  // Get the primary tag for display
+  const primaryTag = product.tags?.[0]?.name || '';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -86,9 +89,9 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
               )}
             </div>
 
-            {product.platform && (
-              <Badge className={`absolute top-4 right-4 ${getPlatformColor(product.platform)} text-white font-bold text-sm px-4 py-2 shadow-lg`}>
-                {product.platform}
+            {primaryTag && (
+              <Badge className={`absolute top-4 right-4 ${getPlatformColor(product)} text-white font-bold text-sm px-4 py-2 shadow-lg`}>
+                {primaryTag}
               </Badge>
             )}
           </div>
@@ -99,9 +102,11 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
               <h2 className="text-3xl font-bold text-gray-800 mb-4 leading-tight">
                 {product.name}
               </h2>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                {product.description}
-              </p>
+              {product.description && (
+                <p className="text-gray-600 text-lg leading-relaxed">
+                  {product.description}
+                </p>
+              )}
             </div>
 
             {/* Price */}
@@ -119,30 +124,32 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
             {/* Options */}
             <div className="space-y-6 mb-8">
               {/* Sizes */}
-              <div>
-                <label className="text-lg font-bold text-gray-700 mb-3 block">
-                  {product.sizes[0] === 'Físico' || product.sizes[0] === 'Digital' ? 'Formato:' : 'Tamanho:'}
-                </label>
-                <div className="flex flex-wrap gap-3">
-                  {product.sizes.map((size) => (
-                    <Button
-                      key={size}
-                      variant={selectedSize === size ? "default" : "outline"}
-                      onClick={() => setSelectedSize(size)}
-                      className={`transition-all duration-200 font-medium px-6 py-3 ${
-                        selectedSize === size 
-                          ? 'bg-red-600 text-white border-red-600 shadow-md scale-105' 
-                          : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 hover:bg-red-50'
-                      }`}
-                    >
-                      {size}
-                    </Button>
-                  ))}
+              {product.sizes && product.sizes.length > 0 && (
+                <div>
+                  <label className="text-lg font-bold text-gray-700 mb-3 block">
+                    {product.sizes[0] === 'Físico' || product.sizes[0] === 'Digital' ? 'Formato:' : 'Tamanho:'}
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {product.sizes.map((size) => (
+                      <Button
+                        key={size}
+                        variant={selectedSize === size ? "default" : "outline"}
+                        onClick={() => setSelectedSize(size)}
+                        className={`transition-all duration-200 font-medium px-6 py-3 ${
+                          selectedSize === size 
+                            ? 'bg-red-600 text-white border-red-600 shadow-md scale-105' 
+                            : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 hover:bg-red-50'
+                        }`}
+                      >
+                        {size}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Colors */}
-              {product.colors.length > 0 && (
+              {product.colors && product.colors.length > 0 && (
                 <div>
                   <label className="text-lg font-bold text-gray-700 mb-3 block">Cor:</label>
                   <div className="flex flex-wrap gap-3">
@@ -169,7 +176,7 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 onClick={handleAddToCart}
-                disabled={isOutOfStock || !selectedSize}
+                disabled={isOutOfStock || (!selectedSize && product.sizes && product.sizes.length > 0)}
                 className={`flex-1 font-bold py-4 text-lg rounded-xl transition-all duration-300 hover:scale-105 shadow-lg ${
                   isOutOfStock 
                     ? 'bg-gray-400 cursor-not-allowed' 

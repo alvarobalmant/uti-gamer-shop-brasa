@@ -32,18 +32,14 @@ const SearchSuggestions = ({ searchQuery, onSelectSuggestion, onSearch, isVisibl
         uniqueSuggestions.add(product.name);
       }
       
-      // Adicionar plataforma se corresponde à busca
-      if (product.platform && 
-          (fuzzySearch(normalizedQuery, product.platform, 0.4) || 
-           normalizeText(product.platform).includes(normalizedQuery))) {
-        uniqueSuggestions.add(product.platform);
-      }
-      
-      // Adicionar categoria se corresponde à busca
-      if (product.category && 
-          (fuzzySearch(normalizedQuery, product.category, 0.4) || 
-           normalizeText(product.category).includes(normalizedQuery))) {
-        uniqueSuggestions.add(product.category);
+      // Adicionar tags se correspondem à busca
+      if (product.tags) {
+        product.tags.forEach(tag => {
+          if (fuzzySearch(normalizedQuery, tag.name, 0.4) || 
+              normalizeText(tag.name).includes(normalizedQuery)) {
+            uniqueSuggestions.add(tag.name);
+          }
+        });
       }
     });
 
