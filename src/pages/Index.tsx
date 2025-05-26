@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,14 +10,14 @@ import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import ServiceCards from '@/components/ServiceCards';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import { useCart } from '@/hooks/useCart';
+import { useCartSync } from '@/hooks/useCartSync';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const { products, loading } = useProducts();
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-  const { cart, addItem, updateQuantityByProduct, getTotal, getItemsCount, sendToWhatsApp } = useCart();
+  const { cart, addToCart, updateQuantity, getTotal, getCartItemsCount, sendToWhatsApp } = useCartSync();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   
@@ -88,7 +89,7 @@ const Index = () => {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={(product, size, color) => addItem(product, size, color)}
+                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
                   getPlatformColor={() => getPlatformColor(product)}
                 />
               ))}
@@ -144,7 +145,7 @@ const Index = () => {
         cart={cart}
         showCart={showCart}
         setShowCart={setShowCart}
-        updateQuantity={updateQuantityByProduct}
+        updateQuantity={updateQuantity}
         sendToWhatsApp={sendToWhatsApp}
       />
 

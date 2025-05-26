@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Plus, Minus, ShoppingCart, X } from 'lucide-react';
-import { CartItem } from '@/types/cart';
+import { CartItem } from '@/hooks/useCartSync';
 
 interface CartProps {
   cart: CartItem[];
@@ -18,11 +18,10 @@ const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: C
 
   const handleQuantityChange = (item: CartItem, change: number) => {
     const newQuantity = Math.max(0, item.quantity + change);
-    const [productId, size, color] = item.id.split('-');
     updateQuantity(
-      productId, 
-      size === 'default' ? undefined : size, 
-      color === 'default' ? undefined : color, 
+      item.product.id, 
+      item.size, 
+      item.color, 
       newQuantity
     );
   };

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '@/hooks/useCart';
+import { useCartSync } from '@/hooks/useCartSync';
 import MobileSearchBar from './MobileSearchBar';
 
 interface HeaderActionsProps {
@@ -21,7 +21,7 @@ const HeaderActions = ({
 }: HeaderActionsProps) => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const { getCartItemsCount } = useCart();
+  const { getCartItemsCount, syncing } = useCartSync();
 
   const cartItemsCount = getCartItemsCount();
   console.log('HeaderActions - Contagem do carrinho:', cartItemsCount);
@@ -62,8 +62,9 @@ const HeaderActions = ({
         onClick={onCartOpen} 
         variant="ghost" 
         className="flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 relative"
+        disabled={syncing}
       >
-        <ShoppingCart className="w-5 h-5" />
+        <ShoppingCart className={`w-5 h-5 ${syncing ? 'animate-pulse' : ''}`} />
         <span className="text-xs font-medium mt-1">Carrinho</span>
         {cartItemsCount > 0 && (
           <Badge className="absolute -top-1 -right-1 bg-uti-red text-white text-xs px-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
