@@ -43,12 +43,12 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
   };
 
   return (
-    <>
+    <div className="w-full max-w-full overflow-x-hidden">
       {/* Top promotional banner */}
       <PromotionalBanner />
 
       {/* Main Header - Fixed positioning */}
-      <header className="bg-white shadow-lg sticky top-0 z-50">
+      <header className="bg-white shadow-lg sticky top-0 z-50 w-full max-w-full">
         <MainHeader
           onCartOpen={onCartOpen}
           onAuthOpen={onAuthOpen}
@@ -72,7 +72,7 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
         onClose={closeMobileMenu}
         onAuthOpen={onAuthOpen}
       />
-    </>
+    </div>
   );
 };
 
