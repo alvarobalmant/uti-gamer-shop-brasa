@@ -10,7 +10,7 @@ import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import ServiceCards from '@/components/ServiceCards';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import { CartItem, useCart } from '@/hooks/useCart';
+import { useCart } from '@/hooks/useCart';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
@@ -23,11 +23,6 @@ const Index = () => {
   
   // Use scroll position hook
   useScrollPosition();
-
-  const updateCartQuantity = (item: CartItem, change: number) => {
-    const newQuantity = item.quantity + change;
-    updateQuantity(item.product.id, item.size, item.color, newQuantity);
-  };
 
   const sendToWhatsApp = () => {
     const itemsList = cart.map(item => `• ${item.product.name} (${item.size || 'Padrão'}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`).join('\n');
@@ -159,7 +154,7 @@ const Index = () => {
         cart={cart}
         showCart={showCart}
         setShowCart={setShowCart}
-        updateQuantity={updateCartQuantity}
+        updateQuantity={updateQuantity}
         sendToWhatsApp={sendToWhatsApp}
       />
 

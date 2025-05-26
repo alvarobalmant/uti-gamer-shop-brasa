@@ -7,13 +7,18 @@ interface CartProps {
   cart: CartItem[];
   showCart: boolean;
   setShowCart: (show: boolean) => void;
-  updateQuantity: (item: CartItem, change: number) => void;
+  updateQuantity: (productId: string, size: string | undefined, color: string | undefined, quantity: number) => void;
   sendToWhatsApp: () => void;
 }
 
 const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: CartProps) => {
   const getTotalPrice = () => {
     return cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+  };
+
+  const handleQuantityChange = (item: CartItem, change: number) => {
+    const newQuantity = item.quantity + change;
+    updateQuantity(item.product.id, item.size, item.color, newQuantity);
   };
 
   if (!showCart) return null;
@@ -63,7 +68,7 @@ const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: C
               {/* Cart Items */}
               <div className="space-y-4 mb-6">
                 {cart.map((item, index) => (
-                  <div key={index} className="bg-gray-50 p-4 rounded-xl border border-gray-200 hover:border-red-300 transition-colors duration-200">
+                  <div key={`${item.product.id}-${item.size || 'default'}-${item.color || 'default'}-${index}`} className="bg-gray-50 p-4 rounded-xl border border-gray-200 hover:border-red-300 transition-colors duration-200">
                     <div className="flex items-start space-x-3">
                       <img 
                         src={item.product.image} 
@@ -81,7 +86,7 @@ const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: C
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => updateQuantity(item, -1)}
+                              onClick={() => handleQuantityChange(item, -1)}
                               className="w-8 h-8 p-0 border-red-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600"
                             >
                               <Minus className="w-3 h-3" />
@@ -92,7 +97,7 @@ const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: C
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => updateQuantity(item, 1)}
+                              onClick={() => handleQuantityChange(item, 1)}
                               className="w-8 h-8 p-0 border-red-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600"
                             >
                               <Plus className="w-3 h-3" />

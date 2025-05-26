@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,35 +26,37 @@ interface CartItemDB {
 export const useCart = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
   // Carregar carrinho na inicialização
   useEffect(() => {
-    loadCart();
-  }, [user]);
+    if (!initialized) {
+      loadCart();
+    }
+  }, [user, initialized]);
 
-  // Salvar carrinho quando mudar
+  // Salvar carrinho quando mudar (apenas se já foi inicializado)
   useEffect(() => {
-    if (cart.length > 0 || loading === false) {
+    if (initialized && cart.length >= 0) {
       saveCart();
     }
-  }, [cart, user]);
+  }, [cart, user, initialized]);
 
   const loadCart = async () => {
     setLoading(true);
     try {
       if (user) {
-        // Carregar do banco para usuários logados
         await loadCartFromDatabase();
       } else {
-        // Carregar do localStorage para usuários não logados
         loadCartFromLocalStorage();
       }
     } catch (error) {
       console.error('Erro ao carregar carrinho:', error);
     } finally {
       setLoading(false);
+      setInitialized(true);
     }
   };
 
@@ -83,7 +85,6 @@ export const useCart = () => {
       }
     } catch (error) {
       console.error('Erro ao carregar carrinho do banco:', error);
-      // Fallback para localStorage se houver erro
       loadCartFromLocalStorage();
     }
   };
@@ -101,15 +102,13 @@ export const useCart = () => {
     }
   };
 
-  const saveCart = async () => {
+  const saveCart = useCallback(async () => {
     if (user) {
-      // Salvar no banco para usuários logados
       await saveCartToDatabase();
     } else {
-      // Salvar no localStorage para usuários não logados
       saveCartToLocalStorage();
     }
-  };
+  }, [user, cart]);
 
   const saveCartToDatabase = async () => {
     if (!user) return;
@@ -139,7 +138,6 @@ export const useCart = () => {
       }
     } catch (error) {
       console.error('Erro ao salvar carrinho no banco:', error);
-      // Fallback para localStorage se houver erro
       saveCartToLocalStorage();
     }
   };
@@ -227,28 +225,24 @@ export const useCart = () => {
   };
 
   // Migrar carrinho do localStorage para o banco quando usuário fizer login
-  const migrateCartToDatabase = async () => {
-    if (!user) return;
+  const migrateCartToDatabase = useCallback(async () => {
+    if (!user || !initialized) return;
 
     try {
       const localCart = localStorage.getItem('uti-games-cart');
       if (localCart) {
         const parsedCart: CartItem[] = JSON.parse(localCart);
         if (parsedCart.length > 0) {
-          // Mesclar com carrinho existente no banco
-          await loadCartFromDatabase();
+          // Carregar carrinho existente do banco
+          const { data: existingItems } = await supabase
+            .from('cart_items')
+            .select('*')
+            .eq('user_id', user.id);
           
-          // Adicionar itens do localStorage que não existem no banco
-          for (const localItem of parsedCart) {
-            const existsInCart = cart.some(item =>
-              item.product.id === localItem.product.id &&
-              item.size === localItem.size &&
-              item.color === localItem.color
-            );
-            
-            if (!existsInCart) {
-              await addToCart(localItem.product, localItem.size, localItem.color);
-            }
+          // Se não há itens no banco, migrar do localStorage
+          if (!existingItems || existingItems.length === 0) {
+            setCart(parsedCart);
+            // O useEffect vai salvar automaticamente no banco
           }
           
           // Limpar localStorage após migração
@@ -258,14 +252,14 @@ export const useCart = () => {
     } catch (error) {
       console.error('Erro ao migrar carrinho para o banco:', error);
     }
-  };
+  }, [user, initialized]);
 
-  // Chamar migração quando usuário logar
+  // Chamar migração quando usuário logar e estiver inicializado
   useEffect(() => {
-    if (user) {
+    if (user && initialized) {
       migrateCartToDatabase();
     }
-  }, [user]);
+  }, [user, initialized, migrateCartToDatabase]);
 
   return {
     cart,
