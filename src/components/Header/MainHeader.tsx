@@ -20,16 +20,16 @@ const MainHeader = ({
 
   return (
     <div className="container-professional">
-      <div className="flex items-center justify-between h-16 md:h-20 px-2 md:px-0">
+      <div className="flex items-center justify-between h-20">
         {/* Logo */}
-        <div className="flex items-center cursor-pointer flex-shrink-0" onClick={() => navigate('/')}>
+        <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
           <img 
             src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
             alt="UTI DOS GAMES" 
-            className="h-10 w-10 md:h-12 md:w-12 mr-2 md:mr-3" 
+            className="h-12 w-12 mr-3" 
           />
           <div className="hidden sm:block">
-            <h1 className="text-xl md:text-2xl font-black text-uti-dark font-heading">
+            <h1 className="text-2xl font-black text-uti-dark font-heading">
               UTI DOS GAMES
             </h1>
             <p className="text-xs text-uti-gray font-medium -mt-1">

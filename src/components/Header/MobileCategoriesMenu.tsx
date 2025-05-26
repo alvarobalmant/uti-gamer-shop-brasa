@@ -1,6 +1,5 @@
 
 import { categories, Category } from './categories';
-import MobileCategoriesIcon from './MobileCategoriesIcon';
 
 interface MobileCategoriesMenuProps {
   showCategories: boolean;
@@ -11,9 +10,9 @@ const MobileCategoriesMenu = ({ showCategories, onCategoryClick }: MobileCategor
   if (!showCategories) return null;
 
   return (
-    <div className="lg:hidden border-t border-gray-200 bg-gray-50 relative">
+    <div className="lg:hidden border-t border-gray-200 bg-gray-50">
       <div className="container-professional py-4">
-        <div className="grid grid-cols-2 gap-2 pr-12">
+        <div className="grid grid-cols-2 gap-2">
           {categories.map(category => (
             <button
               key={category.id}

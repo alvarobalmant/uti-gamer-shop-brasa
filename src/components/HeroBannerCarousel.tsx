@@ -172,8 +172,10 @@ const HeroBannerCarousel = () => {
   const banner = banners[currentBanner];
   const backgroundType = (banner as any).background_type || 'gradient';
   
+  // Determine if button should be shown
   const showButton = banner.button_text && banner.button_link;
 
+  // Create background style based on type
   const getBackgroundStyle = () => {
     if (backgroundType === 'image-only' && banner.image_url) {
       return {
@@ -183,6 +185,17 @@ const HeroBannerCarousel = () => {
         backgroundRepeat: 'no-repeat'
       };
     }
+    
+    if (backgroundType === 'gradient') {
+      const style: any = {};
+      if (banner.gradient) {
+        // Apply gradient background
+        const gradientClass = `bg-gradient-to-br ${banner.gradient}`;
+        // We'll use className for gradient
+      }
+      return style;
+    }
+    
     return {};
   };
 
@@ -210,25 +223,52 @@ const HeroBannerCarousel = () => {
         onMouseUp={handleMouseUp}
         onMouseLeave={() => setIsDragging(false)}
       >
+        {/* Overlay for better text readability on image-only banners */}
         {backgroundType === 'image-only' && (
           <div className="absolute inset-0 bg-black/40"></div>
+        )}
+
+        {/* Navigation Arrows - Repositioned for mobile */}
+        {banners.length > 1 && (
+          <>
+            <Button 
+              onClick={prevBanner}
+              variant="ghost" 
+              size="sm"
+              className="absolute left-2 md:left-8 bottom-20 md:top-1/2 md:transform md:-translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-10 h-10 md:w-12 md:h-12 p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20"
+            >
+              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+            </Button>
+            
+            <Button 
+              onClick={nextBanner}
+              variant="ghost" 
+              size="sm"
+              className="absolute right-2 md:right-8 bottom-20 md:top-1/2 md:transform md:-translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-10 h-10 md:w-12 md:h-12 p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20"
+            >
+              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+            </Button>
+          </>
         )}
 
         {/* Content */}
         <div className="container-professional h-full flex items-center relative z-10">
           <div className="max-w-4xl mx-auto text-center">
+            {/* Title */}
             {banner.title && (
               <div className="inline-block bg-white/20 backdrop-blur-sm text-white font-bold mb-4 px-6 py-2 rounded-full text-sm border border-white/30 animate-fade-in-up">
                 ♦ {banner.title}
               </div>
             )}
             
+            {/* Subtitle */}
             {banner.subtitle && (
               <h1 className="text-hero font-heading mb-8 leading-tight px-4 drop-shadow-lg animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                 {banner.subtitle}
               </h1>
             )}
             
+            {/* Button */}
             {showButton && (
               <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                 <Button 
@@ -248,6 +288,7 @@ const HeroBannerCarousel = () => {
             )}
           </div>
           
+          {/* Secondary Image for gradient banners */}
           {banner.image_url && backgroundType === 'gradient' && (
             <div className="absolute right-8 top-1/2 transform -translate-y-1/2 hidden lg:block animate-fade-in-right">
               <img 
@@ -263,48 +304,23 @@ const HeroBannerCarousel = () => {
         </div>
       </div>
 
-      {/* Navigation Controls - Aligned at bottom */}
+      {/* Banner Indicators - Repositioned for mobile */}
       {banners.length > 1 && (
-        <div className="absolute bottom-6 left-0 right-0 z-20">
-          <div className="flex items-center justify-center gap-4">
-            {/* Left Arrow */}
-            <Button 
-              onClick={prevBanner}
-              variant="ghost" 
-              size="sm"
-              className="bg-black/30 hover:bg-black/50 text-white rounded-full w-10 h-10 md:w-12 md:h-12 p-0 transition-all duration-300 backdrop-blur-sm border border-white/20"
-            >
-              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
-            </Button>
-
-            {/* Banner Indicators */}
-            <div className="flex gap-3">
-              {banners.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setCurrentBanner(index);
-                    resumeAutoPlayAfterDelay();
-                  }}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentBanner 
-                      ? 'bg-white scale-125 shadow-lg' 
-                      : 'bg-white/50 hover:bg-white/70'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Right Arrow */}
-            <Button 
-              onClick={nextBanner}
-              variant="ghost" 
-              size="sm"
-              className="bg-black/30 hover:bg-black/50 text-white rounded-full w-10 h-10 md:w-12 md:h-12 p-0 transition-all duration-300 backdrop-blur-sm border border-white/20"
-            >
-              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
-            </Button>
-          </div>
+        <div className="absolute bottom-6 md:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
+          {banners.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setCurrentBanner(index);
+                resumeAutoPlayAfterDelay();
+              }}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentBanner 
+                  ? 'bg-white scale-125 shadow-lg' 
+                  : 'bg-white/50 hover:bg-white/70'
+              }`}
+            />
+          ))}
         </div>
       )}
     </section>

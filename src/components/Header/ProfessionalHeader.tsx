@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PromotionalBanner from './PromotionalBanner';
 import MainHeader from './MainHeader';
@@ -24,38 +24,20 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
     setShowCategories(false);
   };
 
-  // Lock body scroll when any menu is open
-  useEffect(() => {
-    if (mobileMenuOpen || showCategories) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${window.scrollY}px`;
-      document.body.style.width = '100%';
-    } else {
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
-      }
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-    };
-  }, [mobileMenuOpen, showCategories]);
-
+  // Lock body scroll when mobile menu is open
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+    if (!mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
   };
 
+  // Close mobile menu and unlock scroll
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
+    document.body.style.overflow = 'unset';
   };
 
   const toggleCategories = () => {
@@ -67,8 +49,8 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
       {/* Top promotional banner */}
       <PromotionalBanner />
 
-      {/* Main Header - Fixed with improved mobile support */}
-      <header className="header-professional sticky top-0 z-50 bg-white shadow-sm">
+      {/* Main Header */}
+      <header className="header-professional sticky top-0 z-50">
         <MainHeader
           onCartOpen={onCartOpen}
           onAuthOpen={onAuthOpen}
