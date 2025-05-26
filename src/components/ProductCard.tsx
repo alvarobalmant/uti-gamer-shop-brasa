@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -74,8 +75,8 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
 
   return (
     <div 
-      className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-lg transition-all duration-300 cursor-pointer
-                 md:p-0 p-0 md:hover:shadow-lg hover:shadow-md"
+      className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-lg transition-all duration-300 cursor-pointer w-full max-w-full min-w-0
+                 md:hover:shadow-lg hover:shadow-md"
       onMouseEnter={() => setShowButton(true)}
       onMouseLeave={() => setShowButton(false)}
       onClick={handleCardClick}
@@ -83,33 +84,44 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
       style={{ touchAction: 'manipulation' }}
     >
       {/* Product Image Container */}
-      <ProductCardImage
-        product={product}
-        isWishlisted={isWishlisted}
-        onWishlistClick={handleWishlistClick}
-        onCardClick={handleCardClick}
-        onCardTouch={handleCardTouch}
-      />
+      <div className="w-full max-w-full overflow-hidden">
+        <ProductCardImage
+          product={product}
+          isWishlisted={isWishlisted}
+          onWishlistClick={handleWishlistClick}
+          onCardClick={handleCardClick}
+          onCardTouch={handleCardTouch}
+        />
+      </div>
 
       {/* Product Info */}
-      <div className="p-4 md:p-4 p-3">
-        <ProductCardInfo
-          product={product}
-          getPlatformColor={getPlatformColor}
-        />
+      <div className="p-3 sm:p-4 w-full max-w-full min-w-0">
+        <div className="w-full max-w-full overflow-hidden">
+          <ProductCardInfo
+            product={product}
+            getPlatformColor={getPlatformColor}
+          />
+        </div>
 
-        <ProductCardPrice product={product} />
+        <div className="w-full max-w-full">
+          <ProductCardPrice product={product} />
+        </div>
 
-        <ProductCardStock product={product} />
+        <div className="w-full max-w-full">
+          <ProductCardStock product={product} />
+        </div>
 
-        <ProductCardActions
-          product={product}
-          showButton={showButton}
-          onAddToCart={handleAddToCart}
-        />
+        <div className="w-full max-w-full">
+          <ProductCardActions
+            product={product}
+            showButton={showButton}
+            onAddToCart={handleAddToCart}
+          />
+        </div>
       </div>
     </div>
   );
 };
 
 export default ProductCard;
+

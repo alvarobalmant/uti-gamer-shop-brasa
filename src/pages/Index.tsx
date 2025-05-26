@@ -45,37 +45,46 @@ const Index = () => {
   const featuredProducts = products.slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
       <ProfessionalHeader 
         onCartOpen={() => setShowCart(true)}
         onAuthOpen={() => setShowAuthModal(true)}
       />
 
       {/* Hero Banner Carousel */}
-      <HeroBannerCarousel />
+      <div className="w-full overflow-x-hidden">
+        <HeroBannerCarousel />
+      </div>
 
       {/* Service Cards */}
-      <ServiceCards />
+      <div className="w-full overflow-x-hidden">
+        <ServiceCards />
+      </div>
 
       {/* Featured Products */}
-      <section id="produtos" className="py-12 bg-gray-50">
-        <div className="px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">
+      <section id="produtos" className="py-12 bg-gray-50 w-full overflow-x-hidden">
+        <div className="w-full max-w-full px-4 mx-auto">
+          <div className="flex justify-between items-center mb-6 w-full">
+            <h2 className="text-2xl font-bold text-gray-900 flex-shrink-0">
               🎮 Produtos em Destaque
             </h2>
-            <Button onClick={() => navigate('/categoria/inicio')} variant="outline" className="text-red-600 border-red-600 hover:bg-red-50">
+            <Button 
+              onClick={() => navigate('/categoria/inicio')} 
+              variant="outline" 
+              className="text-red-600 border-red-600 hover:bg-red-50 flex-shrink-0 ml-2"
+              size="sm"
+            >
               Ver Todos
             </Button>
           </div>
 
           {loading ? (
-            <div className="text-center py-16">
+            <div className="text-center py-16 w-full">
               <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
               <div className="text-xl text-gray-500">Carregando produtos...</div>
             </div>
           ) : featuredProducts.length === 0 ? (
-            <div className="text-center py-16">
+            <div className="text-center py-16 w-full">
               <div className="text-2xl text-gray-400 mb-2">
                 Nenhum produto disponível
               </div>
@@ -84,14 +93,15 @@ const Index = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-full overflow-x-hidden">
               {featuredProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
-                  getPlatformColor={() => getPlatformColor(product)}
-                />
+                <div key={product.id} className="w-full min-w-0">
+                  <ProductCard
+                    product={product}
+                    onAddToCart={(product, size, color) => addToCart(product, size, color)}
+                    getPlatformColor={() => getPlatformColor(product)}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -99,8 +109,8 @@ const Index = () => {
       </section>
 
       {/* Footer - GameStop Style */}
-      <footer className="bg-gray-900 text-white py-8">
-        <div className="px-4">
+      <footer className="bg-gray-900 text-white py-8 w-full overflow-x-hidden">
+        <div className="w-full max-w-full px-4 mx-auto">
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-4 mb-4">
               <div>
@@ -110,29 +120,29 @@ const Index = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-6 mb-6">
-            <div>
+          <div className="grid grid-cols-2 gap-6 mb-6 w-full">
+            <div className="min-w-0">
               <h4 className="font-bold mb-3 text-red-400">Links Úteis</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => navigate('/categoria/playstation')} className="text-gray-400 hover:text-white">PlayStation</button></li>
-                <li><button onClick={() => navigate('/categoria/xbox')} className="text-gray-400 hover:text-white">Xbox</button></li>
-                <li><button onClick={() => navigate('/categoria/nintendo')} className="text-gray-400 hover:text-white">Nintendo</button></li>
-                <li><button onClick={() => navigate('/categoria/pc')} className="text-gray-400 hover:text-white">PC</button></li>
+                <li><button onClick={() => navigate('/categoria/playstation')} className="text-gray-400 hover:text-white truncate">PlayStation</button></li>
+                <li><button onClick={() => navigate('/categoria/xbox')} className="text-gray-400 hover:text-white truncate">Xbox</button></li>
+                <li><button onClick={() => navigate('/categoria/nintendo')} className="text-gray-400 hover:text-white truncate">Nintendo</button></li>
+                <li><button onClick={() => navigate('/categoria/pc')} className="text-gray-400 hover:text-white truncate">PC</button></li>
               </ul>
             </div>
             
-            <div>
+            <div className="min-w-0">
               <h4 className="font-bold mb-3 text-red-400">Contato</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>📱 (27) 99688-2090</li>
-                <li>📧 contato@utidosgames.com</li>
-                <li>🕒 Seg à Sex: 9h às 18h</li>
-                <li>📍 Colatina - ES</li>
+                <li className="truncate">📱 (27) 99688-2090</li>
+                <li className="truncate">📧 contato@utidosgames.com</li>
+                <li className="truncate">🕒 Seg à Sex: 9h às 18h</li>
+                <li className="truncate">📍 Colatina - ES</li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-gray-800 pt-6 text-center">
+          <div className="border-t border-gray-800 pt-6 text-center w-full">
             <p className="text-gray-400 text-sm">
               © 2024 UTI DOS GAMES. Todos os direitos reservados.
             </p>
@@ -155,3 +165,4 @@ const Index = () => {
 };
 
 export default Index;
+
