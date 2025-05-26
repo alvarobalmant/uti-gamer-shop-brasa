@@ -21,7 +21,7 @@ const ProductPageHeader = ({ onBackClick }: ProductPageHeaderProps) => {
         </Button>
         <div className="flex items-center gap-2">
           <img 
-            src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
+            src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
             alt="UTI DOS GAMES" 
             className="h-8 w-8"
           />

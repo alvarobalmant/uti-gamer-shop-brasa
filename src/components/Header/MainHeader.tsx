@@ -24,15 +24,15 @@ const MainHeader = ({
         {/* Logo */}
         <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
           <img 
-            src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
+            src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
             alt="UTI DOS GAMES" 
-            className="h-12 w-12 mr-3" 
+            className="h-10 w-10 sm:h-12 sm:w-12 mr-2 sm:mr-3" 
           />
-          <div className="hidden sm:block">
-            <h1 className="text-2xl font-black text-uti-dark font-heading">
+          <div>
+            <h1 className="text-sm sm:text-2xl font-black text-uti-dark font-heading leading-tight">
               UTI DOS GAMES
             </h1>
-            <p className="text-xs text-uti-gray font-medium -mt-1">
+            <p className="text-xs text-uti-gray font-medium -mt-0.5 sm:-mt-1">
               A loja de games de Colatina
             </p>
           </div>
