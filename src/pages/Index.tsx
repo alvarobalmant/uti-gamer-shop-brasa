@@ -10,15 +10,18 @@ import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import ServiceCards from '@/components/ServiceCards';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
+import { useNewCart } from '@/hooks/useNewCart';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const { products, loading } = useProducts();
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useNewCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   
+  // Use scroll position hook
   useScrollPosition();
 
   const getPlatformColor = (product: Product) => {
@@ -48,10 +51,13 @@ const Index = () => {
         onAuthOpen={() => setShowAuthModal(true)}
       />
 
+      {/* Hero Banner Carousel */}
       <HeroBannerCarousel />
 
+      {/* Service Cards */}
       <ServiceCards />
 
+      {/* Featured Products */}
       <section id="produtos" className="py-12 bg-gray-50">
         <div className="px-4">
           <div className="flex justify-between items-center mb-6">
@@ -83,6 +89,7 @@ const Index = () => {
                 <ProductCard
                   key={product.id}
                   product={product}
+                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
                   getPlatformColor={() => getPlatformColor(product)}
                 />
               ))}
@@ -133,9 +140,13 @@ const Index = () => {
         </div>
       </footer>
 
+      {/* Cart Component */}
       <Cart
+        cart={cart}
         showCart={showCart}
         setShowCart={setShowCart}
+        updateQuantity={updateQuantity}
+        sendToWhatsApp={sendToWhatsApp}
       />
 
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
