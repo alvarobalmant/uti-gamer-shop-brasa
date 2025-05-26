@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { useNewCart } from '@/hooks/useNewCart';
+import { useCart } from '@/hooks/useCart';
 import MobileSearchBar from './MobileSearchBar';
 
 interface HeaderActionsProps {
@@ -21,7 +21,7 @@ const HeaderActions = ({
 }: HeaderActionsProps) => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const { getCartItemsCount } = useNewCart();
+  const { getCartItemsCount } = useCart();
 
   const handleLogin = () => {
     if (user) {

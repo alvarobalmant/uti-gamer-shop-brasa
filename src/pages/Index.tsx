@@ -10,19 +10,27 @@ import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import ServiceCards from '@/components/ServiceCards';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import { useNewCart } from '@/hooks/useNewCart';
+import { useCart } from '@/hooks/useCart';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const { products, loading } = useProducts();
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-  const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useNewCart();
+  const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   
   // Use scroll position hook
   useScrollPosition();
+
+  const sendToWhatsApp = () => {
+    const itemsList = cart.map(item => `• ${item.product.name} (${item.size || 'Padrão'}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`).join('\n');
+    const total = getCartTotal();
+    const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*`;
+    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
 
   const getPlatformColor = (product: Product) => {
     const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];
@@ -103,6 +111,7 @@ const Index = () => {
         <div className="px-4">
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-4 mb-4">
+              <img src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" alt="UTI DOS GAMES" className="h-12 w-12" />
               <div>
                 <h3 className="text-xl font-bold text-red-400">UTI DOS GAMES</h3>
                 <p className="text-gray-400 text-sm">A loja de games mais tradicional de Colatina</p>
