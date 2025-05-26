@@ -26,13 +26,13 @@ const MainHeader = ({
           <img 
             src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
             alt="UTI DOS GAMES" 
-            className="h-10 w-10 sm:h-12 sm:w-12 mr-2 sm:mr-3" 
+            className="h-12 w-12 sm:h-16 sm:w-16 mr-2 sm:mr-4" 
           />
           <div>
-            <h1 className="text-sm sm:text-2xl font-black text-uti-dark font-heading leading-tight">
+            <h1 className="text-xs sm:text-xl font-black text-uti-dark font-heading leading-tight">
               UTI DOS GAMES
             </h1>
-            <p className="text-xs text-uti-gray font-medium -mt-0.5 sm:-mt-1">
+            <p className="text-[10px] sm:text-xs text-uti-gray font-medium -mt-0.5 sm:-mt-1">
               A loja de games de Colatina
             </p>
           </div>
