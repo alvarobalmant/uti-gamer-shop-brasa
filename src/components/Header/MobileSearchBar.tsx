@@ -59,18 +59,18 @@ const MobileSearchBar = ({ className }: MobileSearchBarProps) => {
         onClick={handleExpand}
         variant="ghost" 
         size="sm"
-        className={`p-2 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 min-w-[44px] min-h-[44px] ${className}`}
+        className={`p-2 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 ${className}`}
       >
-        <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+        <Search className="w-5 h-5" />
       </Button>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-white w-full max-w-full overflow-x-hidden">
+    <div className="fixed inset-0 z-50 bg-white">
       {/* Header */}
-      <div className="flex items-center p-3 sm:p-4 border-b border-gray-200 w-full max-w-full">
-        <div className="flex-1 relative min-w-0">
+      <div className="flex items-center p-4 border-b border-gray-200">
+        <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
             ref={searchInputRef}
@@ -84,7 +84,7 @@ const MobileSearchBar = ({ className }: MobileSearchBarProps) => {
             onKeyPress={handleSearchKeyPress}
             onFocus={() => setShowSuggestions(searchQuery.length > 1)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            className="pl-10 pr-4 h-10 sm:h-12 bg-gray-50 border-gray-200 focus:bg-white w-full max-w-full"
+            className="pl-10 pr-4 h-12 bg-gray-50 border-gray-200 focus:bg-white"
           />
         </div>
         
@@ -92,14 +92,14 @@ const MobileSearchBar = ({ className }: MobileSearchBarProps) => {
           onClick={handleClose}
           variant="ghost" 
           size="sm"
-          className="ml-2 sm:ml-3 text-gray-600 hover:text-uti-red flex-shrink-0 min-w-[44px] min-h-[44px]"
+          className="ml-3 text-gray-600 hover:text-uti-red"
         >
-          <X className="w-4 h-4 sm:w-5 sm:h-5" />
+          <X className="w-5 h-5" />
         </Button>
       </div>
 
       {/* Search Suggestions */}
-      <div className="relative w-full max-w-full overflow-x-hidden">
+      <div className="relative">
         <SearchSuggestions
           searchQuery={searchQuery}
           onSelectSuggestion={handleSuggestionSelect}
@@ -110,10 +110,10 @@ const MobileSearchBar = ({ className }: MobileSearchBarProps) => {
 
       {/* Search Action */}
       {searchQuery.trim() && (
-        <div className="p-3 sm:p-4 w-full max-w-full">
+        <div className="p-4">
           <Button 
             onClick={handleSearchSubmit}
-            className="w-full btn-primary max-w-full"
+            className="w-full btn-primary"
           >
             Buscar "{searchQuery}"
           </Button>

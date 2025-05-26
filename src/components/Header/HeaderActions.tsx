@@ -33,7 +33,7 @@ const HeaderActions = ({
   };
 
   return (
-    <div className="flex items-center space-x-1 sm:space-x-2 overflow-safe">
+    <div className="flex items-center space-x-2">
       {/* Mobile Search */}
       <div className="lg:hidden">
         <MobileSearchBar />
@@ -43,10 +43,10 @@ const HeaderActions = ({
       <Button 
         onClick={handleLogin} 
         variant="ghost" 
-        className="hidden sm:flex flex-col items-center p-2 sm:p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 min-w-[44px] min-h-[44px]"
+        className="hidden sm:flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
       >
-        <User className="w-4 h-4 sm:w-5 sm:h-5" />
-        <span className="text-[10px] sm:text-xs font-medium mt-0.5 sm:mt-1 leading-tight">
+        <User className="w-5 h-5" />
+        <span className="text-xs font-medium mt-1">
           {user ? (isAdmin ? 'Admin' : 'Conta') : 'Entrar'}
         </span>
       </Button>
@@ -58,10 +58,10 @@ const HeaderActions = ({
       <Button 
         onClick={onMobileMenuToggle} 
         variant="ghost" 
-        className="sm:hidden flex flex-col items-center p-2 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 min-w-[44px] min-h-[44px]"
+        className="sm:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
       >
-        <Menu className="w-4 h-4" />
-        <span className="text-[10px] font-medium mt-0.5 leading-tight">Mais</span>
+        <Menu className="w-5 h-5" />
+        <span className="text-xs font-medium mt-1">Mais</span>
       </Button>
     </div>
   );
