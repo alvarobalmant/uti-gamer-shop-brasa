@@ -1,11 +1,11 @@
 
-import { ShoppingCart, User, Menu, Grid3X3 } from 'lucide-react';
+import { ShoppingCart, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
-import MobileSearchBar from './MobileSearchBar';
+import MobileSearchIcon from './MobileSearchIcon';
 
 interface HeaderActionsProps {
   onCartOpen: () => void;
@@ -37,27 +37,17 @@ const HeaderActions = ({
   };
 
   return (
-    <div className="flex items-center space-x-2">
-      {/* Mobile Search */}
+    <div className="flex items-center space-x-1 md:space-x-2">
+      {/* Mobile Search Icon */}
       <div className="lg:hidden">
-        <MobileSearchBar />
+        <MobileSearchIcon />
       </div>
-
-      {/* Categories Icon for Mobile */}
-      <Button 
-        onClick={onCategoriesToggle}
-        variant="ghost" 
-        className="lg:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
-      >
-        <Grid3X3 className="w-5 h-5" />
-        <span className="text-xs font-medium mt-1">Menu</span>
-      </Button>
 
       {/* User Account */}
       <Button 
         onClick={handleLogin} 
         variant="ghost" 
-        className="hidden sm:flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
+        className="hidden sm:flex flex-col items-center p-2 md:p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
       >
         <User className="w-5 h-5" />
         <span className="text-xs font-medium mt-1">
@@ -69,7 +59,7 @@ const HeaderActions = ({
       <Button 
         onClick={onCartOpen} 
         variant="ghost" 
-        className="flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 relative"
+        className="flex flex-col items-center p-2 md:p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 relative"
       >
         <ShoppingCart className="w-5 h-5" />
         <span className="text-xs font-medium mt-1">Carrinho</span>
@@ -84,7 +74,7 @@ const HeaderActions = ({
       <Button 
         onClick={onMobileMenuToggle} 
         variant="ghost" 
-        className="sm:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
+        className="sm:hidden flex flex-col items-center p-2 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
       >
         <Menu className="w-5 h-5" />
         <span className="text-xs font-medium mt-1">Mais</span>

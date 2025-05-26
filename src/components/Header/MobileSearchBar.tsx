@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,35 +7,27 @@ import { useNavigate } from 'react-router-dom';
 import SearchSuggestions from '@/components/SearchSuggestions';
 
 interface MobileSearchBarProps {
-  className?: string;
+  onClose: () => void;
 }
 
-const MobileSearchBar = ({ className }: MobileSearchBarProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const MobileSearchBar = ({ onClose }: MobileSearchBarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  const handleExpand = () => {
-    setIsExpanded(true);
-    // Focus input after state update
+  useEffect(() => {
+    // Focus input when component mounts
     setTimeout(() => {
       searchInputRef.current?.focus();
     }, 50);
-  };
-
-  const handleClose = () => {
-    setIsExpanded(false);
-    setSearchQuery('');
-    setShowSuggestions(false);
-  };
+  }, []);
 
   const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
       navigate(`/busca?q=${encodeURIComponent(searchQuery.trim())}`);
       setShowSuggestions(false);
-      handleClose();
+      onClose();
     }
   };
 
@@ -43,7 +35,7 @@ const MobileSearchBar = ({ className }: MobileSearchBarProps) => {
     if (e.key === 'Enter') {
       handleSearchSubmit();
     } else if (e.key === 'Escape') {
-      handleClose();
+      onClose();
     }
   };
 
@@ -51,22 +43,8 @@ const MobileSearchBar = ({ className }: MobileSearchBarProps) => {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
     navigate(`/busca?q=${encodeURIComponent(suggestion)}`);
-    handleClose();
+    onClose();
   };
-
-  if (!isExpanded) {
-    return (
-      <Button 
-        onClick={handleExpand}
-        variant="ghost" 
-        size="sm"
-        className={`flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 ${className}`}
-      >
-        <Search className="w-5 h-5" />
-        <span className="text-xs font-medium mt-1">Buscar</span>
-      </Button>
-    );
-  }
 
   return (
     <div className="fixed inset-0 z-50 bg-white">
@@ -91,7 +69,7 @@ const MobileSearchBar = ({ className }: MobileSearchBarProps) => {
         </div>
         
         <Button 
-          onClick={handleClose}
+          onClick={onClose}
           variant="ghost" 
           size="sm"
           className="ml-3 text-gray-600 hover:text-uti-red"
