@@ -192,7 +192,7 @@ export const useCart = () => {
     isLoading: loading,
     error: null,
     
-    // Ações com interface compatível
+    // Ações principais
     addItem,
     removeItem,
     updateQuantity,
@@ -204,7 +204,7 @@ export const useCart = () => {
     cart,
     addToCart: addItem,
     removeFromCart: removeItem,
-    updateQuantity: updateQuantityByProduct,
+    updateQuantityByProduct,
     getCartTotal: getTotal,
     getCartItemsCount: getItemsCount,
     sendToWhatsApp,

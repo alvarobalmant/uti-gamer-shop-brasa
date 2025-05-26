@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,7 +16,7 @@ const Index = () => {
   const { products, loading } = useProducts();
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-  const { cart, addItem, updateQuantity, getTotal, getItemsCount, sendToWhatsApp } = useCart();
+  const { cart, addItem, updateQuantityByProduct, getTotal, getItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   
@@ -145,10 +144,7 @@ const Index = () => {
         cart={cart}
         showCart={showCart}
         setShowCart={setShowCart}
-        updateQuantity={(productId, size, color, quantity) => {
-          const itemId = `${productId}-${size || 'default'}-${color || 'default'}`;
-          updateQuantity(itemId, quantity);
-        }}
+        updateQuantity={updateQuantityByProduct}
         sendToWhatsApp={sendToWhatsApp}
       />
 
