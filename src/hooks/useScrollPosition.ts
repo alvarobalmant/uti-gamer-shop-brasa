@@ -1,57 +1,100 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
+
+interface ScrollPositions {
+  [path: string]: number;
+}
 
 export const useScrollPosition = () => {
   const location = useLocation();
-  const scrollPositions = useRef<Record<string, number>>({});
+  const scrollPositions = useRef<ScrollPositions>({});
   const isNavigatingRef = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
-  useEffect(() => {
-    // Save current scroll position when leaving a page
-    const saveScrollPosition = () => {
-      scrollPositions.current[location.pathname] = window.scrollY;
-    };
+  const saveScrollPosition = useCallback((path?: string) => {
+    const currentPath = path || location.pathname;
+    const currentPosition = window.scrollY;
+    scrollPositions.current[currentPath] = currentPosition;
+    console.log(`Salvando posição ${currentPosition} para ${currentPath}`);
+  }, [location.pathname]);
 
-    // Restore scroll position when entering a page
-    const restoreScrollPosition = () => {
-      const savedPosition = scrollPositions.current[location.pathname];
-      if (savedPosition !== undefined && !isNavigatingRef.current) {
-        // Use setTimeout to ensure DOM is fully rendered
+  const restoreScrollPosition = useCallback((path?: string) => {
+    const targetPath = path || location.pathname;
+    const savedPosition = scrollPositions.current[targetPath];
+    
+    if (savedPosition !== undefined && !isNavigatingRef.current) {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      // Use multiple timeouts to ensure restoration works
+      timeoutRef.current = setTimeout(() => {
+        window.scrollTo(0, savedPosition);
+        console.log(`Restaurando posição ${savedPosition} para ${targetPath}`);
+        
+        // Verify the scroll position was set correctly
         setTimeout(() => {
-          window.scrollTo(0, savedPosition);
+          if (Math.abs(window.scrollY - savedPosition) > 50) {
+            window.scrollTo(0, savedPosition);
+            console.log(`Re-aplicando posição ${savedPosition} para ${targetPath}`);
+          }
           isNavigatingRef.current = false;
         }, 100);
-      } else {
-        isNavigatingRef.current = false;
-      }
-    };
+      }, 50);
+    } else {
+      isNavigatingRef.current = false;
+    }
+  }, [location.pathname]);
 
-    // Save position before navigation
+  // Save position when leaving a page
+  useEffect(() => {
     const handleBeforeUnload = () => {
       saveScrollPosition();
     };
 
-    // Save scroll position on route change
-    const handleRouteChange = () => {
-      saveScrollPosition();
+    // Save position on scroll (debounced)
+    let scrollTimeout: NodeJS.Timeout;
+    const handleScroll = () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        saveScrollPosition();
+      }, 100);
     };
-
-    // Restore position after navigation
-    restoreScrollPosition();
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
     return () => {
-      handleRouteChange();
+      saveScrollPosition(); // Save current position when component unmounts
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('scroll', handleScroll);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      clearTimeout(scrollTimeout);
     };
-  }, [location.pathname]);
+  }, [saveScrollPosition]);
 
-  const saveCurrentPosition = () => {
-    scrollPositions.current[location.pathname] = window.scrollY;
+  // Restore position when entering a page
+  useEffect(() => {
+    restoreScrollPosition();
+  }, [location.pathname, restoreScrollPosition]);
+
+  const saveCurrentPosition = useCallback(() => {
+    saveScrollPosition();
     isNavigatingRef.current = true;
-  };
+  }, [saveScrollPosition]);
 
-  return { saveCurrentPosition };
+  const savePositionForPath = useCallback((path: string) => {
+    saveScrollPosition(path);
+    isNavigatingRef.current = true;
+  }, [saveScrollPosition]);
+
+  return { 
+    saveCurrentPosition, 
+    savePositionForPath,
+    restoreScrollPosition 
+  };
 };
