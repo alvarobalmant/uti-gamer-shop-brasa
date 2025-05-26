@@ -1,3 +1,3 @@
 
-// Legacy cart hook - now uses the new refactored system
+// Usar diretamente o novo hook simplificado
 export { useNewCart as useCart } from './useNewCart';
