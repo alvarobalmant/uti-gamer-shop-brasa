@@ -10,14 +10,14 @@ import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import ServiceCards from '@/components/ServiceCards';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import { useNewCart } from '@/hooks/useNewCart';
+import { useCart } from '@/hooks/useCart';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const { products, loading } = useProducts();
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-  const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useNewCart();
+  const { cart, addItem, updateQuantity, getTotal, getItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   
@@ -89,7 +89,7 @@ const Index = () => {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
+                  onAddToCart={(product, size, color) => addItem(product, size, color)}
                   getPlatformColor={() => getPlatformColor(product)}
                 />
               ))}
@@ -145,7 +145,10 @@ const Index = () => {
         cart={cart}
         showCart={showCart}
         setShowCart={setShowCart}
-        updateQuantity={updateQuantity}
+        updateQuantity={(productId, size, color, quantity) => {
+          const itemId = `${productId}-${size || 'default'}-${color || 'default'}`;
+          updateQuantity(itemId, quantity);
+        }}
         sendToWhatsApp={sendToWhatsApp}
       />
 
