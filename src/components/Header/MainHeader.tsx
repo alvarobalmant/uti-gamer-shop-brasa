@@ -1,0 +1,56 @@
+
+import { useNavigate } from 'react-router-dom';
+import DesktopSearchBar from './DesktopSearchBar';
+import HeaderActions from './HeaderActions';
+
+interface MainHeaderProps {
+  onCartOpen: () => void;
+  onAuthOpen: () => void;
+  onCategoriesToggle: () => void;
+  onMobileMenuToggle: () => void;
+}
+
+const MainHeader = ({ 
+  onCartOpen, 
+  onAuthOpen, 
+  onCategoriesToggle, 
+  onMobileMenuToggle 
+}: MainHeaderProps) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="container-professional">
+      <div className="flex items-center justify-between h-20">
+        {/* Logo */}
+        <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
+          <img 
+            src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
+            alt="UTI DOS GAMES" 
+            className="h-12 w-12 mr-3" 
+          />
+          <div className="hidden sm:block">
+            <h1 className="text-2xl font-black text-uti-dark font-heading">
+              UTI DOS GAMES
+            </h1>
+            <p className="text-xs text-uti-gray font-medium -mt-1">
+              A loja de games de Colatina
+            </p>
+          </div>
+        </div>
+
+        {/* Desktop Search Bar */}
+        <DesktopSearchBar />
+
+        {/* Right Actions */}
+        <HeaderActions
+          onCartOpen={onCartOpen}
+          onAuthOpen={onAuthOpen}
+          onCategoriesToggle={onCategoriesToggle}
+          onMobileMenuToggle={onMobileMenuToggle}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default MainHeader;
