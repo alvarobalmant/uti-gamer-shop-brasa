@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Plus, Minus, ShoppingCart, X } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GlobalCartDropdownProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface GlobalCartDropdownProps {
 
 const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
   const { items, updateQuantity, getCartTotal, sendToWhatsApp } = useCart();
+  const isMobile = useIsMobile();
 
   const handleQuantityChange = (productId: string, size: string | undefined, color: string | undefined, currentQuantity: number, change: number) => {
     const newQuantity = Math.max(0, currentQuantity + change);
@@ -32,10 +34,16 @@ const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
         onClick={handleBackdropClick}
       />
       
-      {/* Dropdown */}
-      <div className="absolute right-0 top-full mt-2 w-96 bg-white shadow-2xl rounded-lg border border-gray-200 z-50 max-h-96 overflow-hidden flex flex-col">
+      {/* Dropdown - Mobile gets full screen treatment */}
+      <div className={`
+        fixed z-50 bg-white shadow-2xl border border-gray-200 flex flex-col
+        ${isMobile 
+          ? 'inset-x-4 top-20 bottom-4 rounded-lg max-h-[calc(100vh-6rem)]' 
+          : 'absolute right-0 top-full mt-2 w-96 max-h-96 rounded-lg'
+        }
+      `}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 bg-white">
+        <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <ShoppingCart className="w-5 h-5 text-red-600" />
@@ -57,15 +65,17 @@ const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
         </div>
 
         {items.length === 0 ? (
-          <div className="p-6 text-center">
-            <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <h4 className="font-bold text-gray-800 mb-2">Carrinho Vazio</h4>
-            <p className="text-gray-500 text-sm">Adicione produtos para começar!</p>
+          <div className="p-6 text-center flex-1 flex items-center justify-center">
+            <div>
+              <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <h4 className="font-bold text-gray-800 mb-2">Carrinho Vazio</h4>
+              <p className="text-gray-500 text-sm">Adicione produtos para começar!</p>
+            </div>
           </div>
         ) : (
           <>
             {/* Items */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-64">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {items.map((item) => (
                 <div 
                   key={item.id} 
@@ -119,7 +129,7 @@ const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-gray-200 p-4 bg-white">
+            <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0">
               <div className="bg-red-50 p-3 rounded-lg mb-3 border border-red-200">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-gray-800">Total:</span>
