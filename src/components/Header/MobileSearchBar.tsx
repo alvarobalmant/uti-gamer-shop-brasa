@@ -19,7 +19,6 @@ const MobileSearchBar = ({ className }: MobileSearchBarProps) => {
 
   const handleExpand = () => {
     setIsExpanded(true);
-    // Focus input after state update
     setTimeout(() => {
       searchInputRef.current?.focus();
     }, 50);
@@ -60,10 +59,9 @@ const MobileSearchBar = ({ className }: MobileSearchBarProps) => {
         onClick={handleExpand}
         variant="ghost" 
         size="sm"
-        className={`flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 ${className}`}
+        className={`p-2 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 ${className}`}
       >
         <Search className="w-5 h-5" />
-        <span className="text-xs font-medium mt-1">Buscar</span>
       </Button>
     );
   }

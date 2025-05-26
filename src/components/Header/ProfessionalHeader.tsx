@@ -24,7 +24,6 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
     setShowCategories(false);
   };
 
-  // Lock body scroll when mobile menu is open
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
     if (!mobileMenuOpen) {
@@ -34,7 +33,6 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
     }
   };
 
-  // Close mobile menu and unlock scroll
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
     document.body.style.overflow = 'unset';
@@ -49,8 +47,8 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
       {/* Top promotional banner */}
       <PromotionalBanner />
 
-      {/* Main Header */}
-      <header className="header-professional sticky top-0 z-50">
+      {/* Main Header - Fixed positioning */}
+      <header className="bg-white shadow-lg sticky top-0 z-50">
         <MainHeader
           onCartOpen={onCartOpen}
           onAuthOpen={onAuthOpen}
@@ -58,9 +56,9 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
           onMobileMenuToggle={toggleMobileMenu}
         />
 
-        {/* Mobile Categories */}
+        {/* Mobile Categories - Hidden since we moved to floating */}
         <MobileCategoriesMenu
-          showCategories={showCategories}
+          showCategories={false}
           onCategoryClick={handleCategoryClick}
         />
       </header>
@@ -68,7 +66,7 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
       {/* Desktop Categories Navigation */}
       <DesktopNavigation />
 
-      {/* Mobile Menu Overlay with Scroll Lock */}
+      {/* Mobile Menu Overlay */}
       <MobileMenu
         isOpen={mobileMenuOpen}
         onClose={closeMobileMenu}

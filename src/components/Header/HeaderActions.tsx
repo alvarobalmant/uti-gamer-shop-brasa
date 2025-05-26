@@ -1,5 +1,5 @@
 
-import { ShoppingCart, User, Menu, Grid3X3 } from 'lucide-react';
+import { ShoppingCart, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,7 +17,6 @@ interface HeaderActionsProps {
 const HeaderActions = ({ 
   onCartOpen, 
   onAuthOpen, 
-  onCategoriesToggle, 
   onMobileMenuToggle 
 }: HeaderActionsProps) => {
   const { user, isAdmin } = useAuth();
@@ -42,16 +41,6 @@ const HeaderActions = ({
       <div className="lg:hidden">
         <MobileSearchBar />
       </div>
-
-      {/* Categories Icon for Mobile */}
-      <Button 
-        onClick={onCategoriesToggle}
-        variant="ghost" 
-        className="lg:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
-      >
-        <Grid3X3 className="w-5 h-5" />
-        <span className="text-xs font-medium mt-1">Menu</span>
-      </Button>
 
       {/* User Account */}
       <Button 
