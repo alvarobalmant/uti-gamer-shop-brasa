@@ -1,11 +1,10 @@
 
-import { ShoppingCart, User, Menu } from 'lucide-react';
+import { User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { useCartSync } from '@/hooks/useCartSync';
 import MobileSearchBar from './MobileSearchBar';
+import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
 
 interface HeaderActionsProps {
   onCartOpen: () => void;
@@ -15,16 +14,11 @@ interface HeaderActionsProps {
 }
 
 const HeaderActions = ({ 
-  onCartOpen, 
   onAuthOpen, 
   onMobileMenuToggle 
 }: HeaderActionsProps) => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const { getCartItemsCount, syncing } = useCartSync();
-
-  const cartItemsCount = getCartItemsCount();
-  console.log('HeaderActions - Contagem do carrinho:', cartItemsCount);
 
   const handleLogin = () => {
     if (user) {
@@ -57,21 +51,8 @@ const HeaderActions = ({
         </span>
       </Button>
 
-      {/* Shopping Cart */}
-      <Button 
-        onClick={onCartOpen} 
-        variant="ghost" 
-        className="flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 relative"
-        disabled={syncing}
-      >
-        <ShoppingCart className={`w-5 h-5 ${syncing ? 'animate-pulse' : ''}`} />
-        <span className="text-xs font-medium mt-1">Carrinho</span>
-        {cartItemsCount > 0 && (
-          <Badge className="absolute -top-1 -right-1 bg-uti-red text-white text-xs px-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
-            {cartItemsCount}
-          </Badge>
-        )}
-      </Button>
+      {/* Global Shopping Cart */}
+      <GlobalCartIcon />
 
       {/* Mobile Menu Toggle */}
       <Button 

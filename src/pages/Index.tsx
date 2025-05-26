@@ -10,14 +10,14 @@ import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import ServiceCards from '@/components/ServiceCards';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import { useCartSync } from '@/hooks/useCartSync';
+import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const { products, loading } = useProducts();
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-  const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCartSync();
+  const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   
@@ -142,7 +142,7 @@ const Index = () => {
 
       {/* Cart Component */}
       <Cart
-        cart={cart}
+        cart={items}
         showCart={showCart}
         setShowCart={setShowCart}
         updateQuantity={updateQuantity}
