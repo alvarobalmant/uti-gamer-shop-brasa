@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard, { Product } from '@/components/ProductCard';
 import { useAuth } from '@/hooks/useAuth';
-import { useNewCart } from '@/hooks/useNewCart';
 import { searchProducts } from '@/utils/fuzzySearch';
 
 const SearchResults = () => {
@@ -15,7 +14,6 @@ const SearchResults = () => {
   const query = searchParams.get('q') || '';
   const { products, loading } = useProducts();
   const { user } = useAuth();
-  const { addToCart } = useNewCart();
 
   // Usar busca fuzzy para filtrar produtos
   const filteredProducts = searchProducts(products, query);
@@ -102,8 +100,7 @@ const SearchResults = () => {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
-                  getPlatformColor={() => getPlatformColor(product)}
+                  getPlatformColor={getPlatformColor}
                 />
               ))}
             </div>
