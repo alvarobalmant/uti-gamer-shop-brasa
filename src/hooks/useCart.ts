@@ -35,14 +35,14 @@ export const useCart = () => {
     if (!initialized) {
       loadCart();
     }
-  }, [user, initialized]);
+  }, [user]);
 
-  // Salvar carrinho quando mudar (apenas se já foi inicializado)
+  // Salvar carrinho quando mudar (apenas se já foi inicializado e não estiver carregando)
   useEffect(() => {
-    if (initialized && cart.length >= 0) {
+    if (initialized && !loading) {
       saveCart();
     }
-  }, [cart, user, initialized]);
+  }, [cart, user, initialized, loading]);
 
   const loadCart = async () => {
     setLoading(true);
@@ -111,7 +111,7 @@ export const useCart = () => {
   }, [user, cart]);
 
   const saveCartToDatabase = async () => {
-    if (!user) return;
+    if (!user || loading) return;
 
     try {
       // Primeiro, limpar carrinho existente
@@ -226,7 +226,7 @@ export const useCart = () => {
 
   // Migrar carrinho do localStorage para o banco quando usuário fizer login
   const migrateCartToDatabase = useCallback(async () => {
-    if (!user || !initialized) return;
+    if (!user || !initialized || loading) return;
 
     try {
       const localCart = localStorage.getItem('uti-games-cart');
@@ -242,7 +242,6 @@ export const useCart = () => {
           // Se não há itens no banco, migrar do localStorage
           if (!existingItems || existingItems.length === 0) {
             setCart(parsedCart);
-            // O useEffect vai salvar automaticamente no banco
           }
           
           // Limpar localStorage após migração
@@ -252,14 +251,14 @@ export const useCart = () => {
     } catch (error) {
       console.error('Erro ao migrar carrinho para o banco:', error);
     }
-  }, [user, initialized]);
+  }, [user, initialized, loading]);
 
   // Chamar migração quando usuário logar e estiver inicializado
   useEffect(() => {
-    if (user && initialized) {
+    if (user && initialized && !loading) {
       migrateCartToDatabase();
     }
-  }, [user, initialized, migrateCartToDatabase]);
+  }, [user, initialized, loading, migrateCartToDatabase]);
 
   return {
     cart,

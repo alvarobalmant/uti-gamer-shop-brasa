@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 export const useScrollPosition = () => {
   const location = useLocation();
   const scrollPositions = useRef<Record<string, number>>({});
+  const isNavigatingRef = useRef(false);
 
   useEffect(() => {
     // Save current scroll position when leaving a page
@@ -15,11 +16,14 @@ export const useScrollPosition = () => {
     // Restore scroll position when entering a page
     const restoreScrollPosition = () => {
       const savedPosition = scrollPositions.current[location.pathname];
-      if (savedPosition !== undefined) {
+      if (savedPosition !== undefined && !isNavigatingRef.current) {
         // Use setTimeout to ensure DOM is fully rendered
         setTimeout(() => {
           window.scrollTo(0, savedPosition);
+          isNavigatingRef.current = false;
         }, 100);
+      } else {
+        isNavigatingRef.current = false;
       }
     };
 
@@ -28,19 +32,25 @@ export const useScrollPosition = () => {
       saveScrollPosition();
     };
 
+    // Save scroll position on route change
+    const handleRouteChange = () => {
+      saveScrollPosition();
+    };
+
     // Restore position after navigation
     restoreScrollPosition();
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-
+    
     return () => {
-      saveScrollPosition();
+      handleRouteChange();
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [location.pathname]);
 
   const saveCurrentPosition = () => {
     scrollPositions.current[location.pathname] = window.scrollY;
+    isNavigatingRef.current = true;
   };
 
   return { saveCurrentPosition };

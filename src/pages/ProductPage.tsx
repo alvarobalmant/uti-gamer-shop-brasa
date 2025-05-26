@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/hooks/useProducts';
 import { useCart } from '@/hooks/useCart';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 
 const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products, loading } = useProducts();
   const { addToCart } = useCart();
+  const { saveCurrentPosition } = useScrollPosition();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = useState('');
@@ -80,6 +82,11 @@ const ProductPage = () => {
     }
   };
 
+  const handleBackClick = () => {
+    saveCurrentPosition();
+    navigate('/');
+  };
+
   const handleWhatsAppContact = () => {
     const message = `Olá! Gostaria de mais informações sobre:\n\n${product.name}\nPreço: R$ ${getCurrentPrice().toFixed(2)}\nCondição: ${selectedCondition === 'new' ? 'Novo' : selectedCondition === 'digital' ? 'Digital' : 'Usado'}`;
     const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
@@ -92,7 +99,7 @@ const ProductPage = () => {
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="px-4 py-3 flex items-center gap-3">
           <Button
-            onClick={() => navigate('/')}
+            onClick={handleBackClick}
             variant="ghost"
             size="sm"
             className="flex items-center gap-2"

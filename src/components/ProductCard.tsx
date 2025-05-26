@@ -1,7 +1,7 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
 import ProductCardPrice from './ProductCard/ProductCardPrice';
@@ -34,12 +34,14 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
   const [showButton, setShowButton] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { saveCurrentPosition } = useScrollPosition();
 
   const isOutOfStock = product.stock === 0;
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    saveCurrentPosition();
     navigate(`/produto/${product.id}`);
   };
 
@@ -47,6 +49,7 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
   const handleCardTouch = (e: React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    saveCurrentPosition();
     navigate(`/produto/${product.id}`);
   };
 
