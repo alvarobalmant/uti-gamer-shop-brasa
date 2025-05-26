@@ -23,9 +23,6 @@ const HeaderActions = ({
   const navigate = useNavigate();
   const { getCartItemsCount } = useNewCart();
 
-  const cartItemsCount = getCartItemsCount();
-  console.log('HeaderActions - Contagem do carrinho:', cartItemsCount);
-
   const handleLogin = () => {
     if (user) {
       if (isAdmin) {
@@ -65,9 +62,9 @@ const HeaderActions = ({
       >
         <ShoppingCart className="w-5 h-5" />
         <span className="text-xs font-medium mt-1">Carrinho</span>
-        {cartItemsCount > 0 && (
+        {getCartItemsCount() > 0 && (
           <Badge className="absolute -top-1 -right-1 bg-uti-red text-white text-xs px-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
-            {cartItemsCount}
+            {getCartItemsCount()}
           </Badge>
         )}
       </Button>

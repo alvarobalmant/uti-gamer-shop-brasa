@@ -30,7 +30,6 @@ export const useCartState = () => {
       setError(null);
 
       const itemId = generateItemId(product, size, color);
-      console.log('Adicionando item:', itemId, 'quantidade:', quantity);
       
       setState(prev => {
         const existingItemIndex = prev.items.findIndex(item => item.id === itemId);
@@ -42,7 +41,6 @@ export const useCartState = () => {
             ...updatedItems[existingItemIndex],
             quantity: updatedItems[existingItemIndex].quantity + quantity
           };
-          console.log('Item existente atualizado. Nova quantidade:', updatedItems[existingItemIndex].quantity);
           return { ...prev, items: updatedItems };
         } else {
           // Add new item
@@ -54,7 +52,6 @@ export const useCartState = () => {
             quantity,
             addedAt: new Date()
           };
-          console.log('Novo item adicionado:', newItem);
           return { ...prev, items: [...prev.items, newItem] };
         }
       });
@@ -83,7 +80,6 @@ export const useCartState = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Removendo item:', itemId);
 
       setState(prev => ({
         ...prev,
@@ -101,7 +97,6 @@ export const useCartState = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Atualizando quantidade:', itemId, 'nova quantidade:', quantity);
 
       if (quantity <= 0) {
         await removeItem(itemId);
@@ -114,7 +109,6 @@ export const useCartState = () => {
           item.id === itemId ? { ...item, quantity } : item
         )
       }));
-      console.log('Quantidade atualizada com sucesso');
     } catch (error) {
       console.error('Erro ao atualizar quantidade:', error);
       setError('Erro ao atualizar quantidade');
@@ -127,7 +121,6 @@ export const useCartState = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Limpando carrinho');
       setState(prev => ({ ...prev, items: [] }));
     } catch (error) {
       console.error('Erro ao limpar carrinho:', error);
@@ -138,18 +131,15 @@ export const useCartState = () => {
   }, []);
 
   const getTotal = useCallback((): number => {
-    const total = state.items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-    return total;
+    return state.items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   }, [state.items]);
 
   const getItemsCount = useCallback((): number => {
-    const count = state.items.reduce((total, item) => total + item.quantity, 0);
-    return count;
+    return state.items.reduce((total, item) => total + item.quantity, 0);
   }, [state.items]);
 
   return {
     state,
-    setState,
     actions: {
       addItem,
       removeItem,

@@ -19,10 +19,7 @@ export const useCartPersistence = ({ items, isLoading, setItems, setLoading }: U
       const saved = localStorage.getItem('uti-games-cart');
       if (saved) {
         const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) ? parsed.map(item => ({
-          ...item,
-          addedAt: new Date(item.addedAt)
-        })) : [];
+        return Array.isArray(parsed) ? parsed : [];
       }
     } catch (error) {
       console.error('Erro ao carregar do localStorage:', error);
@@ -33,7 +30,6 @@ export const useCartPersistence = ({ items, isLoading, setItems, setLoading }: U
   const saveToLocalStorage = useCallback((cartItems: CartItem[]) => {
     try {
       localStorage.setItem('uti-games-cart', JSON.stringify(cartItems));
-      console.log('Carrinho salvo no localStorage:', cartItems.length, 'items');
     } catch (error) {
       console.error('Erro ao salvar no localStorage:', error);
     }
@@ -100,7 +96,6 @@ export const useCartPersistence = ({ items, isLoading, setItems, setLoading }: U
 
         if (error) throw error;
       }
-      console.log('Carrinho salvo no banco:', cartItems.length, 'items');
     } catch (error) {
       console.error('Erro ao salvar no banco:', error);
       // Fallback para localStorage
@@ -116,12 +111,10 @@ export const useCartPersistence = ({ items, isLoading, setItems, setLoading }: U
         if (user) {
           const dbItems = await loadFromDatabase();
           if (dbItems.length > 0) {
-            console.log('Carregando do banco:', dbItems.length, 'items');
             setItems(dbItems);
           } else {
             // Se não há itens no banco, carregar do localStorage
             const localItems = loadFromLocalStorage();
-            console.log('Carregando do localStorage:', localItems.length, 'items');
             setItems(localItems);
             // Migrar para o banco se houver itens
             if (localItems.length > 0) {
@@ -131,7 +124,6 @@ export const useCartPersistence = ({ items, isLoading, setItems, setLoading }: U
           }
         } else {
           const localItems = loadFromLocalStorage();
-          console.log('Carregando do localStorage (sem usuário):', localItems.length, 'items');
           setItems(localItems);
         }
       } catch (error) {
@@ -144,18 +136,14 @@ export const useCartPersistence = ({ items, isLoading, setItems, setLoading }: U
     loadCart();
   }, [user, loadFromDatabase, loadFromLocalStorage, setItems, setLoading, saveToDatabase]);
 
-  // Salvar mudanças automaticamente (com debounce)
+  // Salvar mudanças automaticamente
   useEffect(() => {
-    if (!isLoading && items.length >= 0) {
-      const timeoutId = setTimeout(() => {
-        if (user) {
-          saveToDatabase(items);
-        } else {
-          saveToLocalStorage(items);
-        }
-      }, 500); // Debounce de 500ms
-
-      return () => clearTimeout(timeoutId);
+    if (!isLoading) {
+      if (user) {
+        saveToDatabase(items);
+      } else {
+        saveToLocalStorage(items);
+      }
     }
   }, [items, user, isLoading, saveToDatabase, saveToLocalStorage]);
 

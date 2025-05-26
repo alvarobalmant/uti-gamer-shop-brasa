@@ -5,18 +5,16 @@ import { useCartPersistence } from './useCartPersistence';
 import { Product } from './useProducts';
 
 export const useNewCart = () => {
-  const { state, actions, setState } = useCartState();
+  const { state, actions } = useCartState();
   
-  // Setup persistence with proper callbacks
+  // Setup persistence
   const setItems = useCallback((items: any[]) => {
-    console.log('setItems chamado com:', items.length, 'items');
-    setState(prev => ({ ...prev, items }));
-  }, [setState]);
+    // This will be handled by the cart state
+  }, []);
 
   const setLoading = useCallback((loading: boolean) => {
-    console.log('setLoading chamado com:', loading);
-    setState(prev => ({ ...prev, isLoading: loading }));
-  }, [setState]);
+    // This will be handled by the cart state
+  }, []);
 
   useCartPersistence({
     items: state.items,
@@ -40,26 +38,20 @@ export const useNewCart = () => {
 
   // Legacy compatibility methods
   const addToCart = useCallback((product: Product, size?: string, color?: string) => {
-    console.log('addToCart chamado para:', product.name);
     return actions.addItem(product, size, color, 1);
   }, [actions]);
 
   const updateQuantity = useCallback((productId: string, size: string | undefined, color: string | undefined, quantity: number) => {
     const itemId = `${productId}-${size || 'default'}-${color || 'default'}`;
-    console.log('updateQuantity chamado para:', itemId, 'nova quantidade:', quantity);
     return actions.updateQuantity(itemId, quantity);
   }, [actions]);
 
   const getCartTotal = useCallback(() => {
-    const total = actions.getTotal();
-    console.log('getCartTotal:', total);
-    return total;
+    return actions.getTotal();
   }, [actions]);
 
   const getCartItemsCount = useCallback(() => {
-    const count = actions.getItemsCount();
-    console.log('getCartItemsCount:', count);
-    return count;
+    return actions.getItemsCount();
   }, [actions]);
 
   return {
