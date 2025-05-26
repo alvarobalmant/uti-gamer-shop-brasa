@@ -28,6 +28,7 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || '');
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || '');
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [showButton, setShowButton] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -70,68 +71,60 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
   const isOnSale = discount > 10;
 
   return (
-    <div className="card-product group">
-      {/* Product Badge */}
-      <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
-        {isOnSale && (
-          <div className="bg-uti-red text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
-            -{discount}%
-          </div>
-        )}
-        {isNewProduct && (
-          <div className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
-            NOVO
-          </div>
-        )}
-        {isUsedProduct && (
-          <div className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
-            USADO
-          </div>
-        )}
-        {isLowStock && !isOutOfStock && (
-          <div className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md animate-pulse">
-            Últimas unidades!
-          </div>
-        )}
-      </div>
+    <div 
+      className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-lg transition-all duration-300 cursor-pointer"
+      onMouseEnter={() => setShowButton(true)}
+      onMouseLeave={() => setShowButton(false)}
+      onClick={handleCardClick}
+    >
+      {/* Product Image Container */}
+      <div className="relative overflow-hidden">
+        {/* Product Badges */}
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
+          {isOnSale && (
+            <div className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+              -{discount}%
+            </div>
+          )}
+          {isNewProduct && (
+            <div className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+              NOVO
+            </div>
+          )}
+          {isUsedProduct && (
+            <div className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              USADO
+            </div>
+          )}
+          {isLowStock && !isOutOfStock && (
+            <div className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              Últimas unidades!
+            </div>
+          )}
+        </div>
 
-      {/* Wishlist Button */}
-      <button
-        onClick={handleWishlistClick}
-        className="absolute top-3 right-3 z-10 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-      >
-        <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-uti-red text-uti-red' : 'text-gray-600'}`} />
-      </button>
+        {/* Wishlist Button */}
+        <button
+          onClick={handleWishlistClick}
+          className="absolute top-3 right-3 z-10 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300"
+        >
+          <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-600 text-red-600' : 'text-gray-600'}`} />
+        </button>
 
-      {/* Product Image */}
-      <div 
-        className="relative overflow-hidden cursor-pointer"
-        onClick={handleCardClick}
-      >
+        {/* Product Image */}
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-48 md:h-56 object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-48 md:h-56 object-cover transition-transform duration-300 group-hover:scale-105"
           onError={(e) => {
             e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
           }}
         />
         
-        {/* Quick View Overlay */}
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <Button
-            onClick={handleCardClick}
-            className="bg-white text-uti-dark hover:bg-gray-100 font-semibold py-2 px-4 rounded-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Ver Detalhes
-          </Button>
-        </div>
-
         {/* Out of Stock Overlay */}
         {isOutOfStock && (
-          <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-            <span className="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold text-sm">
               ESGOTADO
             </span>
           </div>
@@ -139,54 +132,50 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
       </div>
 
       {/* Product Info */}
-      <div className="p-4 flex-1 flex flex-col">
-        {/* Platform Tags */}
-        <div className="flex items-center gap-2 mb-3">
-          {primaryTag && (
+      <div className="p-4">
+        {/* Platform Tag */}
+        {primaryTag && (
+          <div className="mb-3">
             <span className={`text-xs text-white px-2 py-1 rounded-md font-medium ${getPlatformColor(product)}`}>
               {primaryTag}
             </span>
-          )}
-          {product.tags && product.tags.length > 1 && (
-            <span className="text-xs text-uti-gray bg-gray-100 px-2 py-1 rounded-md font-medium">
-              +{product.tags.length - 1}
-            </span>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Product Name */}
-        <h3 className="text-card-title font-heading text-uti-dark line-clamp-2 mb-3 group-hover:text-uti-red transition-colors duration-300 cursor-pointer" onClick={handleCardClick}>
+        {/* Product Title */}
+        <h3 className="text-base font-semibold text-gray-900 line-clamp-2 mb-3 leading-tight">
           {product.name}
         </h3>
 
         {/* Rating */}
-        <div className="flex items-center gap-1 mb-3">
+        <div className="flex items-center gap-1 mb-4">
           {[1, 2, 3, 4, 5].map((star) => (
             <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
           ))}
-          <span className="text-xs text-uti-gray ml-1">(4.8)</span>
+          <span className="text-xs text-gray-500 ml-1">(4.8)</span>
         </div>
 
-        {/* Pricing */}
-        <div className="mb-4 flex-1">
-          <div className="flex items-center justify-between mb-1">
-            <div className="text-xl font-bold text-uti-dark">
+        {/* Pricing Block */}
+        <div className="mb-4">
+          {/* Main Price */}
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xl font-bold text-gray-900">
               R$ {product.price.toFixed(2)}
-            </div>
+            </span>
             {discount > 0 && (
-              <div className="text-sm text-uti-gray line-through">
+              <span className="text-sm text-gray-500 line-through">
                 R$ {originalPrice.toFixed(2)}
-              </div>
+              </span>
             )}
           </div>
           
           {/* Pro Price */}
-          <div className="text-sm font-semibold text-purple-600 mb-1">
-            R$ {proPrice.toFixed(2)} para Membros Pro
+          <div className="text-sm font-medium text-purple-600 mb-1">
+            R$ {proPrice.toFixed(2)} Membros Pro
           </div>
           
-          {/* Payment Options */}
-          <div className="text-xs text-uti-gray">
+          {/* Installments */}
+          <div className="text-xs text-gray-500">
             ou 12x de R$ {(product.price / 12).toFixed(2)}
           </div>
         </div>
@@ -194,27 +183,29 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
         {/* Stock Status */}
         <div className="mb-4">
           {isOutOfStock ? (
-            <span className="text-sm text-red-600 font-medium">Produto Esgotado</span>
+            <span className="text-sm text-red-600 font-medium">Esgotado</span>
           ) : isLowStock ? (
-            <span className="text-sm text-orange-600 font-medium">Apenas {product.stock} em estoque</span>
+            <span className="text-sm text-orange-600 font-medium">Restam {product.stock} unidades</span>
           ) : (
             <span className="text-sm text-green-600 font-medium">Em estoque</span>
           )}
         </div>
 
         {/* Add to Cart Button */}
-        <Button
-          onClick={handleAddToCart}
-          disabled={isOutOfStock}
-          className={`w-full font-semibold py-3 text-sm transition-all duration-300 ${
-            isOutOfStock 
-              ? 'bg-gray-400 cursor-not-allowed text-white' 
-              : 'btn-primary group-hover:shadow-lg'
-          }`}
-        >
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          {isOutOfStock ? 'Esgotado' : 'Adicionar ao Carrinho'}
-        </Button>
+        <div className={`transition-all duration-300 ${showButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+          <Button
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            className={`w-full font-semibold py-3 text-sm rounded-lg transition-all duration-300 ${
+              isOutOfStock 
+                ? 'bg-gray-400 cursor-not-allowed text-white' 
+                : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-md'
+            }`}
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            {isOutOfStock ? 'Esgotado' : 'Adicionar ao Carrinho'}
+          </Button>
+        </div>
       </div>
     </div>
   );

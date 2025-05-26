@@ -14,7 +14,6 @@ interface ProductModalProps {
 }
 
 const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor }: ProductModalProps) => {
-  // Early return BEFORE any hooks to avoid hooks order violation
   if (!product || !isOpen) return null;
 
   const [selectedSize, setSelectedSize] = useState('');
@@ -23,7 +22,6 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
   const isLowStock = product.stock && product.stock <= 5;
   const isOutOfStock = product.stock === 0;
 
-  // Initialize selected options when product changes
   useEffect(() => {
     if (product) {
       setSelectedSize(product.sizes?.[0] || '');
@@ -38,8 +36,9 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
     }
   };
 
-  // Get the primary tag for display
   const primaryTag = product.tags?.[0]?.name || '';
+  const originalPrice = product.price * 1.15;
+  const proPrice = product.price * 0.95;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -50,7 +49,7 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto animate-scale-in">
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Close Button */}
         <Button
           onClick={onClose}
@@ -74,59 +73,69 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
             
             {/* Badges */}
             <div className="absolute top-4 left-4 flex flex-col gap-2">
-              <Badge className="bg-red-600 text-white font-bold text-sm px-4 py-2 shadow-lg">
-                NOVO
-              </Badge>
+              {product.tags?.some(tag => tag.name.toLowerCase().includes('novo')) && (
+                <Badge className="bg-green-600 text-white font-bold text-sm px-3 py-1 shadow-lg">
+                  NOVO
+                </Badge>
+              )}
               {isLowStock && !isOutOfStock && (
-                <Badge className="bg-orange-500 text-white font-bold text-sm px-4 py-2 shadow-lg animate-pulse">
-                  🔥 Apenas {product.stock} unidades!
+                <Badge className="bg-orange-500 text-white font-bold text-sm px-3 py-1 shadow-lg">
+                  Últimas {product.stock} unidades!
                 </Badge>
               )}
               {isOutOfStock && (
-                <Badge className="bg-gray-500 text-white font-bold text-sm px-4 py-2 shadow-lg">
+                <Badge className="bg-gray-500 text-white font-bold text-sm px-3 py-1 shadow-lg">
                   ESGOTADO
                 </Badge>
               )}
             </div>
 
             {primaryTag && (
-              <Badge className={`absolute top-4 right-4 ${getPlatformColor(product)} text-white font-bold text-sm px-4 py-2 shadow-lg`}>
+              <Badge className={`absolute top-4 right-4 ${getPlatformColor(product)} text-white font-bold text-sm px-3 py-1 shadow-lg`}>
                 {primaryTag}
               </Badge>
             )}
           </div>
 
           {/* Content Section */}
-          <div className="p-8">
-            <div className="mb-6">
-              <h2 className="text-3xl font-bold text-gray-800 mb-4 leading-tight">
+          <div className="p-8 space-y-6">
+            {/* Product Title */}
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2 leading-tight">
                 {product.name}
               </h2>
               {product.description && (
-                <p className="text-gray-600 text-lg leading-relaxed">
+                <p className="text-gray-600 leading-relaxed">
                   {product.description}
                 </p>
               )}
             </div>
 
-            {/* Price */}
-            <div className="mb-8">
-              <div className="text-4xl font-bold text-red-600 mb-2">
-                R$ {product.price.toFixed(2)}
+            {/* Pricing Block */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-3xl font-bold text-gray-900">
+                  R$ {product.price.toFixed(2)}
+                </span>
+                <span className="text-lg text-gray-500 line-through">
+                  R$ {originalPrice.toFixed(2)}
+                </span>
               </div>
-              <p className="text-gray-500 font-medium">À vista no PIX</p>
-              <div className="mt-2 text-sm text-gray-600">
-                <p>💳 Ou em até 12x no cartão</p>
+              <div className="text-lg font-semibold text-purple-600 mb-2">
+                R$ {proPrice.toFixed(2)} Membros Pro
+              </div>
+              <div className="text-sm text-gray-600 space-y-1">
+                <p>💳 ou 12x de R$ {(product.price / 12).toFixed(2)}</p>
                 <p>🚚 Frete grátis acima de R$ 200</p>
               </div>
             </div>
 
             {/* Options */}
-            <div className="space-y-6 mb-8">
+            <div className="space-y-4">
               {/* Sizes */}
               {product.sizes && product.sizes.length > 0 && (
                 <div>
-                  <label className="text-lg font-bold text-gray-700 mb-3 block">
+                  <label className="text-lg font-semibold text-gray-900 mb-3 block">
                     {product.sizes[0] === 'Físico' || product.sizes[0] === 'Digital' ? 'Formato:' : 'Tamanho:'}
                   </label>
                   <div className="flex flex-wrap gap-3">
@@ -135,10 +144,10 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
                         key={size}
                         variant={selectedSize === size ? "default" : "outline"}
                         onClick={() => setSelectedSize(size)}
-                        className={`transition-all duration-200 font-medium px-6 py-3 ${
+                        className={`transition-all duration-200 font-medium px-4 py-2 ${
                           selectedSize === size 
-                            ? 'bg-red-600 text-white border-red-600 shadow-md scale-105' 
-                            : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 hover:bg-red-50'
+                            ? 'bg-red-600 text-white border-red-600' 
+                            : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'
                         }`}
                       >
                         {size}
@@ -151,17 +160,17 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
               {/* Colors */}
               {product.colors && product.colors.length > 0 && (
                 <div>
-                  <label className="text-lg font-bold text-gray-700 mb-3 block">Cor:</label>
+                  <label className="text-lg font-semibold text-gray-900 mb-3 block">Cor:</label>
                   <div className="flex flex-wrap gap-3">
                     {product.colors.map((color) => (
                       <Button
                         key={color}
                         variant={selectedColor === color ? "default" : "outline"}
                         onClick={() => setSelectedColor(color)}
-                        className={`transition-all duration-200 font-medium px-6 py-3 ${
+                        className={`transition-all duration-200 font-medium px-4 py-2 ${
                           selectedColor === color 
-                            ? 'bg-red-600 text-white border-red-600 shadow-md scale-105' 
-                            : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 hover:bg-red-50'
+                            ? 'bg-red-600 text-white border-red-600' 
+                            : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'
                         }`}
                       >
                         {color}
@@ -173,14 +182,14 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-3">
               <Button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock || (!selectedSize && product.sizes && product.sizes.length > 0)}
-                className={`flex-1 font-bold py-4 text-lg rounded-xl transition-all duration-300 hover:scale-105 shadow-lg ${
+                className={`w-full font-bold py-4 text-lg rounded-lg transition-all duration-300 shadow-md hover:shadow-lg ${
                   isOutOfStock 
                     ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-red-500/25'
+                    : 'bg-red-600 hover:bg-red-700 text-white'
                 }`}
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
@@ -189,31 +198,31 @@ const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor 
               
               <Button
                 variant="outline"
-                className="border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-bold py-4 px-6 rounded-xl transition-all duration-300"
+                className="w-full border-2 border-gray-300 text-gray-700 hover:border-red-600 hover:text-red-600 font-semibold py-3 rounded-lg transition-all duration-300"
               >
                 <Heart className="w-5 h-5 mr-2" />
-                Favoritar
+                Adicionar aos Favoritos
               </Button>
             </div>
 
             {/* Trust Badges */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                <div className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Produto em estoque
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Produto em estoque</span>
                 </div>
-                <div className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Entrega rápida
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Entrega rápida</span>
                 </div>
-                <div className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Suporte via WhatsApp
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Suporte WhatsApp</span>
                 </div>
-                <div className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Garantia oficial
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Garantia oficial</span>
                 </div>
               </div>
             </div>
