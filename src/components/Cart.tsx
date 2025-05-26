@@ -1,22 +1,17 @@
 
 import { Button } from '@/components/ui/button';
 import { Plus, Minus, ShoppingCart, X } from 'lucide-react';
-import { CartItem } from '@/types/cart';
+import { useCart } from '@/contexts/CartContext';
 
 interface CartProps {
-  cart: CartItem[];
   showCart: boolean;
   setShowCart: (show: boolean) => void;
-  updateQuantity: (productId: string, size: string | undefined, color: string | undefined, quantity: number) => void;
-  sendToWhatsApp: () => void;
 }
 
-const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: CartProps) => {
-  const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-  };
+const Cart = ({ showCart, setShowCart }: CartProps) => {
+  const { cart, updateQuantity, getCartTotal, sendToWhatsApp } = useCart();
 
-  const handleQuantityChange = (item: CartItem, change: number) => {
+  const handleQuantityChange = (item: any, change: number) => {
     const newQuantity = Math.max(0, item.quantity + change);
     const [productId, size, color] = item.id.split('-');
     updateQuantity(
@@ -144,15 +139,15 @@ const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: C
               <div className="bg-red-50 p-4 rounded-xl mb-4 border border-red-200">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-600 font-medium">Subtotal:</span>
-                  <span className="text-gray-800 font-bold">R$ {getTotalPrice().toFixed(2)}</span>
+                  <span className="text-gray-800 font-bold">R$ {getCartTotal().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-600 font-medium">Frete:</span>
                   <span className="text-red-600 font-bold">
-                    {getTotalPrice() >= 200 ? 'GRÁTIS' : 'Calcular'}
+                    {getCartTotal() >= 200 ? 'GRÁTIS' : 'Calcular'}
                   </span>
                 </div>
-                {getTotalPrice() >= 200 && (
+                {getCartTotal() >= 200 && (
                   <div className="text-center py-2 bg-green-100 rounded-lg mb-2">
                     <p className="text-green-700 text-sm font-bold">🎉 Você ganhou frete grátis!</p>
                   </div>
@@ -161,7 +156,7 @@ const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: C
                   <div className="flex justify-between items-center">
                     <span className="text-xl font-bold text-gray-800">Total:</span>
                     <span className="text-2xl font-bold text-red-600">
-                      R$ {getTotalPrice().toFixed(2)}
+                      R$ {getCartTotal().toFixed(2)}
                     </span>
                   </div>
                 </div>

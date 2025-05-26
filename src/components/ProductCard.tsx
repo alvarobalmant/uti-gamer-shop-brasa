@@ -1,7 +1,9 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
+import { useCart } from '@/contexts/CartContext';
 import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
 import ProductCardPrice from './ProductCard/ProductCardPrice';
@@ -23,11 +25,10 @@ export interface Product {
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart: (product: Product, size?: string, color?: string) => void;
   getPlatformColor: (product: Product) => string;
 }
 
-const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProps) => {
+const ProductCard = ({ product, getPlatformColor }: ProductCardProps) => {
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || '');
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || '');
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -35,6 +36,7 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
   const { toast } = useToast();
   const navigate = useNavigate();
   const { saveCurrentPosition } = useScrollPosition();
+  const { addToCart } = useCart();
 
   const isOutOfStock = product.stock === 0;
 
@@ -45,7 +47,6 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
     navigate(`/produto/${product.id}`);
   };
 
-  // Enhanced mobile touch handling
   const handleCardTouch = (e: React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -57,7 +58,7 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
     e.preventDefault();
     e.stopPropagation();
     if (!isOutOfStock) {
-      onAddToCart(product, selectedSize, selectedColor);
+      addToCart(product, selectedSize, selectedColor);
     }
   };
 
@@ -82,7 +83,6 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
       onTouchEnd={handleCardTouch}
       style={{ touchAction: 'manipulation' }}
     >
-      {/* Product Image Container */}
       <ProductCardImage
         product={product}
         isWishlisted={isWishlisted}
@@ -91,7 +91,6 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
         onCardTouch={handleCardTouch}
       />
 
-      {/* Product Info */}
       <div className="p-4 md:p-4 p-3">
         <ProductCardInfo
           product={product}
