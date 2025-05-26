@@ -16,33 +16,47 @@ export const useScrollPosition = () => {
     const currentPath = path || location.pathname;
     const currentPosition = window.scrollY;
     scrollPositions.current[currentPath] = currentPosition;
+    
+    // Also save to sessionStorage as backup
+    sessionStorage.setItem(`scroll_${currentPath}`, currentPosition.toString());
     console.log(`Salvando posição ${currentPosition} para ${currentPath}`);
   }, [location.pathname]);
 
   const restoreScrollPosition = useCallback((path?: string) => {
     const targetPath = path || location.pathname;
-    const savedPosition = scrollPositions.current[targetPath];
+    let savedPosition = scrollPositions.current[targetPath];
     
-    if (savedPosition !== undefined && !isNavigatingRef.current) {
+    // If not found in memory, try sessionStorage
+    if (savedPosition === undefined) {
+      const sessionPos = sessionStorage.getItem(`scroll_${targetPath}`);
+      if (sessionPos) {
+        savedPosition = parseInt(sessionPos, 10);
+        scrollPositions.current[targetPath] = savedPosition;
+      }
+    }
+    
+    if (savedPosition !== undefined && savedPosition > 0) {
       // Clear any existing timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
       
-      // Use multiple timeouts to ensure restoration works
-      timeoutRef.current = setTimeout(() => {
-        window.scrollTo(0, savedPosition);
-        console.log(`Restaurando posição ${savedPosition} para ${targetPath}`);
-        
-        // Verify the scroll position was set correctly
-        setTimeout(() => {
-          if (Math.abs(window.scrollY - savedPosition) > 50) {
-            window.scrollTo(0, savedPosition);
-            console.log(`Re-aplicando posição ${savedPosition} para ${targetPath}`);
-          }
-          isNavigatingRef.current = false;
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(() => {
+        timeoutRef.current = setTimeout(() => {
+          window.scrollTo(0, savedPosition);
+          console.log(`Restaurando posição ${savedPosition} para ${targetPath}`);
+          
+          // Verify the scroll position was set correctly after a brief delay
+          setTimeout(() => {
+            if (Math.abs(window.scrollY - savedPosition) > 50) {
+              window.scrollTo(0, savedPosition);
+              console.log(`Re-aplicando posição ${savedPosition} para ${targetPath}`);
+            }
+            isNavigatingRef.current = false;
+          }, 200);
         }, 100);
-      }, 50);
+      });
     } else {
       isNavigatingRef.current = false;
     }
@@ -59,17 +73,28 @@ export const useScrollPosition = () => {
     const handleScroll = () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
+        if (!isNavigatingRef.current) {
+          saveScrollPosition();
+        }
+      }, 150);
+    };
+
+    // Save position on visibility change (when tab becomes hidden)
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
         saveScrollPosition();
-      }, 100);
+      }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       saveScrollPosition(); // Save current position when component unmounts
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -79,7 +104,15 @@ export const useScrollPosition = () => {
 
   // Restore position when entering a page
   useEffect(() => {
-    restoreScrollPosition();
+    // Only restore if we're not currently navigating
+    if (!isNavigatingRef.current) {
+      // Add a small delay to ensure the page content is loaded
+      const restoreTimeout = setTimeout(() => {
+        restoreScrollPosition();
+      }, 50);
+      
+      return () => clearTimeout(restoreTimeout);
+    }
   }, [location.pathname, restoreScrollPosition]);
 
   const saveCurrentPosition = useCallback(() => {

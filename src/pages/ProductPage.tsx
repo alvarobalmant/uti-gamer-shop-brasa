@@ -19,7 +19,7 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const { products, loading } = useProducts();
   const { addToCart } = useCart();
-  const { saveCurrentPosition } = useScrollPosition();
+  const { restoreScrollPosition } = useScrollPosition();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = useState('');
@@ -85,8 +85,13 @@ const ProductPage = () => {
   };
 
   const handleBackClick = () => {
-    saveCurrentPosition();
-    navigate('/');
+    // Navigate back and let the scroll restoration handle the position
+    navigate(-1);
+    
+    // Fallback: restore position for the home page after navigation
+    setTimeout(() => {
+      restoreScrollPosition('/');
+    }, 100);
   };
 
   const handleWhatsAppContact = () => {
