@@ -1,3 +1,3 @@
 
-// Usar diretamente o novo hook simplificado
-export { useNewCart as useCart } from './useNewCart';
+// Hook simplificado que redireciona para o contexto
+export { useCart } from '@/contexts/CartContext';
