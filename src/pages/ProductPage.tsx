@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/hooks/useProducts';
-import { useCart } from '@/contexts/CartContext';
+import { useNewCart } from '@/hooks/useNewCart';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import ProductPageHeader from '@/components/ProductPage/ProductPageHeader';
 import ProductImageGallery from '@/components/ProductPage/ProductImageGallery';
@@ -18,7 +18,7 @@ const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products, loading } = useProducts();
-  const { addToCart } = useCart();
+  const { addToCart } = useNewCart();
   const { saveCurrentPosition } = useScrollPosition();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
