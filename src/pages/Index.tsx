@@ -17,7 +17,7 @@ const Index = () => {
   const { products, loading } = useProducts();
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-  const { cart, addToCart, updateQuantity, getTotal, getCartItemsCount, sendToWhatsApp } = useCartSync();
+  const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCartSync();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   
