@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard, { Product } from '@/components/ProductCard';
 import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/hooks/useCart';
+import { useNewCart } from '@/hooks/useNewCart';
 
 const CategoryPage = () => {
   const { category } = useParams();
   const navigate = useNavigate();
   const { products, loading } = useProducts();
   const { user } = useAuth();
-  const { addToCart } = useCart();
+  const { addToCart } = useNewCart();
 
   const getCategoryTitle = (cat: string) => {
     const categoryMap: { [key: string]: string } = {

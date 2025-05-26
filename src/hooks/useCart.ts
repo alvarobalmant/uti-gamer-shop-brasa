@@ -1,273 +1,212 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { Product } from '@/hooks/useProducts';
+import { useState, useCallback, useEffect } from 'react';
+import { Product } from './useProducts';
+import { CartItem } from '@/types/cart';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 
-export interface CartItem {
-  product: Product;
-  size?: string;
-  color?: string;
-  quantity: number;
-}
-
-interface CartItemDB {
-  id: string;
-  user_id: string;
-  product_id: string;
-  size?: string;
-  color?: string;
-  quantity: number;
-  created_at: string;
-  updated_at: string;
-}
+const STORAGE_KEY = 'uti-games-cart';
 
 export const useCart = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
 
-  // Carregar carrinho na inicialização
+  // Carregar carrinho do localStorage na inicialização
   useEffect(() => {
-    if (!initialized) {
-      loadCart();
-    }
-  }, [user]);
-
-  // Salvar carrinho quando mudar (apenas se já foi inicializado e não estiver carregando)
-  useEffect(() => {
-    if (initialized && !loading) {
-      saveCart();
-    }
-  }, [cart, user, initialized, loading]);
-
-  const loadCart = async () => {
-    setLoading(true);
-    try {
-      if (user) {
-        await loadCartFromDatabase();
-      } else {
-        loadCartFromLocalStorage();
+    const loadCart = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          console.log('Carregando carrinho do localStorage:', parsed.length, 'items');
+          setCart(Array.isArray(parsed) ? parsed.map(item => ({
+            ...item,
+            addedAt: new Date(item.addedAt)
+          })) : []);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar carrinho:', error);
+        setCart([]);
       }
+    };
+    
+    loadCart();
+  }, []);
+
+  // Salvar carrinho no localStorage sempre que mudar
+  useEffect(() => {
+    if (cart.length >= 0) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+        console.log('Carrinho salvo no localStorage:', cart.length, 'items');
+      } catch (error) {
+        console.error('Erro ao salvar carrinho:', error);
+      }
+    }
+  }, [cart]);
+
+  const generateItemId = useCallback((product: Product, size?: string, color?: string): string => {
+    return `${product.id}-${size || 'default'}-${color || 'default'}`;
+  }, []);
+
+  const addItem = useCallback(async (product: Product, size?: string, color?: string, quantity: number = 1) => {
+    try {
+      setLoading(true);
+      console.log('addItem chamado para:', product.name, 'size:', size, 'color:', color);
+      
+      const itemId = generateItemId(product, size, color);
+      
+      setCart(prev => {
+        const existingItemIndex = prev.findIndex(item => item.id === itemId);
+        
+        if (existingItemIndex >= 0) {
+          // Atualizar item existente
+          const newCart = [...prev];
+          newCart[existingItemIndex] = {
+            ...newCart[existingItemIndex],
+            quantity: newCart[existingItemIndex].quantity + quantity
+          };
+          console.log('Item existente atualizado. Nova quantidade:', newCart[existingItemIndex].quantity);
+          return newCart;
+        } else {
+          // Adicionar novo item
+          const newItem: CartItem = {
+            id: itemId,
+            product,
+            size,
+            color,
+            quantity,
+            addedAt: new Date()
+          };
+          console.log('Novo item adicionado:', newItem);
+          return [...prev, newItem];
+        }
+      });
+
+      toast({
+        title: "✅ Produto adicionado!",
+        description: `${product.name} foi adicionado ao carrinho`,
+        duration: 2000,
+        className: "bg-green-50 border-green-200 text-green-800",
+      });
     } catch (error) {
-      console.error('Erro ao carregar carrinho:', error);
+      console.error('Erro ao adicionar item:', error);
+      toast({
+        title: "❌ Erro",
+        description: "Erro ao adicionar item ao carrinho",
+        duration: 3000,
+        className: "bg-red-50 border-red-200 text-red-800",
+      });
     } finally {
       setLoading(false);
-      setInitialized(true);
     }
-  };
+  }, [generateItemId, toast]);
 
-  const loadCartFromDatabase = async () => {
-    if (!user) return;
-
+  const removeItem = useCallback(async (itemId: string) => {
     try {
-      const { data: cartItems, error } = await supabase
-        .from('cart_items')
-        .select(`
-          *,
-          products (*)
-        `)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      if (cartItems) {
-        const formattedCart: CartItem[] = cartItems.map((item: any) => ({
-          product: item.products,
-          size: item.size,
-          color: item.color,
-          quantity: item.quantity,
-        }));
-        setCart(formattedCart);
-      }
+      setLoading(true);
+      console.log('removeItem chamado para:', itemId);
+      
+      setCart(prev => {
+        const newCart = prev.filter(item => item.id !== itemId);
+        console.log('Item removido. Carrinho agora tem:', newCart.length, 'items');
+        return newCart;
+      });
     } catch (error) {
-      console.error('Erro ao carregar carrinho do banco:', error);
-      loadCartFromLocalStorage();
+      console.error('Erro ao remover item:', error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-  const loadCartFromLocalStorage = () => {
+  const updateQuantity = useCallback(async (itemId: string, quantity: number) => {
     try {
-      const savedCart = localStorage.getItem('uti-games-cart');
-      if (savedCart) {
-        const parsedCart = JSON.parse(savedCart);
-        setCart(parsedCart);
+      setLoading(true);
+      console.log('updateQuantity chamado para:', itemId, 'nova quantidade:', quantity);
+      
+      if (quantity <= 0) {
+        await removeItem(itemId);
+        return;
       }
+
+      setCart(prev => {
+        const newCart = prev.map(item =>
+          item.id === itemId ? { ...item, quantity } : item
+        );
+        console.log('Quantidade atualizada para item:', itemId, 'nova quantidade:', quantity);
+        return newCart;
+      });
     } catch (error) {
-      console.error('Erro ao carregar carrinho do localStorage:', error);
+      console.error('Erro ao atualizar quantidade:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [removeItem]);
+
+  const clearCart = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.log('clearCart chamado');
       setCart([]);
-    }
-  };
-
-  const saveCart = useCallback(async () => {
-    if (user) {
-      await saveCartToDatabase();
-    } else {
-      saveCartToLocalStorage();
-    }
-  }, [user, cart]);
-
-  const saveCartToDatabase = async () => {
-    if (!user || loading) return;
-
-    try {
-      // Primeiro, limpar carrinho existente
-      await supabase
-        .from('cart_items')
-        .delete()
-        .eq('user_id', user.id);
-
-      // Depois, inserir novos itens
-      if (cart.length > 0) {
-        const cartItemsToInsert = cart.map(item => ({
-          user_id: user.id,
-          product_id: item.product.id,
-          size: item.size || null,
-          color: item.color || null,
-          quantity: item.quantity,
-        }));
-
-        const { error } = await supabase
-          .from('cart_items')
-          .insert(cartItemsToInsert);
-
-        if (error) throw error;
-      }
     } catch (error) {
-      console.error('Erro ao salvar carrinho no banco:', error);
-      saveCartToLocalStorage();
+      console.error('Erro ao limpar carrinho:', error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-  const saveCartToLocalStorage = () => {
-    try {
-      localStorage.setItem('uti-games-cart', JSON.stringify(cart));
-    } catch (error) {
-      console.error('Erro ao salvar carrinho no localStorage:', error);
-    }
-  };
+  const getTotal = useCallback(() => {
+    const total = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+    console.log('getTotal:', total);
+    return total;
+  }, [cart]);
 
-  const addToCart = async (product: Product, size?: string, color?: string) => {
-    const existingItem = cart.find(
-      item => 
-        item.product.id === product.id && 
-        item.size === size && 
-        item.color === color
-    );
+  const getItemsCount = useCallback(() => {
+    const count = cart.reduce((total, item) => total + item.quantity, 0);
+    console.log('getItemsCount:', count);
+    return count;
+  }, [cart]);
 
-    if (existingItem) {
-      const updatedCart = cart.map(item =>
-        item === existingItem
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-      setCart(updatedCart);
-    } else {
-      const newCart = [...cart, { product, size, color, quantity: 1 }];
-      setCart(newCart);
-    }
+  const sendToWhatsApp = useCallback(() => {
+    if (cart.length === 0) return;
 
-    toast({
-      title: "✅ Produto adicionado!",
-      description: `${product.name} foi adicionado ao carrinho`,
-      duration: 2000,
-      className: "bg-green-50 border-green-200 text-green-800",
-    });
-  };
-
-  const removeFromCart = (productId: string, size?: string, color?: string) => {
-    const updatedCart = cart.filter(item => 
-      !(item.product.id === productId && item.size === size && item.color === color)
-    );
-    setCart(updatedCart);
-  };
-
-  const updateQuantity = (productId: string, size: string | undefined, color: string | undefined, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId, size, color);
-      return;
-    }
-
-    const updatedCart = cart.map(item =>
-      item.product.id === productId && item.size === size && item.color === color
-        ? { ...item, quantity }
-        : item
-    );
-    setCart(updatedCart);
-  };
-
-  const clearCart = async () => {
-    setCart([]);
+    const itemsList = cart.map(item => 
+      `• ${item.product.name} (${item.size || 'Padrão'}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
+    ).join('\n');
     
-    if (user) {
-      try {
-        await supabase
-          .from('cart_items')
-          .delete()
-          .eq('user_id', user.id);
-      } catch (error) {
-        console.error('Erro ao limpar carrinho no banco:', error);
-      }
-    } else {
-      localStorage.removeItem('uti-games-cart');
-    }
-  };
+    const total = getTotal();
+    const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*`;
+    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  }, [cart, getTotal]);
 
-  const getCartTotal = () => {
-    return cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-  };
-
-  const getCartItemsCount = () => {
-    return cart.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  // Migrar carrinho do localStorage para o banco quando usuário fizer login
-  const migrateCartToDatabase = useCallback(async () => {
-    if (!user || !initialized || loading) return;
-
-    try {
-      const localCart = localStorage.getItem('uti-games-cart');
-      if (localCart) {
-        const parsedCart: CartItem[] = JSON.parse(localCart);
-        if (parsedCart.length > 0) {
-          // Carregar carrinho existente do banco
-          const { data: existingItems } = await supabase
-            .from('cart_items')
-            .select('*')
-            .eq('user_id', user.id);
-          
-          // Se não há itens no banco, migrar do localStorage
-          if (!existingItems || existingItems.length === 0) {
-            setCart(parsedCart);
-          }
-          
-          // Limpar localStorage após migração
-          localStorage.removeItem('uti-games-cart');
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao migrar carrinho para o banco:', error);
-    }
-  }, [user, initialized, loading]);
-
-  // Chamar migração quando usuário logar e estiver inicializado
-  useEffect(() => {
-    if (user && initialized && !loading) {
-      migrateCartToDatabase();
-    }
-  }, [user, initialized, loading, migrateCartToDatabase]);
+  // Função para compatibilidade com updateQuantity usando productId, size, color
+  const updateQuantityByProduct = useCallback((productId: string, size: string | undefined, color: string | undefined, quantity: number) => {
+    const itemId = `${productId}-${size || 'default'}-${color || 'default'}`;
+    updateQuantity(itemId, quantity);
+  }, [updateQuantity]);
 
   return {
-    cart,
-    loading,
-    addToCart,
-    removeFromCart,
+    // Estado
+    items: cart,
+    isLoading: loading,
+    error: null,
+    
+    // Ações principais
+    addItem,
+    removeItem,
     updateQuantity,
     clearCart,
-    getCartTotal,
-    getCartItemsCount,
+    getTotal,
+    getItemsCount,
+    
+    // Funções específicas para compatibilidade
+    cart,
+    addToCart: addItem,
+    removeFromCart: removeItem,
+    updateQuantityByProduct,
+    getCartTotal: getTotal,
+    getCartItemsCount: getItemsCount,
+    sendToWhatsApp,
   };
 };
