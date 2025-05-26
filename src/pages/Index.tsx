@@ -1,19 +1,17 @@
 
-import { useState, useRef } from 'react';
-import { ShoppingCart, Search, User, Menu, X, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import ProductCard, { Product } from '@/components/ProductCard';
 import Cart from '@/components/Cart';
-import SearchSuggestions from '@/components/SearchSuggestions';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import ServiceCards from '@/components/ServiceCards';
+import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { CartItem, useCart } from '@/hooks/useCart';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const { products, loading } = useProducts();
@@ -22,25 +20,9 @@ const Index = () => {
   const { cart, addToCart, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showCategories, setShowCategories] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  const categories = [
-    { id: 'inicio', name: 'Início', path: '/' },
-    { id: 'playstation', name: 'PlayStation', path: '/categoria/playstation' },
-    { id: 'nintendo', name: 'Nintendo', path: '/categoria/nintendo' },
-    { id: 'xbox', name: 'Xbox', path: '/categoria/xbox' },
-    { id: 'pc', name: 'PC', path: '/categoria/pc' },
-    { id: 'colecionaveis', name: 'Colecionáveis', path: '/categoria/colecionaveis' },
-    { id: 'acessorios', name: 'Acessórios', path: '/categoria/acessorios' },
-    { id: 'jogos-fisicos', name: 'Jogos Físicos', path: '/categoria/jogos-fisicos' },
-    { id: 'jogos-digitais', name: 'Jogos Digitais', path: '/categoria/jogos-digitais' },
-    { id: 'ofertas', name: 'Ofertas', path: '/categoria/ofertas' },
-    { id: 'novidades', name: 'Novidades', path: '/categoria/novidades' }
-  ];
+  
+  // Use scroll position hook
+  useScrollPosition();
 
   const updateCartQuantity = (item: CartItem, change: number) => {
     const newQuantity = item.quantity + change;
@@ -73,197 +55,14 @@ const Index = () => {
     return 'bg-gray-600';
   };
 
-  const handleSearchSubmit = () => {
-    if (searchQuery.trim()) {
-      navigate(`/busca?q=${encodeURIComponent(searchQuery.trim())}`);
-      setShowSuggestions(false);
-    }
-  };
-
-  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearchSubmit();
-    }
-  };
-
-  const handleSuggestionSelect = (suggestion: string) => {
-    setSearchQuery(suggestion);
-    setShowSuggestions(false);
-    navigate(`/busca?q=${encodeURIComponent(suggestion)}`);
-  };
-
-  const handleLogin = () => {
-    if (user) {
-      if (isAdmin) {
-        navigate('/admin');
-      } else {
-        setShowAuthModal(true);
-      }
-    } else {
-      setShowAuthModal(true);
-    }
-  };
-
   const featuredProducts = products.slice(0, 6);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-lg sticky top-0 z-50">
-        {/* Top rotating banner */}
-        <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-2 overflow-hidden">
-          <div className="animate-marquee whitespace-nowrap">
-            <span className="mx-8">📱 WhatsApp: (27) 99688-2090</span>
-            <span className="mx-8">🚚 Frete grátis acima de R$ 200</span>
-            <span className="mx-8">💳 Parcelamos em até 12x</span>
-            <span className="mx-8">⚡ +10 anos no mercado</span>
-          </div>
-        </div>
-
-        {/* Main Header */}
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between mb-3">
-            {/* Logo */}
-            <div className="flex items-center">
-              <img src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" alt="UTI DOS GAMES" className="h-8 w-8 mr-2" />
-              <h1 className="text-xl font-bold text-gray-900">UTI DOS GAMES</h1>
-            </div>
-
-            {/* Right Icons */}
-            <div className="flex items-center gap-3">
-              <Button onClick={handleLogin} variant="ghost" size="sm" className="flex flex-col items-center p-2 text-gray-700">
-                <User className="w-5 h-5" />
-                <span className="text-xs">
-                  {user ? isAdmin ? 'Admin' : 'Conta' : 'Entrar'}
-                </span>
-              </Button>
-
-              <Button onClick={() => setShowCart(true)} variant="ghost" size="sm" className="flex flex-col items-center p-2 text-gray-700 relative">
-                <ShoppingCart className="w-5 h-5" />
-                <span className="text-xs">Carrinho</span>
-                {getCartItemsCount() > 0 && (
-                  <Badge className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 min-w-[16px] h-4 flex items-center justify-center rounded-full">
-                    {getCartItemsCount()}
-                  </Badge>
-                )}
-              </Button>
-
-              <Button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} variant="ghost" size="sm" className="flex flex-col items-center p-2 text-gray-700">
-                <Menu className="w-5 h-5" />
-                <span className="text-xs">Menu</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Search Bar with Suggestions */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Buscar jogos, consoles e mais"
-              value={searchQuery}
-              onChange={e => {
-                setSearchQuery(e.target.value);
-                setShowSuggestions(e.target.value.length > 1);
-              }}
-              onKeyPress={handleSearchKeyPress}
-              onFocus={() => setShowSuggestions(searchQuery.length > 1)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none"
-            />
-            
-            <SearchSuggestions
-              searchQuery={searchQuery}
-              onSelectSuggestion={handleSuggestionSelect}
-              onSearch={handleSearchSubmit}
-              isVisible={showSuggestions}
-            />
-          </div>
-
-          {/* Mobile Categories Toggle */}
-          <div className="md:hidden mb-2">
-            <Button
-              onClick={() => setShowCategories(!showCategories)}
-              variant="ghost"
-              size="sm"
-              className="text-gray-600 text-sm"
-            >
-              Categorias <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${showCategories ? 'rotate-180' : ''}`} />
-            </Button>
-          </div>
-        </div>
-
-        {/* Categories Horizontal Scroll */}
-        {(showCategories || window.innerWidth >= 768) && (
-          <div className="border-t border-gray-200 bg-gray-50">
-            <div className="flex overflow-x-auto scrollbar-hide px-4 py-3 gap-6">
-              {categories.map(category => (
-                <button
-                  key={category.id}
-                  onClick={() => navigate(category.path)}
-                  className="flex-shrink-0 text-sm font-medium whitespace-nowrap text-gray-600 hover:text-red-600"
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Menu Overlay */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)}>
-            <div className="bg-white w-80 h-full ml-auto p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold">Menu</h3>
-                <Button onClick={() => setMobileMenuOpen(false)} variant="ghost" size="sm">
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-              <div className="space-y-4">
-                {user && (
-                  <div className="pb-4 border-b border-gray-200">
-                    <p className="text-sm text-gray-600 mb-2">Olá, {user.email}</p>
-                    {isAdmin && (
-                      <Button
-                        onClick={() => {
-                          navigate('/admin');
-                          setMobileMenuOpen(false);
-                        }}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white mb-2"
-                      >
-                        Painel Admin
-                      </Button>
-                    )}
-                    <Button
-                      onClick={() => {
-                        signOut();
-                        setMobileMenuOpen(false);
-                      }}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      Sair
-                    </Button>
-                  </div>
-                )}
-                {categories.map(category => (
-                  <button
-                    key={category.id}
-                    onClick={() => {
-                      navigate(category.path);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left py-2 text-gray-700 hover:text-red-600"
-                  >
-                    {category.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </header>
+      <ProfessionalHeader 
+        onCartOpen={() => setShowCart(true)}
+        onAuthOpen={() => setShowAuthModal(true)}
+      />
 
       {/* Hero Banner Carousel */}
       <HeroBannerCarousel />

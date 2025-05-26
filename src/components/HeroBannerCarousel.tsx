@@ -228,25 +228,25 @@ const HeroBannerCarousel = () => {
           <div className="absolute inset-0 bg-black/40"></div>
         )}
 
-        {/* Navigation Arrows */}
+        {/* Navigation Arrows - Repositioned for mobile */}
         {banners.length > 1 && (
           <>
             <Button 
               onClick={prevBanner}
               variant="ghost" 
               size="sm"
-              className="absolute left-4 md:left-8 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-12 h-12 p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20"
+              className="absolute left-2 md:left-8 bottom-20 md:top-1/2 md:transform md:-translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-10 h-10 md:w-12 md:h-12 p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
             </Button>
             
             <Button 
               onClick={nextBanner}
               variant="ghost" 
               size="sm"
-              className="absolute right-4 md:right-8 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-12 h-12 p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20"
+              className="absolute right-2 md:right-8 bottom-20 md:top-1/2 md:transform md:-translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-10 h-10 md:w-12 md:h-12 p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
             </Button>
           </>
         )}
@@ -304,9 +304,9 @@ const HeroBannerCarousel = () => {
         </div>
       </div>
 
-      {/* Banner Indicators */}
+      {/* Banner Indicators - Repositioned for mobile */}
       {banners.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
+        <div className="absolute bottom-6 md:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
           {banners.map((_, index) => (
             <button
               key={index}

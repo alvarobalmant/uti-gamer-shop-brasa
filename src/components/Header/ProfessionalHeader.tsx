@@ -1,6 +1,5 @@
-
 import { useState, useRef } from 'react';
-import { ShoppingCart, Search, User, Menu, X, ChevronDown } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Grid3X3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -8,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
 import SearchSuggestions from '@/components/SearchSuggestions';
+import MobileSearchBar from './MobileSearchBar';
 
 interface Category {
   id: string;
@@ -134,6 +134,22 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
     setHoveredCategory(null);
   };
 
+  // Lock body scroll when mobile menu is open
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+    if (!mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  };
+
+  // Close mobile menu and unlock scroll
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+    document.body.style.overflow = 'unset';
+  };
+
   return (
     <>
       {/* Top promotional banner */}
@@ -205,7 +221,22 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
             </div>
 
             {/* Right Actions */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              {/* Mobile Search */}
+              <div className="lg:hidden">
+                <MobileSearchBar />
+              </div>
+
+              {/* Categories Icon for Mobile */}
+              <Button 
+                onClick={() => setShowCategories(!showCategories)}
+                variant="ghost" 
+                className="lg:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
+              >
+                <Grid3X3 className="w-5 h-5" />
+                <span className="text-xs font-medium mt-1">Menu</span>
+              </Button>
+
               {/* User Account */}
               <Button 
                 onClick={handleLogin} 
@@ -235,54 +266,34 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
 
               {/* Mobile Menu Toggle */}
               <Button 
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+                onClick={toggleMobileMenu} 
                 variant="ghost" 
-                className="lg:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
+                className="sm:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
               >
                 <Menu className="w-5 h-5" />
-                <span className="text-xs font-medium mt-1">Menu</span>
+                <span className="text-xs font-medium mt-1">Mais</span>
               </Button>
             </div>
           </div>
 
-          {/* Mobile Search Bar */}
-          <div className="lg:hidden pb-4">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                type="text"
-                placeholder="Buscar produtos..."
-                value={searchQuery}
-                onChange={e => {
-                  setSearchQuery(e.target.value);
-                  setShowSuggestions(e.target.value.length > 1);
-                }}
-                onKeyPress={handleSearchKeyPress}
-                onFocus={() => setShowSuggestions(searchQuery.length > 1)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                className="input-professional pl-12 h-12 bg-gray-50 border-gray-200 focus:bg-white"
-              />
+          {/* Mobile Categories */}
+          {showCategories && (
+            <div className="lg:hidden border-t border-gray-200 bg-gray-50">
+              <div className="container-professional py-4">
+                <div className="grid grid-cols-2 gap-2">
+                  {categories.map(category => (
+                    <button
+                      key={category.id}
+                      onClick={() => handleCategoryClick(category)}
+                      className="text-left py-2 px-3 text-sm font-medium text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-md transition-all duration-200"
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-            
-            <SearchSuggestions
-              searchQuery={searchQuery}
-              onSelectSuggestion={handleSuggestionSelect}
-              onSearch={handleSearchSubmit}
-              isVisible={showSuggestions}
-            />
-          </div>
-
-          {/* Categories Toggle for Mobile */}
-          <div className="lg:hidden border-t border-gray-200 pt-3 pb-2">
-            <Button
-              onClick={() => setShowCategories(!showCategories)}
-              variant="ghost"
-              className="text-uti-dark text-sm font-medium flex items-center"
-            >
-              Categorias 
-              <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${showCategories ? 'rotate-180' : ''}`} />
-            </Button>
-          </div>
+          )}
         </div>
 
         {/* Desktop Categories Navigation */}
@@ -325,38 +336,19 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
             </nav>
           </div>
         </div>
-
-        {/* Mobile Categories */}
-        {showCategories && (
-          <div className="lg:hidden border-t border-gray-200 bg-gray-50">
-            <div className="container-professional py-4">
-              <div className="grid grid-cols-2 gap-2">
-                {categories.map(category => (
-                  <button
-                    key={category.id}
-                    onClick={() => handleCategoryClick(category)}
-                    className="text-left py-2 px-3 text-sm font-medium text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-md transition-all duration-200"
-                  >
-                    {category.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Overlay with Scroll Lock */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-          <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl">
+        <div className="fixed inset-0 z-50 sm:hidden">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={closeMobileMenu} />
+          <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl overflow-y-auto">
             <div className="p-6">
               {/* Header */}
               <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
                 <h3 className="text-xl font-bold text-uti-dark">Menu</h3>
                 <Button 
-                  onClick={() => setMobileMenuOpen(false)} 
+                  onClick={closeMobileMenu} 
                   variant="ghost" 
                   size="sm"
                   className="text-gray-400 hover:text-uti-red"
@@ -366,14 +358,14 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
               </div>
 
               {/* User Section */}
-              {user && (
+              {user ? (
                 <div className="pb-6 mb-6 border-b border-gray-200">
                   <p className="text-sm text-uti-gray mb-3">Olá, {user.email}</p>
                   {isAdmin && (
                     <Button
                       onClick={() => {
                         navigate('/admin');
-                        setMobileMenuOpen(false);
+                        closeMobileMenu();
                       }}
                       className="w-full mb-3 btn-primary"
                     >
@@ -383,12 +375,24 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
                   <Button
                     onClick={() => {
                       signOut();
-                      setMobileMenuOpen(false);
+                      closeMobileMenu();
                     }}
                     variant="outline"
                     className="w-full"
                   >
                     Sair
+                  </Button>
+                </div>
+              ) : (
+                <div className="pb-6 mb-6 border-b border-gray-200">
+                  <Button
+                    onClick={() => {
+                      onAuthOpen();
+                      closeMobileMenu();
+                    }}
+                    className="w-full btn-primary"
+                  >
+                    Entrar / Criar Conta
                   </Button>
                 </div>
               )}
