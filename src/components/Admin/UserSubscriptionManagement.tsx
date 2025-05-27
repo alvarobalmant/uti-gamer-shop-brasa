@@ -41,7 +41,6 @@ const UserSubscriptionManagement = () => {
   const [monthsToAdd, setMonthsToAdd] = useState(1);
   const [monthsToRemove, setMonthsToRemove] = useState(1);
   const [newPlanId, setNewPlanId] = useState('');
-  const [newEndDate, setNewEndDate] = useState('');
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
@@ -213,6 +212,16 @@ const UserSubscriptionManagement = () => {
       }
 
       if (data) {
+        // Também cancelar no user_subscriptions
+        await supabase
+          .from('user_subscriptions')
+          .update({ 
+            status: 'cancelled',
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+          .eq('status', 'active');
+
         toast({
           title: "Assinatura cancelada",
           description: "A assinatura foi cancelada com sucesso.",
@@ -238,30 +247,38 @@ const UserSubscriptionManagement = () => {
     }
   };
 
-  const createSubscription = async (userId: string, planId: string, endDate: string) => {
+  const createSubscription = async (userId: string, planId: string) => {
     if (processing) return;
     
     try {
       setProcessing(true);
-      console.log(`Criando assinatura para usuário ${userId}`);
+      console.log(`Criando assinatura para usuário ${userId} com plano ${planId}`);
 
       const plan = plans.find(p => p.id === planId);
       if (!plan) throw new Error('Plano não encontrado');
 
-      // Primeiro, cancelar assinaturas ativas existentes no user_subscriptions
+      // Calcular data de expiração automaticamente
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + plan.duration_months);
+
+      console.log('Data de expiração calculada:', endDate.toISOString());
+
+      // Primeiro, cancelar todas as assinaturas ativas existentes no user_subscriptions
       const { data: existingSubscriptions, error: checkError } = await supabase
         .from('user_subscriptions')
         .select('id')
         .eq('user_id', userId)
-        .eq('status', 'active')
-        .gte('end_date', new Date().toISOString());
+        .eq('status', 'active');
 
       if (checkError) {
         console.error('Erro ao verificar assinaturas existentes:', checkError);
         throw checkError;
       }
 
+      // Cancelar assinaturas existentes se houver
       if (existingSubscriptions && existingSubscriptions.length > 0) {
+        console.log('Cancelando assinaturas existentes:', existingSubscriptions.length);
+        
         for (const sub of existingSubscriptions) {
           await supabase
             .from('user_subscriptions')
@@ -279,7 +296,7 @@ const UserSubscriptionManagement = () => {
         .insert({
           user_id: userId,
           plan_id: planId,
-          end_date: endDate,
+          end_date: endDate.toISOString(),
           status: 'active',
           start_date: new Date().toISOString()
         });
@@ -292,25 +309,29 @@ const UserSubscriptionManagement = () => {
       // Atualizar tabela usuarios
       const { error: updateError } = await supabase
         .from('usuarios')
-        .update({
+        .upsert({
+          id: userId,
+          nome: selectedUser?.nome || 'Usuário',
+          email: selectedUser?.email || '',
+          papel: selectedUser?.papel || 'user',
           status_assinatura: 'Ativo',
           plano: plan.name,
           desconto: plan.discount_percentage,
-          data_expiracao: endDate
-        })
-        .eq('id', userId);
+          data_expiracao: endDate.toISOString()
+        });
 
       if (updateError) {
         console.error('Erro ao atualizar usuário:', updateError);
         throw updateError;
       }
 
+      console.log('Assinatura criada com sucesso');
+
       toast({
         title: "Assinatura criada",
-        description: "Nova assinatura criada com sucesso.",
+        description: `Nova assinatura criada com sucesso. Expira em ${endDate.toLocaleDateString('pt-BR')}.`,
       });
 
-      setNewEndDate('');
       setNewPlanId('');
       
       await fetchUsuarios();
@@ -338,7 +359,6 @@ const UserSubscriptionManagement = () => {
   const closeUserModal = () => {
     setShowUserModal(false);
     setSelectedUser(null);
-    setNewEndDate('');
     setNewPlanId('');
     setMonthsToAdd(1);
     setMonthsToRemove(1);
@@ -377,6 +397,15 @@ const UserSubscriptionManagement = () => {
     return usuario.status_assinatura === 'Ativo' && 
            usuario.data_expiracao && 
            new Date(usuario.data_expiracao) > new Date();
+  };
+
+  const getCalculatedExpirationDate = (planId: string) => {
+    const plan = plans.find(p => p.id === planId);
+    if (!plan) return null;
+    
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + plan.duration_months);
+    return endDate;
   };
 
   if (loading) {
@@ -651,19 +680,29 @@ const UserSubscriptionManagement = () => {
                     </Select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Data de Expiração</label>
-                    <Input
-                      type="date"
-                      value={newEndDate}
-                      onChange={(e) => setNewEndDate(e.target.value)}
-                      disabled={processing}
-                    />
-                  </div>
+                  {/* Exibir data de expiração calculada */}
+                  {newPlanId && (
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-2 text-blue-800">
+                        <Calendar className="w-4 h-4" />
+                        <span className="font-medium">Data de Expiração Calculada:</span>
+                      </div>
+                      <p className="text-blue-700 mt-1">
+                        {getCalculatedExpirationDate(newPlanId)?.toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })}
+                      </p>
+                      <p className="text-blue-600 text-sm mt-2">
+                        * A data será automaticamente calculada com base na duração do plano selecionado
+                      </p>
+                    </div>
+                  )}
 
                   <Button
-                    onClick={() => createSubscription(selectedUser.id, newPlanId, newEndDate)}
-                    disabled={!newPlanId || !newEndDate || processing}
+                    onClick={() => createSubscription(selectedUser.id, newPlanId)}
+                    disabled={!newPlanId || processing}
                     className="w-full"
                   >
                     {processing ? 'Processando...' : isSubscriptionActive(selectedUser) ? 'Alterar Assinatura' : 'Criar Assinatura'}
