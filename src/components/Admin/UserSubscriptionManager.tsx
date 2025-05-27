@@ -48,12 +48,15 @@ const UserSubscriptionManager = () => {
   const [newEndDate, setNewEndDate] = useState('');
   const [newPlanId, setNewPlanId] = useState('');
   const [monthsToAdd, setMonthsToAdd] = useState(1);
+  const [monthsToRemove, setMonthsToRemove] = useState(1);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      console.log('Buscando usuários...');
       
       // Buscar todos os usuários
       const { data: profiles, error: profilesError } = await supabase
@@ -61,26 +64,40 @@ const UserSubscriptionManager = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Erro ao buscar profiles:', profilesError);
+        throw profilesError;
+      }
+
+      console.log('Profiles encontrados:', profiles?.length);
 
       // Buscar assinaturas ativas para cada usuário
       const usersWithSubscriptions: UserWithSubscription[] = [];
       
       for (const profile of profiles || []) {
-        const { data: subscriptionData } = await supabase
+        console.log(`Buscando assinatura para usuário ${profile.id}`);
+        
+        const { data: subscriptionData, error: subError } = await supabase
           .rpc('get_active_subscription', { user_id: profile.id });
+
+        if (subError) {
+          console.error(`Erro ao buscar assinatura para ${profile.id}:`, subError);
+        }
 
         const userWithSub: UserWithSubscription = {
           ...profile,
           subscription: subscriptionData?.[0] || undefined
         };
         
+        console.log(`Usuário ${profile.id} - Assinatura:`, userWithSub.subscription);
         usersWithSubscriptions.push(userWithSub);
       }
 
       setUsers(usersWithSubscriptions);
       setFilteredUsers(usersWithSubscriptions);
+      console.log('Usuários carregados com sucesso:', usersWithSubscriptions.length);
     } catch (error: any) {
+      console.error('Erro completo ao carregar usuários:', error);
       toast({
         title: "Erro ao carregar usuários",
         description: error.message,
@@ -93,6 +110,7 @@ const UserSubscriptionManager = () => {
 
   const fetchPlans = async () => {
     try {
+      console.log('Buscando planos...');
       const { data, error } = await supabase
         .from('subscription_plans')
         .select('*')
@@ -100,8 +118,10 @@ const UserSubscriptionManager = () => {
         .order('price', { ascending: true });
 
       if (error) throw error;
+      console.log('Planos encontrados:', data?.length);
       setPlans(data || []);
     } catch (error: any) {
+      console.error('Erro ao carregar planos:', error);
       toast({
         title: "Erro ao carregar planos",
         description: error.message,
@@ -125,111 +145,312 @@ const UserSubscriptionManager = () => {
   };
 
   const cancelSubscription = async (userId: string) => {
+    if (processing) return;
+    
     try {
-      const { error } = await supabase
-        .from('user_subscriptions')
-        .update({ status: 'cancelled' })
-        .eq('user_id', userId)
-        .eq('status', 'active');
+      setProcessing(true);
+      console.log(`Cancelando assinatura do usuário ${userId}`);
 
-      if (error) throw error;
+      // Primeiro, verificar se há assinatura ativa
+      const { data: activeSubscription, error: checkError } = await supabase
+        .from('user_subscriptions')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .gte('end_date', new Date().toISOString())
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Erro ao verificar assinatura ativa:', checkError);
+        throw checkError;
+      }
+
+      if (!activeSubscription) {
+        toast({
+          title: "Nenhuma assinatura ativa encontrada",
+          description: "Este usuário não possui assinatura ativa para cancelar.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Assinatura ativa encontrada:', activeSubscription.id);
+
+      // Cancelar a assinatura específica
+      const { error: cancelError } = await supabase
+        .from('user_subscriptions')
+        .update({ 
+          status: 'cancelled',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', activeSubscription.id);
+
+      if (cancelError) {
+        console.error('Erro ao cancelar assinatura:', cancelError);
+        throw cancelError;
+      }
+
+      console.log('Assinatura cancelada com sucesso');
 
       toast({
         title: "Assinatura cancelada",
         description: "A assinatura foi cancelada com sucesso.",
       });
 
-      fetchUsers();
+      // Atualizar a lista de usuários
+      await fetchUsers();
+      
+      // Atualizar usuário selecionado se for o mesmo
       if (selectedUser?.id === userId) {
-        const updatedUser = { ...selectedUser, subscription: undefined };
+        const updatedUser = await fetchUpdatedUser(userId);
         setSelectedUser(updatedUser);
       }
     } catch (error: any) {
+      console.error('Erro completo ao cancelar assinatura:', error);
       toast({
         title: "Erro ao cancelar assinatura",
-        description: error.message,
+        description: error.message || "Erro desconhecido",
         variant: "destructive",
       });
+    } finally {
+      setProcessing(false);
     }
   };
 
   const extendSubscription = async (userId: string, additionalMonths: number) => {
+    if (processing) return;
+    
     try {
-      const user = users.find(u => u.id === userId);
-      const currentEndDate = user?.subscription?.end_date 
-        ? new Date(user.subscription.end_date)
-        : new Date();
+      setProcessing(true);
+      console.log(`Estendendo assinatura do usuário ${userId} por ${additionalMonths} meses`);
 
+      // Buscar assinatura ativa atual
+      const { data: activeSubscription, error: fetchError } = await supabase
+        .from('user_subscriptions')
+        .select('id, end_date')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .gte('end_date', new Date().toISOString())
+        .single();
+
+      if (fetchError) {
+        console.error('Erro ao buscar assinatura ativa:', fetchError);
+        if (fetchError.code === 'PGRST116') {
+          toast({
+            title: "Nenhuma assinatura ativa",
+            description: "Este usuário não possui assinatura ativa para estender.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw fetchError;
+      }
+
+      console.log('Assinatura ativa encontrada:', activeSubscription);
+
+      // Calcular nova data de expiração
+      const currentEndDate = new Date(activeSubscription.end_date);
       const newEndDate = new Date(currentEndDate);
       newEndDate.setMonth(newEndDate.getMonth() + additionalMonths);
 
-      const { error } = await supabase
+      console.log('Data atual de expiração:', currentEndDate);
+      console.log('Nova data de expiração:', newEndDate);
+
+      // Atualizar a assinatura
+      const { error: updateError } = await supabase
         .from('user_subscriptions')
         .update({ 
           end_date: newEndDate.toISOString(),
-          status: 'active'
+          updated_at: new Date().toISOString()
         })
-        .eq('user_id', userId)
-        .eq('status', 'active');
+        .eq('id', activeSubscription.id);
 
-      if (error) throw error;
+      if (updateError) {
+        console.error('Erro ao atualizar assinatura:', updateError);
+        throw updateError;
+      }
+
+      console.log('Assinatura estendida com sucesso');
 
       toast({
         title: "Assinatura estendida",
-        description: `Assinatura estendida por ${additionalMonths} meses.`,
+        description: `Assinatura estendida por ${additionalMonths} meses até ${newEndDate.toLocaleDateString('pt-BR')}.`,
       });
 
-      fetchUsers();
-      // Atualizar o usuário selecionado se for o mesmo
+      // Atualizar dados
+      await fetchUsers();
       if (selectedUser?.id === userId) {
-        const updatedUsers = await fetchUpdatedUser(userId);
-        setSelectedUser(updatedUsers);
+        const updatedUser = await fetchUpdatedUser(userId);
+        setSelectedUser(updatedUser);
       }
     } catch (error: any) {
+      console.error('Erro completo ao estender assinatura:', error);
       toast({
         title: "Erro ao estender assinatura",
-        description: error.message,
+        description: error.message || "Erro desconhecido",
         variant: "destructive",
       });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const reduceSubscription = async (userId: string, monthsToReduce: number) => {
+    if (processing) return;
+    
+    try {
+      setProcessing(true);
+      console.log(`Reduzindo assinatura do usuário ${userId} em ${monthsToReduce} meses`);
+
+      // Buscar assinatura ativa atual
+      const { data: activeSubscription, error: fetchError } = await supabase
+        .from('user_subscriptions')
+        .select('id, end_date')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .gte('end_date', new Date().toISOString())
+        .single();
+
+      if (fetchError) {
+        console.error('Erro ao buscar assinatura ativa:', fetchError);
+        if (fetchError.code === 'PGRST116') {
+          toast({
+            title: "Nenhuma assinatura ativa",
+            description: "Este usuário não possui assinatura ativa para reduzir.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw fetchError;
+      }
+
+      // Calcular nova data de expiração
+      const currentEndDate = new Date(activeSubscription.end_date);
+      const newEndDate = new Date(currentEndDate);
+      newEndDate.setMonth(newEndDate.getMonth() - monthsToReduce);
+
+      // Verificar se a nova data não é anterior a hoje
+      const today = new Date();
+      if (newEndDate <= today) {
+        toast({
+          title: "Redução inválida",
+          description: "A redução resultaria em uma data de expiração no passado. A assinatura será cancelada.",
+          variant: "destructive",
+        });
+        
+        // Cancelar a assinatura em vez de reduzir
+        await cancelSubscription(userId);
+        return;
+      }
+
+      console.log('Data atual de expiração:', currentEndDate);
+      console.log('Nova data de expiração:', newEndDate);
+
+      // Atualizar a assinatura
+      const { error: updateError } = await supabase
+        .from('user_subscriptions')
+        .update({ 
+          end_date: newEndDate.toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', activeSubscription.id);
+
+      if (updateError) {
+        console.error('Erro ao atualizar assinatura:', updateError);
+        throw updateError;
+      }
+
+      console.log('Assinatura reduzida com sucesso');
+
+      toast({
+        title: "Assinatura reduzida",
+        description: `Assinatura reduzida em ${monthsToReduce} meses. Nova data de expiração: ${newEndDate.toLocaleDateString('pt-BR')}.`,
+      });
+
+      // Atualizar dados
+      await fetchUsers();
+      if (selectedUser?.id === userId) {
+        const updatedUser = await fetchUpdatedUser(userId);
+        setSelectedUser(updatedUser);
+      }
+    } catch (error: any) {
+      console.error('Erro completo ao reduzir assinatura:', error);
+      toast({
+        title: "Erro ao reduzir assinatura",
+        description: error.message || "Erro desconhecido",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessing(false);
     }
   };
 
   const fetchUpdatedUser = async (userId: string) => {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-    const { data: subscriptionData } = await supabase
-      .rpc('get_active_subscription', { user_id: userId });
+      const { data: subscriptionData } = await supabase
+        .rpc('get_active_subscription', { user_id: userId });
 
-    return {
-      ...profile,
-      subscription: subscriptionData?.[0] || undefined
-    };
+      return {
+        ...profile,
+        subscription: subscriptionData?.[0] || undefined
+      };
+    } catch (error) {
+      console.error('Erro ao buscar usuário atualizado:', error);
+      return null;
+    }
   };
 
   const createSubscription = async (userId: string, planId: string, endDate: string) => {
+    if (processing) return;
+    
     try {
-      // Primeiro cancelar assinatura ativa se existir
-      await supabase
+      setProcessing(true);
+      console.log(`Criando assinatura para usuário ${userId} com plano ${planId}`);
+
+      // Verificar se já existe assinatura ativa
+      const { data: existingSubscription } = await supabase
         .from('user_subscriptions')
-        .update({ status: 'cancelled' })
+        .select('id')
         .eq('user_id', userId)
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .gte('end_date', new Date().toISOString())
+        .single();
+
+      if (existingSubscription) {
+        // Cancelar assinatura ativa existente
+        console.log('Cancelando assinatura existente:', existingSubscription.id);
+        await supabase
+          .from('user_subscriptions')
+          .update({ 
+            status: 'cancelled',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingSubscription.id);
+      }
 
       // Criar nova assinatura
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('user_subscriptions')
         .insert({
           user_id: userId,
           plan_id: planId,
           end_date: endDate,
-          status: 'active'
+          status: 'active',
+          start_date: new Date().toISOString()
         });
 
-      if (error) throw error;
+      if (insertError) {
+        console.error('Erro ao inserir nova assinatura:', insertError);
+        throw insertError;
+      }
+
+      console.log('Nova assinatura criada com sucesso');
 
       toast({
         title: "Assinatura criada",
@@ -238,19 +459,22 @@ const UserSubscriptionManager = () => {
 
       setNewEndDate('');
       setNewPlanId('');
-      fetchUsers();
       
-      // Atualizar usuário selecionado
+      // Atualizar dados
+      await fetchUsers();
       if (selectedUser?.id === userId) {
         const updatedUser = await fetchUpdatedUser(userId);
         setSelectedUser(updatedUser);
       }
     } catch (error: any) {
+      console.error('Erro completo ao criar assinatura:', error);
       toast({
         title: "Erro ao criar assinatura",
-        description: error.message,
+        description: error.message || "Erro desconhecido",
         variant: "destructive",
       });
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -265,6 +489,7 @@ const UserSubscriptionManager = () => {
     setNewEndDate('');
     setNewPlanId('');
     setMonthsToAdd(1);
+    setMonthsToRemove(1);
   };
 
   useEffect(() => {
@@ -474,7 +699,7 @@ const UserSubscriptionManager = () => {
                 </CardHeader>
                 <CardContent>
                   {selectedUser.subscription ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div className="flex items-center gap-2">
                         <strong>Status:</strong> {getStatusBadge(selectedUser.subscription)}
                       </div>
@@ -490,7 +715,8 @@ const UserSubscriptionManager = () => {
                       
                       {/* Ações para assinatura ativa */}
                       {isSubscriptionActive(selectedUser.subscription) && (
-                        <div className="flex gap-2 pt-4">
+                        <div className="space-y-4 pt-4 border-t">
+                          {/* Adicionar Meses */}
                           <div className="flex items-center gap-2">
                             <Input
                               type="number"
@@ -499,22 +725,50 @@ const UserSubscriptionManager = () => {
                               value={monthsToAdd}
                               onChange={(e) => setMonthsToAdd(parseInt(e.target.value) || 1)}
                               className="w-20"
+                              disabled={processing}
                             />
                             <Button
                               size="sm"
                               onClick={() => extendSubscription(selectedUser.id, monthsToAdd)}
+                              disabled={processing}
                             >
                               <Plus className="w-3 h-3 mr-1" />
                               Adicionar Meses
                             </Button>
                           </div>
+
+                          {/* Remover Meses */}
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              min="1"
+                              max="12"
+                              value={monthsToRemove}
+                              onChange={(e) => setMonthsToRemove(parseInt(e.target.value) || 1)}
+                              className="w-20"
+                              disabled={processing}
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => reduceSubscription(selectedUser.id, monthsToRemove)}
+                              disabled={processing}
+                            >
+                              <Calendar className="w-3 h-3 mr-1" />
+                              Remover Meses
+                            </Button>
+                          </div>
+
+                          {/* Cancelar Assinatura */}
                           <Button
                             size="sm"
                             variant="destructive"
                             onClick={() => cancelSubscription(selectedUser.id)}
+                            disabled={processing}
+                            className="w-full"
                           >
                             <X className="w-3 h-3 mr-1" />
-                            Cancelar Assinatura
+                            {processing ? 'Processando...' : 'Cancelar Assinatura'}
                           </Button>
                         </div>
                       )}
@@ -537,7 +791,7 @@ const UserSubscriptionManager = () => {
                 <CardContent className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Plano</label>
-                    <Select value={newPlanId} onValueChange={setNewPlanId}>
+                    <Select value={newPlanId} onValueChange={setNewPlanId} disabled={processing}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione um plano" />
                       </SelectTrigger>
@@ -557,22 +811,23 @@ const UserSubscriptionManager = () => {
                       type="date"
                       value={newEndDate}
                       onChange={(e) => setNewEndDate(e.target.value)}
+                      disabled={processing}
                     />
                   </div>
 
                   <Button
                     onClick={() => createSubscription(selectedUser.id, newPlanId, newEndDate)}
-                    disabled={!newPlanId || !newEndDate}
+                    disabled={!newPlanId || !newEndDate || processing}
                     className="w-full"
                   >
-                    {selectedUser.subscription ? 'Alterar Assinatura' : 'Criar Assinatura'}
+                    {processing ? 'Processando...' : selectedUser.subscription ? 'Alterar Assinatura' : 'Criar Assinatura'}
                   </Button>
                 </CardContent>
               </Card>
 
               {/* Botões de Ação */}
               <div className="flex gap-2">
-                <Button variant="outline" onClick={closeUserModal} className="flex-1">
+                <Button variant="outline" onClick={closeUserModal} className="flex-1" disabled={processing}>
                   Fechar
                 </Button>
               </div>
