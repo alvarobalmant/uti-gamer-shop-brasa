@@ -4,21 +4,39 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBanners } from '@/hooks/useBanners';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
+import HeroQuickLinks from './HeroQuickLinks';
 
 const HeroBannerCarousel = () => {
   const { banners, loading } = useBanners();
   const [currentBanner, setCurrentBanner] = useState(0);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [startX, setStartX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [preloadedImages, setPreloadedImages] = useState<{ [key: string]: boolean }>({});
   const carouselRef = useRef<HTMLDivElement>(null);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
+  // Preload images
+  useEffect(() => {
+    banners.forEach(banner => {
+      if (banner.image_url && !preloadedImages[banner.image_url]) {
+        const img = new Image();
+        img.onload = () => {
+          setPreloadedImages(prev => ({ ...prev, [banner.image_url!]: true }));
+        };
+        img.src = banner.image_url;
+      }
+    });
+  }, [banners, preloadedImages]);
 
   const startAutoPlay = () => {
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     autoPlayRef.current = setInterval(() => {
-      if (!isUserInteracting && banners.length > 0) {
+      if (!isUserInteracting && !isPaused && banners.length > 0) {
         setCurrentBanner(prev => (prev + 1) % banners.length);
       }
     }, 5000);
@@ -36,16 +54,16 @@ const HeroBannerCarousel = () => {
     stopAutoPlay();
     setTimeout(() => {
       setIsUserInteracting(false);
-      startAutoPlay();
+      if (!isPaused) startAutoPlay();
     }, 10000);
   };
 
   useEffect(() => {
-    if (banners.length > 0) {
+    if (banners.length > 0 && !isPaused) {
       startAutoPlay();
     }
     return () => stopAutoPlay();
-  }, [isUserInteracting, banners.length]);
+  }, [isUserInteracting, banners.length, isPaused]);
 
   const nextBanner = () => {
     if (banners.length > 0) {
@@ -65,6 +83,7 @@ const HeroBannerCarousel = () => {
   const handleTouchStart = (e: React.TouchEvent) => {
     setStartX(e.touches[0].clientX);
     setIsDragging(true);
+    setIsPaused(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -84,20 +103,23 @@ const HeroBannerCarousel = () => {
       }
     }
     setIsDragging(false);
+    setIsPaused(false);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (isMobile) return;
     setStartX(e.clientX);
     setIsDragging(true);
+    setIsPaused(true);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || isMobile) return;
     e.preventDefault();
   };
 
   const handleMouseUp = (e: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || isMobile) return;
     const endX = e.clientX;
     const diffX = startX - endX;
     if (Math.abs(diffX) > 50) {
@@ -108,6 +130,18 @@ const HeroBannerCarousel = () => {
       }
     }
     setIsDragging(false);
+    setIsPaused(false);
+  };
+
+  const handleMouseEnter = () => {
+    if (!isMobile) setIsPaused(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobile) {
+      setIsPaused(false);
+      setIsDragging(false);
+    }
   };
 
   const handleButtonClick = (buttonLink: string) => {
@@ -121,7 +155,7 @@ const HeroBannerCarousel = () => {
   if (loading) {
     return (
       <section className="relative bg-gray-100 overflow-hidden">
-        <div className="relative h-[400px] md:h-[500px] lg:h-[600px] flex items-center justify-center bg-gradient-to-br from-gray-200 via-gray-300 to-gray-200 animate-pulse">
+        <div className="relative h-[300px] md:h-[500px] lg:h-[600px] xl:h-[clamp(500px,60vh,700px)] flex items-center justify-center bg-gradient-to-br from-gray-200 via-gray-300 to-gray-200 animate-pulse">
           <div className="text-center">
             <div className="w-16 h-16 bg-gray-400 rounded-full mx-auto mb-4 animate-pulse"></div>
             <div className="text-gray-500 font-medium">Carregando banners...</div>
@@ -133,39 +167,42 @@ const HeroBannerCarousel = () => {
 
   if (banners.length === 0) {
     return (
-      <section className="relative bg-gradient-to-br from-uti-red via-red-600 to-red-700 text-white overflow-hidden">
-        <div className="relative h-[400px] md:h-[500px] lg:h-[600px] flex items-center justify-center">
-          <div className="container-professional text-center">
-            <div className="max-w-3xl mx-auto">
-              <img 
-                src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
-                alt="UTI DOS GAMES" 
-                className="h-24 w-24 mx-auto mb-6 drop-shadow-lg" 
-              />
-              <h1 className="text-hero font-heading text-white mb-6 drop-shadow-lg">
-                UTI DOS GAMES
-              </h1>
-              <p className="text-xl md:text-2xl font-medium text-white/90 mb-8 drop-shadow-md">
-                A loja de games mais tradicional de Colatina
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  onClick={() => navigate('/categoria/ofertas')}
-                  className="btn-secondary bg-white text-uti-red border-white hover:bg-gray-100"
-                >
-                  Ver Ofertas
-                </Button>
-                <Button 
-                  onClick={() => navigate('/categoria/inicio')}
-                  className="btn-dark border-white/20 hover:bg-white hover:text-uti-red"
-                >
-                  Explorar Produtos
-                </Button>
+      <>
+        <section className="relative bg-gradient-to-br from-uti-red via-red-600 to-red-700 text-white overflow-hidden">
+          <div className="relative h-[300px] md:h-[500px] lg:h-[600px] xl:h-[clamp(500px,60vh,700px)] flex items-center justify-center">
+            <div className="container mx-auto px-4 max-w-6xl text-center">
+              <div className="max-w-4xl mx-auto">
+                <img 
+                  src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
+                  alt="UTI DOS GAMES" 
+                  className="h-20 w-20 md:h-24 md:w-24 mx-auto mb-6 drop-shadow-lg animate-fade-in-up" 
+                />
+                <h1 className="text-[32px] md:text-[48px] lg:text-[64px] font-heading text-white mb-6 drop-shadow-lg leading-tight animate-fade-in-up">
+                  UTI DOS GAMES
+                </h1>
+                <p className="text-lg md:text-xl lg:text-2xl font-medium text-white/90 mb-8 drop-shadow-md max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                  A loja de games mais tradicional de Colatina
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                  <Button 
+                    onClick={() => navigate('/categoria/ofertas')}
+                    className="h-12 px-8 bg-white text-uti-red border-white hover:bg-gray-100 text-base font-semibold rounded-button transition-all duration-300 hover:scale-105"
+                  >
+                    Ver Ofertas
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/categoria/inicio')}
+                    className="h-12 px-8 bg-transparent border-2 border-white/20 hover:bg-white hover:text-uti-red text-base font-semibold rounded-button transition-all duration-300 hover:scale-105"
+                  >
+                    Explorar Produtos
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+        <HeroQuickLinks />
+      </>
     );
   }
 
@@ -185,17 +222,6 @@ const HeroBannerCarousel = () => {
         backgroundRepeat: 'no-repeat'
       };
     }
-    
-    if (backgroundType === 'gradient') {
-      const style: any = {};
-      if (banner.gradient) {
-        // Apply gradient background
-        const gradientClass = `bg-gradient-to-br ${banner.gradient}`;
-        // We'll use className for gradient
-      }
-      return style;
-    }
-    
     return {};
   };
 
@@ -204,126 +230,142 @@ const HeroBannerCarousel = () => {
     ? `bg-gradient-to-br ${banner.gradient}` 
     : 'bg-gradient-to-br from-uti-red via-red-600 to-red-700';
 
+  const contentAlignment = currentBanner % 2 === 0 ? 'justify-start text-left' : 'justify-end text-right';
+  const imageAlignment = currentBanner % 2 === 0 ? 'right-8' : 'left-8';
+
   return (
-    <section className="relative overflow-hidden">
-      <div 
-        ref={carouselRef}
-        className={`relative text-white transition-all duration-700 ease-in-out ${
-          backgroundType === 'image-only' ? 'bg-gray-900' : gradientClass
-        }`}
-        style={{
-          height: 'clamp(400px, 50vh, 600px)',
-          ...backgroundStyle
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={() => setIsDragging(false)}
-      >
-        {/* Overlay for better text readability on image-only banners */}
-        {backgroundType === 'image-only' && (
-          <div className="absolute inset-0 bg-black/40"></div>
-        )}
+    <>
+      <section className="relative overflow-hidden">
+        <div 
+          ref={carouselRef}
+          className={`relative text-white transition-all duration-700 ease-in-out ${
+            backgroundType === 'image-only' ? 'bg-gray-900' : gradientClass
+          }`}
+          style={{
+            height: 'clamp(300px, 60vh, 700px)',
+            minHeight: '300px',
+            ...backgroundStyle
+          }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {/* Overlay for better text readability */}
+          {backgroundType === 'image-only' && (
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
+          )}
 
-        {/* Navigation Arrows - Repositioned for mobile */}
-        {banners.length > 1 && (
-          <>
-            <Button 
-              onClick={prevBanner}
-              variant="ghost" 
-              size="sm"
-              className="absolute left-2 md:left-8 bottom-20 md:top-1/2 md:transform md:-translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-10 h-10 md:w-12 md:h-12 p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20"
-            >
-              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
-            </Button>
-            
-            <Button 
-              onClick={nextBanner}
-              variant="ghost" 
-              size="sm"
-              className="absolute right-2 md:right-8 bottom-20 md:top-1/2 md:transform md:-translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-10 h-10 md:w-12 md:h-12 p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20"
-            >
-              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
-            </Button>
-          </>
-        )}
+          {/* Desktop Navigation Arrows */}
+          {banners.length > 1 && !isMobile && (
+            <>
+              <Button 
+                onClick={prevBanner}
+                variant="ghost" 
+                size="icon"
+                className="absolute left-4 lg:left-8 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-[60px] h-[60px] p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20 hover:scale-110"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </Button>
+              
+              <Button 
+                onClick={nextBanner}
+                variant="ghost" 
+                size="icon"
+                className="absolute right-4 lg:right-8 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-[60px] h-[60px] p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20 hover:scale-110"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </Button>
+            </>
+          )}
 
-        {/* Content */}
-        <div className="container-professional h-full flex items-center relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Title */}
-            {banner.title && (
-              <div className="inline-block bg-white/20 backdrop-blur-sm text-white font-bold mb-4 px-6 py-2 rounded-full text-sm border border-white/30 animate-fade-in-up">
-                ♦ {banner.title}
+          {/* Content */}
+          <div className="container mx-auto px-4 max-w-6xl h-full flex items-center relative z-10">
+            <div className={`max-w-4xl mx-auto w-full flex ${isMobile ? 'justify-center text-center' : contentAlignment}`}>
+              <div className={`${isMobile ? 'max-w-lg' : 'max-w-2xl'}`}>
+                {/* Title */}
+                {banner.title && (
+                  <div className="inline-block bg-white/20 backdrop-blur-sm text-white font-bold mb-4 md:mb-6 px-4 md:px-6 py-2 rounded-full text-sm border border-white/30 animate-fade-in-up">
+                    ♦ {banner.title}
+                  </div>
+                )}
+                
+                {/* Subtitle */}
+                {banner.subtitle && (
+                  <h1 className={`font-heading mb-6 md:mb-8 leading-tight drop-shadow-lg animate-fade-in-up ${
+                    isMobile ? 'text-[32px] md:text-[36px]' : 'text-[48px] lg:text-[64px]'
+                  }`} style={{ animationDelay: '0.2s' }}>
+                    {banner.subtitle}
+                  </h1>
+                )}
+                
+                {/* Button */}
+                {showButton && (
+                  <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                    <Button 
+                      className={`bg-white text-uti-red hover:bg-gray-100 font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 rounded-button ${
+                        isMobile ? 'w-[80%] h-12 text-base' : 'h-[50px] md:h-[60px] px-8 md:px-12 text-base md:text-lg min-w-[180px] md:min-w-[220px]'
+                      }`}
+                      onClick={() => handleButtonClick(banner.button_link)}
+                    >
+                      {banner.button_image_url && (
+                        <img 
+                          src={banner.button_image_url} 
+                          alt="" 
+                          className="w-5 h-5 mr-2" 
+                        />
+                      )}
+                      {banner.button_text}
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
             
-            {/* Subtitle */}
-            {banner.subtitle && (
-              <h1 className="text-hero font-heading mb-8 leading-tight px-4 drop-shadow-lg animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                {banner.subtitle}
-              </h1>
-            )}
-            
-            {/* Button */}
-            {showButton && (
-              <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-                <Button 
-                  className="btn-primary text-base px-8 py-4 shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
-                  onClick={() => handleButtonClick(banner.button_link)}
-                >
-                  {banner.button_image_url && (
-                    <img 
-                      src={banner.button_image_url} 
-                      alt="" 
-                      className="w-5 h-5 mr-2" 
-                    />
-                  )}
-                  {banner.button_text}
-                </Button>
+            {/* Desktop Secondary Image */}
+            {banner.image_url && backgroundType === 'gradient' && !isMobile && (
+              <div className={`absolute ${imageAlignment} top-1/2 transform -translate-y-1/2 hidden xl:block animate-fade-in-right`}>
+                <img 
+                  src={banner.image_url} 
+                  alt={banner.subtitle || banner.title || 'Banner'} 
+                  className="max-w-sm max-h-80 object-contain drop-shadow-2xl rounded-lg"
+                  onError={e => {
+                    e.currentTarget.style.display = 'none';
+                  }} 
+                />
               </div>
             )}
           </div>
-          
-          {/* Secondary Image for gradient banners */}
-          {banner.image_url && backgroundType === 'gradient' && (
-            <div className="absolute right-8 top-1/2 transform -translate-y-1/2 hidden lg:block animate-fade-in-right">
-              <img 
-                src={banner.image_url} 
-                alt={banner.subtitle || banner.title || 'Banner'} 
-                className="max-w-md max-h-80 object-contain drop-shadow-2xl rounded-lg"
-                onError={e => {
-                  e.currentTarget.style.display = 'none';
-                }} 
-              />
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* Banner Indicators - Repositioned for mobile */}
-      {banners.length > 1 && (
-        <div className="absolute bottom-6 md:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
-          {banners.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setCurrentBanner(index);
-                resumeAutoPlayAfterDelay();
-              }}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentBanner 
-                  ? 'bg-white scale-125 shadow-lg' 
-                  : 'bg-white/50 hover:bg-white/70'
-              }`}
-            />
-          ))}
-        </div>
-      )}
-    </section>
+        {/* Banner Indicators */}
+        {banners.length > 1 && (
+          <div className="absolute bottom-4 md:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
+            {banners.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setCurrentBanner(index);
+                  resumeAutoPlayAfterDelay();
+                }}
+                className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-300 ${
+                  index === currentBanner 
+                    ? 'bg-white scale-125 shadow-lg' 
+                    : 'bg-white/50 hover:bg-white/70'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+      
+      {/* Quick Links Section */}
+      <HeroQuickLinks />
+    </>
   );
 };
 

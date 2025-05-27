@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,7 +50,7 @@ const Index = () => {
         onAuthOpen={() => setShowAuthModal(true)}
       />
 
-      {/* Hero Banner Carousel */}
+      {/* Hero Banner Carousel with Quick Links */}
       <div className="w-full overflow-x-hidden">
         <HeroBannerCarousel />
       </div>
@@ -165,4 +164,3 @@ const Index = () => {
 };
 
 export default Index;
-
