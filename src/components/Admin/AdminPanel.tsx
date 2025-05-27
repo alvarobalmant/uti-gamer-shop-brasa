@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Package, Tags, Image, Users, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import TagManager from './TagManager';
-import BannerManager from './BannerManager';
-import ServiceCardManager from './ServiceCardManager';
+import { TagManager } from './TagManager';
+import { BannerManager } from './BannerManager';
+import { ServiceCardManager } from './ServiceCardManager';
 import UserSubscriptionManager from './UserSubscriptionManager';
 
 export const AdminPanel = () => {

@@ -17,16 +17,15 @@ interface UserProfile {
   created_at: string;
 }
 
-interface UserSubscription {
-  id: string;
+interface ActiveSubscription {
+  subscription_id: string;
   plan_name: string;
-  status: string;
-  end_date: string;
   discount_percentage: number;
+  end_date: string;
 }
 
 interface UserWithSubscription extends UserProfile {
-  subscription?: UserSubscription;
+  subscription?: ActiveSubscription;
 }
 
 const UserSubscriptionManager = () => {
@@ -205,18 +204,22 @@ const UserSubscriptionManager = () => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  const getStatusBadge = (subscription?: UserSubscription) => {
+  const getStatusBadge = (subscription?: ActiveSubscription) => {
     if (!subscription) {
       return <Badge variant="secondary">Sem assinatura</Badge>;
     }
 
-    const isActive = subscription.status === 'active' && new Date(subscription.end_date) > new Date();
+    const isActive = new Date(subscription.end_date) > new Date();
     
     if (isActive) {
       return <Badge className="bg-green-600"><Crown className="w-3 h-3 mr-1" />UTI PRO</Badge>;
     } else {
       return <Badge variant="destructive">Expirada</Badge>;
     }
+  };
+
+  const isSubscriptionActive = (subscription?: ActiveSubscription) => {
+    return subscription && new Date(subscription.end_date) > new Date();
   };
 
   if (loading) {
@@ -269,7 +272,7 @@ const UserSubscriptionManager = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      {user.subscription?.status === 'active' ? (
+                      {isSubscriptionActive(user.subscription) ? (
                         <>
                           <Button
                             size="sm"
