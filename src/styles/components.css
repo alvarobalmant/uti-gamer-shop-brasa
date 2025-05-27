@@ -1,0 +1,150 @@
+
+@layer utilities {
+  /* Premium Button System */
+  .btn-primary {
+    @apply bg-uti-red hover:bg-red-600 text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300;
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 7, 58, 0.1);
+    transform: translateY(0);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255, 7, 58, 0.2);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-secondary {
+    @apply bg-white text-uti-red border-2 border-uti-red hover:bg-uti-red hover:text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300;
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-uti-dark hover:bg-uti-light-gray font-semibold py-4 px-8 rounded-2xl transition-all duration-300;
+  }
+
+  .btn-dark {
+    @apply bg-uti-dark hover:bg-uti-dark-alt text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-dark:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  /* Premium Card System */
+  .card-premium {
+    @apply bg-white rounded-3xl border border-uti-border overflow-hidden transition-all duration-500;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-premium:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-premium);
+  }
+
+  .card-product-premium {
+    @apply bg-white rounded-2xl border border-uti-border overflow-hidden transition-all duration-300;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-product-premium:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-2xl);
+  }
+
+  .card-service-premium {
+    @apply bg-white rounded-3xl border border-uti-border overflow-hidden transition-all duration-500;
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(20px);
+  }
+
+  .card-service-premium:hover {
+    transform: translateY(-12px);
+    box-shadow: var(--shadow-premium);
+  }
+
+  /* Premium Header */
+  .header-premium {
+    @apply bg-white/90 backdrop-blur-xl border-b border-uti-border/50;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Premium Input System */
+  .input-premium {
+    @apply w-full px-6 py-4 border border-uti-border rounded-2xl focus:ring-2 focus:ring-uti-red focus:border-transparent transition-all duration-200 bg-white text-uti-dark placeholder-uti-gray;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .input-premium:focus {
+    box-shadow: var(--shadow-md), 0 0 0 4px rgba(255, 7, 58, 0.1);
+  }
+
+  .select-premium {
+    @apply w-full px-6 py-4 border border-uti-border rounded-2xl focus:ring-2 focus:ring-uti-red focus:border-transparent transition-all duration-200 bg-white text-uti-dark;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Platform Colors Premium */
+  .platform-playstation {
+    @apply bg-blue-600 text-white;
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3);
+  }
+
+  .platform-xbox {
+    @apply bg-green-600 text-white;
+    box-shadow: 0 4px 20px rgba(22, 163, 74, 0.3);
+  }
+
+  .platform-nintendo {
+    @apply bg-red-500 text-white;
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+  }
+
+  .platform-pc {
+    @apply bg-orange-600 text-white;
+    box-shadow: 0 4px 20px rgba(234, 88, 12, 0.3);
+  }
+
+  /* Premium Tags */
+  .tag-premium {
+    @apply text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm;
+  }
+
+  .tag-new {
+    @apply tag-premium bg-green-600/90 text-white;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+  }
+
+  .tag-used {
+    @apply tag-premium bg-amber-600/90 text-white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  }
+
+  .tag-offer {
+    @apply tag-premium bg-uti-red/90 text-white;
+    box-shadow: 0 4px 12px rgba(255, 7, 58, 0.3);
+  }
+
+  /* Glassmorphism Effects */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-dark {
+    background: rgba(15, 15, 20, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}

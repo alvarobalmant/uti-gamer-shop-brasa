@@ -1,5 +1,5 @@
 
-import { User, Menu, Search } from 'lucide-react';
+import { User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,7 @@ import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
 interface HeaderActionsProps {
   onCartOpen: () => void;
   onAuthOpen: () => void;
+  onCategoriesToggle: () => void;
   onMobileMenuToggle: () => void;
 }
 
@@ -32,36 +33,35 @@ const HeaderActions = ({
   };
 
   return (
-    <div className="flex items-center space-x-2 lg:space-x-4">
+    <div className="flex items-center space-x-2">
       {/* Mobile Search */}
       <div className="lg:hidden">
         <MobileSearchBar />
       </div>
 
-      {/* Desktop User Account */}
+      {/* User Account */}
       <Button 
         onClick={handleLogin} 
         variant="ghost" 
-        className="hidden lg:flex flex-col items-center p-3 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-105"
+        className="hidden sm:flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
       >
-        <User className="w-6 h-6 mb-1" />
-        <span className="text-xs font-semibold">
+        <User className="w-5 h-5" />
+        <span className="text-xs font-medium mt-1">
           {user ? (isAdmin ? 'Admin' : 'Conta') : 'Entrar'}
         </span>
       </Button>
 
-      {/* Premium Shopping Cart */}
-      <div className="relative">
-        <GlobalCartIcon />
-      </div>
+      {/* Global Shopping Cart */}
+      <GlobalCartIcon />
 
       {/* Mobile Menu Toggle */}
       <Button 
         onClick={onMobileMenuToggle} 
         variant="ghost" 
-        className="lg:hidden flex items-center justify-center p-3 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+        className="sm:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
       >
-        <Menu className="w-6 h-6" />
+        <Menu className="w-5 h-5" />
+        <span className="text-xs font-medium mt-1">Mais</span>
       </Button>
     </div>
   );

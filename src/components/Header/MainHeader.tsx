@@ -1,48 +1,51 @@
 
 import { useNavigate } from 'react-router-dom';
-import PremiumSearchBar from './PremiumSearchBar';
+import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActions from './HeaderActions';
 
 interface MainHeaderProps {
   onCartOpen: () => void;
   onAuthOpen: () => void;
+  onCategoriesToggle: () => void;
   onMobileMenuToggle: () => void;
 }
 
 const MainHeader = ({ 
   onCartOpen, 
   onAuthOpen, 
+  onCategoriesToggle, 
   onMobileMenuToggle 
 }: MainHeaderProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="flex items-center justify-between h-20 lg:h-24">
-        {/* Logo - Premium sizing */}
-        <div className="flex items-center cursor-pointer flex-shrink-0" onClick={() => navigate('/')}>
+    <div className="container-professional">
+      <div className="flex items-center justify-between h-20">
+        {/* Logo */}
+        <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
           <img 
             src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
             alt="UTI DOS GAMES" 
-            className="h-12 w-12 lg:h-16 lg:w-16 mr-3 lg:mr-4" 
+            className="h-12 w-12 sm:h-16 sm:w-16 mr-2 sm:mr-4" 
           />
-          <div className="hidden sm:block">
-            <h1 className="text-lg lg:text-2xl font-black text-gray-900 font-heading leading-tight">
+          <div>
+            <h1 className="text-xs sm:text-xl font-black text-uti-dark font-heading leading-tight">
               UTI DOS GAMES
             </h1>
-            <p className="text-xs lg:text-sm text-gray-600 font-medium -mt-1">
+            <p className="text-[10px] sm:text-xs text-uti-gray font-medium -mt-0.5 sm:-mt-1">
               A loja de games de Colatina
             </p>
           </div>
         </div>
 
-        {/* Desktop Search Bar - Premium design */}
-        <PremiumSearchBar />
+        {/* Desktop Search Bar */}
+        <DesktopSearchBar />
 
-        {/* Right Actions - Enhanced */}
+        {/* Right Actions */}
         <HeaderActions
           onCartOpen={onCartOpen}
           onAuthOpen={onAuthOpen}
+          onCategoriesToggle={onCategoriesToggle}
           onMobileMenuToggle={onMobileMenuToggle}
         />
       </div>

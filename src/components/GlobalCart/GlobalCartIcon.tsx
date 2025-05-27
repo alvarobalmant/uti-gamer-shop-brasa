@@ -17,13 +17,13 @@ const GlobalCartIcon = () => {
       <Button 
         onClick={() => setIsOpen(!isOpen)} 
         variant="ghost" 
-        className="flex flex-col items-center p-3 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-105 relative"
+        className="flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 relative"
         disabled={isLoading}
       >
-        <ShoppingCart className={`w-6 h-6 mb-1 ${isLoading ? 'animate-pulse' : ''}`} />
-        <span className="text-xs font-semibold hidden lg:block">Carrinho</span>
+        <ShoppingCart className={`w-5 h-5 ${isLoading ? 'animate-pulse' : ''}`} />
+        <span className="text-xs font-medium mt-1">Carrinho</span>
         {cartItemsCount > 0 && (
-          <Badge className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full shadow-lg">
+          <Badge className="absolute -top-1 -right-1 bg-uti-red text-white text-xs px-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
             {cartItemsCount}
           </Badge>
         )}

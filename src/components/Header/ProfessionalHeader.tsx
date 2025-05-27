@@ -1,9 +1,10 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TopPromoBanner from './TopPromoBanner';
+import PromotionalBanner from './PromotionalBanner';
 import MainHeader from './MainHeader';
-import PremiumNavigation from './PremiumNavigation';
+import MobileCategoriesMenu from './MobileCategoriesMenu';
+import DesktopNavigation from './DesktopNavigation';
 import MobileMenu from './MobileMenu';
 import { categories, Category } from './categories';
 
@@ -15,10 +16,12 @@ interface ProfessionalHeaderProps {
 const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
 
   const handleCategoryClick = (category: Category) => {
     navigate(category.path);
     setMobileMenuOpen(false);
+    setShowCategories(false);
   };
 
   const toggleMobileMenu = () => {
@@ -35,22 +38,33 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
     document.body.style.overflow = 'unset';
   };
 
+  const toggleCategories = () => {
+    setShowCategories(!showCategories);
+  };
+
   return (
     <>
-      {/* Top promo banner - premium style */}
-      <TopPromoBanner />
+      {/* Top promotional banner */}
+      <PromotionalBanner />
 
-      {/* Main Header - Premium layout */}
-      <header className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-100">
+      {/* Main Header - Fixed positioning */}
+      <header className="bg-white shadow-lg sticky top-0 z-50">
         <MainHeader
           onCartOpen={onCartOpen}
           onAuthOpen={onAuthOpen}
+          onCategoriesToggle={toggleCategories}
           onMobileMenuToggle={toggleMobileMenu}
         />
 
-        {/* Desktop Premium Navigation */}
-        <PremiumNavigation />
+        {/* Mobile Categories - Hidden since we moved to floating */}
+        <MobileCategoriesMenu
+          showCategories={false}
+          onCategoryClick={handleCategoryClick}
+        />
       </header>
+
+      {/* Desktop Categories Navigation */}
+      <DesktopNavigation />
 
       {/* Mobile Menu Overlay */}
       <MobileMenu

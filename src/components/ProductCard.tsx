@@ -39,27 +39,19 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
 
   const isOutOfStock = product.stock === 0;
 
-  const handleNavigation = () => {
-    // Force save current scroll position before navigating
-    saveCurrentPosition();
-    
-    // Small delay to ensure position is saved
-    setTimeout(() => {
-      navigate(`/produto/${product.id}`);
-    }, 10);
-  };
-
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    handleNavigation();
+    saveCurrentPosition();
+    navigate(`/produto/${product.id}`);
   };
 
   // Enhanced mobile touch handling
   const handleCardTouch = (e: React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    handleNavigation();
+    saveCurrentPosition();
+    navigate(`/produto/${product.id}`);
   };
 
   const handleAddToCart = (e: React.MouseEvent | React.TouchEvent) => {
@@ -132,3 +124,4 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
 };
 
 export default ProductCard;
+
