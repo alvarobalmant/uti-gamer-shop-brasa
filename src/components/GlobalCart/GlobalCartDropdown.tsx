@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Plus, Minus, ShoppingCart, X } from 'lucide-react';
+import { Plus, Minus, ShoppingCart, X, Trash2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -10,12 +10,20 @@ interface GlobalCartDropdownProps {
 }
 
 const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
-  const { items, updateQuantity, getCartTotal, sendToWhatsApp } = useCart();
+  const { items, updateQuantity, removeFromCart, clearCart, getCartTotal, sendToWhatsApp } = useCart();
   const isMobile = useIsMobile();
 
   const handleQuantityChange = (productId: string, size: string | undefined, color: string | undefined, currentQuantity: number, change: number) => {
     const newQuantity = Math.max(0, currentQuantity + change);
     updateQuantity(productId, size, color, newQuantity);
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    removeFromCart(itemId);
+  };
+
+  const handleClearCart = () => {
+    clearCart();
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -54,13 +62,25 @@ const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
                 </p>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              onClick={onClose} 
-              className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-8 h-8 p-0"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              {items.length > 0 && (
+                <Button 
+                  variant="ghost" 
+                  onClick={handleClearCart}
+                  className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-8 h-8 p-0"
+                  title="Limpar carrinho"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
+              <Button 
+                variant="ghost" 
+                onClick={onClose} 
+                className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-8 h-8 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -88,9 +108,20 @@ const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
                       className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-gray-800 font-medium text-sm leading-tight mb-1 truncate">
-                        {item.product.name}
-                      </h4>
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="text-gray-800 font-medium text-sm leading-tight truncate">
+                          {item.product.name}
+                        </h4>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-6 h-6 p-0 ml-2 flex-shrink-0"
+                          title="Remover item"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
                       <p className="text-gray-500 text-xs mb-2">
                         {item.size || 'Padrão'}{item.color ? `, ${item.color}` : ''}
                       </p>

@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Plus, Minus, ShoppingCart, X } from 'lucide-react';
+import { Plus, Minus, ShoppingCart, X, Trash2 } from 'lucide-react';
 import { CartItem } from '@/hooks/useCartSync';
 
 interface CartProps {
@@ -8,10 +8,20 @@ interface CartProps {
   showCart: boolean;
   setShowCart: (show: boolean) => void;
   updateQuantity: (productId: string, size: string | undefined, color: string | undefined, quantity: number) => void;
+  removeFromCart?: (itemId: string) => void;
+  clearCart?: () => void;
   sendToWhatsApp: () => void;
 }
 
-const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: CartProps) => {
+const Cart = ({ 
+  cart, 
+  showCart, 
+  setShowCart, 
+  updateQuantity, 
+  removeFromCart,
+  clearCart,
+  sendToWhatsApp 
+}: CartProps) => {
   const getTotalPrice = () => {
     return cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   };
@@ -24,6 +34,18 @@ const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: C
       item.color, 
       newQuantity
     );
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    if (removeFromCart) {
+      removeFromCart(itemId);
+    }
+  };
+
+  const handleClearCart = () => {
+    if (clearCart) {
+      clearCart();
+    }
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -54,13 +76,25 @@ const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: C
                 </p>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              onClick={() => setShowCart(false)} 
-              className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
-            >
-              <X className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              {cart.length > 0 && clearCart && (
+                <Button 
+                  variant="ghost" 
+                  onClick={handleClearCart}
+                  className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
+                  title="Limpar carrinho"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </Button>
+              )}
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowCart(false)} 
+                className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -98,9 +132,22 @@ const Cart = ({ cart, showCart, setShowCart, updateQuantity, sendToWhatsApp }: C
                       className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-gray-800 font-bold text-sm leading-tight mb-1 truncate">
-                        {item.product.name}
-                      </h4>
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="text-gray-800 font-bold text-sm leading-tight truncate">
+                          {item.product.name}
+                        </h4>
+                        {removeFromCart && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-6 h-6 p-0 ml-2 flex-shrink-0"
+                            title="Remover item"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
                       <p className="text-gray-500 text-xs mb-3">
                         {item.size || 'Padrão'}{item.color ? `, ${item.color}` : ''}
                       </p>
