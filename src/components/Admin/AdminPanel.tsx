@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProductManager } from './ProductManager';
+import ProductManager from './ProductManager';
 import { BannerManager } from './BannerManager';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
