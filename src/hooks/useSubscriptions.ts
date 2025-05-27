@@ -149,45 +149,75 @@ export const useSubscriptions = () => {
       const plan = plans.find(p => p.id === planId);
       if (!plan) throw new Error('Plano não encontrado');
 
-      // Cancelar assinaturas ativas existentes primeiro
-      const { data: existingSubscriptions, error: fetchError } = await supabase
+      console.log('=== INICIANDO CRIAÇÃO DE ASSINATURA ===');
+      console.log('Usuário:', user.id);
+      console.log('Plano:', planId, plan.name);
+
+      // PASSO 1: BUSCAR E CANCELAR TODAS AS ASSINATURAS ATIVAS
+      console.log('PASSO 1: Buscando assinaturas ativas...');
+      const { data: activeSubscriptions, error: fetchError } = await supabase
         .from('user_subscriptions')
-        .select('id')
+        .select('id, status, end_date')
         .eq('user_id', user.id)
-        .eq('status', 'active')
-        .gte('end_date', new Date().toISOString());
+        .eq('status', 'active');
 
       if (fetchError) {
-        console.error('Erro ao buscar assinaturas existentes:', fetchError);
+        console.error('Erro ao buscar assinaturas ativas:', fetchError);
+        throw fetchError;
       }
 
-      // Cancelar assinaturas existentes se houver
-      if (existingSubscriptions && existingSubscriptions.length > 0) {
-        console.log('Cancelando assinaturas existentes:', existingSubscriptions.length);
+      console.log('Assinaturas ativas encontradas:', activeSubscriptions?.length || 0);
+
+      // PASSO 2: CANCELAR ASSINATURAS EXISTENTES (SE HOUVER)
+      if (activeSubscriptions && activeSubscriptions.length > 0) {
+        console.log('PASSO 2: Cancelando', activeSubscriptions.length, 'assinaturas ativas...');
         
-        for (const sub of existingSubscriptions) {
-          await supabase
+        for (const subscription of activeSubscriptions) {
+          console.log('Cancelando assinatura:', subscription.id);
+          const { error: cancelError } = await supabase
             .from('user_subscriptions')
             .update({ 
               status: 'cancelled',
               updated_at: new Date().toISOString()
             })
-            .eq('id', sub.id);
+            .eq('id', subscription.id);
+
+          if (cancelError) {
+            console.error('Erro ao cancelar assinatura:', subscription.id, cancelError);
+            throw cancelError;
+          }
+          console.log('Assinatura cancelada com sucesso:', subscription.id);
         }
       }
 
-      // Calcular data de expiração
+      // PASSO 3: VERIFICAR SE NÃO HÁ MAIS ASSINATURAS ATIVAS
+      console.log('PASSO 3: Verificando se todas as assinaturas foram canceladas...');
+      const { data: remainingActive, error: verifyError } = await supabase
+        .from('user_subscriptions')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'active');
+
+      if (verifyError) {
+        console.error('Erro ao verificar assinaturas remanescentes:', verifyError);
+        throw verifyError;
+      }
+
+      if (remainingActive && remainingActive.length > 0) {
+        console.error('ERRO: Ainda existem', remainingActive.length, 'assinaturas ativas após cancelamento!');
+        throw new Error('Falha ao cancelar assinaturas existentes');
+      }
+
+      console.log('✅ Todas as assinaturas foram canceladas com sucesso');
+
+      // PASSO 4: CALCULAR DATA DE EXPIRAÇÃO
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + plan.duration_months);
+      console.log('PASSO 4: Data de expiração calculada:', endDate.toISOString());
 
-      console.log('Criando nova assinatura:', {
-        user_id: user.id,
-        plan_id: planId,
-        end_date: endDate.toISOString()
-      });
-
-      // Criar assinatura no user_subscriptions
-      const { error: insertError } = await supabase
+      // PASSO 5: CRIAR NOVA ASSINATURA
+      console.log('PASSO 5: Criando nova assinatura...');
+      const { data: newSubscription, error: insertError } = await supabase
         .from('user_subscriptions')
         .insert({
           user_id: user.id,
@@ -195,14 +225,19 @@ export const useSubscriptions = () => {
           end_date: endDate.toISOString(),
           status: 'active',
           start_date: new Date().toISOString()
-        });
+        })
+        .select()
+        .single();
 
       if (insertError) {
-        console.error('Erro ao inserir nova assinatura:', insertError);
+        console.error('Erro ao criar nova assinatura:', insertError);
         throw insertError;
       }
 
-      // Atualizar ou criar registro na tabela usuarios
+      console.log('✅ Nova assinatura criada:', newSubscription.id);
+
+      // PASSO 6: ATUALIZAR TABELA USUARIOS
+      console.log('PASSO 6: Atualizando tabela usuarios...');
       const { error: upsertError } = await supabase
         .from('usuarios')
         .upsert({
@@ -213,7 +248,8 @@ export const useSubscriptions = () => {
           status_assinatura: 'Ativo',
           plano: plan.name,
           desconto: plan.discount_percentage,
-          data_expiracao: endDate.toISOString()
+          data_expiracao: endDate.toISOString(),
+          updated_at: new Date().toISOString()
         });
 
       if (upsertError) {
@@ -221,7 +257,28 @@ export const useSubscriptions = () => {
         throw upsertError;
       }
 
-      console.log('Assinatura criada com sucesso');
+      console.log('✅ Tabela usuarios atualizada com sucesso');
+
+      // PASSO 7: VERIFICAÇÃO FINAL
+      console.log('PASSO 7: Verificação final...');
+      const { data: finalCheck, error: finalError } = await supabase
+        .from('user_subscriptions')
+        .select('id, status')
+        .eq('user_id', user.id)
+        .eq('status', 'active');
+
+      if (finalError) {
+        console.error('Erro na verificação final:', finalError);
+        throw finalError;
+      }
+
+      console.log('Assinaturas ativas após criação:', finalCheck?.length || 0);
+      if (finalCheck && finalCheck.length !== 1) {
+        console.error('ERRO: Deveria haver exatamente 1 assinatura ativa, mas foram encontradas:', finalCheck?.length);
+        throw new Error('Estado inconsistente após criação da assinatura');
+      }
+
+      console.log('=== ASSINATURA CRIADA COM SUCESSO ===');
 
       // Atualizar dados imediatamente
       await fetchUserSubscription();
@@ -233,7 +290,8 @@ export const useSubscriptions = () => {
 
       return true;
     } catch (error: any) {
-      console.error('Erro ao criar assinatura:', error);
+      console.error('=== ERRO NA CRIAÇÃO DA ASSINATURA ===');
+      console.error('Erro:', error);
       toast({
         title: "Erro ao criar assinatura",
         description: error.message,
@@ -254,34 +312,97 @@ export const useSubscriptions = () => {
     }
 
     try {
-      console.log('Cancelando assinatura do usuário:', user?.id);
+      console.log('=== INICIANDO CANCELAMENTO DE ASSINATURA ===');
+      console.log('Usuário:', user?.id);
 
       if (!user) throw new Error('Usuário não autenticado');
 
-      // Usar a função do banco para cancelar
-      const { data, error } = await supabase.rpc('cancelar_assinatura', {
-        user_id: user.id
-      });
-
-      if (error) {
-        console.error('Erro ao cancelar assinatura:', error);
-        throw error;
-      }
-
-      // Cancelar também no user_subscriptions
-      await supabase
+      // PASSO 1: BUSCAR TODAS AS ASSINATURAS ATIVAS
+      console.log('PASSO 1: Buscando assinaturas ativas...');
+      const { data: activeSubscriptions, error: fetchError } = await supabase
         .from('user_subscriptions')
-        .update({ 
-          status: 'cancelled',
-          updated_at: new Date().toISOString()
-        })
+        .select('id, status')
         .eq('user_id', user.id)
         .eq('status', 'active');
 
-      console.log('Assinatura cancelada com sucesso');
+      if (fetchError) {
+        console.error('Erro ao buscar assinaturas ativas:', fetchError);
+        throw fetchError;
+      }
+
+      console.log('Assinaturas ativas encontradas:', activeSubscriptions?.length || 0);
+
+      if (!activeSubscriptions || activeSubscriptions.length === 0) {
+        console.log('Nenhuma assinatura ativa encontrada para cancelar');
+        toast({
+          title: "Aviso",
+          description: "Nenhuma assinatura ativa encontrada para cancelar.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // PASSO 2: CANCELAR TODAS AS ASSINATURAS ATIVAS
+      console.log('PASSO 2: Cancelando', activeSubscriptions.length, 'assinaturas...');
+      for (const subscription of activeSubscriptions) {
+        console.log('Cancelando assinatura:', subscription.id);
+        const { error: cancelError } = await supabase
+          .from('user_subscriptions')
+          .update({ 
+            status: 'cancelled',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', subscription.id);
+
+        if (cancelError) {
+          console.error('Erro ao cancelar assinatura:', subscription.id, cancelError);
+          throw cancelError;
+        }
+        console.log('Assinatura cancelada:', subscription.id);
+      }
+
+      // PASSO 3: ATUALIZAR TABELA USUARIOS
+      console.log('PASSO 3: Atualizando tabela usuarios...');
+      const { error: updateError } = await supabase
+        .from('usuarios')
+        .update({
+          status_assinatura: 'Expirado',
+          data_expiracao: null,
+          plano: null,
+          desconto: 0,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('Erro ao atualizar usuário:', updateError);
+        throw updateError;
+      }
+
+      // PASSO 4: VERIFICAÇÃO FINAL
+      console.log('PASSO 4: Verificação final...');
+      const { data: finalCheck, error: finalError } = await supabase
+        .from('user_subscriptions')
+        .select('id, status')
+        .eq('user_id', user.id)
+        .eq('status', 'active');
+
+      if (finalError) {
+        console.error('Erro na verificação final:', finalError);
+        throw finalError;
+      }
+
+      console.log('Assinaturas ativas após cancelamento:', finalCheck?.length || 0);
+      if (finalCheck && finalCheck.length > 0) {
+        console.error('ERRO: Ainda existem assinaturas ativas após cancelamento!');
+        throw new Error('Falha ao cancelar todas as assinaturas');
+      }
+
+      console.log('=== CANCELAMENTO CONCLUÍDO COM SUCESSO ===');
 
       // Atualizar estado imediatamente
       setUserSubscription(null);
+      await fetchUserSubscription();
       
       toast({
         title: "Assinatura cancelada",
@@ -290,7 +411,8 @@ export const useSubscriptions = () => {
 
       return true;
     } catch (error: any) {
-      console.error('Erro ao cancelar assinatura:', error);
+      console.error('=== ERRO NO CANCELAMENTO ===');
+      console.error('Erro:', error);
       toast({
         title: "Erro ao cancelar assinatura",
         description: error.message,
