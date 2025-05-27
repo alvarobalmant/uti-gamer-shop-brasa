@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import SearchResults from "./pages/SearchResults";
 import CategoryPage from "./pages/CategoryPage";
 import ProductPage from "./pages/ProductPage";
 import NotFound from "./pages/NotFound";
+import UTIPro from "./pages/UTIPro";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +29,7 @@ const App = () => (
               <Route path="/busca" element={<SearchResults />} />
               <Route path="/categoria/:category" element={<CategoryPage />} />
               <Route path="/produto/:id" element={<ProductPage />} />
+              <Route path="/uti-pro" element={<UTIPro />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

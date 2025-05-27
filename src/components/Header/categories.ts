@@ -1,4 +1,3 @@
-
 export interface Category {
   id: string;
   name: string;
@@ -68,5 +67,11 @@ export const categories: Category[] = [
     id: 'ofertas', 
     name: 'Ofertas', 
     path: '/categoria/ofertas' 
+  },
+  {
+    id: 'uti-pro',
+    name: 'UTI PRO',
+    path: '/uti-pro',
+    icon: 'Crown'
   }
 ];

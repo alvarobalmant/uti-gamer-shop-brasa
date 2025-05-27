@@ -1,10 +1,10 @@
-
-import { User, Menu } from 'lucide-react';
+import { User, Menu, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import MobileSearchBar from './MobileSearchBar';
 import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
+import { useSubscriptions } from '@/hooks/useSubscriptions';
 
 interface HeaderActionsProps {
   onCartOpen: () => void;
@@ -18,6 +18,7 @@ const HeaderActions = ({
   onMobileMenuToggle 
 }: HeaderActionsProps) => {
   const { user, isAdmin } = useAuth();
+  const { hasActiveSubscription } = useSubscriptions();
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -38,6 +39,14 @@ const HeaderActions = ({
       <div className="lg:hidden">
         <MobileSearchBar />
       </div>
+
+      {/* UTI PRO Badge for subscribers */}
+      {hasActiveSubscription() && (
+        <div className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
+          <Crown className="w-3 h-3" />
+          PRO
+        </div>
+      )}
 
       {/* User Account */}
       <Button 
