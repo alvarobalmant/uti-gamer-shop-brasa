@@ -44,23 +44,23 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 w-full no-overflow">
+    <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
       <ProfessionalHeader 
         onCartOpen={() => setShowCart(true)}
         onAuthOpen={() => setShowAuthModal(true)}
       />
 
-      {/* Hero Banner Carousel - Premium Responsivo */}
-      <div className="w-full no-overflow">
+      {/* Hero Banner Carousel with Quick Links */}
+      <div className="w-full overflow-x-hidden">
         <HeroBannerCarousel />
       </div>
 
-      {/* Service Cards - Sistema Grid Premium */}
-      <div className="w-full no-overflow">
+      {/* Service Cards */}
+      <div className="w-full overflow-x-hidden">
         <ServiceCards />
       </div>
 
-      {/* Featured Products Section - Design System Premium */}
+      {/* Featured Products Section with Premium Design */}
       <FeaturedProductsSection 
         products={products}
         loading={loading}
@@ -71,7 +71,7 @@ const Index = () => {
       {/* Footer Premium */}
       <Footer />
 
-      {/* Cart Component - Premium com Micro-interações */}
+      {/* Cart Component */}
       <Cart
         cart={items}
         showCart={showCart}
@@ -80,11 +80,7 @@ const Index = () => {
         sendToWhatsApp={sendToWhatsApp}
       />
 
-      {/* Auth Modal Premium */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
-      />
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 };
