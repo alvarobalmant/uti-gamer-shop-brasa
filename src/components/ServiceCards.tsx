@@ -101,7 +101,10 @@ const ServiceCards = () => {
                         className="w-8 h-8 object-cover rounded filter brightness-0 invert"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling.style.display = 'block';
+                          const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (nextSibling) {
+                            nextSibling.style.display = 'block';
+                          }
                         }}
                       />
                       <div className="w-8 h-8 text-white text-xl font-bold hidden">
@@ -137,8 +140,8 @@ const ServiceCards = () => {
       <section className="py-16 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_25%_25%,#ef4444_0%,transparent_50%)]"></div>
-          <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_75%_75%,#dc2626_0%,transparent_50%)]"></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-radial from-red-400/20 to-transparent"></div>
+          <div className="absolute top-0 right-0 w-full h-full bg-gradient-radial from-red-600/20 to-transparent"></div>
         </div>
         
         <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -191,7 +194,11 @@ const ServiceCards = () => {
             <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in-up">
               {/* Header with Gradient */}
               <div className="bg-gradient-to-r from-red-600 to-red-700 px-8 py-8 text-white text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+                <div className="absolute inset-0 opacity-20">
+                  <div className="w-full h-full bg-repeat" style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+                  }}></div>
+                </div>
                 <div className="relative">
                   <h2 className="text-3xl md:text-4xl font-bold mb-4">
                     💬 Precisa de ajuda especializada?
