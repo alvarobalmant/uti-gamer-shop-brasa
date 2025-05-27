@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Crown, Calendar, X, Plus, User, Search, Settings, Trash2 } from 'lucide-react';
+import { Crown, Calendar, X, Plus, User, Search, Settings, CalendarMinus } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -56,9 +56,8 @@ const UserSubscriptionManager = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      console.log('Buscando usuários...');
+      console.log('Iniciando carregamento de usuários...');
       
-      // Buscar todos os usuários
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
@@ -69,35 +68,36 @@ const UserSubscriptionManager = () => {
         throw profilesError;
       }
 
-      console.log('Profiles encontrados:', profiles?.length);
+      console.log('Profiles carregados:', profiles?.length);
 
-      // Buscar assinaturas ativas para cada usuário
       const usersWithSubscriptions: UserWithSubscription[] = [];
       
       for (const profile of profiles || []) {
-        console.log(`Buscando assinatura para usuário ${profile.id}`);
-        
-        const { data: subscriptionData, error: subError } = await supabase
-          .rpc('get_active_subscription', { user_id: profile.id });
+        try {
+          const { data: subscriptionData, error: subError } = await supabase
+            .rpc('get_active_subscription', { user_id: profile.id });
 
-        if (subError) {
-          console.error(`Erro ao buscar assinatura para ${profile.id}:`, subError);
+          if (subError) {
+            console.error(`Erro ao buscar assinatura para ${profile.id}:`, subError);
+          }
+
+          const userWithSub: UserWithSubscription = {
+            ...profile,
+            subscription: subscriptionData?.[0] || undefined
+          };
+          
+          usersWithSubscriptions.push(userWithSub);
+        } catch (error) {
+          console.error(`Erro ao processar usuário ${profile.id}:`, error);
+          usersWithSubscriptions.push(profile);
         }
-
-        const userWithSub: UserWithSubscription = {
-          ...profile,
-          subscription: subscriptionData?.[0] || undefined
-        };
-        
-        console.log(`Usuário ${profile.id} - Assinatura:`, userWithSub.subscription);
-        usersWithSubscriptions.push(userWithSub);
       }
 
       setUsers(usersWithSubscriptions);
       setFilteredUsers(usersWithSubscriptions);
-      console.log('Usuários carregados com sucesso:', usersWithSubscriptions.length);
+      console.log('Usuários carregados com sucesso');
     } catch (error: any) {
-      console.error('Erro completo ao carregar usuários:', error);
+      console.error('Erro ao carregar usuários:', error);
       toast({
         title: "Erro ao carregar usuários",
         description: error.message,
@@ -110,7 +110,6 @@ const UserSubscriptionManager = () => {
 
   const fetchPlans = async () => {
     try {
-      console.log('Buscando planos...');
       const { data, error } = await supabase
         .from('subscription_plans')
         .select('*')
@@ -118,7 +117,6 @@ const UserSubscriptionManager = () => {
         .order('price', { ascending: true });
 
       if (error) throw error;
-      console.log('Planos encontrados:', data?.length);
       setPlans(data || []);
     } catch (error: any) {
       console.error('Erro ao carregar planos:', error);
@@ -151,62 +149,59 @@ const UserSubscriptionManager = () => {
       setProcessing(true);
       console.log(`Cancelando assinatura do usuário ${userId}`);
 
-      // Primeiro, verificar se há assinatura ativa
-      const { data: activeSubscription, error: checkError } = await supabase
+      // Buscar assinatura ativa atual
+      const { data: activeSubscriptions, error: fetchError } = await supabase
         .from('user_subscriptions')
-        .select('id')
+        .select('id, end_date')
         .eq('user_id', userId)
         .eq('status', 'active')
-        .gte('end_date', new Date().toISOString())
-        .single();
+        .gte('end_date', new Date().toISOString());
 
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Erro ao verificar assinatura ativa:', checkError);
-        throw checkError;
+      if (fetchError) {
+        console.error('Erro ao buscar assinatura ativa:', fetchError);
+        throw fetchError;
       }
 
-      if (!activeSubscription) {
+      if (!activeSubscriptions || activeSubscriptions.length === 0) {
         toast({
-          title: "Nenhuma assinatura ativa encontrada",
+          title: "Nenhuma assinatura ativa",
           description: "Este usuário não possui assinatura ativa para cancelar.",
           variant: "destructive",
         });
         return;
       }
 
-      console.log('Assinatura ativa encontrada:', activeSubscription.id);
+      // Cancelar todas as assinaturas ativas (geralmente será apenas uma)
+      for (const subscription of activeSubscriptions) {
+        const { error: updateError } = await supabase
+          .from('user_subscriptions')
+          .update({ 
+            status: 'cancelled',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', subscription.id);
 
-      // Cancelar a assinatura específica
-      const { error: cancelError } = await supabase
-        .from('user_subscriptions')
-        .update({ 
-          status: 'cancelled',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', activeSubscription.id);
-
-      if (cancelError) {
-        console.error('Erro ao cancelar assinatura:', cancelError);
-        throw cancelError;
+        if (updateError) {
+          console.error('Erro ao cancelar assinatura:', updateError);
+          throw updateError;
+        }
       }
 
-      console.log('Assinatura cancelada com sucesso');
+      console.log('Assinatura(s) cancelada(s) com sucesso');
 
       toast({
         title: "Assinatura cancelada",
         description: "A assinatura foi cancelada com sucesso.",
       });
 
-      // Atualizar a lista de usuários
+      // Atualizar dados
       await fetchUsers();
-      
-      // Atualizar usuário selecionado se for o mesmo
       if (selectedUser?.id === userId) {
         const updatedUser = await fetchUpdatedUser(userId);
         setSelectedUser(updatedUser);
       }
     } catch (error: any) {
-      console.error('Erro completo ao cancelar assinatura:', error);
+      console.error('Erro ao cancelar assinatura:', error);
       toast({
         title: "Erro ao cancelar assinatura",
         description: error.message || "Erro desconhecido",
@@ -231,6 +226,8 @@ const UserSubscriptionManager = () => {
         .eq('user_id', userId)
         .eq('status', 'active')
         .gte('end_date', new Date().toISOString())
+        .order('end_date', { ascending: false })
+        .limit(1)
         .single();
 
       if (fetchError) {
@@ -246,15 +243,13 @@ const UserSubscriptionManager = () => {
         throw fetchError;
       }
 
-      console.log('Assinatura ativa encontrada:', activeSubscription);
-
       // Calcular nova data de expiração
       const currentEndDate = new Date(activeSubscription.end_date);
       const newEndDate = new Date(currentEndDate);
       newEndDate.setMonth(newEndDate.getMonth() + additionalMonths);
 
-      console.log('Data atual de expiração:', currentEndDate);
-      console.log('Nova data de expiração:', newEndDate);
+      console.log('Data atual:', currentEndDate.toISOString());
+      console.log('Nova data:', newEndDate.toISOString());
 
       // Atualizar a assinatura
       const { error: updateError } = await supabase
@@ -284,7 +279,7 @@ const UserSubscriptionManager = () => {
         setSelectedUser(updatedUser);
       }
     } catch (error: any) {
-      console.error('Erro completo ao estender assinatura:', error);
+      console.error('Erro ao estender assinatura:', error);
       toast({
         title: "Erro ao estender assinatura",
         description: error.message || "Erro desconhecido",
@@ -309,6 +304,8 @@ const UserSubscriptionManager = () => {
         .eq('user_id', userId)
         .eq('status', 'active')
         .gte('end_date', new Date().toISOString())
+        .order('end_date', { ascending: false })
+        .limit(1)
         .single();
 
       if (fetchError) {
@@ -335,7 +332,6 @@ const UserSubscriptionManager = () => {
         toast({
           title: "Redução inválida",
           description: "A redução resultaria em uma data de expiração no passado. A assinatura será cancelada.",
-          variant: "destructive",
         });
         
         // Cancelar a assinatura em vez de reduzir
@@ -343,8 +339,8 @@ const UserSubscriptionManager = () => {
         return;
       }
 
-      console.log('Data atual de expiração:', currentEndDate);
-      console.log('Nova data de expiração:', newEndDate);
+      console.log('Data atual:', currentEndDate.toISOString());
+      console.log('Nova data:', newEndDate.toISOString());
 
       // Atualizar a assinatura
       const { error: updateError } = await supabase
@@ -364,7 +360,7 @@ const UserSubscriptionManager = () => {
 
       toast({
         title: "Assinatura reduzida",
-        description: `Assinatura reduzida em ${monthsToReduce} meses. Nova data de expiração: ${newEndDate.toLocaleDateString('pt-BR')}.`,
+        description: `Assinatura reduzida em ${monthsToReduce} meses. Nova data: ${newEndDate.toLocaleDateString('pt-BR')}.`,
       });
 
       // Atualizar dados
@@ -374,7 +370,7 @@ const UserSubscriptionManager = () => {
         setSelectedUser(updatedUser);
       }
     } catch (error: any) {
-      console.error('Erro completo ao reduzir assinatura:', error);
+      console.error('Erro ao reduzir assinatura:', error);
       toast({
         title: "Erro ao reduzir assinatura",
         description: error.message || "Erro desconhecido",
@@ -382,27 +378,6 @@ const UserSubscriptionManager = () => {
       });
     } finally {
       setProcessing(false);
-    }
-  };
-
-  const fetchUpdatedUser = async (userId: string) => {
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      const { data: subscriptionData } = await supabase
-        .rpc('get_active_subscription', { user_id: userId });
-
-      return {
-        ...profile,
-        subscription: subscriptionData?.[0] || undefined
-      };
-    } catch (error) {
-      console.error('Erro ao buscar usuário atualizado:', error);
-      return null;
     }
   };
 
@@ -414,24 +389,31 @@ const UserSubscriptionManager = () => {
       console.log(`Criando assinatura para usuário ${userId} com plano ${planId}`);
 
       // Verificar se já existe assinatura ativa
-      const { data: existingSubscription } = await supabase
+      const { data: existingSubscriptions, error: checkError } = await supabase
         .from('user_subscriptions')
         .select('id')
         .eq('user_id', userId)
         .eq('status', 'active')
-        .gte('end_date', new Date().toISOString())
-        .single();
+        .gte('end_date', new Date().toISOString());
 
-      if (existingSubscription) {
-        // Cancelar assinatura ativa existente
-        console.log('Cancelando assinatura existente:', existingSubscription.id);
-        await supabase
-          .from('user_subscriptions')
-          .update({ 
-            status: 'cancelled',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingSubscription.id);
+      if (checkError) {
+        console.error('Erro ao verificar assinaturas existentes:', checkError);
+        throw checkError;
+      }
+
+      // Cancelar assinaturas ativas existentes
+      if (existingSubscriptions && existingSubscriptions.length > 0) {
+        console.log('Cancelando assinaturas existentes:', existingSubscriptions.length);
+        
+        for (const sub of existingSubscriptions) {
+          await supabase
+            .from('user_subscriptions')
+            .update({ 
+              status: 'cancelled',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', sub.id);
+        }
       }
 
       // Criar nova assinatura
@@ -467,7 +449,7 @@ const UserSubscriptionManager = () => {
         setSelectedUser(updatedUser);
       }
     } catch (error: any) {
-      console.error('Erro completo ao criar assinatura:', error);
+      console.error('Erro ao criar assinatura:', error);
       toast({
         title: "Erro ao criar assinatura",
         description: error.message || "Erro desconhecido",
@@ -475,6 +457,36 @@ const UserSubscriptionManager = () => {
       });
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const fetchUpdatedUser = async (userId: string): Promise<UserWithSubscription | null> => {
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) {
+        console.error('Erro ao buscar profile atualizado:', profileError);
+        return null;
+      }
+
+      const { data: subscriptionData, error: subError } = await supabase
+        .rpc('get_active_subscription', { user_id: userId });
+
+      if (subError) {
+        console.error('Erro ao buscar assinatura atualizada:', subError);
+      }
+
+      return {
+        ...profile,
+        subscription: subscriptionData?.[0] || undefined
+      };
+    } catch (error) {
+      console.error('Erro ao buscar usuário atualizado:', error);
+      return null;
     }
   };
 
@@ -733,7 +745,7 @@ const UserSubscriptionManager = () => {
                               disabled={processing}
                             >
                               <Plus className="w-3 h-3 mr-1" />
-                              Adicionar Meses
+                              {processing ? 'Processando...' : 'Adicionar Meses'}
                             </Button>
                           </div>
 
@@ -754,8 +766,8 @@ const UserSubscriptionManager = () => {
                               onClick={() => reduceSubscription(selectedUser.id, monthsToRemove)}
                               disabled={processing}
                             >
-                              <Calendar className="w-3 h-3 mr-1" />
-                              Remover Meses
+                              <CalendarMinus className="w-3 h-3 mr-1" />
+                              {processing ? 'Processando...' : 'Remover Meses'}
                             </Button>
                           </div>
 
