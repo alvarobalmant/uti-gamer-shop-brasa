@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { useBanners } from '@/hooks/useBanners';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import HeroQuickLinks from './HeroQuickLinks';
+import MobileHeroBanner from './HeroBanner/MobileHeroBanner';
 
 const HeroBannerCarousel = () => {
   const { banners, loading } = useBanners();
@@ -235,26 +235,14 @@ const HeroBannerCarousel = () => {
 
   return (
     <>
-      <section className="relative overflow-hidden">
-        <div 
-          ref={carouselRef}
-          className={`relative text-white transition-all duration-700 ease-in-out ${
-            backgroundType === 'image-only' ? 'bg-gray-900' : gradientClass
-          }`}
-          style={{
-            height: 'clamp(300px, 60vh, 700px)',
-            minHeight: '300px',
-            ...backgroundStyle
-          }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
+      {/* Mobile Banner */}
+      <div className="lg:hidden">
+        <MobileHeroBanner />
+      </div>
+
+      {/* Desktop Banner */}
+      <div className="hidden lg:block">
+        <section className="relative w-full overflow-hidden">
           {/* Overlay for better text readability */}
           {backgroundType === 'image-only' && (
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
@@ -340,28 +328,28 @@ const HeroBannerCarousel = () => {
               </div>
             )}
           </div>
-        </div>
+        </section>
+      </div>
 
-        {/* Banner Indicators */}
-        {banners.length > 1 && (
-          <div className="absolute bottom-4 md:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
-            {banners.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setCurrentBanner(index);
-                  resumeAutoPlayAfterDelay();
-                }}
-                className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-300 ${
-                  index === currentBanner 
-                    ? 'bg-white scale-125 shadow-lg' 
-                    : 'bg-white/50 hover:bg-white/70'
-                }`}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+      {/* Banner Indicators */}
+      {banners.length > 1 && (
+        <div className="absolute bottom-4 md:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
+          {banners.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setCurrentBanner(index);
+                resumeAutoPlayAfterDelay();
+              }}
+              className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-300 ${
+                index === currentBanner 
+                  ? 'bg-white scale-125 shadow-lg' 
+                  : 'bg-white/50 hover:bg-white/70'
+              }`}
+            />
+          ))}
+        </div>
+      )}
       
       {/* Quick Links Section */}
       <HeroQuickLinks />

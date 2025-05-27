@@ -34,20 +34,20 @@ const FeaturedProductsSection = ({
   ];
 
   const filterProductsByCategory = (category: string) => {
-    if (category === 'todos') return products.slice(0, 8);
+    if (category === 'todos') return products.slice(0, isMobile ? 6 : 8);
     
     return products.filter(product => 
       product.tags?.some(tag => 
         tag.name.toLowerCase().includes(category.toLowerCase())
       )
-    ).slice(0, 8);
+    ).slice(0, isMobile ? 6 : 8);
   };
 
   const featuredProducts = filterProductsByCategory(selectedCategory);
 
   if (loading) {
     return (
-      <section className="py-16 bg-white">
+      <section className="py-8 lg:py-16 bg-white">
         <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-16">
             <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -59,14 +59,14 @@ const FeaturedProductsSection = ({
   }
 
   return (
-    <section id="produtos" className="py-16 bg-white">
+    <section id="produtos" className="py-8 lg:py-16 bg-white">
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header - Perfect Alignment */}
-        <div className="mb-12">
-          {/* Title and View All Link - Same Visual Line */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        {/* Section Header */}
+        <div className="mb-8 lg:mb-12">
+          {/* Title and View All Link */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
             <div className="flex-1">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              <h2 className="text-xl sm:text-2xl lg:text-4xl font-bold text-gray-900 mb-2">
                 🎮 Produtos em Destaque
               </h2>
               <p className="text-sm sm:text-base lg:text-lg text-gray-600 hidden sm:block">
@@ -77,7 +77,7 @@ const FeaturedProductsSection = ({
               <Button 
                 onClick={() => navigate('/categoria/inicio')} 
                 variant="outline" 
-                className="text-red-600 border-red-600 hover:bg-red-50 flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold min-h-[44px] w-full sm:w-auto justify-center"
+                className="text-red-600 border-red-600 hover:bg-red-50 flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold min-h-[48px] w-full sm:w-auto justify-center"
               >
                 Ver Todos
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -85,20 +85,21 @@ const FeaturedProductsSection = ({
             </div>
           </div>
 
-          {/* Category Navigation - Refined Style and Perfect Alignment */}
+          {/* Category Navigation */}
           {isMobile ? (
-            // Mobile: Horizontal scrollable pills with refined style
+            // Mobile: Horizontal scrollable pills
             <div className="overflow-x-auto pb-2 -mx-1">
-              <div className="flex gap-3 px-1 min-w-max">
+              <div className="flex gap-2 px-1 min-w-max">
                 {categories.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-300 min-h-[44px] border-0 ${
+                    className={`px-4 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-300 min-h-[44px] border-0 ${
                       selectedCategory === category.id
                         ? 'bg-red-600 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
                     }`}
+                    style={{ touchAction: 'manipulation' }}
                   >
                     {category.label}
                   </button>
@@ -106,7 +107,7 @@ const FeaturedProductsSection = ({
               </div>
             </div>
           ) : (
-            // Desktop: Centered refined tabs
+            // Desktop: Centered tabs
             <div className="flex justify-center">
               <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full max-w-3xl">
                 <TabsList className="grid w-full grid-cols-5 bg-gray-100 p-1.5 rounded-xl h-auto">
@@ -125,7 +126,7 @@ const FeaturedProductsSection = ({
           )}
         </div>
 
-        {/* Products Grid - Perfect Layout and Spacing */}
+        {/* Products Grid */}
         {featuredProducts.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-2xl text-gray-400 mb-2">
@@ -136,7 +137,11 @@ const FeaturedProductsSection = ({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 w-full">
+          <div className={`grid gap-4 sm:gap-5 lg:gap-6 w-full ${
+            isMobile 
+              ? 'grid-cols-2' 
+              : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+          }`}>
             {featuredProducts.map((product, index) => (
               <div 
                 key={product.id} 

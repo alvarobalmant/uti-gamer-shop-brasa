@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductCardProps {
   product: Product;
@@ -14,15 +15,29 @@ import ProductCardInfo from './ProductCard/ProductCardInfo';
 import ProductCardProPrice from './ProductCard/ProductCardProPrice';
 import ProductCardStock from './ProductCard/ProductCardStock';
 import ProductCardActions from './ProductCard/ProductCardActions';
+import MobileProductCard from './ProductCard/MobileProductCard';
 
 // Export the Product type for other components to use
 export type { Product } from '@/hooks/useProducts';
 
 const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProps) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showButton, setShowButton] = useState(false);
 
+  // Use mobile-optimized card on mobile devices
+  if (isMobile) {
+    return (
+      <MobileProductCard
+        product={product}
+        onAddToCart={onAddToCart}
+        getPlatformColor={getPlatformColor}
+      />
+    );
+  }
+
+  // Desktop version (existing implementation)
   const handleWishlistClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -36,12 +51,10 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Navigate to product page
     navigate(`/produto/${product.id}`);
   };
 
   const handleCardTouch = (e: React.TouchEvent) => {
-    // Handle touch events for mobile navigation
     navigate(`/produto/${product.id}`);
   };
 
