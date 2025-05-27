@@ -8,6 +8,13 @@ const Footer = () => {
   const [showNewsletterPopup, setShowNewsletterPopup] = useState(false);
 
   useEffect(() => {
+    // Verifica se o usuário já viu o popup
+    const hasSeenPopup = localStorage.getItem('utidosgames_newsletter_popup_seen');
+    
+    if (hasSeenPopup) {
+      return; // Se já viu, não mostra novamente
+    }
+
     // Show newsletter popup after 30 seconds or on scroll intent
     const timer = setTimeout(() => {
       setShowNewsletterPopup(true);
@@ -27,13 +34,19 @@ const Footer = () => {
     };
   }, []);
 
+  const handleClosePopup = () => {
+    setShowNewsletterPopup(false);
+    // Marca que o usuário já viu o popup
+    localStorage.setItem('utidosgames_newsletter_popup_seen', 'true');
+  };
+
   return (
     <>
       <FooterMain />
       <FloatingElements />
       <NewsletterPopup 
         isOpen={showNewsletterPopup} 
-        onClose={() => setShowNewsletterPopup(false)} 
+        onClose={handleClosePopup} 
       />
     </>
   );

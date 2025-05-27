@@ -24,12 +24,21 @@ const NewsletterPopup: React.FC<NewsletterPopupProps> = ({ isOpen, onClose }) =>
     setIsSubmitting(false);
     setIsSubmitted(true);
     
+    // Marca que o usuário já viu/usou o popup
+    localStorage.setItem('utidosgames_newsletter_popup_seen', 'true');
+    
     // Auto close after success
     setTimeout(() => {
       onClose();
       setIsSubmitted(false);
       setEmail('');
     }, 2000);
+  };
+
+  const handleClose = () => {
+    onClose();
+    // Marca que o usuário já viu o popup (mesmo sem se cadastrar)
+    localStorage.setItem('utidosgames_newsletter_popup_seen', 'true');
   };
 
   if (!isOpen) return null;
@@ -40,7 +49,7 @@ const NewsletterPopup: React.FC<NewsletterPopupProps> = ({ isOpen, onClose }) =>
         {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 p-8 text-white relative">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
           >
             <X className="w-4 h-4" />
