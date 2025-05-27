@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,7 +11,7 @@ import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import ServiceCards from '@/components/ServiceCards';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
-import { Button } from '@/components/ui/button';
+import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
 
 const Index = () => {
   const { products, loading } = useProducts();
@@ -41,8 +42,6 @@ const Index = () => {
     return 'bg-gray-600';
   };
 
-  const featuredProducts = products.slice(0, 6);
-
   return (
     <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
       <ProfessionalHeader 
@@ -60,52 +59,13 @@ const Index = () => {
         <ServiceCards />
       </div>
 
-      {/* Featured Products */}
-      <section id="produtos" className="py-12 bg-gray-50 w-full overflow-x-hidden">
-        <div className="w-full max-w-full px-4 mx-auto">
-          <div className="flex justify-between items-center mb-6 w-full">
-            <h2 className="text-2xl font-bold text-gray-900 flex-shrink-0">
-              🎮 Produtos em Destaque
-            </h2>
-            <Button 
-              onClick={() => navigate('/categoria/inicio')} 
-              variant="outline" 
-              className="text-red-600 border-red-600 hover:bg-red-50 flex-shrink-0 ml-2"
-              size="sm"
-            >
-              Ver Todos
-            </Button>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-16 w-full">
-              <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <div className="text-xl text-gray-500">Carregando produtos...</div>
-            </div>
-          ) : featuredProducts.length === 0 ? (
-            <div className="text-center py-16 w-full">
-              <div className="text-2xl text-gray-400 mb-2">
-                Nenhum produto disponível
-              </div>
-              <p className="text-gray-500">
-                Produtos serão adicionados em breve
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-full overflow-x-hidden">
-              {featuredProducts.map(product => (
-                <div key={product.id} className="w-full min-w-0">
-                  <ProductCard
-                    product={product}
-                    onAddToCart={(product, size, color) => addToCart(product, size, color)}
-                    getPlatformColor={() => getPlatformColor(product)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+      {/* Featured Products Section with Premium Design */}
+      <FeaturedProductsSection 
+        products={products}
+        loading={loading}
+        onAddToCart={addToCart}
+        getPlatformColor={getPlatformColor}
+      />
 
       {/* Footer - GameStop Style */}
       <footer className="bg-gray-900 text-white py-8 w-full overflow-x-hidden">
