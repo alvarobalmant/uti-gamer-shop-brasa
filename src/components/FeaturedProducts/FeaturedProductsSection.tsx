@@ -46,11 +46,11 @@ const FeaturedProductsSection = ({
 
   if (loading) {
     return (
-      <section className="py-16 bg-white">
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-16">
-            <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <div className="text-xl text-gray-500">Carregando produtos...</div>
+      <section className="py-xl bg-white">
+        <div className="container-premium">
+          <div className="text-center py-2xl">
+            <div className="loading-shimmer w-12 h-12 rounded-full mx-auto mb-md"></div>
+            <div className="text-display-sm text-neutral-gray">Carregando produtos...</div>
           </div>
         </div>
       </section>
@@ -58,46 +58,46 @@ const FeaturedProductsSection = ({
   }
 
   return (
-    <section id="produtos" className="py-16 bg-white">
-      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header - Perfect Alignment */}
-        <div className="mb-12">
-          {/* Title and View All Link - Same Visual Line */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <section id="produtos" className="py-xl bg-white">
+      <div className="container-premium">
+        {/* Section Header - Sistema Tipográfico Premium */}
+        <div className="mb-2xl">
+          {/* Title and View All Link - Perfect Responsive Alignment */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md mb-xl">
             <div className="flex-1">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              <h2 className="text-display-md text-neutral-dark mb-sm">
                 🎮 Produtos em Destaque
               </h2>
-              <p className="text-sm sm:text-base lg:text-lg text-gray-600 hidden sm:block">
+              <p className="text-body-md text-neutral-gray hidden sm:block">
                 Descubra os jogos e acessórios mais populares
               </p>
             </div>
             <div className="flex-shrink-0">
               <Button 
                 onClick={() => navigate('/categoria/inicio')} 
-                variant="outline" 
-                className="text-red-600 border-red-600 hover:bg-red-50 flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold min-h-[44px] w-full sm:w-auto justify-center"
+                className="btn-secondary-premium flex items-center gap-sm w-full sm:w-auto"
               >
                 Ver Todos
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 quick-transition" />
               </Button>
             </div>
           </div>
 
-          {/* Category Navigation - Refined Style and Perfect Alignment */}
+          {/* Category Navigation - Sistema Responsivo Premium */}
           {isMobile ? (
-            // Mobile: Horizontal scrollable pills with refined style
-            <div className="overflow-x-auto pb-2 -mx-1">
-              <div className="flex gap-3 px-1 min-w-max">
+            // Mobile: Horizontal scrollable com touch otimizado
+            <div className="overflow-x-auto scrollbar-premium pb-sm -mx-1">
+              <div className="flex gap-sm px-1 min-w-max">
                 {categories.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-300 min-h-[44px] border-0 ${
-                      selectedCategory === category.id
-                        ? 'bg-red-600 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`touch-friendly touch-feedback px-md py-sm rounded-xl 
+                               text-sm font-semibold whitespace-nowrap quick-transition
+                               ${selectedCategory === category.id
+                                 ? 'bg-primary text-white shadow-lg scale-105'
+                                 : 'bg-neutral-light text-neutral-dark hover:bg-gray-200'
+                               }`}
                   >
                     {category.label}
                   </button>
@@ -105,15 +105,20 @@ const FeaturedProductsSection = ({
               </div>
             </div>
           ) : (
-            // Desktop: Centered refined tabs
+            // Desktop: Tabs centralizadas com micro-interações
             <div className="flex justify-center">
-              <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full max-w-3xl">
-                <TabsList className="grid w-full grid-cols-5 bg-gray-100 p-1.5 rounded-xl h-auto">
+              <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full max-w-4xl">
+                <TabsList className="grid w-full grid-cols-5 bg-neutral-light p-2 rounded-2xl h-auto gap-1">
                   {categories.map((category) => (
                     <TabsTrigger
                       key={category.id}
                       value={category.id}
-                      className="px-4 py-3 text-sm font-semibold rounded-lg data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-700 data-[state=inactive]:hover:bg-gray-200 transition-all duration-300 border-0"
+                      className="px-md py-sm text-sm font-semibold rounded-xl 
+                                 data-[state=active]:bg-primary data-[state=active]:text-white 
+                                 data-[state=active]:shadow-lg data-[state=active]:scale-105
+                                 data-[state=inactive]:text-neutral-dark 
+                                 data-[state=inactive]:hover:bg-gray-200 
+                                 quick-transition border-0"
                     >
                       {category.label}
                     </TabsTrigger>
@@ -124,25 +129,24 @@ const FeaturedProductsSection = ({
           )}
         </div>
 
-        {/* Products Grid - Perfect Layout and Spacing */}
+        {/* Products Grid - Sistema Grid Flexível Premium */}
         {featuredProducts.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-2xl text-gray-400 mb-2">
+          <div className="text-center py-2xl">
+            <div className="text-display-sm text-neutral-gray mb-sm">
               Nenhum produto disponível
             </div>
-            <p className="text-gray-500">
+            <p className="text-body-md text-neutral-gray">
               Produtos serão adicionados em breve
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 w-full">
+          <div className="grid-products w-full">
             {featuredProducts.map((product, index) => (
               <div 
                 key={product.id} 
-                className="animate-fade-in-up opacity-0 w-full"
+                className="opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards] w-full"
                 style={{ 
-                  animationDelay: `${index * 100}ms`,
-                  animationFillMode: 'forwards'
+                  animationDelay: `${index * 100}ms`
                 }}
               >
                 <ProductCard
