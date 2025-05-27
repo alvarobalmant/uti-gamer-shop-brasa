@@ -30,9 +30,22 @@ export interface ActiveSubscription {
   end_date: string;
 }
 
+export interface Usuario {
+  id: string;
+  nome: string;
+  email: string;
+  papel: string;
+  data_cadastro: string;
+  plano?: string;
+  status_assinatura: string;
+  desconto?: number;
+  data_expiracao?: string;
+}
+
 export const useSubscriptions = () => {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [userSubscription, setUserSubscription] = useState<ActiveSubscription | null>(null);
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -60,32 +73,65 @@ export const useSubscriptions = () => {
   const fetchUserSubscription = async () => {
     if (!user) {
       setUserSubscription(null);
+      setUsuario(null);
       return;
     }
 
     try {
-      console.log('Buscando assinatura do usuário:', user.id);
+      console.log('Buscando dados do usuário:', user.id);
       
-      const { data, error } = await supabase
-        .rpc('get_active_subscription', { user_id: user.id });
+      // Buscar dados do usuário na tabela usuarios
+      const { data: usuarioData, error: usuarioError } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-      if (error) {
-        console.error('Erro na função get_active_subscription:', error);
-        throw error;
+      if (usuarioError && usuarioError.code !== 'PGRST116') {
+        console.error('Erro ao buscar usuário:', usuarioError);
+        throw usuarioError;
       }
-      
-      console.log('Dados da assinatura retornados:', data);
-      
-      if (data && data.length > 0) {
-        setUserSubscription(data[0]);
-        console.log('Assinatura ativa encontrada:', data[0]);
+
+      if (usuarioData) {
+        setUsuario(usuarioData);
+        console.log('Dados do usuário encontrados:', usuarioData);
+
+        // Verificar se tem assinatura ativa
+        if (usuarioData.status_assinatura === 'Ativo' && 
+            usuarioData.data_expiracao && 
+            new Date(usuarioData.data_expiracao) > new Date()) {
+          
+          // Buscar dados detalhados da assinatura
+          const { data: subscriptionData, error: subError } = await supabase
+            .rpc('get_active_subscription', { user_id: user.id });
+
+          if (subError) {
+            console.error('Erro na função get_active_subscription:', subError);
+          } else if (subscriptionData && subscriptionData.length > 0) {
+            setUserSubscription(subscriptionData[0]);
+            console.log('Assinatura ativa encontrada:', subscriptionData[0]);
+          } else {
+            // Usar dados da tabela usuarios como fallback
+            setUserSubscription({
+              subscription_id: user.id, // fallback
+              plan_name: usuarioData.plano || 'UTI PRO',
+              discount_percentage: usuarioData.desconto || 0,
+              end_date: usuarioData.data_expiracao || ''
+            });
+          }
+        } else {
+          setUserSubscription(null);
+          console.log('Nenhuma assinatura ativa encontrada');
+        }
       } else {
+        setUsuario(null);
         setUserSubscription(null);
-        console.log('Nenhuma assinatura ativa encontrada');
+        console.log('Usuário não encontrado na tabela usuarios');
       }
     } catch (error: any) {
-      console.error('Erro ao carregar assinatura:', error);
+      console.error('Erro ao carregar dados do usuário:', error);
       setUserSubscription(null);
+      setUsuario(null);
     }
   };
 
@@ -140,7 +186,8 @@ export const useSubscriptions = () => {
         end_date: endDate.toISOString()
       });
 
-      const { error } = await supabase
+      // Criar assinatura no user_subscriptions
+      const { error: insertError } = await supabase
         .from('user_subscriptions')
         .insert({
           user_id: user.id,
@@ -150,9 +197,28 @@ export const useSubscriptions = () => {
           start_date: new Date().toISOString()
         });
 
-      if (error) {
-        console.error('Erro ao inserir nova assinatura:', error);
-        throw error;
+      if (insertError) {
+        console.error('Erro ao inserir nova assinatura:', insertError);
+        throw insertError;
+      }
+
+      // Atualizar ou criar registro na tabela usuarios
+      const { error: upsertError } = await supabase
+        .from('usuarios')
+        .upsert({
+          id: user.id,
+          nome: user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário',
+          email: user.email || '',
+          papel: 'user',
+          status_assinatura: 'Ativo',
+          plano: plan.name,
+          desconto: plan.discount_percentage,
+          data_expiracao: endDate.toISOString()
+        });
+
+      if (upsertError) {
+        console.error('Erro ao atualizar usuário:', upsertError);
+        throw upsertError;
       }
 
       console.log('Assinatura criada com sucesso');
@@ -188,20 +254,29 @@ export const useSubscriptions = () => {
     }
 
     try {
-      console.log('Cancelando assinatura:', userSubscription.subscription_id);
+      console.log('Cancelando assinatura do usuário:', user?.id);
 
-      const { error } = await supabase
-        .from('user_subscriptions')
-        .update({ 
-          status: 'cancelled',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userSubscription.subscription_id);
+      if (!user) throw new Error('Usuário não autenticado');
+
+      // Usar a função do banco para cancelar
+      const { data, error } = await supabase.rpc('cancelar_assinatura', {
+        user_id: user.id
+      });
 
       if (error) {
         console.error('Erro ao cancelar assinatura:', error);
         throw error;
       }
+
+      // Cancelar também no user_subscriptions
+      await supabase
+        .from('user_subscriptions')
+        .update({ 
+          status: 'cancelled',
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('status', 'active');
 
       console.log('Assinatura cancelada com sucesso');
 
@@ -226,11 +301,14 @@ export const useSubscriptions = () => {
   };
 
   const hasActiveSubscription = () => {
-    return userSubscription !== null && new Date(userSubscription.end_date) > new Date();
+    return userSubscription !== null && 
+           usuario?.status_assinatura === 'Ativo' &&
+           usuario?.data_expiracao &&
+           new Date(usuario.data_expiracao) > new Date();
   };
 
   const getDiscountPercentage = () => {
-    return hasActiveSubscription() ? userSubscription!.discount_percentage : 0;
+    return hasActiveSubscription() ? (usuario?.desconto || userSubscription?.discount_percentage || 0) : 0;
   };
 
   // Efeito principal para carregar dados
@@ -255,12 +333,14 @@ export const useSubscriptions = () => {
       fetchUserSubscription();
     } else {
       setUserSubscription(null);
+      setUsuario(null);
     }
   }, [user]);
 
   return {
     plans,
     userSubscription,
+    usuario,
     loading,
     createSubscription,
     cancelSubscription,

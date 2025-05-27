@@ -359,11 +359,61 @@ export type Database = {
           },
         ]
       }
+      usuarios: {
+        Row: {
+          created_at: string
+          data_cadastro: string
+          data_expiracao: string | null
+          desconto: number | null
+          email: string
+          id: string
+          nome: string
+          papel: string
+          plano: string | null
+          status_assinatura: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_cadastro?: string
+          data_expiracao?: string | null
+          desconto?: number | null
+          email: string
+          id?: string
+          nome: string
+          papel?: string
+          plano?: string | null
+          status_assinatura?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_cadastro?: string
+          data_expiracao?: string | null
+          desconto?: number | null
+          email?: string
+          id?: string
+          nome?: string
+          papel?: string
+          plano?: string | null
+          status_assinatura?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      adicionar_meses_assinatura: {
+        Args: { user_id: string; meses: number }
+        Returns: boolean
+      }
+      cancelar_assinatura: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       get_active_subscription: {
         Args: { user_id: string }
         Returns: {
@@ -379,6 +429,10 @@ export type Database = {
       }
       is_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      remover_meses_assinatura: {
+        Args: { user_id: string; meses: number }
         Returns: boolean
       }
     }

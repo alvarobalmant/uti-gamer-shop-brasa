@@ -1,82 +1,59 @@
 
-import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { ArrowLeft, Package, Tags, Image, Users, Crown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { TagManager } from './TagManager';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProductManager } from './ProductManager';
 import { BannerManager } from './BannerManager';
 import { ServiceCardManager } from './ServiceCardManager';
-import UserSubscriptionManager from './UserSubscriptionManager';
-import ProductManager from './ProductManager';
+import { TagManager } from './TagManager';
+import UserSubscriptionManagement from './UserSubscriptionManagement';
+import { Package, Image, Briefcase, Tag, Users } from 'lucide-react';
 
 export const AdminPanel = () => {
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('products');
-
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/');
-  };
+  const [activeTab, setActiveTab] = useState('users');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
-      <div className="container mx-auto p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => navigate('/')}
-              variant="ghost"
-              className="text-white hover:bg-gray-800"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar à Loja
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Painel Administrativo</h1>
-              <p className="text-gray-400">UTI DOS GAMES</p>
-            </div>
-          </div>
-          <Button onClick={handleLogout} variant="destructive">
-            Sair
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Painel Administrativo
+          </h1>
+          <p className="text-gray-400">
+            Gerencie produtos, banners, serviços e usuários do sistema
+          </p>
         </div>
 
-        {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5 bg-gray-800 border-gray-700">
-            <TabsTrigger value="products" className="text-white data-[state=active]:bg-red-600">
-              <Package className="w-4 h-4 mr-2" />
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Usuários
+            </TabsTrigger>
+            <TabsTrigger value="products" className="flex items-center gap-2">
+              <Package className="w-4 h-4" />
               Produtos
             </TabsTrigger>
-            <TabsTrigger value="tags" className="text-white data-[state=active]:bg-red-600">
-              <Tags className="w-4 h-4 mr-2" />
-              Tags
-            </TabsTrigger>
-            <TabsTrigger value="banners" className="text-white data-[state=active]:bg-red-600">
-              <Image className="w-4 h-4 mr-2" />
+            <TabsTrigger value="banners" className="flex items-center gap-2">
+              <Image className="w-4 h-4" />
               Banners
             </TabsTrigger>
-            <TabsTrigger value="services" className="text-white data-[state=active]:bg-red-600">
-              <Image className="w-4 h-4 mr-2" />
+            <TabsTrigger value="services" className="flex items-center gap-2">
+              <Briefcase className="w-4 h-4" />
               Serviços
             </TabsTrigger>
-            <TabsTrigger value="users" className="text-white data-[state=active]:bg-red-600">
-              <Users className="w-4 h-4 mr-2" />
-              Usuários
+            <TabsTrigger value="tags" className="flex items-center gap-2">
+              <Tag className="w-4 h-4" />
+              Tags
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="products">
-            <ProductManager />
+          <TabsContent value="users">
+            <UserSubscriptionManagement />
           </TabsContent>
 
-          <TabsContent value="tags">
-            <TagManager />
+          <TabsContent value="products">
+            <ProductManager />
           </TabsContent>
 
           <TabsContent value="banners">
@@ -87,8 +64,8 @@ export const AdminPanel = () => {
             <ServiceCardManager />
           </TabsContent>
 
-          <TabsContent value="users">
-            <UserSubscriptionManager />
+          <TabsContent value="tags">
+            <TagManager />
           </TabsContent>
         </Tabs>
       </div>
