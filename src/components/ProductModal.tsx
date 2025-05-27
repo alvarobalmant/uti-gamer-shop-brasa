@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { X, Heart, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Product } from './ProductCard';
+import { Product } from '@/hooks/useProducts';
 
 interface ProductModalProps {
   product: Product | null;

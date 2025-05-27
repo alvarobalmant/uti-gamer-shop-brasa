@@ -1,5 +1,4 @@
-
-import { Product } from '@/components/ProductCard';
+import { Product } from '@/hooks/useProducts';
 
 export const dummyProducts: Product[] = [
   {

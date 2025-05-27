@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Product } from '../ProductCard';
+import { Product } from '@/hooks/useProducts';
 
 interface ProductCardPriceProps {
   product: Product;

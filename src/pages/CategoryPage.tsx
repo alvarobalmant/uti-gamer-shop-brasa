@@ -4,7 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
-import ProductCard, { Product } from '@/components/ProductCard';
+import ProductCard from '@/components/ProductCard';
+import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 
@@ -61,6 +62,10 @@ const CategoryPage = () => {
       return 'bg-orange-600';
     }
     return 'bg-gray-600';
+  };
+
+  const handleAddToCart = (product: Product) => {
+    addToCart(product);
   };
 
   return (
@@ -126,7 +131,7 @@ const CategoryPage = () => {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={(product, size, color) => addToCart(product, size, color)}
+                  onAddToCart={handleAddToCart}
                   getPlatformColor={() => getPlatformColor(product)}
                 />
               ))}

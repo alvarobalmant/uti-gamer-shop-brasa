@@ -5,7 +5,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { AuthModal } from '@/components/Auth/AuthModal';
-import ProductCard, { Product } from '@/components/ProductCard';
+import ProductCard from '@/components/ProductCard';
+import { Product } from '@/hooks/useProducts';
 import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import ServiceCards from '@/components/ServiceCards';
@@ -42,6 +43,10 @@ const Index = () => {
     return 'bg-gray-600';
   };
 
+  const handleAddToCart = (product: Product, size?: string, color?: string) => {
+    addToCart(product, size, color);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
       <ProfessionalHeader 
@@ -63,7 +68,7 @@ const Index = () => {
       <FeaturedProductsSection 
         products={products}
         loading={loading}
-        onAddToCart={addToCart}
+        onAddToCart={handleAddToCart}
         getPlatformColor={getPlatformColor}
       />
 

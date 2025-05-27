@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
-import { Product } from '@/components/ProductCard';
+import { Product } from '@/hooks/useProducts';
 import { normalizeText, fuzzySearch } from '@/utils/fuzzySearch';
 
 interface SearchSuggestionsProps {

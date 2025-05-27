@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Heart } from 'lucide-react';
-import { Product } from '../ProductCard';
+import { Product } from '@/hooks/useProducts';
 
 interface ProductCardImageProps {
   product: Product;

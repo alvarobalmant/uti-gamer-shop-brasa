@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProductCard, { Product } from '@/components/ProductCard';
+import ProductCard from '@/components/ProductCard';
+import { Product } from '@/hooks/useProducts';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface FeaturedProductsSectionProps {
@@ -147,7 +148,7 @@ const FeaturedProductsSection = ({
               >
                 <ProductCard
                   product={product}
-                  onAddToCart={(product, size, color) => onAddToCart(product, size, color)}
+                  onAddToCart={(product) => onAddToCart(product)}
                   getPlatformColor={() => getPlatformColor(product)}
                 />
               </div>

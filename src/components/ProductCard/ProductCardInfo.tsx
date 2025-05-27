@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Star } from 'lucide-react';
-import { Product } from '../ProductCard';
+import { Product } from '@/hooks/useProducts';
 
 interface ProductCardInfoProps {
   product: Product;
