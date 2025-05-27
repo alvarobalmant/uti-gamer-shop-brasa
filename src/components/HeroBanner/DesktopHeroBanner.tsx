@@ -11,10 +11,9 @@ interface BannerSlide {
   ctaText: string;
   ctaLink: string;
   image: string;
-  mobileImage?: string;
 }
 
-const MobileHeroBanner = () => {
+const DesktopHeroBanner = () => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -23,16 +22,16 @@ const MobileHeroBanner = () => {
       id: '1',
       title: 'Jogos Incríveis',
       subtitle: 'Os melhores preços de Colatina',
-      ctaText: 'Ver Ofertas',
-      ctaLink: '/categoria/ofertas',
+      ctaText: 'Entre em Contato',
+      ctaLink: 'https://wa.me/5527996882090',
       image: '/lovable-uploads/8cf1f59f-91ee-4e94-b333-02445409df1a.png',
     },
     {
       id: '2',
       title: 'UTI PRO',
-      subtitle: 'Descontos exclusivos',
-      ctaText: 'Saiba Mais',
-      ctaLink: '/uti-pro',
+      subtitle: 'Descontos exclusivos para membros',
+      ctaText: 'Entre em Contato',
+      ctaLink: 'https://wa.me/5527996882090',
       image: '/lovable-uploads/103e7d18-a70a-497f-a476-e6c513079b69.png',
     },
   ];
@@ -58,14 +57,14 @@ const MobileHeroBanner = () => {
   };
 
   const handleCTAClick = (link: string) => {
-    navigate(link);
+    window.open(link, '_blank');
   };
 
   if (slides.length === 0) return null;
 
   return (
-    <section className="relative block lg:hidden">
-      <div className="relative h-64 overflow-hidden">
+    <section className="relative hidden lg:block">
+      <div className="relative h-96 overflow-hidden">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
@@ -74,30 +73,24 @@ const MobileHeroBanner = () => {
               index < currentSlide ? '-translate-x-full' : 'translate-x-full'
             }`}
           >
-            <div 
-              className="w-full h-full bg-cover bg-center relative"
-              style={{ 
-                backgroundImage: `url(${slide.mobileImage || slide.image})`,
-                backgroundPosition: 'center center'
-              }}
-            >
-              {/* Overlay for better text readability */}
-              <div className="absolute inset-0 bg-black/40" />
-              
+            {/* Banner com fundo vermelho sólido - DESIGN ORIGINAL */}
+            <div className="w-full h-full bg-red-600 relative">
               {/* Content */}
-              <div className="relative h-full flex flex-col justify-center items-center text-center px-6">
-                <h2 className="text-2xl font-bold text-white mb-2 leading-tight">
-                  {slide.title}
-                </h2>
-                <p className="text-white/90 mb-6 text-base">
-                  {slide.subtitle}
-                </p>
-                <Button
-                  onClick={() => handleCTAClick(slide.ctaLink)}
-                  className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-base font-semibold rounded-lg min-h-[48px] shadow-lg"
-                >
-                  {slide.ctaText}
-                </Button>
+              <div className="relative h-full flex items-center justify-center text-center px-8">
+                <div className="max-w-4xl mx-auto">
+                  <h2 className="text-5xl font-bold text-white mb-4 leading-tight">
+                    {slide.title}
+                  </h2>
+                  <p className="text-white/90 mb-8 text-xl">
+                    {slide.subtitle}
+                  </p>
+                  <Button
+                    onClick={() => handleCTAClick(slide.ctaLink)}
+                    className="bg-white hover:bg-gray-100 text-red-600 px-12 py-4 text-lg font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    {slide.ctaText}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -110,17 +103,17 @@ const MobileHeroBanner = () => {
               onClick={goToPrevious}
               variant="ghost"
               size="sm"
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-6 h-6" />
             </Button>
             <Button
               onClick={goToNext}
               variant="ghost"
               size="sm"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-6 h-6" />
             </Button>
           </>
         )}
@@ -128,12 +121,12 @@ const MobileHeroBanner = () => {
 
       {/* Dots Indicator */}
       {slides.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
           {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              className={`w-4 h-4 rounded-full transition-all duration-300 ${
                 index === currentSlide 
                   ? 'bg-white' 
                   : 'bg-white/50'
@@ -147,4 +140,4 @@ const MobileHeroBanner = () => {
   );
 };
 
-export default MobileHeroBanner;
+export default DesktopHeroBanner;

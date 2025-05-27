@@ -54,13 +54,13 @@ const Index = () => {
         onAuthOpen={() => setShowAuthModal(true)}
       />
 
-      {/* Hero Banner Carousel with Mobile Optimization */}
+      {/* Hero Banner Carousel with separate Desktop/Mobile components */}
       <div className="w-full overflow-x-hidden">
         <HeroBannerCarousel />
       </div>
 
-      {/* Service Cards - Hidden on very small mobile screens */}
-      <div className="w-full overflow-x-hidden hidden sm:block">
+      {/* Service Cards - Always visible with responsive layout */}
+      <div className="w-full overflow-x-hidden">
         <ServiceCards />
       </div>
 
@@ -72,9 +72,9 @@ const Index = () => {
         getPlatformColor={getPlatformColor}
       />
 
-      {/* Footer - Mobile Optimized */}
+      {/* Footer - Mobile Optimized but always visible */}
       <footer className="bg-gray-900 text-white py-6 lg:py-8 w-full overflow-x-hidden">
-        <div className="w-full max-w-full px-4 mx-auto">
+        <div className="container-professional">
           <div className="text-center mb-4 lg:mb-6">
             <div className="flex items-center justify-center gap-4 mb-4">
               <div>
