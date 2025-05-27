@@ -33,43 +33,35 @@ const HeaderActions = ({
   };
 
   return (
-    <div className="flex items-center gap-sm">
-      {/* Mobile Search - Touch Optimized */}
+    <div className="flex items-center space-x-2">
+      {/* Mobile Search */}
       <div className="lg:hidden">
         <MobileSearchBar />
       </div>
 
-      {/* User Account - Premium Button Style */}
+      {/* User Account */}
       <Button 
         onClick={handleLogin} 
         variant="ghost" 
-        className="hidden sm:flex flex-col items-center touch-friendly
-                   text-neutral-dark hover:text-primary hover:bg-red-50 
-                   rounded-xl quick-transition group p-3"
+        className="hidden sm:flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
       >
-        <User className="w-5 h-5 group-hover:scale-110 quick-transition" />
-        <span className="text-xs font-medium mt-1 group-hover:font-semibold quick-transition">
+        <User className="w-5 h-5" />
+        <span className="text-xs font-medium mt-1">
           {user ? (isAdmin ? 'Admin' : 'Conta') : 'Entrar'}
         </span>
       </Button>
 
-      {/* Global Shopping Cart - Enhanced */}
-      <div className="relative">
-        <GlobalCartIcon />
-      </div>
+      {/* Global Shopping Cart */}
+      <GlobalCartIcon />
 
-      {/* Mobile Menu Toggle - Touch Optimized */}
+      {/* Mobile Menu Toggle */}
       <Button 
         onClick={onMobileMenuToggle} 
         variant="ghost" 
-        className="sm:hidden flex flex-col items-center touch-friendly touch-feedback
-                   text-neutral-dark hover:text-primary hover:bg-red-50 
-                   rounded-xl quick-transition group p-3"
+        className="sm:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
       >
-        <Menu className="w-5 h-5 group-hover:scale-110 quick-transition" />
-        <span className="text-xs font-medium mt-1 group-hover:font-semibold quick-transition">
-          Menu
-        </span>
+        <Menu className="w-5 h-5" />
+        <span className="text-xs font-medium mt-1">Mais</span>
       </Button>
     </div>
   );

@@ -19,44 +19,29 @@ const MainHeader = ({
   const navigate = useNavigate();
 
   return (
-    <div className="container-premium">
-      <div className="flex items-center justify-between h-16 md:h-20 lg:h-24">
-        {/* Logo - Responsivo com Micro-interações */}
-        <div 
-          className="flex items-center cursor-pointer group quick-transition hover:scale-105" 
-          onClick={() => navigate('/')}
-        >
-          <div className="relative">
-            <img 
-              src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
-              alt="UTI DOS GAMES" 
-              className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 
-                         quick-transition group-hover:rotate-3" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent 
-                            opacity-0 group-hover:opacity-100 quick-transition rounded-lg"></div>
-          </div>
-          
-          <div className="ml-3 md:ml-4">
-            <h1 className="text-xs sm:text-sm md:text-lg lg:text-xl xl:text-2xl 
-                           font-black text-neutral-dark font-heading leading-tight
-                           group-hover:text-primary quick-transition">
+    <div className="container-professional">
+      <div className="flex items-center justify-between h-20">
+        {/* Logo */}
+        <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
+          <img 
+            src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
+            alt="UTI DOS GAMES" 
+            className="h-12 w-12 sm:h-16 sm:w-16 mr-2 sm:mr-4" 
+          />
+          <div>
+            <h1 className="text-xs sm:text-xl font-black text-uti-dark font-heading leading-tight">
               UTI DOS GAMES
             </h1>
-            <p className="text-[10px] sm:text-xs md:text-sm lg:text-base 
-                          text-neutral-gray font-medium -mt-0.5 sm:-mt-1
-                          group-hover:text-secondary quick-transition hidden sm:block">
+            <p className="text-[10px] sm:text-xs text-uti-gray font-medium -mt-0.5 sm:-mt-1">
               A loja de games de Colatina
             </p>
           </div>
         </div>
 
-        {/* Desktop Search Bar - Melhor responsividade */}
-        <div className="hidden lg:block flex-1 max-w-2xl mx-8">
-          <DesktopSearchBar />
-        </div>
+        {/* Desktop Search Bar */}
+        <DesktopSearchBar />
 
-        {/* Right Actions - Otimizado para touch */}
+        {/* Right Actions */}
         <HeaderActions
           onCartOpen={onCartOpen}
           onAuthOpen={onAuthOpen}
