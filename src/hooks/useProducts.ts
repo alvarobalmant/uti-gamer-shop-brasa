@@ -26,30 +26,46 @@ export const useProducts = () => {
       setLoading(true);
       console.log('Buscando produtos...');
       
-      const { data, error } = await supabase
+      // Primeira consulta: buscar todos os produtos
+      const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_tags!inner (
-            tags (
-              id,
-              name
-            )
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Erro ao buscar produtos:', error);
-        throw error;
+      if (productsError) {
+        console.error('Erro ao buscar produtos:', productsError);
+        throw productsError;
       }
 
-      console.log('Produtos encontrados:', data);
-      
-      const productsWithTags = data?.map(product => ({
-        ...product,
-        tags: product.product_tags?.map((pt: any) => pt.tags) || []
-      })) || [];
+      console.log('Produtos encontrados:', productsData);
+
+      // Segunda consulta: buscar as tags para cada produto
+      const productsWithTags = await Promise.all(
+        (productsData || []).map(async (product) => {
+          const { data: productTagsData, error: tagsError } = await supabase
+            .from('product_tags')
+            .select(`
+              tags (
+                id,
+                name
+              )
+            `)
+            .eq('product_id', product.id);
+
+          if (tagsError) {
+            console.error('Erro ao buscar tags do produto:', tagsError);
+            return {
+              ...product,
+              tags: []
+            };
+          }
+
+          return {
+            ...product,
+            tags: productTagsData?.map((pt: any) => pt.tags).filter(Boolean) || []
+          };
+        })
+      );
 
       setProducts(productsWithTags);
     } catch (error: any) {
