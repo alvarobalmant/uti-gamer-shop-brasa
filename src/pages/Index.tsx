@@ -12,6 +12,7 @@ import ServiceCards from '@/components/ServiceCards';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
+import Footer from '@/components/Footer';
 
 const Index = () => {
   const { products, loading } = useProducts();
@@ -67,47 +68,8 @@ const Index = () => {
         getPlatformColor={getPlatformColor}
       />
 
-      {/* Footer - GameStop Style */}
-      <footer className="bg-gray-900 text-white py-8 w-full overflow-x-hidden">
-        <div className="w-full max-w-full px-4 mx-auto">
-          <div className="text-center mb-6">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-red-400">UTI DOS GAMES</h3>
-                <p className="text-gray-400 text-sm">A loja de games mais tradicional de Colatina</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-6 mb-6 w-full">
-            <div className="min-w-0">
-              <h4 className="font-bold mb-3 text-red-400">Links Úteis</h4>
-              <ul className="space-y-2 text-sm">
-                <li><button onClick={() => navigate('/categoria/playstation')} className="text-gray-400 hover:text-white truncate">PlayStation</button></li>
-                <li><button onClick={() => navigate('/categoria/xbox')} className="text-gray-400 hover:text-white truncate">Xbox</button></li>
-                <li><button onClick={() => navigate('/categoria/nintendo')} className="text-gray-400 hover:text-white truncate">Nintendo</button></li>
-                <li><button onClick={() => navigate('/categoria/pc')} className="text-gray-400 hover:text-white truncate">PC</button></li>
-              </ul>
-            </div>
-            
-            <div className="min-w-0">
-              <h4 className="font-bold mb-3 text-red-400">Contato</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li className="truncate">📱 (27) 99688-2090</li>
-                <li className="truncate">📧 contato@utidosgames.com</li>
-                <li className="truncate">🕒 Seg à Sex: 9h às 18h</li>
-                <li className="truncate">📍 Colatina - ES</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 pt-6 text-center w-full">
-            <p className="text-gray-400 text-sm">
-              © 2024 UTI DOS GAMES. Todos os direitos reservados.
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Footer Premium */}
+      <Footer />
 
       {/* Cart Component */}
       <Cart
