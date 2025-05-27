@@ -1,8 +1,8 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PromotionalBanner from './PromotionalBanner';
 import MainHeader from './MainHeader';
-import MobileHeader from './MobileHeader';
 import MobileCategoriesMenu from './MobileCategoriesMenu';
 import DesktopNavigation from './DesktopNavigation';
 import MobileMenu from './MobileMenu';
@@ -44,37 +44,29 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
 
   return (
     <>
-      {/* Top promotional banner - Hidden on mobile */}
-      <div className="hidden lg:block">
-        <PromotionalBanner />
-      </div>
+      {/* Top promotional banner */}
+      <PromotionalBanner />
 
-      {/* Mobile Header - Only visible on mobile */}
-      <div className="lg:hidden">
-        <MobileHeader onAuthOpen={onAuthOpen} />
-      </div>
+      {/* Main Header - Fixed positioning */}
+      <header className="bg-white shadow-lg sticky top-0 z-50">
+        <MainHeader
+          onCartOpen={onCartOpen}
+          onAuthOpen={onAuthOpen}
+          onCategoriesToggle={toggleCategories}
+          onMobileMenuToggle={toggleMobileMenu}
+        />
 
-      {/* Desktop Header - Hidden on mobile */}
-      <div className="hidden lg:block">
-        <header className="bg-white shadow-lg sticky top-0 z-50">
-          <MainHeader
-            onCartOpen={onCartOpen}
-            onAuthOpen={onAuthOpen}
-            onCategoriesToggle={toggleCategories}
-            onMobileMenuToggle={toggleMobileMenu}
-          />
+        {/* Mobile Categories - Hidden since we moved to floating */}
+        <MobileCategoriesMenu
+          showCategories={false}
+          onCategoryClick={handleCategoryClick}
+        />
+      </header>
 
-          <MobileCategoriesMenu
-            showCategories={false}
-            onCategoryClick={handleCategoryClick}
-          />
-        </header>
+      {/* Desktop Categories Navigation */}
+      <DesktopNavigation />
 
-        {/* Desktop Categories Navigation */}
-        <DesktopNavigation />
-      </div>
-
-      {/* Legacy Mobile Menu Overlay - Keep for compatibility */}
+      {/* Mobile Menu Overlay */}
       <MobileMenu
         isOpen={mobileMenuOpen}
         onClose={closeMobileMenu}
