@@ -10,6 +10,7 @@ import { TagManager } from './TagManager';
 import { BannerManager } from './BannerManager';
 import { ServiceCardManager } from './ServiceCardManager';
 import UserSubscriptionManager from './UserSubscriptionManager';
+import ProductManager from './ProductManager';
 
 export const AdminPanel = () => {
   const { signOut } = useAuth();
@@ -71,20 +72,7 @@ export const AdminPanel = () => {
           </TabsList>
 
           <TabsContent value="products">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">Gerenciamento de Produtos</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Gerencie o catálogo de produtos da loja
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-400">Funcionalidade em desenvolvimento</p>
-                </div>
-              </CardContent>
-            </Card>
+            <ProductManager />
           </TabsContent>
 
           <TabsContent value="tags">
