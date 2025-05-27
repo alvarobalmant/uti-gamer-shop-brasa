@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Product } from '@/hooks/useProducts';
 
@@ -15,7 +14,7 @@ import ProductCardStock from './ProductCard/ProductCardStock';
 import ProductCardActions from './ProductCard/ProductCardActions';
 
 // Export the Product type for other components to use
-export { Product } from '@/hooks/useProducts';
+export type { Product } from '@/hooks/useProducts';
 
 const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProps) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
