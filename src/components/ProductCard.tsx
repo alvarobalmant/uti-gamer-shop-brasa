@@ -1,4 +1,6 @@
+
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
 
 interface ProductCardProps {
@@ -17,6 +19,7 @@ import ProductCardActions from './ProductCard/ProductCardActions';
 export type { Product } from '@/hooks/useProducts';
 
 const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProps) => {
+  const navigate = useNavigate();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showButton, setShowButton] = useState(false);
 
@@ -33,15 +36,21 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Navigate to product page logic could go here
+    // Navigate to product page
+    navigate(`/produto/${product.id}`);
   };
 
   const handleCardTouch = (e: React.TouchEvent) => {
-    // Handle touch events for mobile
+    // Handle touch events for mobile navigation
+    navigate(`/produto/${product.id}`);
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col h-full">
+    <div 
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col h-full cursor-pointer"
+      onClick={handleCardClick}
+      onTouchEnd={handleCardTouch}
+    >
       <ProductCardImage 
         product={product} 
         isWishlisted={isWishlisted}

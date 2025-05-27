@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { categories, Category } from './categories';
 
@@ -29,6 +29,15 @@ const DesktopNavigation = () => {
                 {category.name}
               </button>
             ))}
+            
+            {/* UTI PRO Link */}
+            <button
+              onClick={() => navigate('/uti-pro')}
+              className="flex items-center gap-1 text-sm font-bold text-yellow-600 hover:text-yellow-700 transition-colors duration-200 py-2 bg-gradient-to-r from-yellow-100 to-yellow-50 px-3 rounded-full border border-yellow-300"
+            >
+              <Crown className="w-4 h-4" />
+              UTI PRO
+            </button>
           </div>
         </div>
       </nav>
@@ -60,6 +69,18 @@ const DesktopNavigation = () => {
                     {category.name}
                   </button>
                 ))}
+                
+                {/* UTI PRO Link Mobile */}
+                <button
+                  onClick={() => {
+                    navigate('/uti-pro');
+                    setShowMobileCategories(false);
+                  }}
+                  className="flex items-center gap-2 w-full px-4 py-3 text-sm font-bold text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 transition-all duration-200"
+                >
+                  <Crown className="w-4 h-4" />
+                  UTI PRO
+                </button>
               </div>
             </>
           )}

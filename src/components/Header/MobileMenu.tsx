@@ -1,9 +1,10 @@
 
-import { X } from 'lucide-react';
+import { X, User, Crown, Home, Grid, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { categories, Category } from './categories';
+import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { categories } from './categories';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -12,11 +13,25 @@ interface MobileMenuProps {
 }
 
 const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const { hasActiveSubscription } = useSubscriptions();
   const navigate = useNavigate();
 
-  const handleCategoryClick = (category: Category) => {
-    navigate(category.path);
+  const handleAuthClick = () => {
+    if (user) {
+      if (isAdmin) {
+        navigate('/admin');
+        onClose();
+      } else {
+        onAuthOpen();
+      }
+    } else {
+      onAuthOpen();
+    }
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
     onClose();
   };
 
@@ -24,74 +39,101 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
 
   return (
     <div className="fixed inset-0 z-50 sm:hidden">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl overflow-y-auto">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-            <h3 className="text-xl font-bold text-uti-dark">Menu</h3>
-            <Button 
-              onClick={onClose} 
-              variant="ghost" 
-              size="sm"
-              className="text-gray-400 hover:text-uti-red"
-            >
-              <X className="w-5 h-5" />
-            </Button>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/20" onClick={onClose} />
+      
+      {/* Menu Panel */}
+      <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl">
+        <div className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
+              alt="UTI DOS GAMES" 
+              className="h-8 w-8"
+            />
+            <span className="font-bold text-gray-900">Menu</span>
           </div>
+          <Button onClick={onClose} variant="ghost" size="sm">
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
 
+        <div className="p-4 space-y-4">
           {/* User Section */}
-          {user ? (
-            <div className="pb-6 mb-6 border-b border-gray-200">
-              <p className="text-sm text-uti-gray mb-3">Olá, {user.email}</p>
-              {isAdmin && (
+          <div className="border-b pb-4">
+            {user ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <User className="w-5 h-5 text-gray-500" />
+                  <span className="font-medium">{user.email}</span>
+                </div>
+                {hasActiveSubscription() && (
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 rounded-lg p-2">
+                    <Crown className="w-4 h-4 text-yellow-600" />
+                    <span className="text-sm font-bold text-yellow-800">Membro UTI PRO</span>
+                  </div>
+                )}
                 <Button
-                  onClick={() => {
-                    navigate('/admin');
-                    onClose();
-                  }}
-                  className="w-full mb-3 btn-primary"
+                  onClick={handleAuthClick}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
                 >
-                  Painel Admin
+                  {isAdmin ? 'Painel Admin' : 'Gerenciar Conta'}
                 </Button>
-              )}
+              </div>
+            ) : (
               <Button
-                onClick={() => {
-                  signOut();
-                  onClose();
-                }}
-                variant="outline"
-                className="w-full"
+                onClick={handleAuthClick}
+                className="w-full bg-red-600 hover:bg-red-700"
               >
-                Sair
+                <User className="w-4 h-4 mr-2" />
+                Entrar / Cadastrar
               </Button>
-            </div>
-          ) : (
-            <div className="pb-6 mb-6 border-b border-gray-200">
-              <Button
-                onClick={() => {
-                  onAuthOpen();
-                  onClose();
-                }}
-                className="w-full btn-primary"
-              >
-                Entrar / Criar Conta
-              </Button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Navigation */}
           <div className="space-y-2">
-            <h4 className="font-semibold text-uti-dark text-sm mb-3">Categorias</h4>
-            {categories.map(category => (
-              <button
-                key={category.id}
-                onClick={() => handleCategoryClick(category)}
-                className="block w-full text-left py-3 px-4 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 font-medium"
-              >
-                {category.name}
-              </button>
-            ))}
+            <Button
+              onClick={() => handleNavigation('/')}
+              variant="ghost"
+              className="w-full justify-start"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Início
+            </Button>
+
+            {/* UTI PRO Link */}
+            <Button
+              onClick={() => handleNavigation('/uti-pro')}
+              variant="ghost"
+              className="w-full justify-start bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 text-yellow-800 hover:bg-yellow-200"
+            >
+              <Crown className="w-4 h-4 mr-2" />
+              UTI PRO
+            </Button>
+          </div>
+
+          {/* Categories */}
+          <div className="border-t pt-4">
+            <h3 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+              <Grid className="w-4 h-4" />
+              Categorias
+            </h3>
+            <div className="space-y-1">
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  onClick={() => handleNavigation(category.path)}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-gray-600 hover:text-red-600"
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
