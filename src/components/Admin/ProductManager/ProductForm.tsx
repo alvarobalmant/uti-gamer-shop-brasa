@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, X, Plus } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { Tag } from '@/hooks/useTags';
@@ -33,9 +34,13 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
 
   const [newSize, setNewSize] = useState('');
   const [newColor, setNewColor] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (product) {
+      console.log('Carregando produto para edição:', product);
+      console.log('Tags do produto:', product.tags);
+      
       setFormData({
         name: product.name || '',
         description: product.description || '',
@@ -46,6 +51,19 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
         sizes: product.sizes || [],
         colors: product.colors || [],
         tagIds: product.tags?.map(tag => tag.id) || [],
+      });
+    } else {
+      // Reset form for new product
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        stock: '',
+        image: '',
+        additional_images: [],
+        sizes: [],
+        colors: [],
+        tagIds: [],
       });
     }
   }, [product]);
@@ -101,13 +119,17 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
     }));
   };
 
-  const toggleTag = (tagId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tagIds: prev.tagIds.includes(tagId)
-        ? prev.tagIds.filter(id => id !== tagId)
-        : [...prev.tagIds, tagId]
-    }));
+  const handleTagToggle = (tagId: string, checked: boolean) => {
+    console.log('Toggle tag:', tagId, 'checked:', checked);
+    
+    setFormData(prev => {
+      const newTagIds = checked
+        ? [...prev.tagIds, tagId]
+        : prev.tagIds.filter(id => id !== tagId);
+      
+      console.log('Tags atualizadas:', newTagIds);
+      return { ...prev, tagIds: newTagIds };
+    });
   };
 
   const removeAdditionalImage = (index: number) => {
@@ -117,22 +139,31 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    const productData = {
-      name: formData.name,
-      description: formData.description || null,
-      price: parseFloat(formData.price),
-      stock: parseInt(formData.stock) || 0,
-      image: formData.image || null,
-      additional_images: formData.additional_images,
-      sizes: formData.sizes,
-      colors: formData.colors,
-      tagIds: formData.tagIds,
-    };
+    try {
+      console.log('Enviando dados do produto com tags:', formData.tagIds);
+      
+      const productData = {
+        name: formData.name,
+        description: formData.description || null,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock) || 0,
+        image: formData.image || null,
+        additional_images: formData.additional_images,
+        sizes: formData.sizes,
+        colors: formData.colors,
+        tagIds: formData.tagIds,
+      };
 
-    onSubmit(productData);
+      await onSubmit(productData);
+    } catch (error) {
+      console.error('Erro ao salvar produto:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -143,6 +174,7 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
             onClick={onCancel}
             variant="ghost"
             className="text-white hover:bg-gray-700"
+            disabled={isSubmitting}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
@@ -170,6 +202,7 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   className="bg-gray-700 border-gray-600 text-white"
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -183,6 +216,7 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
                   onChange={(e) => handleInputChange('price', e.target.value)}
                   required
                   className="bg-gray-700 border-gray-600 text-white"
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -194,6 +228,7 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
                   value={formData.stock}
                   onChange={(e) => handleInputChange('stock', e.target.value)}
                   className="bg-gray-700 border-gray-600 text-white"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -207,6 +242,7 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   rows={4}
                   className="bg-gray-700 border-gray-600 text-white"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -247,6 +283,7 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
                       variant="destructive"
                       className="absolute -top-2 -right-2 w-6 h-6 p-0"
                       onClick={() => removeAdditionalImage(index)}
+                      disabled={isSubmitting}
                     >
                       <X className="w-3 h-3" />
                     </Button>
@@ -267,8 +304,15 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
                   placeholder="Ex: P, M, G, GG"
                   className="bg-gray-700 border-gray-600 text-white"
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSize())}
+                  disabled={isSubmitting}
                 />
-                <Button type="button" onClick={addSize} variant="outline" className="border-gray-600">
+                <Button 
+                  type="button" 
+                  onClick={addSize} 
+                  variant="outline" 
+                  className="border-gray-600"
+                  disabled={isSubmitting}
+                >
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -282,6 +326,7 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
                       variant="ghost"
                       className="h-auto p-1 ml-1"
                       onClick={() => removeSize(size)}
+                      disabled={isSubmitting}
                     >
                       <X className="w-3 h-3" />
                     </Button>
@@ -302,8 +347,15 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
                   placeholder="Ex: Preto, Branco, Azul"
                   className="bg-gray-700 border-gray-600 text-white"
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addColor())}
+                  disabled={isSubmitting}
                 />
-                <Button type="button" onClick={addColor} variant="outline" className="border-gray-600">
+                <Button 
+                  type="button" 
+                  onClick={addColor} 
+                  variant="outline" 
+                  className="border-gray-600"
+                  disabled={isSubmitting}
+                >
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -317,6 +369,7 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
                       variant="ghost"
                       className="h-auto p-1 ml-1"
                       onClick={() => removeColor(color)}
+                      disabled={isSubmitting}
                     >
                       <X className="w-3 h-3" />
                     </Button>
@@ -326,33 +379,80 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
             </div>
           </div>
 
-          {/* Tags */}
+          {/* Categorias/Tags */}
           <div>
-            <Label className="text-white">Categorias</Label>
-            <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
-              {tags.map((tag) => (
-                <div key={tag.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id={`tag-${tag.id}`}
-                    checked={formData.tagIds.includes(tag.id)}
-                    onChange={() => toggleTag(tag.id)}
-                    className="rounded border-gray-600"
-                  />
-                  <label htmlFor={`tag-${tag.id}`} className="text-sm text-gray-300">
-                    {tag.name}
-                  </label>
+            <Label className="text-white mb-3 block">Categorias</Label>
+            {tags.length === 0 ? (
+              <div className="text-gray-400 text-sm">
+                Nenhuma categoria disponível. Crie categorias no gerenciador de tags primeiro.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {tags.map((tag) => {
+                  const isChecked = formData.tagIds.includes(tag.id);
+                  
+                  return (
+                    <div key={tag.id} className="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
+                      <Checkbox
+                        id={`tag-${tag.id}`}
+                        checked={isChecked}
+                        onCheckedChange={(checked) => handleTagToggle(tag.id, checked as boolean)}
+                        disabled={isSubmitting}
+                        className="border-gray-500 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                      />
+                      <label 
+                        htmlFor={`tag-${tag.id}`} 
+                        className="text-sm text-gray-300 cursor-pointer flex-1"
+                      >
+                        {tag.name}
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {/* Exibir tags selecionadas */}
+            {formData.tagIds.length > 0 && (
+              <div className="mt-4">
+                <Label className="text-white text-sm mb-2 block">Tags Selecionadas:</Label>
+                <div className="flex flex-wrap gap-2">
+                  {formData.tagIds.map((tagId) => {
+                    const tag = tags.find(t => t.id === tagId);
+                    return tag ? (
+                      <Badge key={tagId} variant="default" className="bg-red-600 text-white">
+                        {tag.name}
+                      </Badge>
+                    ) : null;
+                  })}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Botões */}
           <div className="flex gap-4 pt-6 border-t border-gray-700">
-            <Button type="submit" className="bg-red-600 hover:bg-red-700">
-              {product ? 'Atualizar Produto' : 'Criar Produto'}
+            <Button 
+              type="submit" 
+              className="bg-red-600 hover:bg-red-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  {product ? 'Atualizando...' : 'Criando...'}
+                </div>
+              ) : (
+                product ? 'Atualizar Produto' : 'Criar Produto'
+              )}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel} className="border-gray-600">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel} 
+              className="border-gray-600"
+              disabled={isSubmitting}
+            >
               Cancelar
             </Button>
           </div>
