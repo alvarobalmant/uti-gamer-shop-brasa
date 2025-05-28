@@ -141,14 +141,25 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.name.trim()) {
+      alert('Nome do produto é obrigatório');
+      return;
+    }
+    
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      alert('Preço deve ser maior que zero');
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
       console.log('Enviando dados do produto com tags:', formData.tagIds);
       
       const productData = {
-        name: formData.name,
-        description: formData.description || null,
+        name: formData.name.trim(),
+        description: formData.description?.trim() || null,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock) || 0,
         image: formData.image || null,
@@ -158,9 +169,11 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
         tagIds: formData.tagIds,
       };
 
+      console.log('Dados finais do produto:', productData);
       await onSubmit(productData);
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
+      alert('Erro ao salvar produto. Tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
