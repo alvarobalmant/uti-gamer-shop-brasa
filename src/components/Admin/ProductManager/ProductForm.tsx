@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -244,10 +243,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
             <div className="space-y-4">
               <div>
-                <Label className="text-white">Imagem Principal</Label>
                 <ImageUpload
-                  value={formData.image}
-                  onChange={(url) => handleInputChange('image', url)}
+                  label="Imagem Principal"
+                  currentImage={formData.image}
+                  onImageUploaded={(url) => handleInputChange('image', url)}
+                  folder="products"
                   className="bg-gray-700 border-gray-600"
                 />
               </div>
