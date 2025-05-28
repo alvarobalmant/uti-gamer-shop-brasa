@@ -6,10 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, X, Plus, Upload } from 'lucide-react';
+import { ArrowLeft, X, Plus } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { Tag } from '@/hooks/useTags';
-import { useImageUpload } from '@/hooks/useImageUpload';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 interface ProductFormProps {
   product: Product | null;
@@ -33,7 +33,6 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
 
   const [newSize, setNewSize] = useState('');
   const [newColor, setNewColor] = useState('');
-  const { uploadImage, uploading } = useImageUpload();
 
   useEffect(() => {
     if (product) {
@@ -55,19 +54,16 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageUpload = async (file: File, isMainImage = true) => {
-    try {
-      const imageUrl = await uploadImage(file);
-      if (isMainImage) {
-        setFormData(prev => ({ ...prev, image: imageUrl }));
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          additional_images: [...prev.additional_images, imageUrl]
-        }));
-      }
-    } catch (error) {
-      console.error('Erro ao fazer upload da imagem:', error);
+  const handleMainImageUpload = (url: string) => {
+    setFormData(prev => ({ ...prev, image: url }));
+  };
+
+  const handleAdditionalImageUpload = (url: string) => {
+    if (url) {
+      setFormData(prev => ({
+        ...prev,
+        additional_images: [...prev.additional_images, url]
+      }));
     }
   };
 
@@ -218,57 +214,28 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
 
           {/* Imagem Principal */}
           <div>
-            <Label className="text-white">Imagem Principal</Label>
-            <div className="mt-2">
-              <div className="flex items-center gap-4">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleImageUpload(file, true);
-                  }}
-                  className="hidden"
-                  id="main-image-upload"
-                />
-                <label
-                  htmlFor="main-image-upload"
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-700 border border-gray-600 rounded-md cursor-pointer hover:bg-gray-600"
-                >
-                  <Upload className="w-4 h-4" />
-                  {uploading ? 'Uploading...' : 'Escolher Imagem'}
-                </label>
-                {formData.image && (
-                  <div className="w-16 h-16 bg-gray-600 rounded-lg overflow-hidden">
-                    <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
-              </div>
-            </div>
+            <ImageUpload
+              onImageUploaded={handleMainImageUpload}
+              currentImage={formData.image}
+              label="Imagem Principal *"
+              folder="products"
+              className="mb-4"
+            />
           </div>
 
           {/* Imagens Adicionais */}
           <div>
-            <Label className="text-white">Imagens Adicionais</Label>
-            <div className="mt-2">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImageUpload(file, false);
-                }}
-                className="hidden"
-                id="additional-images-upload"
-              />
-              <label
-                htmlFor="additional-images-upload"
-                className="flex items-center gap-2 px-4 py-2 bg-gray-700 border border-gray-600 rounded-md cursor-pointer hover:bg-gray-600 mb-4"
-              >
-                <Plus className="w-4 h-4" />
-                Adicionar Imagem
-              </label>
-              <div className="grid grid-cols-4 gap-4">
+            <Label className="text-white mb-2 block">Imagens Adicionais</Label>
+            
+            <ImageUpload
+              onImageUploaded={handleAdditionalImageUpload}
+              label="Adicionar Imagem Adicional"
+              folder="products"
+              className="mb-4"
+            />
+            
+            {formData.additional_images.length > 0 && (
+              <div className="grid grid-cols-4 gap-4 mt-4">
                 {formData.additional_images.map((image, index) => (
                   <div key={index} className="relative">
                     <div className="w-full h-24 bg-gray-600 rounded-lg overflow-hidden">
@@ -286,7 +253,7 @@ const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) =>
                   </div>
                 ))}
               </div>
-            </div>
+            )}
           </div>
 
           {/* Tamanhos */}

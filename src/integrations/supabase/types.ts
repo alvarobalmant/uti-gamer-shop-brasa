@@ -431,6 +431,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       remover_meses_assinatura: {
         Args: { user_id: string; meses: number }
         Returns: boolean
