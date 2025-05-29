@@ -16,17 +16,13 @@ const CategoryPage = () => {
   const { products, loading } = useProducts();
   const { user } = useAuth();
   const { addToCart } = useCart();
-  const { tryRestoreAfterLoad } = useScrollPosition();
+  const { setupScrollRestoration } = useScrollPosition();
 
-  // Tentar restaurar scroll quando os produtos terminarem de carregar
+  // Configurar restauração de scroll quando o componente montar
   useEffect(() => {
-    if (!loading && products.length > 0) {
-      console.log('📦 Produtos da categoria carregados, tentando restaurar scroll...');
-      setTimeout(() => {
-        tryRestoreAfterLoad();
-      }, 100);
-    }
-  }, [loading, products.length, tryRestoreAfterLoad]);
+    const cleanup = setupScrollRestoration();
+    return cleanup;
+  }, [setupScrollRestoration]);
 
   const getCategoryTitle = (cat: string) => {
     const categoryMap: { [key: string]: string } = {

@@ -18,20 +18,16 @@ const SearchResults = () => {
   const { products, loading } = useProducts();
   const { user } = useAuth();
   const { addToCart } = useCart();
-  const { tryRestoreAfterLoad } = useScrollPosition();
+  const { setupScrollRestoration } = useScrollPosition();
+
+  // Configurar restauração de scroll quando o componente montar
+  useEffect(() => {
+    const cleanup = setupScrollRestoration();
+    return cleanup;
+  }, [setupScrollRestoration]);
 
   // Usar busca fuzzy para filtrar produtos
   const filteredProducts = searchProducts(products, query);
-
-  // Tentar restaurar scroll quando os produtos terminarem de carregar
-  useEffect(() => {
-    if (!loading && products.length > 0) {
-      console.log('📦 Resultados de busca carregados, tentando restaurar scroll...');
-      setTimeout(() => {
-        tryRestoreAfterLoad();
-      }, 100);
-    }
-  }, [loading, products.length, tryRestoreAfterLoad]);
 
   const getPlatformColor = (product: Product) => {
     // Verificar tags para determinar a cor

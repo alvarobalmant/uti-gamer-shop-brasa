@@ -21,7 +21,7 @@ export type { Product } from '@/hooks/useProducts';
 
 const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProps) => {
   const navigate = useNavigate();
-  const { saveCurrentPosition } = useScrollPosition();
+  const { saveScrollPosition } = useScrollPosition();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showButton, setShowButton] = useState(false);
 
@@ -39,14 +39,14 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Salvar posição atual antes de navegar
-    saveCurrentPosition();
+    saveScrollPosition();
     // Navigate to product page
     navigate(`/produto/${product.id}`);
   };
 
   const handleCardTouch = (e: React.TouchEvent) => {
     // Salvar posição atual antes de navegar
-    saveCurrentPosition();
+    saveScrollPosition();
     // Handle touch events for mobile navigation
     navigate(`/produto/${product.id}`);
   };

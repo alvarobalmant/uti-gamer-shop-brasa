@@ -23,18 +23,13 @@ const Index = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   
   // Use scroll position hook
-  const { tryRestoreAfterLoad } = useScrollPosition();
+  const { setupScrollRestoration } = useScrollPosition();
 
-  // Tentar restaurar scroll quando os produtos terminarem de carregar
+  // Configurar restauração de scroll quando o componente montar
   useEffect(() => {
-    if (!loading && products.length > 0) {
-      console.log('📦 Produtos carregados, tentando restaurar scroll...');
-      // Aguardar renderização dos componentes
-      setTimeout(() => {
-        tryRestoreAfterLoad();
-      }, 100);
-    }
-  }, [loading, products.length, tryRestoreAfterLoad]);
+    const cleanup = setupScrollRestoration();
+    return cleanup;
+  }, [setupScrollRestoration]);
 
   const getPlatformColor = (product: Product) => {
     const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];

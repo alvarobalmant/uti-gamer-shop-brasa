@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/hooks/useProducts';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 
 interface FeaturedProductsSectionProps {
   products: Product[];
@@ -23,6 +24,7 @@ const FeaturedProductsSection = ({
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { saveScrollPosition } = useScrollPosition();
   const [selectedCategory, setSelectedCategory] = useState('todos');
 
   const categories = [
@@ -44,6 +46,11 @@ const FeaturedProductsSection = ({
   };
 
   const featuredProducts = filterProductsByCategory(selectedCategory);
+
+  const handleViewAllClick = () => {
+    saveScrollPosition();
+    navigate('/categoria/inicio');
+  };
 
   if (loading) {
     return (
@@ -75,7 +82,7 @@ const FeaturedProductsSection = ({
             </div>
             <div className="flex-shrink-0">
               <Button 
-                onClick={() => navigate('/categoria/inicio')} 
+                onClick={handleViewAllClick} 
                 variant="outline" 
                 className="text-red-600 border-red-600 hover:bg-red-50 flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold min-h-[44px] w-full sm:w-auto justify-center"
               >
