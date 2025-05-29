@@ -88,7 +88,7 @@ const ServiceCards = () => {
               <div
                 key={card.id}
                 onClick={() => handleCardClick(card.link_url)}
-                className="group bg-white rounded-2xl border border-gray-200 hover:border-red-200 p-8 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 animate-fade-in-up"
+                className="group bg-white rounded-2xl border border-gray-200 hover:border-red-200 p-4 sm:p-6 md:p-8 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 animate-fade-in-up"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 {/* Service Icon */}
@@ -136,8 +136,8 @@ const ServiceCards = () => {
         </div>
       </section>
 
-      {/* Store Differentiators Section */}
-      <section className="py-16 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+      {/* Store Differentiators Section - Adjusted for Mobile */}
+      <section className="py-12 md:py-16 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-radial from-red-400/20 to-transparent"></div>
@@ -167,7 +167,7 @@ const ServiceCards = () => {
                 >
                   {/* Icon */}
                   <div className="mb-6">
-                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-2xl">
+                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg group-hover:shadow-red-500/50">
                       <IconComponent className="w-10 h-10 text-white" />
                     </div>
                   </div>
@@ -209,8 +209,8 @@ const ServiceCards = () => {
                 </div>
               </div>
               
-              {/* Content */}
-              <div className="p-8 md:p-12">
+              {/* Content - Adjusted padding for mobile */}
+              <div className="p-6 md:p-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                   {/* Left: CTA and Description */}
                   <div className="text-center lg:text-left">

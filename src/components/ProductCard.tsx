@@ -33,8 +33,8 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   return (
     <Card
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-uti-gray-dark/20 bg-card shadow-sm", // Use lighter border, consistent radius
-        "transition-shadow duration-300 ease-in-out hover:shadow-md", // Subtle shadow hover
+        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-card shadow-sm", // Use lighter gray border (like gray-200)
+        "transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-[1.02]", // Enhanced hover effect (shadow + scale)
         "cursor-pointer" // Ensure card is clickable
       )}
       onClick={handleCardNavigation}
@@ -46,7 +46,7 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
       />
 
       {/* Content Section - Minimalist, below image */}
-      <div className="flex flex-1 flex-col justify-between p-3"> {/* Use padding, justify-between */}
+      <div className="flex flex-1 flex-col justify-between p-2 sm:p-3"> {/* Reduced padding on mobile (p-2), keep p-3 for sm+ */}
         {/* Top part: Info + Price */}
         <div>
           <ProductCardInfo product={product} />

@@ -30,8 +30,8 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
       backgroundColor
     )}>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-0 items-center">
-        {/* Text Content Area (Takes more space on mobile, less on desktop) */}
-        <div className="md:col-span-3 p-6 md:p-8 lg:p-10 flex flex-col justify-center order-2 md:order-1">
+        {/* Text Content Area (Adjusted padding for mobile) */}
+        <div className="md:col-span-3 p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col justify-center order-2 md:order-1">
           <h2 className={cn(
             "text-2xl md:text-3xl lg:text-4xl font-bold mb-2 md:mb-3",
             textColor
@@ -44,7 +44,7 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
           )}>
             {description}
           </p>
-          <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start">
+          <a href={buttonLink} className="self-start">
             <Button 
               variant="outline" // Outline style often works well on dark backgrounds
               className={cn(

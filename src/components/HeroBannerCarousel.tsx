@@ -198,8 +198,8 @@ const HeroBannerCarousel = () => {
             })}
           </CarouselContent>
           
-          {/* Custom Navigation Arrows (More elegant) */}
-          {banners.length > 1 && (
+          {/* Custom Navigation Arrows (More elegant - Hidden on Mobile) */}
+          {banners.length > 1 && !isMobile && (
             <>
               <CarouselPrevious 
                 className={cn(
