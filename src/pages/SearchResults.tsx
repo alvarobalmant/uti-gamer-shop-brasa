@@ -9,6 +9,7 @@ import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { searchProducts } from '@/utils/fuzzySearch';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -17,9 +18,20 @@ const SearchResults = () => {
   const { products, loading } = useProducts();
   const { user } = useAuth();
   const { addToCart } = useCart();
+  const { tryRestoreAfterLoad } = useScrollPosition();
 
   // Usar busca fuzzy para filtrar produtos
   const filteredProducts = searchProducts(products, query);
+
+  // Tentar restaurar scroll quando os produtos terminarem de carregar
+  useEffect(() => {
+    if (!loading && products.length > 0) {
+      console.log('📦 Resultados de busca carregados, tentando restaurar scroll...');
+      setTimeout(() => {
+        tryRestoreAfterLoad();
+      }, 100);
+    }
+  }, [loading, products.length, tryRestoreAfterLoad]);
 
   const getPlatformColor = (product: Product) => {
     // Verificar tags para determinar a cor

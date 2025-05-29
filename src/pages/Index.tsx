@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -23,7 +23,18 @@ const Index = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   
   // Use scroll position hook
-  useScrollPosition();
+  const { tryRestoreAfterLoad } = useScrollPosition();
+
+  // Tentar restaurar scroll quando os produtos terminarem de carregar
+  useEffect(() => {
+    if (!loading && products.length > 0) {
+      console.log('📦 Produtos carregados, tentando restaurar scroll...');
+      // Aguardar renderização dos componentes
+      setTimeout(() => {
+        tryRestoreAfterLoad();
+      }, 100);
+    }
+  }, [loading, products.length, tryRestoreAfterLoad]);
 
   const getPlatformColor = (product: Product) => {
     const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];

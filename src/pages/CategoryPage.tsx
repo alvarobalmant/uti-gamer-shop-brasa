@@ -8,6 +8,7 @@ import ProductCard from '@/components/ProductCard';
 import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 
 const CategoryPage = () => {
   const { category } = useParams();
@@ -15,6 +16,17 @@ const CategoryPage = () => {
   const { products, loading } = useProducts();
   const { user } = useAuth();
   const { addToCart } = useCart();
+  const { tryRestoreAfterLoad } = useScrollPosition();
+
+  // Tentar restaurar scroll quando os produtos terminarem de carregar
+  useEffect(() => {
+    if (!loading && products.length > 0) {
+      console.log('📦 Produtos da categoria carregados, tentando restaurar scroll...');
+      setTimeout(() => {
+        tryRestoreAfterLoad();
+      }, 100);
+    }
+  }, [loading, products.length, tryRestoreAfterLoad]);
 
   const getCategoryTitle = (cat: string) => {
     const categoryMap: { [key: string]: string } = {
