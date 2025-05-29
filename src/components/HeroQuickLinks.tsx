@@ -1,35 +1,51 @@
-
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Gamepad2, 
   MonitorSpeaker, 
   Headphones, 
-  Smartphone, 
-  Trophy, 
-  Gift 
+  Gift, 
+  Puzzle, // Using Puzzle for Colecionáveis
+  MousePointerSquare // Using MousePointerSquare for Acessórios
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card'; // Import Card components
+
+// Define the structure for a quick link
+interface QuickLinkItem {
+  id: string;
+  icon: React.ElementType;
+  label: string;
+  path: string;
+  color: string; // Tailwind background color class
+  hoverColor: string; // Tailwind hover background color class
+  borderColor?: string; // Optional border color
+}
 
 const HeroQuickLinks = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  const quickLinks = [
+  // Define the quick links data using the interface
+  const quickLinks: QuickLinkItem[] = [
     {
       id: 'playstation',
       icon: Gamepad2,
       label: 'PlayStation',
       path: '/categoria/playstation',
-      color: 'bg-blue-600',
-      hoverColor: 'hover:bg-blue-700'
+      color: 'bg-blue-500',
+      hoverColor: 'hover:bg-blue-600',
+      borderColor: 'border-blue-600'
     },
     {
       id: 'xbox',
       icon: Gamepad2,
       label: 'Xbox',
       path: '/categoria/xbox',
-      color: 'bg-green-600',
-      hoverColor: 'hover:bg-green-700'
+      color: 'bg-green-500',
+      hoverColor: 'hover:bg-green-600',
+      borderColor: 'border-green-600'
     },
     {
       id: 'nintendo',
@@ -37,85 +53,86 @@ const HeroQuickLinks = () => {
       label: 'Nintendo',
       path: '/categoria/nintendo',
       color: 'bg-red-500',
-      hoverColor: 'hover:bg-red-600'
+      hoverColor: 'hover:bg-red-600',
+      borderColor: 'border-red-600'
     },
     {
       id: 'pc',
       icon: MonitorSpeaker,
-      label: 'PC Games',
+      label: 'PC Gaming',
       path: '/categoria/pc',
-      color: 'bg-orange-600',
-      hoverColor: 'hover:bg-orange-700'
+      color: 'bg-gray-700', // Changed color for PC
+      hoverColor: 'hover:bg-gray-800',
+      borderColor: 'border-gray-800'
     },
     {
       id: 'acessorios',
-      icon: Headphones,
+      icon: Headphones, // Kept Headphones, or use MousePointerSquare
       label: 'Acessórios',
       path: '/categoria/acessorios',
-      color: 'bg-purple-600',
-      hoverColor: 'hover:bg-purple-700'
+      color: 'bg-purple-500',
+      hoverColor: 'hover:bg-purple-600',
+      borderColor: 'border-purple-600'
     },
     {
       id: 'ofertas',
       icon: Gift,
       label: 'Ofertas',
       path: '/categoria/ofertas',
-      color: 'bg-uti-red',
-      hoverColor: 'hover:bg-red-700'
+      color: 'bg-uti-red', // Use brand red
+      hoverColor: 'hover:bg-red-700',
+      borderColor: 'border-red-700'
     }
+    // Add 'Colecionáveis' if needed
+    // {
+    //   id: 'colecionaveis',
+    //   icon: Puzzle,
+    //   label: 'Colecionáveis',
+    //   path: '/categoria/colecionaveis',
+    //   color: 'bg-yellow-500',
+    //   hoverColor: 'hover:bg-yellow-600',
+    //   borderColor: 'border-yellow-600'
+    // }
   ];
 
   const handleQuickLinkClick = (path: string) => {
     navigate(path);
   };
 
-  if (isMobile) {
-    return (
-      <section className="py-6 bg-white border-b border-gray-100">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-3 gap-4">
-            {quickLinks.map((link) => {
-              const IconComponent = link.icon;
-              return (
-                <button
-                  key={link.id}
-                  onClick={() => handleQuickLinkClick(link.path)}
-                  className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 group"
-                >
-                  <div className={`w-[60px] h-[60px] ${link.color} ${link.hoverColor} rounded-full flex items-center justify-center mb-2 transition-all duration-300 group-hover:shadow-lg`}>
-                    <IconComponent className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-xs font-medium text-gray-700 text-center leading-tight">
-                    {link.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section className="py-8 bg-white border-b border-gray-100">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="flex justify-center items-center space-x-8 lg:space-x-12">
+    // Section styling: White background, subtle top border, padding
+    <section className="py-6 md:py-10 bg-white border-t border-gray-100">
+      <div className="container mx-auto px-4">
+        {/* Use grid for layout, responsive columns */}
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-4 md:gap-6">
           {quickLinks.map((link) => {
             const IconComponent = link.icon;
             return (
-              <button
+              // Use Card component for structure and styling
+              <Card 
                 key={link.id}
                 onClick={() => handleQuickLinkClick(link.path)}
-                className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 group"
+                className={cn(
+                  "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
+                  "hover:shadow-md hover:-translate-y-1 border-2 border-transparent",
+                  `hover:border-opacity-50 ${link.borderColor}` // Use specific border color on hover
+                )}
               >
-                <div className={`w-[80px] h-[80px] lg:w-[100px] lg:h-[100px] ${link.color} ${link.hoverColor} rounded-full flex items-center justify-center mb-3 transition-all duration-300 group-hover:shadow-professional`}>
-                  <IconComponent className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
-                </div>
-                <span className="text-sm lg:text-base font-medium text-gray-700 text-center">
-                  {link.label}
-                </span>
-              </button>
+                <CardContent className="flex flex-col items-center justify-center p-4 md:p-5 aspect-square">
+                  {/* Icon container with background color */}
+                  <div className={cn(
+                    "w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center mb-2 md:mb-3 transition-all duration-300",
+                    link.color,
+                    // link.hoverColor // Hover effect can be on the card itself
+                  )}>
+                    <IconComponent className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                  </div>
+                  {/* Label styling */}
+                  <span className="text-xs sm:text-sm font-medium text-gray-800 text-center leading-tight">
+                    {link.label}
+                  </span>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
@@ -125,3 +142,4 @@ const HeroQuickLinks = () => {
 };
 
 export default HeroQuickLinks;
+
