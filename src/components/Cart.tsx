@@ -58,10 +58,15 @@ const Cart = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" 
+      className={`fixed inset-0 bg-black/50 z-50 backdrop-blur-sm transition-opacity duration-300 ${showCart ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
       onClick={handleBackdropClick}
     >
-      <div className="fixed right-0 top-0 h-full w-full sm:w-[90%] md:w-[450px] max-w-md bg-white shadow-2xl overflow-hidden flex flex-col">
+      {/* Cart Panel - Slides in from right */}
+      <div 
+        className={`fixed right-0 top-0 h-full w-[90%] sm:w-[450px] max-w-md bg-white shadow-2xl overflow-hidden flex flex-col transform transition-transform duration-300 ease-in-out ${showCart ? 'translate-x-0' : 'translate-x-full'}`}
+        // Prevent backdrop click from closing if clicking inside the cart panel
+        onClick={(e) => e.stopPropagation()} 
+      >
         {/* Header */}
         <div className="p-4 sm:p-6 border-b-2 border-red-600 bg-white">
           <div className="flex justify-between items-center">

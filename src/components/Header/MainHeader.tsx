@@ -26,14 +26,14 @@ const MainHeader = ({
   return (
     <div className={cn("bg-background", className)}> {/* Removed sticky/border, handled by ProfessionalHeader */}
       {/* Top Row: Mobile Menu, Logo, Actions */}
-      <div className="container flex h-16 items-center justify-between"> 
+      <div className="container flex h-16 items-center justify-between px-4"> 
         {/* Left side: Mobile Menu Toggle (visible on small screens) + Logo */}
         <div className="flex items-center">
           {/* Mobile Menu Toggle Button - visible only on md and below */}
           <Button 
             variant="ghost" 
             size="icon" 
-            className="mr-2 md:hidden" 
+            className="mr-1 md:hidden" // Reduced margin
             onClick={onMobileMenuToggle}
             aria-label="Abrir menu"
           >
@@ -41,13 +41,14 @@ const MainHeader = ({
           </Button>
 
           {/* Logo - Link to home */}
-          <a href="/" className="flex items-center flex-shrink-0" aria-label="Página Inicial UTI DOS GAMES">
+          <a href="/" className="flex items-center flex-shrink-0 ml-1" aria-label="Página Inicial UTI DOS GAMES"> {/* Added margin */}
             <img 
               src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" // Ensure this path is correct
               alt="UTI DOS GAMES Logo" 
-              className="h-10 w-auto" // Adjusted height, auto width
+              className="h-9 w-auto" // Slightly reduced height for mobile
             />
-            <span className="ml-2 font-bold text-lg hidden sm:inline-block">UTI DOS GAMES</span>
+            {/* Hide text logo on mobile */}
+            {/* <span className="ml-2 font-bold text-lg hidden sm:inline-block">UTI DOS GAMES</span> */}
           </a>
         </div>
 

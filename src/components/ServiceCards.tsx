@@ -155,10 +155,10 @@ const ServiceCards = () => {
                       <IconComponent className="w-8 h-8 text-primary-foreground" />
                     </div>
                   </div>
-                  <h3 className="text-sm font-semibold text-white mb-1 group-hover:text-primary/80 transition-colors duration-300">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-1 group-hover:text-primary/80 transition-colors duration-300">
                     {item.title}
                   </h3>
-                  <p className="text-xs text-secondary-foreground/80 leading-relaxed">
+                  <p className="text-xs text-gray-600 leading-relaxed">
                     {item.description}
                   </p>
                 </div>

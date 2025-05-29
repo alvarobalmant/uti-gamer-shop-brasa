@@ -38,13 +38,14 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 sm:hidden">
+    <div className="fixed inset-0 z-50 md:hidden"> {/* Changed sm:hidden to md:hidden to match toggle button */}
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/20" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       
-      {/* Menu Panel */}
-      <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl">
-        <div className="flex items-center justify-between p-4 border-b">
+      {/* Menu Panel - Slide in from left */}
+      <div className="fixed top-0 left-0 h-full w-4/5 max-w-xs bg-white shadow-xl flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
           <div className="flex items-center gap-2">
             <img 
               src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
@@ -53,12 +54,13 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
             />
             <span className="font-bold text-gray-900">Menu</span>
           </div>
-          <Button onClick={onClose} variant="ghost" size="sm">
+          <Button onClick={onClose} variant="ghost" size="icon" className="-mr-2">
             <X className="w-5 h-5" />
           </Button>
         </div>
 
-        <div className="p-4 space-y-4">
+        {/* Scrollable Content */}
+        <div className="flex-grow overflow-y-auto p-4 space-y-4">
           {/* User Section */}
           <div className="border-b pb-4">
             {user ? (

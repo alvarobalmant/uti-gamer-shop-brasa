@@ -59,14 +59,14 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
         </div>
 
         {/* Image Area (Takes less space on mobile, more on desktop) */}
-        <div className="md:col-span-2 h-36 sm:h-40 md:h-full order-1 md:order-2">
+        <div className="md:col-span-2 h-32 sm:h-36 md:h-full order-1 md:order-2"> {/* Reduced height for mobile to make it more rectangular */}
           <img 
-            src={imageUrl || '/placeholder-banner.webp'} 
+            src={imageUrl || "/placeholder-banner.webp"} 
             alt={title} 
             className="w-full h-full object-cover"
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = '/placeholder-banner-error.webp';
+              e.currentTarget.src = "/placeholder-banner-error.webp";
             }}
             loading="lazy"
           />
