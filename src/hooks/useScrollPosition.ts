@@ -2,59 +2,133 @@
 import { useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 
+interface ScrollPosition {
+  x: number;
+  y: number;
+  path: string;
+  timestamp: number;
+}
+
 export const useScrollPosition = () => {
   const location = useLocation();
 
-  // Função para salvar a posição de scroll antes da navegação
+  // Função para verificar se estamos na página inicial
+  const isHomePage = useCallback(() => {
+    return location.pathname === '/' || location.pathname === '/index.html';
+  }, [location.pathname]);
+
+  // Função para salvar a posição de scroll (apenas na página inicial)
   const saveScrollPosition = useCallback(() => {
-    const scrollY = window.scrollY;
-    const currentPath = window.location.pathname + window.location.search;
-    sessionStorage.setItem(`scrollPosition_${currentPath}`, String(scrollY));
-    console.log(`Scroll position ${scrollY} saved for path ${currentPath}`);
-  }, []);
-
-  // Função para restaurar a posição de scroll
-  const restoreScrollPosition = useCallback(() => {
-    const currentPath = window.location.pathname + window.location.search;
-    const savedScrollY = sessionStorage.getItem(`scrollPosition_${currentPath}`);
-
-    if (savedScrollY !== null) {
-      const scrollPosition = parseInt(savedScrollY, 10);
-      console.log(`Found saved scroll position ${scrollPosition} for path ${currentPath}`);
-
-      // Delay para aguardar a renderização
-      setTimeout(() => {
-        console.log(`Attempting to scroll to ${scrollPosition}`);
-        window.scrollTo(0, scrollPosition);
-      }, 100);
-    } else {
-      console.log(`No saved scroll position found for path ${currentPath}`);
-      // Se não houver posição salva, rolar para o topo
-      setTimeout(() => { 
-        window.scrollTo(0, 0); 
-      }, 0);
+    if (isHomePage()) {
+      const scrollPos: ScrollPosition = {
+        x: window.scrollX,
+        y: window.scrollY,
+        path: window.location.pathname,
+        timestamp: new Date().getTime()
+      };
+      
+      try {
+        localStorage.setItem('utiGamesScrollPos', JSON.stringify(scrollPos));
+        console.log(`Scroll position ${scrollPos.y} saved for home page`);
+      } catch (error) {
+        console.warn('Failed to save scroll position:', error);
+      }
     }
-  }, []);
+  }, [isHomePage]);
 
-  // Handler para o evento popstate
+  // Função para restaurar a posição de scroll (apenas na página inicial)
+  const restoreScrollPosition = useCallback(() => {
+    if (isHomePage()) {
+      try {
+        const scrollPosData = localStorage.getItem('utiGamesScrollPos');
+        
+        if (scrollPosData) {
+          const scrollPos: ScrollPosition = JSON.parse(scrollPosData);
+          
+          // Verificar se o dado não está expirado (30 minutos)
+          const now = new Date().getTime();
+          const timeLimit = 30 * 60 * 1000; // 30 minutos em milissegundos
+          
+          if (now - scrollPos.timestamp < timeLimit) {
+            console.log(`Found saved scroll position ${scrollPos.y} for home page`);
+            
+            // Usar setTimeout para garantir que a página esteja totalmente carregada
+            setTimeout(() => {
+              console.log(`Attempting to scroll to ${scrollPos.y}`);
+              window.scrollTo({
+                left: scrollPos.x,
+                top: scrollPos.y,
+                behavior: 'auto' // Usar 'auto' para evitar animação estranha
+              });
+            }, 100);
+          } else {
+            // Limpar dados expirados
+            localStorage.removeItem('utiGamesScrollPos');
+            console.log('Scroll position data expired, cleared from storage');
+          }
+        } else {
+          console.log('No saved scroll position found for home page');
+        }
+      } catch (error) {
+        console.warn('Failed to restore scroll position:', error);
+        // Limpar dados corrompidos
+        localStorage.removeItem('utiGamesScrollPos');
+      }
+    }
+  }, [isHomePage]);
+
+  // Função debounce para salvar posição durante scroll
+  const debouncedSavePosition = useCallback(() => {
+    let timeout: NodeJS.Timeout;
+    
+    return () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        saveScrollPosition();
+      }, 200);
+    };
+  }, [saveScrollPosition]);
+
+  // Handler para o evento popstate (botão voltar do navegador)
   const handlePopState = useCallback(() => {
     console.log("Popstate event detected");
     restoreScrollPosition();
   }, [restoreScrollPosition]);
 
-  // Setup da restauração de scroll
+  // Setup da restauração de scroll e eventos
   const setupScrollRestoration = useCallback(() => {
-    // Tenta restaurar imediatamente caso a página seja carregada diretamente
-    restoreScrollPosition();
+    // Restaurar posição ao carregar a página inicial
+    if (isHomePage()) {
+      restoreScrollPosition();
+      
+      // Adicionar listener para salvar posição durante scroll (apenas na página inicial)
+      const debouncedSave = debouncedSavePosition();
+      window.addEventListener('scroll', debouncedSave);
+      
+      // Salvar posição ao sair da página
+      const handleBeforeUnload = () => {
+        saveScrollPosition();
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      
+      // Adicionar listener para popstate
+      window.addEventListener("popstate", handlePopState);
 
-    // Adiciona o listener para futuras navegações 'voltar'/'avançar'
-    window.addEventListener("popstate", handlePopState);
-
-    // Função de limpeza
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [handlePopState, restoreScrollPosition]);
+      // Função de limpeza
+      return () => {
+        window.removeEventListener('scroll', debouncedSave);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        window.removeEventListener("popstate", handlePopState);
+      };
+    } else {
+      // Para outras páginas, apenas adicionar listener para popstate
+      window.addEventListener("popstate", handlePopState);
+      
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
+  }, [isHomePage, restoreScrollPosition, debouncedSavePosition, saveScrollPosition, handlePopState]);
 
   return { 
     saveScrollPosition,
