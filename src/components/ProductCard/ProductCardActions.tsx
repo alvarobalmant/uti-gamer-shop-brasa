@@ -1,41 +1,46 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
+import { cn } from '@/lib/utils';
 
 interface ProductCardActionsProps {
   product: Product;
-  showButton: boolean;
   onAddToCart: (e: React.MouseEvent | React.TouchEvent) => void;
 }
 
+// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductCardActions: React.FC<ProductCardActionsProps> = ({
   product,
-  showButton,
   onAddToCart
 }) => {
   const isOutOfStock = product.stock === 0;
 
+  // Minimalist approach: Button appears subtly on hover (desktop)
+  // For mobile, clicking the card navigates, so button might be less critical here
+  // or could be a smaller icon button if desired.
   return (
-    <div className={`transition-all duration-300 ${showButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'} md:opacity-0 md:group-hover:opacity-100 opacity-100 translate-y-0`}>
+    <div className="absolute bottom-2 right-2 z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100"> {/* Show on hover */}
       <Button
+        size="icon" // Use icon size for a smaller footprint
+        variant="default" // Use primary color (UTI Red)
         onClick={onAddToCart}
-        onTouchEnd={onAddToCart}
+        onTouchEnd={onAddToCart} // Ensure touch works
         disabled={isOutOfStock}
-        className={`w-full font-semibold py-3 text-sm rounded-lg transition-all duration-300 active:scale-95 md:py-3 py-3.5 md:text-sm text-xs min-h-[44px] ${
-          isOutOfStock 
-            ? 'bg-gray-400 cursor-not-allowed text-white' 
-            : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-md'
-        }`}
+        className={cn(
+          "h-8 w-8 rounded-full shadow-md transition-all duration-300 active:scale-90",
+          isOutOfStock
+            ? "cursor-not-allowed bg-muted text-muted-foreground"
+            : "bg-uti-red text-primary-foreground hover:bg-uti-red/90"
+        )}
+        aria-label={isOutOfStock ? 'Esgotado' : 'Adicionar ao Carrinho'}
         style={{ touchAction: 'manipulation' }}
       >
-        <ShoppingCart className="w-4 h-4 mr-2 md:w-4 md:h-4 w-3.5 h-3.5" />
-        <span className="md:inline hidden">{isOutOfStock ? 'Esgotado' : 'Adicionar ao Carrinho'}</span>
-        <span className="md:hidden inline">{isOutOfStock ? 'Esgotado' : 'Adicionar'}</span>
+        <ShoppingCart className="h-4 w-4" />
       </Button>
     </div>
   );
 };
 
 export default ProductCardActions;
+

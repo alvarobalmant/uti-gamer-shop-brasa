@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown } from 'lucide-react';
-import { categories, Category } from './categories';
-import { cn } from '@/lib/utils'; // Assuming utils path
+import { categories, Category } from './categories'; // Assuming categories data is defined here
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button'; // Use Button for consistency
 
 interface DesktopNavigationProps {
   className?: string;
@@ -16,36 +17,42 @@ const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
   };
 
   return (
-    // Removed background and border, simplified structure
-    // Added container for consistent padding, hidden below lg breakpoint
-    <nav className={cn("hidden lg:block bg-white border-t border-gray-100", className)}> 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center space-x-6 xl:space-x-8 py-2.5">
-          {/* Adjusted spacing and padding */}
+    // Navigation bar below the main header, visible on large screens only
+    // Clean background, subtle top border to separate from header shadow
+    <nav className={cn(
+      "hidden lg:block bg-background border-t border-border/60", 
+      className
+    )}>
+      <div className="container mx-auto"> {/* Use standard container */} 
+        <div className="flex h-12 items-center justify-center gap-x-6 xl:gap-x-8"> {/* Adjusted height and gap */}
+          
           {categories.map(category => (
-            <button
+            <Button
               key={category.id}
+              variant="ghost" // Use ghost variant for clean look
+              size="sm" // Smaller size for nav items
               onClick={() => handleCategoryClick(category)}
-              className="text-sm font-medium text-gray-700 hover:text-uti-red transition-colors duration-150 py-1"
-              // Simplified text color and hover effect
+              className="text-sm font-medium text-muted-foreground hover:text-primary hover:bg-transparent px-2"
+              // Use muted foreground, primary color on hover, transparent background
             >
               {category.name}
-            </button>
+            </Button>
           ))}
           
-          {/* UTI PRO Link - Refined styling slightly */}
-          <button
+          {/* UTI PRO Link - Styled as a distinct button or badge */}
+          <Button
+            variant="outline" // Outline variant for subtle emphasis
+            size="sm"
             onClick={() => navigate('/uti-pro')}
-            className="flex items-center gap-1.5 text-sm font-semibold text-yellow-700 hover:text-yellow-800 transition-colors duration-150 py-1 px-3 rounded-md bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 shadow-sm"
-            // Adjusted font weight, colors, padding, added shadow
+            className="flex items-center gap-1.5 text-sm font-semibold text-uti-pro hover:bg-yellow-500/10 border-uti-pro/50 hover:border-uti-pro/80 transition-colors duration-150"
+            // Using uti-pro color (defined in tailwind.config), subtle hover
           >
-            <Crown className="w-4 h-4 text-yellow-600" />
+            <Crown className="w-4 h-4 text-uti-pro/90" />
             UTI PRO
-          </button>
+          </Button>
         </div>
       </div>
     </nav>
-    // Removed the mobile floating button logic, will be handled in MobileMenu
   );
 };
 
