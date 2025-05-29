@@ -25,17 +25,17 @@ const SectionTitle: React.FC<SectionTitleProps> = ({
   return (
     <div className={cn("mb-4 md:mb-6", className)}> {/* Margin bottom */}
       <h2 className={cn(
-        "text-2xl md:text-3xl font-semibold text-foreground tracking-tight", // Base title style
+        "text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground tracking-tight leading-tight", // Base title style with improved leading
         titleClassName
       )}>
         {/* Render title with bold first word if applicable */}
         {regularPart ? (
           <>
-            <span className="font-bold">{boldPart}</span> {regularPart}
+            <span className="font-bold text-black">{boldPart}</span> <span className="text-gray-800">{regularPart}</span>
           </>
         ) : (
           // If only one word, render normally or bold based on preference
-          <span className="font-bold">{title}</span>
+          <span className="font-bold text-black">{title}</span>
         )}
       </h2>
       {subtitle && (

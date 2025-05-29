@@ -45,13 +45,13 @@ const ProductCardProPrice: React.FC<ProductCardProPriceProps> = ({ product }) =>
         {/* Pro Price Info - Enhanced Highlighting */}
         {displayProPrice && (
           <div className={cn(
-            "mt-0.5 flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded",
-            // Use a distinct background/text color for Pro price
-            "bg-uti-pro/10 text-uti-pro"
+            "mt-1 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md",
+            // Use a distinct background/text color for Pro price with better contrast
+            "bg-uti-pro/15 text-uti-pro border border-uti-pro/20"
             // Alternatively, use GameStop's purple: "bg-purple-100 text-purple-700"
           )}>
             <Crown className="h-3.5 w-3.5" />
-            <span>R$ {displayProPrice}</span>
+            <span className="font-bold">R$ {displayProPrice}</span>
             <span className="ml-1 font-semibold">para Pros</span>
           </div>
         )}

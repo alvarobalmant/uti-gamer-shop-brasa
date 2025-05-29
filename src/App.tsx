@@ -6,18 +6,14 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
-// import Admin from "./pages/Admin"; // Replace with specific admin routes
 import SearchResults from "./pages/SearchResults";
 import CategoryPage from "./pages/CategoryPage";
 import ProductPage from "./pages/ProductPage";
 import NotFound from "./pages/NotFound";
 import UTIPro from "./pages/UTIPro";
 
-// Import Admin components
-import AdminLayout from "@/components/Admin/AdminLayout";
-import AdminSections from "./pages/Admin/AdminSections";
-// Import a placeholder Admin Dashboard if needed
-// import AdminDashboard from "./pages/Admin/AdminDashboard";
+// Import the main Admin Panel component which now includes all tabs
+import { AdminPanel } from "@/components/Admin/AdminPanel"; 
 
 const queryClient = new QueryClient();
 
@@ -26,16 +22,15 @@ const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isAdmin, loading } = useAuth();
 
   if (loading) {
-    // Optional: Add a loading spinner or skeleton screen
     return <div>Verificando autenticação...</div>;
   }
 
   if (!user || !isAdmin) {
-    // Redirect to home or login page if not an authenticated admin
     return <Navigate to="/" replace />;
   }
 
-  return <>{children}</>;
+  // Render the children (AdminPanel in this case) if authenticated and admin
+  return <>{children}</>; 
 };
 
 const App = () => (
@@ -54,21 +49,18 @@ const App = () => (
               <Route path="/produto/:id" element={<ProductPage />} />
               <Route path="/uti-pro" element={<UTIPro />} />
 
-              {/* Admin Routes - Protected */}
+              {/* Admin Route - Protected */}
+              {/* The AdminPanel component itself handles the different admin sections via Tabs */}
               <Route 
                 path="/admin" 
                 element={
                   <ProtectedAdminRoute>
-                    <AdminLayout />
+                    {/* Render the main AdminPanel component directly */}
+                    <AdminPanel /> 
                   </ProtectedAdminRoute>
                 }
-              >
-                {/* Default admin route (e.g., redirect to sections or show dashboard) */}
-                <Route index element={<Navigate to="sections" replace />} /> 
-                {/* <Route index element={<AdminDashboard />} /> */}
-                <Route path="sections" element={<AdminSections />} />
-                {/* Add other admin routes here */}
-              </Route>
+              />
+              {/* No need for nested routes here if AdminPanel uses Tabs for navigation */}
 
               {/* Catch-all Not Found Route */}
               <Route path="*" element={<NotFound />} />

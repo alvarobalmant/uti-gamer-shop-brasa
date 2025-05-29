@@ -64,11 +64,8 @@ const Index = () => {
       />
 
       <main className="flex-grow">
-        {/* Hero Section */}
+        {/* Hero Section (includes Quick Links) */}
         <HeroBannerCarousel />
-
-        {/* Quick Links Section (Below Hero) - Checked for duplication */}
-        <HeroQuickLinks />
 
         {/* Promotional Banner (UTI PRO) */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 my-8 md:my-12"> {/* Added margin */}

@@ -47,7 +47,7 @@ const MainHeader = ({
               alt="UTI DOS GAMES Logo" 
               className="h-10 w-auto" // Adjusted height, auto width
             />
-            {/* Optional: Text logo can be added back if desired, but GameStop uses image logo primarily */}
+            <span className="ml-2 font-bold text-lg hidden sm:inline-block">UTI DOS GAMES</span>
           </a>
         </div>
 

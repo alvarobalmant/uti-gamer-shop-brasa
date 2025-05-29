@@ -33,8 +33,8 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   return (
     <Card
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-card shadow-sm", // Lighter border (gray-200), consistent radius
-        "transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1", // Subtle shadow and lift hover effect
+        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-card shadow-sm", // Even lighter border (gray-100), consistent radius
+        "transition-all duration-300 ease-in-out hover:shadow-md hover:-translate-y-1", // Subtle shadow and lift hover effect
         "cursor-pointer",
         "w-full" // Ensure card takes full width in its container (for carousel/grid)
         // Removed fixed width/height to allow flexibility in carousel/grid

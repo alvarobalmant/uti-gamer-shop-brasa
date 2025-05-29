@@ -59,7 +59,7 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
         </div>
 
         {/* Image Area (Takes less space on mobile, more on desktop) */}
-        <div className="md:col-span-2 h-48 md:h-full order-1 md:order-2">
+        <div className="md:col-span-2 h-36 sm:h-40 md:h-full order-1 md:order-2">
           <img 
             src={imageUrl || '/placeholder-banner.webp'} 
             alt={title} 
