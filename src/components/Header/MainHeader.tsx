@@ -2,10 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActions from './HeaderActions';
-import MobileSearchBarTrigger from './MobileSearchBarTrigger'; // Renamed/Refactored for clarity
+import MobileSearchBar from './MobileSearchBar';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Menu, Search } from 'lucide-react'; // Import Search icon for mobile trigger
+import { Menu } from 'lucide-react';
+
+// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
+// Focus: Visual structure, styling, layout, responsiveness. NO logic changes.
 
 interface MainHeaderProps {
   onCartOpen: () => void;
@@ -14,90 +17,73 @@ interface MainHeaderProps {
   className?: string;
 }
 
-// **Radical Redesign - Header based on GameStop reference and UTI Identity**
 const MainHeader = ({ 
   onCartOpen, 
   onAuthOpen, 
   onMobileMenuToggle,
   className
 }: MainHeaderProps) => {
-  const navigate = useNavigate();
-  const [isMobileSearchVisible, setIsMobileSearchVisible] = React.useState(false);
-
-  // Function to toggle mobile search visibility
-  const toggleMobileSearch = () => {
-    setIsMobileSearchVisible(!isMobileSearchVisible);
-  };
+  const navigate = useNavigate(); // Keep navigation logic
 
   return (
-    // Consistent background, border, sticky positioning
-    <header className={cn(
-      "sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm", // Lighter border, white background
-      className
-    )}>
-      <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8"> 
+    <header 
+      className={cn(
+        "sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm", // GameStop-like: white bg, subtle border/shadow
+        className
+      )}
+    >
+      {/* Main Header Row */}
+      <div className="container flex h-16 items-center justify-between gap-4 sm:h-20"> 
         
-        {/* Left side: Mobile Menu Toggle + Logo */}
-        <div className="flex items-center">
-          {/* Mobile Menu Toggle Button - visible only on md and below */}
+        {/* Left Side: Mobile Menu Toggle + Logo */}
+        <div className="flex items-center flex-shrink-0">
+          {/* Mobile Menu Toggle Button (md:hidden) */}
           <Button 
             variant="ghost" 
             size="icon" 
             className="mr-2 md:hidden text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md" 
-            onClick={onMobileMenuToggle}
+            onClick={onMobileMenuToggle} // Keep existing toggle logic
             aria-label="Abrir menu"
           >
             <Menu className="h-6 w-6" />
           </Button>
 
-          {/* Logo - Link to home */}
+          {/* Logo - Always visible, clickable */}
           <div 
-            className="flex items-center cursor-pointer flex-shrink-0" 
-            onClick={() => navigate('/')}
-            aria-label="Página Inicial UTI DOS GAMES"
+            className="flex items-center cursor-pointer" 
+            onClick={() => navigate('/')} // Keep existing navigation logic
+            aria-label="Ir para a página inicial"
           >
             <img 
-              src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" // Ensure this path is correct
+              src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
               alt="UTI DOS GAMES Logo" 
-              className="h-9 w-9 sm:h-10 sm:w-10" // Slightly adjusted logo size
+              className="h-9 w-9 sm:h-10 sm:w-10" // Slightly adjusted size
             />
-            {/* Optional: Text logo can be added back if desired, hidden on mobile */}
-             <span className="ml-2 text-xl font-bold text-uti-red hidden sm:inline">UTI DOS GAMES</span> 
+            {/* Text Logo - Hidden on mobile, visible sm+ */}
+            <span className="hidden sm:inline-block ml-2 text-xl font-bold text-uti-dark">
+              UTI DOS GAMES
+            </span>
           </div>
         </div>
 
-        {/* Center: Desktop Search Bar (visible on md and up) */}
-        <div className="flex-1 justify-center px-4 hidden md:flex max-w-xl"> {/* Constrain width */}
+        {/* Center: Desktop Search Bar (hidden md:flex) */}
+        <div className="flex-1 justify-center px-4 hidden md:flex max-w-xl mx-auto">
            <DesktopSearchBar />
         </div>
 
-        {/* Right side: Actions (Search Trigger Mobile, Cart, Login) */} 
-        <div className="flex items-center justify-end space-x-1 sm:space-x-2">
-          {/* Mobile Search Trigger - visible only on md and below */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md" // Added focus-visible for accessibility 
-            onClick={toggleMobileSearch} // Use the toggle function
-            aria-label="Abrir busca"
-          >
-            <Search className="h-5 w-5" />
-          </Button>
-
-          {/* Standard Header Actions (Cart, Login) */}
+        {/* Right Side: Header Actions */}
+        <div className="flex items-center justify-end flex-shrink-0">
           <HeaderActions
-            onCartOpen={onCartOpen}
-            onAuthOpen={onAuthOpen}
+            onCartOpen={onCartOpen} // Keep existing logic
+            onAuthOpen={onAuthOpen} // Keep existing logic
           />
         </div>
       </div>
 
-      {/* Mobile Search Bar - Conditionally rendered below header */}
-      {isMobileSearchVisible && (
-        <div className="container md:hidden pb-3 px-4 border-t border-gray-200 bg-white">
-           <MobileSearchBarTrigger onSearchSubmit={() => setIsMobileSearchVisible(false)} />
-        </div>
-      )}
+      {/* Mobile Search Bar - Shown below header on small screens (md:hidden) */}
+      <div className="container md:hidden pb-3 px-4 border-t border-gray-200">
+         <MobileSearchBar />
+      </div>
     </header>
   );
 };

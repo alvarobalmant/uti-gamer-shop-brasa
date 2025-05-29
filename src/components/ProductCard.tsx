@@ -33,8 +33,8 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   return (
     <Card
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-card shadow-sm", // Use lighter gray border (like gray-200)
-        "transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-[1.02]", // Enhanced hover effect (shadow + scale)
+        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-card shadow-sm", // Lighter border (gray-200)
+        "transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-[1.02]", // Enhanced hover effect
         "cursor-pointer" // Ensure card is clickable
       )}
       onClick={handleCardNavigation}

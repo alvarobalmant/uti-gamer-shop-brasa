@@ -2,80 +2,68 @@ import { User, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import MobileSearchBar from './MobileSearchBar'; // Keep if still used elsewhere, or remove if MobileSearchBarTrigger handles all mobile search
 import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { cn } from '@/lib/utils';
+
+// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
+// Focus: Visual structure, styling, layout, responsiveness. NO logic changes.
 
 interface HeaderActionsProps {
-  onCartOpen: () => void; // Keep if GlobalCartIcon needs it, otherwise remove
-  onAuthOpen: () => void;
-  // onCategoriesToggle: () => void; // Removed as likely handled by MobileMenu
-  // onMobileMenuToggle: () => void; // Removed as the toggle is now in MainHeader
+  onCartOpen: () => void; // Keep for GlobalCartIcon if needed internally
+  onAuthOpen: () => void; // Keep for login/account button logic
 }
 
-// **Radical Redesign - Simplified Header Actions**
 const HeaderActions = ({ 
   onAuthOpen, 
-  // Remove onMobileMenuToggle if not used
+  // onCartOpen might not be needed directly here if GlobalCartIcon handles its own logic
 }: HeaderActionsProps) => {
-  const { user, isAdmin } = useAuth();
-  const { hasActiveSubscription } = useSubscriptions();
-  const navigate = useNavigate();
+  const { user, isAdmin } = useAuth(); // Keep auth logic
+  const { hasActiveSubscription } = useSubscriptions(); // Keep subscription logic
+  const navigate = useNavigate(); // Keep navigation logic
 
+  // Keep existing login handler logic
   const handleLogin = () => {
     if (user) {
       if (isAdmin) {
         navigate('/admin');
       } else {
-        // Navigate to account page or open modal
+        // Navigate to account page or open modal - keep existing behavior
         navigate('/conta'); // Example: navigate to account page
-        // onAuthOpen(); // Or open modal if preferred
+        // onAuthOpen(); // Or open modal if that's the original behavior
       }
     } else {
-      onAuthOpen(); // Open login/signup modal
+      onAuthOpen(); // Keep existing logic to open auth modal
     }
   };
 
   return (
-    // Use space-x-1 or space-x-2 for spacing based on visual preference
-    <div className="flex items-center space-x-1 sm:space-x-2">
+    // Use flex and gap for spacing, consistent with GameStop style
+    <div className="flex items-center gap-2 sm:gap-3">
       
-      {/* Mobile Search - Removed, handled by trigger in MainHeader */}
-      {/* <div className="lg:hidden">
-        <MobileSearchBar />
-      </div> */}
-
-      {/* UTI PRO Badge for subscribers - Desktop only */}
+      {/* UTI PRO Badge - Simplified visual, shown only if active */}
       {hasActiveSubscription() && (
-        <div className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
-          <Crown className="w-3 h-3" />
-          PRO
+        <div className="hidden sm:flex items-center gap-1 bg-yellow-400 text-yellow-900 px-2.5 py-1 rounded-full text-xs font-bold">
+          <Crown className="w-3.5 h-3.5" />
+          <span>PRO</span>
         </div>
       )}
 
-      {/* User Account / Login Button - Desktop only */}
+      {/* User Account Button - Consistent icon style */}
       <Button 
-        onClick={handleLogin} 
+        onClick={handleLogin} // Keep existing logic
         variant="ghost" 
-        size="icon" // Use icon size for consistency
-        className="hidden md:inline-flex text-gray-700 hover:bg-gray-100" // Show only on md and up
+        size="icon" 
+        className="text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
         aria-label={user ? (isAdmin ? 'Painel Admin' : 'Minha Conta') : 'Entrar ou Cadastrar'}
       >
-        <User className="h-5 w-5" />
+        <User className="h-5 w-5 sm:h-6 sm:w-6" />
       </Button>
 
-      {/* Global Shopping Cart Icon - Visible on all sizes */}
+      {/* Global Shopping Cart Icon - Assuming it handles its own logic */}
       <GlobalCartIcon />
 
-      {/* Mobile Menu Toggle - REMOVED from here, handled in MainHeader */}
-      {/* <Button 
-        onClick={onMobileMenuToggle} 
-        variant="ghost" 
-        className="sm:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
-      >
-        <Menu className="w-5 h-5" />
-        <span className="text-xs font-medium mt-1">Mais</span>
-      </Button> */}
+      {/* Mobile Menu Toggle was moved to MainHeader.tsx - Removed from here */}
     </div>
   );
 };

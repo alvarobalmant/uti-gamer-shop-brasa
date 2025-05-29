@@ -1,104 +1,83 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input'; // For potential newsletter signup
-import { Button } from '@/components/ui/button'; // For potential newsletter signup
-import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react'; // Example social icons
+import { Input } from '@/components/ui/input'; // Assuming Input is used for newsletter
+import { Button } from '@/components/ui/button'; // Assuming Button is used for newsletter
+import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react'; // Icons for social media
 
-// **Radical Redesign - Footer based on GameStop reference and UTI Identity**
+// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
+// Focus: Visual structure, styling, layout, responsiveness. NO logic changes.
 const Footer: React.FC = () => {
   const navigate = useNavigate();
 
-  // Footer link sections
-  const sections = [
-    {
-      title: 'Compre por Categoria',
-      links: [
-        { label: 'PlayStation', path: '/categoria/playstation' },
-        { label: 'Xbox', path: '/categoria/xbox' },
-        { label: 'Nintendo', path: '/categoria/nintendo' },
-        { label: 'PC Gamer', path: '/categoria/pc' },
-        { label: 'Acessórios', path: '/categoria/acessorios' },
-        { label: 'Ofertas', path: '/categoria/ofertas' },
-        // { label: 'Colecionáveis', path: '/categoria/colecionaveis' }, // Add if applicable
-      ],
-    },
-    {
-      title: 'UTI PRO',
-      links: [
-        { label: 'Benefícios', path: '/uti-pro' },
-        { label: 'Torne-se Membro', path: '/uti-pro' }, // Link to main UTI Pro page
-        // { label: 'Minha Conta PRO', path: '/conta/pro' }, // Example link
-      ],
-    },
-    {
-      title: 'Suporte ao Cliente',
-      links: [
-        { label: 'Perguntas Frequentes (FAQ)', path: '/ajuda/faq' },
-        { label: 'Fale Conosco', path: '/ajuda/contato' },
-        { label: 'Trocas e Devoluções', path: '/ajuda/trocas' },
-        { label: 'Política de Privacidade', path: '/institucional/privacidade' },
-        { label: 'Termos de Serviço', path: '/institucional/termos' },
-      ],
-    },
-    {
-      title: 'Sobre a UTI dos Games',
-      links: [
-        { label: 'Nossa História', path: '/institucional/sobre' },
-        { label: 'Trabalhe Conosco', path: '/institucional/carreiras' }, // Example link
-        { label: 'Localização', path: '/institucional/localizacao' }, // Example link
-      ],
-    },
-  ];
-
+  // Keep existing navigation logic intact
   const handleNavigate = (path: string) => {
+    // Potentially add scroll restoration logic if needed, but keep core navigation
     navigate(path);
   };
 
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-12 pb-8 w-full overflow-x-hidden mt-16 border-t border-gray-700">
+    <footer className="bg-gray-900 text-gray-300 pt-12 pb-8 mt-16 w-full overflow-x-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top Section: Links Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-10">
-          {sections.map((section) => (
-            <div key={section.title}>
-              <h4 className="font-semibold text-base text-white mb-4 uppercase tracking-wider">{section.title}</h4>
-              <ul className="space-y-2">
-                {section.links.map((link) => (
-                  <li key={link.label}>
-                    <button
-                      onClick={() => handleNavigate(link.path)}
-                      className="text-sm text-gray-400 hover:text-uti-red transition-colors duration-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 rounded-sm"
-                    >
-                      {link.label}
-                    </button>
-                  </li>
-                ))}
+        {/* Top Section: Links + Newsletter (Inspired by GameStop) */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-10">
+          {/* Links Columns (3 columns) */}
+          <div className="md:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-8">
+            {/* Column 1: Loja */}
+            <div>
+              <h5 className="font-semibold text-base text-white mb-4 uppercase tracking-wider">Loja</h5>
+              <ul className="space-y-2 text-sm">
+                <li><button onClick={() => handleNavigate('/categoria/playstation')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">PlayStation</button></li>
+                <li><button onClick={() => handleNavigate('/categoria/xbox')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Xbox</button></li>
+                <li><button onClick={() => handleNavigate('/categoria/nintendo')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Nintendo</button></li>
+                <li><button onClick={() => handleNavigate('/categoria/pc')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">PC Gamer</button></li>
+                <li><button onClick={() => handleNavigate('/categoria/acessorios')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Acessórios</button></li>
+                <li><button onClick={() => handleNavigate('/categoria/ofertas')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Ofertas</button></li>
               </ul>
             </div>
-          ))}
-
-          {/* Optional: Newsletter/Contact Column (Example) */}
-          <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <h4 className="font-semibold text-base text-white mb-4 uppercase tracking-wider">Fique por Dentro</h4>
-            <p className="text-sm text-gray-400 mb-4">Receba ofertas exclusivas e novidades diretamente no seu email.</p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Input 
-                type="email" 
-                placeholder="Seu melhor email" 
-                className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-uti-red focus:ring-uti-red rounded-md text-sm" 
-              />
-              <Button 
-                variant="destructive" // Use UTI Red color
-                className="bg-uti-red hover:bg-uti-red/90 text-white rounded-md text-sm px-4 whitespace-nowrap"
-              >
-                Inscrever
-              </Button>
+            {/* Column 2: UTI PRO & Serviços */}
+            <div>
+              <h5 className="font-semibold text-base text-white mb-4 uppercase tracking-wider">UTI PRO & Serviços</h5>
+              <ul className="space-y-2 text-sm">
+                <li><button onClick={() => handleNavigate('/uti-pro')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Conheça o UTI PRO</button></li>
+                <li><button onClick={() => handleNavigate('/servicos/assistencia')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Assistência Técnica</button></li>
+                <li><button onClick={() => handleNavigate('/servicos/avaliacao')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Avaliação de Produtos</button></li>
+              </ul>
             </div>
+            {/* Column 3: Ajuda */}
+            <div>
+              <h5 className="font-semibold text-base text-white mb-4 uppercase tracking-wider">Ajuda</h5>
+              <ul className="space-y-2 text-sm">
+                <li><button onClick={() => handleNavigate('/ajuda/faq')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Perguntas Frequentes</button></li>
+                <li><button onClick={() => handleNavigate('/ajuda/contato')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Fale Conosco</button></li>
+                <li><button onClick={() => handleNavigate('/ajuda/trocas')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Política de Trocas</button></li>
+                <li><button onClick={() => handleNavigate('/ajuda/privacidade')} className="hover:text-uti-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-gray-900 rounded-sm">Política de Privacidade</button></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Newsletter & Social (2 columns) */}
+          <div className="md:col-span-2 flex flex-col justify-between">
+            {/* Newsletter */}
+            <div>
+              <h5 className="font-semibold text-base text-white mb-4 uppercase tracking-wider">Fique por dentro</h5>
+              <p className="text-sm mb-3">Receba ofertas exclusivas e novidades direto no seu email.</p>
+              <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}> {/* Prevent default form submission */}
+                <Input
+                  type="email"
+                  placeholder="Seu melhor email"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-uti-red focus:border-uti-red flex-grow"
+                  aria-label="Email para newsletter"
+                />
+                <Button type="submit" variant="destructive" className="bg-uti-red hover:bg-uti-red/90">Inscrever</Button>
+              </form>
+            </div>
+
             {/* Social Media Links */}
             <div className="mt-6">
               <h5 className="font-semibold text-base text-white mb-3 uppercase tracking-wider">Siga-nos</h5>
               <div className="flex space-x-4">
+                {/* Added focus-visible for accessibility */}
                 <a href="#" aria-label="Facebook" className="text-gray-400 hover:text-uti-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 rounded-sm"><Facebook size={20} /></a>
                 <a href="#" aria-label="Instagram" className="text-gray-400 hover:text-uti-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 rounded-sm"><Instagram size={20} /></a>
                 <a href="#" aria-label="Twitter" className="text-gray-400 hover:text-uti-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 rounded-sm"><Twitter size={20} /></a>
@@ -110,15 +89,14 @@ const Footer: React.FC = () => {
 
         <Separator className="bg-gray-700 my-8" />
 
-        {/* Bottom Section: Copyright and Info */}
+        {/* Bottom Section: Copyright & Contact Info */}
         <div className="text-center text-xs text-gray-500">
           <p className="mb-1">
-            © {new Date().getFullYear()} UTI DOS GAMES. Todos os direitos reservados. CNPJ: XX.XXX.XXX/0001-XX
+            UTI DOS GAMES LTDA - CNPJ: XX.XXX.XXX/0001-XX | Endereço: Rua Exemplo, 123, Centro, Colatina - ES, CEP 29700-000
           </p>
           <p>
-            Endereço: Rua Exemplo, 123 - Centro, Colatina - ES, CEP: 29700-000
+            © {new Date().getFullYear()} UTI DOS GAMES. Todos os direitos reservados. Os preços e condições de pagamento são exclusivos para compras via internet.
           </p>
-          {/* Add other required info like payment methods icons if needed */}
         </div>
       </div>
     </footer>
