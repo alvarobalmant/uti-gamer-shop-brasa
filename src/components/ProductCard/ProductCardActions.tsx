@@ -6,7 +6,8 @@ import { cn } from '@/lib/utils';
 
 interface ProductCardActionsProps {
   product: Product;
-  onAddToCart: (e: React.MouseEvent | React.TouchEvent) => void;
+  // Change the prop type to expect the product object directly
+  onAddToCart: (product: Product) => void;
 }
 
 // **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
@@ -16,6 +17,15 @@ const ProductCardActions: React.FC<ProductCardActionsProps> = ({
 }) => {
   const isOutOfStock = product.stock === 0;
 
+  // Handler to prevent event propagation and call the actual add to cart function
+  const handleAddToCartClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation(); // Prevent card navigation when clicking the button
+    e.preventDefault();
+    if (!isOutOfStock) {
+      onAddToCart(product); // Pass the product object
+    }
+  };
+
   // Minimalist approach: Button appears subtly on hover (desktop)
   // For mobile, clicking the card navigates, so button might be less critical here
   // or could be a smaller icon button if desired.
@@ -24,8 +34,8 @@ const ProductCardActions: React.FC<ProductCardActionsProps> = ({
       <Button
         size="icon" // Use icon size for a smaller footprint
         variant="default" // Use primary color (UTI Red)
-        onClick={onAddToCart}
-        onTouchEnd={onAddToCart} // Ensure touch works
+        onClick={handleAddToCartClick} // Use the new handler
+        onTouchEnd={handleAddToCartClick} // Use the new handler for touch
         disabled={isOutOfStock}
         className={cn(
           "h-8 w-8 rounded-full shadow-md transition-all duration-300 active:scale-90",

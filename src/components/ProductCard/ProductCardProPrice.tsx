@@ -1,6 +1,6 @@
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
-import { useSubscriptions } from '@/hooks/useSubscriptions'; // Assuming this hook provides Pro status
+import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -8,17 +8,15 @@ interface ProductCardProPriceProps {
   product: Product;
 }
 
-// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
+// **Radical Redesign - Enhanced Pro Price Highlighting**
 const ProductCardProPrice: React.FC<ProductCardProPriceProps> = ({ product }) => {
-  const { hasActiveSubscription } = useSubscriptions(); // Simplified hook usage example
-  const isProMember = hasActiveSubscription();
+  const { hasActiveSubscription } = useSubscriptions();
+  const isProMember = hasActiveSubscription(); // Determine if the current user is a Pro member
 
-  // Calculate Pro price (example: 10% discount)
-  // Replace with actual logic if different (e.g., specific pro_price field)
-  const proDiscount = 0.10; // Example 10% discount
-  const proPrice = product.price ? product.price * (1 - proDiscount) : null;
+  // Calculate Pro price (example: 10% discount or use a specific field if available)
+  const proDiscount = product.pro_discount_percent || 0.10; // Use specific discount or default
+  const proPrice = product.pro_price || (product.price ? product.price * (1 - proDiscount) : null);
 
-  // Use product.list_price if available for strikethrough, otherwise use regular price
   const displayPrice = product.price.toFixed(2);
   const displayListPrice = product.list_price ? product.list_price.toFixed(2) : null;
   const displayProPrice = proPrice ? proPrice.toFixed(2) : null;
@@ -28,12 +26,11 @@ const ProductCardProPrice: React.FC<ProductCardProPriceProps> = ({ product }) =>
 
   return (
     <div className="mt-1 mb-1"> {/* Minimal margins */}
-      {/* Price Display - Mimicking GameStop structure */}
       <div className="flex flex-col items-start">
         {/* Regular Price - Always visible */}
         <span className={cn(
           "font-semibold text-foreground",
-          showListPriceStrike ? "text-base" : "text-base" // Keep size consistent
+          showListPriceStrike ? "text-base" : "text-lg" // Make regular price slightly larger if no list price
         )}>
           R$ {displayPrice}
         </span>
@@ -45,9 +42,14 @@ const ProductCardProPrice: React.FC<ProductCardProPriceProps> = ({ product }) =>
           </span>
         )}
 
-        {/* Pro Price Info */}
+        {/* Pro Price Info - Enhanced Highlighting */}
         {displayProPrice && (
-          <div className="mt-0.5 flex items-center gap-1 text-xs font-medium text-uti-pro">
+          <div className={cn(
+            "mt-0.5 flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded",
+            // Use a distinct background/text color for Pro price
+            "bg-uti-pro/10 text-uti-pro"
+            // Alternatively, use GameStop's purple: "bg-purple-100 text-purple-700"
+          )}>
             <Crown className="h-3.5 w-3.5" />
             <span>R$ {displayProPrice}</span>
             <span className="ml-1 font-semibold">para Pros</span>

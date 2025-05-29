@@ -16,8 +16,8 @@ export type { Product } from '@/hooks/useProducts';
 
 interface ProductCardProps {
   product: Product;
+  // Update the prop type to expect the product object
   onAddToCart: (product: Product) => void;
-  // getPlatformColor is likely not needed for the new design, remove if unused in subcomponents
 }
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
@@ -29,37 +29,40 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
     navigate(`/produto/${product.id}`);
   };
 
-  // **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
+  // **Radical Redesign based on GameStop reference and user feedback**
   return (
     <Card
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-uti-gray-dark/20 bg-card shadow-sm", // Use lighter border, consistent radius
-        "transition-shadow duration-300 ease-in-out hover:shadow-md", // Subtle shadow hover
-        "cursor-pointer" // Ensure card is clickable
+        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-card shadow-sm", // Lighter border (gray-200), consistent radius
+        "transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1", // Subtle shadow and lift hover effect
+        "cursor-pointer",
+        "w-full" // Ensure card takes full width in its container (for carousel/grid)
+        // Removed fixed width/height to allow flexibility in carousel/grid
       )}
       onClick={handleCardNavigation}
     >
       {/* Image Section - Takes most space */}
       <ProductCardImage
         product={product}
-        // Wishlist logic can be integrated here or kept separate if needed
       />
 
       {/* Content Section - Minimalist, below image */}
       <div className="flex flex-1 flex-col justify-between p-3"> {/* Use padding, justify-between */}
         {/* Top part: Info + Price */}
         <div>
+          {/* Ensure ProductCardInfo uses appropriate text sizes/styles */}
           <ProductCardInfo product={product} />
+          {/* Ensure ProductCardProPrice highlights the PRO price effectively */}
           <ProductCardProPrice product={product} />
         </div>
 
         {/* Bottom part: Stock + Actions (aligned bottom) */}
         <div className="mt-2 flex items-center justify-between"> {/* Align stock and actions */}
           <ProductCardStock product={product} />
-          {/* Actions might be simplified or shown on hover depending on final design */}
+          {/* Pass the product object to ProductCardActions */}
           <ProductCardActions
             product={product}
-            onAddToCart={onAddToCart}
+            onAddToCart={onAddToCart} // Pass the function that expects the product
           />
         </div>
       </div>

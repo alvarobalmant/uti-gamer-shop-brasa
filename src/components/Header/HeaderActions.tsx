@@ -1,79 +1,69 @@
-import { User, Menu, Crown } from 'lucide-react';
+import { User, ShoppingCart, Repeat } from 'lucide-react'; // Added Repeat for Trade-In
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import MobileSearchBar from './MobileSearchBar';
 import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
-import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { cn } from '@/lib/utils';
 
 interface HeaderActionsProps {
-  onCartOpen: () => void;
+  onCartOpen: () => void; // Keep for GlobalCartIcon if needed internally
   onAuthOpen: () => void;
-  onCategoriesToggle: () => void;
-  onMobileMenuToggle: () => void;
 }
 
+// **Redesign based on GameStop Header Actions**
 const HeaderActions = ({ 
-  onAuthOpen, 
-  onMobileMenuToggle 
+  onAuthOpen,
+  onCartOpen // Keep if GlobalCartIcon needs it
 }: HeaderActionsProps) => {
   const { user, isAdmin } = useAuth();
-  const { hasActiveSubscription } = useSubscriptions();
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    if (user) {
-      if (isAdmin) {
-        navigate('/admin');
-      } else {
-        onAuthOpen();
-      }
+  const handleLoginClick = () => {
+    if (user && isAdmin) {
+      navigate('/admin');
     } else {
-      onAuthOpen();
+      onAuthOpen(); // Open auth modal for login/signup or non-admin user account view
     }
   };
 
+  const handleTradeInClick = () => {
+    // TODO: Implement navigation or action for Trade-In
+    // navigate('/trade-in'); // Example navigation
+    console.log('Trade-In clicked');
+  };
+
   return (
-    <div className="flex items-center space-x-2">
-      {/* Mobile Search */}
-      <div className="lg:hidden">
-        <MobileSearchBar />
-      </div>
-
-      {/* UTI PRO Badge for subscribers */}
-      {hasActiveSubscription() && (
-        <div className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
-          <Crown className="w-3 h-3" />
-          PRO
-        </div>
-      )}
-
-      {/* User Account */}
+    <div className="flex items-center space-x-1 sm:space-x-2"> {/* Reduced spacing slightly */}
+      
+      {/* Trade-In Button (Desktop Only - Mimicking GameStop) */}
       <Button 
-        onClick={handleLogin} 
+        onClick={handleTradeInClick} 
         variant="ghost" 
-        className="hidden sm:flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
+        size="sm" // Smaller button size
+        className="hidden md:flex items-center text-xs font-medium text-foreground hover:text-primary hover:bg-secondary px-2 py-1" // Adjusted styling
       >
-        <User className="w-5 h-5" />
-        <span className="text-xs font-medium mt-1">
-          {user ? (isAdmin ? 'Admin' : 'Conta') : 'Entrar'}
-        </span>
+        <Repeat className="w-4 h-4 mr-1" />
+        Trade-In
       </Button>
 
-      {/* Global Shopping Cart */}
-      <GlobalCartIcon />
-
-      {/* Mobile Menu Toggle */}
+      {/* User Account / Sign In Button (Desktop Only) */}
       <Button 
-        onClick={onMobileMenuToggle} 
+        onClick={handleLoginClick} 
         variant="ghost" 
-        className="sm:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
+        size="sm" // Smaller button size
+        className="hidden md:flex items-center text-xs font-medium text-foreground hover:text-primary hover:bg-secondary px-2 py-1" // Adjusted styling
       >
-        <Menu className="w-5 h-5" />
-        <span className="text-xs font-medium mt-1">Mais</span>
+        <User className="w-4 h-4 mr-1" />
+        {user ? (isAdmin ? 'Admin' : 'Conta') : 'Sign In'}
       </Button>
+
+      {/* Global Shopping Cart Icon - Always visible */}
+      <GlobalCartIcon onCartOpen={onCartOpen} /> 
+
+      {/* Mobile Menu Toggle is handled outside this component now */}
     </div>
   );
 };
 
 export default HeaderActions;
+
