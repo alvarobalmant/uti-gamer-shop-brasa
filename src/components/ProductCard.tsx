@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +21,7 @@ export type { Product } from '@/hooks/useProducts';
 
 const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProps) => {
   const navigate = useNavigate();
+  const { saveCurrentPosition } = useScrollPosition();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showButton, setShowButton] = useState(false);
 
@@ -36,11 +38,15 @@ const ProductCard = ({ product, onAddToCart, getPlatformColor }: ProductCardProp
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
+    // Salvar posição atual antes de navegar
+    saveCurrentPosition();
     // Navigate to product page
     navigate(`/produto/${product.id}`);
   };
 
   const handleCardTouch = (e: React.TouchEvent) => {
+    // Salvar posição atual antes de navegar
+    saveCurrentPosition();
     // Handle touch events for mobile navigation
     navigate(`/produto/${product.id}`);
   };

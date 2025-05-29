@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,7 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const { products, loading } = useProducts();
   const { addToCart } = useCart();
-  const { restoreScrollPosition } = useScrollPosition();
+  const { saveCurrentPosition } = useScrollPosition();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = useState('');
@@ -85,13 +84,9 @@ const ProductPage = () => {
   };
 
   const handleBackClick = () => {
-    // Navigate back and let the scroll restoration handle the position
+    // Não salvar posição ao usar o botão de volta do header
+    // O navegador vai lidar com isso automaticamente
     navigate(-1);
-    
-    // Fallback: restore position for the home page after navigation
-    setTimeout(() => {
-      restoreScrollPosition('/');
-    }, 100);
   };
 
   const handleWhatsAppContact = () => {
