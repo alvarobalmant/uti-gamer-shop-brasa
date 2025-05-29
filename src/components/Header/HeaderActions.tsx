@@ -1,72 +1,79 @@
-import { User, Crown } from 'lucide-react';
+import { User, Menu, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import MobileSearchBar from './MobileSearchBar';
 import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
-import { cn } from '@/lib/utils';
-
-// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
-// Focus: Visual structure, styling, layout, responsiveness. NO logic changes.
 
 interface HeaderActionsProps {
-  onCartOpen: () => void; // Keep for GlobalCartIcon if needed internally
-  onAuthOpen: () => void; // Keep for login/account button logic
+  onCartOpen: () => void;
+  onAuthOpen: () => void;
+  onCategoriesToggle: () => void;
+  onMobileMenuToggle: () => void;
 }
 
 const HeaderActions = ({ 
   onAuthOpen, 
-  // onCartOpen might not be needed directly here if GlobalCartIcon handles its own logic
+  onMobileMenuToggle 
 }: HeaderActionsProps) => {
-  const { user, isAdmin } = useAuth(); // Keep auth logic
-  const { hasActiveSubscription } = useSubscriptions(); // Keep subscription logic
-  const navigate = useNavigate(); // Keep navigation logic
+  const { user, isAdmin } = useAuth();
+  const { hasActiveSubscription } = useSubscriptions();
+  const navigate = useNavigate();
 
-  // Keep existing login handler logic
   const handleLogin = () => {
     if (user) {
       if (isAdmin) {
         navigate('/admin');
       } else {
-        // Navigate to account page or open modal - keep existing behavior
-        navigate('/conta'); // Example: navigate to account page
-        // onAuthOpen(); // Or open modal if that's the original behavior
+        onAuthOpen();
       }
     } else {
-      onAuthOpen(); // Keep existing logic to open auth modal
+      onAuthOpen();
     }
   };
 
   return (
-    // Use flex and gap for spacing, consistent with GameStop style
-    <div className="flex items-center gap-2 sm:gap-3">
-      
-      {/* UTI PRO Badge - Simplified visual, shown only if active */}
+    <div className="flex items-center space-x-2">
+      {/* Mobile Search */}
+      <div className="lg:hidden">
+        <MobileSearchBar />
+      </div>
+
+      {/* UTI PRO Badge for subscribers */}
       {hasActiveSubscription() && (
-        <div className="hidden sm:flex items-center gap-1 bg-yellow-400 text-yellow-900 px-2.5 py-1 rounded-full text-xs font-bold">
-          <Crown className="w-3.5 h-3.5" />
-          <span>PRO</span>
+        <div className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
+          <Crown className="w-3 h-3" />
+          PRO
         </div>
       )}
 
-      {/* User Account Button - Consistent icon style */}
+      {/* User Account */}
       <Button 
-        onClick={handleLogin} // Keep existing logic
+        onClick={handleLogin} 
         variant="ghost" 
-        size="icon" 
-        className="text-gray-700 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
-        aria-label={user ? (isAdmin ? 'Painel Admin' : 'Minha Conta') : 'Entrar ou Cadastrar'}
+        className="hidden sm:flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
       >
-        <User className="h-5 w-5 sm:h-6 sm:w-6" />
+        <User className="w-5 h-5" />
+        <span className="text-xs font-medium mt-1">
+          {user ? (isAdmin ? 'Admin' : 'Conta') : 'Entrar'}
+        </span>
       </Button>
 
-      {/* Global Shopping Cart Icon - Assuming it handles its own logic */}
+      {/* Global Shopping Cart */}
       <GlobalCartIcon />
 
-      {/* Mobile Menu Toggle was moved to MainHeader.tsx - Removed from here */}
+      {/* Mobile Menu Toggle */}
+      <Button 
+        onClick={onMobileMenuToggle} 
+        variant="ghost" 
+        className="sm:hidden flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200"
+      >
+        <Menu className="w-5 h-5" />
+        <span className="text-xs font-medium mt-1">Mais</span>
+      </Button>
     </div>
   );
 };
 
 export default HeaderActions;
-
