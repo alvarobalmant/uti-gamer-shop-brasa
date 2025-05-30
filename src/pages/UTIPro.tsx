@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ const staggerContainer = {
 const UTIPro = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { plans, userSubscription, loading, createSubscription, cancelSubscription, hasActiveSubscription } = useSubscriptions();
+  const { plans, userSubscription, usuario, loading, createSubscription, cancelSubscription, hasActiveSubscription } = useSubscriptions();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
 
@@ -414,7 +415,7 @@ const UTIPro = () => {
         )}
 
         {/* Subscription Management Section */}
-        {hasActiveSubscription() && userSubscription && (
+        {hasActiveSubscription() && usuario && (
           <section className="py-12 md:py-20 bg-gray-900">
             <div className="container-professional max-w-2xl mx-auto">
               <motion.h2 
@@ -435,16 +436,16 @@ const UTIPro = () => {
               >
                 <div className="mb-4">
                   <p className="text-sm text-white/60">Plano Atual</p>
-                  <p className="text-lg font-semibold text-white">{userSubscription.plan_name}</p>
+                  <p className="text-lg font-semibold text-white">{usuario.plano || 'UTI PRO'}</p>
                 </div>
                 <div className="mb-6">
                   <p className="text-sm text-white/60">Status</p>
                   <p className={cn(
                       "text-lg font-semibold",
-                      userSubscription.status === 'active' ? 'text-green-400' : 'text-yellow-400'
+                      usuario.status_assinatura === 'Ativo' ? 'text-green-400' : 'text-yellow-400'
                     )}
                   >
-                    {userSubscription.status === 'active' ? 'Ativa' : 'Pendente'}
+                    {usuario.status_assinatura === 'Ativo' ? 'Ativa' : 'Pendente'}
                   </p>
                 </div>
                 <Button 
@@ -504,10 +505,10 @@ const UTIPro = () => {
 
       <Footer />
 
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />} 
+      {/* Fixed: Added isOpen prop to AuthModal */}
+      {showAuthModal && <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />} 
     </div>
   );
 };
 
 export default UTIPro;
-

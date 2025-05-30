@@ -28,6 +28,7 @@ export interface ActiveSubscription {
   plan_name: string;
   discount_percentage: number;
   end_date: string;
+  status?: 'active' | 'expired' | 'cancelled'; // Fixed: Added status property
 }
 
 export interface Usuario {

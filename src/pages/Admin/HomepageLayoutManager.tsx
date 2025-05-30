@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -85,6 +86,7 @@ const AdminSections: React.FC = () => {
   const handleSaveChanges = async () => {
     const updates = layoutItems.map(item => ({
       id: item.id,
+      section_key: item.section_key, // Fixed: Include section_key as required by LayoutUpdatePayload
       display_order: item.display_order,
       is_visible: item.is_visible,
     }));
@@ -159,4 +161,3 @@ const AdminSections: React.FC = () => {
 };
 
 export default AdminSections;
-
