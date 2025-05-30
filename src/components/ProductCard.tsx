@@ -1,74 +1,39 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Product } from '@/hooks/useProducts';
-import { useScrollPosition } from '@/hooks/useScrollPosition';
-import { cn } from '@/lib/utils';
-import { Card } from '@/components/ui/card';
 
-// Import subcomponents
+import React from 'react';
+import { Product } from '@/hooks/useProducts';
 import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
-import ProductCardProPrice from './ProductCard/ProductCardProPrice';
+import ProductCardPrice from './ProductCard/ProductCardPrice';
 import ProductCardStock from './ProductCard/ProductCardStock';
 import ProductCardActions from './ProductCard/ProductCardActions';
+import { Card, CardContent } from '@/components/ui/card';
 
-export type { Product } from '@/hooks/useProducts';
-
-interface ProductCardProps {
+export interface ProductCardProps {
   product: Product;
-  // Update the prop type to expect the product object
   onAddToCart: (product: Product) => void;
 }
 
-const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
-  const navigate = useNavigate();
-  const { saveScrollPosition } = useScrollPosition();
-
-  const handleCardNavigation = () => {
-    saveScrollPosition();
-    navigate(`/produto/${product.id}`);
-  };
-
-  // **Radical Redesign based on GameStop reference and user feedback**
+const ProductCard: React.FC<ProductCardProps> = ({ 
+  product, 
+  onAddToCart 
+}) => {
   return (
-    <Card
-      className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-card shadow-sm", // Even lighter border (gray-100), consistent radius
-        "transition-all duration-300 ease-in-out hover:shadow-md hover:-translate-y-1", // Subtle shadow and lift hover effect
-        "cursor-pointer",
-        "w-full" // Ensure card takes full width in its container (for carousel/grid)
-        // Removed fixed width/height to allow flexibility in carousel/grid
-      )}
-      onClick={handleCardNavigation}
-    >
-      {/* Image Section - Takes most space */}
-      <ProductCardImage
-        product={product}
-      />
-
-      {/* Content Section - Minimalist, below image */}
-      <div className="flex flex-1 flex-col justify-between p-3"> {/* Use padding, justify-between */}
-        {/* Top part: Info + Price */}
-        <div>
-          {/* Ensure ProductCardInfo uses appropriate text sizes/styles */}
+    <Card className="group overflow-hidden border border-border/60 bg-card hover:shadow-lg transition-all duration-300 hover:border-primary/40">
+      <CardContent className="p-0">
+        <ProductCardImage product={product} />
+        
+        <div className="p-4 space-y-3">
           <ProductCardInfo product={product} />
-          {/* Ensure ProductCardProPrice highlights the PRO price effectively */}
-          <ProductCardProPrice product={product} />
-        </div>
-
-        {/* Bottom part: Stock + Actions (aligned bottom) */}
-        <div className="mt-2 flex items-center justify-between"> {/* Align stock and actions */}
+          <ProductCardPrice product={product} />
           <ProductCardStock product={product} />
-          {/* Pass the product object to ProductCardActions */}
-          <ProductCardActions
-            product={product}
-            onAddToCart={onAddToCart} // Pass the function that expects the product
+          <ProductCardActions 
+            product={product} 
+            onAddToCart={onAddToCart}
           />
         </div>
-      </div>
+      </CardContent>
     </Card>
   );
 };
 
 export default ProductCard;
-

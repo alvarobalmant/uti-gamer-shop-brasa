@@ -1,159 +1,214 @@
-
-import { useState, useCallback, useEffect } from 'react';
-import { Product } from './useProducts';
-import { CartItem } from '@/types/cart';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/hooks/useProducts';
+import { v4 as uuidv4 } from 'uuid';
+
+export interface CartItem {
+  id: string;
+  product: Product;
+  quantity: number;
+  size?: string;
+  color?: string;
+  created_at: string;
+}
 
 export const useNewCart = () => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
   const { user } = useAuth();
+  const { toast } = useToast();
 
-  // Carregar carrinho do localStorage na inicialização
   useEffect(() => {
-    const loadCart = () => {
-      try {
-        const saved = localStorage.getItem('uti-games-cart');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          console.log('Carregando carrinho do localStorage:', parsed.length, 'items');
-          setCart(Array.isArray(parsed) ? parsed : []);
+    const fetchCartItems = async () => {
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('cart_items')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error('Error fetching cart items:', error);
+            toast({
+              title: "Erro ao carregar carrinho",
+              description: error.message,
+              variant: "destructive",
+            });
+          } else {
+            setItems(data || []);
+          }
+        } catch (error: any) {
+          console.error('Unexpected error fetching cart items:', error);
+          toast({
+            title: "Erro inesperado ao carregar carrinho",
+            description: error.message,
+            variant: "destructive",
+          });
         }
-      } catch (error) {
-        console.error('Erro ao carregar carrinho:', error);
-        setCart([]);
+      } else {
+        setItems([]);
       }
     };
-    
-    loadCart();
-  }, []);
 
-  // Salvar carrinho no localStorage sempre que mudar
-  useEffect(() => {
-    if (cart.length >= 0) {
-      try {
-        localStorage.setItem('uti-games-cart', JSON.stringify(cart));
-        console.log('Carrinho salvo no localStorage:', cart.length, 'items');
-      } catch (error) {
-        console.error('Erro ao salvar carrinho:', error);
+    fetchCartItems();
+  }, [user, toast]);
+
+  const addToCart = async (product: Product, size?: string, color?: string) => {
+    setLoading(true);
+    try {
+      if (!user) {
+        toast({
+          title: "Você precisa estar logado para adicionar itens ao carrinho.",
+        });
+        return;
       }
-    }
-  }, [cart]);
 
-  const generateItemId = useCallback((product: Product, size?: string, color?: string): string => {
-    return `${product.id}-${size || 'default'}-${color || 'default'}`;
-  }, []);
+      const newItem = {
+        id: uuidv4(),
+        product_id: product.id,
+        user_id: user.id,
+        quantity: 1,
+        size: size || null,
+        color: color || null,
+      };
 
-  const addToCart = useCallback((product: Product, size?: string, color?: string) => {
-    console.log('addToCart chamado para:', product.name, 'size:', size, 'color:', color);
-    
-    const itemId = generateItemId(product, size, color);
-    
-    setCart(prev => {
-      const existingItemIndex = prev.findIndex(item => item.id === itemId);
-      
-      if (existingItemIndex >= 0) {
-        // Atualizar item existente
-        const newCart = [...prev];
-        newCart[existingItemIndex] = {
-          ...newCart[existingItemIndex],
-          quantity: newCart[existingItemIndex].quantity + 1
-        };
-        console.log('Item existente atualizado. Nova quantidade:', newCart[existingItemIndex].quantity);
-        return newCart;
+      const { data, error } = await supabase
+        .from('cart_items')
+        .insert([{
+          id: newItem.id,
+          product_id: newItem.product_id,
+          user_id: newItem.user_id,
+          quantity: newItem.quantity,
+          size: newItem.size,
+          color: newItem.color,
+        }])
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Error adding to cart:', error);
+        toast({
+          title: "Erro ao adicionar ao carrinho",
+          description: error.message,
+          variant: "destructive",
+        });
       } else {
-        // Adicionar novo item
-        const newItem: CartItem = {
-          id: itemId,
-          product,
-          size,
-          color,
-          quantity: 1,
-          addedAt: new Date()
-        };
-        console.log('Novo item adicionado:', newItem);
-        return [...prev, newItem];
+        setItems(prevItems => [...prevItems, {
+          id: data.id,
+          product: product,
+          quantity: data.quantity,
+          size: data.size,
+          color: data.color,
+          created_at: data.created_at,
+        }]);
+        toast({
+          title: "Produto adicionado ao carrinho!",
+        });
       }
-    });
-
-    toast({
-      title: "✅ Produto adicionado!",
-      description: `${product.name} foi adicionado ao carrinho`,
-      duration: 2000,
-      className: "bg-green-50 border-green-200 text-green-800",
-    });
-  }, [generateItemId, toast]);
-
-  const removeFromCart = useCallback((itemId: string) => {
-    console.log('removeFromCart chamado para:', itemId);
-    setCart(prev => {
-      const newCart = prev.filter(item => item.id !== itemId);
-      console.log('Item removido. Carrinho agora tem:', newCart.length, 'items');
-      return newCart;
-    });
-  }, []);
-
-  const updateQuantity = useCallback((productId: string, size: string | undefined, color: string | undefined, quantity: number) => {
-    const itemId = `${productId}-${size || 'default'}-${color || 'default'}`;
-    console.log('updateQuantity chamado para:', itemId, 'nova quantidade:', quantity);
-    
-    if (quantity <= 0) {
-      removeFromCart(itemId);
-      return;
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setCart(prev => {
-      const newCart = prev.map(item =>
-        item.id === itemId ? { ...item, quantity } : item
-      );
-      console.log('Quantidade atualizada para item:', itemId, 'nova quantidade:', quantity);
-      return newCart;
-    });
-  }, [removeFromCart]);
+  const removeFromCart = async (itemId: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('id', itemId);
 
-  const clearCart = useCallback(() => {
-    console.log('clearCart chamado');
-    setCart([]);
-  }, []);
+      if (error) {
+        console.error('Error removing from cart:', error);
+        toast({
+          title: "Erro ao remover do carrinho",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        setItems(prevItems => prevItems.filter(item => item.id !== itemId));
+        toast({
+          title: "Produto removido do carrinho!",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const getCartTotal = useCallback(() => {
-    const total = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-    console.log('getCartTotal:', total);
-    return total;
-  }, [cart]);
+  const updateQuantity = async (itemId: string, quantity: number) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('cart_items')
+        .update({ quantity })
+        .eq('id', itemId)
+        .select('*')
+        .single();
 
-  const getCartItemsCount = useCallback(() => {
-    const count = cart.reduce((total, item) => total + item.quantity, 0);
-    console.log('getCartItemsCount:', count);
-    return count;
-  }, [cart]);
+      if (error) {
+        console.error('Error updating quantity:', error);
+        toast({
+          title: "Erro ao atualizar quantidade",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        setItems(prevItems =>
+          prevItems.map(item =>
+            item.id === itemId ? { ...item, quantity: data.quantity } : item
+          )
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const sendToWhatsApp = useCallback(() => {
-    if (cart.length === 0) return;
+  const clearCart = async () => {
+    setLoading(true);
+    try {
+      if (!user) {
+        toast({
+          title: "Você precisa estar logado para limpar o carrinho.",
+        });
+        return;
+      }
 
-    const itemsList = cart.map(item => 
-      `• ${item.product.name} (${item.size || 'Padrão'}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
-    ).join('\n');
-    
-    const total = getCartTotal();
-    const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  }, [cart, getCartTotal]);
+      const { error } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error clearing cart:', error);
+        toast({
+          title: "Erro ao limpar o carrinho",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        setItems([]);
+        toast({
+          title: "Carrinho limpo com sucesso!",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
-    cart,
+    items,
+    itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
+    total: items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
     loading,
-    error: null,
     addToCart,
     removeFromCart,
     updateQuantity,
     clearCart,
-    getCartTotal,
-    getCartItemsCount,
-    sendToWhatsApp,
   };
 };

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DesktopSearchBar from './DesktopSearchBar';
@@ -59,7 +60,6 @@ const MainHeader = ({
         {/* Ensure HeaderActions itself provides adequate spacing for its internal items */} 
         <div className="flex items-center justify-end flex-shrink-0">
           <HeaderActions
-            onCartOpen={onCartOpen}
             onAuthOpen={onAuthOpen}
           />
         </div>
@@ -75,4 +75,3 @@ const MainHeader = ({
 };
 
 export default MainHeader;
-

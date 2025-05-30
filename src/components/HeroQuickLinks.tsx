@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -6,7 +7,7 @@ import {
   Headphones, 
   Gift, 
   Puzzle, 
-  MousePointerSquare,
+  MousePointer,
   Flame, // Icon for Ofertas
   Package // Icon for Colecionáveis
 } from 'lucide-react';
@@ -52,7 +53,7 @@ const HeroQuickLinks = () => {
     },
     {
       id: 'acessorios',
-      icon: Headphones, // Or MousePointerSquare
+      icon: Headphones, // Or MousePointer
       label: 'Acessórios',
       path: '/categoria/acessorios',
     },
@@ -114,4 +115,3 @@ const HeroQuickLinks = () => {
 };
 
 export default HeroQuickLinks;
-

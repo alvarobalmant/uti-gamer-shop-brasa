@@ -14,6 +14,13 @@ export interface Product {
   colors?: string[];
   stock?: number;
   tags?: { id: string; name: string; }[];
+  // Added missing properties for pro pricing and conditions
+  pro_discount_percent?: number;
+  pro_price?: number;
+  list_price?: number;
+  new_price?: number;
+  digital_price?: number;
+  category_id?: string;
 }
 
 export const useProducts = () => {
