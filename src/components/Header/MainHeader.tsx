@@ -14,7 +14,6 @@ interface MainHeaderProps {
   className?: string;
 }
 
-// **Redesign based on GameStop Header structure**
 const MainHeader = ({ 
   onCartOpen, 
   onAuthOpen, 
@@ -24,41 +23,41 @@ const MainHeader = ({
   const navigate = useNavigate();
 
   return (
-    <div className={cn("bg-background", className)}> {/* Removed sticky/border, handled by ProfessionalHeader */}
+    <div className={cn("bg-background border-b", className)}> {/* Added border-b for visual separation */} 
       {/* Top Row: Mobile Menu, Logo, Actions */}
-      <div className="container flex h-16 items-center justify-between px-4"> 
+      {/* Increased height for mobile, adjusted padding */}
+      <div className="container flex h-[72px] items-center justify-between px-4 gap-2"> 
         {/* Left side: Mobile Menu Toggle (visible on small screens) + Logo */}
-        <div className="flex items-center">
+        <div className="flex items-center flex-shrink-0">
           {/* Mobile Menu Toggle Button - visible only on md and below */}
           <Button 
             variant="ghost" 
             size="icon" 
-            className="mr-1 md:hidden" // Reduced margin
+            className="mr-2 md:hidden p-2 h-10 w-10" // Increased size and margin for easier tap
             onClick={onMobileMenuToggle}
             aria-label="Abrir menu"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-6 w-6" /> {/* Icon size maintained, button size increased */} 
           </Button>
 
           {/* Logo - Link to home */}
-          <a href="/" className="flex items-center flex-shrink-0 ml-1" aria-label="Página Inicial UTI DOS GAMES"> {/* Added margin */}
+          <a href="/" className="flex items-center" aria-label="Página Inicial UTI DOS GAMES">
             <img 
               src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" // Ensure this path is correct
               alt="UTI DOS GAMES Logo" 
-              className="h-9 w-auto" // Slightly reduced height for mobile
+              className="h-10 w-auto" // Increased height slightly
             />
-            {/* Hide text logo on mobile */}
-            {/* <span className="ml-2 font-bold text-lg hidden sm:inline-block">UTI DOS GAMES</span> */}
           </a>
         </div>
 
         {/* Center: Desktop Search Bar (visible on md and up) */}
-        <div className="flex-1 justify-center px-4 hidden md:flex max-w-xl"> {/* Added max-width */}
+        <div className="flex-1 justify-center px-4 hidden md:flex max-w-xl">
            <DesktopSearchBar />
         </div>
 
         {/* Right side: Header Actions (Cart, Login, etc.) */}
-        <div className="flex items-center justify-end">
+        {/* Ensure HeaderActions itself provides adequate spacing for its internal items */} 
+        <div className="flex items-center justify-end flex-shrink-0">
           <HeaderActions
             onCartOpen={onCartOpen}
             onAuthOpen={onAuthOpen}
@@ -67,7 +66,8 @@ const MainHeader = ({
       </div>
 
       {/* Bottom Row: Mobile Search Bar (visible on small screens) */}
-      <div className="container md:hidden pb-3 px-4 border-t border-border/80"> {/* Added border */}
+      {/* Removed border-t, added padding-bottom */} 
+      <div className="container md:hidden pb-4 px-4 pt-1"> 
          <MobileSearchBar />
       </div>
     </div>
