@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
-import { Category } from './categories';
+import { Category, categories } from './categories'; // Add categories import
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import {
@@ -190,4 +190,3 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
 };
 
 export default MobileMenu;
-

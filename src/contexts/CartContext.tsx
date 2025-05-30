@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useNewCart } from '@/hooks/useNewCart';
 import { Product } from '@/hooks/useProducts';
@@ -5,6 +6,7 @@ import { CartItem } from '@/types/cart';
 
 export interface CartContextType {
   cart: CartItem[];
+  items: CartItem[]; // Add items alias for backward compatibility
   loading: boolean;
   error: null;
   addToCart: (product: Product, size?: string, color?: string) => void;
@@ -36,6 +38,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <CartContext.Provider
       value={{
         cart,
+        items: cart, // Provide items as alias for cart
         loading,
         error,
         addToCart,
