@@ -1,38 +1,29 @@
+
 import React, { useEffect, useState } from 'react';
 import { Product, useProducts } from '@/hooks/useProducts';
-import ProductCard from '@/components/ProductCard'; // Use the redesigned ProductCard
+import ProductCard from '@/components/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCart } from '@/contexts/CartContext';
 
 interface RelatedProductsProps {
   product: Product;
 }
 
-// **New Component - Basic Structure based on GameStop reference**
 const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
   const { products: allProducts, loading } = useProducts();
+  const { addToCart } = useCart();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     if (allProducts.length > 0 && product) {
       // Simple related logic: find products with at least one common tag (excluding self)
-      // More sophisticated logic could be based on category, brand, etc.
       const currentProductTags = product.tags?.map(t => t.id) || [];
       const related = allProducts.filter(p => 
         p.id !== product.id && 
         p.tags?.some(tag => currentProductTags.includes(tag.id))
-      ).slice(0, 4); // Limit to 4 related products for display
+      ).slice(0, 4);
       
-      // If not enough tag-related products, fill with others from the same category (if category exists)
-      if (related.length < 4 && product.category_id) {
-          const categoryProducts = allProducts.filter(p => 
-              p.id !== product.id && 
-              p.category_id === product.category_id && 
-              !related.some(r => r.id === p.id) // Avoid duplicates
-          );
-          related.push(...categoryProducts.slice(0, 4 - related.length));
-      }
-
-      // If still not enough, fill with any other products (excluding self)
+      // If not enough tag-related products, fill with others (excluding self)
       if (related.length < 4) {
           const otherProducts = allProducts.filter(p => 
               p.id !== product.id && 
@@ -44,6 +35,10 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
       setRelatedProducts(related);
     }
   }, [allProducts, product]);
+
+  const handleAddToCart = (product: Product) => {
+    addToCart(product);
+  };
 
   return (
     <div>
@@ -66,7 +61,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
             <ProductCard 
               key={relatedProduct.id} 
               product={relatedProduct} 
-              // Pass necessary props like onAddToCart if needed, or handle within ProductCard
+              onAddToCart={handleAddToCart}
             />
           ))}
         </div>
@@ -78,4 +73,3 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
 };
 
 export default RelatedProducts;
-

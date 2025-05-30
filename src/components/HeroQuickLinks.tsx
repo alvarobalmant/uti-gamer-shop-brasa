@@ -6,12 +6,12 @@ import {
   Headphones, 
   Gift, 
   Puzzle, 
-  MousePointerSquare,
+  MousePointer,
   Flame, // Icon for Ofertas
   Package // Icon for Colecionáveis
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card'; // Use shadcn Card
+import { Card, CardContent } from '@/components/ui/card';
 
 // Define the structure for a quick link
 interface QuickLinkItem {
@@ -114,4 +114,3 @@ const HeroQuickLinks = () => {
 };
 
 export default HeroQuickLinks;
-

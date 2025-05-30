@@ -53,25 +53,6 @@ const CategoryPage = () => {
     );
   });
 
-  const getPlatformColor = (product: Product) => {
-    // Verificar tags para determinar a cor
-    const tags = product.tags?.map(tag => tag.name.toLowerCase()) || [];
-    
-    if (tags.some(tag => tag.includes('playstation'))) {
-      return 'bg-blue-600';
-    }
-    if (tags.some(tag => tag.includes('xbox'))) {
-      return 'bg-green-600';
-    }
-    if (tags.some(tag => tag.includes('nintendo'))) {
-      return 'bg-red-500';
-    }
-    if (tags.some(tag => tag.includes('pc'))) {
-      return 'bg-orange-600';
-    }
-    return 'bg-gray-600';
-  };
-
   const handleAddToCart = (product: Product) => {
     addToCart(product);
   };
@@ -140,7 +121,6 @@ const CategoryPage = () => {
                   key={product.id}
                   product={product}
                   onAddToCart={handleAddToCart}
-                  getPlatformColor={() => getPlatformColor(product)}
                 />
               ))}
             </div>
