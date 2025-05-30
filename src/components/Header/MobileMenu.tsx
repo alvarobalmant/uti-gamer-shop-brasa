@@ -163,7 +163,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     key={category.id}
                     onClick={() => handleNavigation(category.path)}
                     variant="ghost"
-                    className="w-full justify-start h-12 text-base px-3 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-md font-medium"
+                    className="w-full justify-start h-12 text-base px-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 md:hover:text-red-600 md:hover:bg-red-50 rounded-md font-medium"
                   >
                     {category.name}
                   </Button>
@@ -171,6 +171,8 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
               </div>
             </div>
 
+            {/* Add padding at the bottom for scroll space */}
+            <div className="h-16"></div>
           </div>
         </ScrollArea>
       </SheetContent>

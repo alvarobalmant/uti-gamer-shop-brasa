@@ -141,7 +141,7 @@ const HeroBannerCarousel = () => {
                     <div className="absolute inset-0 z-10 flex items-center">
                       <div className="container mx-auto w-full">
                         <div className={cn(
-                            "max-w-lg md:max-w-xl lg:max-w-2xl animate-fade-in-up",
+                            "max-w-lg md:max-w-xl lg:max-w-2xl md:animate-fade-in-up", // Apply animation only on md+ screens
                             "text-left" 
                         )}>
                           {banner.title && (
