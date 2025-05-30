@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, X, Trash2, Plus, Minus } from 'lucide-react';
@@ -34,7 +35,11 @@ const Cart = ({ showCart, setShowCart }: CartSheetProps) => {
 
   const handleQuantityChange = (itemId: string, currentQuantity: number, change: number) => {
     const newQuantity = Math.max(0, currentQuantity + change);
-    updateQuantity(itemId, newQuantity);
+    // Find the cart item to get the product, size, and color
+    const cartItem = cart.find(item => item.id === itemId);
+    if (cartItem) {
+      updateQuantity(cartItem.product.id, cartItem.size || '', cartItem.color || '', newQuantity);
+    }
   };
 
   const handleRemoveItem = (itemId: string) => {
@@ -235,4 +240,3 @@ const Cart = ({ showCart, setShowCart }: CartSheetProps) => {
 };
 
 export default Cart;
-

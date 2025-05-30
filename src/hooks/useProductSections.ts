@@ -149,7 +149,16 @@ export const useProductSections = () => {
 
       // Refetch sections to update the list
       await fetchSections();
-      return { ...newSectionData, items: sectionInput.items.map((item, index) => ({ ...item, section_id: newSectionId!, display_order: index })) }; // Return optimistic data
+      
+      // Return the created section with properly mapped items
+      const mappedItems: ProductSectionItem[] = sectionInput.items.map((item, index) => ({
+        section_id: newSectionId!,
+        item_type: item.type,
+        item_id: item.id,
+        display_order: index
+      }));
+      
+      return { ...newSectionData, items: mappedItems };
 
     } catch (err: any) {
       console.error('Error creating product section:', err);

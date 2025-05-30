@@ -13,9 +13,10 @@ export interface HomepageLayoutItem {
   title?: string; // Example: Fetched from product_sections or hardcoded for fixed sections
 }
 
-// Define the structure for updating layout items
+// Define the structure for updating layout items - include section_key for upsert
 interface LayoutUpdatePayload {
   id: number;
+  section_key: string; // Required for upsert
   display_order: number;
   is_visible: boolean;
 }

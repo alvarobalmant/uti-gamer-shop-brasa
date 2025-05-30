@@ -136,13 +136,10 @@ const Index = () => {
       {/* Footer */}
       <Footer />
 
-      {/* Cart Component */}
+      {/* Cart Component - Fixed props to match CartSheetProps interface */}
       <Cart
-        cart={items}
         showCart={showCart}
         setShowCart={setShowCart}
-        updateQuantity={updateQuantity}
-        sendToWhatsApp={sendToWhatsApp}
       />
 
       {/* Auth Modal */}
