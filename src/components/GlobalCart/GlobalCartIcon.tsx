@@ -1,36 +1,37 @@
 
-import { useState } from 'react';
+import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
-import GlobalCartDropdown from './GlobalCartDropdown';
+import { cn } from '@/lib/utils';
 
-const GlobalCartIcon = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { getCartItemsCount, isLoading } = useCart();
+interface GlobalCartIconProps {
+  onCartOpen: () => void;
+}
 
-  const cartItemsCount = getCartItemsCount();
+const GlobalCartIcon: React.FC<GlobalCartIconProps> = ({ onCartOpen }) => {
+  const { getCartItemsCount } = useCart();
+  const itemCount = getCartItemsCount();
 
   return (
-    <div className="relative">
-      <Button 
-        onClick={() => setIsOpen(!isOpen)} 
-        variant="ghost" 
-        className="flex flex-col items-center p-3 text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-lg transition-all duration-200 relative"
-        disabled={isLoading}
-      >
-        <ShoppingCart className={`w-5 h-5 ${isLoading ? 'animate-pulse' : ''}`} />
-        <span className="text-xs font-medium mt-1">Carrinho</span>
-        {cartItemsCount > 0 && (
-          <Badge className="absolute -top-1 -right-1 bg-uti-red text-white text-xs px-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
-            {cartItemsCount}
-          </Badge>
-        )}
-      </Button>
-
-      <GlobalCartDropdown isOpen={isOpen} onClose={() => setIsOpen(false)} />
-    </div>
+    <Button
+      onClick={onCartOpen}
+      variant="ghost"
+      size="sm"
+      className="relative flex items-center text-xs font-medium text-foreground hover:text-primary hover:bg-secondary px-2 py-1"
+    >
+      <ShoppingCart className="w-4 h-4 mr-1" />
+      <span className="hidden sm:inline">Carrinho</span>
+      
+      {itemCount > 0 && (
+        <span className={cn(
+          "absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full",
+          "bg-uti-red text-primary-foreground text-[10px] font-bold"
+        )}>
+          {itemCount > 99 ? '99+' : itemCount}
+        </span>
+      )}
+    </Button>
   );
 };
 

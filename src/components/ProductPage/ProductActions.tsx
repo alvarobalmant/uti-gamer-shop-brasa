@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,11 +7,11 @@ import { cn } from '@/lib/utils';
 
 interface ProductActionsProps {
   product: Product;
+  quantity?: number;
+  selectedCondition?: 'new' | 'pre-owned' | 'digital';
   onAddToCart: () => void;
-  isLoading: boolean; // To show loading state on button
-  // Add wishlist props if needed
-  // onAddToWishlist: () => void;
-  // isWishlisted: boolean;
+  onWhatsAppContact?: () => void;
+  isLoading?: boolean;
 }
 
 // **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**

@@ -1,10 +1,11 @@
+
 import { useEffect } from 'react';
 import { X, User, Crown, Home, Grid, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
-import { categories } from './categories'; // Assuming this contains { id: string, name: string, path: string }
+import { Category } from './categories';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import {
@@ -19,6 +20,8 @@ interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
   onAuthOpen: () => void;
+  categories: Category[];
+  onCategoryClick: (category: Category) => void;
 }
 
 // Rebuilding based on reference image image(1).png and user feedback

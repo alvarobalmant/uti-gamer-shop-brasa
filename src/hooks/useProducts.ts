@@ -8,11 +8,17 @@ export interface Product {
   name: string;
   description?: string;
   price: number;
+  list_price?: number;
+  pro_price?: number;
+  pro_discount_percent?: number;
+  new_price?: number;
+  digital_price?: number;
   image: string;
   additional_images?: string[];
   sizes?: string[];
   colors?: string[];
   stock?: number;
+  category_id?: string;
   tags?: { id: string; name: string; }[];
 }
 
