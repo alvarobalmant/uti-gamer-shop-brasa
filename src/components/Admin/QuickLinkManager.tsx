@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useQuickLinks, QuickLink } from '@/hooks/useQuickLinks';
 import { Button } from '@/components/ui/button';
@@ -141,8 +142,6 @@ export const QuickLinkManager = () => {
       } else {
         updatedLink = await addQuickLink(formData);
       }
-      // Update local state immediately if needed, or rely on refetch
-      // fetchAllQuickLinksForAdmin(); // Refetch after successful operation
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
@@ -153,7 +152,6 @@ export const QuickLinkManager = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir este link rápido?')) {
       await deleteQuickLink(id);
-      // fetchAllQuickLinksForAdmin(); // Refetch after successful operation
     }
   };
 
@@ -251,17 +249,12 @@ export const QuickLinkManager = () => {
                     onImageUploaded={(url) => setFormData(prev => ({ ...prev, icon_url: url }))}
                     currentImage={formData.icon_url}
                     label="Ícone (SVG/PNG) *"
-                    folder="quick-link-icons" // Use the dedicated bucket
+                    folder="quick-link-icons"
                   />
                   {!formData.icon_url && editingLink?.icon_url && (
                      <p className="text-xs text-muted-foreground">Ícone atual: {editingLink.icon_url}</p>
                   )}
                 </div>
-                {/* Position is handled by drag-and-drop, but could be an input */}
-                {/* <div className="space-y-1">
-                  <Label htmlFor="position">Posição</Label>
-                  <Input id="position" type="number" min="1" value={formData.position} onChange={(e) => setFormData(prev => ({ ...prev, position: parseInt(e.target.value) || 1 }))} />
-                </div> */}
                 <div className="flex items-center space-x-2">
                   <Switch id="is_active" checked={formData.is_active} onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))} />
                   <Label htmlFor="is_active">Ativo</Label>
@@ -334,4 +327,3 @@ export const QuickLinkManager = () => {
     </Card>
   );
 };
-
