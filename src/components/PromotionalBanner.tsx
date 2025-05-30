@@ -51,15 +51,14 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
           <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start">
             <Button 
               variant="outline" 
-              size="xs" // Reduced button size on mobile
+              size="xs"
               className={cn(
                 "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
-                "text-xs", // Reduced text size on mobile
                 textColor
               )}
             >
               {buttonText}
-              <ArrowRight className="ml-1.5 h-3 w-3" /> {/* Adjusted icon size slightly */}
+              <ArrowRight className="ml-1.5 h-3 w-3" />
             </Button>
           </a>
         </div>
@@ -86,4 +85,3 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
 };
 
 export default PromotionalBanner;
-
