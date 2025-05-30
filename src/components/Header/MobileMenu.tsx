@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { categories } from './categories';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 interface MobileMenuProps {
@@ -62,46 +61,43 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
     onClose();
   };
 
-  // Render even when closed for smooth transitions
+  // Don't render anything when closed
+  if (!isOpen) return null;
+
   return (
-    <div 
-      className={cn(
-        "fixed inset-0 z-[100] md:hidden transition-all duration-300 ease-in-out",
-        isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-      )}
-    >
+    <div className="fixed inset-0 z-[100] md:hidden">
       {/* Full screen backdrop */}
       <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm" 
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
         onClick={onClose} 
         aria-hidden="true"
       />
       
-      {/* Menu Panel - Full height, slides from left */}
+      {/* Menu Panel - Takes up most of the screen */}
       <div 
-        className={cn(
-          "absolute top-0 left-0 h-full w-full max-w-sm bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out overflow-hidden",
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        )}
+        className="absolute inset-x-4 inset-y-8 bg-white shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300"
         role="dialog"
         aria-modal="true"
         aria-labelledby="mobile-menu-title"
       >
         {/* Header - Fixed at top */}
-        <div className="flex items-center justify-between p-4 border-b bg-white flex-shrink-0 min-h-[64px]">
+        <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-red-600 to-red-700 text-white">
           <div className="flex items-center gap-3">
             <img 
               src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
               alt="UTI DOS GAMES Logo" 
-              className="h-8 w-auto"
+              className="h-10 w-auto"
             />
-            <span id="mobile-menu-title" className="font-bold text-lg text-gray-900">Menu</span>
+            <div>
+              <h2 id="mobile-menu-title" className="font-bold text-xl">UTI DOS GAMES</h2>
+              <p className="text-red-100 text-sm">Menu Principal</p>
+            </div>
           </div>
           <Button 
             onClick={onClose} 
             variant="ghost" 
             size="icon" 
-            className="text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10"
+            className="text-white hover:text-red-200 hover:bg-red-800/50 rounded-full w-12 h-12"
           >
             <X className="w-6 h-6" />
             <span className="sr-only">Fechar menu</span>
@@ -109,77 +105,102 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
         </div>
 
         {/* Scrollable Content - Takes remaining space */}
-        <div className="flex-1 overflow-y-auto bg-white">
-          <div className="p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-8">
             {/* User Section */}
-            <div className="border-b pb-4">
+            <div className="bg-gray-50 rounded-xl p-6 border">
               {user ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-gray-800 truncate">{user.email}</span>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+                      <User className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-800 text-lg">Olá!</p>
+                      <p className="text-gray-600 text-sm truncate">{user.email}</p>
+                    </div>
                   </div>
                   {hasActiveSubscription() && (
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 rounded-lg p-2">
-                      <Crown className="w-5 h-5 text-yellow-600" />
-                      <span className="text-sm font-bold text-yellow-800">Membro UTI PRO</span>
+                    <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 rounded-xl p-4">
+                      <Crown className="w-6 h-6 text-yellow-600" />
+                      <div>
+                        <p className="font-bold text-yellow-800">Membro UTI PRO</p>
+                        <p className="text-xs text-yellow-700">Acesso a benefícios exclusivos</p>
+                      </div>
                     </div>
                   )}
                   <Button
                     onClick={handleAuthClick}
                     variant="outline"
-                    className="w-full h-12 text-base"
+                    className="w-full h-14 text-lg font-semibold border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
                   >
                     {isAdmin ? 'Painel Admin' : 'Gerenciar Conta'}
                   </Button>
                 </div>
               ) : (
-                <Button
-                  onClick={handleAuthClick}
-                  className="w-full bg-red-600 hover:bg-red-700 h-12 text-base"
-                >
-                  <User className="w-5 h-5 mr-2" />
-                  Entrar / Cadastrar
-                </Button>
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto">
+                    <User className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xl text-gray-800 mb-2">Entre na sua conta</h3>
+                    <p className="text-gray-600 text-sm mb-4">Acesse sua conta ou crie uma nova</p>
+                  </div>
+                  <Button
+                    onClick={handleAuthClick}
+                    className="w-full bg-red-600 hover:bg-red-700 h-14 text-lg font-semibold"
+                  >
+                    <User className="w-5 h-5 mr-2" />
+                    Entrar / Cadastrar
+                  </Button>
+                </div>
               )}
             </div>
 
             {/* Navigation */}
-            <div className="space-y-2">
+            <div className="space-y-3">
+              <h3 className="font-bold text-lg text-gray-800 mb-4">Navegação</h3>
+              
               <Button
                 onClick={() => handleNavigation('/')}
                 variant="ghost"
-                className="w-full justify-start h-12 text-base px-4"
+                className="w-full justify-start h-16 text-lg px-6 bg-gray-50 hover:bg-gray-100 rounded-xl"
               >
-                <Home className="w-5 h-5 mr-3" />
-                Início
+                <Home className="w-6 h-6 mr-4 text-red-600" />
+                <div className="text-left">
+                  <p className="font-semibold text-gray-800">Início</p>
+                  <p className="text-xs text-gray-600">Página principal</p>
+                </div>
               </Button>
 
               <Button
                 onClick={() => handleNavigation('/uti-pro')}
                 variant="ghost"
-                className="w-full justify-start h-12 text-base px-4 bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 text-yellow-800 hover:bg-yellow-200 hover:text-yellow-900"
+                className="w-full justify-start h-16 text-lg px-6 bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 hover:bg-yellow-200 rounded-xl"
               >
-                <Crown className="w-5 h-5 mr-3" />
-                UTI PRO
+                <Crown className="w-6 h-6 mr-4 text-yellow-600" />
+                <div className="text-left">
+                  <p className="font-semibold text-yellow-800">UTI PRO</p>
+                  <p className="text-xs text-yellow-700">Plano premium</p>
+                </div>
               </Button>
             </div>
 
             {/* Categories */}
-            <div className="border-t pt-4">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-lg px-4">
-                <Grid className="w-5 h-5" />
+            <div>
+              <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-3">
+                <Grid className="w-6 h-6 text-red-600" />
                 Categorias
               </h3>
-              <div className="space-y-1">
+              <div className="grid grid-cols-1 gap-3">
                 {categories.map((category) => (
                   <Button
                     key={category.id}
                     onClick={() => handleNavigation(category.path)}
                     variant="ghost"
-                    className="w-full justify-start h-12 text-base px-4 text-gray-700 hover:text-red-600 hover:bg-red-50"
+                    className="w-full justify-start h-14 text-base px-6 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-xl border border-gray-200 hover:border-red-200"
                   >
-                    {category.name}
+                    <span className="font-medium">{category.name}</span>
                   </Button>
                 ))}
               </div>
