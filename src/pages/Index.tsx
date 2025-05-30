@@ -1,17 +1,27 @@
+
 import { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { useProducts, Product } from '@/hooks/useProducts'; // Import Product type
+=======
+import { useProducts } from '@/hooks/useProducts';
+>>>>>>> e5a60625d058fb859863420e1cbfaf0962df3877
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
+<<<<<<< HEAD
 import HeroQuickLinks from '@/components/HeroQuickLinks'; // Import HeroQuickLinks
 import PromotionalBanner from '@/components/PromotionalBanner';
 // Import the new separated service/contact components
 import SpecializedServices from '@/components/ServiceCards/SpecializedServices';
 import WhyChooseUs from '@/components/ServiceCards/WhyChooseUs';
 import ContactHelp from '@/components/ServiceCards/ContactHelp';
+=======
+import PromotionalBanner from '@/components/PromotionalBanner';
+import ServiceCards from '@/components/ServiceCards';
+>>>>>>> e5a60625d058fb859863420e1cbfaf0962df3877
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
@@ -59,10 +69,13 @@ const Index = () => {
       case 'hero_banner':
         return <HeroBannerCarousel key="hero_banner" />;
       
+<<<<<<< HEAD
       // Add case for HeroQuickLinks
       case 'hero_quick_links':
         return <HeroQuickLinks key="hero_quick_links" />;
 
+=======
+>>>>>>> e5a60625d058fb859863420e1cbfaf0962df3877
       case 'promo_banner':
         return (
           <div key="promo_banner" className="container mx-auto px-4 sm:px-6 lg:px-8 my-8 md:my-12">
@@ -70,6 +83,7 @@ const Index = () => {
           </div>
         );
       
+<<<<<<< HEAD
       // Replace 'service_cards' with individual components
       case 'specialized_services':
         return <SpecializedServices key="specialized_services" />;
@@ -77,6 +91,10 @@ const Index = () => {
         return <WhyChooseUs key="why_choose_us" />;
       case 'contact_help':
         return <ContactHelp key="contact_help" />;
+=======
+      case 'service_cards':
+        return <ServiceCards key="service_cards" />;
+>>>>>>> e5a60625d058fb859863420e1cbfaf0962df3877
       
       default:
         // Handle product sections
@@ -86,32 +104,46 @@ const Index = () => {
           
           if (!section) return null;
           
+<<<<<<< HEAD
           // --- BUG FIX: Deduplicate products --- 
           const productMap = new Map<string, Product>(); // Use a Map to store unique products by ID
           
+=======
+          // Filter products based on section items
+          let sectionProducts = [];
+>>>>>>> e5a60625d058fb859863420e1cbfaf0962df3877
           if (section.items) {
             for (const item of section.items) {
               if (item.item_type === 'product') {
                 // Find specific product by ID
                 const product = products.find(p => p.id === item.item_id);
+<<<<<<< HEAD
                 if (product && !productMap.has(product.id)) { // Check if not already added
                   productMap.set(product.id, product);
                 }
+=======
+                if (product) sectionProducts.push(product);
+>>>>>>> e5a60625d058fb859863420e1cbfaf0962df3877
               } else if (item.item_type === 'tag') {
                 // Find products with this tag
                 const tagProducts = products.filter(p => 
                   p.tags?.some(tag => tag.name.toLowerCase() === item.item_id.toLowerCase() || tag.id === item.item_id)
                 );
+<<<<<<< HEAD
                 // Add tag products to the map, overwriting duplicates (which is fine)
                 tagProducts.forEach(product => {
                   if (!productMap.has(product.id)) { // Check if not already added
                      productMap.set(product.id, product);
                   }
                 });
+=======
+                sectionProducts.push(...tagProducts);
+>>>>>>> e5a60625d058fb859863420e1cbfaf0962df3877
               }
             }
           }
           
+<<<<<<< HEAD
           const uniqueSectionProducts = Array.from(productMap.values()); // Get unique products from the map
           // --- END BUG FIX ---
           
@@ -119,6 +151,12 @@ const Index = () => {
             <FeaturedProductsSection
               key={sectionKey}
               products={uniqueSectionProducts} // Pass unique products
+=======
+          return (
+            <FeaturedProductsSection
+              key={sectionKey}
+              products={sectionProducts}
+>>>>>>> e5a60625d058fb859863420e1cbfaf0962df3877
               loading={productsLoading || sectionsLoading}
               onAddToCart={handleAddToCart}
               title={section.title}
@@ -159,7 +197,7 @@ const Index = () => {
       {/* Footer */}
       <Footer />
 
-      {/* Cart Component */}
+      {/* Cart Component - Fixed props to match CartSheetProps interface */}
       <Cart
         showCart={showCart}
         setShowCart={setShowCart}
@@ -172,4 +210,3 @@ const Index = () => {
 };
 
 export default Index;
-
