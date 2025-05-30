@@ -1,38 +1,44 @@
+
 import React from 'react';
+import { Star } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge'; // Keep Badge if needed for 'Usado'
 
 interface ProductCardInfoProps {
   product: Product;
-  // getPlatformColor is removed as platform badges are likely omitted in the minimalist design
+  getPlatformColor: (product: Product) => string;
 }
 
-// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
-const ProductCardInfo: React.FC<ProductCardInfoProps> = ({ product }) => {
-  // Minimalist approach like GameStop: Focus on the title.
-  // Badges (like platform) are generally omitted on the card itself in the reference.
-  // Rating is also omitted for a cleaner look.
+const ProductCardInfo: React.FC<ProductCardInfoProps> = ({
+  product,
+  getPlatformColor
+}) => {
+  const primaryTag = product.tags?.[0]?.name || '';
 
   return (
-    <div className="mb-1"> {/* Minimal bottom margin */}
-      {/* Product Title - Clean and concise */}
-      <h3
-        className="text-sm font-medium text-foreground leading-tight line-clamp-2 transition-colors duration-200 group-hover:text-uti-red"
-        title={product.name} // Tooltip for full name
-      >
+    <>
+      {/* Platform Tag */}
+      {primaryTag && (
+        <div className="mb-3 md:mb-3 mb-2">
+          <span className={`text-xs text-white px-2 py-1 rounded-md font-medium ${getPlatformColor(product)} md:text-xs text-[10px] md:px-2 px-1.5`}>
+            {primaryTag}
+          </span>
+        </div>
+      )}
+
+      {/* Product Title */}
+      <h3 className="text-base font-semibold text-gray-900 line-clamp-2 mb-3 leading-tight md:text-base text-sm md:mb-3 mb-2 md:leading-tight leading-snug">
         {product.name}
       </h3>
 
-      {/* Optional: Badge for 'Usado' could be placed here if needed, but kept minimal */}
-      {/* {product.tags?.some(tag => tag.name.toLowerCase().includes('usado')) && (
-        <Badge variant="outline" className="mt-1 px-1.5 py-0.5 text-[10px] font-medium">
-          Usado
-        </Badge>
-      )} */}
-    </div>
+      {/* Rating */}
+      <div className="flex items-center gap-1 mb-4 md:mb-4 mb-3">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400 md:w-3 md:h-3 w-2.5 h-2.5" />
+        ))}
+        <span className="text-xs text-gray-500 ml-1 md:text-xs text-[10px]">(4.8)</span>
+      </div>
+    </>
   );
 };
 
 export default ProductCardInfo;
-

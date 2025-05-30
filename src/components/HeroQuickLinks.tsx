@@ -1,110 +1,121 @@
-import React from 'react';
+
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Gamepad2, 
   MonitorSpeaker, 
   Headphones, 
-  Gift, 
-  Puzzle, 
-  MousePointerSquare,
-  Flame, // Icon for Ofertas
-  Package // Icon for Colecionáveis
+  Smartphone, 
+  Trophy, 
+  Gift 
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card'; // Use shadcn Card
-
-// Define the structure for a quick link
-interface QuickLinkItem {
-  id: string;
-  icon: React.ElementType;
-  label: string;
-  path: string;
-}
 
 const HeroQuickLinks = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
-  // Define the quick links data - simplified, colors removed
-  const quickLinks: QuickLinkItem[] = [
+  const quickLinks = [
     {
       id: 'playstation',
       icon: Gamepad2,
       label: 'PlayStation',
       path: '/categoria/playstation',
+      color: 'bg-blue-600',
+      hoverColor: 'hover:bg-blue-700'
     },
     {
       id: 'xbox',
       icon: Gamepad2,
       label: 'Xbox',
       path: '/categoria/xbox',
+      color: 'bg-green-600',
+      hoverColor: 'hover:bg-green-700'
     },
     {
       id: 'nintendo',
       icon: Gamepad2,
       label: 'Nintendo',
       path: '/categoria/nintendo',
+      color: 'bg-red-500',
+      hoverColor: 'hover:bg-red-600'
     },
     {
       id: 'pc',
       icon: MonitorSpeaker,
-      label: 'PC Gamer',
+      label: 'PC Games',
       path: '/categoria/pc',
+      color: 'bg-orange-600',
+      hoverColor: 'hover:bg-orange-700'
     },
     {
       id: 'acessorios',
-      icon: Headphones, // Or MousePointerSquare
+      icon: Headphones,
       label: 'Acessórios',
       path: '/categoria/acessorios',
+      color: 'bg-purple-600',
+      hoverColor: 'hover:bg-purple-700'
     },
     {
       id: 'ofertas',
-      icon: Flame, // Using Flame for Ofertas
+      icon: Gift,
       label: 'Ofertas',
       path: '/categoria/ofertas',
-    },
-    // Add Colecionáveis if it exists as a category
-    // {
-    //   id: 'colecionaveis',
-    //   icon: Package, // Using Package for Colecionáveis
-    //   label: 'Colecionáveis',
-    //   path: '/categoria/colecionaveis',
-    // },
+      color: 'bg-uti-red',
+      hoverColor: 'hover:bg-red-700'
+    }
   ];
 
   const handleQuickLinkClick = (path: string) => {
     navigate(path);
   };
 
+  if (isMobile) {
+    return (
+      <section className="py-6 bg-white border-b border-gray-100">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-3 gap-4">
+            {quickLinks.map((link) => {
+              const IconComponent = link.icon;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => handleQuickLinkClick(link.path)}
+                  className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 group"
+                >
+                  <div className={`w-[60px] h-[60px] ${link.color} ${link.hoverColor} rounded-full flex items-center justify-center mb-2 transition-all duration-300 group-hover:shadow-lg`}>
+                    <IconComponent className="w-6 h-6 text-white" />
+                  </div>
+                  <span className="text-xs font-medium text-gray-700 text-center leading-tight">
+                    {link.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    // Section styling: Light gray background, padding, subtle border top
-    <section className="py-8 md:py-12 bg-secondary border-t border-border/60">
-      <div className="container mx-auto">
-        {/* Use grid for layout, responsive columns */}
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-6">
+    <section className="py-8 bg-white border-b border-gray-100">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <div className="flex justify-center items-center space-x-8 lg:space-x-12">
           {quickLinks.map((link) => {
             const IconComponent = link.icon;
             return (
-              // Use Card component for structure and styling
-              <Card 
+              <button
                 key={link.id}
                 onClick={() => handleQuickLinkClick(link.path)}
-                className={cn(
-                  "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
-                  "bg-card border border-border/80 rounded-xl", // Use card background, subtle border, defined radius
-                  "hover:shadow-md hover:border-primary/40 hover:-translate-y-1" // Hover effects: shadow, primary border, lift
-                )}
+                className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 group"
               >
-                {/* Flex container for icon and text */}
-                <CardContent className="flex flex-col items-center justify-center p-4 md:p-6 aspect-[4/3] sm:aspect-square">
-                  {/* Icon styling: Use primary color */}
-                  <IconComponent className="w-7 h-7 md:w-8 md:h-8 mb-3 text-primary transition-transform duration-300 group-hover:scale-110" />
-                  
-                  {/* Label styling: Clear typography */}
-                  <span className="text-xs sm:text-sm font-medium text-foreground text-center leading-tight group-hover:text-primary transition-colors duration-200">
-                    {link.label}
-                  </span>
-                </CardContent>
-              </Card>
+                <div className={`w-[80px] h-[80px] lg:w-[100px] lg:h-[100px] ${link.color} ${link.hoverColor} rounded-full flex items-center justify-center mb-3 transition-all duration-300 group-hover:shadow-professional`}>
+                  <IconComponent className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
+                </div>
+                <span className="text-sm lg:text-base font-medium text-gray-700 text-center">
+                  {link.label}
+                </span>
+              </button>
             );
           })}
         </div>
@@ -114,4 +125,3 @@ const HeroQuickLinks = () => {
 };
 
 export default HeroQuickLinks;
-

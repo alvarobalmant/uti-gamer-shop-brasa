@@ -1,28 +1,25 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ImageUpload } from '@/components/ui/image-upload';
-import { ArrowLeft } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowLeft, X, Plus } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { Tag } from '@/hooks/useTags';
-import { TagSelector } from './TagSelector';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 interface ProductFormProps {
-  product?: Product | null;
+  product: Product | null;
   tags: Tag[];
-  onSubmit: (productData: any) => Promise<void>;
+  onSubmit: (productData: any) => void;
   onCancel: () => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({
-  product,
-  tags,
-  onSubmit,
-  onCancel,
-}) => {
+const ProductForm = ({ product, tags, onSubmit, onCancel }: ProductFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -35,16 +32,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
     tagIds: [] as string[],
   });
 
+  const [newSize, setNewSize] = useState('');
+  const [newColor, setNewColor] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (product) {
-      console.log('Produto carregado para edição:', product);
+      console.log('Carregando produto para edição:', product);
+      console.log('Tags do produto:', product.tags);
+      
       setFormData({
         name: product.name || '',
         description: product.description || '',
-        price: product.price?.toString() || '',
-        stock: product.stock?.toString() || '0',
+        price: product.price.toString(),
+        stock: (product.stock || 0).toString(),
         image: product.image || '',
         additional_images: product.additional_images || [],
         sizes: product.sizes || [],
@@ -67,27 +68,74 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
   }, [product]);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleMainImageUpload = (url: string) => {
+    setFormData(prev => ({ ...prev, image: url }));
+  };
+
+  const handleAdditionalImageUpload = (url: string) => {
+    if (url) {
+      setFormData(prev => ({
+        ...prev,
+        additional_images: [...prev.additional_images, url]
+      }));
+    }
+  };
+
+  const addSize = () => {
+    if (newSize.trim() && !formData.sizes.includes(newSize.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        sizes: [...prev.sizes, newSize.trim()]
+      }));
+      setNewSize('');
+    }
+  };
+
+  const removeSize = (size: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      sizes: prev.sizes.filter(s => s !== size)
     }));
   };
 
-  const handleArrayInputChange = (field: 'sizes' | 'colors', value: string) => {
-    const items = value.split(',').map(item => item.trim()).filter(Boolean);
+  const addColor = () => {
+    if (newColor.trim() && !formData.colors.includes(newColor.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        colors: [...prev.colors, newColor.trim()]
+      }));
+      setNewColor('');
+    }
+  };
+
+  const removeColor = (color: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: items
+      colors: prev.colors.filter(c => c !== color)
     }));
   };
 
-  const handleTagChange = (tagId: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      tagIds: checked 
+  const handleTagToggle = (tagId: string, checked: boolean) => {
+    console.log('Toggle tag:', tagId, 'checked:', checked);
+    
+    setFormData(prev => {
+      const newTagIds = checked
         ? [...prev.tagIds, tagId]
-        : prev.tagIds.filter(id => id !== tagId)
+        : prev.tagIds.filter(id => id !== tagId);
+      
+      console.log('Tags atualizadas:', newTagIds);
+      return { ...prev, tagIds: newTagIds };
+    });
+  };
+
+  const removeAdditionalImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      additional_images: prev.additional_images.filter((_, i) => i !== index)
     }));
   };
 
@@ -136,10 +184,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
       <CardHeader>
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
-            size="sm"
             onClick={onCancel}
-            className="text-gray-400 hover:text-white"
+            variant="ghost"
+            className="text-white hover:bg-gray-700"
+            disabled={isSubmitting}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
@@ -149,13 +197,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
               {product ? 'Editar Produto' : 'Novo Produto'}
             </CardTitle>
             <CardDescription className="text-gray-400">
-              {product ? 'Edite as informações do produto' : 'Preencha as informações do novo produto'}
+              {product ? 'Edite as informações do produto' : 'Adicione um novo produto ao catálogo'}
             </CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Informações Básicas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -164,152 +213,258 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="bg-gray-700 border-gray-600 text-white"
-                  placeholder="Digite o nome do produto"
                   required
+                  className="bg-gray-700 border-gray-600 text-white"
+                  disabled={isSubmitting}
                 />
               </div>
 
+              <div>
+                <Label htmlFor="price" className="text-white">Preço (R$) *</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={(e) => handleInputChange('price', e.target.value)}
+                  required
+                  className="bg-gray-700 border-gray-600 text-white"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="stock" className="text-white">Estoque</Label>
+                <Input
+                  id="stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={(e) => handleInputChange('stock', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
               <div>
                 <Label htmlFor="description" className="text-white">Descrição</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
-                  className="bg-gray-700 border-gray-600 text-white"
-                  placeholder="Descrição do produto"
                   rows={4}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="price" className="text-white">Preço *</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.price}
-                    onChange={(e) => handleInputChange('price', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white"
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="stock" className="text-white">Estoque</Label>
-                  <Input
-                    id="stock"
-                    type="number"
-                    min="0"
-                    value={formData.stock}
-                    onChange={(e) => handleInputChange('stock', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="sizes" className="text-white">Tamanhos</Label>
-                <Input
-                  id="sizes"
-                  value={formData.sizes.join(', ')}
-                  onChange={(e) => handleArrayInputChange('sizes', e.target.value)}
                   className="bg-gray-700 border-gray-600 text-white"
-                  placeholder="P, M, G, GG (separados por vírgula)"
+                  disabled={isSubmitting}
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="colors" className="text-white">Cores</Label>
-                <Input
-                  id="colors"
-                  value={formData.colors.join(', ')}
-                  onChange={(e) => handleArrayInputChange('colors', e.target.value)}
-                  className="bg-gray-700 border-gray-600 text-white"
-                  placeholder="Azul, Vermelho, Verde (separados por vírgula)"
-                />
-              </div>
-
-              <TagSelector
-                tags={tags}
-                selectedTagIds={formData.tagIds}
-                onTagChange={handleTagChange}
-              />
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <ImageUpload
-                  label="Imagem Principal"
-                  currentImage={formData.image}
-                  onImageUploaded={(url) => handleInputChange('image', url)}
-                  folder="products"
-                  className="bg-gray-700 border-gray-600"
-                />
-              </div>
-
-              <div>
-                <Label className="text-white">Imagens Adicionais</Label>
-                <div className="space-y-2">
-                  {formData.additional_images.map((url, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        value={url}
-                        onChange={(e) => {
-                          const newImages = [...formData.additional_images];
-                          newImages[index] = e.target.value;
-                          handleInputChange('additional_images', newImages);
-                        }}
-                        className="bg-gray-700 border-gray-600 text-white"
-                        placeholder="URL da imagem"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          const newImages = formData.additional_images.filter((_, i) => i !== index);
-                          handleInputChange('additional_images', newImages);
-                        }}
-                      >
-                        Remover
-                      </Button>
-                    </div>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      handleInputChange('additional_images', [...formData.additional_images, '']);
-                    }}
-                    className="text-gray-300"
-                  >
-                    Adicionar Imagem
-                  </Button>
-                </div>
               </div>
             </div>
           </div>
 
+          {/* Imagem Principal */}
+          <div>
+            <ImageUpload
+              onImageUploaded={handleMainImageUpload}
+              currentImage={formData.image}
+              label="Imagem Principal *"
+              folder="products"
+              className="mb-4"
+            />
+          </div>
+
+          {/* Imagens Adicionais */}
+          <div>
+            <Label className="text-white mb-2 block">Imagens Adicionais</Label>
+            
+            <ImageUpload
+              onImageUploaded={handleAdditionalImageUpload}
+              label="Adicionar Imagem Adicional"
+              folder="products"
+              className="mb-4"
+            />
+            
+            {formData.additional_images.length > 0 && (
+              <div className="grid grid-cols-4 gap-4 mt-4">
+                {formData.additional_images.map((image, index) => (
+                  <div key={index} className="relative">
+                    <div className="w-full h-24 bg-gray-600 rounded-lg overflow-hidden">
+                      <img src={image} alt={`Additional ${index}`} className="w-full h-full object-cover" />
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 w-6 h-6 p-0"
+                      onClick={() => removeAdditionalImage(index)}
+                      disabled={isSubmitting}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Tamanhos */}
+          <div>
+            <Label className="text-white">Tamanhos</Label>
+            <div className="mt-2 space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  value={newSize}
+                  onChange={(e) => setNewSize(e.target.value)}
+                  placeholder="Ex: P, M, G, GG"
+                  className="bg-gray-700 border-gray-600 text-white"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSize())}
+                  disabled={isSubmitting}
+                />
+                <Button 
+                  type="button" 
+                  onClick={addSize} 
+                  variant="outline" 
+                  className="border-gray-600"
+                  disabled={isSubmitting}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.sizes.map((size) => (
+                  <Badge key={size} variant="secondary" className="pr-1">
+                    {size}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-auto p-1 ml-1"
+                      onClick={() => removeSize(size)}
+                      disabled={isSubmitting}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Cores */}
+          <div>
+            <Label className="text-white">Cores</Label>
+            <div className="mt-2 space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  value={newColor}
+                  onChange={(e) => setNewColor(e.target.value)}
+                  placeholder="Ex: Preto, Branco, Azul"
+                  className="bg-gray-700 border-gray-600 text-white"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addColor())}
+                  disabled={isSubmitting}
+                />
+                <Button 
+                  type="button" 
+                  onClick={addColor} 
+                  variant="outline" 
+                  className="border-gray-600"
+                  disabled={isSubmitting}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.colors.map((color) => (
+                  <Badge key={color} variant="secondary" className="pr-1">
+                    {color}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-auto p-1 ml-1"
+                      onClick={() => removeColor(color)}
+                      disabled={isSubmitting}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Categorias/Tags */}
+          <div>
+            <Label className="text-white mb-3 block">Categorias</Label>
+            {tags.length === 0 ? (
+              <div className="text-gray-400 text-sm">
+                Nenhuma categoria disponível. Crie categorias no gerenciador de tags primeiro.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {tags.map((tag) => {
+                  const isChecked = formData.tagIds.includes(tag.id);
+                  
+                  return (
+                    <div key={tag.id} className="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
+                      <Checkbox
+                        id={`tag-${tag.id}`}
+                        checked={isChecked}
+                        onCheckedChange={(checked) => handleTagToggle(tag.id, checked as boolean)}
+                        disabled={isSubmitting}
+                        className="border-gray-500 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                      />
+                      <label 
+                        htmlFor={`tag-${tag.id}`} 
+                        className="text-sm text-gray-300 cursor-pointer flex-1"
+                      >
+                        {tag.name}
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {/* Exibir tags selecionadas */}
+            {formData.tagIds.length > 0 && (
+              <div className="mt-4">
+                <Label className="text-white text-sm mb-2 block">Tags Selecionadas:</Label>
+                <div className="flex flex-wrap gap-2">
+                  {formData.tagIds.map((tagId) => {
+                    const tag = tags.find(t => t.id === tagId);
+                    return tag ? (
+                      <Badge key={tagId} variant="default" className="bg-red-600 text-white">
+                        {tag.name}
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Botões */}
           <div className="flex gap-4 pt-6 border-t border-gray-700">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
+            <Button 
+              type="submit" 
               className="bg-red-600 hover:bg-red-700"
-            >
-              {isSubmitting ? 'Salvando...' : (product ? 'Atualizar Produto' : 'Criar Produto')}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
               disabled={isSubmitting}
-              className="border-gray-600 text-gray-300"
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  {product ? 'Atualizando...' : 'Criando...'}
+                </div>
+              ) : (
+                product ? 'Atualizar Produto' : 'Criar Produto'
+              )}
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel} 
+              className="border-gray-600"
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>

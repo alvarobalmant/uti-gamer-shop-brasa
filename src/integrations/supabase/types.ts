@@ -96,13 +96,6 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "cart_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
-          },
         ]
       }
       product_tags: {
@@ -133,25 +126,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_product_tags_product_id"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
-          },
-          {
             foreignKeyName: "fk_product_tags_tag_id"
             columns: ["tag_id"]
             isOneToOne: false
             referencedRelation: "tags"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_product_tags_tag_id"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["tag_id"]
           },
         ]
       }
@@ -410,19 +389,7 @@ export type Database = {
       }
     }
     Views: {
-      view_product_with_tags: {
-        Row: {
-          product_description: string | null
-          product_id: string | null
-          product_image: string | null
-          product_name: string | null
-          product_price: number | null
-          product_stock: number | null
-          tag_id: string | null
-          tag_name: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       adicionar_meses_assinatura: {

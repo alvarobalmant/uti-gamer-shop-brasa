@@ -9,7 +9,6 @@ import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { searchProducts } from '@/utils/fuzzySearch';
-import { useScrollPosition } from '@/hooks/useScrollPosition';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -18,13 +17,6 @@ const SearchResults = () => {
   const { products, loading } = useProducts();
   const { user } = useAuth();
   const { addToCart } = useCart();
-  const { setupScrollRestoration } = useScrollPosition();
-
-  // Configurar restauração de scroll quando o componente montar
-  useEffect(() => {
-    const cleanup = setupScrollRestoration();
-    return cleanup;
-  }, [setupScrollRestoration]);
 
   // Usar busca fuzzy para filtrar produtos
   const filteredProducts = searchProducts(products, query);

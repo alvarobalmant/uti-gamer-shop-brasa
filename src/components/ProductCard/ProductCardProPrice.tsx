@@ -1,64 +1,72 @@
+
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { Crown } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface ProductCardProPriceProps {
   product: Product;
 }
 
-// **Radical Redesign - Enhanced Pro Price Highlighting**
 const ProductCardProPrice: React.FC<ProductCardProPriceProps> = ({ product }) => {
-  const { hasActiveSubscription } = useSubscriptions();
-  const isProMember = hasActiveSubscription(); // Determine if the current user is a Pro member
-
-  // Calculate Pro price (example: 10% discount or use a specific field if available)
-  const proDiscount = product.pro_discount_percent || 0.10; // Use specific discount or default
-  const proPrice = product.pro_price || (product.price ? product.price * (1 - proDiscount) : null);
-
-  const displayPrice = product.price.toFixed(2);
-  const displayListPrice = product.list_price ? product.list_price.toFixed(2) : null;
-  const displayProPrice = proPrice ? proPrice.toFixed(2) : null;
-
-  // Show strikethrough only if list_price is higher than current price
-  const showListPriceStrike = displayListPrice && parseFloat(displayListPrice) > product.price;
+  const { hasActiveSubscription, getDiscountPercentage } = useSubscriptions();
+  
+  const isProMember = hasActiveSubscription();
+  const discountPercentage = getDiscountPercentage();
+  const proPrice = product.price * (1 - discountPercentage / 100);
+  const originalPrice = product.price * 1.15;
+  const savings = product.price - proPrice;
 
   return (
-    <div className="mt-1 mb-1"> {/* Minimal margins */}
-      <div className="flex flex-col items-start">
-        {/* Regular Price - Always visible */}
-        <span className={cn(
-          "font-semibold text-foreground",
-          showListPriceStrike ? "text-base" : "text-lg" // Make regular price slightly larger if no list price
-        )}>
-          R$ {displayPrice}
-        </span>
+    <div className="mb-4 md:mb-4 mb-3">
+      {/* UTI PRO Price - Show first if user is PRO member */}
+      {isProMember && (
+        <div className="bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Crown className="w-4 h-4 text-yellow-600" />
+            <span className="text-xs font-bold text-yellow-800 uppercase tracking-wide">
+              Preço UTI PRO
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold text-yellow-800">
+              R$ {proPrice.toFixed(2)}
+            </span>
+            <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
+              -{discountPercentage}%
+            </span>
+          </div>
+          <div className="text-xs text-yellow-700 mt-1">
+            Economia de R$ {savings.toFixed(2)}
+          </div>
+        </div>
+      )}
 
-        {/* List Price Strikethrough (if applicable) */}
-        {showListPriceStrike && (
-          <span className="text-xs text-muted-foreground line-through">
-            R$ {displayListPrice}
+      {/* Regular Price */}
+      <div className="flex items-center gap-2 mb-1">
+        <span className={`text-xl font-bold ${isProMember ? 'text-gray-500 line-through' : 'text-gray-900'} md:text-xl text-lg`}>
+          R$ {product.price.toFixed(2)}
+        </span>
+        {!isProMember && (
+          <span className="text-sm text-gray-500 line-through md:text-sm text-xs">
+            R$ {originalPrice.toFixed(2)}
           </span>
         )}
-
-        {/* Pro Price Info - Enhanced Highlighting */}
-        {displayProPrice && (
-          <div className={cn(
-            "mt-1 flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md",
-            // Use a distinct background/text color for Pro price with better contrast
-            "bg-uti-pro/15 text-uti-pro border border-uti-pro/20"
-            // Alternatively, use GameStop's purple: "bg-purple-100 text-purple-700"
-          )}>
-            <Crown className="h-3.5 w-3.5" />
-            <span className="font-bold">R$ {displayProPrice}</span>
-            <span className="ml-1 font-semibold">para Pros</span>
-          </div>
-        )}
+      </div>
+      
+      {/* UTI PRO teaser for non-members */}
+      {!isProMember && (
+        <div className="text-sm font-medium text-purple-600 mb-1 md:text-sm text-xs">
+          R$ {proPrice.toFixed(2)} Membros PRO
+        </div>
+      )}
+      
+      {/* Installments */}
+      <div className="text-xs text-gray-500 md:text-xs text-[10px]">
+        ou 12x de R$ {((isProMember ? proPrice : product.price) / 12).toFixed(2)}
       </div>
     </div>
   );
 };
 
 export default ProductCardProPrice;
-

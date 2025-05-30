@@ -88,9 +88,9 @@ const ProductPage = () => {
     // Navigate back and let the scroll restoration handle the position
     navigate(-1);
     
-    // Fallback: restore position after navigation
+    // Fallback: restore position for the home page after navigation
     setTimeout(() => {
-      restoreScrollPosition();
+      restoreScrollPosition('/');
     }, 100);
   };
 

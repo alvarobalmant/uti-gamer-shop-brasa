@@ -1,111 +1,202 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBanners } from '@/hooks/useBanners';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
-import HeroQuickLinks from './HeroQuickLinks'; // Assuming this component is also redesigned
-import { cn } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  type CarouselApi,
-} from "@/components/ui/carousel" // Using shadcn Carousel
-import Autoplay from "embla-carousel-autoplay" // Import Autoplay plugin
+import HeroQuickLinks from './HeroQuickLinks';
 
 const HeroBannerCarousel = () => {
   const { banners, loading } = useBanners();
-  const [api, setApi] = useState<CarouselApi>()
-  const [currentSlide, setCurrentSlide] = useState(0)
+  const [currentBanner, setCurrentBanner] = useState(0);
+  const [isUserInteracting, setIsUserInteracting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [preloadedImages, setPreloadedImages] = useState<{ [key: string]: boolean }>({});
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-
-  // Autoplay plugin instance
-  const plugin = useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
-  )
-
-  // Update current slide index on select
-  useEffect(() => {
-    if (!api) {
-      return
-    }
-    setCurrentSlide(api.selectedScrollSnap())
-    api.on("select", () => {
-      setCurrentSlide(api.selectedScrollSnap())
-    })
-  }, [api])
 
   // Preload images
   useEffect(() => {
     banners.forEach(banner => {
-      if (banner.image_url) {
+      if (banner.image_url && !preloadedImages[banner.image_url]) {
         const img = new Image();
+        img.onload = () => {
+          setPreloadedImages(prev => ({ ...prev, [banner.image_url!]: true }));
+        };
         img.src = banner.image_url;
       }
     });
-  }, [banners]);
+  }, [banners, preloadedImages]);
 
-  const handleButtonClick = useCallback((buttonLink: string | undefined) => {
-    if (!buttonLink) return;
+  const startAutoPlay = () => {
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    autoPlayRef.current = setInterval(() => {
+      if (!isUserInteracting && !isPaused && banners.length > 0) {
+        setCurrentBanner(prev => (prev + 1) % banners.length);
+      }
+    }, 5000);
+  };
+
+  const stopAutoPlay = () => {
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
+      autoPlayRef.current = null;
+    }
+  };
+
+  const resumeAutoPlayAfterDelay = () => {
+    setIsUserInteracting(true);
+    stopAutoPlay();
+    setTimeout(() => {
+      setIsUserInteracting(false);
+      if (!isPaused) startAutoPlay();
+    }, 10000);
+  };
+
+  useEffect(() => {
+    if (banners.length > 0 && !isPaused) {
+      startAutoPlay();
+    }
+    return () => stopAutoPlay();
+  }, [isUserInteracting, banners.length, isPaused]);
+
+  const nextBanner = () => {
+    if (banners.length > 0) {
+      setCurrentBanner(prev => (prev + 1) % banners.length);
+      resumeAutoPlayAfterDelay();
+    }
+  };
+
+  const prevBanner = () => {
+    if (banners.length > 0) {
+      setCurrentBanner(prev => (prev - 1 + banners.length) % banners.length);
+      resumeAutoPlayAfterDelay();
+    }
+  };
+
+  // Touch and mouse handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setStartX(e.touches[0].clientX);
+    setIsDragging(true);
+    setIsPaused(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const endX = e.changedTouches[0].clientX;
+    const diffX = startX - endX;
+    if (Math.abs(diffX) > 50) {
+      if (diffX > 0) {
+        nextBanner();
+      } else {
+        prevBanner();
+      }
+    }
+    setIsDragging(false);
+    setIsPaused(false);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (isMobile) return;
+    setStartX(e.clientX);
+    setIsDragging(true);
+    setIsPaused(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || isMobile) return;
+    e.preventDefault();
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isDragging || isMobile) return;
+    const endX = e.clientX;
+    const diffX = startX - endX;
+    if (Math.abs(diffX) > 50) {
+      if (diffX > 0) {
+        nextBanner();
+      } else {
+        prevBanner();
+      }
+    }
+    setIsDragging(false);
+    setIsPaused(false);
+  };
+
+  const handleMouseEnter = () => {
+    if (!isMobile) setIsPaused(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobile) {
+      setIsPaused(false);
+      setIsDragging(false);
+    }
+  };
+
+  const handleButtonClick = (buttonLink: string) => {
     if (buttonLink.startsWith('http')) {
-      window.open(buttonLink, '_blank', 'noopener,noreferrer');
+      window.open(buttonLink, '_blank');
     } else {
       navigate(buttonLink);
     }
-  }, [navigate]);
+  };
 
-  // --- Loading State ---
   if (loading) {
     return (
-      <section className="relative bg-uti-gray-light overflow-hidden border-b border-border/60">
-        {/* Use Skeleton for the carousel area */}
-        <Skeleton className="h-[300px] md:h-[450px] lg:h-[550px] xl:h-[clamp(500px,65vh,650px)] w-full" />
-        {/* Render QuickLinks below the skeleton */}
-        <HeroQuickLinks />
+      <section className="relative bg-gray-100 overflow-hidden">
+        <div className="relative h-[300px] md:h-[500px] lg:h-[600px] xl:h-[clamp(500px,60vh,700px)] flex items-center justify-center bg-gradient-to-br from-gray-200 via-gray-300 to-gray-200 animate-pulse">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gray-400 rounded-full mx-auto mb-4 animate-pulse"></div>
+            <div className="text-gray-500 font-medium">Carregando banners...</div>
+          </div>
+        </div>
       </section>
     );
   }
 
-  // --- Fallback Content (No Banners) ---
   if (banners.length === 0) {
     return (
       <>
-        {/* Use a simpler, static hero section if no banners */}
-        <section className="relative bg-gradient-to-br from-uti-dark via-gray-900 to-uti-dark text-white overflow-hidden">
-          <div className="relative h-[300px] md:h-[450px] lg:h-[550px] xl:h-[clamp(500px,65vh,650px)] flex items-center justify-center">
-            <div className="container mx-auto px-4 max-w-4xl text-center animate-fade-in">
-              <img 
-                src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" // Use logo
-                alt="UTI DOS GAMES" 
-                className="h-16 w-16 md:h-20 md:w-20 mx-auto mb-5 drop-shadow-md"
-              />
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 drop-shadow-md leading-tight">
-                Bem-vindo à UTI DOS GAMES
-              </h1>
-              <p className="text-base md:text-lg lg:text-xl font-medium text-white/80 mb-8 drop-shadow-sm max-w-2xl mx-auto">
-                Sua loja de games favorita em Colatina. Explore nossas novidades e ofertas!
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button 
-                  size="lg"
-                  className="bg-uti-red text-primary-foreground hover:bg-uti-red/90 font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
-                  onClick={() => navigate('/categoria/ofertas')}
-                >
-                  Ver Ofertas
-                </Button>
-                <Button 
-                  size="lg"
-                  variant="outline"
-                  className="bg-transparent border-white/40 text-white hover:bg-white/10 hover:border-white/60 font-semibold shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
-                  onClick={() => navigate('/')} // Navigate to home or a general products page
-                >
-                  Explorar Produtos
-                </Button>
+        <section className="relative bg-gradient-to-br from-uti-red via-red-600 to-red-700 text-white overflow-hidden">
+          <div className="relative h-[300px] md:h-[500px] lg:h-[600px] xl:h-[clamp(500px,60vh,700px)] flex items-center justify-center">
+            <div className="container mx-auto px-4 max-w-6xl text-center">
+              <div className="max-w-4xl mx-auto">
+                <img 
+                  src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
+                  alt="UTI DOS GAMES" 
+                  className="h-20 w-20 md:h-24 md:w-24 mx-auto mb-6 drop-shadow-lg animate-fade-in-up" 
+                />
+                <h1 className="text-[32px] md:text-[48px] lg:text-[64px] font-heading text-white mb-6 drop-shadow-lg leading-tight animate-fade-in-up">
+                  UTI DOS GAMES
+                </h1>
+                <p className="text-lg md:text-xl lg:text-2xl font-medium text-white/90 mb-8 drop-shadow-md max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                  A loja de games mais tradicional de Colatina
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                  <Button 
+                    onClick={() => navigate('/categoria/ofertas')}
+                    className="h-12 px-8 bg-white text-uti-red border-white hover:bg-gray-100 text-base font-semibold rounded-button transition-all duration-300 hover:scale-105"
+                  >
+                    Ver Ofertas
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/categoria/inicio')}
+                    className="h-12 px-8 bg-transparent border-2 border-white/20 hover:bg-white hover:text-uti-red text-base font-semibold rounded-button transition-all duration-300 hover:scale-105"
+                  >
+                    Explorar Produtos
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -115,137 +206,167 @@ const HeroBannerCarousel = () => {
     );
   }
 
-  // --- Carousel Rendering ---
+  const banner = banners[currentBanner];
+  const backgroundType = (banner as any).background_type || 'gradient';
+  
+  // Determine if button should be shown
+  const showButton = banner.button_text && banner.button_link;
+
+  // Create background style based on type
+  const getBackgroundStyle = () => {
+    if (backgroundType === 'image-only' && banner.image_url) {
+      return {
+        backgroundImage: `url(${banner.image_url})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
+    }
+    return {};
+  };
+
+  const backgroundStyle = getBackgroundStyle();
+  const gradientClass = backgroundType === 'gradient' && banner.gradient 
+    ? `bg-gradient-to-br ${banner.gradient}` 
+    : 'bg-gradient-to-br from-uti-red via-red-600 to-red-700';
+
+  const contentAlignment = currentBanner % 2 === 0 ? 'justify-start text-left' : 'justify-end text-right';
+  const imageAlignment = currentBanner % 2 === 0 ? 'right-8' : 'left-8';
+
   return (
     <>
-      <section className="relative overflow-hidden border-b border-border/60 bg-uti-gray-light"> {/* Fallback bg */}
-        <Carousel 
-          setApi={setApi}
-          plugins={[plugin.current]} // Add autoplay plugin
-          opts={{ 
-            loop: true, 
-            align: "start",
+      <section className="relative overflow-hidden">
+        <div 
+          ref={carouselRef}
+          className={`relative text-white transition-all duration-700 ease-in-out ${
+            backgroundType === 'image-only' ? 'bg-gray-900' : gradientClass
+          }`}
+          style={{
+            height: 'clamp(300px, 60vh, 700px)',
+            minHeight: '300px',
+            ...backgroundStyle
           }}
-          onMouseEnter={plugin.current.stop}
-          onMouseLeave={plugin.current.reset}
-          className="w-full"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
-          <CarouselContent className="-ml-0"> {/* Remove negative margin if not needed */}
-            {banners.map((banner, index) => {
-              const hasImage = !!banner.image_url;
-              return (
-                <CarouselItem key={index} className="pl-0"> {/* Remove padding left if not needed */}
-                  <div 
-                    className={cn(
-                      "relative text-white transition-opacity duration-500 ease-in-out",
-                      "h-[300px] md:h-[450px] lg:h-[550px] xl:h-[clamp(500px,65vh,650px)]", // Responsive height
-                      "flex items-center", // Use flex to center content vertically
-                      hasImage ? "bg-cover bg-center" : "bg-gradient-to-br from-uti-red via-red-700 to-red-800" // Background logic
-                    )}
-                    style={hasImage ? { backgroundImage: `url(${banner.image_url})` } : {}}
-                  >
-                    {/* Overlay for better text readability on image backgrounds */}
-                    {hasImage && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/70"></div>
-                    )}
+          {/* Overlay for better text readability */}
+          {backgroundType === 'image-only' && (
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
+          )}
 
-                    {/* Content Area */} 
-                    <div className="absolute inset-0 z-10 flex items-center">
-                      <div className="container mx-auto w-full">
-                        <div className={cn(
-                            "max-w-lg md:max-w-xl lg:max-w-2xl animate-fade-in-up",
-                            // Adjust text alignment based on design preference (e.g., always left)
-                            "text-left" 
-                        )}>
-                          {/* Title (Optional Tag) */}
-                          {banner.title && (
-                            <div className="inline-block bg-black/30 backdrop-blur-sm text-white font-semibold mb-3 md:mb-4 px-4 py-1.5 rounded-md text-xs sm:text-sm border border-white/20">
-                              {banner.title}
-                            </div>
-                          )}
-                          
-                          {/* Subtitle (Main Heading) */}
-                          {banner.subtitle && (
-                            <h1 className={cn(
-                                "font-bold text-white mb-4 md:mb-6 leading-tight drop-shadow-lg",
-                                "text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
-                            )} style={{ animationDelay: '0.1s' }}>
-                              {banner.subtitle}
-                            </h1>
-                          )}
-                          
-                          {/* Button */}
-                          {banner.button_text && banner.button_link && (
-                            <div style={{ animationDelay: '0.2s' }}>
-                              <Button 
-                                size="lg"
-                                className={cn(
-                                  "bg-uti-red text-primary-foreground hover:bg-uti-red/90 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200",
-                                  isMobile ? "w-full sm:w-auto" : ""
-                                )}
-                                onClick={() => handleButtonClick(banner.button_link)}
-                              >
-                                {banner.button_text}
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CarouselItem>
-              );
-            })}
-          </CarouselContent>
-          
-          {/* Custom Navigation Arrows (More elegant) */}
-          {banners.length > 1 && (
+          {/* Desktop Navigation Arrows */}
+          {banners.length > 1 && !isMobile && (
             <>
-              <CarouselPrevious 
-                className={cn(
-                  "absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20",
-                  "h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12", // Responsive size
-                  "bg-black/30 hover:bg-black/50 text-white border-white/20 hover:border-white/40",
-                  "transition-all duration-200 backdrop-blur-sm rounded-full disabled:opacity-50"
-                )}
-              />
-              <CarouselNext 
-                className={cn(
-                  "absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20",
-                  "h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12", // Responsive size
-                  "bg-black/30 hover:bg-black/50 text-white border-white/20 hover:border-white/40",
-                  "transition-all duration-200 backdrop-blur-sm rounded-full disabled:opacity-50"
-                )}
-              />
+              <Button 
+                onClick={prevBanner}
+                variant="ghost" 
+                size="icon"
+                className="absolute left-4 lg:left-8 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-[60px] h-[60px] p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20 hover:scale-110"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </Button>
+              
+              <Button 
+                onClick={nextBanner}
+                variant="ghost" 
+                size="icon"
+                className="absolute right-4 lg:right-8 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-[60px] h-[60px] p-0 z-20 transition-all duration-300 backdrop-blur-sm border border-white/20 hover:scale-110"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </Button>
             </>
           )}
 
-          {/* Custom Banner Indicators */}
-          {banners.length > 1 && (
-            <div className="absolute bottom-4 md:bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-              {banners.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => api?.scrollTo(index)} // Use API to scroll
-                  className={cn(
-                    "w-2.5 h-2.5 rounded-full transition-all duration-300",
-                    index === currentSlide 
-                      ? 'bg-white scale-110 ring-1 ring-white/50 ring-offset-2 ring-offset-black/20' 
-                      : 'bg-white/40 hover:bg-white/70'
-                  )}
-                  aria-label={`Ir para o banner ${index + 1}`}
-                />
-              ))}
+          {/* Content */}
+          <div className="container mx-auto px-4 max-w-6xl h-full flex items-center relative z-10">
+            <div className={`max-w-4xl mx-auto w-full flex ${isMobile ? 'justify-center text-center' : contentAlignment}`}>
+              <div className={`${isMobile ? 'max-w-lg' : 'max-w-2xl'}`}>
+                {/* Title */}
+                {banner.title && (
+                  <div className="inline-block bg-white/20 backdrop-blur-sm text-white font-bold mb-4 md:mb-6 px-4 md:px-6 py-2 rounded-full text-sm border border-white/30 animate-fade-in-up">
+                    ♦ {banner.title}
+                  </div>
+                )}
+                
+                {/* Subtitle */}
+                {banner.subtitle && (
+                  <h1 className={`font-heading mb-6 md:mb-8 leading-tight drop-shadow-lg animate-fade-in-up ${
+                    isMobile ? 'text-[32px] md:text-[36px]' : 'text-[48px] lg:text-[64px]'
+                  }`} style={{ animationDelay: '0.2s' }}>
+                    {banner.subtitle}
+                  </h1>
+                )}
+                
+                {/* Button */}
+                {showButton && (
+                  <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                    <Button 
+                      className={`bg-white text-uti-red hover:bg-gray-100 font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 rounded-button ${
+                        isMobile ? 'w-[80%] h-12 text-base' : 'h-[50px] md:h-[60px] px-8 md:px-12 text-base md:text-lg min-w-[180px] md:min-w-[220px]'
+                      }`}
+                      onClick={() => handleButtonClick(banner.button_link)}
+                    >
+                      {banner.button_image_url && (
+                        <img 
+                          src={banner.button_image_url} 
+                          alt="" 
+                          className="w-5 h-5 mr-2" 
+                        />
+                      )}
+                      {banner.button_text}
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </Carousel>
+            
+            {/* Desktop Secondary Image */}
+            {banner.image_url && backgroundType === 'gradient' && !isMobile && (
+              <div className={`absolute ${imageAlignment} top-1/2 transform -translate-y-1/2 hidden xl:block animate-fade-in-right`}>
+                <img 
+                  src={banner.image_url} 
+                  alt={banner.subtitle || banner.title || 'Banner'} 
+                  className="max-w-sm max-h-80 object-contain drop-shadow-2xl rounded-lg"
+                  onError={e => {
+                    e.currentTarget.style.display = 'none';
+                  }} 
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Banner Indicators */}
+        {banners.length > 1 && (
+          <div className="absolute bottom-4 md:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
+            {banners.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setCurrentBanner(index);
+                  resumeAutoPlayAfterDelay();
+                }}
+                className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-300 ${
+                  index === currentBanner 
+                    ? 'bg-white scale-125 shadow-lg' 
+                    : 'bg-white/50 hover:bg-white/70'
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </section>
       
-      {/* Quick Links Section (Assuming it's also redesigned) */}
+      {/* Quick Links Section */}
       <HeroQuickLinks />
     </>
   );
 };
 
 export default HeroBannerCarousel;
-

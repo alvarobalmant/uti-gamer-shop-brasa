@@ -1,76 +1,51 @@
-import React from 'react';
+
 import { ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/hooks/useProducts';
-import { cn } from '@/lib/utils';
 
 interface ProductActionsProps {
   product: Product;
+  quantity: number;
+  selectedCondition: 'new' | 'pre-owned' | 'digital';
   onAddToCart: () => void;
-  isLoading: boolean; // To show loading state on button
-  // Add wishlist props if needed
-  // onAddToWishlist: () => void;
-  // isWishlisted: boolean;
+  onWhatsAppContact: () => void;
 }
 
-// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
-const ProductActions: React.FC<ProductActionsProps> = ({ 
+const ProductActions = ({ 
   product, 
+  quantity, 
+  selectedCondition, 
   onAddToCart, 
-  isLoading
-  // onAddToWishlist, 
-  // isWishlisted 
-}) => {
-  const isOutOfStock = product.stock === 0;
-
+  onWhatsAppContact 
+}: ProductActionsProps) => {
   return (
-    <div className="space-y-3 pt-2"> {/* Add padding top */}
-      {/* Main Add to Cart Button */}
+    <div className="space-y-3">
       <Button
         onClick={onAddToCart}
-        size="lg" // Larger button for primary action
-        className={cn(
-          "w-full font-bold text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-300 active:scale-[0.98]",
-          isOutOfStock
-            ? "bg-muted text-muted-foreground cursor-not-allowed"
-            : "bg-uti-red hover:bg-uti-red/90 text-primary-foreground"
-        )}
-        disabled={isOutOfStock || isLoading}
+        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 text-lg rounded-lg shadow-md hover:shadow-lg transition-all"
+        disabled={product.stock === 0}
       >
-        {isLoading ? (
-          <>
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Adicionando...
-          </>
-        ) : (
-          <>
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            {isOutOfStock ? 'Esgotado' : 'Adicionar ao Carrinho'}
-          </>
-        )}
+        <ShoppingCart className="w-5 h-5 mr-2" />
+        {product.stock === 0 ? 'Produto Esgotado' : 'Adicionar ao Carrinho'}
       </Button>
 
-      {/* Optional: Wishlist Button (Subtle) */}
-      {/* 
       <Button
         variant="outline"
-        size="lg"
-        onClick={onAddToWishlist}
-        className="w-full font-semibold rounded-lg transition-all"
-        disabled={isLoading} // Disable while adding to cart potentially
+        className="w-full border-2 border-gray-300 text-gray-700 hover:border-red-600 hover:text-red-600 font-semibold py-4 rounded-lg transition-all"
       >
-        <Heart className={cn("w-5 h-5 mr-2", isWishlisted ? "fill-uti-red text-uti-red" : "")} />
-        {isWishlisted ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}
+        <Heart className="w-5 h-5 mr-2" />
+        Adicionar aos Favoritos
       </Button>
-      */}
 
-      {/* Removed WhatsApp contact button from here, should be in header/footer or specific contact section */}
+      <Button
+        onClick={onWhatsAppContact}
+        variant="outline"
+        className="w-full border-2 border-green-600 text-green-600 hover:bg-green-50 font-semibold py-3 rounded-lg"
+      >
+        💬 Entrar em Contato via WhatsApp
+      </Button>
     </div>
   );
 };
 
 export default ProductActions;
-
