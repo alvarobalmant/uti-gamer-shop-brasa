@@ -1,29 +1,34 @@
+
 import { useState, useEffect } from 'react';
-import { useProducts } from '@/hooks/useProducts'; // Removed unused Product type
+import { useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
-import HeroQuickLinks from '@/components/HeroQuickLinks';
 import PromotionalBanner from '@/components/PromotionalBanner';
-import ServiceCards from '@/components/ServiceCards'; // Contains Services, Benefits, Contact
+import ServiceCards from '@/components/ServiceCards';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
 import Footer from '@/components/Footer';
-// SectionTitle is used within FeaturedProductsSection and ServiceCards
+import { useHomepageLayout } from '@/hooks/useHomepageLayout';
+import { useProductSections } from '@/hooks/useProductSections';
 
-// **Radical Redesign - Home Page Layout Reorganization**
+// Dynamic Homepage Layout based on database configuration
 const Index = () => {
-  const { products, loading } = useProducts();
-  const { user, isAdmin, signOut } = useAuth(); // Keep auth hooks
-  const navigate = useNavigate(); // Keep navigate
+  const { products, loading: productsLoading } = useProducts();
+  const { user, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { setupScrollRestoration } = useScrollPosition();
+  
+  // Fetch homepage layout and product sections
+  const { layoutItems, loading: layoutLoading } = useHomepageLayout();
+  const { sections, loading: sectionsLoading } = useProductSections();
 
   // Placeholder for fetching banner data (replace with actual logic)
   const [bannerData, setBannerData] = useState({
@@ -32,66 +37,103 @@ const Index = () => {
     description: 'Tenha acesso a descontos exclusivos, frete grátis e muito mais. Torne-se membro hoje mesmo!',
     buttonText: 'Saiba Mais sobre UTI PRO',
     buttonLink: '/uti-pro',
-    targetBlank: false, // Ensure link opens in the same tab
+    targetBlank: false,
   });
-
-  // Placeholder for fetching featured sections data (replace with actual logic, potentially from admin)
-  // Added more example sections
-  const [featuredSections, setFeaturedSections] = useState([
-    { id: 'destaques', title: 'Destaques da Semana', tag: 'featured', viewAllLink: '/categoria/destaques' },
-    { id: 'novidades', title: 'Novidades', tag: 'new', viewAllLink: '/categoria/novidades' },
-    { id: 'mais_vendidos', title: 'Mais Vendidos', tag: 'bestseller', viewAllLink: '/categoria/mais-vendidos' },
-    // Add more sections as needed or fetch dynamically
-  ]);
 
   useEffect(() => {
     const cleanup = setupScrollRestoration();
-    // TODO: Fetch actual banner data & featured sections data
+    // TODO: Fetch actual banner data
     return cleanup;
   }, [setupScrollRestoration]);
 
-  // handleAddToCart remains the same, passed to FeaturedProductsSection
   const handleAddToCart = (product: any, size?: string, color?: string) => {
     addToCart(product, size, color);
   };
 
+  // Render section based on section key
+  const renderSection = (sectionKey: string) => {
+    switch (sectionKey) {
+      case 'hero_banner':
+        return <HeroBannerCarousel key="hero_banner" />;
+      
+      case 'promo_banner':
+        return (
+          <div key="promo_banner" className="container mx-auto px-4 sm:px-6 lg:px-8 my-8 md:my-12">
+            <PromotionalBanner {...bannerData} />
+          </div>
+        );
+      
+      case 'service_cards':
+        return <ServiceCards key="service_cards" />;
+      
+      default:
+        // Handle product sections
+        if (sectionKey.startsWith('product_section_')) {
+          const sectionId = sectionKey.replace('product_section_', '');
+          const section = sections.find(s => s.id === sectionId);
+          
+          if (!section) return null;
+          
+          // Filter products based on section items
+          let sectionProducts = [];
+          if (section.items) {
+            for (const item of section.items) {
+              if (item.item_type === 'product') {
+                // Find specific product by ID
+                const product = products.find(p => p.id === item.item_id);
+                if (product) sectionProducts.push(product);
+              } else if (item.item_type === 'tag') {
+                // Find products with this tag
+                const tagProducts = products.filter(p => 
+                  p.tags?.some(tag => tag.name.toLowerCase() === item.item_id.toLowerCase() || tag.id === item.item_id)
+                );
+                sectionProducts.push(...tagProducts);
+              }
+            }
+          }
+          
+          return (
+            <FeaturedProductsSection
+              key={sectionKey}
+              products={sectionProducts}
+              loading={productsLoading || sectionsLoading}
+              onAddToCart={handleAddToCart}
+              title={section.title}
+              viewAllLink={section.view_all_link || undefined}
+            />
+          );
+        }
+        
+        return null;
+    }
+  };
+
+  const isLoading = layoutLoading || sectionsLoading;
+
   return (
     <div className="min-h-screen bg-background w-full overflow-x-hidden flex flex-col">
-      {/* Header - Redesigned */}
+      {/* Header */}
       <ProfessionalHeader
         onCartOpen={() => setShowCart(true)}
         onAuthOpen={() => setShowAuthModal(true)}
       />
 
       <main className="flex-grow">
-        {/* Hero Section (includes Quick Links) */}
-        <HeroBannerCarousel />
-
-        {/* Promotional Banner (UTI PRO) */}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 my-8 md:my-12"> {/* Added margin */}
-          <PromotionalBanner {...bannerData} />
-        </div>
-
-        {/* Dynamically Rendered Featured Products Sections */}
-        {featuredSections.map((section) => (
-          <FeaturedProductsSection
-            key={section.id}
-            // Filter products based on section tag or fetch specific products per section
-            // Example filtering - adjust based on actual product data structure
-            products={products.filter(p => p.tags?.some(t => t.name.toLowerCase() === section.tag) || section.tag === 'featured')} 
-            loading={loading}
-            onAddToCart={handleAddToCart}
-            title={section.title} // Use dynamic title
-            viewAllLink={section.viewAllLink} // Pass the specific link
-          />
-        ))}
-
-        {/* Service Cards Section (Includes Services, Benefits, Contact) - Redesigned for mobile */}
-        <ServiceCards />
-
+        {/* Render sections dynamically based on layout configuration */}
+        {isLoading ? (
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center">Carregando...</div>
+          </div>
+        ) : (
+          layoutItems
+            .filter(item => item.is_visible) // Only show visible sections
+            .sort((a, b) => a.display_order - b.display_order) // Sort by display order
+            .map(item => renderSection(item.section_key))
+            .filter(Boolean) // Remove null sections
+        )}
       </main>
 
-      {/* Footer - Redesigned */}
+      {/* Footer */}
       <Footer />
 
       {/* Cart Component */}
@@ -99,7 +141,7 @@ const Index = () => {
         cart={items}
         showCart={showCart}
         setShowCart={setShowCart}
-        updateQuantity={updateQuantity} // Pass the correct update function
+        updateQuantity={updateQuantity}
         sendToWhatsApp={sendToWhatsApp}
       />
 
@@ -110,4 +152,3 @@ const Index = () => {
 };
 
 export default Index;
-

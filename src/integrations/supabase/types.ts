@@ -105,6 +105,92 @@ export type Database = {
           },
         ]
       }
+      homepage_layout: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          id: number
+          is_visible: boolean
+          section_key: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order: number
+          id?: number
+          is_visible?: boolean
+          section_key: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          id?: number
+          is_visible?: boolean
+          section_key?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      product_section_items: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: number
+          item_id: string
+          item_type: Database["public"]["Enums"]["section_item_type"]
+          section_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: number
+          item_id: string
+          item_type: Database["public"]["Enums"]["section_item_type"]
+          section_id: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: number
+          item_id?: string
+          item_type?: Database["public"]["Enums"]["section_item_type"]
+          section_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_section_items_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "product_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_sections: {
+        Row: {
+          created_at: string | null
+          id: string
+          title: string
+          updated_at: string | null
+          view_all_link: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+          view_all_link?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          view_all_link?: string | null
+        }
+        Relationships: []
+      }
       product_tags: {
         Row: {
           created_at: string
@@ -460,7 +546,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      section_item_type: "product" | "tag"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -575,6 +661,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      section_item_type: ["product", "tag"],
+    },
   },
 } as const

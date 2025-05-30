@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -56,7 +57,8 @@ export const useProductSections = () => {
         const { data: itemsData, error: itemsError } = await supabase
           .from('product_section_items')
           .select('*')
-          .in('section_id', sectionIds);
+          .in('section_id', sectionIds)
+          .order('display_order', { ascending: true });
         if (itemsError) throw itemsError;
         allItems = itemsData || [];
       }
@@ -119,7 +121,7 @@ export const useProductSections = () => {
         .select('display_order')
         .order('display_order', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (orderError && orderError.code !== 'PGRST116') { // Ignore 'No rows found' error
          throw orderError;
@@ -269,4 +271,3 @@ export const useProductSections = () => {
 
   return { sections, loading, error, fetchSections, createSection, updateSection, deleteSection };
 };
-

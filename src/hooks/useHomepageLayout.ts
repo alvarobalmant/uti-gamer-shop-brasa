@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client'; // Adjust path as needed
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
 // Define the structure for a layout item from the DB
@@ -64,7 +65,7 @@ export const useHomepageLayout = () => {
         if (sectionsError) {
           console.warn('Could not fetch product section titles:', sectionsError.message);
         } else {
-          productSectionsData = sections;
+          productSectionsData = sections || [];
         }
       }
 
@@ -125,4 +126,3 @@ export const useHomepageLayout = () => {
 
   return { layoutItems, setLayoutItems, loading, error, fetchLayout, updateLayout };
 };
-
