@@ -69,25 +69,15 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
           <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start mt-auto">
             <Button 
               variant="outline" 
-<<<<<<< HEAD
               size="xs" // Keep small size for mobile
               className={cn(
                 "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
                 "text-xs px-2 py-1", // Adjusted padding for smaller button
-=======
-              size="xs"
-              className={cn(
-                "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
->>>>>>> ab4a43026c025f1f4a4eb058d8b0604d2684adfe
                 textColor
               )}
             >
               {buttonText}
-<<<<<<< HEAD
               <ArrowRight className="ml-1 h-3 w-3" /> {/* Adjusted icon size slightly */}
-=======
-              <ArrowRight className="ml-1.5 h-3 w-3" />
->>>>>>> ab4a43026c025f1f4a4eb058d8b0604d2684adfe
             </Button>
           </a>
         </div>
@@ -97,3 +87,4 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
 };
 
 export default PromotionalBanner;
+
