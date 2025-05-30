@@ -69,14 +69,15 @@ const SpecializedServices = () => {
                           <div className="w-full h-full bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             {!imageErrors[card.id] && card.image_url ? (
                               <img
-                                src={card.image_url}
+                                src={card.image_url} // Ensure this URL is correct and accessible
                                 alt={card.title}
-                                className="w-7 h-7 object-contain filter brightness-0 invert"
+                                // Removed filter brightness-0 invert as it's likely for icons, not images
+                                className="w-7 h-7 object-contain" 
                                 loading="lazy"
                                 onError={() => handleImageError(card.id)}
                               />
                             ) : (
-                              // Fallback icon when image fails to load or is missing
+                              // Fallback icon (Box) when image fails to load or is missing
                               <div className="w-7 h-7 flex items-center justify-center text-primary-foreground">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
@@ -114,3 +115,4 @@ const SpecializedServices = () => {
 };
 
 export default SpecializedServices;
+

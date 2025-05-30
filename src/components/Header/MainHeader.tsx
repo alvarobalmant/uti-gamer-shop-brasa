@@ -54,9 +54,11 @@ const MainHeader = ({
                 alt="UTI DOS GAMES Logo"
                 className="h-10 w-auto"
               />
-              <div className="ml-3 hidden sm:block">
+              {/* Removed 'hidden' class to make text visible on mobile */}
+              <div className="ml-3 sm:block">
                 <h1 className="font-bold text-lg leading-tight text-uti-red">UTI DOS GAMES</h1>
-                <p className="text-xs text-gray-600 leading-tight">compre online com a segurança de uma loja física</p>
+                {/* Corrected subtitle text below */}
+                <p className="text-xs text-gray-600 leading-tight">Compre online com a segurança de uma loja física.</p>
               </div>
             </a>
           </div>
@@ -97,3 +99,4 @@ const MainHeader = ({
 };
 
 export default MainHeader;
+

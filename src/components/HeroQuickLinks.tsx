@@ -1,112 +1,82 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Gamepad2, 
-  MonitorSpeaker, 
-  Headphones, 
-  Gift, 
-  Puzzle, 
-  MousePointer,
-  Flame, // Icon for Ofertas
-  Package // Icon for Colecionáveis
-} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
-
-// Define the structure for a quick link
-interface QuickLinkItem {
-  id: string;
-  icon: React.ElementType;
-  label: string;
-  path: string;
-}
+import { useQuickLinks } from '@/hooks/useQuickLinks'; // Import the hook
+import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
 
 const HeroQuickLinks = () => {
   const navigate = useNavigate();
+  const { quickLinks, loading, fetchQuickLinks } = useQuickLinks(); // Use the hook
 
-  // Define the quick links data - simplified, colors removed
-  const quickLinks: QuickLinkItem[] = [
-    {
-      id: 'playstation',
-      icon: Gamepad2,
-      label: 'PlayStation',
-      path: '/categoria/playstation',
-    },
-    {
-      id: 'xbox',
-      icon: Gamepad2,
-      label: 'Xbox',
-      path: '/categoria/xbox',
-    },
-    {
-      id: 'nintendo',
-      icon: Gamepad2,
-      label: 'Nintendo',
-      path: '/categoria/nintendo',
-    },
-    {
-      id: 'pc',
-      icon: MonitorSpeaker,
-      label: 'PC Gamer',
-      path: '/categoria/pc',
-    },
-    {
-      id: 'acessorios',
-      icon: Headphones, // Or MousePointerSquare
-      label: 'Acessórios',
-      path: '/categoria/acessorios',
-    },
-    {
-      id: 'ofertas',
-      icon: Flame, // Using Flame for Ofertas
-      label: 'Ofertas',
-      path: '/categoria/ofertas',
-    },
-    // Add Colecionáveis if it exists as a category
-    // {
-    //   id: 'colecionaveis',
-    //   icon: Package, // Using Package for Colecionáveis
-    //   label: 'Colecionáveis',
-    //   path: '/categoria/colecionaveis',
-    // },
-  ];
+  // Fetch links when the component mounts
+  useEffect(() => {
+    fetchQuickLinks();
+  }, [fetchQuickLinks]);
 
   const handleQuickLinkClick = (path: string) => {
-    navigate(path);
+    // Basic validation to prevent navigating to empty or invalid paths
+    if (path && path.trim() !== '' && path !== '#') {
+      navigate(path);
+    } else {
+      console.warn('Invalid path provided for quick link:', path);
+    }
+  };
+
+  // Function to handle image loading errors
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    // Replace with a placeholder or hide the image
+    event.currentTarget.src = '/placeholder-icon.svg'; // Ensure you have a placeholder icon at this path
+    event.currentTarget.onerror = null; // Prevent infinite loop if placeholder also fails
   };
 
   return (
-    // Section styling: Light gray background, padding, subtle border top
     <section className="py-8 md:py-12 bg-secondary border-t border-border/60">
       <div className="container mx-auto">
-        {/* Use grid for layout, responsive columns */}
         <div className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-6">
-          {quickLinks.map((link) => {
-            const IconComponent = link.icon;
-            return (
-              // Use Card component for structure and styling
-              <Card 
-                key={link.id}
-                onClick={() => handleQuickLinkClick(link.path)}
-                className={cn(
-                  "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
-                  "bg-card border border-border/80 rounded-xl", // Use card background, subtle border, defined radius
-                  "hover:shadow-md hover:border-primary/40 hover:-translate-y-1" // Hover effects: shadow, primary border, lift
-                )}
-              >
-                {/* Flex container for icon and text */}
+          {loading && (
+            // Show skeletons while loading
+            [...Array(6)].map((_, i) => (
+              <Card key={`skeleton-${i}`} className="overflow-hidden bg-card border border-border/80 rounded-xl">
                 <CardContent className="flex flex-col items-center justify-center p-4 md:p-6 aspect-[4/3] sm:aspect-square">
-                  {/* Icon styling: Use primary color */}
-                  <IconComponent className="w-7 h-7 md:w-8 md:h-8 mb-3 text-primary transition-transform duration-300 group-hover:scale-110" />
-                  
-                  {/* Label styling: Clear typography */}
-                  <span className="text-xs sm:text-sm font-medium text-foreground text-center leading-tight group-hover:text-primary transition-colors duration-200">
-                    {link.label}
-                  </span>
+                  <Skeleton className="w-8 h-8 md:w-10 md:h-10 mb-3 rounded-full" />
+                  <Skeleton className="h-4 w-3/4" />
                 </CardContent>
               </Card>
-            );
-          })}
+            ))
+          )}
+
+          {!loading && quickLinks.length === 0 && (
+            <p className="col-span-3 md:col-span-6 text-center text-muted-foreground py-8">
+              Nenhum link rápido configurado.
+            </p>
+          )}
+
+          {!loading && quickLinks.map((link) => (
+            <Card
+              key={link.id}
+              onClick={() => handleQuickLinkClick(link.path)}
+              className={cn(
+                "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
+                "bg-card border border-border/80 rounded-xl",
+                "hover:shadow-md hover:border-primary/40 hover:-translate-y-1"
+              )}
+            >
+              <CardContent className="flex flex-col items-center justify-center p-4 md:p-6 aspect-[4/3] sm:aspect-square">
+                {/* Use img tag for the icon_url */}
+                <img
+                  src={link.icon_url}
+                  alt={link.label} // Use label as alt text
+                  className="w-7 h-7 md:w-8 md:h-8 mb-3 object-contain transition-transform duration-300 group-hover:scale-110"
+                  loading="lazy"
+                  onError={handleImageError} // Add error handler
+                />
+                <span className="text-xs sm:text-sm font-medium text-foreground text-center leading-tight group-hover:text-primary transition-colors duration-200">
+                  {link.label}
+                </span>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </section>
@@ -114,3 +84,4 @@ const HeroQuickLinks = () => {
 };
 
 export default HeroQuickLinks;
+

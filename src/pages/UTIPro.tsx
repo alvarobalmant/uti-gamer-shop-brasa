@@ -160,9 +160,10 @@ const UTIPro = () => {
           </div>
         </motion.section>
 
-        {/* Benefits Section - Horizontal Scroll on Mobile */}
+        {/* Benefits Section - Added padding */}
         <section className="py-12 md:py-24 bg-uti-dark">
-          <div className="container-professional">
+          {/* Increased horizontal padding for the container */}
+          <div className="container-professional px-4 sm:px-6 lg:px-8">
             <motion.h2 
               className="text-2xl md:text-4xl font-bold text-center mb-8 md:mb-12 text-white"
               initial={{ opacity: 0, y: 20 }} 
@@ -172,7 +173,7 @@ const UTIPro = () => {
             >
               Vantagens Exclusivas
             </motion.h2>
-            {/* Horizontal Scroll Container for Mobile */}
+            {/* Horizontal Scroll Container for Mobile - Adjusted padding/margin */}
             <div className="md:hidden overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin scrollbar-thumb-uti-red/50 scrollbar-track-transparent">
               <motion.div 
                 className="flex gap-4 w-max"
@@ -202,7 +203,7 @@ const UTIPro = () => {
                 ))}
               </motion.div>
             </div>
-            {/* Grid Layout for Desktop */}
+            {/* Grid Layout for Desktop - Added padding */}
             <motion.div 
               className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
               variants={staggerContainer}
@@ -233,10 +234,11 @@ const UTIPro = () => {
           </div>
         </section>
 
-        {/* Pricing Plans Section - Horizontal Scroll on Mobile */}
+        {/* Pricing Plans Section - Added padding */}
         {!hasActiveSubscription() && (
           <section id="planos" className="py-12 md:py-24 bg-gradient-to-b from-black via-uti-dark to-black">
-            <div className="container-professional">
+            {/* Increased horizontal padding for the container */}
+            <div className="container-professional px-4 sm:px-6 lg:px-8">
               <motion.h2 
                 className="text-2xl md:text-4xl font-bold text-center mb-8 md:mb-12 text-white"
                 initial={{ opacity: 0, y: 20 }} 
@@ -246,10 +248,11 @@ const UTIPro = () => {
               >
                 Escolha seu Plano UTI PRO
               </motion.h2>
-              {/* Horizontal Scroll Container for Mobile */}
-              <div className="md:hidden overflow-x-auto pb-6 -mx-4 px-4 pt-4 scrollbar-thin scrollbar-thumb-uti-red/50 scrollbar-track-transparent">
+              {/* Horizontal Scroll Container for Mobile - Adjusted padding/margin */}
+              {/* Added pt-6 to give space for the badge */}
+              <div className="md:hidden overflow-x-auto pb-6 -mx-4 px-4 pt-6 scrollbar-thin scrollbar-thumb-uti-red/50 scrollbar-track-transparent">
                 <motion.div 
-                  className="flex gap-4 w-max pt-3"
+                  className="flex gap-4 w-max"
                   variants={staggerContainer}
                   initial="hidden"
                   whileInView="visible"
@@ -263,10 +266,10 @@ const UTIPro = () => {
                       <motion.div 
                         key={plan.id} 
                         variants={fadeInUp} 
-                        // Adjusted width for better fit on mobile, popular plan slightly larger
                         className={cn(
                           "flex-shrink-0",
-                          isPopular ? "w-[80vw] sm:w-[55vw] -mt-5" : "w-[75vw] sm:w-[50vw]"
+                          // Removed negative margin, let padding handle space
+                          isPopular ? "w-[80vw] sm:w-[55vw]" : "w-[75vw] sm:w-[50vw]"
                         )}
                       >
                         <Card className={cn(
@@ -274,7 +277,8 @@ const UTIPro = () => {
                           isPopular ? 'border-uti-red ring-2 ring-uti-red z-10' : '' 
                         )}>
                           {isPopular && (
-                            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-uti-red text-white px-3 py-1.5 text-xs sm:text-sm font-semibold shadow-md z-20">
+                            // Adjusted badge position slightly
+                            <Badge className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-uti-red text-white px-3 py-1.5 text-xs sm:text-sm font-semibold shadow-md z-20">
                               Mais Popular
                             </Badge>
                           )}
@@ -312,18 +316,17 @@ const UTIPro = () => {
                               disabled={processingPlan === plan.id}
                               size="lg"
                               className={cn(
-                                "w-full font-bold text-base md:text-lg py-2.5 md:py-3 rounded-lg transition-all duration-300", // Adjusted padding
+                                "w-full font-bold text-base md:text-lg py-2.5 md:py-3 rounded-lg transition-all duration-300",
                                 isPopular 
                                   ? 'bg-uti-red text-white hover:bg-uti-red/90 shadow-lg'
-                                  : 'bg-white/10 text-white hover:bg-white/20 border border-white/30'
+                                  : 'bg-gray-700 text-white/80 hover:bg-gray-600'
                               )}
                             >
                               {processingPlan === plan.id ? (
-                                <span className="flex items-center justify-center gap-2">
-                                  <Loader2 className="w-5 h-5 animate-spin" />
-                                  Processando...
-                                </span>
-                              ) : 'Assinar Agora'}
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                              ) : (
+                                'Assinar Agora'
+                              )}
                             </Button>
                           </CardContent>
                         </Card>
@@ -332,141 +335,95 @@ const UTIPro = () => {
                   })}
                 </motion.div>
               </div>
-              {/* Grid Layout for Desktop */}
+              {/* Grid Layout for Desktop - Added padding */}
               <motion.div 
-                className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-stretch"
+                className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-stretch pt-3"
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.1 }}
               >
-                 {plans.map((plan) => {
-                    const isPopular = plan.duration_months === 6;
-                    const monthlyPrice = calculateMonthlyPrice(plan.price, plan.duration_months);
-                    
-                    return (
-                      <motion.div key={plan.id} variants={fadeInUp} className={cn(isPopular ? "lg:scale-105 lg:z-10" : "")}>
-                        <Card className={cn(
-                          "relative bg-gray-800/60 border border-gray-700 shadow-xl h-full flex flex-col transition-all duration-300",
-                          isPopular ? 'border-uti-red ring-2 ring-uti-red' : 'hover:border-uti-red/70 hover:bg-gray-800/80'
-                        )}>
-                          {isPopular && (
-                            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-uti-red text-white px-4 py-1 text-sm font-semibold">
-                              Mais Popular
-                            </Badge>
-                          )}
-                          
-                          <CardHeader className="text-center pt-8 pb-4">
-                            <CardTitle className="text-2xl font-bold text-white mb-2">{plan.name}</CardTitle>
-                            <CardDescription className="text-white/70 min-h-[40px]">{plan.description}</CardDescription>
-                            <div className="mt-6">
-                              <span className="text-4xl font-extrabold text-uti-red">
-                                {formatPrice(plan.price)}
-                              </span>
-                              <div className="text-sm text-white/60 mt-1">
-                                Equivalente a {formatPrice(monthlyPrice)}/mês
-                              </div>
+                {plans.map((plan) => {
+                  const isPopular = plan.duration_months === 6;
+                  const monthlyPrice = calculateMonthlyPrice(plan.price, plan.duration_months);
+
+                  return (
+                    <motion.div 
+                      key={plan.id} 
+                      variants={fadeInUp} 
+                      // Adjusted scale and margin for desktop popular plan
+                      className={cn(isPopular ? "lg:scale-105 lg:-mt-4" : "")}
+                    >
+                      <Card className={cn(
+                        "relative bg-gray-800/60 border border-gray-700 shadow-xl h-full flex flex-col transition-all duration-300",
+                        isPopular ? 'border-uti-red ring-2 ring-uti-red z-10' : 'hover:border-gray-600'
+                      )}>
+                        {isPopular && (
+                          // Adjusted badge position slightly for desktop
+                          <Badge className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-uti-red text-white px-4 py-1.5 text-sm font-semibold shadow-md z-20">
+                            Mais Popular
+                          </Badge>
+                        )}
+                        
+                        <CardHeader className="text-center pt-8 pb-4">
+                          <CardTitle className="text-2xl font-bold text-white mb-2">{plan.name}</CardTitle>
+                          <CardDescription className="text-white/70 min-h-[40px]">{plan.description}</CardDescription>
+                          <div className="mt-6">
+                            <span className="text-4xl font-extrabold text-uti-red">
+                              {formatPrice(plan.price)}
+                            </span>
+                            <div className="text-sm text-white/60 mt-1">
+                              Equivalente a {formatPrice(monthlyPrice)}/mês
                             </div>
-                          </CardHeader>
+                          </div>
+                        </CardHeader>
 
-                          <CardContent className="flex-grow flex flex-col justify-between pt-0 pb-8 px-6">
-                            <ul className="space-y-3 mb-8 text-left text-white/80">
-                                {[ 
-                                  '10% de desconto em tudo',
-                                  'Ofertas exclusivas para membros',
-                                  'Acesso prioritário a novidades',
-                                  'Suporte premium via WhatsApp'
-                                ].map((feature, i) => (
-                                  <li key={i} className="flex items-center gap-3">
-                                  <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                                  <span>{feature}</span>
-                                  </li>
-                              ))}
-                            </ul>
+                        <CardContent className="flex-grow flex flex-col justify-between pt-0 pb-8 px-6">
+                          <ul className="space-y-3 mb-8 text-left text-white/80">
+                            {[ 
+                                '10% de desconto em tudo',
+                                'Ofertas exclusivas para membros',
+                                'Acesso prioritário a novidades',
+                                'Suporte premium via WhatsApp'
+                            ].map((feature, i) => (
+                                <li key={i} className="flex items-center gap-3">
+                                <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                                <span>{feature}</span>
+                                </li>
+                            ))}
+                          </ul>
 
-                            <Button
-                              onClick={() => handleSubscribe(plan.id)}
-                              disabled={processingPlan === plan.id}
-                              size="lg"
-                              className={cn(
-                                "w-full font-bold text-lg py-3 rounded-lg transition-all duration-300",
-                                isPopular 
-                                  ? 'bg-uti-red text-white hover:bg-uti-red/90 shadow-lg'
-                                  : 'bg-white/10 text-white hover:bg-white/20 border border-white/30'
-                              )}
-                            >
-                               {processingPlan === plan.id ? (
-                                <span className="flex items-center justify-center gap-2">
-                                  <Loader2 className="w-5 h-5 animate-spin" />
-                                  Processando...
-                                </span>
-                              ) : 'Assinar Agora'}
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    );
-                  })}
+                          <Button
+                            onClick={() => handleSubscribe(plan.id)}
+                            disabled={processingPlan === plan.id}
+                            size="lg"
+                            className={cn(
+                              "w-full font-bold text-lg py-3 rounded-lg transition-all duration-300",
+                              isPopular 
+                                ? 'bg-uti-red text-white hover:bg-uti-red/90 shadow-lg'
+                                : 'bg-gray-700 text-white/80 hover:bg-gray-600'
+                            )}
+                          >
+                            {processingPlan === plan.id ? (
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                              'Assinar Agora'
+                            )}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
               </motion.div>
             </div>
           </section>
         )}
 
-        {/* Subscription Management Section */}
-        {hasActiveSubscription() && usuario && (
-          <section className="py-12 md:py-20 bg-gray-900">
-            <div className="container-professional max-w-2xl mx-auto">
-              <motion.h2 
-                className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-white"
-                initial={{ opacity: 0, y: 20 }} 
-                whileInView={{ opacity: 1, y: 0 }} 
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.5 }}
-              >
-                Sua Assinatura UTI PRO
-              </motion.h2>
-              <motion.div 
-                className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 md:p-8 shadow-lg"
-                initial={{ opacity: 0, scale: 0.95 }} 
-                whileInView={{ opacity: 1, scale: 1 }} 
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="mb-4">
-                  <p className="text-sm text-white/60">Plano Atual</p>
-                  <p className="text-lg font-semibold text-white">{usuario.plano || 'UTI PRO'}</p>
-                </div>
-                <div className="mb-6">
-                  <p className="text-sm text-white/60">Status</p>
-                  <p className={cn(
-                      "text-lg font-semibold",
-                      userSubscription?.status === 'active' ? 'text-green-400' : 'text-yellow-400'
-                    )}
-                  >
-                    {userSubscription?.status === 'active' ? 'Ativa' : 'Pendente'}
-                  </p>
-                </div>
-                <div className="mb-6">
-                  <p className="text-sm text-white/60">Próxima Cobrança</p>
-                  <p className="text-lg font-semibold text-white">
-                    {usuario.proxima_cobranca || 'Não disponível'}
-                  </p>
-                </div>
-                <Button 
-                  onClick={handleCancel}
-                  variant="outline"
-                  className="w-full border-white/30 text-white hover:bg-white/10 hover:border-white/50"
-                >
-                  Cancelar Assinatura
-                </Button>
-              </motion.div>
-            </div>
-          </section>
-        )}
-
-        {/* FAQ Section */}
-        <section className="py-12 md:py-20 bg-black">
-          <div className="container-professional max-w-3xl mx-auto">
+        {/* FAQ Section - Added padding and adjusted spacing */}
+        <section className="py-12 md:py-24 bg-black">
+          {/* Increased horizontal padding for the container */}
+          <div className="container-professional px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
             <motion.h2 
               className="text-2xl md:text-4xl font-bold text-center mb-8 md:mb-12 text-white"
               initial={{ opacity: 0, y: 20 }} 
@@ -476,56 +433,46 @@ const UTIPro = () => {
             >
               Perguntas Frequentes
             </motion.h2>
-            <motion.div 
-              className="space-y-4"
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true, amount: 0.1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="item-1" className="border-white/20">
-                  <AccordionTrigger className="text-white hover:text-white/90 text-left">
-                    Como funciona o UTI PRO?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-white/70">
-                    UTI PRO é um programa de assinatura que oferece benefícios exclusivos como descontos em todos os produtos, acesso prioritário a lançamentos e ofertas especiais. Você escolhe o plano que melhor se adapta às suas necessidades e aproveita todas as vantagens.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-2" className="border-white/20">
-                  <AccordionTrigger className="text-white hover:text-white/90 text-left">
-                    Posso cancelar minha assinatura a qualquer momento?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-white/70">
-                    Sim, você pode cancelar sua assinatura UTI PRO a qualquer momento através da sua conta. O cancelamento será efetivado ao final do período atual já pago, sem cobranças adicionais.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-3" className="border-white/20">
-                  <AccordionTrigger className="text-white hover:text-white/90 text-left">
-                    O desconto de 10% é válido para todos os produtos?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-white/70">
-                    Sim! O desconto de 10% é aplicado em todos os produtos da loja, incluindo lançamentos e itens já em promoção. É uma das maiores vantagens do programa UTI PRO.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-4" className="border-white/20">
-                  <AccordionTrigger className="text-white hover:text-white/90 text-left">
-                    Como faço para me tornar um membro UTI PRO?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-white/70">
-                    É simples! Basta escolher um dos planos disponíveis, fazer login na sua conta (ou criar uma nova) e confirmar sua assinatura. Os benefícios são ativados imediatamente após a confirmação do pagamento.
-                  </AccordionContent>
-                </AccordionItem>
+              <Accordion type="single" collapsible className="w-full space-y-4"> {/* Increased space between items */}
+                {[ 
+                  { q: "Como funciona o UTI PRO?", a: "O UTI PRO é um programa de assinatura que oferece 10% de desconto em todos os produtos, acesso prioritário a novidades, ofertas exclusivas e suporte premium via WhatsApp." },
+                  { q: "Posso cancelar minha assinatura a qualquer momento?", a: "Sim, você pode cancelar sua assinatura a qualquer momento através do seu painel de controle, sem taxas adicionais." },
+                  { q: "O desconto de 10% é válido para todos os produtos?", a: "Sim, o desconto de 10% é aplicado automaticamente em todos os produtos da loja para membros UTI PRO, sem exceções." },
+                  { q: "Como faço para me tornar um membro UTI PRO?", a: "Basta escolher um dos planos (Mensal, Semestral ou Anual) acima e clicar em \"Assinar Agora\". Você será redirecionado para a página de pagamento seguro." },
+                ].map((faq, index) => (
+                  <motion.div key={index} variants={fadeInUp}>
+                    <AccordionItem value={`item-${index}`} className="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+                      {/* Increased padding for trigger */}
+                      <AccordionTrigger className="text-left font-semibold text-white hover:no-underline px-6 py-5 text-base md:text-lg">
+                        {faq.q}
+                      </AccordionTrigger>
+                      {/* Increased padding and added leading-relaxed for content */}
+                      <AccordionContent className="px-6 pb-5 pt-0 text-white/70 text-sm md:text-base leading-relaxed">
+                        {faq.a}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </motion.div>
+                ))}
               </Accordion>
             </motion.div>
           </div>
         </section>
+
       </main>
 
       <Footer />
+
+      {/* Authentication Modal */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 };
 
 export default UTIPro;
+
