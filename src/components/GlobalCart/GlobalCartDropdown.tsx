@@ -1,11 +1,17 @@
 # Merged version of GlobalCartDropdown.tsx
 # Prioritizing GitHub version's styling and structure, assuming updateQuantity uses itemId based on GitHub's hook usage.
 
+<<<<<<< HEAD
 import { Button } from '@/components/ui/button';
 import { Plus, Minus, ShoppingCart, X, Trash2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext'; // Assuming CartContext provides the necessary functions
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils'; // Import cn for conditional classes
+=======
+import GlobalCartContainer from './GlobalCartContainer';
+import GlobalCartContent from './GlobalCartContent';
+import { useGlobalCartLogic } from './useGlobalCartLogic';
+>>>>>>> dbbec974f352f8a2dcb3662acfc51dce5f1461fb
 
 interface GlobalCartDropdownProps {
   isOpen: boolean;
@@ -13,6 +19,7 @@ interface GlobalCartDropdownProps {
 }
 
 const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
+<<<<<<< HEAD
   // Assuming useCart provides these based on CartContext.tsx (to be checked next)
   const { items, updateQuantity, removeFromCart, clearCart, getCartTotal, sendToWhatsApp } = useCart(); 
   const isMobile = useIsMobile();
@@ -245,6 +252,29 @@ const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
         )}
       </div>
     </>
+=======
+  const {
+    items,
+    handleQuantityChange,
+    handleRemoveItem,
+    handleClearCart,
+    getCartTotal,
+    sendToWhatsApp,
+  } = useGlobalCartLogic();
+
+  return (
+    <GlobalCartContainer isOpen={isOpen} onClose={onClose}>
+      <GlobalCartContent
+        items={items}
+        onClose={onClose}
+        onQuantityChange={handleQuantityChange}
+        onRemoveItem={handleRemoveItem}
+        onClearCart={handleClearCart}
+        getCartTotal={getCartTotal}
+        sendToWhatsApp={sendToWhatsApp}
+      />
+    </GlobalCartContainer>
+>>>>>>> dbbec974f352f8a2dcb3662acfc51dce5f1461fb
   );
 };
 

@@ -1,12 +1,15 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Product } from '@/hooks/useProducts';
 
 interface ProductPageHeaderProps {
   onBackClick: () => void;
+  product?: Product;
+  isLoading?: boolean;
 }
 
-const ProductPageHeader = ({ onBackClick }: ProductPageHeaderProps) => {
+const ProductPageHeader = ({ onBackClick, product, isLoading }: ProductPageHeaderProps) => {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="px-4 py-3 flex items-center gap-3">
@@ -15,6 +18,7 @@ const ProductPageHeader = ({ onBackClick }: ProductPageHeaderProps) => {
           variant="ghost"
           size="sm"
           className="flex items-center gap-2"
+          disabled={isLoading}
         >
           <ArrowLeft className="w-4 h-4" />
           Voltar
@@ -25,7 +29,9 @@ const ProductPageHeader = ({ onBackClick }: ProductPageHeaderProps) => {
             alt="UTI DOS GAMES" 
             className="h-8 w-8"
           />
-          <h1 className="text-lg font-bold text-gray-900">UTI DOS GAMES</h1>
+          <h1 className="text-lg font-bold text-gray-900">
+            {product ? product.name : 'UTI DOS GAMES'}
+          </h1>
         </div>
       </div>
     </header>
