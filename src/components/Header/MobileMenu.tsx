@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react'; // Import useEffect
+import { useEffect } from 'react';
 import { X, User, Crown, Home, Grid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,12 +24,21 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
     } else {
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
     }
-    // Cleanup function to reset overflow when component unmounts or isOpen changes
+    
     return () => {
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
     };
   }, [isOpen]);
 
@@ -53,37 +62,33 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
     onClose();
   };
 
-  // Do not render anything if not open (improves performance slightly)
-  // The transition control is handled by the parent managing isOpen state
-  // if (!isOpen) return null; 
-  // Keep rendering structure for transitions
-
+  // Render even when closed for smooth transitions
   return (
     <div 
       className={cn(
-        "fixed inset-0 z-50 md:hidden transition-opacity duration-300 ease-in-out",
-        isOpen ? "opacity-100" : "opacity-0 pointer-events-none" // Control visibility via opacity
+        "fixed inset-0 z-[100] md:hidden transition-all duration-300 ease-in-out",
+        isOpen ? "opacity-100 visible" : "opacity-0 invisible"
       )}
     >
-      {/* Backdrop */}
+      {/* Full screen backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm" 
         onClick={onClose} 
         aria-hidden="true"
       />
       
-      {/* Menu Panel - Slide in from left, 80% width, max-w-xs, full height */}
+      {/* Menu Panel - Full height, slides from left */}
       <div 
         className={cn(
-          "fixed top-0 left-0 h-full w-4/5 max-w-xs bg-white shadow-xl flex flex-col transition-transform duration-300 ease-in-out", // Restored width constraints
-          isOpen ? "translate-x-0" : "-translate-x-full" // Control slide via transform
+          "absolute top-0 left-0 h-full w-full max-w-sm bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out overflow-hidden",
+          isOpen ? "translate-x-0" : "-translate-x-full"
         )}
         role="dialog"
         aria-modal="true"
         aria-labelledby="mobile-menu-title"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
+        {/* Header - Fixed at top */}
+        <div className="flex items-center justify-between p-4 border-b bg-white flex-shrink-0 min-h-[64px]">
           <div className="flex items-center gap-3">
             <img 
               src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
@@ -92,15 +97,20 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
             />
             <span id="mobile-menu-title" className="font-bold text-lg text-gray-900">Menu</span>
           </div>
-          <Button onClick={onClose} variant="ghost" size="icon" className="text-gray-600 hover:text-red-600 hover:bg-red-50">
+          <Button 
+            onClick={onClose} 
+            variant="ghost" 
+            size="icon" 
+            className="text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10"
+          >
             <X className="w-6 h-6" />
             <span className="sr-only">Fechar menu</span>
           </Button>
         </div>
 
-        {/* Scrollable Content Area */} 
-        <ScrollArea className="flex-grow">
-          <div className="p-4 space-y-6"> {/* Increased spacing */}
+        {/* Scrollable Content - Takes remaining space */}
+        <div className="flex-1 overflow-y-auto bg-white">
+          <div className="p-4 space-y-6">
             {/* User Section */}
             <div className="border-b pb-4">
               {user ? (
@@ -118,7 +128,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                   <Button
                     onClick={handleAuthClick}
                     variant="outline"
-                    className="w-full h-11 text-base" // Increased height and text size
+                    className="w-full h-12 text-base"
                   >
                     {isAdmin ? 'Painel Admin' : 'Gerenciar Conta'}
                   </Button>
@@ -126,7 +136,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
               ) : (
                 <Button
                   onClick={handleAuthClick}
-                  className="w-full bg-red-600 hover:bg-red-700 h-11 text-base" // Increased height and text size
+                  className="w-full bg-red-600 hover:bg-red-700 h-12 text-base"
                 >
                   <User className="w-5 h-5 mr-2" />
                   Entrar / Cadastrar
@@ -139,17 +149,16 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
               <Button
                 onClick={() => handleNavigation('/')}
                 variant="ghost"
-                className="w-full justify-start h-11 text-base px-3" // Increased height, text size, padding
+                className="w-full justify-start h-12 text-base px-4"
               >
                 <Home className="w-5 h-5 mr-3" />
                 Início
               </Button>
 
-              {/* UTI PRO Link */}
               <Button
                 onClick={() => handleNavigation('/uti-pro')}
                 variant="ghost"
-                className="w-full justify-start h-11 text-base px-3 bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 text-yellow-800 hover:bg-yellow-200 hover:text-yellow-900"
+                className="w-full justify-start h-12 text-base px-4 bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 text-yellow-800 hover:bg-yellow-200 hover:text-yellow-900"
               >
                 <Crown className="w-5 h-5 mr-3" />
                 UTI PRO
@@ -158,7 +167,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
 
             {/* Categories */}
             <div className="border-t pt-4">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-lg px-3">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-lg px-4">
                 <Grid className="w-5 h-5" />
                 Categorias
               </h3>
@@ -168,7 +177,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     key={category.id}
                     onClick={() => handleNavigation(category.path)}
                     variant="ghost"
-                    className="w-full justify-start h-11 text-base px-3 text-gray-700 hover:text-red-600 hover:bg-red-50" // Increased height, text size, padding
+                    className="w-full justify-start h-12 text-base px-4 text-gray-700 hover:text-red-600 hover:bg-red-50"
                   >
                     {category.name}
                   </Button>
@@ -176,11 +185,10 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
       </div>
     </div>
   );
 };
 
 export default MobileMenu;
-

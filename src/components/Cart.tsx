@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react'; // Import useEffect
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Minus, ShoppingCart, X, Trash2 } from 'lucide-react';
 import { CartItem } from '@/hooks/useCartSync';
@@ -31,12 +31,21 @@ const Cart = ({
   useEffect(() => {
     if (showCart) {
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
     } else {
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
     }
-    // Cleanup function to reset overflow when component unmounts or showCart changes
+    
     return () => {
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
     };
   }, [showCart]);
 
@@ -63,40 +72,33 @@ const Cart = ({
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    // Only close if the backdrop itself (the div with bg-black/60) is clicked
     if (e.target === e.currentTarget) {
       setShowCart(false);
     }
   };
 
-  // Keep rendering structure for transitions, control visibility via opacity/transform
-  // if (!showCart) return null; 
-
   return (
-    // Backdrop - Covers the entire screen, centers the modal on mobile
     <div 
-      className={`fixed inset-0 bg-black/60 z-50 backdrop-blur-sm transition-opacity duration-300 flex items-center justify-center ${showCart ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-      onClick={handleBackdropClick} // Close when clicking backdrop
+      className={`fixed inset-0 bg-black/70 z-[100] backdrop-blur-sm transition-all duration-300 ${showCart ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+      onClick={handleBackdropClick}
       aria-hidden={!showCart}
-      role="dialog" // Add role dialog for accessibility
-      aria-modal="true" // Indicate it's a modal
-      aria-labelledby="cart-title" // Add accessible name
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cart-title"
     >
-      {/* Cart Panel - Centered modal on mobile, slides from right on md+ */}
+      {/* Cart Panel - Full height on mobile, takes most of screen */}
       <div 
         className={`bg-white shadow-2xl overflow-hidden flex flex-col transform transition-all duration-300 ease-in-out 
-                    w-[90%] max-w-[400px] rounded-lg max-h-[90vh]  /* Mobile: Centered Modal */
-                    md:fixed md:right-0 md:top-0 md:h-full md:w-[450px] md:max-w-[450px] md:rounded-none md:max-h-full /* Desktop: Side Panel */
-                    ${showCart ? 'scale-100 opacity-100 md:translate-x-0' : 'scale-95 opacity-0 md:translate-x-full'}` 
+                    fixed inset-x-2 inset-y-4 rounded-lg  /* Mobile: Almost full screen with small margins */
+                    md:right-2 md:left-auto md:w-[500px] md:inset-y-4 /* Desktop: Right side panel */
+                    ${showCart ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}` 
                   }
-        // Prevent backdrop click from closing if clicking inside the cart panel
         onClick={(e) => e.stopPropagation()} 
-        role="document" // Inner container role
+        role="document"
       >
-        {/* Header */}
-        <div className="p-4 border-b-2 border-red-600 bg-white flex-shrink-0 rounded-t-lg md:rounded-none">
+        {/* Header - Fixed at top */}
+        <div className="p-4 border-b-2 border-red-600 bg-white flex-shrink-0 rounded-t-lg">
           <div className="flex justify-between items-center">
-            {/* Left: Icon + Title */} 
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <ShoppingCart className="w-5 h-5 text-white" />
@@ -108,13 +110,12 @@ const Cart = ({
                 </p>
               </div>
             </div>
-            {/* Right: Clear + Close Buttons */} 
             <div className="flex items-center space-x-1">
               {cart.length > 0 && clearCart && (
                 <Button 
                   variant="ghost" 
                   onClick={handleClearCart}
-                  className="text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full w-9 h-9 p-0"
+                  className="text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
                   title="Limpar carrinho"
                   aria-label="Limpar carrinho"
                 >
@@ -124,7 +125,7 @@ const Cart = ({
               <Button 
                 variant="ghost" 
                 onClick={() => setShowCart(false)} 
-                className="text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full w-9 h-9 p-0"
+                className="text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
                 aria-label="Fechar carrinho"
               >
                 <X className="w-5 h-5" />
@@ -133,10 +134,9 @@ const Cart = ({
           </div>
         </div>
 
-        {/* Conditional Content: Empty or Items + Footer */} 
+        {/* Content Area */}
         {cart.length === 0 ? (
-          // Empty Cart View
-          <div className="flex-1 flex items-center justify-center p-6 text-center">
+          <div className="flex-1 flex items-center justify-center p-6 text-center bg-white">
             <div>
               <img 
                 src="/lovable-uploads/ad940e09-b6fc-44a8-98a5-3247986d6f98.png" 
@@ -154,25 +154,22 @@ const Cart = ({
             </div>
           </div>
         ) : (
-          // Cart with Items
           <>
-            {/* Cart Items List (Scrollable) */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Cart Items - Scrollable middle section */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
               {cart.map((item) => (
                 <div 
                   key={item.id} 
-                  className="bg-gray-50 p-3 rounded-lg border border-gray-200 hover:border-red-300 transition-colors duration-200"
+                  className="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-red-300 transition-colors duration-200"
                 >
                   <div className="flex items-start space-x-3">
-                    {/* Item Image */}
                     <img 
                       src={item.product.image} 
                       alt={item.product.name}
-                      className="w-16 h-16 object-cover rounded-md flex-shrink-0 border"
+                      className="w-20 h-20 object-cover rounded-md flex-shrink-0 border"
                     />
-                    {/* Item Details */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-1">
+                      <div className="flex justify-between items-start mb-2">
                         <h4 className="text-gray-800 font-semibold text-sm leading-tight mr-2">
                           {item.product.name}
                         </h4>
@@ -181,47 +178,44 @@ const Cart = ({
                             size="icon"
                             variant="ghost"
                             onClick={() => handleRemoveItem(item.id)}
-                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-6 h-6 p-0 flex-shrink-0"
+                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-7 h-7 p-0 flex-shrink-0"
                             title="Remover item"
                             aria-label="Remover item"
                           >
-                            <X className="w-3.5 h-3.5" />
+                            <X className="w-4 h-4" />
                           </Button>
                         )}
                       </div>
-                      <p className="text-gray-500 text-xs mb-2">
+                      <p className="text-gray-500 text-xs mb-3">
                         {item.size || 'Padrão'}{item.color ? `, ${item.color}` : ''}
                       </p>
                       
-                      {/* Quantity + Price */}
-                      <div className="flex justify-between items-center mt-2">
-                        {/* Quantity Controls */}
+                      <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-2">
                           <Button
                             size="icon"
                             variant="outline"
                             onClick={() => handleQuantityChange(item, -1)}
-                            className="w-7 h-7 p-0 border-gray-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600 rounded-md"
+                            className="w-8 h-8 p-0 border-gray-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600 rounded-md"
                             disabled={item.quantity <= 1}
                             aria-label="Diminuir quantidade"
                           >
-                            <Minus className="w-3.5 h-3.5" />
+                            <Minus className="w-4 h-4" />
                           </Button>
-                          <span className="text-gray-800 font-bold text-sm w-8 text-center">
+                          <span className="text-gray-800 font-bold text-base w-8 text-center">
                             {item.quantity}
                           </span>
                           <Button
                             size="icon"
                             variant="outline"
                             onClick={() => handleQuantityChange(item, 1)}
-                            className="w-7 h-7 p-0 border-gray-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600 rounded-md"
+                            className="w-8 h-8 p-0 border-gray-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600 rounded-md"
                             aria-label="Aumentar quantidade"
                           >
-                            <Plus className="w-3.5 h-3.5" />
+                            <Plus className="w-4 h-4" />
                           </Button>
                         </div>
-                        {/* Item Total Price */}
-                        <p className="text-red-600 font-bold text-sm">
+                        <p className="text-red-600 font-bold text-base">
                           R$ {(item.product.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
@@ -231,9 +225,8 @@ const Cart = ({
               ))}
             </div>
 
-            {/* Footer with Summary and Actions */}
-            <div className="border-t-2 border-gray-200 p-4 bg-white flex-shrink-0 rounded-b-lg md:rounded-none">
-              {/* Price Summary Box */}
+            {/* Footer - Fixed at bottom */}
+            <div className="border-t-2 border-gray-200 p-4 bg-white flex-shrink-0 rounded-b-lg">
               <div className="bg-gray-50 p-4 rounded-lg mb-4 border border-gray-200 space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 text-sm font-medium">Subtotal:</span>
@@ -253,14 +246,13 @@ const Cart = ({
                 <div className="border-t border-gray-200 pt-2 mt-2">
                   <div className="flex justify-between items-center">
                     <span className="text-base font-bold text-gray-800">Total:</span>
-                    <span className="text-lg font-bold text-red-600">
+                    <span className="text-xl font-bold text-red-600">
                       R$ {getTotalPrice().toFixed(2)}
                     </span>
                   </div>
                 </div>
               </div>
               
-              {/* Action Buttons */}
               <div className="space-y-3">
                 <Button
                   onClick={sendToWhatsApp}
@@ -290,4 +282,3 @@ const Cart = ({
 };
 
 export default Cart;
-
