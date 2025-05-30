@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useEffect } from 'react';
 import { X, User, Crown, Home, Grid, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,13 +14,6 @@ import {
   SheetTitle,
   SheetClose
 } from "@/components/ui/sheet";
-=======
-
-import MobileMenuHeader from './MobileMenu/MobileMenuHeader';
-import MobileMenuAuth from './MobileMenu/MobileMenuAuth';
-import MobileMenuNavigation from './MobileMenu/MobileMenuNavigation';
-import { useMobileMenuLogic } from './MobileMenu/useMobileMenuLogic';
->>>>>>> dbbec974f352f8a2dcb3662acfc51dce5f1461fb
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -31,13 +23,10 @@ interface MobileMenuProps {
 
 // Rebuilding based on reference image image(1).png and user feedback
 const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
-  const { handleAuthClick, handleNavigation } = useMobileMenuLogic({
-    isOpen,
-    onClose,
-    onAuthOpen,
-  });
+  const { user, isAdmin } = useAuth();
+  const { hasActiveSubscription } = useSubscriptions();
+  const navigate = useNavigate();
 
-<<<<<<< HEAD
   const handleAuthClick = () => {
     if (user) {
       // If user is logged in, navigate to account or admin panel
@@ -194,26 +183,6 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
         </ScrollArea>
       </SheetContent>
     </Sheet>
-=======
-  if (!isOpen) return null;
-
-  return (
-    <>
-      {/* Full screen backdrop */}
-      <div className="fixed inset-0 bg-black/50 z-[9999]" onClick={onClose} />
-      
-      {/* Menu modal - positioned like in the image */}
-      <div className="fixed top-0 left-4 right-4 bottom-20 bg-white z-[9999] rounded-b-2xl shadow-2xl flex flex-col overflow-hidden">
-        <MobileMenuHeader onClose={onClose} />
-
-        {/* Menu content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <MobileMenuAuth onAuthClick={handleAuthClick} />
-          <MobileMenuNavigation onNavigation={handleNavigation} />
-        </div>
-      </div>
-    </>
->>>>>>> dbbec974f352f8a2dcb3662acfc51dce5f1461fb
   );
 };
 
