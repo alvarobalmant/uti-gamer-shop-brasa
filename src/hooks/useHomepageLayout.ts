@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client'; // Adjust path as needed
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
 // Define the structure for a layout item from the DB
@@ -12,9 +12,10 @@ export interface HomepageLayoutItem {
   title?: string; // Example: Fetched from product_sections or hardcoded for fixed sections
 }
 
-// Define the structure for updating layout items
+// Define the structure for updating layout items - include section_key for upsert
 interface LayoutUpdatePayload {
   id: number;
+  section_key: string; // Required for upsert
   display_order: number;
   is_visible: boolean;
 }
@@ -29,10 +30,19 @@ export const useHomepageLayout = () => {
   const getSectionTitle = (key: string): string => {
     switch (key) {
       case 'hero_banner': return 'Carrossel de Banners Principal';
+      case 'hero_quick_links': return 'Links Rápidos (Categorias)'; // Added
       case 'promo_banner': return 'Banner Promocional (UTI PRO)';
-      case 'service_cards': return 'Cartões de Serviço/Contato';
+      // Removed 'service_cards', added individual sections
+      case 'specialized_services': return 'Seção: Nossos Serviços Especializados';
+      case 'why_choose_us': return 'Seção: Por que escolher a UTI DOS GAMES?';
+      case 'contact_help': return 'Seção: Precisa de Ajuda/Contato';
       // Product sections title will be fetched separately
-      default: return key; // Fallback to key
+      default:
+        if (key.startsWith('product_section_')) {
+          // Placeholder title, actual title fetched later
+          return `Seção de Produtos (${key.replace('product_section_', '').substring(0, 8)}...)`; 
+        }
+        return key; // Fallback to key
     }
   };
 
@@ -64,7 +74,7 @@ export const useHomepageLayout = () => {
         if (sectionsError) {
           console.warn('Could not fetch product section titles:', sectionsError.message);
         } else {
-          productSectionsData = sections;
+          productSectionsData = sections || [];
         }
       }
 
@@ -75,7 +85,7 @@ export const useHomepageLayout = () => {
           const sectionId = item.section_key.replace('product_section_', '');
           const productSection = productSectionsData.find(sec => sec.id === sectionId);
           if (productSection) {
-            title = productSection.title; // Use fetched title
+            title = productSection.title; // Use fetched title for product sections
           }
         }
         return { ...item, title }; // Add title to the item
@@ -125,4 +135,3 @@ export const useHomepageLayout = () => {
 
   return { layoutItems, setLayoutItems, loading, error, fetchLayout, updateLayout };
 };
-
