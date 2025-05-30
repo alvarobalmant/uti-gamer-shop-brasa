@@ -1,3 +1,4 @@
+
 import { User, ShoppingCart, Repeat } from 'lucide-react'; // Added Repeat for Trade-In
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,14 +7,12 @@ import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
 import { cn } from '@/lib/utils';
 
 interface HeaderActionsProps {
-  onCartOpen: () => void; // Keep for GlobalCartIcon if needed internally
   onAuthOpen: () => void;
 }
 
 // **Redesign based on GameStop Header Actions**
 const HeaderActions = ({ 
   onAuthOpen,
-  onCartOpen // Keep if GlobalCartIcon needs it
 }: HeaderActionsProps) => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -58,7 +57,7 @@ const HeaderActions = ({
       </Button>
 
       {/* Global Shopping Cart Icon - Always visible */}
-      <GlobalCartIcon onCartOpen={onCartOpen} /> 
+      <GlobalCartIcon />
 
       {/* Mobile Menu Toggle is handled outside this component now */}
     </div>
@@ -66,4 +65,3 @@ const HeaderActions = ({
 };
 
 export default HeaderActions;
-

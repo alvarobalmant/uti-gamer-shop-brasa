@@ -81,7 +81,7 @@ const Cart = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/80 z-[100] backdrop-blur-sm"
+      className="fixed inset-0 bg-black/80 z-[9999] backdrop-blur-sm"
       onClick={handleBackdropClick}
       aria-hidden={!showCart}
       role="dialog"
@@ -91,7 +91,7 @@ const Cart = ({
       {/* Cart Panel - Takes up most of the screen */}
       <div 
         className="bg-white shadow-2xl overflow-hidden flex flex-col 
-                  fixed inset-x-4 inset-y-8 rounded-2xl animate-in zoom-in-95 duration-300"
+                  fixed inset-x-4 inset-y-8 rounded-2xl animate-in zoom-in-95 duration-300 z-[9999]"
         onClick={(e) => e.stopPropagation()} 
         role="document"
       >

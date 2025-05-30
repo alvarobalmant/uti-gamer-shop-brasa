@@ -1,11 +1,9 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// PromotionalBanner import removed, assuming it's not part of the sticky header
 import MainHeader from './MainHeader';
-// MobileCategoriesMenu import removed, likely integrated into MobileMenu
 import DesktopNavigation from './DesktopNavigation';
 import MobileMenu from './MobileMenu';
-import { categories, Category } from './categories'; // Keep categories if needed for MobileMenu/DesktopNavigation
 import { cn } from '@/lib/utils';
 
 interface ProfessionalHeaderProps {
@@ -17,13 +15,6 @@ interface ProfessionalHeaderProps {
 const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  // showCategories state likely removed as it's handled within MobileMenu
-
-  const handleCategoryClick = (category: Category) => {
-    navigate(category.path);
-    setMobileMenuOpen(false); // Close menu on navigation
-    document.body.style.overflow = 'unset'; // Restore body scroll
-  };
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(prev => {
@@ -62,8 +53,6 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
         isOpen={mobileMenuOpen}
         onClose={closeMobileMenu}
         onAuthOpen={onAuthOpen}
-        categories={categories} // Pass categories to the mobile menu
-        onCategoryClick={handleCategoryClick} // Pass category click handler
       />
     </header>
     // PromotionalBanner is likely rendered separately in the page layout (e.g., Index.tsx)
@@ -71,4 +60,3 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
 };
 
 export default ProfessionalHeader;
-

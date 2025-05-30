@@ -65,7 +65,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] md:hidden">
+    <div className="fixed inset-0 z-[9999] md:hidden">
       {/* Full screen backdrop */}
       <div 
         className="absolute inset-0 bg-black/80 backdrop-blur-sm" 

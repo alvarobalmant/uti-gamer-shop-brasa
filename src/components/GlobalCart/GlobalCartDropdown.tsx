@@ -38,13 +38,13 @@ const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40" 
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999]" 
         onClick={handleBackdropClick}
       />
       
       {/* Dropdown - Mobile gets almost full screen treatment */}
       <div className={`
-        fixed z-50 bg-white shadow-2xl border border-gray-200 flex flex-col rounded-2xl
+        fixed z-[9999] bg-white shadow-2xl border border-gray-200 flex flex-col rounded-2xl
         ${isMobile 
           ? 'inset-x-4 inset-y-8 max-h-[calc(100vh-4rem)]' 
           : 'absolute right-0 top-full mt-2 w-96 max-h-96 rounded-lg'
