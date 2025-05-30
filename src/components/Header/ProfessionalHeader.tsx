@@ -17,6 +17,7 @@ interface ProfessionalHeaderProps {
 const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // showCategories state likely removed as it's handled within MobileMenu
 
   const handleCategoryClick = (category: Category) => {
     navigate(category.path);
@@ -61,6 +62,8 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
         isOpen={mobileMenuOpen}
         onClose={closeMobileMenu}
         onAuthOpen={onAuthOpen}
+        categories={categories} // Pass categories to the mobile menu
+        onCategoryClick={handleCategoryClick} // Pass category click handler
       />
     </header>
     // PromotionalBanner is likely rendered separately in the page layout (e.g., Index.tsx)
@@ -68,3 +71,4 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
 };
 
 export default ProfessionalHeader;
+

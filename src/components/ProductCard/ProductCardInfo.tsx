@@ -1,10 +1,11 @@
 import React from 'react';
-import { Product } from '@/types/product';
+import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge'; // Keep Badge if needed for 'Usado'
 
 interface ProductCardInfoProps {
   product: Product;
+  // getPlatformColor is removed as platform badges are likely omitted in the minimalist design
 }
 
 // **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
@@ -34,3 +35,4 @@ const ProductCardInfo: React.FC<ProductCardInfoProps> = ({ product }) => {
 };
 
 export default ProductCardInfo;
+

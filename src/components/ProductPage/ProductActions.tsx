@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,18 +7,19 @@ import { cn } from '@/lib/utils';
 interface ProductActionsProps {
   product: Product;
   onAddToCart: () => void;
-  isLoading?: boolean; // Make optional with default
-  selectedCondition?: 'new' | 'pre-owned' | 'digital'; // Add selectedCondition
-  onWhatsAppContact?: () => void; // Add WhatsApp contact
+  isLoading: boolean; // To show loading state on button
+  // Add wishlist props if needed
+  // onAddToWishlist: () => void;
+  // isWishlisted: boolean;
 }
 
 // **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductActions: React.FC<ProductActionsProps> = ({ 
   product, 
   onAddToCart, 
-  isLoading = false, // Default to false
-  selectedCondition,
-  onWhatsAppContact
+  isLoading
+  // onAddToWishlist, 
+  // isWishlisted 
 }) => {
   const isOutOfStock = product.stock === 0;
 
@@ -53,20 +53,24 @@ const ProductActions: React.FC<ProductActionsProps> = ({
         )}
       </Button>
 
-      {/* WhatsApp Contact Button */}
-      {onWhatsAppContact && (
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={onWhatsAppContact}
-          className="w-full font-semibold rounded-lg transition-all"
-          disabled={isLoading}
-        >
-          Contato WhatsApp
-        </Button>
-      )}
+      {/* Optional: Wishlist Button (Subtle) */}
+      {/* 
+      <Button
+        variant="outline"
+        size="lg"
+        onClick={onAddToWishlist}
+        className="w-full font-semibold rounded-lg transition-all"
+        disabled={isLoading} // Disable while adding to cart potentially
+      >
+        <Heart className={cn("w-5 h-5 mr-2", isWishlisted ? "fill-uti-red text-uti-red" : "")} />
+        {isWishlisted ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}
+      </Button>
+      */}
+
+      {/* Removed WhatsApp contact button from here, should be in header/footer or specific contact section */}
     </div>
   );
 };
 
 export default ProductActions;
+

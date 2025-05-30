@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -7,7 +6,7 @@ import {
   Headphones, 
   Gift, 
   Puzzle, 
-  MousePointer,
+  MousePointerSquare,
   Flame, // Icon for Ofertas
   Package // Icon for Colecionáveis
 } from 'lucide-react';

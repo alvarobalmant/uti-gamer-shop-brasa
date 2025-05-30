@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Product } from '@/types/product';
+import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 
 interface ProductCardStockProps {

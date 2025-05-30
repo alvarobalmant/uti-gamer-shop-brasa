@@ -1,10 +1,9 @@
-
 import React from 'react';
-import { Product } from '@/types/product';
-import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { Product } from '@/hooks/useProducts';
+import { useSubscriptions } from '@/hooks/useSubscriptions'; // Assuming hook for Pro status
 import { Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'; // For condition selection
 import { Label } from '@/components/ui/label';
 
 interface ProductPricingProps {

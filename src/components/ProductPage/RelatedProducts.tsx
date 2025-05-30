@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Product } from '@/types/product';
-import { useProducts } from '@/hooks/useProducts';
-import ProductCard from '@/components/ProductCard';
+import { Product, useProducts } from '@/hooks/useProducts';
+import ProductCard from '@/components/ProductCard'; // Use the redesigned ProductCard
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface RelatedProductsProps {
@@ -46,11 +45,6 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
     }
   }, [allProducts, product]);
 
-  const handleAddToCart = (product: Product) => {
-    // TODO: Implement add to cart functionality
-    console.log('Adding to cart:', product);
-  };
-
   return (
     <div>
       <h2 className="text-xl lg:text-2xl font-semibold text-foreground mb-4">
@@ -71,8 +65,8 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
           {relatedProducts.map((relatedProduct) => (
             <ProductCard 
               key={relatedProduct.id} 
-              product={relatedProduct}
-              onAddToCart={() => handleAddToCart(relatedProduct)}
+              product={relatedProduct} 
+              // Pass necessary props like onAddToCart if needed, or handle within ProductCard
             />
           ))}
         </div>
@@ -84,3 +78,4 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
 };
 
 export default RelatedProducts;
+

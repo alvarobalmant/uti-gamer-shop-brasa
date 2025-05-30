@@ -22,13 +22,12 @@ const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products, loading: productsLoading } = useProducts();
-  const { addToCart } = useCart();
+  const { addToCart, loading: cartLoading } = useCart(); // Assuming cart context provides loading state
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (products.length > 0 && id) {
@@ -45,30 +44,18 @@ const ProductPage = () => {
 
   const handleAddToCart = async () => {
     if (!product) return;
-    setIsLoading(true);
-    try {
-      await addToCart(product, selectedSize || undefined, selectedColor || undefined);
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    // Add logic to handle quantity if needed, GameStop seems to add 1 by default
+    await addToCart(product, selectedSize || undefined, selectedColor || undefined);
+    // Optional: Add feedback like toast notification
   };
 
   const handleBackClick = () => navigate(-1);
-
-  const handleWhatsAppContact = () => {
-    if (!product) return;
-    const message = `Olá! Gostaria de mais informações sobre:\n\n${product.name}`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
 
   // --- Loading State --- 
   if (productsLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <ProductPageHeader onBackClick={handleBackClick} />
+        <ProductPageHeader onBackClick={handleBackClick} isLoading />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Skeleton for Gallery */}
@@ -105,7 +92,7 @@ const ProductPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Simplified Header - Breadcrumbs might go here */}
-      <ProductPageHeader onBackClick={handleBackClick} />
+      <ProductPageHeader product={product} onBackClick={handleBackClick} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Top Section: Gallery + Info/Actions */}
@@ -134,10 +121,9 @@ const ProductPage = () => {
             <Separator className="my-4" />
             <ProductActions 
               product={product} 
-              onAddToCart={handleAddToCart}
-              isLoading={isLoading}
-              selectedCondition={selectedCondition}
-              onWhatsAppContact={handleWhatsAppContact}
+              onAddToCart={handleAddToCart} 
+              isLoading={cartLoading} // Pass cart loading state
+              // Add other actions like wishlist if needed
             />
             {/* Trust badges/Delivery info can go here */}
             {/* <ProductTrustBadges /> */}
@@ -164,3 +150,4 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
+
