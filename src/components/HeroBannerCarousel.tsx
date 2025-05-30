@@ -4,18 +4,18 @@ import { Button } from '@/components/ui/button';
 import { useBanners } from '@/hooks/useBanners';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
-import HeroQuickLinks from './HeroQuickLinks'; // Assuming this component is also redesigned
+import HeroQuickLinks from './HeroQuickLinks';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
+  // CarouselNext, // Removed
+  // CarouselPrevious, // Removed
   type CarouselApi,
-} from "@/components/ui/carousel" // Using shadcn Carousel
-import Autoplay from "embla-carousel-autoplay" // Import Autoplay plugin
+} from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
 
 const HeroBannerCarousel = () => {
   const { banners, loading } = useBanners();
@@ -24,12 +24,10 @@ const HeroBannerCarousel = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Autoplay plugin instance
   const plugin = useRef(
     Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
   )
 
-  // Update current slide index on select
   useEffect(() => {
     if (!api) {
       return
@@ -40,7 +38,6 @@ const HeroBannerCarousel = () => {
     })
   }, [api])
 
-  // Preload images
   useEffect(() => {
     banners.forEach(banner => {
       if (banner.image_url) {
@@ -59,28 +56,23 @@ const HeroBannerCarousel = () => {
     }
   }, [navigate]);
 
-  // --- Loading State ---
   if (loading) {
     return (
       <section className="relative bg-uti-gray-light overflow-hidden border-b border-border/60">
-        {/* Use Skeleton for the carousel area */}
         <Skeleton className="h-[300px] md:h-[450px] lg:h-[550px] xl:h-[clamp(500px,65vh,650px)] w-full" />
-        {/* Render QuickLinks below the skeleton */}
         <HeroQuickLinks />
       </section>
     );
   }
 
-  // --- Fallback Content (No Banners) ---
   if (banners.length === 0) {
     return (
       <>
-        {/* Use a simpler, static hero section if no banners */}
         <section className="relative bg-gradient-to-br from-uti-dark via-gray-900 to-uti-dark text-white overflow-hidden">
           <div className="relative h-[300px] md:h-[450px] lg:h-[550px] xl:h-[clamp(500px,65vh,650px)] flex items-center justify-center">
             <div className="container mx-auto px-4 max-w-4xl text-center animate-fade-in">
               <img 
-                src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" // Use logo
+                src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png"
                 alt="UTI DOS GAMES" 
                 className="h-16 w-16 md:h-20 md:w-20 mx-auto mb-5 drop-shadow-md"
               />
@@ -102,7 +94,7 @@ const HeroBannerCarousel = () => {
                   size="lg"
                   variant="outline"
                   className="bg-transparent border-white/40 text-white hover:bg-white/10 hover:border-white/60 font-semibold shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
-                  onClick={() => navigate('/')} // Navigate to home or a general products page
+                  onClick={() => navigate('/')}
                 >
                   Explorar Produtos
                 </Button>
@@ -115,13 +107,12 @@ const HeroBannerCarousel = () => {
     );
   }
 
-  // --- Carousel Rendering ---
   return (
     <>
-      <section className="relative overflow-hidden border-b border-border/60 bg-uti-gray-light"> {/* Fallback bg */}
+      <section className="relative overflow-hidden border-b border-border/60 bg-uti-gray-light">
         <Carousel 
           setApi={setApi}
-          plugins={[plugin.current]} // Add autoplay plugin
+          plugins={[plugin.current]}
           opts={{ 
             loop: true, 
             align: "start",
@@ -130,41 +121,34 @@ const HeroBannerCarousel = () => {
           onMouseLeave={plugin.current.reset}
           className="w-full"
         >
-          <CarouselContent className="-ml-0"> {/* Remove negative margin if not needed */}
+          <CarouselContent className="-ml-0">
             {banners.map((banner, index) => {
               const hasImage = !!banner.image_url;
               return (
-                <CarouselItem key={index} className="pl-0"> {/* Remove padding left if not needed */}
+                <CarouselItem key={index} className="pl-0">
                   <div 
                     className={cn(
                       "relative text-white transition-opacity duration-500 ease-in-out",
-                      "h-[300px] md:h-[450px] lg:h-[550px] xl:h-[clamp(500px,65vh,650px)]", // Responsive height
-                      "flex items-center", // Use flex to center content vertically
-                      hasImage ? "bg-cover bg-center" : "bg-gradient-to-br from-uti-red via-red-700 to-red-800" // Background logic
+                      "h-[300px] md:h-[450px] lg:h-[550px] xl:h-[clamp(500px,65vh,650px)]",
+                      "flex items-center",
+                      hasImage ? "bg-cover bg-center" : "bg-gradient-to-br from-uti-red via-red-700 to-red-800"
                     )}
                     style={hasImage ? { backgroundImage: `url(${banner.image_url})` } : {}}
                   >
-                    {/* Overlay for better text readability on image backgrounds */}
                     {hasImage && (
                       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/70"></div>
                     )}
-
-                    {/* Content Area */} 
                     <div className="absolute inset-0 z-10 flex items-center">
                       <div className="container mx-auto w-full">
                         <div className={cn(
                             "max-w-lg md:max-w-xl lg:max-w-2xl animate-fade-in-up",
-                            // Adjust text alignment based on design preference (e.g., always left)
                             "text-left" 
                         )}>
-                          {/* Title (Optional Tag) */}
                           {banner.title && (
                             <div className="inline-block bg-black/30 backdrop-blur-sm text-white font-semibold mb-3 md:mb-4 px-4 py-1.5 rounded-md text-xs sm:text-sm border border-white/20">
                               {banner.title}
                             </div>
                           )}
-                          
-                          {/* Subtitle (Main Heading) */}
                           {banner.subtitle && (
                             <h1 className={cn(
                                 "font-bold text-white mb-4 md:mb-6 leading-tight drop-shadow-lg",
@@ -173,8 +157,6 @@ const HeroBannerCarousel = () => {
                               {banner.subtitle}
                             </h1>
                           )}
-                          
-                          {/* Button */}
                           {banner.button_text && banner.button_link && (
                             <div style={{ animationDelay: '0.2s' }}>
                               <Button 
@@ -198,13 +180,13 @@ const HeroBannerCarousel = () => {
             })}
           </CarouselContent>
           
-          {/* Custom Navigation Arrows (More elegant) */}
-          {banners.length > 1 && (
+          {/* Navigation Arrows Removed */}
+          {/* {banners.length > 1 && (
             <>
               <CarouselPrevious 
                 className={cn(
                   "absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20",
-                  "h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12", // Responsive size
+                  "h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12",
                   "bg-black/30 hover:bg-black/50 text-white border-white/20 hover:border-white/40",
                   "transition-all duration-200 backdrop-blur-sm rounded-full disabled:opacity-50"
                 )}
@@ -212,21 +194,21 @@ const HeroBannerCarousel = () => {
               <CarouselNext 
                 className={cn(
                   "absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20",
-                  "h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12", // Responsive size
+                  "h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12",
                   "bg-black/30 hover:bg-black/50 text-white border-white/20 hover:border-white/40",
                   "transition-all duration-200 backdrop-blur-sm rounded-full disabled:opacity-50"
                 )}
               />
             </>
-          )}
+          )} */} 
 
-          {/* Custom Banner Indicators */}
+          {/* Custom Banner Indicators (Kept) */}
           {banners.length > 1 && (
             <div className="absolute bottom-4 md:bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-20">
               {banners.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => api?.scrollTo(index)} // Use API to scroll
+                  onClick={() => api?.scrollTo(index)}
                   className={cn(
                     "w-2.5 h-2.5 rounded-full transition-all duration-300",
                     index === currentSlide 
@@ -241,7 +223,6 @@ const HeroBannerCarousel = () => {
         </Carousel>
       </section>
       
-      {/* Quick Links Section (Assuming it's also redesigned) */}
       <HeroQuickLinks />
     </>
   );

@@ -24,7 +24,6 @@ interface MobileMenuProps {
   onCategoryClick: (category: Category) => void;
 }
 
-// Rebuilding based on reference image image(1).png and user feedback
 const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
   const { user, isAdmin } = useAuth();
   const { hasActiveSubscription } = useSubscriptions();
@@ -32,13 +31,11 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
 
   const handleAuthClick = () => {
     if (user) {
-      // If user is logged in, navigate to account or admin panel
-      navigate(isAdmin ? '/admin' : '/account'); // Adjust '/account' if necessary
+      navigate(isAdmin ? '/admin' : '/account'); 
       onClose();
     } else {
-      // If user is logged out, open the auth modal
       onAuthOpen();
-      onClose(); // Close menu when opening auth modal
+      onClose(); 
     }
   };
 
@@ -47,11 +44,9 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
     onClose();
   };
 
-  // Define structure based on reference image image(1).png
   const navLinks = [
     { id: 'inicio', name: 'Início', path: '/', icon: Home },
     { id: 'uti-pro', name: 'UTI PRO', path: '/uti-pro', icon: Crown },
-    // Add other main links if present in the reference
   ];
 
   const utiProLink = navLinks.find(link => link.id === 'uti-pro');
@@ -59,22 +54,24 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
+      {/* Ensure no default close button is rendered by SheetContent if possible, 
+         or remove any other <X> or <SheetClose> outside the header */}
       <SheetContent
         side="left"
-        showCloseButton={false} // Adicionado para remover o X padrão do SheetContent
         className={cn(
-          "w-4/5 max-w-xs h-screen flex flex-col p-0 z-[100] md:hidden", // Full height, left side, specific width, high z-index, hide on md+
-          "bg-white" // White background as per reference
+          "w-4/5 max-w-xs h-screen flex flex-col p-0 z-[100] md:hidden",
+          "bg-white"
         )}
         aria-describedby="mobile-menu-title"
+        // Add showCloseButton={false} or similar prop if available in Shadcn Sheet to prevent default button
+        // For now, assume the explicit <SheetClose> in the header is the only one needed.
       >
-        {/* Header - Similar to reference image(1).png */}
+        {/* Header - Contains the ONLY intended close button */}
         <SheetHeader className="flex flex-row items-center justify-between p-4 border-b flex-shrink-0">
           <div className="flex items-center gap-2">
-            {/* Using a placeholder or simple icon if logo isn't in reference header */}
-            {/* <img src="/path/to/logo.png" alt="Logo" className="h-8 w-auto" /> */}
             <SheetTitle id="mobile-menu-title" className="font-semibold text-lg text-gray-800">Menu</SheetTitle>
           </div>
+          {/* This is the close button to keep */}
           <SheetClose asChild>
             <Button variant="ghost" size="icon" className="text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full w-8 h-8">
               <X className="w-5 h-5" />
@@ -85,21 +82,17 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
 
         {/* Scrollable Content Area */}
         <ScrollArea className="flex-grow">
-          <div className="p-4 space-y-6"> {/* Increased spacing */}
-
-            {/* User Section - Similar to reference image(1).png */}
+          <div className="p-4 space-y-6">
+            {/* User Section */}
             <div className="border-b pb-4">
               {user ? (
-                // Logged In View
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <User className="w-6 h-6 text-gray-600" />
                     <div className='flex-1 min-w-0'>
                       <p className="font-medium text-gray-800 truncate text-sm">{user.email}</p>
-                      {/* Add other user info if needed */}
                     </div>
                   </div>
-                  {/* UTI PRO status/link if applicable */}
                   {utiProLink && hasActiveSubscription() && (
                     <Button
                       onClick={() => handleNavigation(utiProLink.path)}
@@ -111,16 +104,14 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     </Button>
                   )}
                   <Button
-                    onClick={handleAuthClick} // Navigate to account/admin
+                    onClick={handleAuthClick}
                     variant="outline"
                     className="w-full h-11 text-base border-gray-300"
                   >
                     {isAdmin ? 'Painel Admin' : 'Minha Conta'}
                   </Button>
-                  {/* Add Logout Button here */}
                 </div>
               ) : (
-                // Logged Out View - Button like reference
                 <Button
                   onClick={handleAuthClick}
                   className="w-full bg-red-600 hover:bg-red-700 h-12 text-base flex items-center justify-center gap-2 text-white rounded-md font-semibold"
@@ -131,7 +122,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
               )}
             </div>
 
-            {/* Main Navigation Links - Similar to reference */}
+            {/* Main Navigation Links */}
             <div className="space-y-1 border-b pb-4">
               {mainLinks.map((link) => (
                  <Button
@@ -144,7 +135,6 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     {link.name}
                   </Button>
               ))}
-              {/* UTI PRO link - Styled differently, always visible? */}
               {utiProLink && (
                 <Button
                   onClick={() => handleNavigation(utiProLink.path)}
@@ -162,10 +152,9 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
               )}
             </div>
 
-            {/* Categories Section - Similar to reference */}
+            {/* Categories Section */}
             <div className="space-y-1">
               <h3 className="font-semibold text-gray-500 mb-2 flex items-center gap-2 text-sm px-3 uppercase tracking-wider">
-                {/* <Grid className="w-4 h-4" /> */}
                 Categorias
               </h3>
               <div className="space-y-1">
@@ -176,7 +165,6 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     variant="ghost"
                     className="w-full justify-start h-12 text-base px-3 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-md font-medium"
                   >
-                    {/* Add icons here if categories have them */}
                     {category.name}
                   </Button>
                 ))}
@@ -191,3 +179,4 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
 };
 
 export default MobileMenu;
+
