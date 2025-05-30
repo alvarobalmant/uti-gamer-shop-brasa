@@ -47,13 +47,17 @@ const MainHeader = ({
               <Menu className="h-6 w-6" />
             </Button>
 
-            {/* Logo */}
+            {/* Logo with Text */}
             <a href="/" className="flex items-center" aria-label="Página Inicial UTI DOS GAMES">
               <img
                 src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png"
                 alt="UTI DOS GAMES Logo"
                 className="h-10 w-auto"
               />
+              <div className="ml-3 hidden sm:block">
+                <h1 className="font-bold text-lg leading-tight text-uti-red">UTI DOS GAMES</h1>
+                <p className="text-xs text-gray-600 leading-tight">compre online com a segurança de uma loja física</p>
+              </div>
             </a>
           </div>
 
@@ -93,4 +97,3 @@ const MainHeader = ({
 };
 
 export default MainHeader;
-

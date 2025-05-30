@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { useBanners } from '@/hooks/useBanners';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
-import HeroQuickLinks from './HeroQuickLinks';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -60,7 +59,7 @@ const HeroBannerCarousel = () => {
     return (
       <section className="relative bg-uti-gray-light overflow-hidden border-b border-border/60">
         <Skeleton className="h-[300px] md:h-[450px] lg:h-[550px] xl:h-[clamp(500px,65vh,650px)] w-full" />
-        <HeroQuickLinks />
+        {/* Removida a chamada fixa do HeroQuickLinks */}
       </section>
     );
   }
@@ -102,7 +101,7 @@ const HeroBannerCarousel = () => {
             </div>
           </div>
         </section>
-        <HeroQuickLinks />
+        {/* Removida a chamada fixa do HeroQuickLinks */}
       </>
     );
   }
@@ -223,10 +222,9 @@ const HeroBannerCarousel = () => {
         </Carousel>
       </section>
       
-      <HeroQuickLinks />
+      {/* Removida a chamada fixa do HeroQuickLinks */}
     </>
   );
 };
 
 export default HeroBannerCarousel;
-

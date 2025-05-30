@@ -43,23 +43,23 @@ const WhyChooseUs = () => {
           subtitleClassName="text-secondary-foreground/80" // Adjusted for secondary background
         />
 
-        {/* Differentiators Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+        {/* Differentiators Grid - Improved for mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-8 max-w-4xl mx-auto">
           {differentiators.map((item, index) => {
             const IconComponent = item.icon;
             return (
-              <div key={index} className="text-center group">
+              <div key={index} className="text-center group bg-secondary/50 p-4 rounded-lg hover:bg-secondary-foreground/10 transition-colors duration-300">
                 <div className="mb-4">
                   <div className="w-16 h-16 mx-auto bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
                     {/* Ensure icon color contrasts with primary gradient */}
                     <IconComponent className="w-8 h-8 text-primary-foreground" /> 
                   </div>
                 </div>
-                {/* Ensure text color contrasts with secondary background */}
-                <h3 className="text-sm font-semibold text-white mb-1 group-hover:text-primary/80 transition-colors duration-300">
+                {/* Improved text contrast and sizing */}
+                <h3 className="text-base font-semibold text-white mb-2 group-hover:text-primary/80 transition-colors duration-300">
                   {item.title}
                 </h3>
-                <p className="text-xs text-secondary-foreground/80 leading-relaxed">
+                <p className="text-sm text-secondary-foreground/90 leading-relaxed">
                   {item.description}
                 </p>
               </div>
@@ -72,4 +72,3 @@ const WhyChooseUs = () => {
 };
 
 export default WhyChooseUs;
-

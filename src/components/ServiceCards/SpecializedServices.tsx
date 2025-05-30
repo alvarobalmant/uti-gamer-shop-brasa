@@ -5,10 +5,12 @@ import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
 
 const SpecializedServices = () => {
   const { serviceCards, loading } = useServiceCards();
   const navigate = useNavigate();
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   const handleCardClick = (linkUrl: string) => {
     if (linkUrl.startsWith("http")) {
@@ -16,6 +18,13 @@ const SpecializedServices = () => {
     } else {
       navigate(linkUrl);
     }
+  };
+
+  const handleImageError = (id: string) => {
+    setImageErrors(prev => ({
+      ...prev,
+      [id]: true
+    }));
   };
 
   return (
@@ -58,15 +67,24 @@ const SpecializedServices = () => {
                       <div className="mb-4 flex-shrink-0">
                         <div className="relative w-14 h-14 mx-auto">
                           <div className="w-full h-full bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                            <img
-                              src={card.image_url}
-                              alt=""
-                              className="w-7 h-7 object-contain filter brightness-0 invert"
-                              loading="lazy"
-                              onError={(e) => {
-                                e.currentTarget.style.display = "none";
-                              }}
-                            />
+                            {!imageErrors[card.id] && card.image_url ? (
+                              <img
+                                src={card.image_url}
+                                alt={card.title}
+                                className="w-7 h-7 object-contain filter brightness-0 invert"
+                                loading="lazy"
+                                onError={() => handleImageError(card.id)}
+                              />
+                            ) : (
+                              // Fallback icon when image fails to load or is missing
+                              <div className="w-7 h-7 flex items-center justify-center text-primary-foreground">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                  <polyline points="3.29 7 12 12 20.71 7"></polyline>
+                                  <line x1="12" y1="22" x2="12" y2="12"></line>
+                                </svg>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -96,4 +114,3 @@ const SpecializedServices = () => {
 };
 
 export default SpecializedServices;
-

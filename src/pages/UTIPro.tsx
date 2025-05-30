@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -267,13 +266,12 @@ const UTIPro = () => {
                         // Adjusted width for better fit on mobile, popular plan slightly larger
                         className={cn(
                           "flex-shrink-0",
-                          isPopular ? "w-[80vw] sm:w-[55vw]" : "w-[75vw] sm:w-[50vw]"
+                          isPopular ? "w-[80vw] sm:w-[55vw] -mt-5" : "w-[75vw] sm:w-[50vw]"
                         )}
                       >
                         <Card className={cn(
                           "relative bg-gray-800/60 border border-gray-700 shadow-xl h-full flex flex-col transition-all duration-300",
-                          isPopular ? 'border-uti-red ring-2 ring-uti-red z-10 mt-5' : '' 
-                          // Adicionado mt-5 para dar espaço para a badge no mobile
+                          isPopular ? 'border-uti-red ring-2 ring-uti-red z-10' : '' 
                         )}>
                           {isPopular && (
                             <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-uti-red text-white px-3 py-1.5 text-xs sm:text-sm font-semibold shadow-md z-20">
@@ -442,16 +440,22 @@ const UTIPro = () => {
                   <p className="text-sm text-white/60">Status</p>
                   <p className={cn(
                       "text-lg font-semibold",
-                      usuario.status_assinatura === 'Ativo' ? 'text-green-400' : 'text-yellow-400'
+                      userSubscription?.status === 'active' ? 'text-green-400' : 'text-yellow-400'
                     )}
                   >
-                    {usuario.status_assinatura === 'Ativo' ? 'Ativa' : 'Pendente'}
+                    {userSubscription?.status === 'active' ? 'Ativa' : 'Pendente'}
+                  </p>
+                </div>
+                <div className="mb-6">
+                  <p className="text-sm text-white/60">Próxima Cobrança</p>
+                  <p className="text-lg font-semibold text-white">
+                    {usuario.proxima_cobranca || 'Não disponível'}
                   </p>
                 </div>
                 <Button 
                   onClick={handleCancel}
                   variant="outline"
-                  className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                  className="w-full border-white/30 text-white hover:bg-white/10 hover:border-white/50"
                 >
                   Cancelar Assinatura
                 </Button>
@@ -461,7 +465,7 @@ const UTIPro = () => {
         )}
 
         {/* FAQ Section */}
-        <section className="py-12 md:py-24 bg-black">
+        <section className="py-12 md:py-20 bg-black">
           <div className="container-professional max-w-3xl mx-auto">
             <motion.h2 
               className="text-2xl md:text-4xl font-bold text-center mb-8 md:mb-12 text-white"
@@ -472,41 +476,54 @@ const UTIPro = () => {
             >
               Perguntas Frequentes
             </motion.h2>
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
+            <motion.div 
+              className="space-y-4"
+              initial={{ opacity: 0, y: 20 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
               viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Accordion type="single" collapsible className="w-full space-y-3">
-                {[ 
-                  { q: "Como funciona o desconto?", a: "O desconto de 10% é aplicado automaticamente em todos os produtos da loja ao finalizar a compra, desde que sua assinatura UTI PRO esteja ativa." },
-                  { q: "Posso cancelar a qualquer momento?", a: "Sim, você pode cancelar sua assinatura UTI PRO a qualquer momento através do painel de gerenciamento. O acesso aos benefícios continuará até o final do período já pago." },
-                  { q: "O que são as ofertas exclusivas?", a: "São promoções especiais em produtos selecionados, disponíveis apenas para membros UTI PRO. Fique atento aos nossos emails e notificações!" },
-                  { q: "Como funciona o acesso prioritário?", a: "Membros UTI PRO recebem notificações antecipadas sobre pré-vendas e lançamentos, garantindo a chance de comprar antes do público geral." },
-                ].map((faq, index) => (
-                  <motion.div key={index} variants={fadeInUp}>
-                    <AccordionItem value={`item-${index}`} className="bg-gray-800/50 border border-gray-700 rounded-lg px-4 md:px-6 transition-colors hover:bg-gray-800/80">
-                      <AccordionTrigger className="text-left text-base md:text-lg font-medium text-white hover:no-underline py-4">
-                        {faq.q}
-                      </AccordionTrigger>
-                      <AccordionContent className="text-white/70 pt-1 pb-4 text-sm md:text-base">
-                        {faq.a}
-                      </AccordionContent>
-                    </AccordionItem>
-                  </motion.div>
-                ))}
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="item-1" className="border-white/20">
+                  <AccordionTrigger className="text-white hover:text-white/90 text-left">
+                    Como funciona o UTI PRO?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-white/70">
+                    UTI PRO é um programa de assinatura que oferece benefícios exclusivos como descontos em todos os produtos, acesso prioritário a lançamentos e ofertas especiais. Você escolhe o plano que melhor se adapta às suas necessidades e aproveita todas as vantagens.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-2" className="border-white/20">
+                  <AccordionTrigger className="text-white hover:text-white/90 text-left">
+                    Posso cancelar minha assinatura a qualquer momento?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-white/70">
+                    Sim, você pode cancelar sua assinatura UTI PRO a qualquer momento através da sua conta. O cancelamento será efetivado ao final do período atual já pago, sem cobranças adicionais.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-3" className="border-white/20">
+                  <AccordionTrigger className="text-white hover:text-white/90 text-left">
+                    O desconto de 10% é válido para todos os produtos?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-white/70">
+                    Sim! O desconto de 10% é aplicado em todos os produtos da loja, incluindo lançamentos e itens já em promoção. É uma das maiores vantagens do programa UTI PRO.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-4" className="border-white/20">
+                  <AccordionTrigger className="text-white hover:text-white/90 text-left">
+                    Como faço para me tornar um membro UTI PRO?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-white/70">
+                    É simples! Basta escolher um dos planos disponíveis, fazer login na sua conta (ou criar uma nova) e confirmar sua assinatura. Os benefícios são ativados imediatamente após a confirmação do pagamento.
+                  </AccordionContent>
+                </AccordionItem>
               </Accordion>
             </motion.div>
           </div>
         </section>
-
       </main>
 
       <Footer />
-
-      {/* Fixed: Added isOpen prop to AuthModal */}
-      {showAuthModal && <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />} 
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 };

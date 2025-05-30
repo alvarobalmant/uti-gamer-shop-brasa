@@ -1,4 +1,4 @@
-import { User, ShoppingCart, Repeat } from 'lucide-react'; // Added Repeat for Trade-In
+import { User, ShoppingCart } from 'lucide-react'; // Removed Repeat import
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -26,25 +26,12 @@ const HeaderActions = ({
     }
   };
 
-  const handleTradeInClick = () => {
-    // TODO: Implement navigation or action for Trade-In
-    // navigate('/trade-in'); // Example navigation
-    console.log('Trade-In clicked');
-  };
+  // Trade-In function removed
 
   return (
     <div className="flex items-center space-x-1 sm:space-x-2"> {/* Reduced spacing slightly */}
       
-      {/* Trade-In Button (Desktop Only - Mimicking GameStop) */}
-      <Button 
-        onClick={handleTradeInClick} 
-        variant="ghost" 
-        size="sm" // Smaller button size
-        className="hidden md:flex items-center text-xs font-medium text-foreground hover:text-primary hover:bg-secondary px-2 py-1" // Adjusted styling
-      >
-        <Repeat className="w-4 h-4 mr-1" />
-        Trade-In
-      </Button>
+      {/* Trade-In Button removed */}
 
       {/* User Account / Sign In Button (Desktop Only) */}
       <Button 
@@ -66,4 +53,3 @@ const HeaderActions = ({
 };
 
 export default HeaderActions;
-
