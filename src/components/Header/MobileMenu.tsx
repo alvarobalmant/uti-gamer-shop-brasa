@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { categories } from './categories';
-import { cn } from '@/lib/utils';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -19,7 +18,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
   const { hasActiveSubscription } = useSubscriptions();
   const navigate = useNavigate();
 
-  // Effect to lock body scroll when menu is open
+  // Lock body scroll when menu is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -61,154 +60,134 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
     onClose();
   };
 
-  // Don't render anything when closed
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] md:hidden">
+    <>
       {/* Full screen backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
-        onClick={onClose} 
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-black/50 z-[9999]" onClick={onClose} />
       
-      {/* Menu Panel - Takes up most of the screen */}
-      <div 
-        className="absolute inset-x-4 inset-y-8 bg-white shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="mobile-menu-title"
-      >
-        {/* Header - Fixed at top */}
-        <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-red-600 to-red-700 text-white">
+      {/* Menu modal - positioned like in the image */}
+      <div className="fixed top-0 left-4 right-4 bottom-20 bg-white z-[9999] rounded-b-2xl shadow-2xl flex flex-col overflow-hidden">
+        {/* Header - matches the image design */}
+        <div className="bg-white border-b p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img 
               src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
-              alt="UTI DOS GAMES Logo" 
-              className="h-10 w-auto"
+              alt="UTI DOS GAMES" 
+              className="h-8 w-8"
             />
-            <div>
-              <h2 id="mobile-menu-title" className="font-bold text-xl">UTI DOS GAMES</h2>
-              <p className="text-red-100 text-sm">Menu Principal</p>
-            </div>
+            <h2 className="font-bold text-lg text-gray-900">Menu</h2>
           </div>
           <Button 
             onClick={onClose} 
             variant="ghost" 
-            size="icon" 
-            className="text-white hover:text-red-200 hover:bg-red-800/50 rounded-full w-12 h-12"
+            size="icon"
+            className="text-gray-500 hover:text-gray-700 rounded-full"
           >
-            <X className="w-6 h-6" />
-            <span className="sr-only">Fechar menu</span>
+            <X className="w-5 h-5" />
           </Button>
         </div>
 
-        {/* Scrollable Content - Takes remaining space */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-8">
-            {/* User Section */}
-            <div className="bg-gray-50 rounded-xl p-6 border">
-              {user ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-800 text-lg">Olá!</p>
-                      <p className="text-gray-600 text-sm truncate">{user.email}</p>
-                    </div>
-                  </div>
-                  {hasActiveSubscription() && (
-                    <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 rounded-xl p-4">
-                      <Crown className="w-6 h-6 text-yellow-600" />
-                      <div>
-                        <p className="font-bold text-yellow-800">Membro UTI PRO</p>
-                        <p className="text-xs text-yellow-700">Acesso a benefícios exclusivos</p>
-                      </div>
-                    </div>
-                  )}
-                  <Button
-                    onClick={handleAuthClick}
-                    variant="outline"
-                    className="w-full h-14 text-lg font-semibold border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-                  >
-                    {isAdmin ? 'Painel Admin' : 'Gerenciar Conta'}
-                  </Button>
+        {/* Menu content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Login/Register Button - Red background like in image */}
+          {!user ? (
+            <Button
+              onClick={handleAuthClick}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-medium"
+            >
+              <User className="w-5 h-5 mr-2" />
+              Entrar / Cadastrar
+            </Button>
+          ) : (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-white" />
                 </div>
-              ) : (
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto">
-                    <User className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-xl text-gray-800 mb-2">Entre na sua conta</h3>
-                    <p className="text-gray-600 text-sm mb-4">Acesse sua conta ou crie uma nova</p>
-                  </div>
-                  <Button
-                    onClick={handleAuthClick}
-                    className="w-full bg-red-600 hover:bg-red-700 h-14 text-lg font-semibold"
-                  >
-                    <User className="w-5 h-5 mr-2" />
-                    Entrar / Cadastrar
-                  </Button>
+                <div>
+                  <p className="font-medium text-gray-900">Olá!</p>
+                  <p className="text-sm text-gray-500">{user.email}</p>
+                </div>
+              </div>
+              {hasActiveSubscription() && (
+                <div className="flex items-center gap-2 bg-yellow-100 p-2 rounded-lg mb-3">
+                  <Crown className="w-4 h-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-800">Membro UTI PRO</span>
                 </div>
               )}
+              <Button
+                onClick={handleAuthClick}
+                variant="outline"
+                className="w-full"
+              >
+                {isAdmin ? 'Painel Admin' : 'Gerenciar Conta'}
+              </Button>
             </div>
+          )}
 
-            {/* Navigation */}
-            <div className="space-y-3">
-              <h3 className="font-bold text-lg text-gray-800 mb-4">Navegação</h3>
-              
+          {/* Home button */}
+          <Button
+            onClick={() => handleNavigation('/')}
+            variant="ghost"
+            className="w-full justify-start p-4 h-auto text-left"
+          >
+            <Home className="w-5 h-5 mr-3 text-gray-600" />
+            <span className="font-medium text-gray-900">Início</span>
+          </Button>
+
+          {/* UTI PRO button - Yellow background like in image */}
+          <Button
+            onClick={() => handleNavigation('/uti-pro')}
+            className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-4 rounded-lg font-medium justify-start"
+          >
+            <Crown className="w-5 h-5 mr-3" />
+            UTI PRO
+          </Button>
+
+          {/* Categories section */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 px-2 py-2">
+              <Grid className="w-5 h-5 text-gray-600" />
+              <h3 className="font-semibold text-gray-900">Categorias</h3>
+            </div>
+            
+            <div className="pl-7 space-y-1">
+              {/* Início */}
               <Button
                 onClick={() => handleNavigation('/')}
                 variant="ghost"
-                className="w-full justify-start h-16 text-lg px-6 bg-gray-50 hover:bg-gray-100 rounded-xl"
+                className="w-full justify-start text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-2"
               >
-                <Home className="w-6 h-6 mr-4 text-red-600" />
-                <div className="text-left">
-                  <p className="font-semibold text-gray-800">Início</p>
-                  <p className="text-xs text-gray-600">Página principal</p>
-                </div>
+                Início
               </Button>
 
+              {/* Categories from the image */}
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  onClick={() => handleNavigation(category.path)}
+                  variant="ghost"
+                  className="w-full justify-start text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-2"
+                >
+                  {category.name}
+                </Button>
+              ))}
+
+              {/* UTI PRO at the bottom of categories */}
               <Button
                 onClick={() => handleNavigation('/uti-pro')}
                 variant="ghost"
-                className="w-full justify-start h-16 text-lg px-6 bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 hover:bg-yellow-200 rounded-xl"
+                className="w-full justify-start text-gray-700 hover:text-gray-900 hover:bg-gray-50 py-2"
               >
-                <Crown className="w-6 h-6 mr-4 text-yellow-600" />
-                <div className="text-left">
-                  <p className="font-semibold text-yellow-800">UTI PRO</p>
-                  <p className="text-xs text-yellow-700">Plano premium</p>
-                </div>
+                UTI PRO
               </Button>
-            </div>
-
-            {/* Categories */}
-            <div>
-              <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-3">
-                <Grid className="w-6 h-6 text-red-600" />
-                Categorias
-              </h3>
-              <div className="grid grid-cols-1 gap-3">
-                {categories.map((category) => (
-                  <Button
-                    key={category.id}
-                    onClick={() => handleNavigation(category.path)}
-                    variant="ghost"
-                    className="w-full justify-start h-14 text-base px-6 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-xl border border-gray-200 hover:border-red-200"
-                  >
-                    <span className="font-medium">{category.name}</span>
-                  </Button>
-                ))}
-              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
