@@ -35,12 +35,13 @@ const MainHeader = ({
         {/* Top Row: Mobile Menu, Logo, Actions (including mobile search toggle) */}
         <div className="container flex h-[72px] items-center justify-between px-4 gap-2">
           {/* Left side: Mobile Menu Toggle + Logo */}
-          <div className="flex items-center flex-shrink-0">
+          {/* Added flex-shrink to allow this section to shrink if needed */}
+          <div className="flex items-center flex-shrink min-w-0"> 
             {/* Mobile Menu Toggle Button */}
             <Button
               variant="ghost"
               size="icon"
-              className="mr-2 md:hidden p-2 h-10 w-10"
+              className="mr-2 md:hidden p-2 h-10 w-10 flex-shrink-0" // Added flex-shrink-0
               onClick={onMobileMenuToggle}
               aria-label="Abrir menu"
             >
@@ -48,17 +49,17 @@ const MainHeader = ({
             </Button>
 
             {/* Logo with Text */}
-            <a href="/" className="flex items-center" aria-label="Página Inicial UTI DOS GAMES">
+            {/* Added min-w-0 to allow shrinking/truncation */}
+            <a href="/" className="flex items-center min-w-0" aria-label="Página Inicial UTI DOS GAMES">
               <img
                 src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png"
                 alt="UTI DOS GAMES Logo"
-                className="h-10 w-auto"
+                className="h-10 w-auto flex-shrink-0" // Added flex-shrink-0
               />
-              {/* Removed 'hidden' class to make text visible on mobile */}
-              <div className="ml-3 sm:block">
-                <h1 className="font-bold text-lg leading-tight text-uti-red">UTI DOS GAMES</h1>
-                {/* Corrected subtitle text below */}
-                <p className="text-xs text-gray-600 leading-tight">Compre online com a segurança de uma loja física.</p>
+              {/* Adjusted text sizes and added overflow handling */}
+              <div className="ml-2 sm:ml-3 overflow-hidden">
+                <h1 className="font-bold text-base sm:text-lg leading-tight text-uti-red truncate">UTI DOS GAMES</h1>
+                <p className="text-xs text-gray-600 leading-tight truncate">Compre online com a segurança de uma loja física.</p>
               </div>
             </a>
           </div>
@@ -69,6 +70,7 @@ const MainHeader = ({
           </div>
 
           {/* Right side: Header Actions + Mobile Search Toggle */}
+          {/* Kept flex-shrink-0 to prevent actions from shrinking */}
           <div className="flex items-center justify-end flex-shrink-0 gap-1"> 
             {/* Mobile Search Toggle Button - Always shows Search icon */}
             <Button

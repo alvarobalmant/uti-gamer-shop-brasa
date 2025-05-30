@@ -7,7 +7,7 @@ import { ArrowRight } from 'lucide-react';
 interface PromotionalBannerProps {
   imageUrl: string;
   title: string;
-  description: string;
+  description: string; // Keep description for desktop
   buttonText: string;
   buttonLink: string;
   backgroundColor?: string; // Optional background color override
@@ -28,14 +28,32 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
       "rounded-lg overflow-hidden shadow-lg my-6 md:my-8", // Margin top/bottom
       backgroundColor
     )}>
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-0 items-center">
+      {/* Use flex layout for better control on mobile */}
+      <div className="flex flex-row items-center">
+        {/* Image Area - Fixed width on mobile, full height */}
+        <div className={cn(
+          "w-1/3 md:w-2/5 flex-shrink-0", // Adjust width ratio for mobile/desktop
+          "h-24 md:h-auto md:aspect-[4/3]" // Fixed height on mobile, aspect ratio on desktop
+        )}>
+          <img 
+            src={imageUrl || "/placeholder-banner.webp"} 
+            alt={title} 
+            onError={e => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/placeholder-banner-error.webp";
+            }} 
+            loading="lazy" 
+            className="w-full h-full object-cover" 
+          />
+        </div>
+
         {/* Text Content Area */}
         <div className={cn(
-          "md:col-span-3 flex flex-col justify-center order-2 md:order-1",
-          "p-3 md:p-8 lg:p-10" // Reduced padding on mobile
+          "flex-grow flex flex-col justify-center",
+          "p-3 sm:p-4 md:p-8 lg:p-10" // Adjusted padding
         )}>
           <h2 className={cn(
-            "text-xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-3",
+            "text-base md:text-3xl lg:text-4xl font-bold mb-1 md:mb-3", // Adjusted mobile text size
             textColor
           )}>
             {title}
@@ -48,37 +66,20 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
           )}>
             {description}
           </p>
-          <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start">
+          <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start mt-auto">
             <Button 
               variant="outline" 
-              size="xs" // Reduced button size on mobile
+              size="xs" // Keep small size for mobile
               className={cn(
                 "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
-                "text-xs", // Reduced text size on mobile
+                "text-xs px-2 py-1", // Adjusted padding for smaller button
                 textColor
               )}
             >
               {buttonText}
-              <ArrowRight className="ml-1.5 h-3 w-3" /> {/* Adjusted icon size slightly */}
+              <ArrowRight className="ml-1 h-3 w-3" /> {/* Adjusted icon size slightly */}
             </Button>
           </a>
-        </div>
-
-        {/* Image Area */}
-        <div className={cn(
-          "md:col-span-2 order-1 md:order-2",
-          "h-12 sm:h-16 md:h-full" // Reduced height for mobile/sm
-        )}>
-          <img 
-            src={imageUrl || "/placeholder-banner.webp"} 
-            alt={title} 
-            onError={e => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "/placeholder-banner-error.webp";
-            }} 
-            loading="lazy" 
-            className="w-full h-full object-cover" // Removed md:object-scale-down to ensure cover
-          />
         </div>
       </div>
     </div>

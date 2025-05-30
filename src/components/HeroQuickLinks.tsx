@@ -71,7 +71,8 @@ const HeroQuickLinks = () => {
                   loading="lazy"
                   onError={handleImageError} // Add error handler
                 />
-                <span className="text-xs sm:text-sm font-medium text-foreground text-center leading-tight group-hover:text-primary transition-colors duration-200">
+                {/* Adjusted font weight and color */}
+                <span className="text-xs sm:text-sm font-semibold text-gray-800 text-center leading-tight group-hover:text-primary transition-colors duration-200">
                   {link.label}
                 </span>
               </CardContent>
