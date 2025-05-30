@@ -1,11 +1,12 @@
 
+import { useEffect } from 'react'; // Import useEffect
 import { X, User, Crown, Home, Grid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { categories } from './categories';
-import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 interface MobileMenuProps {
@@ -19,19 +20,31 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
   const { hasActiveSubscription } = useSubscriptions();
   const navigate = useNavigate();
 
+  // Effect to lock body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    // Cleanup function to reset overflow when component unmounts or isOpen changes
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const handleAuthClick = () => {
     if (user) {
       if (isAdmin) {
         navigate('/admin');
         onClose();
       } else {
-        // Potentially navigate to account page or open auth modal for logout/details
-        onAuthOpen(); // Keep original behavior for now
-        onClose(); // Close menu after action
+        onAuthOpen();
+        onClose();
       }
     } else {
       onAuthOpen();
-      onClose(); // Close menu after opening auth
+      onClose();
     }
   };
 
@@ -40,13 +53,16 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
     onClose();
   };
 
-  if (!isOpen) return null;
+  // Do not render anything if not open (improves performance slightly)
+  // The transition control is handled by the parent managing isOpen state
+  // if (!isOpen) return null; 
+  // Keep rendering structure for transitions
 
   return (
     <div 
       className={cn(
-        "fixed inset-0 z-50 md:hidden transition-opacity duration-300",
-        isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        "fixed inset-0 z-50 md:hidden transition-opacity duration-300 ease-in-out",
+        isOpen ? "opacity-100" : "opacity-0 pointer-events-none" // Control visibility via opacity
       )}
     >
       {/* Backdrop */}
@@ -56,11 +72,11 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
         aria-hidden="true"
       />
       
-      {/* Menu Panel - Slide in from left, full width, almost full height */}
+      {/* Menu Panel - Slide in from left, 80% width, max-w-xs, full height */}
       <div 
         className={cn(
-          "fixed top-0 left-0 h-full w-full bg-white shadow-xl flex flex-col transition-transform duration-300 ease-in-out",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed top-0 left-0 h-full w-4/5 max-w-xs bg-white shadow-xl flex flex-col transition-transform duration-300 ease-in-out", // Restored width constraints
+          isOpen ? "translate-x-0" : "-translate-x-full" // Control slide via transform
         )}
         role="dialog"
         aria-modal="true"

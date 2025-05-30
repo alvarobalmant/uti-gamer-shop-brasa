@@ -1,4 +1,5 @@
 
+import { useEffect } from 'react'; // Import useEffect
 import { Button } from '@/components/ui/button';
 import { Plus, Minus, ShoppingCart, X, Trash2 } from 'lucide-react';
 import { CartItem } from '@/hooks/useCartSync';
@@ -25,6 +26,19 @@ const Cart = ({
   const getTotalPrice = () => {
     return cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   };
+
+  // Effect to lock body scroll when cart is open
+  useEffect(() => {
+    if (showCart) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    // Cleanup function to reset overflow when component unmounts or showCart changes
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showCart]);
 
   const handleQuantityChange = (item: CartItem, change: number) => {
     const newQuantity = Math.max(0, item.quantity + change);
@@ -55,13 +69,18 @@ const Cart = ({
     }
   };
 
-  if (!showCart) return null;
+  // Keep rendering structure for transitions, control visibility via opacity/transform
+  // if (!showCart) return null; 
 
   return (
     // Backdrop - Covers the entire screen, centers the modal on mobile
     <div 
       className={`fixed inset-0 bg-black/60 z-50 backdrop-blur-sm transition-opacity duration-300 flex items-center justify-center ${showCart ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       onClick={handleBackdropClick} // Close when clicking backdrop
+      aria-hidden={!showCart}
+      role="dialog" // Add role dialog for accessibility
+      aria-modal="true" // Indicate it's a modal
+      aria-labelledby="cart-title" // Add accessible name
     >
       {/* Cart Panel - Centered modal on mobile, slides from right on md+ */}
       <div 
@@ -72,6 +91,7 @@ const Cart = ({
                   }
         // Prevent backdrop click from closing if clicking inside the cart panel
         onClick={(e) => e.stopPropagation()} 
+        role="document" // Inner container role
       >
         {/* Header */}
         <div className="p-4 border-b-2 border-red-600 bg-white flex-shrink-0 rounded-t-lg md:rounded-none">
@@ -82,7 +102,7 @@ const Cart = ({
                 <ShoppingCart className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-800">Meu Carrinho</h3>
+                <h3 id="cart-title" className="text-lg font-bold text-gray-800">Meu Carrinho</h3>
                 <p className="text-sm text-gray-600">
                   {cart.length} {cart.length === 1 ? 'item' : 'itens'}
                 </p>
