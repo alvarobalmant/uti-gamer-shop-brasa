@@ -1,133 +1,138 @@
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 
-interface ScrollPositions {
-  [path: string]: number;
+interface ScrollPosition {
+  x: number;
+  y: number;
+  path: string;
+  timestamp: number;
 }
 
 export const useScrollPosition = () => {
   const location = useLocation();
-  const scrollPositions = useRef<ScrollPositions>({});
-  const isNavigatingRef = useRef(false);
-  const timeoutRef = useRef<NodeJS.Timeout>();
 
-  const saveScrollPosition = useCallback((path?: string) => {
-    const currentPath = path || location.pathname;
-    const currentPosition = window.scrollY;
-    scrollPositions.current[currentPath] = currentPosition;
-    
-    // Also save to sessionStorage as backup
-    sessionStorage.setItem(`scroll_${currentPath}`, currentPosition.toString());
-    console.log(`Salvando posição ${currentPosition} para ${currentPath}`);
+  // Função para verificar se estamos na página inicial
+  const isHomePage = useCallback(() => {
+    return location.pathname === '/' || location.pathname === '/index.html';
   }, [location.pathname]);
 
-  const restoreScrollPosition = useCallback((path?: string) => {
-    const targetPath = path || location.pathname;
-    let savedPosition = scrollPositions.current[targetPath];
-    
-    // If not found in memory, try sessionStorage
-    if (savedPosition === undefined) {
-      const sessionPos = sessionStorage.getItem(`scroll_${targetPath}`);
-      if (sessionPos) {
-        savedPosition = parseInt(sessionPos, 10);
-        scrollPositions.current[targetPath] = savedPosition;
+  // Função para salvar a posição de scroll (apenas na página inicial)
+  const saveScrollPosition = useCallback(() => {
+    if (isHomePage()) {
+      const scrollPos: ScrollPosition = {
+        x: window.scrollX,
+        y: window.scrollY,
+        path: window.location.pathname,
+        timestamp: new Date().getTime()
+      };
+      
+      try {
+        localStorage.setItem('utiGamesScrollPos', JSON.stringify(scrollPos));
+        console.log(`Scroll position ${scrollPos.y} saved for home page`);
+      } catch (error) {
+        console.warn('Failed to save scroll position:', error);
       }
     }
-    
-    if (savedPosition !== undefined && savedPosition > 0) {
-      // Clear any existing timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      
-      // Use requestAnimationFrame to ensure DOM is ready
-      requestAnimationFrame(() => {
-        timeoutRef.current = setTimeout(() => {
-          window.scrollTo(0, savedPosition);
-          console.log(`Restaurando posição ${savedPosition} para ${targetPath}`);
+  }, [isHomePage]);
+
+  // Função para restaurar a posição de scroll (apenas na página inicial)
+  const restoreScrollPosition = useCallback(() => {
+    if (isHomePage()) {
+      try {
+        const scrollPosData = localStorage.getItem('utiGamesScrollPos');
+        
+        if (scrollPosData) {
+          const scrollPos: ScrollPosition = JSON.parse(scrollPosData);
           
-          // Verify the scroll position was set correctly after a brief delay
-          setTimeout(() => {
-            if (Math.abs(window.scrollY - savedPosition) > 50) {
-              window.scrollTo(0, savedPosition);
-              console.log(`Re-aplicando posição ${savedPosition} para ${targetPath}`);
-            }
-            isNavigatingRef.current = false;
-          }, 200);
-        }, 100);
-      });
-    } else {
-      isNavigatingRef.current = false;
-    }
-  }, [location.pathname]);
-
-  // Save position when leaving a page
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      saveScrollPosition();
-    };
-
-    // Save position on scroll (debounced)
-    let scrollTimeout: NodeJS.Timeout;
-    const handleScroll = () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        if (!isNavigatingRef.current) {
-          saveScrollPosition();
+          // Verificar se o dado não está expirado (30 minutos)
+          const now = new Date().getTime();
+          const timeLimit = 30 * 60 * 1000; // 30 minutos em milissegundos
+          
+          if (now - scrollPos.timestamp < timeLimit) {
+            console.log(`Found saved scroll position ${scrollPos.y} for home page`);
+            
+            // Usar setTimeout para garantir que a página esteja totalmente carregada
+            setTimeout(() => {
+              console.log(`Attempting to scroll to ${scrollPos.y}`);
+              window.scrollTo({
+                left: scrollPos.x,
+                top: scrollPos.y,
+                behavior: 'auto' // Usar 'auto' para evitar animação estranha
+              });
+            }, 100);
+          } else {
+            // Limpar dados expirados
+            localStorage.removeItem('utiGamesScrollPos');
+            console.log('Scroll position data expired, cleared from storage');
+          }
+        } else {
+          console.log('No saved scroll position found for home page');
         }
-      }, 150);
-    };
-
-    // Save position on visibility change (when tab becomes hidden)
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        saveScrollPosition();
+      } catch (error) {
+        console.warn('Failed to restore scroll position:', error);
+        // Limpar dados corrompidos
+        localStorage.removeItem('utiGamesScrollPos');
       }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      saveScrollPosition(); // Save current position when component unmounts
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      clearTimeout(scrollTimeout);
-    };
-  }, [saveScrollPosition]);
-
-  // Restore position when entering a page
-  useEffect(() => {
-    // Only restore if we're not currently navigating
-    if (!isNavigatingRef.current) {
-      // Add a small delay to ensure the page content is loaded
-      const restoreTimeout = setTimeout(() => {
-        restoreScrollPosition();
-      }, 50);
-      
-      return () => clearTimeout(restoreTimeout);
     }
-  }, [location.pathname, restoreScrollPosition]);
+  }, [isHomePage]);
 
-  const saveCurrentPosition = useCallback(() => {
-    saveScrollPosition();
-    isNavigatingRef.current = true;
+  // Função debounce para salvar posição durante scroll
+  const debouncedSavePosition = useCallback(() => {
+    let timeout: NodeJS.Timeout;
+    
+    return () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        saveScrollPosition();
+      }, 200);
+    };
   }, [saveScrollPosition]);
 
-  const savePositionForPath = useCallback((path: string) => {
-    saveScrollPosition(path);
-    isNavigatingRef.current = true;
-  }, [saveScrollPosition]);
+  // Handler para o evento popstate (botão voltar do navegador)
+  const handlePopState = useCallback(() => {
+    console.log("Popstate event detected");
+    restoreScrollPosition();
+  }, [restoreScrollPosition]);
+
+  // Setup da restauração de scroll e eventos
+  const setupScrollRestoration = useCallback(() => {
+    // Restaurar posição ao carregar a página inicial
+    if (isHomePage()) {
+      restoreScrollPosition();
+      
+      // Adicionar listener para salvar posição durante scroll (apenas na página inicial)
+      const debouncedSave = debouncedSavePosition();
+      window.addEventListener('scroll', debouncedSave);
+      
+      // Salvar posição ao sair da página
+      const handleBeforeUnload = () => {
+        saveScrollPosition();
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      
+      // Adicionar listener para popstate
+      window.addEventListener("popstate", handlePopState);
+
+      // Função de limpeza
+      return () => {
+        window.removeEventListener('scroll', debouncedSave);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        window.removeEventListener("popstate", handlePopState);
+      };
+    } else {
+      // Para outras páginas, apenas adicionar listener para popstate
+      window.addEventListener("popstate", handlePopState);
+      
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
+  }, [isHomePage, restoreScrollPosition, debouncedSavePosition, saveScrollPosition, handlePopState]);
 
   return { 
-    saveCurrentPosition, 
-    savePositionForPath,
-    restoreScrollPosition 
+    saveScrollPosition,
+    setupScrollRestoration,
+    restoreScrollPosition
   };
 };

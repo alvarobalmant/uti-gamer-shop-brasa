@@ -2,18 +2,36 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
-import Admin from "./pages/Admin";
 import SearchResults from "./pages/SearchResults";
 import CategoryPage from "./pages/CategoryPage";
 import ProductPage from "./pages/ProductPage";
 import NotFound from "./pages/NotFound";
 import UTIPro from "./pages/UTIPro";
 
+// Import the main Admin Panel component which now includes all tabs
+import { AdminPanel } from "@/components/Admin/AdminPanel"; 
+
 const queryClient = new QueryClient();
+
+// Protected Route Component for Admin
+const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAdmin, loading } = useAuth();
+
+  if (loading) {
+    return <div>Verificando autenticação...</div>;
+  }
+
+  if (!user || !isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Render the children (AdminPanel in this case) if authenticated and admin
+  return <>{children}</>; 
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -24,13 +42,27 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<Index />} />
-              <Route path="/admin" element={<Admin />} />
               <Route path="/busca" element={<SearchResults />} />
               <Route path="/categoria/:category" element={<CategoryPage />} />
               <Route path="/produto/:id" element={<ProductPage />} />
               <Route path="/uti-pro" element={<UTIPro />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+              {/* Admin Route - Protected */}
+              {/* The AdminPanel component itself handles the different admin sections via Tabs */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedAdminRoute>
+                    {/* Render the main AdminPanel component directly */}
+                    <AdminPanel /> 
+                  </ProtectedAdminRoute>
+                }
+              />
+              {/* No need for nested routes here if AdminPanel uses Tabs for navigation */}
+
+              {/* Catch-all Not Found Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
@@ -41,3 +73,4 @@ const App = () => (
 );
 
 export default App;
+

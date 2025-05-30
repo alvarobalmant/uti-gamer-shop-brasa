@@ -1,56 +1,78 @@
-
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActions from './HeaderActions';
+import MobileSearchBar from './MobileSearchBar';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Menu } from 'lucide-react';
 
 interface MainHeaderProps {
   onCartOpen: () => void;
   onAuthOpen: () => void;
-  onCategoriesToggle: () => void;
   onMobileMenuToggle: () => void;
+  className?: string;
 }
 
 const MainHeader = ({ 
   onCartOpen, 
   onAuthOpen, 
-  onCategoriesToggle, 
-  onMobileMenuToggle 
+  onMobileMenuToggle,
+  className
 }: MainHeaderProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="container-professional">
-      <div className="flex items-center justify-between h-20">
-        {/* Logo */}
-        <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
-          <img 
-            src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
-            alt="UTI DOS GAMES" 
-            className="h-12 w-12 sm:h-16 sm:w-16 mr-2 sm:mr-4" 
-          />
-          <div>
-            <h1 className="text-xs sm:text-xl font-black text-uti-dark font-heading leading-tight">
-              UTI DOS GAMES
-            </h1>
-            <p className="text-[10px] sm:text-xs text-uti-gray font-medium -mt-0.5 sm:-mt-1">
-              A loja de games de Colatina
-            </p>
-          </div>
+    <div className={cn("bg-background border-b", className)}> {/* Added border-b for visual separation */} 
+      {/* Top Row: Mobile Menu, Logo, Actions */}
+      {/* Increased height for mobile, adjusted padding */}
+      <div className="container flex h-[72px] items-center justify-between px-4 gap-2"> 
+        {/* Left side: Mobile Menu Toggle (visible on small screens) + Logo */}
+        <div className="flex items-center flex-shrink-0">
+          {/* Mobile Menu Toggle Button - visible only on md and below */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="mr-2 md:hidden p-2 h-10 w-10" // Increased size and margin for easier tap
+            onClick={onMobileMenuToggle}
+            aria-label="Abrir menu"
+          >
+            <Menu className="h-6 w-6" /> {/* Icon size maintained, button size increased */} 
+          </Button>
+
+          {/* Logo - Link to home */}
+          <a href="/" className="flex items-center" aria-label="Página Inicial UTI DOS GAMES">
+            <img 
+              src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" // Ensure this path is correct
+              alt="UTI DOS GAMES Logo" 
+              className="h-10 w-auto" // Increased height slightly
+            />
+          </a>
         </div>
 
-        {/* Desktop Search Bar */}
-        <DesktopSearchBar />
+        {/* Center: Desktop Search Bar (visible on md and up) */}
+        <div className="flex-1 justify-center px-4 hidden md:flex max-w-xl">
+           <DesktopSearchBar />
+        </div>
 
-        {/* Right Actions */}
-        <HeaderActions
-          onCartOpen={onCartOpen}
-          onAuthOpen={onAuthOpen}
-          onCategoriesToggle={onCategoriesToggle}
-          onMobileMenuToggle={onMobileMenuToggle}
-        />
+        {/* Right side: Header Actions (Cart, Login, etc.) */}
+        {/* Ensure HeaderActions itself provides adequate spacing for its internal items */} 
+        <div className="flex items-center justify-end flex-shrink-0">
+          <HeaderActions
+            onCartOpen={onCartOpen}
+            onAuthOpen={onAuthOpen}
+          />
+        </div>
+      </div>
+
+      {/* Bottom Row: Mobile Search Bar (visible on small screens) */}
+      {/* Removed border-t, added padding-bottom */} 
+      <div className="container md:hidden pb-4 px-4 pt-1"> 
+         <MobileSearchBar />
       </div>
     </div>
   );
 };
 
 export default MainHeader;
+

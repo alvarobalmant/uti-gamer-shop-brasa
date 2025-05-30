@@ -1,29 +1,42 @@
-
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
+import { cn } from '@/lib/utils';
 
 interface ProductCardStockProps {
   product: Product;
 }
 
+// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductCardStock: React.FC<ProductCardStockProps> = ({ product }) => {
-  const isLowStock = product.stock && product.stock <= 5;
   const isOutOfStock = product.stock === 0;
+  const isLowStock = !isOutOfStock && product.stock && product.stock <= 5; // Low stock if not out and <= 5
+
+  // Minimalist stock indicator
+  let stockText = '';
+  let stockColorClass = '';
+
+  if (isOutOfStock) {
+    stockText = 'Esgotado';
+    stockColorClass = 'text-destructive'; // Use destructive color from theme
+  } else if (isLowStock) {
+    stockText = `Restam ${product.stock}`;
+    stockColorClass = 'text-orange-600'; // Keep orange for low stock warning
+  } else {
+    stockText = 'Em estoque';
+    stockColorClass = 'text-green-600'; // Keep green for in stock
+  }
 
   return (
-    <div className="mb-4 md:mb-4 mb-3">
-      {isOutOfStock ? (
-        <span className="text-sm text-red-600 font-medium md:text-sm text-xs">Esgotado</span>
-      ) : isLowStock ? (
-        <span className="text-sm text-orange-600 font-medium md:text-sm text-xs">
-          <span className="md:inline hidden">Restam {product.stock} unidades</span>
-          <span className="md:hidden inline">Restam {product.stock}</span>
-        </span>
-      ) : (
-        <span className="text-sm text-green-600 font-medium md:text-sm text-xs">Em estoque</span>
-      )}
+    <div className="flex items-center"> {/* Align with actions if needed */}
+      <span className={cn(
+        "text-[11px] font-medium", // Smaller, consistent text size
+        stockColorClass
+      )}>
+        {stockText}
+      </span>
     </div>
   );
 };
 
 export default ProductCardStock;
+

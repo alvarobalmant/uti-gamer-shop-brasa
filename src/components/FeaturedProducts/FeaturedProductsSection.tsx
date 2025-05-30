@@ -1,57 +1,76 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProductCard from "@/components/ProductCard";
+import { Product } from "@/hooks/useProducts";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
+import SectionTitle from "@/components/SectionTitle"; // Use the new SectionTitle component
+import { cn } from "@/lib/utils";
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProductCard from '@/components/ProductCard';
-import { Product } from '@/hooks/useProducts';
-import { useIsMobile } from '@/hooks/use-mobile';
+// Import Swiper components (assuming installed)
+// import { Swiper, SwiperSlide } from 'swiper/react';
+// import 'swiper/css';
+// import 'swiper/css/navigation';
+// import { Navigation } from 'swiper/modules';
 
 interface FeaturedProductsSectionProps {
   products: Product[];
   loading: boolean;
-  onAddToCart: (product: Product, size?: string, color?: string) => void;
-  getPlatformColor: (product: Product) => string;
+  onAddToCart: (product: Product) => void; // Simplified prop
+  title: string; // Add title prop
+  viewAllLink?: string; // Optional link for "View All"
+  // getPlatformColor removed as it's likely handled within ProductCard
 }
 
+// **Redesign based on GameStop and user feedback, including horizontal scroll**
 const FeaturedProductsSection = ({
   products,
   loading,
   onAddToCart,
-  getPlatformColor
+  title,
+  viewAllLink = "/categoria/inicio", // Default link
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [selectedCategory, setSelectedCategory] = useState('todos');
+  const { saveScrollPosition } = useScrollPosition();
+  const [selectedCategory, setSelectedCategory] = useState("todos");
 
+  // Define categories (can be fetched dynamically later)
   const categories = [
-    { id: 'todos', label: 'Todos', path: '/categoria/inicio' },
-    { id: 'playstation', label: 'PlayStation', path: '/categoria/playstation' },
-    { id: 'xbox', label: 'Xbox', path: '/categoria/xbox' },
-    { id: 'nintendo', label: 'Nintendo', path: '/categoria/nintendo' },
-    { id: 'pc', label: 'PC Games', path: '/categoria/pc' }
+    { id: "todos", label: "Todos" },
+    { id: "playstation", label: "PlayStation" },
+    { id: "xbox", label: "Xbox" },
+    { id: "nintendo", label: "Nintendo" },
+    { id: "pc", label: "PC Games" },
   ];
 
+  // Filter products (example logic, adjust as needed)
   const filterProductsByCategory = (category: string) => {
-    if (category === 'todos') return products.slice(0, 8);
-    
-    return products.filter(product => 
-      product.tags?.some(tag => 
+    if (category === "todos") return products; // Show all for "Todos"
+    return products.filter((product) =>
+      product.tags?.some((tag) =>
         tag.name.toLowerCase().includes(category.toLowerCase())
       )
-    ).slice(0, 8);
+    );
   };
 
-  const featuredProducts = filterProductsByCategory(selectedCategory);
+  const displayedProducts = filterProductsByCategory(selectedCategory);
+
+  const handleViewAllClick = () => {
+    saveScrollPosition();
+    navigate(viewAllLink);
+  };
 
   if (loading) {
+    // Simple loading state
     return (
-      <section className="py-16 bg-white">
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-16">
-            <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <div className="text-xl text-gray-500">Carregando produtos...</div>
+      <section className="py-12 md:py-16 bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-16 text-muted-foreground">
+            Carregando produtos...
           </div>
         </div>
       </section>
@@ -59,100 +78,73 @@ const FeaturedProductsSection = ({
   }
 
   return (
-    <section id="produtos" className="py-16 bg-white">
-      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header - Perfect Alignment */}
-        <div className="mb-12">
-          {/* Title and View All Link - Same Visual Line */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-            <div className="flex-1">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-                🎮 Produtos em Destaque
-              </h2>
-              <p className="text-sm sm:text-base lg:text-lg text-gray-600 hidden sm:block">
-                Descubra os jogos e acessórios mais populares
-              </p>
-            </div>
-            <div className="flex-shrink-0">
-              <Button 
-                onClick={() => navigate('/categoria/inicio')} 
-                variant="outline" 
-                className="text-red-600 border-red-600 hover:bg-red-50 flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold min-h-[44px] w-full sm:w-auto justify-center"
-              >
-                Ver Todos
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Category Navigation - Refined Style and Perfect Alignment */}
-          {isMobile ? (
-            // Mobile: Horizontal scrollable pills with refined style
-            <div className="overflow-x-auto pb-2 -mx-1">
-              <div className="flex gap-3 px-1 min-w-max">
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-300 min-h-[44px] border-0 ${
-                      selectedCategory === category.id
-                        ? 'bg-red-600 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {category.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            // Desktop: Centered refined tabs
-            <div className="flex justify-center">
-              <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full max-w-3xl">
-                <TabsList className="grid w-full grid-cols-5 bg-gray-100 p-1.5 rounded-xl h-auto">
-                  {categories.map((category) => (
-                    <TabsTrigger
-                      key={category.id}
-                      value={category.id}
-                      className="px-4 py-3 text-sm font-semibold rounded-lg data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=inactive]:text-gray-700 data-[state=inactive]:hover:bg-gray-200 transition-all duration-300 border-0"
-                    >
-                      {category.label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            </div>
-          )}
+    <section className="py-8 md:py-12 bg-background"> {/* Adjusted padding */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
+          <SectionTitle title={title} className="mb-0" /> {/* Use SectionTitle */}
+          <Button
+            onClick={handleViewAllClick}
+            variant="outline"
+            size="sm"
+            className="text-primary border-primary hover:bg-primary/10 flex-shrink-0 w-full sm:w-auto"
+          >
+            Ver Todos
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
         </div>
 
-        {/* Products Grid - Perfect Layout and Spacing */}
-        {featuredProducts.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-2xl text-gray-400 mb-2">
-              Nenhum produto disponível
-            </div>
-            <p className="text-gray-500">
-              Produtos serão adicionados em breve
-            </p>
+        {/* Category Filters - Simplified for horizontal scroll focus */}
+        <div className="mb-6 md:mb-8 flex justify-center">
+          <Tabs
+            value={selectedCategory}
+            onValueChange={setSelectedCategory}
+            className="w-full max-w-lg"
+          >
+            <TabsList className="grid w-full grid-cols-5 bg-muted p-1 rounded-lg h-auto">
+              {categories.map((category) => (
+                <TabsTrigger
+                  key={category.id}
+                  value={category.id}
+                  className="text-xs sm:text-sm"
+                >
+                  {category.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {/* Products Grid / Scroll Container */}
+        {displayedProducts.length === 0 ? (
+          <div className="text-center py-16 text-muted-foreground">
+            Nenhum produto encontrado nesta categoria.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 w-full">
-            {featuredProducts.map((product, index) => (
-              <div 
-                key={product.id} 
-                className="animate-fade-in-up opacity-0 w-full"
-                style={{ 
-                  animationDelay: `${index * 100}ms`,
-                  animationFillMode: 'forwards'
-                }}
-              >
-                <ProductCard
-                  product={product}
-                  onAddToCart={(product) => onAddToCart(product)}
-                  getPlatformColor={() => getPlatformColor(product)}
-                />
-              </div>
-            ))}
+          // **Horizontal Scroll Container**
+          <div className="relative">
+            {/* Use overflow-x-auto for basic horizontal scroll */}
+            <div
+              className={cn(
+                "flex space-x-4 md:space-x-6 overflow-x-auto pb-4", // Enable horizontal scroll
+                "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8" // Adjust padding for edge-to-edge feel
+              )}
+              style={{ scrollbarWidth: "none" }} // Hide scrollbar for cleaner look (optional)
+            >
+              {displayedProducts.map((product, index) => (
+                <div
+                  key={product.id}
+                  className="w-60 sm:w-64 flex-shrink-0" // Set fixed width for items
+                >
+                  <ProductCard
+                    product={product}
+                    onAddToCart={onAddToCart}
+                    // getPlatformColor is removed
+                  />
+                </div>
+              ))}
+            </div>
+            {/* Optional: Add custom arrow buttons for navigation if not using Swiper */}
           </div>
         )}
       </div>
@@ -161,3 +153,4 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
+

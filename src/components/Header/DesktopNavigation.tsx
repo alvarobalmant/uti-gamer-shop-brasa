@@ -1,93 +1,60 @@
-
-import { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Crown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { categories, Category } from './categories';
+import { Crown } from 'lucide-react';
+import { categories, Category } from './categories'; // Assuming categories data is defined here
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button'; // Use Button for consistency
 
-const DesktopNavigation = () => {
+interface DesktopNavigationProps {
+  className?: string;
+}
+
+const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
   const navigate = useNavigate();
-  const [showMobileCategories, setShowMobileCategories] = useState(false);
 
   const handleCategoryClick = (category: Category) => {
     navigate(category.path);
-    setShowMobileCategories(false);
   };
 
   return (
-    <>
-      {/* Desktop Categories Navigation */}
-      <nav className="hidden lg:block bg-white border-b border-gray-200">
-        <div className="container-professional">
-          <div className="flex items-center justify-center space-x-8 py-3">
-            {categories.map(category => (
-              <button
-                key={category.id}
-                onClick={() => navigate(category.path)}
-                className="text-sm font-medium text-uti-dark hover:text-uti-red transition-colors duration-200 py-2"
-              >
-                {category.name}
-              </button>
-            ))}
-            
-            {/* UTI PRO Link */}
-            <button
-              onClick={() => navigate('/uti-pro')}
-              className="flex items-center gap-1 text-sm font-bold text-yellow-600 hover:text-yellow-700 transition-colors duration-200 py-2 bg-gradient-to-r from-yellow-100 to-yellow-50 px-3 rounded-full border border-yellow-300"
-            >
-              <Crown className="w-4 h-4" />
-              UTI PRO
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Categories Menu Icon - Floating */}
-      <div className="lg:hidden fixed bottom-4 right-4 z-40">
-        <div className="relative">
-          <Button
-            onClick={() => setShowMobileCategories(!showMobileCategories)}
-            className="bg-uti-red hover:bg-red-700 text-white rounded-full w-12 h-12 shadow-lg"
-          >
-            <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${showMobileCategories ? 'rotate-180' : ''}`} />
-          </Button>
+    // Navigation bar below the main header, visible on large screens only
+    // Clean background, subtle top border to separate from header shadow
+    <nav className={cn(
+      "hidden lg:block bg-background border-t border-border/60", 
+      className
+    )}>
+      <div className="container mx-auto"> {/* Use standard container */} 
+        <div className="flex h-12 items-center justify-center gap-x-6 xl:gap-x-8"> {/* Adjusted height and gap */}
           
-          {/* Floating Categories Menu */}
-          {showMobileCategories && (
-            <>
-              <div 
-                className="fixed inset-0 bg-black/20 z-30" 
-                onClick={() => setShowMobileCategories(false)}
-              />
-              <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-40">
-                {categories.map(category => (
-                  <button
-                    key={category.id}
-                    onClick={() => handleCategoryClick(category)}
-                    className="block w-full text-left px-4 py-3 text-sm font-medium text-uti-dark hover:text-uti-red hover:bg-red-50 transition-all duration-200"
-                  >
-                    {category.name}
-                  </button>
-                ))}
-                
-                {/* UTI PRO Link Mobile */}
-                <button
-                  onClick={() => {
-                    navigate('/uti-pro');
-                    setShowMobileCategories(false);
-                  }}
-                  className="flex items-center gap-2 w-full px-4 py-3 text-sm font-bold text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 transition-all duration-200"
-                >
-                  <Crown className="w-4 h-4" />
-                  UTI PRO
-                </button>
-              </div>
-            </>
-          )}
+          {categories.map(category => (
+            <Button
+              key={category.id}
+              variant="ghost" // Use ghost variant for clean look
+              size="sm" // Smaller size for nav items
+              onClick={() => handleCategoryClick(category)}
+              className="text-sm font-medium text-muted-foreground hover:text-primary hover:bg-transparent px-2"
+              // Use muted foreground, primary color on hover, transparent background
+            >
+              {category.name}
+            </Button>
+          ))}
+          
+          {/* UTI PRO Link - Styled as a distinct button or badge */}
+          <Button
+            variant="outline" // Outline variant for subtle emphasis
+            size="sm"
+            onClick={() => navigate('/uti-pro')}
+            className="flex items-center gap-1.5 text-sm font-semibold text-uti-pro hover:bg-yellow-500/10 border-uti-pro/50 hover:border-uti-pro/80 transition-colors duration-150"
+            // Using uti-pro color (defined in tailwind.config), subtle hover
+          >
+            <Crown className="w-4 h-4 text-uti-pro/90" />
+            UTI PRO
+          </Button>
         </div>
       </div>
-    </>
+    </nav>
   );
 };
 
 export default DesktopNavigation;
+

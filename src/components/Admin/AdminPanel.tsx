@@ -1,16 +1,17 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProductManager from './ProductManager';
-import { BannerManager } from './BannerManager';
-import { ServiceCardManager } from './ServiceCardManager';
-import { TagManager } from './TagManager';
-import UserSubscriptionManagement from './UserSubscriptionManagement';
-import { Package, Image, Briefcase, Tag, Users } from 'lucide-react';
+import ProductManager from './ProductManager'; // Assuming this manages products
+import { BannerManager } from './BannerManager'; // Assuming this manages banners
+import { ServiceCardManager } from './ServiceCardManager'; // Assuming this manages service cards
+import { TagManager } from './TagManager'; // Assuming this manages tags
+import UserSubscriptionManagement from './UserSubscriptionManagement'; // Assuming this manages users/UTI Pro
+import AdminSections from '@/pages/Admin/AdminSections'; // Import the new sections manager
+import { Package, Image, Briefcase, Tag, Users, LayoutList } from 'lucide-react'; // Added LayoutList icon
 
 export const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('users');
+  // Default to users or another relevant tab if preferred
+  const [activeTab, setActiveTab] = useState('users'); 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
@@ -20,15 +21,16 @@ export const AdminPanel = () => {
             Painel Administrativo
           </h1>
           <p className="text-gray-400">
-            Gerencie produtos, banners, serviços e usuários do sistema
+            Gerencie o conteúdo e as configurações do site UTI dos Games
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-gray-800 border-gray-700">
+          {/* Updated grid-cols-6 to accommodate the new tab */}
+          <TabsList className="grid w-full grid-cols-6 bg-gray-800 border-gray-700">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Usuários
+              Usuários/PRO
             </TabsTrigger>
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
@@ -46,29 +48,46 @@ export const AdminPanel = () => {
               <Tag className="w-4 h-4" />
               Tags
             </TabsTrigger>
+            {/* New Tab for Home Sections */}
+            <TabsTrigger value="sections" className="flex items-center gap-2">
+              <LayoutList className="w-4 h-4" />
+              Seções Home
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
-            <UserSubscriptionManagement />
+            {/* Ensure this component handles both user and UTI Pro management */}
+            <UserSubscriptionManagement /> 
           </TabsContent>
 
           <TabsContent value="products">
-            <ProductManager />
+            {/* Ensure this component handles product CRUD and tag association */}
+            <ProductManager /> 
           </TabsContent>
 
           <TabsContent value="banners">
-            <BannerManager />
+            {/* Ensure this handles banner CRUD, image upload/drag */}
+            <BannerManager /> 
           </TabsContent>
 
           <TabsContent value="services">
-            <ServiceCardManager />
+            {/* Ensure this handles service card customization */}
+            <ServiceCardManager /> 
           </TabsContent>
 
           <TabsContent value="tags">
+             {/* Ensure this handles tag CRUD */}
             <TagManager />
           </TabsContent>
+          
+          {/* New Tab Content for Home Sections */}
+          <TabsContent value="sections">
+            <AdminSections />
+          </TabsContent>
+
         </Tabs>
       </div>
     </div>
   );
 };
+

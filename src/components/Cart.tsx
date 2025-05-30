@@ -1,4 +1,5 @@
 
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Minus, ShoppingCart, X, Trash2 } from 'lucide-react';
 import { CartItem } from '@/hooks/useCartSync';
@@ -25,6 +26,28 @@ const Cart = ({
   const getTotalPrice = () => {
     return cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   };
+
+  // Effect to lock body scroll when cart is open
+  useEffect(() => {
+    if (showCart) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+    };
+  }, [showCart]);
 
   const handleQuantityChange = (item: CartItem, change: number) => {
     const newQuantity = Math.max(0, item.quantity + change);
@@ -54,35 +77,47 @@ const Cart = ({
     }
   };
 
-  if (!showCart) return null;
-
   return (
     <div 
-      className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" 
+      className={`fixed inset-0 bg-black/70 z-[100] backdrop-blur-sm transition-all duration-300 ${showCart ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
       onClick={handleBackdropClick}
+      aria-hidden={!showCart}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cart-title"
     >
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="p-6 border-b-2 border-red-600 bg-white">
+      {/* Cart Panel - Full height on mobile, takes most of screen */}
+      <div 
+        className={`bg-white shadow-2xl overflow-hidden flex flex-col transform transition-all duration-300 ease-in-out 
+                    fixed inset-x-2 inset-y-4 rounded-lg  /* Mobile: Almost full screen with small margins */
+                    md:right-2 md:left-auto md:w-[500px] md:inset-y-4 /* Desktop: Right side panel */
+                    ${showCart ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}` 
+                  }
+        onClick={(e) => e.stopPropagation()} 
+        role="document"
+      >
+        {/* Header - Fixed at top */}
+        <div className="p-4 border-b-2 border-red-600 bg-white flex-shrink-0 rounded-t-lg">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <ShoppingCart className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-800">Meu Carrinho</h3>
+                <h3 id="cart-title" className="text-lg font-bold text-gray-800">Meu Carrinho</h3>
                 <p className="text-sm text-gray-600">
                   {cart.length} {cart.length === 1 ? 'item' : 'itens'}
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
               {cart.length > 0 && clearCart && (
                 <Button 
                   variant="ghost" 
                   onClick={handleClearCart}
-                  className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
+                  className="text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
                   title="Limpar carrinho"
+                  aria-label="Limpar carrinho"
                 >
                   <Trash2 className="w-5 h-5" />
                 </Button>
@@ -90,7 +125,8 @@ const Cart = ({
               <Button 
                 variant="ghost" 
                 onClick={() => setShowCart(false)} 
-                className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
+                className="text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
+                aria-label="Fechar carrinho"
               >
                 <X className="w-5 h-5" />
               </Button>
@@ -98,9 +134,10 @@ const Cart = ({
           </div>
         </div>
 
+        {/* Content Area */}
         {cart.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center p-6">
-            <div className="text-center">
+          <div className="flex-1 flex items-center justify-center p-6 text-center bg-white">
+            <div>
               <img 
                 src="/lovable-uploads/ad940e09-b6fc-44a8-98a5-3247986d6f98.png" 
                 alt="Carrinho vazio" 
@@ -118,33 +155,34 @@ const Cart = ({
           </div>
         ) : (
           <>
-            {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {/* Cart Items - Scrollable middle section */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
               {cart.map((item) => (
                 <div 
                   key={item.id} 
-                  className="bg-gray-50 p-4 rounded-xl border border-gray-200 hover:border-red-300 transition-colors duration-200"
+                  className="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-red-300 transition-colors duration-200"
                 >
                   <div className="flex items-start space-x-3">
                     <img 
                       src={item.product.image} 
                       alt={item.product.name}
-                      className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                      className="w-20 h-20 object-cover rounded-md flex-shrink-0 border"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-gray-800 font-bold text-sm leading-tight truncate">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-gray-800 font-semibold text-sm leading-tight mr-2">
                           {item.product.name}
                         </h4>
                         {removeFromCart && (
                           <Button
-                            size="sm"
+                            size="icon"
                             variant="ghost"
                             onClick={() => handleRemoveItem(item.id)}
-                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-6 h-6 p-0 ml-2 flex-shrink-0"
+                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-7 h-7 p-0 flex-shrink-0"
                             title="Remover item"
+                            aria-label="Remover item"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-4 h-4" />
                           </Button>
                         )}
                       </div>
@@ -155,27 +193,29 @@ const Cart = ({
                       <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-2">
                           <Button
-                            size="sm"
+                            size="icon"
                             variant="outline"
                             onClick={() => handleQuantityChange(item, -1)}
-                            className="w-8 h-8 p-0 border-red-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600"
+                            className="w-8 h-8 p-0 border-gray-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600 rounded-md"
                             disabled={item.quantity <= 1}
+                            aria-label="Diminuir quantidade"
                           >
-                            <Minus className="w-3 h-3" />
+                            <Minus className="w-4 h-4" />
                           </Button>
-                          <span className="text-gray-800 font-bold text-sm w-8 text-center bg-white px-2 py-1 rounded border">
+                          <span className="text-gray-800 font-bold text-base w-8 text-center">
                             {item.quantity}
                           </span>
                           <Button
-                            size="sm"
+                            size="icon"
                             variant="outline"
                             onClick={() => handleQuantityChange(item, 1)}
-                            className="w-8 h-8 p-0 border-red-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600"
+                            className="w-8 h-8 p-0 border-gray-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600 rounded-md"
+                            aria-label="Aumentar quantidade"
                           >
-                            <Plus className="w-3 h-3" />
+                            <Plus className="w-4 h-4" />
                           </Button>
                         </div>
-                        <p className="text-red-600 font-bold text-sm">
+                        <p className="text-red-600 font-bold text-base">
                           R$ {(item.product.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
@@ -185,51 +225,53 @@ const Cart = ({
               ))}
             </div>
 
-            {/* Footer */}
-            <div className="border-t-2 border-gray-200 p-6 bg-white">
-              <div className="bg-red-50 p-4 rounded-xl mb-4 border border-red-200">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600 font-medium">Subtotal:</span>
-                  <span className="text-gray-800 font-bold">R$ {getTotalPrice().toFixed(2)}</span>
+            {/* Footer - Fixed at bottom */}
+            <div className="border-t-2 border-gray-200 p-4 bg-white flex-shrink-0 rounded-b-lg">
+              <div className="bg-gray-50 p-4 rounded-lg mb-4 border border-gray-200 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 text-sm font-medium">Subtotal:</span>
+                  <span className="text-gray-800 text-sm font-semibold">R$ {getTotalPrice().toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600 font-medium">Frete:</span>
-                  <span className="text-red-600 font-bold">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 text-sm font-medium">Frete:</span>
+                  <span className="text-red-600 text-sm font-bold">
                     {getTotalPrice() >= 200 ? 'GRÁTIS' : 'Calcular'}
                   </span>
                 </div>
                 {getTotalPrice() >= 200 && (
-                  <div className="text-center py-2 bg-green-100 rounded-lg mb-2">
-                    <p className="text-green-700 text-sm font-bold">🎉 Você ganhou frete grátis!</p>
+                  <div className="text-center py-1.5 bg-green-100 rounded-md">
+                    <p className="text-green-700 text-xs font-bold">🎉 Você ganhou frete grátis!</p>
                   </div>
                 )}
-                <div className="border-t border-red-200 pt-2 mt-2">
+                <div className="border-t border-gray-200 pt-2 mt-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-xl font-bold text-gray-800">Total:</span>
-                    <span className="text-2xl font-bold text-red-600">
+                    <span className="text-base font-bold text-gray-800">Total:</span>
+                    <span className="text-xl font-bold text-red-600">
                       R$ {getTotalPrice().toFixed(2)}
                     </span>
                   </div>
                 </div>
               </div>
               
-              <Button
-                onClick={sendToWhatsApp}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg text-lg mb-4"
-              >
-                Finalizar no WhatsApp 📱
-              </Button>
-              
-              <Button
-                onClick={() => setShowCart(false)}
-                variant="outline"
-                className="w-full border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-bold py-3 rounded-xl transition-all duration-300"
-              >
-                Continuar Comprando
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  onClick={sendToWhatsApp}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-md text-base"
+                >
+                  Finalizar no WhatsApp 📱
+                </Button>
+                
+                <Button
+                  onClick={() => setShowCart(false)}
+                  variant="outline"
+                  className="w-full border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-bold py-2.5 rounded-lg transition-all duration-300"
+                >
+                  Continuar Comprando
+                </Button>
+              </div>
               
               <p className="text-xs text-gray-500 text-center mt-3">
-                Você será redirecionado para o WhatsApp para finalizar sua compra
+                Você será redirecionado para o WhatsApp para finalizar sua compra.
               </p>
             </div>
           </>

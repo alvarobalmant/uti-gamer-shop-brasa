@@ -26,7 +26,7 @@ export const useProducts = () => {
       setLoading(true);
       console.log('Buscando produtos...');
       
-      // Primeira consulta: buscar todos os produtos
+      // Buscar todos os produtos
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*')
@@ -37,36 +37,41 @@ export const useProducts = () => {
         throw productsError;
       }
 
-      console.log('Produtos encontrados:', productsData);
+      console.log('Produtos encontrados:', productsData?.length || 0);
 
-      // Segunda consulta: buscar as tags para cada produto
+      // Buscar as tags para cada produto usando a view otimizada
       const productsWithTags = await Promise.all(
         (productsData || []).map(async (product) => {
+          console.log('Buscando tags para produto:', product.name);
+          
           const { data: productTagsData, error: tagsError } = await supabase
-            .from('product_tags')
-            .select(`
-              tags (
-                id,
-                name
-              )
-            `)
+            .from('view_product_with_tags')
+            .select('tag_id, tag_name')
             .eq('product_id', product.id);
 
           if (tagsError) {
-            console.error('Erro ao buscar tags do produto:', tagsError);
+            console.error('Erro ao buscar tags do produto:', product.name, tagsError);
             return {
               ...product,
               tags: []
             };
           }
 
+          const tags = productTagsData?.map(row => ({
+            id: row.tag_id,
+            name: row.tag_name
+          })).filter(tag => tag.id && tag.name) || [];
+
+          console.log(`Tags para ${product.name}:`, tags);
+
           return {
             ...product,
-            tags: productTagsData?.map((pt: any) => pt.tags).filter(Boolean) || []
+            tags
           };
         })
       );
 
+      console.log('Produtos com tags carregados:', productsWithTags.length);
       setProducts(productsWithTags);
     } catch (error: any) {
       console.error('Erro ao carregar produtos:', error);
@@ -82,6 +87,7 @@ export const useProducts = () => {
 
   const addProduct = async (productData: Omit<Product, 'id' | 'tags'> & { tagIds: string[] }) => {
     try {
+      console.log('Adicionando produto:', productData);
       const { tagIds, ...product } = productData;
       
       const { data: productResult, error: productError } = await supabase
@@ -90,10 +96,16 @@ export const useProducts = () => {
         .select()
         .single();
 
-      if (productError) throw productError;
+      if (productError) {
+        console.error('Erro ao inserir produto:', productError);
+        throw productError;
+      }
+
+      console.log('Produto criado:', productResult.id);
 
       // Adicionar relacionamentos com tags
-      if (tagIds.length > 0) {
+      if (tagIds && tagIds.length > 0) {
+        console.log('Adicionando tags ao produto:', tagIds);
         const tagRelations = tagIds.map(tagId => ({
           product_id: productResult.id,
           tag_id: tagId
@@ -103,7 +115,11 @@ export const useProducts = () => {
           .from('product_tags')
           .insert(tagRelations);
 
-        if (tagError) throw tagError;
+        if (tagError) {
+          console.error('Erro ao adicionar tags:', tagError);
+          throw tagError;
+        }
+        console.log('Tags adicionadas com sucesso');
       }
 
       await fetchProducts(); // Recarregar para obter as tags
@@ -113,6 +129,7 @@ export const useProducts = () => {
       
       return productResult;
     } catch (error: any) {
+      console.error('Erro completo ao adicionar produto:', error);
       toast({
         title: "Erro ao adicionar produto",
         description: error.message,
@@ -124,6 +141,7 @@ export const useProducts = () => {
 
   const updateProduct = async (id: string, updates: Partial<Product> & { tagIds?: string[] }) => {
     try {
+      console.log('Atualizando produto:', id, updates);
       const { tagIds, tags, ...productUpdates } = updates;
 
       const { data, error } = await supabase
@@ -133,15 +151,27 @@ export const useProducts = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao atualizar produto:', error);
+        throw error;
+      }
+
+      console.log('Produto atualizado:', data.id);
 
       // Atualizar tags se fornecidas
       if (tagIds !== undefined) {
+        console.log('Atualizando tags do produto:', tagIds);
+        
         // Remover relacionamentos existentes
-        await supabase
+        const { error: deleteError } = await supabase
           .from('product_tags')
           .delete()
           .eq('product_id', id);
+
+        if (deleteError) {
+          console.error('Erro ao remover tags antigas:', deleteError);
+          throw deleteError;
+        }
 
         // Adicionar novos relacionamentos
         if (tagIds.length > 0) {
@@ -154,8 +184,12 @@ export const useProducts = () => {
             .from('product_tags')
             .insert(tagRelations);
 
-          if (tagError) throw tagError;
+          if (tagError) {
+            console.error('Erro ao inserir novas tags:', tagError);
+            throw tagError;
+          }
         }
+        console.log('Tags atualizadas com sucesso');
       }
 
       await fetchProducts(); // Recarregar para obter as tags atualizadas
@@ -165,6 +199,7 @@ export const useProducts = () => {
       
       return data;
     } catch (error: any) {
+      console.error('Erro completo ao atualizar produto:', error);
       toast({
         title: "Erro ao atualizar produto",
         description: error.message,
@@ -176,18 +211,25 @@ export const useProducts = () => {
 
   const deleteProduct = async (id: string) => {
     try {
+      console.log('Deletando produto:', id);
+      
       const { error } = await supabase
         .from('products')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao deletar produto:', error);
+        throw error;
+      }
 
       setProducts(prev => prev.filter(p => p.id !== id));
       toast({
         title: "Produto removido com sucesso!",
       });
+      console.log('Produto deletado com sucesso');
     } catch (error: any) {
+      console.error('Erro completo ao deletar produto:', error);
       toast({
         title: "Erro ao remover produto",
         description: error.message,
