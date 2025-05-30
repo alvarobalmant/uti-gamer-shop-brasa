@@ -16,19 +16,19 @@ import ProductOptions from '@/components/ProductPage/ProductOptions'; // Needs r
 import ProductActions from '@/components/ProductPage/ProductActions'; // Needs redesign
 import ProductDescription from '@/components/ProductPage/ProductDescription'; // New component for description section
 import RelatedProducts from '@/components/ProductPage/RelatedProducts'; // New component for related products
-import { CartContextType } from '@/contexts/CartContext';
 
 // **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products, loading: productsLoading } = useProducts();
-  const { addToCart } = useCart() as CartContextType; // Assuming cart context provides loading state
+  const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (products.length > 0 && id) {
@@ -45,12 +45,24 @@ const ProductPage = () => {
 
   const handleAddToCart = async () => {
     if (!product) return;
-    // Add logic to handle quantity if needed, GameStop seems to add 1 by default
-    await addToCart(product, selectedSize || undefined, selectedColor || undefined);
-    // Optional: Add feedback like toast notification
+    setIsLoading(true);
+    try {
+      await addToCart(product, selectedSize || undefined, selectedColor || undefined);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBackClick = () => navigate(-1);
+
+  const handleWhatsAppContact = () => {
+    if (!product) return;
+    const message = `Olá! Gostaria de mais informações sobre:\n\n${product.name}`;
+    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
 
   // --- Loading State --- 
   if (productsLoading) {
@@ -122,7 +134,10 @@ const ProductPage = () => {
             <Separator className="my-4" />
             <ProductActions 
               product={product} 
-              onAddToCart={handleAddToCart} 
+              onAddToCart={handleAddToCart}
+              isLoading={isLoading}
+              selectedCondition={selectedCondition}
+              onWhatsAppContact={handleWhatsAppContact}
             />
             {/* Trust badges/Delivery info can go here */}
             {/* <ProductTrustBadges /> */}

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { dummyProducts } from '@/data/products';
 import { Product } from '@/types/product';
@@ -6,6 +7,9 @@ interface UseProductsReturn {
   products: Product[];
   loading: boolean;
   error: string | null;
+  addProduct: (productData: any) => Promise<void>;
+  updateProduct: (id: string, productData: any) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
 }
 
 export const useProducts = (): UseProductsReturn => {
@@ -26,7 +30,22 @@ export const useProducts = (): UseProductsReturn => {
     }, 500);
   }, []);
 
-  return { products, loading, error };
+  const addProduct = async (productData: any): Promise<void> => {
+    // TODO: Implement actual API call
+    console.log('Adding product:', productData);
+  };
+
+  const updateProduct = async (id: string, productData: any): Promise<void> => {
+    // TODO: Implement actual API call
+    console.log('Updating product:', id, productData);
+  };
+
+  const deleteProduct = async (id: string): Promise<void> => {
+    // TODO: Implement actual API call
+    console.log('Deleting product:', id);
+  };
+
+  return { products, loading, error, addProduct, updateProduct, deleteProduct };
 };
 
 export type { Product };
