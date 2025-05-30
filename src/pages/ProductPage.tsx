@@ -16,13 +16,14 @@ import ProductOptions from '@/components/ProductPage/ProductOptions'; // Needs r
 import ProductActions from '@/components/ProductPage/ProductActions'; // Needs redesign
 import ProductDescription from '@/components/ProductPage/ProductDescription'; // New component for description section
 import RelatedProducts from '@/components/ProductPage/RelatedProducts'; // New component for related products
+import { CartContextType } from '@/contexts/CartContext';
 
 // **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products, loading: productsLoading } = useProducts();
-  const { addToCart, loading: cartLoading } = useCart(); // Assuming cart context provides loading state
+  const { addToCart } = useCart() as CartContextType; // Assuming cart context provides loading state
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = useState('');
@@ -55,7 +56,7 @@ const ProductPage = () => {
   if (productsLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <ProductPageHeader onBackClick={handleBackClick} isLoading />
+        <ProductPageHeader onBackClick={handleBackClick} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Skeleton for Gallery */}
@@ -92,7 +93,7 @@ const ProductPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Simplified Header - Breadcrumbs might go here */}
-      <ProductPageHeader product={product} onBackClick={handleBackClick} />
+      <ProductPageHeader onBackClick={handleBackClick} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Top Section: Gallery + Info/Actions */}
@@ -122,8 +123,6 @@ const ProductPage = () => {
             <ProductActions 
               product={product} 
               onAddToCart={handleAddToCart} 
-              isLoading={cartLoading} // Pass cart loading state
-              // Add other actions like wishlist if needed
             />
             {/* Trust badges/Delivery info can go here */}
             {/* <ProductTrustBadges /> */}
@@ -150,4 +149,3 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
-

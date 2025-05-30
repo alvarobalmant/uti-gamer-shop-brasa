@@ -131,7 +131,6 @@ const ProductPage = () => {
 
             <ProductActions
               product={product}
-              quantity={quantity}
               selectedCondition={selectedCondition}
               onAddToCart={handleAddToCart}
               onWhatsAppContact={handleWhatsAppContact}

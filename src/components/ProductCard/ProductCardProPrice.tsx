@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Product } from '@/hooks/useProducts';
+import { Product } from '@/types/product';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';

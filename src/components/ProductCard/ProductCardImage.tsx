@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Heart } from 'lucide-react';
-import { Product } from '@/hooks/useProducts';
+import { Product } from '@/types/product';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 

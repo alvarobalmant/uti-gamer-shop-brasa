@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Product } from '@/hooks/useProducts';
+import { Product } from '@/types/product';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import ProductCardProPrice from './ProductCard/ProductCardProPrice';
 import ProductCardStock from './ProductCard/ProductCardStock';
 import ProductCardActions from './ProductCard/ProductCardActions';
 
-export type { Product } from '@/hooks/useProducts';
+export type { Product } from '@/types/product';
 
 interface ProductCardProps {
   product: Product;
@@ -71,4 +71,3 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
 };
 
 export default ProductCard;
-

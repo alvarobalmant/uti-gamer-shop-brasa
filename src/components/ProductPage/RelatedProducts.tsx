@@ -1,6 +1,8 @@
+
 import React, { useEffect, useState } from 'react';
-import { Product, useProducts } from '@/hooks/useProducts';
-import ProductCard from '@/components/ProductCard'; // Use the redesigned ProductCard
+import { Product } from '@/types/product';
+import { useProducts } from '@/hooks/useProducts';
+import ProductCard from '@/components/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface RelatedProductsProps {

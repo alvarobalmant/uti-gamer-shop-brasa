@@ -1,11 +1,10 @@
-
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
-import { Product } from '@/hooks/useProducts';
+import { Product } from '@/types/product';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { searchProducts } from '@/utils/fuzzySearch';
@@ -116,7 +115,6 @@ const SearchResults = () => {
                   key={product.id}
                   product={product}
                   onAddToCart={handleAddToCart}
-                  getPlatformColor={() => getPlatformColor(product)}
                 />
               ))}
             </div>
