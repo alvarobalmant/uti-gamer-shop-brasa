@@ -1,7 +1,12 @@
+# Merged and adjusted version of Cart.tsx
+# Using the structure and styling from the refactored version
+# Adapting to use functions from the merged CartContext (itemId based)
+
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, X, Trash2, Plus, Minus } from 'lucide-react';
-import { CartItem } from '@/hooks/useCartSync';
+# Use CartItem type from the correct source (assuming types/cart.ts or useNewCart.ts)
+from '@/types/cart'; 
 import {
   Sheet,
   SheetContent,
@@ -9,75 +14,63 @@ import {
   SheetTitle,
   SheetFooter,
   SheetClose
-} from "@/components/ui/sheet"; // Use Shadcn Sheet
+} from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+# Import useCart to access the merged context functions
+from '@/contexts/CartContext'; 
 
-interface CartProps {
-  cart: CartItem[];
+interface CartSheetProps {
   showCart: boolean;
   setShowCart: (show: boolean) => void;
-  updateQuantity: (productId: string, size: string | undefined, color: string | undefined, quantity: number) => void;
-  removeFromCart?: (itemId: string) => void;
-  clearCart?: () => void;
-  sendToWhatsApp: () => void;
 }
 
-// Rebuilding based on reference image image.png and user feedback
-const Cart = ({ 
-  cart,
-  showCart,
-  setShowCart,
-  updateQuantity,
-  removeFromCart,
-  clearCart,
-  sendToWhatsApp
-}: CartProps) => {
-  const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+// This component now primarily controls the Sheet visibility
+// and renders the cart content using data/functions from useCart context
+const Cart = ({ showCart, setShowCart }: CartSheetProps) => {
+  // Get cart state and functions from the merged context
+  const { 
+    items: cart, // Rename items to cart for consistency within this component
+    updateQuantity, 
+    removeFromCart, 
+    clearCart, 
+    getCartTotal, 
+    sendToWhatsApp 
+  } = useCart();
+
+  // Handler now uses itemId and quantity
+  const handleQuantityChange = (itemId: string, currentQuantity: number, change: number) => {
+    const newQuantity = Math.max(0, currentQuantity + change);
+    // updateQuantity from the context handles the logic for quantity <= 0
+    updateQuantity(itemId, newQuantity);
   };
 
-  const handleQuantityChange = (item: CartItem, change: number) => {
-    const newQuantity = Math.max(0, item.quantity + change);
-    if (newQuantity === 0 && removeFromCart) {
-       handleRemoveItem(item.id);
-       return;
-    }
-    if (newQuantity > 0) {
-        updateQuantity(
-          item.product.id,
-          item.size,
-          item.color,
-          newQuantity
-        );
-    }
-  };
-
+  // Handler uses itemId
   const handleRemoveItem = (itemId: string) => {
-    if (removeFromCart) {
+    if (removeFromCart) { // Check if function exists in context
       removeFromCart(itemId);
     }
   };
 
   const handleClearCart = () => {
-    if (clearCart) {
+    if (clearCart) { // Check if function exists in context
       clearCart();
     }
   };
 
-  // Shadcn Sheet handles scroll lock and z-index
+  const totalPrice = getCartTotal ? getCartTotal() : 0; // Use context function
 
   return (
     <Sheet open={showCart} onOpenChange={setShowCart}>
       <SheetContent
-        side="bottom" // Changed to bottom based on reference image.png
+        side="bottom" // Keep bottom side as per reference image.png
         className={cn(
-          "h-[90vh] w-full flex flex-col p-0 z-[100]", // 90% viewport height from bottom, high z-index
-          "md:w-[450px] md:h-full md:side-right" // Keep desktop as right side panel
+          "h-[90vh] w-full flex flex-col p-0 z-[1000]", // High z-index, 90% viewport height
+          "md:w-[450px] md:h-full md:side-right" // Desktop side panel
         )}
         aria-describedby="cart-title"
       >
-        {/* Header - Styled similar to reference image.png */}
+        {/* Header - Using styling from refactored version */}
         <SheetHeader className="p-4 border-b flex-row justify-between items-center flex-shrink-0 bg-white">
           <div className="flex items-center gap-2">
              <ShoppingCart className="w-5 h-5 text-gray-700" />
@@ -106,11 +99,11 @@ const Cart = ({
         </SheetHeader>
 
         {/* Scrollable Content Area */}
-        <ScrollArea className="flex-grow bg-gray-50"> {/* Light background for content */}
+        <ScrollArea className="flex-grow bg-gray-50"> 
           <div className="p-4"> 
             {cart.length === 0 ? (
-              // Empty Cart View - Styled similar to reference image.png
-              <div className="flex flex-col items-center justify-center text-center h-[calc(90vh-150px)]"> {/* Adjust height based on header/footer */}
+              // Empty Cart View - Using styling from refactored version
+              <div className="flex flex-col items-center justify-center text-center h-[calc(90vh-150px)]"> 
                 <ShoppingCart className="w-16 h-16 text-gray-300 mb-6" />
                 <h4 className="text-xl font-semibold text-gray-700 mb-2">Seu carrinho está vazio</h4>
                 <p className="text-gray-500 mb-8 max-w-xs">Parece que você ainda não adicionou nenhum produto ao seu carrinho.</p>
@@ -123,11 +116,11 @@ const Cart = ({
                  </SheetClose>
               </div>
             ) : (
-              // Cart with Items - Keep previous structure, adjust styling if needed
+              // Cart with Items - Using styling from refactored version
               <div className="space-y-3 pb-4">
                 {cart.map((item) => (
                   <div
-                    key={item.id}
+                    key={item.id} // Use item.id directly
                     className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm flex items-start space-x-3"
                   >
                     <img
@@ -144,7 +137,7 @@ const Cart = ({
                           <Button
                             size="icon"
                             variant="ghost"
-                            onClick={() => handleRemoveItem(item.id)}
+                            onClick={() => handleRemoveItem(item.id)} // Pass item.id
                             className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full w-6 h-6 p-0 flex-shrink-0"
                             title="Remover item"
                           >
@@ -158,12 +151,12 @@ const Cart = ({
                         </p>
                       )}
                       <div className="flex justify-between items-center mt-2">
-                        {/* Quantity Controls */}
+                        {/* Quantity Controls - Pass item.id and quantity */}
                         <div className="flex items-center border border-gray-300 rounded-md">
                           <Button
                             size="icon"
                             variant="ghost"
-                            onClick={() => handleQuantityChange(item, -1)}
+                            onClick={() => handleQuantityChange(item.id, item.quantity, -1)} // Pass item.id
                             className="w-7 h-7 p-0 text-gray-600 hover:bg-gray-100 rounded-r-none"
                             disabled={item.quantity <= 1}
                           >
@@ -175,7 +168,7 @@ const Cart = ({
                           <Button
                             size="icon"
                             variant="ghost"
-                            onClick={() => handleQuantityChange(item, 1)}
+                            onClick={() => handleQuantityChange(item.id, item.quantity, 1)} // Pass item.id
                             className="w-7 h-7 p-0 text-gray-600 hover:bg-gray-100 rounded-l-none"
                           >
                             <Plus className="w-3.5 h-3.5" />
@@ -201,15 +194,15 @@ const Cart = ({
             <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 space-y-2">
                <div className="flex justify-between items-center">
                   <span className="text-gray-600 text-sm">Subtotal:</span>
-                  <span className="text-gray-800 text-sm font-medium">R$ {getTotalPrice().toFixed(2)}</span>
+                  <span className="text-gray-800 text-sm font-medium">R$ {totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 text-sm">Frete:</span>
                   <span className="text-red-600 text-sm font-semibold">
-                    {getTotalPrice() >= 200 ? 'GRÁTIS' : 'Calcular'}
+                    {totalPrice >= 200 ? 'GRÁTIS' : 'Calcular'}
                   </span>
                 </div>
-                {getTotalPrice() >= 200 && (
+                {totalPrice >= 200 && (
                   <div className="text-center py-1 bg-green-100 rounded">
                     <p className="text-green-700 text-xs font-semibold">🎉 Você ganhou frete grátis!</p>
                   </div>
@@ -218,7 +211,7 @@ const Cart = ({
                   <div className="flex justify-between items-center">
                     <span className="text-base font-semibold text-gray-800">Total:</span>
                     <span className="text-lg font-bold text-red-600">
-                      R$ {getTotalPrice().toFixed(2)}
+                      R$ {totalPrice.toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -226,7 +219,7 @@ const Cart = ({
 
             {/* Action Buttons */}
             <Button
-              onClick={sendToWhatsApp}
+              onClick={sendToWhatsApp} // Use context function
               className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 text-base shadow-sm"
             >
               Finalizar no WhatsApp 📱
