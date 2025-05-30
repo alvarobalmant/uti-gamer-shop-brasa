@@ -307,6 +307,39 @@ export type Database = {
         }
         Relationships: []
       }
+      quick_links: {
+        Row: {
+          created_at: string
+          icon_url: string
+          id: string
+          is_active: boolean
+          label: string
+          path: string
+          position: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon_url: string
+          id?: string
+          is_active?: boolean
+          label: string
+          path: string
+          position?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon_url?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          path?: string
+          position?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       service_cards: {
         Row: {
           created_at: string
