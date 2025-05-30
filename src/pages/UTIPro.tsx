@@ -247,9 +247,9 @@ const UTIPro = () => {
                 Escolha seu Plano UTI PRO
               </motion.h2>
               {/* Horizontal Scroll Container for Mobile */}
-              <div className="md:hidden overflow-x-auto pb-6 -mx-4 px-4 scrollbar-thin scrollbar-thumb-uti-red/50 scrollbar-track-transparent">
+              <div className="md:hidden overflow-x-auto pb-6 -mx-4 px-4 pt-4 scrollbar-thin scrollbar-thumb-uti-red/50 scrollbar-track-transparent">
                 <motion.div 
-                  className="flex gap-4 w-max"
+                  className="flex gap-4 w-max pt-3"
                   variants={staggerContainer}
                   initial="hidden"
                   whileInView="visible"
@@ -271,11 +271,11 @@ const UTIPro = () => {
                       >
                         <Card className={cn(
                           "relative bg-gray-800/60 border border-gray-700 shadow-xl h-full flex flex-col transition-all duration-300",
-                          isPopular ? 'border-uti-red ring-2 ring-uti-red z-10' : '' 
-                          // Removed hover scale for mobile scroll stability
+                          isPopular ? 'border-uti-red ring-2 ring-uti-red z-10 mt-5' : '' 
+                          // Adicionado mt-5 para dar espaço para a badge no mobile
                         )}>
                           {isPopular && (
-                            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-uti-red text-white px-3 py-1 text-xs sm:text-sm font-semibold">
+                            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-uti-red text-white px-3 py-1.5 text-xs sm:text-sm font-semibold shadow-md z-20">
                               Mais Popular
                             </Badge>
                           )}
