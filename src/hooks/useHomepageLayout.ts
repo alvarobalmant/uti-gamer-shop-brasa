@@ -30,9 +30,9 @@ export const useHomepageLayout = () => {
   const getSectionTitle = (key: string): string => {
     switch (key) {
       case 'hero_banner': return 'Carrossel de Banners Principal';
-      case 'hero_quick_links': return 'Links Rápidos (Categorias)'; // Added
+      case 'hero_quick_links': return 'Links Rápidos (Categorias)';
       case 'promo_banner': return 'Banner Promocional (UTI PRO)';
-      // Removed 'service_cards', added individual sections
+      // Individual service sections instead of grouped 'service_cards'
       case 'specialized_services': return 'Seção: Nossos Serviços Especializados';
       case 'why_choose_us': return 'Seção: Por que escolher a UTI DOS GAMES?';
       case 'contact_help': return 'Seção: Precisa de Ajuda/Contato';

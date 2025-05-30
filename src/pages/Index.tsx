@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { useProducts, Product } from '@/hooks/useProducts'; // Import Product type
+=======
+import { useProducts } from '@/hooks/useProducts';
+>>>>>>> 58694ed4ab02d9720d68ee9778edba4ce19d69ce
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
+<<<<<<< HEAD
 import HeroQuickLinks from '@/components/HeroQuickLinks'; // Import HeroQuickLinks
+=======
+import HeroQuickLinks from '@/components/HeroQuickLinks';
+>>>>>>> 58694ed4ab02d9720d68ee9778edba4ce19d69ce
 import PromotionalBanner from '@/components/PromotionalBanner';
 // Import the new separated service/contact components
 import SpecializedServices from '@/components/ServiceCards/SpecializedServices';
@@ -59,7 +67,10 @@ const Index = () => {
       case 'hero_banner':
         return <HeroBannerCarousel key="hero_banner" />;
       
+<<<<<<< HEAD
       // Add case for HeroQuickLinks
+=======
+>>>>>>> 58694ed4ab02d9720d68ee9778edba4ce19d69ce
       case 'hero_quick_links':
         return <HeroQuickLinks key="hero_quick_links" />;
 
@@ -70,7 +81,11 @@ const Index = () => {
           </div>
         );
       
+<<<<<<< HEAD
       // Replace 'service_cards' with individual components
+=======
+      // Replace single 'service_cards' with individual components
+>>>>>>> 58694ed4ab02d9720d68ee9778edba4ce19d69ce
       case 'specialized_services':
         return <SpecializedServices key="specialized_services" />;
       case 'why_choose_us':
@@ -87,7 +102,7 @@ const Index = () => {
           if (!section) return null;
           
           // --- BUG FIX: Deduplicate products --- 
-          const productMap = new Map<string, Product>(); // Use a Map to store unique products by ID
+          const productMap = new Map<string, any>(); // Use a Map to store unique products by ID
           
           if (section.items) {
             for (const item of section.items) {
