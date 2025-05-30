@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActions from './HeaderActions';
-import MobileSearchBar from './MobileSearchBar';
+import MobileSearchBar from './MobileSearchBar'; // Import MobileSearchBar
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { Menu, Search } from 'lucide-react'; // Only need Menu and Search icons here now
 
 interface MainHeaderProps {
   onCartOpen: () => void;
@@ -14,63 +14,81 @@ interface MainHeaderProps {
   className?: string;
 }
 
-const MainHeader = ({ 
-  onCartOpen, 
-  onAuthOpen, 
+const MainHeader = ({
+  onCartOpen,
+  onAuthOpen,
   onMobileMenuToggle,
   className
 }: MainHeaderProps) => {
   const navigate = useNavigate();
+  // State to control the visibility of the MobileSearchBar overlay
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  // Function to toggle the search overlay visibility
+  const toggleMobileSearch = () => {
+    setIsMobileSearchOpen(!isMobileSearchOpen);
+  };
 
   return (
-    <div className={cn("bg-background border-b", className)}> {/* Added border-b for visual separation */} 
-      {/* Top Row: Mobile Menu, Logo, Actions */}
-      {/* Increased height for mobile, adjusted padding */}
-      <div className="container flex h-[72px] items-center justify-between px-4 gap-2"> 
-        {/* Left side: Mobile Menu Toggle (visible on small screens) + Logo */}
-        <div className="flex items-center flex-shrink-0">
-          {/* Mobile Menu Toggle Button - visible only on md and below */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="mr-2 md:hidden p-2 h-10 w-10" // Increased size and margin for easier tap
-            onClick={onMobileMenuToggle}
-            aria-label="Abrir menu"
-          >
-            <Menu className="h-6 w-6" /> {/* Icon size maintained, button size increased */} 
-          </Button>
+    <> {/* Use Fragment to render MobileSearchBar outside the main div flow */}
+      <div className={cn("bg-background border-b sticky top-0 z-40", className)}> {/* z-index adjusted */}
+        {/* Top Row: Mobile Menu, Logo, Actions (including mobile search toggle) */}
+        <div className="container flex h-[72px] items-center justify-between px-4 gap-2">
+          {/* Left side: Mobile Menu Toggle + Logo */}
+          <div className="flex items-center flex-shrink-0">
+            {/* Mobile Menu Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="mr-2 md:hidden p-2 h-10 w-10"
+              onClick={onMobileMenuToggle}
+              aria-label="Abrir menu"
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
 
-          {/* Logo - Link to home */}
-          <a href="/" className="flex items-center" aria-label="Página Inicial UTI DOS GAMES">
-            <img 
-              src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" // Ensure this path is correct
-              alt="UTI DOS GAMES Logo" 
-              className="h-10 w-auto" // Increased height slightly
+            {/* Logo */}
+            <a href="/" className="flex items-center" aria-label="Página Inicial UTI DOS GAMES">
+              <img
+                src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png"
+                alt="UTI DOS GAMES Logo"
+                className="h-10 w-auto"
+              />
+            </a>
+          </div>
+
+          {/* Center: Desktop Search Bar */}
+          <div className="flex-1 justify-center px-4 hidden md:flex max-w-xl">
+             <DesktopSearchBar />
+          </div>
+
+          {/* Right side: Header Actions + Mobile Search Toggle */}
+          <div className="flex items-center justify-end flex-shrink-0 gap-1"> 
+            {/* Mobile Search Toggle Button - Always shows Search icon */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden p-2 h-10 w-10" // Consistent size with menu toggle
+              onClick={toggleMobileSearch} // Opens the search overlay
+              aria-label="Abrir busca"
+            >
+              <Search className="h-6 w-6" />
+            </Button>
+
+            {/* Original Header Actions (Cart, Login, etc.) */}
+            <HeaderActions
+              onCartOpen={onCartOpen}
+              onAuthOpen={onAuthOpen}
             />
-          </a>
-        </div>
-
-        {/* Center: Desktop Search Bar (visible on md and up) */}
-        <div className="flex-1 justify-center px-4 hidden md:flex max-w-xl">
-           <DesktopSearchBar />
-        </div>
-
-        {/* Right side: Header Actions (Cart, Login, etc.) */}
-        {/* Ensure HeaderActions itself provides adequate spacing for its internal items */} 
-        <div className="flex items-center justify-end flex-shrink-0">
-          <HeaderActions
-            onCartOpen={onCartOpen}
-            onAuthOpen={onAuthOpen}
-          />
+          </div>
         </div>
       </div>
 
-      {/* Bottom Row: Mobile Search Bar (visible on small screens) */}
-      {/* Removed border-t, added padding-bottom */} 
-      <div className="container md:hidden pb-4 px-4 pt-1"> 
-         <MobileSearchBar />
-      </div>
-    </div>
+      {/* Mobile Search Bar Component - Rendered conditionally */}
+      {/* Pass state and toggle function as props */}
+      <MobileSearchBar isOpen={isMobileSearchOpen} onClose={toggleMobileSearch} />
+
+    </>
   );
 };
 
