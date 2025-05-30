@@ -1,21 +1,22 @@
+
 import React, { useEffect, useState } from 'react';
 import { Product, useProducts } from '@/hooks/useProducts';
-import ProductCard from '@/components/ProductCard'; // Use the redesigned ProductCard
+import ProductCard from '@/components/ProductCard'; 
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCart } from '@/contexts/CartContext';
 
 interface RelatedProductsProps {
   product: Product;
 }
 
-// **New Component - Basic Structure based on GameStop reference**
 const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
   const { products: allProducts, loading } = useProducts();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     if (allProducts.length > 0 && product) {
       // Simple related logic: find products with at least one common tag (excluding self)
-      // More sophisticated logic could be based on category, brand, etc.
       const currentProductTags = product.tags?.map(t => t.id) || [];
       const related = allProducts.filter(p => 
         p.id !== product.id && 
@@ -45,6 +46,10 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
     }
   }, [allProducts, product]);
 
+  const handleAddToCart = async (relatedProduct: Product) => {
+    await addToCart(relatedProduct);
+  };
+
   return (
     <div>
       <h2 className="text-xl lg:text-2xl font-semibold text-foreground mb-4">
@@ -66,7 +71,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
             <ProductCard 
               key={relatedProduct.id} 
               product={relatedProduct} 
-              // Pass necessary props like onAddToCart if needed, or handle within ProductCard
+              onAddToCart={handleAddToCart}
             />
           ))}
         </div>
@@ -78,4 +83,3 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
 };
 
 export default RelatedProducts;
-

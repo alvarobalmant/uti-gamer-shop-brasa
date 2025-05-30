@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/hooks/useProducts';
+import { Product, useProducts } from '@/hooks/useProducts';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface CartItem {
@@ -19,10 +20,11 @@ export const useNewCart = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { products } = useProducts();
 
   useEffect(() => {
     const fetchCartItems = async () => {
-      if (user) {
+      if (user && products.length > 0) {
         try {
           const { data, error } = await supabase
             .from('cart_items')
@@ -38,7 +40,24 @@ export const useNewCart = () => {
               variant: "destructive",
             });
           } else {
-            setItems(data || []);
+            // Map database items to CartItem interface with product data
+            const cartItems: CartItem[] = (data || []).map(dbItem => {
+              const product = products.find(p => p.id === dbItem.product_id);
+              if (!product) {
+                console.warn('Product not found for cart item:', dbItem.product_id);
+                return null;
+              }
+              return {
+                id: dbItem.id,
+                product: product,
+                quantity: dbItem.quantity,
+                size: dbItem.size || undefined,
+                color: dbItem.color || undefined,
+                created_at: dbItem.created_at,
+              };
+            }).filter(Boolean) as CartItem[];
+            
+            setItems(cartItems);
           }
         } catch (error: any) {
           console.error('Unexpected error fetching cart items:', error);
@@ -54,7 +73,7 @@ export const useNewCart = () => {
     };
 
     fetchCartItems();
-  }, [user, toast]);
+  }, [user, toast, products]);
 
   const addToCart = async (product: Product, size?: string, color?: string) => {
     setLoading(true);
@@ -100,8 +119,8 @@ export const useNewCart = () => {
           id: data.id,
           product: product,
           quantity: data.quantity,
-          size: data.size,
-          color: data.color,
+          size: data.size || undefined,
+          color: data.color || undefined,
           created_at: data.created_at,
         }]);
         toast({

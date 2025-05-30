@@ -13,9 +13,9 @@ const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
   const { items, updateQuantity, removeFromCart, clearCart, getCartTotal, sendToWhatsApp } = useCart();
   const isMobile = useIsMobile();
 
-  const handleQuantityChange = (productId: string, size: string | undefined, color: string | undefined, currentQuantity: number, change: number) => {
+  const handleQuantityChange = (itemId: string, currentQuantity: number, change: number) => {
     const newQuantity = Math.max(0, currentQuantity + change);
-    updateQuantity(productId, size, color, newQuantity);
+    updateQuantity(itemId, newQuantity);
   };
 
   const handleRemoveItem = (itemId: string) => {
@@ -141,7 +141,7 @@ const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleQuantityChange(item.product.id, item.size, item.color, item.quantity, -1)}
+                            onClick={() => handleQuantityChange(item.id, item.quantity, -1)}
                             className="w-8 h-8 p-0 border-red-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg"
                             disabled={item.quantity <= 1}
                           >
@@ -153,7 +153,7 @@ const GlobalCartDropdown = ({ isOpen, onClose }: GlobalCartDropdownProps) => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleQuantityChange(item.product.id, item.size, item.color, item.quantity, 1)}
+                            onClick={() => handleQuantityChange(item.id, item.quantity, 1)}
                             className="w-8 h-8 p-0 border-red-300 hover:border-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg"
                           >
                             <Plus className="w-4 h-4" />
