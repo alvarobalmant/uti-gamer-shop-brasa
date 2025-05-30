@@ -57,18 +57,21 @@ const Cart = ({
   if (!showCart) return null;
 
   return (
-    <div 
-      className={`fixed inset-0 bg-black/50 z-50 backdrop-blur-sm transition-opacity duration-300 ${showCart ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
-      onClick={handleBackdropClick}
-    >
-      {/* Cart Panel - Slides in from right */}
+    <div className="fixed inset-0 z-50">
+      {/* Backdrop com blur e escurecimento */}
       <div 
-        className={`fixed right-0 top-0 h-full w-[90%] sm:w-[450px] max-w-md bg-white shadow-2xl overflow-hidden flex flex-col transform transition-transform duration-300 ease-in-out ${showCart ? 'translate-x-0' : 'translate-x-full'}`}
-        // Prevent backdrop click from closing if clicking inside the cart panel
-        onClick={(e) => e.stopPropagation()} 
-      >
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+        onClick={handleBackdropClick}
+      />
+
+      {/* Cart Panel - Slides in from right com animação suave */}
+      <div className={`
+        fixed right-0 top-0 h-full w-[90%] sm:w-[450px] max-w-md bg-white shadow-2xl 
+        overflow-hidden flex flex-col transform transition-transform duration-300 ease-in-out
+        ${showCart ? 'translate-x-0' : 'translate-x-full'}
+      `}>
         {/* Header */}
-        <div className="p-4 sm:p-6 border-b-2 border-red-600 bg-white">
+        <div className="p-4 sm:p-6 border-b-2 border-red-600 bg-white flex-shrink-0">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-600 rounded-full flex items-center justify-center">
@@ -123,7 +126,7 @@ const Cart = ({
           </div>
         ) : (
           <>
-            {/* Cart Items */}
+            {/* Cart Items - Com scroll interno */}
             <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4">
               {cart.map((item) => (
                 <div 
@@ -190,8 +193,8 @@ const Cart = ({
               ))}
             </div>
 
-            {/* Footer */}
-            <div className="border-t-2 border-gray-200 p-4 sm:p-6 bg-white">
+            {/* Footer - Fixo na parte inferior */}
+            <div className="border-t-2 border-gray-200 p-4 sm:p-6 bg-white flex-shrink-0">
               <div className="bg-red-50 p-3 sm:p-4 rounded-xl mb-3 sm:mb-4 border border-red-200">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-600 text-sm sm:text-base font-medium">Subtotal:</span>

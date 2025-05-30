@@ -1,5 +1,5 @@
 
-import { X, User, Crown, Home, Grid, Search } from 'lucide-react';
+import { X, User, Crown, Home, Grid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -35,17 +35,30 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
     onClose();
   };
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 md:hidden"> {/* Changed sm:hidden to md:hidden to match toggle button */}
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-50 md:hidden">
+      {/* Backdrop com blur e escurecimento */}
+      <div 
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+        onClick={handleBackdropClick}
+      />
       
-      {/* Menu Panel - Slide in from left */}
-      <div className="fixed top-0 left-0 h-full w-4/5 max-w-xs bg-white shadow-xl flex flex-col">
+      {/* Menu Panel - Slide in from left com animação suave */}
+      <div className={`
+        fixed top-0 left-0 h-full w-4/5 max-w-xs bg-white shadow-2xl flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
+        <div className="flex items-center justify-between p-4 border-b flex-shrink-0 bg-white">
           <div className="flex items-center gap-2">
             <img 
               src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 

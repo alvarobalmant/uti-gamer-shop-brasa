@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -58,8 +59,8 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
           </a>
         </div>
 
-        {/* Image Area (Takes less space on mobile, more on desktop) */}
-        <div className="md:col-span-2 h-32 sm:h-36 md:h-full order-1 md:order-2"> {/* Reduced height for mobile to make it more rectangular */}
+        {/* Image Area - Altura reduzida especificamente para mobile */}
+        <div className="md:col-span-2 h-24 sm:h-28 md:h-full order-1 md:order-2">
           <img 
             src={imageUrl || "/placeholder-banner.webp"} 
             alt={title} 
@@ -77,4 +78,3 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
 };
 
 export default PromotionalBanner;
-
