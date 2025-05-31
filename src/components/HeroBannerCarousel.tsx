@@ -23,9 +23,14 @@ const HeroBannerCarousel = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Ajustado o delay de 5000ms (5 segundos) para 3500ms (3.5 segundos) para tornar o autoplay mais perceptível
+  // Configuração do autoplay para funcionar em todas as plataformas
   const plugin = useRef(
-    Autoplay({ delay: 3500, stopOnInteraction: true, stopOnMouseEnter: true })
+    Autoplay({ 
+      delay: 3500, 
+      stopOnInteraction: false, 
+      stopOnMouseEnter: false,
+      rootNode: (emblaRoot) => emblaRoot
+    })
   )
 
   useEffect(() => {
