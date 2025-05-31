@@ -28,42 +28,13 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
       "rounded-lg overflow-hidden shadow-lg my-6 md:my-8", // Margin top/bottom
       backgroundColor
     )}>
-      {/* Desktop layout - Image on right */}
-      <div className="hidden md:flex flex-row items-center">
-        {/* Text Content Area */}
+      {/* Use flex layout for better control on mobile */}
+      <div className="flex flex-row items-center">
+        {/* Image Area - Fixed width on mobile, full height */}
         <div className={cn(
-          "flex-grow flex flex-col justify-center",
-          "p-8 lg:p-10" // Adjusted padding
+          "w-1/3 md:w-2/5 flex-shrink-0", // Adjust width ratio for mobile/desktop
+          "h-24 md:h-auto md:aspect-[4/3]" // Fixed height on mobile, aspect ratio on desktop
         )}>
-          <h2 className={cn(
-            "text-3xl lg:text-4xl font-bold mb-3", // Adjusted text size
-            textColor
-          )}>
-            {title}
-          </h2>
-          <p className={cn(
-            "text-lg mb-6 opacity-90",
-            textColor
-          )}>
-            {description}
-          </p>
-          <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start mt-auto">
-            <Button 
-              variant="outline" 
-              size="default"
-              className={cn(
-                "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
-                textColor
-              )}
-            >
-              {buttonText}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </a>
-        </div>
-        
-        {/* Image Area - Fixed width on desktop */}
-        <div className="w-2/5 flex-shrink-0 h-auto aspect-[4/3]">
           <img 
             src={imageUrl || "/placeholder-banner.webp"} 
             alt={title} 
@@ -75,24 +46,30 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
             className="w-full h-full object-cover" 
           />
         </div>
-      </div>
-      
-      {/* Mobile layout - Text only, aligned left */}
-      <div className="flex md:hidden flex-col">
+
+        {/* Text Content Area */}
         <div className={cn(
-          "flex flex-col justify-center",
-          "p-4 py-3" // Reduced padding for mobile
+          "flex-grow flex flex-col justify-center",
+          "p-3 sm:p-4 md:p-8 lg:p-10" // Adjusted padding
         )}>
           <h2 className={cn(
-            "text-base font-bold mb-1", // Smaller text for mobile
+            "text-base md:text-3xl lg:text-4xl font-bold mb-1 md:mb-3", // Adjusted mobile text size
             textColor
           )}>
             {title}
           </h2>
-          <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start mt-1">
+          {/* Description hidden on mobile */}
+          <p className={cn(
+            "text-sm md:text-lg mb-3 md:mb-6 opacity-90",
+            "hidden md:block", // Hide on mobile, show on md and up
+            textColor
+          )}>
+            {description}
+          </p>
+          <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start mt-auto">
             <Button 
               variant="outline" 
-              size="xs"
+              size="xs" // Keep small size for mobile
               className={cn(
                 "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
                 "text-xs px-2 py-1", // Adjusted padding for smaller button
@@ -100,7 +77,7 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
               )}
             >
               {buttonText}
-              <ArrowRight className="ml-1 h-3 w-3" />
+              <ArrowRight className="ml-1 h-3 w-3" /> {/* Adjusted icon size slightly */}
             </Button>
           </a>
         </div>
@@ -110,3 +87,4 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
 };
 
 export default PromotionalBanner;
+
