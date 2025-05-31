@@ -29,8 +29,11 @@ const FeaturedProductsSection = ({
   const isMobile = useIsMobile();
   const { saveScrollPosition } = useScrollPosition();
   const [selectedCategory, setSelectedCategory] = useState("todos");
+<<<<<<< HEAD
   // Start with animation enabled for initial load
   const [animateProducts, setAnimateProducts] = useState(true); 
+=======
+>>>>>>> 3739176a6305ba173c1daaa03279b27359ccfd4d
 
   // Define categories
   const categories = [
@@ -58,6 +61,7 @@ const FeaturedProductsSection = ({
     navigate(viewAllLink);
   };
 
+<<<<<<< HEAD
   // Handle category change with animation logic
   const handleCategoryChange = (category: string) => {
     if (category === selectedCategory) return; // Do nothing if the category is the same
@@ -84,6 +88,8 @@ const FeaturedProductsSection = ({
     setAnimateProducts(true);
   }, [displayedProducts]);
 
+=======
+>>>>>>> 3739176a6305ba173c1daaa03279b27359ccfd4d
   if (loading) {
     return (
       <section className="py-12 md:py-16 bg-background">
@@ -117,7 +123,11 @@ const FeaturedProductsSection = ({
         <div className="mb-6 md:mb-8 flex justify-center">
           <Tabs
             value={selectedCategory}
+<<<<<<< HEAD
             onValueChange={handleCategoryChange} // Use the new handler
+=======
+            onValueChange={setSelectedCategory}
+>>>>>>> 3739176a6305ba173c1daaa03279b27359ccfd4d
             className="w-full max-w-lg"
           >
             <TabsList className="grid w-full grid-cols-5 bg-muted p-1 rounded-lg h-auto">
@@ -150,6 +160,7 @@ const FeaturedProductsSection = ({
             >
               {displayedProducts.map((product, index) => (
                 <div
+<<<<<<< HEAD
                   key={`${selectedCategory}-${product.id}`} // Change key to help React differentiate elements between renders
                   className={cn(
                     "w-60 sm:w-64 flex-shrink-0",
@@ -163,6 +174,10 @@ const FeaturedProductsSection = ({
                     // Apply staggered delay only for the enter animation
                     transitionDelay: animateProducts ? `${index * 75}ms` : '0ms' // Increased delay slightly
                   }}
+=======
+                  key={product.id}
+                  className="w-60 sm:w-64 flex-shrink-0" // Set fixed width for items
+>>>>>>> 3739176a6305ba173c1daaa03279b27359ccfd4d
                 >
                   <ProductCard
                     product={product}
@@ -179,3 +194,4 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
+
