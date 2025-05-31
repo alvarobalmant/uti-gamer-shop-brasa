@@ -2,7 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Sonner } from "@/components/ui/sonner"; // Corrected import name
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+<<<<<<< HEAD
 import { BrowserRouter, Routes, Route, Navigate, ScrollRestoration } from "react-router-dom"; // Import ScrollRestoration
+=======
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+>>>>>>> 3f02af925dea522af30cbde511e410778e595bd9
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
@@ -41,7 +45,10 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+<<<<<<< HEAD
             <ScrollRestoration /> {/* Add ScrollRestoration here */}
+=======
+>>>>>>> 3f02af925dea522af30cbde511e410778e595bd9
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
