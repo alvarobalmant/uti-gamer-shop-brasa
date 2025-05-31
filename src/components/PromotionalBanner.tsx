@@ -28,13 +28,42 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
       "rounded-lg overflow-hidden shadow-lg my-6 md:my-8", // Margin top/bottom
       backgroundColor
     )}>
-      {/* Use flex layout for better control on mobile */}
-      <div className="flex flex-row items-center">
-        {/* Image Area - Fixed width on mobile, full height */}
+      {/* Desktop layout - Image on right */}
+      <div className="hidden md:flex flex-row items-center">
+        {/* Text Content Area */}
         <div className={cn(
-          "w-1/3 md:w-2/5 flex-shrink-0", // Adjust width ratio for mobile/desktop
-          "h-24 md:h-auto md:aspect-[4/3]" // Fixed height on mobile, aspect ratio on desktop
+          "flex-grow flex flex-col justify-center",
+          "p-8 lg:p-10" // Adjusted padding
         )}>
+          <h2 className={cn(
+            "text-3xl lg:text-4xl font-bold mb-3", // Adjusted text size
+            textColor
+          )}>
+            {title}
+          </h2>
+          <p className={cn(
+            "text-lg mb-6 opacity-90",
+            textColor
+          )}>
+            {description}
+          </p>
+          <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start mt-auto">
+            <Button 
+              variant="outline" 
+              size="default"
+              className={cn(
+                "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
+                textColor
+              )}
+            >
+              {buttonText}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </a>
+        </div>
+        
+        {/* Image Area - Fixed width on desktop */}
+        <div className="w-2/5 flex-shrink-0 h-auto aspect-[4/3]">
           <img 
             src={imageUrl || "/placeholder-banner.webp"} 
             alt={title} 
@@ -46,48 +75,32 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
             className="w-full h-full object-cover" 
           />
         </div>
-
-        {/* Text Content Area */}
+      </div>
+      
+      {/* Mobile layout - Text only, aligned left */}
+      <div className="flex md:hidden flex-col">
         <div className={cn(
-          "flex-grow flex flex-col justify-center",
-          "p-3 sm:p-4 md:p-8 lg:p-10" // Adjusted padding
+          "flex flex-col justify-center",
+          "p-4 py-3" // Reduced padding for mobile
         )}>
           <h2 className={cn(
-            "text-base md:text-3xl lg:text-4xl font-bold mb-1 md:mb-3", // Adjusted mobile text size
+            "text-base font-bold mb-1", // Smaller text for mobile
             textColor
           )}>
             {title}
           </h2>
-          {/* Description hidden on mobile */}
-          <p className={cn(
-            "text-sm md:text-lg mb-3 md:mb-6 opacity-90",
-            "hidden md:block", // Hide on mobile, show on md and up
-            textColor
-          )}>
-            {description}
-          </p>
-          <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start mt-auto">
+          <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start mt-1">
             <Button 
               variant="outline" 
-<<<<<<< HEAD
-              size="xs" // Keep small size for mobile
-              className={cn(
-                "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
-                "text-xs px-2 py-1", // Adjusted padding for smaller button
-=======
               size="xs"
               className={cn(
                 "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
->>>>>>> ab4a43026c025f1f4a4eb058d8b0604d2684adfe
+                "text-xs px-2 py-1", // Adjusted padding for smaller button
                 textColor
               )}
             >
               {buttonText}
-<<<<<<< HEAD
-              <ArrowRight className="ml-1 h-3 w-3" /> {/* Adjusted icon size slightly */}
-=======
-              <ArrowRight className="ml-1.5 h-3 w-3" />
->>>>>>> ab4a43026c025f1f4a4eb058d8b0604d2684adfe
+              <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
           </a>
         </div>

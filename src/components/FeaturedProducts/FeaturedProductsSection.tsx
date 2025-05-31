@@ -37,6 +37,7 @@ const FeaturedProductsSection = ({
   const isMobile = useIsMobile();
   const { saveScrollPosition } = useScrollPosition();
   const [selectedCategory, setSelectedCategory] = useState("todos");
+  const [animateProducts, setAnimateProducts] = useState(false);
 
   // Define categories (can be fetched dynamically later)
   const categories = [
@@ -62,6 +63,18 @@ const FeaturedProductsSection = ({
   const handleViewAllClick = () => {
     saveScrollPosition();
     navigate(viewAllLink);
+  };
+
+  // Função para lidar com a mudança de categoria e ativar a animação
+  const handleCategoryChange = (category: string) => {
+    // Primeiro, ativa a animação de saída
+    setAnimateProducts(false);
+    
+    // Depois de um pequeno delay, muda a categoria e ativa a animação de entrada
+    setTimeout(() => {
+      setSelectedCategory(category);
+      setAnimateProducts(true);
+    }, 100);
   };
 
   if (loading) {
@@ -98,7 +111,7 @@ const FeaturedProductsSection = ({
         <div className="mb-6 md:mb-8 flex justify-center">
           <Tabs
             value={selectedCategory}
-            onValueChange={setSelectedCategory}
+            onValueChange={handleCategoryChange}
             className="w-full max-w-lg"
           >
             <TabsList className="grid w-full grid-cols-5 bg-muted p-1 rounded-lg h-auto">
@@ -134,7 +147,18 @@ const FeaturedProductsSection = ({
               {displayedProducts.map((product, index) => (
                 <div
                   key={product.id}
-                  className="w-60 sm:w-64 flex-shrink-0" // Set fixed width for items
+                  className={cn(
+                    "w-60 sm:w-64 flex-shrink-0", // Set fixed width for items
+                    "transition-all duration-300 ease-in-out", // Base transition
+                    // Animação de entrada com fade e slide
+                    animateProducts 
+                      ? "opacity-100 translate-y-0" 
+                      : "opacity-0 translate-y-4"
+                  )}
+                  style={{ 
+                    // Delay staggered para cada card
+                    transitionDelay: `${index * 50}ms` 
+                  }}
                 >
                   <ProductCard
                     product={product}
@@ -153,4 +177,3 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
-
