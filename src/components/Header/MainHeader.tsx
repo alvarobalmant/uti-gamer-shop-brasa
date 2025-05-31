@@ -56,10 +56,11 @@ const MainHeader = ({
                 alt="UTI DOS GAMES Logo"
                 className="h-10 w-auto flex-shrink-0" // Added flex-shrink-0
               />
-              {/* Ajustado para mostrar o subtítulo completo no mobile */}
+              {/* Adjusted text sizes and removed truncate for subtitle */}
               <div className="ml-2 sm:ml-3 overflow-hidden">
                 <h1 className="font-bold text-sm sm:text-lg leading-tight text-uti-red">UTI DOS GAMES</h1>
-                <p className="text-[9px] sm:text-xs text-gray-600 leading-tight break-normal">
+                {/* Removed truncate, added whitespace-normal and adjusted font size */}
+                <p className="text-[10px] sm:text-xs text-gray-600 leading-tight whitespace-normal">
                   Compre online com a segurança de uma loja física.
                 </p>
               </div>

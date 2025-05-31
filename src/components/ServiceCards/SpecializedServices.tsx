@@ -65,19 +65,21 @@ const SpecializedServices = () => {
                   >
                     <CardContent className="flex flex-col items-center justify-center p-6 text-center">
                       <div className="mb-4 flex-shrink-0">
+                        {/* Container for the icon/image, without the background div */}
                         <div className="relative w-14 h-14 mx-auto flex items-center justify-center">
-                          {/* Removido o fundo vermelho, mantendo apenas a imagem */}
                           {!imageErrors[card.id] && card.image_url ? (
                             <img
                               src={card.image_url}
                               alt={card.title}
+                              // Adjusted size and added hover effect directly to the image
                               className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300"
                               loading="lazy"
                               onError={() => handleImageError(card.id)}
                             />
                           ) : (
-                            // Fallback icon (Box) quando a imagem falha ao carregar ou está ausente
-                            <div className="w-10 h-10 flex items-center justify-center text-primary">
+                            // Fallback icon (Box) when image fails to load or is missing
+                            // Adjusted size and color for consistency
+                            <div className="w-10 h-10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                                 <polyline points="3.29 7 12 12 20.71 7"></polyline>
