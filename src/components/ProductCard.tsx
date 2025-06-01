@@ -5,7 +5,7 @@ import { Product } from '@/hooks/useProducts';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
-import { useMobile } from '@/hooks/use-mobile'; // Importar hook de detecção mobile
+import { useIsMobile } from '@/hooks/use-mobile'; // Importar hook de detecção mobile
 
 // Import subcomponents
 import ProductCardImage from './ProductCard/ProductCardImage';
