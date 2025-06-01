@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
-import { useScrollPosition } from '@/hooks/useScrollPosition';
+// Importei useScrollRestoration para usar a função de salvar posição
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'; 
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 
@@ -16,53 +17,59 @@ export type { Product } from '@/hooks/useProducts';
 
 interface ProductCardProps {
   product: Product;
-  // Update the prop type to expect the product object
   onAddToCart: (product: Product) => void;
 }
 
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const navigate = useNavigate();
-  const { saveScrollPosition } = useScrollPosition();
+  // Removido useScrollPosition, pois useScrollRestoration agora lida com isso internamente
+  // const { saveScrollPosition } = useScrollPosition(); 
 
+  // A função de navegação agora só precisa navegar
   const handleCardNavigation = () => {
-    saveScrollPosition();
+    // A lógica de salvar scroll foi movida para dentro do useScrollRestoration
+    // saveScrollPosition(); 
     navigate(`/produto/${product.id}`);
   };
 
-  // **Radical Redesign based on GameStop reference and user feedback**
+  // Handler específico para touchEnd para tentar resolver o clique duplo no mobile
+  const handleTouchEndNavigation = (e: React.TouchEvent) => {
+    // Impede que o navegador dispare um evento 'click' simulado após o 'touchend'
+    e.preventDefault(); 
+    handleCardNavigation();
+  };
+
   return (
     <Card
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-card shadow-sm", // Even lighter border (gray-100), consistent radius
-        "transition-all duration-300 ease-in-out hover:shadow-md hover:-translate-y-1", // Subtle shadow and lift hover effect
+        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-card shadow-sm",
+        "transition-all duration-300 ease-in-out hover:shadow-md hover:-translate-y-1",
         "cursor-pointer",
-        "w-full" // Ensure card takes full width in its container (for carousel/grid)
-        // Removed fixed width/height to allow flexibility in carousel/grid
+        "w-full"
       )}
-      onClick={handleCardNavigation}
+      onClick={handleCardNavigation} // Mantém para desktop e acessibilidade
+      onTouchEnd={handleTouchEndNavigation} // Adiciona para mobile, prevenindo click simulado
+      style={{ touchAction: 'manipulation' }} // Boa prática para elementos interativos touch
     >
-      {/* Image Section - Takes most space */}
+      {/* Image Section */}
       <ProductCardImage
         product={product}
       />
 
-      {/* Content Section - Minimalist, below image */}
-      <div className="flex flex-1 flex-col justify-between p-3"> {/* Use padding, justify-between */}
+      {/* Content Section */}
+      <div className="flex flex-1 flex-col justify-between p-3">
         {/* Top part: Info + Price */}
         <div>
-          {/* Ensure ProductCardInfo uses appropriate text sizes/styles */}
           <ProductCardInfo product={product} />
-          {/* Ensure ProductCardProPrice highlights the PRO price effectively */}
           <ProductCardProPrice product={product} />
         </div>
 
-        {/* Bottom part: Stock + Actions (aligned bottom) */}
-        <div className="mt-2 flex items-center justify-between"> {/* Align stock and actions */}
+        {/* Bottom part: Stock + Actions */}
+        <div className="mt-2 flex items-center justify-between">
           <ProductCardStock product={product} />
-          {/* Pass the product object to ProductCardActions */}
           <ProductCardActions
             product={product}
-            onAddToCart={onAddToCart} // Pass the function that expects the product
+            onAddToCart={onAddToCart}
           />
         </div>
       </div>
