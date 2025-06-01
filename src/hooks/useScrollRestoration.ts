@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useLayoutEffect } from 'react';
-import { useLocation, useNavigationType, Location } from 'react-router-dom';
+import { useLocation, useNavigationType } from 'react-router-dom';
 
 // Interface para armazenar a posição de scroll e timestamp
 interface ScrollPositionEntry {
@@ -18,25 +18,25 @@ const SCROLL_POSITION_EXPIRATION_MS = 60 * 60 * 1000;
 
 /**
  * Hook robusto para restauração de posição de scroll entre navegações.
- * Utiliza sessionStorage para persistência na sessão e history.state para dados mais recentes.
- * Foca em confiabilidade e performance, especialmente em mobile.
+ * Utiliza sessionStorage para persistência na sessão.
+ * Inclui verificações de ambiente para maior segurança em runtime.
  */
 export const useScrollRestoration = () => {
   const location = useLocation();
-  const navigationType = useNavigationType(); // 'POP', 'PUSH', ou 'REPLACE'
+  const navigationType = useNavigationType();
   const scrollPositions = useRef<ScrollPositionMap>({});
-  const isRestoringRef = useRef(false); // Flag para evitar salvar scroll durante a restauração
-  const restoreTimeoutRef = useRef<number | null>(null); // Ref para o timeout de restauração
+  const isRestoringRef = useRef(false);
+  const restoreTimeoutRef = useRef<number | null>(null);
 
   // --- Funções Auxiliares ---
 
-  // Carrega posições do sessionStorage na inicialização
   const loadPositionsFromSessionStorage = useCallback(() => {
+    // Verifica se sessionStorage está disponível
+    if (typeof sessionStorage === 'undefined') return;
     try {
       const savedPositions = sessionStorage.getItem(SESSION_STORAGE_KEY);
       if (savedPositions) {
         const parsedPositions: ScrollPositionMap = JSON.parse(savedPositions);
-        // Filtra posições expiradas
         const now = Date.now();
         const validPositions: ScrollPositionMap = {};
         for (const key in parsedPositions) {
@@ -45,26 +45,30 @@ export const useScrollRestoration = () => {
           }
         }
         scrollPositions.current = validPositions;
-        // console.log('Loaded valid scroll positions from sessionStorage:', scrollPositions.current);
       }
     } catch (error) {
-      console.warn('Failed to load scroll positions from sessionStorage:', error);
-      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      console.warn('Falha ao carregar posições de scroll do sessionStorage:', error);
+      try {
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      } catch (removeError) {
+        console.warn('Falha ao remover item inválido do sessionStorage:', removeError);
+      }
     }
   }, []);
 
-  // Salva posições no sessionStorage
   const persistPositionsToSessionStorage = useCallback(() => {
+    // Verifica se sessionStorage está disponível
+    if (typeof sessionStorage === 'undefined') return;
     try {
       sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(scrollPositions.current));
     } catch (error) {
-      console.warn('Failed to save scroll positions to sessionStorage:', error);
+      console.warn('Falha ao salvar posições de scroll no sessionStorage:', error);
     }
   }, []);
 
-  // Salva a posição de scroll atual para uma dada chave (geralmente location.key)
   const saveScrollPosition = useCallback((key: string) => {
-    if (isRestoringRef.current) return; // Não salva durante a restauração
+    // Verifica se window está disponível
+    if (typeof window === 'undefined' || isRestoringRef.current) return;
 
     const scrollPos: ScrollPositionEntry = {
       x: window.scrollX,
@@ -72,140 +76,132 @@ export const useScrollRestoration = () => {
       timestamp: Date.now(),
     };
 
-    // Salva apenas se houver scroll significativo para evitar ruído
     if (scrollPos.y > 50 || scrollPos.x > 10) {
       scrollPositions.current[key] = scrollPos;
-      // console.log(`Saved scroll position for key ${key}:`, scrollPos);
-      // Atualiza sessionStorage para persistência na sessão
       persistPositionsToSessionStorage();
     }
   }, [persistPositionsToSessionStorage]);
 
-  // Tenta restaurar a posição de scroll para uma dada chave
   const restoreScrollPosition = useCallback((key: string) => {
+    // Verifica se window está disponível
+    if (typeof window === 'undefined') return;
+
     const savedPosition = scrollPositions.current[key];
 
     if (savedPosition) {
       const now = Date.now();
-      // Verifica se a posição não expirou
       if (now - savedPosition.timestamp < SCROLL_POSITION_EXPIRATION_MS) {
         isRestoringRef.current = true;
-
-        // Limpa timeout anterior, se houver
         if (restoreTimeoutRef.current) {
           clearTimeout(restoreTimeoutRef.current);
         }
 
-        // Tenta restaurar usando requestAnimationFrame para sincronizar com a renderização
-        // Isso é geralmente mais confiável que setTimeout
         const attemptScroll = () => {
-          window.scrollTo({
-            left: savedPosition.x,
-            top: savedPosition.y,
-            behavior: 'auto', // Usa 'auto' para scroll instantâneo
-          });
+          // Verifica window novamente antes de usar
+          if (typeof window === 'undefined') {
+            isRestoringRef.current = false;
+            return;
+          }
+          window.scrollTo({ left: savedPosition.x, top: savedPosition.y, behavior: 'auto' });
 
-          // Verifica após um pequeno delay se o scroll funcionou
           restoreTimeoutRef.current = window.setTimeout(() => {
-            const currentY = window.scrollY;
-            const tolerance = 10; // Tolerância para a verificação
-            if (Math.abs(currentY - savedPosition.y) > tolerance) {
-              // Se não funcionou, tenta novamente (poderia adicionar lógica de retry aqui se necessário)
-              // console.warn(`Scroll restoration attempt for key ${key} might not be precise. Target: ${savedPosition.y}, Current: ${currentY}`);
+            if (typeof window === 'undefined') {
+              isRestoringRef.current = false;
+              restoreTimeoutRef.current = null;
+              return;
             }
-            // Marca como não restaurando mais após a tentativa
+            // const currentY = window.scrollY;
+            // console.log(`Scroll restoration attempt for key ${key}. Target: ${savedPosition.y}, Current: ${currentY}`);
             isRestoringRef.current = false;
             restoreTimeoutRef.current = null;
-            // console.log(`Scroll restoration attempt finished for key ${key}.`);
-          }, 100); // Delay para verificação pós-scroll
+          }, 150); // Aumentado delay para verificação/finalização
         };
 
-        // Adia a tentativa de scroll para garantir que o DOM esteja mais estável
-        requestAnimationFrame(() => {
-            // Adiciona um pequeno delay adicional antes de tentar o scroll
-            setTimeout(attemptScroll, 50);
-        });
-
-        // console.log(`Attempting to restore scroll position for key ${key}:`, savedPosition);
+        // Usa requestAnimationFrame se disponível, senão setTimeout
+        if (typeof requestAnimationFrame !== 'undefined') {
+          requestAnimationFrame(() => {
+            if (typeof setTimeout !== 'undefined') {
+              setTimeout(attemptScroll, 50);
+            } else {
+              attemptScroll();
+            }
+          });
+        } else if (typeof setTimeout !== 'undefined') {
+          setTimeout(attemptScroll, 50);
+        } else {
+          attemptScroll();
+        }
       } else {
-        // Remove a posição expirada
         delete scrollPositions.current[key];
         persistPositionsToSessionStorage();
-        // console.log(`Scroll position for key ${key} expired and removed.`);
-        // Rola para o topo se a posição expirou
         window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
       }
     } else {
-      // Se não há posição salva, rola para o topo
-      // console.log(`No saved scroll position for key ${key}, scrolling to top.`);
       window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
   }, [persistPositionsToSessionStorage]);
 
   // --- Efeitos ---
 
-  // Carrega posições do sessionStorage na montagem inicial
+  // Carrega posições na montagem inicial e configura listener de unload
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') return;
+
     loadPositionsFromSessionStorage();
 
-    // Adiciona listener para salvar antes de descarregar a página
     const handleBeforeUnload = () => {
-      // Salva a posição da localização atual antes de sair
-      if (location.key) {
-        saveScrollPosition(location.key);
-      }
-      persistPositionsToSessionStorage(); // Garante que tudo seja salvo
+      const keyToSave = location.key || location.pathname + location.search;
+      saveScrollPosition(keyToSave);
+      persistPositionsToSessionStorage();
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      // Limpa timeout de restauração ao desmontar
       if (restoreTimeoutRef.current) {
         clearTimeout(restoreTimeoutRef.current);
       }
     };
-    // Executa apenas uma vez na montagem
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Dependências corretas para execução única na montagem/desmontagem
+  }, [loadPositionsFromSessionStorage, saveScrollPosition, persistPositionsToSessionStorage, location.key, location.pathname, location.search]);
 
-  // Efeito principal para salvar e restaurar scroll baseado na navegação
+  // Efeito principal para salvar/restaurar baseado na navegação
   useLayoutEffect(() => {
-    // Usa location.key como identificador único da entrada no histórico
-    const currentKey = location.key || 'initial'; // 'initial' para a primeira renderização sem key
+    if (typeof window === 'undefined') return;
+
+    // Gera uma chave mais única para o estado inicial
+    const currentKey = location.key || `initial_${location.pathname}${location.search}`;
 
     if (navigationType === 'POP') {
-      // Navegação para trás/frente: restaura a posição salva para esta key
       restoreScrollPosition(currentKey);
     } else {
-      // Navegação PUSH ou REPLACE: rola para o topo
+      // Garante scroll para o topo em navegações PUSH/REPLACE
       window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
 
-    // Função de cleanup: salva a posição da PÁGINA ANTERIOR antes da transição
-    // Precisamos capturar a key da localização *anterior*
-    let previousKey = currentKey;
+    // Salva a posição da chave *anterior* na limpeza
+    const keyForCleanup = currentKey;
     return () => {
-      saveScrollPosition(previousKey);
+      saveScrollPosition(keyForCleanup);
     };
-  }, [location.key, navigationType, saveScrollPosition, restoreScrollPosition]); // Depende da key da localização
+  // Dependências incluem tudo que afeta a lógica do efeito
+  }, [location.key, location.pathname, location.search, navigationType, restoreScrollPosition, saveScrollPosition]);
 
   // Efeito para salvar scroll durante a rolagem (com debounce)
   useEffect(() => {
-    const currentKey = location.key || 'initial';
+    if (typeof window === 'undefined') return;
+
+    const currentKey = location.key || `initial_${location.pathname}${location.search}`;
     let scrollTimer: number | null = null;
 
     const handleScroll = () => {
-      if (isRestoringRef.current) return; // Não salva durante a restauração
-
+      if (isRestoringRef.current) return;
       if (scrollTimer) {
         clearTimeout(scrollTimer);
       }
-
-      // Debounce para salvar a posição após o usuário parar de rolar
       scrollTimer = window.setTimeout(() => {
         saveScrollPosition(currentKey);
-      }, 200); // Debounce de 200ms
+      }, 200);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -216,7 +212,8 @@ export const useScrollRestoration = () => {
       }
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [location.key, saveScrollPosition]); // Depende da key da localização
+  // Dependências incluem tudo que afeta a lógica do efeito
+  }, [location.key, location.pathname, location.search, saveScrollPosition]);
 
-};
+}; // Fim do hook
 
