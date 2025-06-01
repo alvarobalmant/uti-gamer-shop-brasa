@@ -11,6 +11,7 @@ import CategoryPage from "./pages/CategoryPage";
 import ProductPage from "./pages/ProductPage";
 import NotFound from "./pages/NotFound";
 import UTIPro from "./pages/UTIPro";
+import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 
 // Import the main Admin Panel component which now includes all tabs
 import { AdminPanel } from "@/components/Admin/AdminPanel"; 
@@ -41,30 +42,32 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Index />} />
-              <Route path="/busca" element={<SearchResults />} />
-              <Route path="/categoria/:category" element={<CategoryPage />} />
-              <Route path="/produto/:id" element={<ProductPage />} />
-              <Route path="/uti-pro" element={<UTIPro />} />
+            <ScrollRestorationProvider>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Index />} />
+                <Route path="/busca" element={<SearchResults />} />
+                <Route path="/categoria/:category" element={<CategoryPage />} />
+                <Route path="/produto/:id" element={<ProductPage />} />
+                <Route path="/uti-pro" element={<UTIPro />} />
 
-              {/* Admin Route - Protected */}
-              {/* The AdminPanel component itself handles the different admin sections via Tabs */}
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedAdminRoute>
-                    {/* Render the main AdminPanel component directly */}
-                    <AdminPanel /> 
-                  </ProtectedAdminRoute>
-                }
-              />
-              {/* No need for nested routes here if AdminPanel uses Tabs for navigation */}
+                {/* Admin Route - Protected */}
+                {/* The AdminPanel component itself handles the different admin sections via Tabs */}
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedAdminRoute>
+                      {/* Render the main AdminPanel component directly */}
+                      <AdminPanel /> 
+                    </ProtectedAdminRoute>
+                  }
+                />
+                {/* No need for nested routes here if AdminPanel uses Tabs for navigation */}
 
-              {/* Catch-all Not Found Route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                {/* Catch-all Not Found Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </ScrollRestorationProvider>
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
@@ -73,4 +76,3 @@ const App = () => (
 );
 
 export default App;
-
