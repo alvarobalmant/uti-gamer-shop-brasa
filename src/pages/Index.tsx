@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useHomepageLayout } from "@/hooks/useHomepageLayout";
 import { useProducts } from "@/hooks/useProducts";
