@@ -1,62 +1,85 @@
-import { useEffect, useLayoutEffect, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 
+const SESSION_STORAGE_KEY = 'scrollPositions';
+
 /**
- * Hook simplificado para gerenciamento de scroll.
- * - Garante scroll para o topo em navegações PUSH/REPLACE.
- * - Confia no comportamento padrão do navegador (`history.scrollRestoration = 'auto'`) 
- *   para restaurar a posição em navegações POP (voltar/avançar).
- * - Remove a complexidade de salvar/restaurar manualmente posições.
+ * Hook robusto para restauração de posição de scroll em React Router v6.
+ * - Salva a posição de scroll no sessionStorage antes de navegar.
+ * - Restaura a posição em navegações POP (voltar/avançar).
+ * - Rola para o topo em navegações PUSH/REPLACE.
  */
 export const useScrollRestoration = () => {
   const location = useLocation();
   const navigationType = useNavigationType();
+  const lastNavigationType = useRef(navigationType);
 
-  const getWindow = useCallback(() => {
+  // Função para obter as posições salvas do sessionStorage
+  const getScrollPositions = (): { [key: string]: number } => {
+    const json = sessionStorage.getItem(SESSION_STORAGE_KEY);
     try {
-      if (typeof window !== 'undefined') {
-        return window;
-      }
+      return json ? JSON.parse(json) : {};
     } catch (e) {
-      console.warn('Window não está acessível:', e);
+      console.error('Erro ao parsear posições de scroll do sessionStorage:', e);
+      return {};
     }
-    return null;
-  }, []);
+  };
 
-  // Garante que a restauração padrão do navegador esteja ativa
+  // Função para salvar a posição atual no sessionStorage
+  const saveScrollPosition = (key: string, position: number) => {
+    const positions = getScrollPositions();
+    positions[key] = position;
+    try {
+      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(positions));
+    } catch (e) {
+      console.error('Erro ao salvar posição de scroll no sessionStorage:', e);
+    }
+  };
+
+  // Salva a posição de scroll ANTES da navegação ou desmontagem
   useEffect(() => {
-    const win = getWindow();
-    if (!win) return;
+    const handleBeforeUnload = () => {
+      saveScrollPosition(location.key, window.scrollY);
+    };
 
-    if (win.history.scrollRestoration !== 'auto') {
-      win.history.scrollRestoration = 'auto';
-      // console.log("Definido history.scrollRestoration para 'auto'");
-    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Restaura para 'manual' ao desmontar, se necessário (geralmente não é)
-    // return () => {
-    //   if (win.history.scrollRestoration === 'auto') {
-    //     win.history.scrollRestoration = 'manual';
-    //   }
-    // };
-  }, [getWindow]);
+    // Retorna uma função de limpeza que salva a posição ao mudar de rota
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Salva a posição da chave de localização atual ANTES de navegar para a próxima
+      saveScrollPosition(location.key, window.scrollY);
+    };
+  }, [location.key]); // Depende da chave da localização
 
-  // Efeito para rolar para o topo em novas navegações (PUSH/REPLACE)
+  // Restaura a posição de scroll ou rola para o topo APÓS a navegação
   useLayoutEffect(() => {
-    const win = getWindow();
-    if (!win) return;
-
-    // Rola para o topo apenas se não for uma navegação POP (voltar/avançar)
+    // Rola para o topo se for uma nova navegação (PUSH/REPLACE)
+    // Ou se for a primeira renderização (lastNavigationType ainda não definido ou diferente)
     if (navigationType !== 'POP') {
-      // console.log(`Navegação ${navigationType}, rolando para o topo para ${location.pathname}`);
-      win.scrollTo(0, 0);
-    }
-    // Para navegação POP, confiamos no 'history.scrollRestoration = auto'
-    // else {
-    //   console.log(`Navegação POP para ${location.pathname}, deixando o navegador restaurar.`);
-    // }
+      window.scrollTo(0, 0);
+    } else {
+      // Se for POP, tenta restaurar a posição salva
+      const positions = getScrollPositions();
+      const savedPosition = positions[location.key];
 
-  }, [location.pathname, navigationType, getWindow]); // Depende do pathname e tipo de navegação
+      if (savedPosition !== undefined) {
+        // Adiciona um pequeno delay para garantir que o DOM esteja pronto
+        // Em alguns casos, especialmente com renderização assíncrona, isso pode ser necessário
+        const timer = setTimeout(() => {
+            window.scrollTo(0, savedPosition);
+        }, 50); // 50ms delay, ajuste se necessário
+        return () => clearTimeout(timer);
+      } else {
+        // Se não houver posição salva para esta chave (raro em POP), rola para o topo
+        window.scrollTo(0, 0);
+      }
+    }
+
+    // Atualiza o último tipo de navegação
+    lastNavigationType.current = navigationType;
+
+  }, [location.key, navigationType]); // Depende da chave e do tipo de navegação
 
 }; // Fim do hook
 
