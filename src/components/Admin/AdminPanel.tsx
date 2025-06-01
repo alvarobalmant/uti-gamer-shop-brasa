@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductManager from './ProductManager';
@@ -6,13 +5,12 @@ import { BannerManager } from './BannerManager';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
 import UserSubscriptionManagement from './UserSubscriptionManagement';
-import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
-import ProductSectionManager from './ProductSectionManager';
-import TopDealsManager from '@/pages/TopDealsManager';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Zap } from 'lucide-react';
+import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager'; // Renamed component
+import ProductSectionManager from './ProductSectionManager'; // New component for managing product sections
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks } from 'lucide-react'; // Added ListChecks icon
 
 export const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('layout');
+  const [activeTab, setActiveTab] = useState('layout'); // Default to layout management
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
@@ -27,7 +25,8 @@ export const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8 bg-gray-800 border-gray-700">
+          {/* Updated grid-cols-7 to accommodate the new tabs */}
+          <TabsList className="grid w-full grid-cols-7 bg-gray-800 border-gray-700">
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutList className="w-4 h-4" />
               Layout Home
@@ -35,10 +34,6 @@ export const AdminPanel = () => {
             <TabsTrigger value="product_sections" className="flex items-center gap-2">
               <ListChecks className="w-4 h-4" />
               Seções Produtos
-            </TabsTrigger>
-            <TabsTrigger value="top_deals" className="flex items-center gap-2">
-              <Zap className="w-4 h-4" />
-              Ofertas Especiais
             </TabsTrigger>
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
@@ -62,16 +57,14 @@ export const AdminPanel = () => {
             </TabsTrigger>
           </TabsList>
 
+          {/* Content for Homepage Layout Management */}
           <TabsContent value="layout">
             <HomepageLayoutManager />
           </TabsContent>
 
+          {/* Content for Product Section Management */}
           <TabsContent value="product_sections">
             <ProductSectionManager />
-          </TabsContent>
-
-          <TabsContent value="top_deals">
-            <TopDealsManager />
           </TabsContent>
 
           <TabsContent value="products">
@@ -99,3 +92,4 @@ export const AdminPanel = () => {
     </div>
   );
 };
+

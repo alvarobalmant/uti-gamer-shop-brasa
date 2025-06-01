@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -6,10 +5,11 @@ import { useToast } from '@/components/ui/use-toast';
 // Define the structure for a layout item from the DB
 export interface HomepageLayoutItem {
   id: number;
-  section_key: string; // e.g., 'hero_banner', 'promo_banner', 'product_section_uuid', 'top_deal_section_uuid'
+  section_key: string; // e.g., 'hero_banner', 'promo_banner', 'product_section_uuid'
   display_order: number;
   is_visible: boolean;
-  title?: string; // Example: Fetched from product_sections/top_deal_sections or hardcoded for fixed sections
+  // Add title/description for display in admin panel if needed, fetched separately or joined
+  title?: string; // Example: Fetched from product_sections or hardcoded for fixed sections
 }
 
 // Define the structure for updating layout items - include section_key for upsert
@@ -30,17 +30,17 @@ export const useHomepageLayout = () => {
   const getSectionTitle = (key: string): string => {
     switch (key) {
       case 'hero_banner': return 'Carrossel de Banners Principal';
-      case 'hero_quick_links': return 'Links Rápidos (Categorias)';
+      case 'hero_quick_links': return 'Links Rápidos (Categorias)'; // Added
       case 'promo_banner': return 'Banner Promocional (UTI PRO)';
+      // Removed 'service_cards', added individual sections
       case 'specialized_services': return 'Seção: Nossos Serviços Especializados';
       case 'why_choose_us': return 'Seção: Por que escolher a UTI DOS GAMES?';
       case 'contact_help': return 'Seção: Precisa de Ajuda/Contato';
+      // Product sections title will be fetched separately
       default:
         if (key.startsWith('product_section_')) {
-          return `Seção de Produtos (${key.replace('product_section_', '').substring(0, 8)}...)`;
-        }
-        if (key.startsWith('top_deal_section_')) {
-          return `Seção de Ofertas Especiais (${key.replace('top_deal_section_', '').substring(0, 8)}...)`;
+          // Placeholder title, actual title fetched later
+          return `Seção de Produtos (${key.replace('product_section_', '').substring(0, 8)}...)`; 
         }
         return key; // Fallback to key
     }
@@ -78,45 +78,17 @@ export const useHomepageLayout = () => {
         }
       }
 
-      // Fetch top deal section details to get titles
-      const topDealSectionKeys = layoutData
-        .map(item => item.section_key)
-        .filter(key => key.startsWith('top_deal_section_'));
-      
-      let topDealSectionsData: { id: string, title: string }[] = [];
-      if (topDealSectionKeys.length > 0) {
-        const sectionIds = topDealSectionKeys.map(key => key.replace('top_deal_section_', ''));
-        const { data: sections, error: sectionsError } = await supabase
-          .from('top_deal_sections')
-          .select('id, title')
-          .in('id', sectionIds);
-        
-        if (sectionsError) {
-          console.warn('Could not fetch top deal section titles:', sectionsError.message);
-        } else {
-          topDealSectionsData = sections || [];
-        }
-      }
-
       // Combine layout data with titles
       const enrichedLayoutData = layoutData.map(item => {
         let title = getSectionTitle(item.section_key);
-        
         if (item.section_key.startsWith('product_section_')) {
           const sectionId = item.section_key.replace('product_section_', '');
           const productSection = productSectionsData.find(sec => sec.id === sectionId);
           if (productSection) {
-            title = productSection.title;
-          }
-        } else if (item.section_key.startsWith('top_deal_section_')) {
-          const sectionId = item.section_key.replace('top_deal_section_', '');
-          const topDealSection = topDealSectionsData.find(sec => sec.id === sectionId);
-          if (topDealSection) {
-            title = topDealSection.title;
+            title = productSection.title; // Use fetched title for product sections
           }
         }
-        
-        return { ...item, title };
+        return { ...item, title }; // Add title to the item
       });
 
       setLayoutItems(enrichedLayoutData);
