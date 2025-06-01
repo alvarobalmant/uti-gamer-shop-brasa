@@ -1,17 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useBanners } from '@/hooks/useBanners';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  // CarouselNext, // Removed
-  // CarouselPrevious, // Removed
   type CarouselApi,
 } from "@/components/ui/carousel"
 import Autoplay from "embla-carousel-autoplay"
@@ -23,9 +20,12 @@ const HeroBannerCarousel = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Ajustado o delay de 5000ms (5 segundos) para 3500ms (3.5 segundos) para tornar o autoplay mais perceptível
+  // Configuração do autoplay para funcionar em todas as plataformas
   const plugin = useRef(
-    Autoplay({ delay: 3500, stopOnInteraction: true })
+    Autoplay({ 
+      delay: 3500, 
+      stopOnInteraction: false 
+    })
   )
 
   useEffect(() => {
@@ -60,7 +60,6 @@ const HeroBannerCarousel = () => {
     return (
       <section className="relative bg-uti-gray-light overflow-hidden border-b border-border/60">
         <Skeleton className="h-[300px] md:h-[450px] lg:h-[550px] xl:h-[clamp(500px,65vh,650px)] w-full" />
-        {/* Removida a chamada fixa do HeroQuickLinks */}
       </section>
     );
   }
@@ -102,7 +101,6 @@ const HeroBannerCarousel = () => {
             </div>
           </div>
         </section>
-        {/* Removida a chamada fixa do HeroQuickLinks */}
       </>
     );
   }
@@ -117,8 +115,6 @@ const HeroBannerCarousel = () => {
             loop: true, 
             align: "start",
           }}
-          onMouseEnter={plugin.current.stop}
-          onMouseLeave={plugin.current.reset}
           className="w-full"
         >
           <CarouselContent className="-ml-0">
@@ -141,7 +137,7 @@ const HeroBannerCarousel = () => {
                     <div className="absolute inset-0 z-10 flex items-center">
                       <div className="container mx-auto w-full">
                         <div className={cn(
-                            "max-w-lg md:max-w-xl lg:max-w-2xl md:animate-fade-in-up", // Apply animation only on md+ screens
+                            "max-w-lg md:max-w-xl lg:max-w-2xl md:animate-fade-in-up", 
                             "text-left" 
                         )}>
                           {banner.title && (
@@ -153,12 +149,12 @@ const HeroBannerCarousel = () => {
                             <h1 className={cn(
                                 "font-bold text-white mb-4 md:mb-6 leading-tight drop-shadow-lg",
                                 "text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
-                            )} style={{ animationDelay: '0.1s' }}>
+                            )}>
                               {banner.subtitle}
                             </h1>
                           )}
                           {banner.button_text && banner.button_link && (
-                            <div style={{ animationDelay: '0.2s' }}>
+                            <div>
                               <Button 
                                 size="lg"
                                 className={cn(
@@ -180,29 +176,7 @@ const HeroBannerCarousel = () => {
             })}
           </CarouselContent>
           
-          {/* Navigation Arrows Removed */}
-          {/* {banners.length > 1 && (
-            <>
-              <CarouselPrevious 
-                className={cn(
-                  "absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20",
-                  "h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12",
-                  "bg-black/30 hover:bg-black/50 text-white border-white/20 hover:border-white/40",
-                  "transition-all duration-200 backdrop-blur-sm rounded-full disabled:opacity-50"
-                )}
-              />
-              <CarouselNext 
-                className={cn(
-                  "absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20",
-                  "h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12",
-                  "bg-black/30 hover:bg-black/50 text-white border-white/20 hover:border-white/40",
-                  "transition-all duration-200 backdrop-blur-sm rounded-full disabled:opacity-50"
-                )}
-              />
-            </>
-          )} */} 
-
-          {/* Custom Banner Indicators (Kept) */}
+          {/* Custom Banner Indicators */}
           {banners.length > 1 && (
             <div className="absolute bottom-4 md:bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-20">
               {banners.map((_, index) => (
@@ -222,8 +196,6 @@ const HeroBannerCarousel = () => {
           )}
         </Carousel>
       </section>
-      
-      {/* Removida a chamada fixa do HeroQuickLinks */}
     </>
   );
 };
