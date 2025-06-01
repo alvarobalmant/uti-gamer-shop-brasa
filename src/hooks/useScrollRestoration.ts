@@ -12,26 +12,32 @@ interface ScrollPositionEntry {
 type ScrollPositionMap = Record<string, ScrollPositionEntry>;
 
 // Chave para armazenar no sessionStorage
-const SESSION_STORAGE_KEY = 'utiGamesScrollPositions_v3'; // Incrementar versão da chave
+const SESSION_STORAGE_KEY = 'utiGamesScrollPositions_v4'; // Incrementar versão da chave
 // Tempo máximo de validade da posição salva (em milissegundos) - 1 hora
 const SCROLL_POSITION_EXPIRATION_MS = 60 * 60 * 1000;
+// Máximo de tentativas para restaurar o scroll
+const MAX_RESTORE_ATTEMPTS = 15;
+// Delay inicial antes da primeira tentativa de restauração (ms)
+const INITIAL_RESTORE_DELAY = 100;
+// Delay base entre tentativas de restauração (ms)
+const RESTORE_ATTEMPT_DELAY = 50;
+// Tolerância para considerar a restauração bem-sucedida (pixels)
+const RESTORE_TOLERANCE = 10;
 
 /**
  * Hook robusto para restauração de posição de scroll entre navegações.
- * Utiliza sessionStorage para persistência na sessão.
- * Inclui verificações de ambiente e lógica aprimorada para restauração.
- * Versão focada em corrigir a funcionalidade de scroll.
+ * Utiliza sessionStorage e múltiplas tentativas de restauração.
+ * Versão focada em corrigir a funcionalidade de scroll ao voltar.
  */
 export const useScrollRestoration = () => {
   const location = useLocation();
   const navigationType = useNavigationType();
   const scrollPositions = useRef<ScrollPositionMap>({});
   const isRestoringRef = useRef(false);
-  const restoreTimeoutRef = useRef<number | null>(null);
-  const lastSavedKey = useRef<string | null>(null);
+  const restoreAttemptTimeoutRef = useRef<number | null>(null);
+  const lastNavigationType = useRef<string | null>(null);
 
   // --- Funções Auxiliares Seguras ---
-
   const getSessionStorage = useCallback(() => {
     try {
       if (typeof sessionStorage !== 'undefined') {
@@ -55,7 +61,6 @@ export const useScrollRestoration = () => {
   }, []);
 
   // --- Lógica de Carregamento/Persistência ---
-
   const loadPositions = useCallback(() => {
     const storage = getSessionStorage();
     if (!storage) return;
@@ -71,7 +76,6 @@ export const useScrollRestoration = () => {
           }
         }
         scrollPositions.current = validPositions;
-        // console.log('Posições de scroll carregadas:', validPositions);
       }
     } catch (error) {
       console.warn('Falha ao carregar posições de scroll:', error);
@@ -88,14 +92,12 @@ export const useScrollRestoration = () => {
     if (!storage) return;
     try {
       storage.setItem(SESSION_STORAGE_KEY, JSON.stringify(scrollPositions.current));
-      // console.log('Posições de scroll persistidas:', scrollPositions.current);
     } catch (error) {
       console.warn('Falha ao salvar posições de scroll:', error);
     }
   }, [getSessionStorage]);
 
   // --- Lógica de Salvar/Restaurar ---
-
   const saveScrollPosition = useCallback((key: string) => {
     const win = getWindow();
     if (!win || isRestoringRef.current) return;
@@ -106,14 +108,41 @@ export const useScrollRestoration = () => {
       timestamp: Date.now(),
     };
 
-    // Salva apenas se houver algum scroll (evita salvar 0,0 desnecessariamente)
+    // Salva apenas se houver algum scroll
     if (scrollPos.y > 10 || scrollPos.x > 10) {
       scrollPositions.current[key] = scrollPos;
-      lastSavedKey.current = key; // Guarda a última chave salva
       persistPositions();
-      // console.log(`Posição salva para ${key}:`, scrollPos);
     }
   }, [getWindow, persistPositions]);
+
+  // Função de restauração com múltiplas tentativas
+  const attemptRestoreScroll = useCallback((key: string, targetY: number, targetX: number, attempt = 1) => {
+    const win = getWindow();
+    if (!win) return;
+
+    win.scrollTo({ left: targetX, top: targetY, behavior: 'auto' });
+
+    // Limpa timeout anterior
+    if (restoreAttemptTimeoutRef.current) {
+      win.clearTimeout(restoreAttemptTimeoutRef.current);
+    }
+
+    restoreAttemptTimeoutRef.current = win.setTimeout(() => {
+      const currentY = win.scrollY;
+      const isCloseEnough = Math.abs(currentY - targetY) <= RESTORE_TOLERANCE;
+
+      if (isCloseEnough || attempt >= MAX_RESTORE_ATTEMPTS) {
+        // console.log(`Restauração para ${key} ${isCloseEnough ? 'bem-sucedida' : 'falhou'} após ${attempt} tentativas.`);
+        isRestoringRef.current = false; // Libera o salvamento de scroll
+        restoreAttemptTimeoutRef.current = null;
+      } else {
+        // Tenta novamente
+        // console.log(`Tentativa ${attempt} para ${key} falhou (atual: ${currentY}, alvo: ${targetY}). Tentando novamente.`);
+        attemptRestoreScroll(key, targetY, targetX, attempt + 1);
+      }
+    }, RESTORE_ATTEMPT_DELAY * attempt); // Aumenta o delay a cada tentativa
+
+  }, [getWindow]);
 
   const restoreScrollPosition = useCallback((key: string) => {
     const win = getWindow();
@@ -123,32 +152,28 @@ export const useScrollRestoration = () => {
 
     if (savedPosition && (Date.now() - savedPosition.timestamp < SCROLL_POSITION_EXPIRATION_MS)) {
       isRestoringRef.current = true;
-      // console.log(`Restaurando para ${key}:`, savedPosition);
-      win.scrollTo({ left: savedPosition.x, top: savedPosition.y, behavior: 'auto' });
+      // console.log(`Iniciando restauração para ${key}:`, savedPosition);
 
-      // Limpa o timeout anterior se houver
-      if (restoreTimeoutRef.current) {
-        win.clearTimeout(restoreTimeoutRef.current);
+      // Limpa qualquer tentativa anterior pendente
+      if (restoreAttemptTimeoutRef.current) {
+        win.clearTimeout(restoreAttemptTimeoutRef.current);
+        restoreAttemptTimeoutRef.current = null;
       }
 
-      // Define um timeout para resetar o flag isRestoringRef
-      // Isso é crucial para permitir que o scroll seja salvo novamente após a restauração
-      restoreTimeoutRef.current = win.setTimeout(() => {
-        isRestoringRef.current = false;
-        restoreTimeoutRef.current = null;
-        // console.log(`Flag isRestoring resetado para ${key}`);
-      }, 150); // Tempo para permitir que o scroll ocorra e eventos se estabilizem
+      // Inicia a primeira tentativa após um delay inicial
+      restoreAttemptTimeoutRef.current = win.setTimeout(() => {
+        attemptRestoreScroll(key, savedPosition.y, savedPosition.x, 1);
+      }, INITIAL_RESTORE_DELAY);
+
     } else {
-      // Se não há posição válida ou está expirada, rola para o topo
       // console.log(`Sem posição válida para ${key} ou expirada, rolando para o topo.`);
       win.scrollTo({ left: 0, top: 0, behavior: 'auto' });
       if (savedPosition) {
-        // Remove a posição expirada
         delete scrollPositions.current[key];
         persistPositions();
       }
     }
-  }, [getWindow, persistPositions]);
+  }, [getWindow, persistPositions, attemptRestoreScroll]);
 
   // --- Efeitos ---
 
@@ -162,9 +187,17 @@ export const useScrollRestoration = () => {
     const win = getWindow();
     if (!win) return;
 
-    // Usa location.key se disponível, senão uma combinação de pathname/search
-    // location.key é mais confiável para diferenciar entradas no histórico
     const currentKey = location.key === 'default' ? location.pathname + location.search : location.key;
+
+    // Salva a posição da página ANTERIOR antes de decidir o que fazer com a atual
+    // Isso é crucial para capturar a posição antes da transição
+    if (lastNavigationType.current && lastNavigationType.current !== 'POP') {
+        const previousKey = win.history.state?.key;
+        if (previousKey && previousKey !== currentKey) {
+             // console.log(`Salvando posição da chave anterior ${previousKey} antes da navegação ${navigationType}`);
+             saveScrollPosition(previousKey);
+        }
+    }
 
     if (navigationType === 'POP') {
       // console.log(`Navegação POP detectada para ${currentKey}`);
@@ -175,18 +208,12 @@ export const useScrollRestoration = () => {
       win.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
 
-    // Função de limpeza: Salva a posição da página ANTERIOR
-    // Usa a chave guardada em lastSavedKey.current
-    return () => {
-      if (lastSavedKey.current) {
-         // console.log(`Salvando posição na limpeza para ${lastSavedKey.current}`);
-         saveScrollPosition(lastSavedKey.current);
-      }
-    };
-  // Dependências revisadas para garantir execução correta
+    // Atualiza o último tipo de navegação
+    lastNavigationType.current = navigationType;
+
   }, [location.key, location.pathname, location.search, navigationType, restoreScrollPosition, saveScrollPosition, getWindow]);
 
-  // Salva posição antes de descarregar a página (fechar aba/navegador)
+  // Salva posição antes de descarregar a página
   useEffect(() => {
     const win = getWindow();
     if (!win) return;
@@ -200,9 +227,8 @@ export const useScrollRestoration = () => {
     win.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       win.removeEventListener('beforeunload', handleBeforeUnload);
-      // Limpa timeout ao desmontar o componente principal
-      if (restoreTimeoutRef.current) {
-        win.clearTimeout(restoreTimeoutRef.current);
+      if (restoreAttemptTimeoutRef.current) {
+        win.clearTimeout(restoreAttemptTimeoutRef.current);
       }
     };
   }, [location.key, location.pathname, location.search, saveScrollPosition, getWindow]);
