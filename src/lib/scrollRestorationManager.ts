@@ -1,70 +1,284 @@
-import { useRef, useCallback } from 'react';
 
-// Tipos
-interface ScrollPositionEntry {
+// Sistema de restauração de scroll otimizado para Safari mobile
+interface ScrollPosition {
   x: number;
   y: number;
   timestamp: number;
+  attempts?: number;
+  source?: string;
 }
-type ScrollPositionMap = Record<string, ScrollPositionEntry>;
 
-// Estado compartilhado (simulando um singleton/módulo)
-// REMOVIDO: Carregamento inicial do localStorage
-const scrollPositions: ScrollPositionMap = {};
-let isRestoring = false; // Flag para evitar salvar durante a restauração
+class ScrollRestorationManager {
+  private positions = new Map<string, ScrollPosition>();
+  private isRestoring = false;
+  private cleanupInterval: number;
+  private isSafari: boolean;
+  private isMobile: boolean;
+  private isSafariMobile: boolean;
 
-// REMOVIDO: Função para persistir posições no localStorage
-// const persistScrollPositions = () => { ... };
+  constructor() {
+    // Detecta Safari e dispositivos móveis
+    this.isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    this.isSafariMobile = this.isSafari && this.isMobile;
+    
+    // Limpa posições antigas a cada 10 minutos
+    this.cleanupInterval = window.setInterval(() => {
+      this.cleanup();
+    }, 10 * 60 * 1000);
 
-// Função exportada para salvar a posição de scroll atual
-export const saveScrollPosition = (path: string, source: string = 'unknown') => {
-  // Não salva se estamos no processo de restauração
-  if (isRestoring) {
-    // console.log(`[ScrollManager] Save skipped for ${path} (source: ${source}) because restoration is in progress.`);
-    return;
+    console.log(`[ScrollManager] Initialized. Safari: ${this.isSafari}, Mobile: ${this.isMobile}, SafariMobile: ${this.isSafariMobile}`);
+    
+    // Inicializa o backup do Safari Mobile a partir do sessionStorage
+    if (this.isSafariMobile) {
+      this.restoreFromBackup();
+    }
   }
 
-  const scrollPos: ScrollPositionEntry = {
-    x: window.scrollX,
-    y: window.scrollY,
-    timestamp: Date.now()
-  };
-
-  // Só salva se realmente houver scroll significativo (evita salvar 0,0)
-  // Armazena apenas na memória agora, não mais no localStorage
-  if (scrollPos.y > 10 || scrollPos.x > 10) {
-    scrollPositions[path] = scrollPos;
-    console.log(`[ScrollManager - Memory Only] Saved scroll position for ${path} (source: ${source}):`, scrollPos);
-    // REMOVIDO: persistScrollPositions();
-  } else {
-    // console.log(`[ScrollManager - Memory Only] Save skipped for ${path} (source: ${source}) due to insignificant scroll (y=${scrollPos.y}, x=${scrollPos.x}).`);
+  // Restaura posições do backup do sessionStorage (Safari Mobile)
+  private restoreFromBackup(): void {
+    if (!this.isSafariMobile) return;
+    
+    try {
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key?.startsWith('safari_scroll_')) {
+          const path = key.replace('safari_scroll_', '');
+          const data = sessionStorage.getItem(key);
+          if (data) {
+            const position = JSON.parse(data);
+            this.positions.set(path, position);
+            console.log(`[ScrollManager] Safari Mobile: Restored position from backup for ${path}: y=${position.y}`);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[ScrollManager] Safari Mobile: Backup restoration failed:', e);
+    }
   }
+
+  savePosition(path: string, source: string = 'unknown'): void {
+    if (this.isRestoring) {
+      console.log(`[ScrollManager] Skipping save - currently restoring`);
+      return;
+    }
+
+    const position: ScrollPosition = {
+      x: window.scrollX,
+      y: window.scrollY,
+      timestamp: Date.now(),
+      attempts: 0,
+      source
+    };
+
+    // Para Safari Mobile, sempre salva mesmo com scroll pequeno
+    const minScroll = this.isSafariMobile ? 5 : 50;
+    
+    if (position.y > minScroll || path.includes('/produto/')) {
+      this.positions.set(path, position);
+      
+      console.log(`[ScrollManager] Saved position for ${path} (${source}): y=${position.y}`);
+      
+      // Safari Mobile: força salvamento adicional no sessionStorage como backup
+      if (this.isSafariMobile) {
+        try {
+          const safariKey = `safari_scroll_${path}`;
+          sessionStorage.setItem(safariKey, JSON.stringify(position));
+        } catch (e) {
+          console.warn('[ScrollManager] Safari backup save failed:', e);
+        }
+      }
+    }
+  }
+
+  async restorePosition(path: string, context: string = 'unknown'): Promise<boolean> {
+    let savedPosition = this.positions.get(path);
+    
+    // Safari Mobile: tenta recuperar do backup se posição principal não existe
+    if (!savedPosition && this.isSafariMobile) {
+      try {
+        const safariKey = `safari_scroll_${path}`;
+        const backupData = sessionStorage.getItem(safariKey);
+        if (backupData) {
+          savedPosition = JSON.parse(backupData);
+          console.log(`[ScrollManager] Safari Mobile: recovered from backup for ${path}`);
+          this.positions.set(path, savedPosition);
+        }
+      } catch (e) {
+        console.warn('[ScrollManager] Safari backup recovery failed:', e);
+      }
+    }
+    
+    if (!savedPosition) {
+      console.log(`[ScrollManager] No saved position for ${path}`);
+      return false;
+    }
+
+    // Verifica se não expirou
+    const now = Date.now();
+    const maxAge = this.isSafariMobile ? 5 * 60 * 1000 : 15 * 60 * 1000;
+    
+    if (now - savedPosition.timestamp > maxAge) {
+      console.log(`[ScrollManager] Position expired for ${path}`);
+      this.positions.delete(path);
+      if (this.isSafariMobile) {
+        try {
+          sessionStorage.removeItem(`safari_scroll_${path}`);
+        } catch (e) {
+          console.warn('[ScrollManager] Safari cleanup failed:', e);
+        }
+      }
+      return false;
+    }
+
+    const minPosition = this.isSafariMobile ? 10 : 100;
+    if (savedPosition.y < minPosition && !path.includes('/produto/')) {
+      console.log(`[ScrollManager] Position too small for ${path}: ${savedPosition.y}px`);
+      return false;
+    }
+
+    console.log(`[ScrollManager] Restoring position for ${path} (${context}): y=${savedPosition.y}`);
+    
+    this.isRestoring = true;
+
+    return new Promise((resolve) => {
+      const delay = this.isSafariMobile ? 300 : 150;
+      
+      setTimeout(() => {
+        window.scrollTo({
+          left: savedPosition.x,
+          top: savedPosition.y,
+          behavior: 'auto'
+        });
+
+        // Verificação de sucesso
+        setTimeout(() => {
+          const currentY = window.scrollY;
+          const tolerance = this.isSafariMobile ? 200 : 100;
+          const success = Math.abs(currentY - savedPosition.y) <= tolerance;
+          
+          console.log(`[ScrollManager] Restore result: target=${savedPosition.y}, current=${currentY}, success=${success}`);
+          
+          this.isRestoring = false;
+          resolve(success);
+        }, this.isSafariMobile ? 200 : 100);
+      }, delay);
+    });
+  }
+
+  removePosition(path: string): void {
+    if (this.positions.has(path)) {
+      this.positions.delete(path);
+      console.log(`[ScrollManager] Removed position for ${path}`);
+    }
+    
+    if (this.isSafariMobile) {
+      try {
+        sessionStorage.removeItem(`safari_scroll_${path}`);
+      } catch (e) {
+        console.warn('[ScrollManager] Safari backup removal failed:', e);
+      }
+    }
+  }
+
+  setIsRestoring(restoring: boolean): void {
+    this.isRestoring = restoring;
+  }
+
+  getIsRestoring(): boolean {
+    return this.isRestoring;
+  }
+
+  forceSave(path: string): void {
+    const position: ScrollPosition = {
+      x: window.scrollX,
+      y: window.scrollY,
+      timestamp: Date.now(),
+      attempts: 0,
+      source: 'force save'
+    };
+    
+    this.positions.set(path, position);
+    
+    console.log(`[ScrollManager] Force saved position for ${path}: y=${position.y}`);
+    
+    if (this.isSafariMobile) {
+      try {
+        const safariKey = `safari_scroll_${path}`;
+        sessionStorage.setItem(safariKey, JSON.stringify(position));
+      } catch (e) {
+        console.warn('[ScrollManager] Safari force backup save failed:', e);
+      }
+    }
+  }
+
+  private cleanup(): void {
+    const now = Date.now();
+    const maxAge = this.isSafariMobile ? 5 * 60 * 1000 : 15 * 60 * 1000;
+
+    for (const [path, position] of this.positions.entries()) {
+      if (now - position.timestamp > maxAge) {
+        this.positions.delete(path);
+        console.log(`[ScrollManager] Cleaned up expired position for ${path}`);
+        
+        if (this.isSafariMobile) {
+          try {
+            sessionStorage.removeItem(`safari_scroll_${path}`);
+          } catch (e) {
+            console.warn('[ScrollManager] Safari backup cleanup failed:', e);
+          }
+        }
+      }
+    }
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+    this.positions.clear();
+    
+    if (this.isSafariMobile) {
+      try {
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key?.startsWith('safari_scroll_')) {
+            sessionStorage.removeItem(key);
+          }
+        }
+      } catch (e) {
+        console.warn('[ScrollManager] Safari full cleanup failed:', e);
+      }
+    }
+  }
+}
+
+// Instância singleton
+const scrollManager = new ScrollRestorationManager();
+
+// Exports
+export const saveScrollPosition = (path: string, source?: string) => {
+  scrollManager.savePosition(path, source);
 };
 
-// Funções para controlar o estado de restauração (usadas pelo hook)
-export const setIsRestoring = (restoring: boolean) => {
-  // console.log(`[ScrollManager] Setting isRestoring to: ${restoring}`);
-  isRestoring = restoring;
+export const restoreScrollPosition = (path: string, context?: string) => {
+  return scrollManager.restorePosition(path, context);
 };
 
-export const getIsRestoring = () => {
-  return isRestoring;
-};
-
-// Função para obter a posição salva (usada pelo hook)
-export const getSavedScrollPosition = (path: string): ScrollPositionEntry | undefined => {
-  return scrollPositions[path];
-};
-
-// Função para remover posição (usada pelo hook para expiração)
 export const removeScrollPosition = (path: string) => {
-  if (scrollPositions[path]) {
-    delete scrollPositions[path];
-    console.log(`[ScrollManager - Memory Only] Removed scroll position for ${path}.`);
-    // REMOVIDO: persistScrollPositions();
-  }
+  scrollManager.removePosition(path);
 };
 
-// REMOVIDO: Listener de beforeunload para salvar no localStorage
-// window.addEventListener('beforeunload', () => { ... });
+export const setIsRestoring = (restoring: boolean) => {
+  scrollManager.setIsRestoring(restoring);
+};
 
+export const getIsRestoring = (): boolean => {
+  return scrollManager.getIsRestoring();
+};
+
+export const forceSavePosition = (path: string) => {
+  scrollManager.forceSave(path);
+};
+
+export default scrollManager;
