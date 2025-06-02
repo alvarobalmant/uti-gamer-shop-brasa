@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -95,10 +94,10 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
           <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start mt-1">
             <Button 
               variant="outline" 
-              size="sm" // Changed from "xs" to "sm" since "xs" is not a valid size
+              size="xs" // Small button for mobile
               className={cn(
                 "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
-                "text-xs px-2 py-1 h-7", // Custom small styling with reduced height
+                "text-xs px-2 py-1", // Adjusted padding for smaller button
                 textColor
               )}
             >

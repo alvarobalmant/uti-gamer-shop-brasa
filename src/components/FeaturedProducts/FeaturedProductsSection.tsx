@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/hooks/useProducts";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useScrollPosition } from "@/hooks/useScrollPosition";
+// Removed import { useScrollPosition } from "@/hooks/useScrollPosition";
 import SectionTitle from "@/components/SectionTitle"; // Use the new SectionTitle component
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,7 @@ const FeaturedProductsSection = ({
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { saveScrollPosition } = useScrollPosition();
+  // Removed const { saveScrollPosition } = useScrollPosition();
   const [selectedCategory, setSelectedCategory] = useState("todos");
   // Start with animation enabled for initial load
   const [animateProducts, setAnimateProducts] = useState(true); 
@@ -54,7 +54,7 @@ const FeaturedProductsSection = ({
   const displayedProducts = filterProductsByCategory(selectedCategory);
 
   const handleViewAllClick = () => {
-    saveScrollPosition();
+    // Removed saveScrollPosition(); - useScrollRestoration handles this globally
     navigate(viewAllLink);
   };
 
@@ -179,3 +179,4 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
+

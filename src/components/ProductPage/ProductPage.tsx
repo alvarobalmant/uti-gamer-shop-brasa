@@ -1,10 +1,10 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
+// Removed import { useScrollPosition } from '@/hooks/useScrollPosition';
 import ProductPageHeader from '@/components/ProductPage/ProductPageHeader';
 import ProductImageGallery from '@/components/ProductPage/ProductImageGallery';
 import ProductInfo from '@/components/ProductPage/ProductInfo';
@@ -18,6 +18,7 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const { products, loading } = useProducts();
   const { addToCart } = useCart();
+  // Removed const { restoreScrollPosition } = useScrollPosition();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = useState('');
@@ -84,8 +85,10 @@ const ProductPage = () => {
   };
 
   const handleBackClick = () => {
-    // Simplesmente navega de volta - o sistema de scroll restoration cuida do resto
+    // Navigate back and let the global useScrollRestoration handle the position
     navigate(-1);
+    
+    // Removed fallback restoreScrollPosition call
   };
 
   const handleWhatsAppContact = () => {
@@ -140,3 +143,4 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
+

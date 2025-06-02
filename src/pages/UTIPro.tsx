@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useAuth } from '@/hooks/useAuth';
-import { useScrollPosition } from '@/hooks/useScrollPosition';
+// Removed import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import Footer from '@/components/Footer';
@@ -47,7 +47,7 @@ const UTIPro = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
 
-  useScrollPosition();
+  // Removed useScrollPosition(); - This is handled globally by useScrollRestoration
 
   const handleSubscribe = async (planId: string) => {
     if (!user) {
@@ -316,17 +316,18 @@ const UTIPro = () => {
                               disabled={processingPlan === plan.id}
                               size="lg"
                               className={cn(
-                                "w-full font-bold text-base md:text-lg py-2.5 md:py-3 rounded-lg transition-all duration-300",
+                                "w-full font-bold text-base md:text-lg py-2.5 md:py-3 rounded-lg transition-all duration-300 transform hover:scale-105",
                                 isPopular 
-                                  ? 'bg-uti-red text-white hover:bg-uti-red/90 shadow-lg'
-                                  : 'bg-gray-700 text-white/80 hover:bg-gray-600'
+                                  ? "bg-uti-red text-white hover:bg-uti-red/90 shadow-lg hover:shadow-xl"
+                                  : "bg-white/10 text-white hover:bg-white/20"
                               )}
                             >
                               {processingPlan === plan.id ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <Loader2 className="w-5 h-5 animate-spin mr-2" />
                               ) : (
-                                'Assinar Agora'
+                                <Crown className="w-4 h-4 mr-2" />
                               )}
+                              {processingPlan === plan.id ? "Processando..." : "Assinar Agora"}
                             </Button>
                           </CardContent>
                         </Card>
@@ -336,30 +337,25 @@ const UTIPro = () => {
                 </motion.div>
               </div>
               {/* Grid Layout for Desktop - Added padding */}
+              {/* Added pt-6 to give space for the badge */}
               <motion.div 
-                className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-stretch pt-3"
+                className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 pt-6"
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, amount: 0.1 }}
+                viewport={{ once: true, amount: 0.2 }}
               >
                 {plans.map((plan) => {
                   const isPopular = plan.duration_months === 6;
                   const monthlyPrice = calculateMonthlyPrice(plan.price, plan.duration_months);
 
                   return (
-                    <motion.div 
-                      key={plan.id} 
-                      variants={fadeInUp} 
-                      // Adjusted scale and margin for desktop popular plan
-                      className={cn(isPopular ? "lg:scale-105 lg:-mt-4" : "")}
-                    >
+                    <motion.div key={plan.id} variants={fadeInUp} className={cn(isPopular ? "lg:scale-105" : "")}>
                       <Card className={cn(
                         "relative bg-gray-800/60 border border-gray-700 shadow-xl h-full flex flex-col transition-all duration-300",
-                        isPopular ? 'border-uti-red ring-2 ring-uti-red z-10' : 'hover:border-gray-600'
+                        isPopular ? 'border-uti-red ring-2 ring-uti-red z-10' : 'hover:border-gray-500'
                       )}>
                         {isPopular && (
-                          // Adjusted badge position slightly for desktop
                           <Badge className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-uti-red text-white px-4 py-1.5 text-sm font-semibold shadow-md z-20">
                             Mais Popular
                           </Badge>
@@ -398,17 +394,18 @@ const UTIPro = () => {
                             disabled={processingPlan === plan.id}
                             size="lg"
                             className={cn(
-                              "w-full font-bold text-lg py-3 rounded-lg transition-all duration-300",
+                              "w-full font-bold text-lg py-3 rounded-lg transition-all duration-300 transform hover:scale-105",
                               isPopular 
-                                ? 'bg-uti-red text-white hover:bg-uti-red/90 shadow-lg'
-                                : 'bg-gray-700 text-white/80 hover:bg-gray-600'
+                                ? "bg-uti-red text-white hover:bg-uti-red/90 shadow-lg hover:shadow-xl"
+                                : "bg-white/10 text-white hover:bg-white/20"
                             )}
                           >
                             {processingPlan === plan.id ? (
-                              <Loader2 className="w-5 h-5 animate-spin" />
+                              <Loader2 className="w-5 h-5 animate-spin mr-2" />
                             ) : (
-                              'Assinar Agora'
+                              <Crown className="w-4 h-4 mr-2" />
                             )}
+                            {processingPlan === plan.id ? "Processando..." : "Assinar Agora"}
                           </Button>
                         </CardContent>
                       </Card>
@@ -420,8 +417,8 @@ const UTIPro = () => {
           </section>
         )}
 
-        {/* FAQ Section - Added padding and adjusted spacing */}
-        <section className="py-12 md:py-24 bg-black">
+        {/* FAQ Section - Added padding */}
+        <section className="py-12 md:py-24 bg-uti-dark">
           {/* Increased horizontal padding for the container */}
           <div className="container-professional px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
             <motion.h2 
@@ -433,27 +430,25 @@ const UTIPro = () => {
             >
               Perguntas Frequentes
             </motion.h2>
-            <motion.div
+            <motion.div 
               variants={staggerContainer}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.1 }}
             >
-              <Accordion type="single" collapsible className="w-full space-y-4"> {/* Increased space between items */}
+              <Accordion type="single" collapsible className="w-full space-y-4">
                 {[ 
-                  { q: "Como funciona o UTI PRO?", a: "O UTI PRO é um programa de assinatura que oferece 10% de desconto em todos os produtos, acesso prioritário a novidades, ofertas exclusivas e suporte premium via WhatsApp." },
-                  { q: "Posso cancelar minha assinatura a qualquer momento?", a: "Sim, você pode cancelar sua assinatura a qualquer momento através do seu painel de controle, sem taxas adicionais." },
-                  { q: "O desconto de 10% é válido para todos os produtos?", a: "Sim, o desconto de 10% é aplicado automaticamente em todos os produtos da loja para membros UTI PRO, sem exceções." },
-                  { q: "Como faço para me tornar um membro UTI PRO?", a: "Basta escolher um dos planos (Mensal, Semestral ou Anual) acima e clicar em \"Assinar Agora\". Você será redirecionado para a página de pagamento seguro." },
+                  { q: "Como funciona o desconto de 10%?", a: "O desconto é aplicado automaticamente em todos os produtos da loja ao finalizar a compra, desde que você esteja logado com sua conta UTI PRO ativa." },
+                  { q: "Posso cancelar minha assinatura a qualquer momento?", a: "Sim, você pode cancelar sua assinatura UTI PRO quando quiser através do painel da sua conta. O cancelamento impede futuras cobranças, mas você continua com os benefícios até o fim do período já pago." },
+                  { q: "As ofertas exclusivas são cumulativas com o desconto de 10%?", a: "Geralmente sim! As ofertas exclusivas para membros PRO costumam ser adicionais ao seu desconto padrão de 10%, maximizando sua economia." },
+                  { q: "Como funciona o acesso prioritário a lançamentos?", a: "Membros UTI PRO recebem notificações antecipadas e, em alguns casos, têm a oportunidade de comprar lançamentos selecionados antes do público geral." },
                 ].map((faq, index) => (
                   <motion.div key={index} variants={fadeInUp}>
                     <AccordionItem value={`item-${index}`} className="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
-                      {/* Increased padding for trigger */}
-                      <AccordionTrigger className="text-left font-semibold text-white hover:no-underline px-6 py-5 text-base md:text-lg">
+                      <AccordionTrigger className="text-left text-base md:text-lg font-medium text-white hover:no-underline px-4 md:px-6 py-3 md:py-4">
                         {faq.q}
                       </AccordionTrigger>
-                      {/* Increased padding and added leading-relaxed for content */}
-                      <AccordionContent className="px-6 pb-5 pt-0 text-white/70 text-sm md:text-base leading-relaxed">
+                      <AccordionContent className="px-4 md:px-6 pb-4 md:pb-6 text-white/70 text-sm md:text-base">
                         {faq.a}
                       </AccordionContent>
                     </AccordionItem>
@@ -468,8 +463,12 @@ const UTIPro = () => {
 
       <Footer />
 
-      {/* Authentication Modal */}
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      {/* Auth Modal */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <AuthModal onClose={() => setShowAuthModal(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
