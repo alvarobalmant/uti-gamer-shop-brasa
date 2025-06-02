@@ -38,7 +38,7 @@ const MainHeader = ({
           {/* Left side: Mobile Menu Toggle + Logo */}
           {/* Added flex-shrink to allow this section to shrink if needed */}
           <div className="flex items-center flex-shrink min-w-0"> 
-            {/* Mobile Menu Toggle Button */}
+            {/* Mobile Menu Toggle Button - REMOVED hover effects for mobile */}
             <Button
               variant="ghost"
               size="icon"
@@ -80,7 +80,7 @@ const MainHeader = ({
           {/* Right side: Header Actions + Mobile Search Toggle */}
           {/* Kept flex-shrink-0 to prevent actions from shrinking */}
           <div className="flex items-center justify-end flex-shrink-0 gap-1"> 
-            {/* Mobile Search Toggle Button - Always shows Search icon */}
+            {/* Mobile Search Toggle Button - REMOVED hover effects for mobile */}
             <Button
               variant="ghost"
               size="icon"

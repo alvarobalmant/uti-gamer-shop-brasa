@@ -20,7 +20,7 @@ const GlobalCartIcon: React.FC<GlobalCartIconProps> = ({ onCartOpen }) => {
       size="sm"
       className={cn(
         "relative flex items-center text-xs font-medium text-foreground px-2 py-1",
-        // Apply hover effects only on desktop (md and above)
+        // Apply hover effects only on desktop (md and above) - REMOVED hover effects for mobile
         "md:hover:text-primary md:hover:bg-secondary"
       )}
     >

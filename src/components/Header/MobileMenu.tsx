@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { X, User, Crown, Home, Grid, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -71,7 +70,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
           <div className="flex items-center gap-2">
             <SheetTitle id="mobile-menu-title" className="font-semibold text-lg text-gray-800">Menu</SheetTitle>
           </div>
-          {/* This is the close button to keep */}
+          {/* This is the close button to keep - REMOVED hover effects for mobile */}
           <SheetClose asChild>
             <Button 
               variant="ghost" 
@@ -107,7 +106,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                       variant="ghost"
                       className={cn(
                         "w-full justify-start h-11 text-base px-3 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md",
-                        // Only apply hover effects on desktop (md and above)
+                        // Only apply hover effects on desktop (md and above) - REMOVED hover effects for mobile
                         "md:hover:bg-yellow-200 md:hover:text-yellow-900"
                       )}
                     >
@@ -120,7 +119,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     variant="outline"
                     className={cn(
                       "w-full h-11 text-base border-gray-300",
-                      // Only apply hover effects on desktop (md and above)
+                      // Only apply hover effects on desktop (md and above) - REMOVED hover effects for mobile
                       "md:hover:bg-accent md:hover:text-accent-foreground"
                     )}
                   >
@@ -132,7 +131,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                   onClick={handleAuthClick}
                   className={cn(
                     "w-full bg-red-600 h-12 text-base flex items-center justify-center gap-2 text-white rounded-md font-semibold",
-                    // Only apply hover effects on desktop (md and above)
+                    // Only apply hover effects on desktop (md and above) - REMOVED hover effects for mobile
                     "md:hover:bg-red-700"
                   )}
                 >
@@ -142,7 +141,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
               )}
             </div>
 
-            {/* Main Navigation Links */}
+            {/* Main Navigation Links - REMOVED hover effects for mobile */}
             <div className="space-y-1 border-b pb-4">
               {mainLinks.map((link) => (
                  <Button
@@ -151,7 +150,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     variant="ghost"
                     className={cn(
                       "w-full justify-start h-12 text-base px-3 text-gray-700 rounded-md font-medium",
-                      // Only apply hover effects on desktop (md and above)
+                      // Only apply hover effects on desktop (md and above) - REMOVED hover effects for mobile
                       "md:hover:text-red-600 md:hover:bg-red-50"
                     )}
                   >
@@ -176,7 +175,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
               )}
             </div>
 
-            {/* Categories Section */}
+            {/* Categories Section - REMOVED hover effects for mobile */}
             <div className="space-y-1">
               <h3 className="font-semibold text-gray-500 mb-2 flex items-center gap-2 text-sm px-3 uppercase tracking-wider">
                 Categorias
@@ -189,7 +188,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     variant="ghost"
                     className={cn(
                       "w-full justify-start h-12 text-base px-3 text-gray-700 rounded-md font-medium",
-                      // Only apply hover effects on desktop (md and above)
+                      // Only apply hover effects on desktop (md and above) - REMOVED hover effects for mobile
                       "md:hover:text-red-600 md:hover:bg-red-50"
                     )}
                   >

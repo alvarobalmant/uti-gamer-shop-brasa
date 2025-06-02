@@ -20,8 +20,8 @@ const MobileCategoriesMenu = ({ showCategories, onCategoryClick }: MobileCategor
               onClick={() => onCategoryClick(category)}
               className={cn(
                 "text-left py-2 px-3 text-sm font-medium text-uti-dark rounded-md",
-                // Apply hover effects only on desktop (lg and above, since this is hidden on lg+)
-                "lg:transition-all lg:duration-200 lg:hover:text-uti-red lg:hover:bg-red-50"
+                // Apply hover effects only on desktop (md and above) - REMOVED hover effects for mobile
+                "md:hover:text-uti-red md:hover:bg-red-50 md:transition-all md:duration-200"
               )}
             >
               {category.name}

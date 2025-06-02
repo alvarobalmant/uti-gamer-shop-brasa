@@ -34,7 +34,7 @@ const HeaderActions = ({
       
       {/* Trade-In Button removed */}
 
-      {/* User Account / Sign In Button (Desktop Only) */}
+      {/* User Account / Sign In Button (Desktop Only) - REMOVED hover effects for mobile */}
       <Button 
         onClick={handleLoginClick} 
         variant="ghost" 
