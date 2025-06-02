@@ -144,8 +144,8 @@ export const setIsRestoring = (restoring: boolean) => {
   scrollManager.setIsRestoring(restoring);
 };
 
-export const getIsRestoring = () => {
-  scrollManager.getIsRestoring();
+export const getIsRestoring = (): boolean => {
+  return scrollManager.getIsRestoring();
 };
 
 export const cleanupOldPositions = () => {
