@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MobileSearchBarProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Focus input when the search bar opens
   useEffect(() => {
@@ -98,7 +100,13 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
               onClick={onClose} // Use the passed onClose function
               variant="ghost" 
               size="icon" // Make it icon size for consistency
-              className="ml-2 text-gray-600 hover:text-uti-red p-2 h-10 w-10" // Consistent size
+              className={cn(
+                "ml-2 text-gray-600 p-2 h-10 w-10", // Consistent size
+                // Aplicar efeitos de hover apenas em desktop
+                !isMobile 
+                  ? "hover:text-uti-red hover:bg-secondary" 
+                  : ""
+              )}
               aria-label="Fechar busca"
             >
               <X className="w-6 h-6" />
@@ -114,18 +122,6 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
               isVisible={showSuggestions}
             />
           </div>
-
-          {/* Optional: Search Action Button (if needed) */}
-          {/* {searchQuery.trim() && (
-            <div className="p-4 absolute bottom-0 left-0 right-0 bg-white border-t">
-              <Button 
-                onClick={handleSearchSubmit}
-                className="w-full btn-primary"
-              >
-                Buscar "{searchQuery}"
-              </Button>
-            </div>
-          )} */}
         </motion.div>
       )}
     </AnimatePresence>
@@ -133,4 +129,3 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
 };
 
 export default MobileSearchBar;
-

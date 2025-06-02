@@ -72,6 +72,16 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
     touchStartRef.current = { x: 0, y: 0, time: 0 };
   };
 
+  // Função para lidar com cliques no mobile (backup para garantir clicabilidade)
+  const handleClick = () => {
+    if (isMobile) {
+      handleCardNavigation();
+    } else {
+      // No desktop, o onClick normal já funciona
+      handleCardNavigation();
+    }
+  };
+
   // **Radical Redesign based on GameStop reference and user feedback**
   return (
     <Card
@@ -84,7 +94,7 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
         "w-full" // Ensure card takes full width in its container (for carousel/grid)
         // Removed fixed width/height to allow flexibility in carousel/grid
       )}
-      onClick={isMobile ? undefined : handleCardNavigation}
+      onClick={handleClick} // Usar o mesmo handler para mobile e desktop
       onTouchStart={isMobile ? handleTouchStart : undefined}
       onTouchEnd={isMobile ? handleTouchEnd : undefined}
       style={{ touchAction: 'pan-y' }} // Permitir rolagem vertical, mas capturar toques horizontais

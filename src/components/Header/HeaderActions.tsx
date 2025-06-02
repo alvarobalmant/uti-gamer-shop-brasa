@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface HeaderActionsProps {
   onCartOpen: () => void; // Keep for GlobalCartIcon if needed internally
@@ -17,6 +18,7 @@ const HeaderActions = ({
 }: HeaderActionsProps) => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleLoginClick = () => {
     if (user && isAdmin) {
@@ -38,7 +40,13 @@ const HeaderActions = ({
         onClick={handleLoginClick} 
         variant="ghost" 
         size="sm" // Smaller button size
-        className="hidden md:flex items-center text-xs font-medium text-foreground hover:text-primary hover:bg-secondary px-2 py-1" // Adjusted styling
+        className={cn(
+          "hidden md:flex items-center text-xs font-medium text-foreground px-2 py-1", // Adjusted styling
+          // Aplicar efeitos de hover apenas em desktop
+          !isMobile 
+            ? "hover:text-primary hover:bg-secondary" 
+            : ""
+        )}
       >
         <User className="w-4 h-4 mr-1" />
         {user ? (isAdmin ? 'Admin' : 'Conta') : 'Sign In'}

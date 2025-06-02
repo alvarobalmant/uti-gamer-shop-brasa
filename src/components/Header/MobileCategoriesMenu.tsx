@@ -21,11 +21,11 @@ const MobileCategoriesMenu = ({ showCategories, onCategoryClick }: MobileCategor
               key={category.id}
               onClick={() => onCategoryClick(category)}
               className={cn(
-                "text-left py-2 px-3 text-sm font-medium text-uti-dark rounded-md transition-all duration-200",
-                // Aplicar efeitos de hover apenas em desktop
+                "text-left py-2 px-3 text-sm font-medium text-uti-dark rounded-md",
+                // Remover completamente qualquer efeito de hover/transição no mobile
                 !isMobile 
-                  ? "hover:text-uti-red hover:bg-red-50" 
-                  : "active:text-uti-red"
+                  ? "transition-all duration-200 hover:text-uti-red hover:bg-red-50" 
+                  : ""
               )}
             >
               {category.name}

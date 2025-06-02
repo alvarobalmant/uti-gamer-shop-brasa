@@ -2,6 +2,7 @@ import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge'; // Keep Badge if needed for 'Usado'
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductCardInfoProps {
   product: Product;
@@ -13,12 +14,19 @@ const ProductCardInfo: React.FC<ProductCardInfoProps> = ({ product }) => {
   // Minimalist approach like GameStop: Focus on the title.
   // Badges (like platform) are generally omitted on the card itself in the reference.
   // Rating is also omitted for a cleaner look.
+  const isMobile = useIsMobile();
 
   return (
     <div className="mb-1"> {/* Minimal bottom margin */}
       {/* Product Title - Clean and concise */}
       <h3
-        className="text-sm font-medium text-foreground leading-tight line-clamp-2 transition-colors duration-200 group-hover:text-uti-red"
+        className={cn(
+          "text-sm font-medium leading-tight line-clamp-2 transition-colors duration-200",
+          // No aplicar efeito de cor no mobile, manter preto padrão
+          isMobile 
+            ? "text-foreground" 
+            : "text-foreground group-hover:text-uti-red"
+        )}
         title={product.name} // Tooltip for full name
       >
         {product.name}
@@ -35,4 +43,3 @@ const ProductCardInfo: React.FC<ProductCardInfoProps> = ({ product }) => {
 };
 
 export default ProductCardInfo;
-
