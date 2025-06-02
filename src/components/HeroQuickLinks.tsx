@@ -4,10 +4,12 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuickLinks } from '@/hooks/useQuickLinks'; // Import the hook
 import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const HeroQuickLinks = () => {
   const navigate = useNavigate();
   const { quickLinks, loading, fetchQuickLinks } = useQuickLinks(); // Use the hook
+  const isMobile = useIsMobile();
 
   // Fetch links when the component mounts
   useEffect(() => {
@@ -59,7 +61,8 @@ const HeroQuickLinks = () => {
               className={cn(
                 "overflow-hidden cursor-pointer group transition-all duration-300 ease-in-out",
                 "bg-card border border-border/80 rounded-xl",
-                "hover:shadow-md hover:border-primary/40 hover:-translate-y-1"
+                // Aplicar efeitos de hover apenas em desktop
+                !isMobile && "hover:shadow-md hover:border-primary/40 hover:-translate-y-1"
               )}
             >
               <CardContent className="flex flex-col items-center justify-center p-4 md:p-6 aspect-[4/3] sm:aspect-square">
@@ -67,12 +70,20 @@ const HeroQuickLinks = () => {
                 <img
                   src={link.icon_url}
                   alt={link.label} // Use label as alt text
-                  className="w-7 h-7 md:w-8 md:h-8 mb-3 object-contain transition-transform duration-300 group-hover:scale-110"
+                  className={cn(
+                    "w-7 h-7 md:w-8 md:h-8 mb-3 object-contain transition-transform duration-300",
+                    // Aplicar efeito de escala apenas em desktop
+                    !isMobile && "group-hover:scale-110"
+                  )}
                   loading="lazy"
                   onError={handleImageError} // Add error handler
                 />
                 {/* Adjusted font weight and color */}
-                <span className="text-xs sm:text-sm font-semibold text-gray-800 text-center leading-tight group-hover:text-primary transition-colors duration-200">
+                <span className={cn(
+                  "text-xs sm:text-sm font-semibold text-gray-800 text-center leading-tight transition-colors duration-200",
+                  // Aplicar mudança de cor apenas em desktop
+                  !isMobile && "group-hover:text-primary"
+                )}>
                   {link.label}
                 </span>
               </CardContent>
@@ -85,4 +96,3 @@ const HeroQuickLinks = () => {
 };
 
 export default HeroQuickLinks;
-

@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GlobalCartIconProps {
   onCartOpen: () => void;
@@ -12,13 +12,20 @@ interface GlobalCartIconProps {
 const GlobalCartIcon: React.FC<GlobalCartIconProps> = ({ onCartOpen }) => {
   const { getCartItemsCount } = useCart();
   const itemCount = getCartItemsCount();
+  const isMobile = useIsMobile();
 
   return (
     <Button
       onClick={onCartOpen}
       variant="ghost"
       size="sm"
-      className="relative flex items-center text-xs font-medium text-foreground hover:text-primary hover:bg-secondary px-2 py-1"
+      className={cn(
+        "relative flex items-center text-xs font-medium text-foreground px-2 py-1",
+        // Aplicar efeitos de hover apenas em desktop
+        !isMobile 
+          ? "hover:text-primary hover:bg-secondary" 
+          : ""
+      )}
     >
       <ShoppingCart className="w-4 h-4 mr-1" />
       <span className="hidden sm:inline">Carrinho</span>

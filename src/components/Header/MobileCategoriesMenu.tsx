@@ -1,5 +1,6 @@
-
 import { categories, Category } from './categories';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MobileCategoriesMenuProps {
   showCategories: boolean;
@@ -7,6 +8,8 @@ interface MobileCategoriesMenuProps {
 }
 
 const MobileCategoriesMenu = ({ showCategories, onCategoryClick }: MobileCategoriesMenuProps) => {
+  const isMobile = useIsMobile();
+  
   if (!showCategories) return null;
 
   return (
@@ -17,7 +20,13 @@ const MobileCategoriesMenu = ({ showCategories, onCategoryClick }: MobileCategor
             <button
               key={category.id}
               onClick={() => onCategoryClick(category)}
-              className="text-left py-2 px-3 text-sm font-medium text-uti-dark hover:text-uti-red hover:bg-red-50 rounded-md transition-all duration-200"
+              className={cn(
+                "text-left py-2 px-3 text-sm font-medium text-uti-dark rounded-md transition-all duration-200",
+                // Aplicar efeitos de hover apenas em desktop
+                !isMobile 
+                  ? "hover:text-uti-red hover:bg-red-50" 
+                  : "active:text-uti-red"
+              )}
             >
               {category.name}
             </button>

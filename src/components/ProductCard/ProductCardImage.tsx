@@ -3,6 +3,7 @@ import { Heart } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductCardImageProps {
   product: Product;
@@ -14,6 +15,7 @@ interface ProductCardImageProps {
 // **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductCardImage: React.FC<ProductCardImageProps> = ({ product }) => {
   const isOutOfStock = product.stock === 0;
+  const isMobile = useIsMobile();
 
   // Simplified badge logic based on GameStop's cleaner look
   const getConditionBadge = () => {
@@ -38,7 +40,9 @@ const ProductCardImage: React.FC<ProductCardImageProps> = ({ product }) => {
         src={product.image || '/placeholder-image.webp'} // Use placeholder
         alt={product.name}
         className={cn(
-          "h-full w-full object-contain transition-transform duration-300 ease-in-out group-hover:scale-105 p-2", // Use contain to show full product, add padding
+          "h-full w-full object-contain transition-transform duration-300 ease-in-out p-2", // Use contain to show full product, add padding
+          // Aplicar efeito de escala apenas em desktop
+          !isMobile && "group-hover:scale-105",
           isOutOfStock ? "grayscale filter opacity-70" : "" // Subtle grayscale + opacity
         )}
         loading="lazy"
@@ -79,4 +83,3 @@ const ProductCardImage: React.FC<ProductCardImageProps> = ({ product }) => {
 };
 
 export default ProductCardImage;
-
