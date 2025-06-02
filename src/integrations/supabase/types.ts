@@ -307,39 +307,6 @@ export type Database = {
         }
         Relationships: []
       }
-      quick_links: {
-        Row: {
-          created_at: string
-          icon_url: string
-          id: string
-          is_active: boolean
-          label: string
-          path: string
-          position: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          icon_url: string
-          id?: string
-          is_active?: boolean
-          label: string
-          path: string
-          position?: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          icon_url?: string
-          id?: string
-          is_active?: boolean
-          label?: string
-          path?: string
-          position?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
       service_cards: {
         Row: {
           created_at: string
@@ -427,86 +394,6 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
-        }
-        Relationships: []
-      }
-      top_deal_items: {
-        Row: {
-          created_at: string | null
-          deal_label: string
-          display_order: number | null
-          id: number
-          product_id: string
-          section_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          deal_label: string
-          display_order?: number | null
-          id?: number
-          product_id: string
-          section_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          deal_label?: string
-          display_order?: number | null
-          id?: number
-          product_id?: string
-          section_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "top_deal_items_section_id_fkey"
-            columns: ["section_id"]
-            isOneToOne: false
-            referencedRelation: "top_deal_sections"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      top_deal_sections: {
-        Row: {
-          banner_button_link: string | null
-          banner_button_text: string | null
-          banner_image_url: string | null
-          banner_subtitle: string | null
-          banner_title: string | null
-          created_at: string | null
-          id: string
-          is_pro_exclusive: boolean | null
-          subtitle: string | null
-          title: string
-          updated_at: string | null
-          view_all_link: string | null
-        }
-        Insert: {
-          banner_button_link?: string | null
-          banner_button_text?: string | null
-          banner_image_url?: string | null
-          banner_subtitle?: string | null
-          banner_title?: string | null
-          created_at?: string | null
-          id?: string
-          is_pro_exclusive?: boolean | null
-          subtitle?: string | null
-          title: string
-          updated_at?: string | null
-          view_all_link?: string | null
-        }
-        Update: {
-          banner_button_link?: string | null
-          banner_button_text?: string | null
-          banner_image_url?: string | null
-          banner_subtitle?: string | null
-          banner_title?: string | null
-          created_at?: string | null
-          id?: string
-          is_pro_exclusive?: boolean | null
-          subtitle?: string | null
-          title?: string
-          updated_at?: string | null
-          view_all_link?: string | null
         }
         Relationships: []
       }
