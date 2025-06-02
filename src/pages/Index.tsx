@@ -1,8 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { useProducts, Product } from '@/hooks/useProducts'; // Import Product type
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
@@ -27,7 +27,6 @@ const Index = () => {
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { setupScrollRestoration } = useScrollPosition();
   
   // Fetch homepage layout and product sections
   const { layoutItems, loading: layoutLoading } = useHomepageLayout();
@@ -42,12 +41,6 @@ const Index = () => {
     buttonLink: '/uti-pro',
     targetBlank: false,
   });
-
-  useEffect(() => {
-    const cleanup = setupScrollRestoration();
-    // TODO: Fetch actual banner data
-    return cleanup;
-  }, [setupScrollRestoration]);
 
   const handleAddToCart = (product: any, size?: string, color?: string) => {
     addToCart(product, size, color);
@@ -172,4 +165,3 @@ const Index = () => {
 };
 
 export default Index;
-

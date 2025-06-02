@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
@@ -6,51 +7,51 @@ import { cn } from '@/lib/utils';
 
 interface ProductCardActionsProps {
   product: Product;
-  // Change the prop type to expect the product object directly
   onAddToCart: (product: Product) => void;
 }
 
-// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductCardActions: React.FC<ProductCardActionsProps> = ({
   product,
   onAddToCart
 }) => {
   const isOutOfStock = product.stock === 0;
 
-  // Handler to prevent event propagation and call the actual add to cart function
+  // Handler que previne propagação do evento
   const handleAddToCartClick = (e: React.MouseEvent | React.TouchEvent) => {
-    e.stopPropagation(); // Prevent card navigation when clicking the button
+    e.stopPropagation(); // Impede que o clique propague para o card
     e.preventDefault();
+    
+    console.log(`[ProductCardActions] Add to cart clicked: ${product.name}`);
+    
     if (!isOutOfStock) {
-      onAddToCart(product); // Pass the product object
+      onAddToCart(product);
     }
   };
 
-  // Minimalist approach: Button appears subtly on hover (desktop)
-  // For mobile, clicking the card navigates, so button might be less critical here
-  // or could be a smaller icon button if desired.
   return (
-    <div className="absolute bottom-2 right-2 z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100"> {/* Show on hover */}
+    <div className="flex items-center">
       <Button
-        size="icon" // Use icon size for a smaller footprint
-        variant="default" // Use primary color (UTI Red)
-        onClick={handleAddToCartClick} // Use the new handler
-        onTouchEnd={handleAddToCartClick} // Use the new handler for touch
+        size="sm"
+        variant="default"
+        onClick={handleAddToCartClick}
         disabled={isOutOfStock}
         className={cn(
-          "h-8 w-8 rounded-full shadow-md transition-all duration-300 active:scale-90",
+          "h-8 px-3 text-xs font-medium transition-all duration-200 active:scale-95",
           isOutOfStock
             ? "cursor-not-allowed bg-muted text-muted-foreground"
             : "bg-uti-red text-primary-foreground hover:bg-uti-red/90"
         )}
         aria-label={isOutOfStock ? 'Esgotado' : 'Adicionar ao Carrinho'}
-        style={{ touchAction: 'manipulation' }}
+        style={{ 
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'transparent'
+        }}
       >
-        <ShoppingCart className="h-4 w-4" />
+        <ShoppingCart className="h-3 w-3 mr-1" />
+        {isOutOfStock ? 'Esgotado' : 'Adicionar'}
       </Button>
     </div>
   );
 };
 
 export default ProductCardActions;
-

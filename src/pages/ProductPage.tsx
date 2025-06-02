@@ -1,28 +1,28 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton'; // For loading state
+import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 
-// Import radically redesigned subcomponents (assuming they will be created/modified)
-import ProductPageHeader from '@/components/ProductPage/ProductPageHeader'; // Keep or simplify
-import ProductImageGallery from '@/components/ProductPage/ProductImageGallery'; // Needs redesign
-import ProductInfo from '@/components/ProductPage/ProductInfo'; // Needs redesign
-import ProductPricing from '@/components/ProductPage/ProductPricing'; // Needs redesign
-import ProductOptions from '@/components/ProductPage/ProductOptions'; // Needs redesign
-import ProductActions from '@/components/ProductPage/ProductActions'; // Needs redesign
-import ProductDescription from '@/components/ProductPage/ProductDescription'; // New component for description section
-import RelatedProducts from '@/components/ProductPage/RelatedProducts'; // New component for related products
+// Import subcomponents
+import ProductPageHeader from '@/components/ProductPage/ProductPageHeader';
+import ProductImageGallery from '@/components/ProductPage/ProductImageGallery';
+import ProductInfo from '@/components/ProductPage/ProductInfo';
+import ProductPricing from '@/components/ProductPage/ProductPricing';
+import ProductOptions from '@/components/ProductPage/ProductOptions';
+import ProductActions from '@/components/ProductPage/ProductActions';
+import ProductDescription from '@/components/ProductPage/ProductDescription';
+import RelatedProducts from '@/components/ProductPage/RelatedProducts';
 
-// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products, loading: productsLoading } = useProducts();
-  const { addToCart, loading: cartLoading } = useCart(); // Assuming cart context provides loading state
+  const { addToCart, loading: cartLoading } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = useState('');
@@ -33,7 +33,7 @@ const ProductPage = () => {
     if (products.length > 0 && id) {
       const foundProduct = products.find(p => p.id === id);
       setProduct(foundProduct || null);
-      // Set default options if product found
+      
       if (foundProduct) {
         setSelectedCondition(foundProduct.tags?.some(t => t.name.toLowerCase() === 'novo') ? 'new' : 'pre-owned');
         if (foundProduct.sizes && foundProduct.sizes.length > 0) setSelectedSize(foundProduct.sizes[0]);
@@ -44,23 +44,23 @@ const ProductPage = () => {
 
   const handleAddToCart = async () => {
     if (!product) return;
-    // Add logic to handle quantity if needed, GameStop seems to add 1 by default
     await addToCart(product, selectedSize || undefined, selectedColor || undefined);
-    // Optional: Add feedback like toast notification
   };
 
-  const handleBackClick = () => navigate(-1);
+  const handleBackClick = () => {
+    console.log('[ProductPage] Back button clicked');
+    // Simplesmente navega de volta - o sistema de scroll restoration cuida do resto
+    navigate(-1);
+  };
 
-  // --- Loading State --- 
+  // Loading State
   if (productsLoading) {
     return (
       <div className="min-h-screen bg-background">
         <ProductPageHeader onBackClick={handleBackClick} isLoading />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* Skeleton for Gallery */}
             <Skeleton className="aspect-square w-full rounded-lg" />
-            {/* Skeleton for Info */}
             <div className="space-y-4">
               <Skeleton className="h-8 w-3/4 rounded" />
               <Skeleton className="h-6 w-1/4 rounded" />
@@ -74,7 +74,7 @@ const ProductPage = () => {
     );
   }
 
-  // --- Not Found State --- 
+  // Not Found State
   if (!product) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center text-center px-4">
@@ -88,19 +88,15 @@ const ProductPage = () => {
     );
   }
 
-  // --- Main Product Page Layout (GameStop Inspired) --- 
+  // Main Product Page Layout
   return (
     <div className="min-h-screen bg-background">
-      {/* Simplified Header - Breadcrumbs might go here */}
       <ProductPageHeader product={product} onBackClick={handleBackClick} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Top Section: Gallery + Info/Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
-          {/* Left Column: Image Gallery */}
           <ProductImageGallery product={product} />
 
-          {/* Right Column: Info, Pricing, Options, Actions */}
           <div className="flex flex-col space-y-4">
             <ProductInfo product={product} />
             <ProductPricing 
@@ -108,7 +104,6 @@ const ProductPage = () => {
               selectedCondition={selectedCondition} 
               onConditionChange={setSelectedCondition} 
             />
-            {/* Options might be integrated differently or simplified */}
             <ProductOptions 
               product={product} 
               selectedSize={selectedSize} 
@@ -122,32 +117,23 @@ const ProductPage = () => {
             <ProductActions 
               product={product} 
               onAddToCart={handleAddToCart} 
-              isLoading={cartLoading} // Pass cart loading state
-              // Add other actions like wishlist if needed
+              isLoading={cartLoading}
             />
-            {/* Trust badges/Delivery info can go here */}
-            {/* <ProductTrustBadges /> */}
           </div>
         </div>
 
-        {/* Bottom Section: Description + Related Products */}
         <Separator className="mb-8" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           <div className="lg:col-span-2">
             <ProductDescription product={product} />
           </div>
-          <div className="lg:col-span-1">
-            {/* Placeholder for potential sidebar content or ads */}
-          </div>
         </div>
 
         <Separator className="my-12" />
         <RelatedProducts product={product} />
-
       </main>
     </div>
   );
 };
 
 export default ProductPage;
-
