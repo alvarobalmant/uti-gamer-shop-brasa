@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -466,7 +467,10 @@ const UTIPro = () => {
       {/* Auth Modal */}
       <AnimatePresence>
         {showAuthModal && (
-          <AuthModal onClose={() => setShowAuthModal(false)} />
+          <AuthModal 
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)} 
+          />
         )}
       </AnimatePresence>
     </div>
@@ -474,4 +478,3 @@ const UTIPro = () => {
 };
 
 export default UTIPro;
-
