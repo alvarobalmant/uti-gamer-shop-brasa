@@ -1,231 +1,85 @@
-import { useEffect, useRef, useCallback, useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 
-interface ScrollPositionEntry {
-  x: number;
-  y: number;
-  timestamp: number;
-}
-
-type ScrollPositionMap = Record<string, ScrollPositionEntry>;
+const SESSION_STORAGE_KEY = 'scrollPositions';
 
 /**
- * Hook avançado para restauração de posição de scroll entre navegações
- * Funciona com navegação para frente, para trás e cliques em links
- * AJUSTADO PARA MELHORAR COMPORTAMENTO MOBILE
+ * Hook robusto para restauração de posição de scroll em React Router v6.
+ * - Salva a posição de scroll no sessionStorage antes de navegar.
+ * - Restaura a posição em navegações POP (voltar/avançar).
+ * - Rola para o topo em navegações PUSH/REPLACE.
  */
 export const useScrollRestoration = () => {
   const location = useLocation();
-  const navigationType = useNavigationType(); // 'POP', 'PUSH', ou 'REPLACE'
-  const scrollPositions = useRef<ScrollPositionMap>({});
-  const isRestoringRef = useRef(false);
-  const initialRenderRef = useRef(true);
+  const navigationType = useNavigationType();
+  const lastNavigationType = useRef(navigationType);
 
-  // Carrega posições salvas do localStorage na inicialização
-  useEffect(() => {
+  // Função para obter as posições salvas do sessionStorage
+  const getScrollPositions = (): { [key: string]: number } => {
+    const json = sessionStorage.getItem(SESSION_STORAGE_KEY);
     try {
-      const savedPositions = localStorage.getItem('utiGamesScrollPositions');
-      if (savedPositions) {
-        scrollPositions.current = JSON.parse(savedPositions);
-        console.log('Loaded scroll positions from localStorage:', scrollPositions.current);
-      }
-    } catch (error) {
-      console.warn('Failed to load scroll positions from localStorage:', error);
-      localStorage.removeItem('utiGamesScrollPositions');
+      return json ? JSON.parse(json) : {};
+    } catch (e) {
+      console.error('Erro ao parsear posições de scroll do sessionStorage:', e);
+      return {};
     }
+  };
 
-    // Salva posições no localStorage ao desmontar
-    return () => {
-      persistScrollPositions();
-    };
-  }, []);
-
-  // Função para persistir posições no localStorage
-  const persistScrollPositions = useCallback(() => {
+  // Função para salvar a posição atual no sessionStorage
+  const saveScrollPosition = (key: string, position: number) => {
+    const positions = getScrollPositions();
+    positions[key] = position;
     try {
-      localStorage.setItem('utiGamesScrollPositions', JSON.stringify(scrollPositions.current));
-    } catch (error) {
-      console.warn('Failed to save scroll positions to localStorage:', error);
+      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(positions));
+    } catch (e) {
+      console.error('Erro ao salvar posição de scroll no sessionStorage:', e);
     }
-  }, []);
+  };
 
-  // Salva a posição de scroll atual
-  const saveScrollPosition = useCallback((path: string) => {
-    // Não salva se estamos no processo de restauração
-    if (isRestoringRef.current) return;
-
-    const scrollPos: ScrollPositionEntry = {
-      x: window.scrollX,
-      y: window.scrollY,
-      timestamp: Date.now()
-    };
-
-    // Só salva se realmente houver scroll significativo (evita salvar 0,0)
-    if (scrollPos.y > 10 || scrollPos.x > 10) { // Aumentado o threshold para evitar salvar posições triviais
-      scrollPositions.current[path] = scrollPos;
-      console.log(`Saved scroll position for ${path}:`, scrollPos);
-
-      // Atualiza localStorage para persistência
-      persistScrollPositions();
-    }
-  }, [persistScrollPositions]);
-
-  // Restaura a posição de scroll quando retornamos a uma página
-  const restoreScrollPosition = useCallback((path: string) => {
-    const savedPosition = scrollPositions.current[path];
-
-    if (savedPosition) {
-      // Verifica se a posição não está expirada (24 horas)
-      const now = Date.now();
-      const expirationTime = 24 * 60 * 60 * 1000; // 24 horas em ms
-
-      if (now - savedPosition.timestamp < expirationTime) {
-        isRestoringRef.current = true;
-
-        // Usa uma série de tentativas para garantir que o conteúdo esteja carregado
-        let attempts = 0;
-        const maxAttempts = 20; // Aumentado para mais tentativas
-        const initialDelay = 100; // Aumentado delay inicial
-        const attemptDelayBase = 150; // Aumentado delay base entre tentativas
-
-        const attemptScroll = () => {
-          // Tenta restaurar a posição
-          window.scrollTo({
-            left: savedPosition.x,
-            top: savedPosition.y,
-            behavior: 'auto' // Instantâneo para evitar animações estranhas
-          });
-
-          // Verifica se conseguimos restaurar a posição corretamente após um pequeno delay
-          // Isso dá tempo para o navegador processar o scroll, especialmente no mobile
-          setTimeout(() => {
-            const currentY = window.scrollY;
-            const isCloseEnough = Math.abs(currentY - savedPosition.y) <= 10; // Aumentada a tolerância
-
-            if (!isCloseEnough && attempts < maxAttempts) {
-              attempts++;
-              // Tenta novamente após um delay, aumentando o tempo entre tentativas
-              setTimeout(attemptScroll, attemptDelayBase * Math.min(attempts, 6)); // Aumentado multiplicador máximo
-            } else {
-              // Finaliza o processo de restauração após um pequeno delay
-              setTimeout(() => {
-                isRestoringRef.current = false;
-              }, 250); // Aumentado delay final
-
-              console.log(`Scroll restoration ${isCloseEnough ? 'succeeded' : 'gave up'} after ${attempts} attempts for ${path}`);
-            }
-          }, 50); // Pequeno delay para verificar a posição após o scrollTo
-        };
-
-        // Inicia a primeira tentativa com um delay maior para garantir que o DOM esteja mais pronto
-        setTimeout(attemptScroll, initialDelay);
-        console.log(`Attempting to restore scroll position for ${path}:`, savedPosition);
-      } else {
-        // Remove posições expiradas
-        delete scrollPositions.current[path];
-        persistScrollPositions();
-        console.log(`Scroll position for ${path} expired and was removed`);
-      }
-    } else {
-      // Se não houver posição salva, rola para o topo como fallback
-      // Isso evita ficar no meio da página em casos inesperados
-      window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
-      console.log(`No saved scroll position for ${path}, scrolling to top.`);
-    }
-  }, [persistScrollPositions]);
-
-  // Efeito principal que gerencia a restauração de scroll
-  // Usando useLayoutEffect para tentar restaurar antes da pintura, se possível
-  useLayoutEffect(() => {
-    const { pathname } = location;
-
-    // Pula a primeira renderização para evitar problemas com o carregamento inicial
-    if (initialRenderRef.current) {
-      initialRenderRef.current = false;
-      // Na primeira renderização, garante que a página comece no topo
-      window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
-      return;
-    }
-
-    // Comportamento diferente baseado no tipo de navegação
-    if (navigationType === 'POP') {
-      // Navegação para trás/frente (botões do navegador)
-      console.log('Navigation type: POP - Attempting scroll restoration');
-      // Chama a função de restauração diretamente (ela contém os delays internos)
-      restoreScrollPosition(pathname);
-    } else {
-      // PUSH ou REPLACE (clique em link ou navegação programática)
-      console.log('Navigation type:', navigationType, '- New navigation, scrolling to top');
-      // Para nova navegação, sempre rola para o topo
-      window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
-    }
-
-    // Salva a posição ANTES de desmontar (mudança de página)
-    // Isso garante que a posição salva seja a correta antes da transição
-    const currentPath = pathname;
-    return () => {
-      if (!isRestoringRef.current) {
-        saveScrollPosition(currentPath);
-      }
-    };
-  // Adicionado restoreScrollPosition e saveScrollPosition às dependências
-  }, [location, navigationType, restoreScrollPosition, saveScrollPosition]);
-
-  // Salva periodicamente durante a navegação na página (com debounce)
-  useEffect(() => {
-    const { pathname } = location;
-    let scrollTimer: number | null = null;
-
-    const handleScroll = () => {
-      if (isRestoringRef.current) return;
-
-      if (scrollTimer) {
-        clearTimeout(scrollTimer);
-      }
-
-      scrollTimer = window.setTimeout(() => {
-        saveScrollPosition(pathname);
-      }, 350) as unknown as number; // Aumentado debounce
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      if (scrollTimer) {
-        clearTimeout(scrollTimer);
-      }
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [location, saveScrollPosition]);
-
-  // Salva posição antes de descarregar a página
+  // Salva a posição de scroll ANTES da navegação ou desmontagem
   useEffect(() => {
     const handleBeforeUnload = () => {
-      saveScrollPosition(location.pathname);
-      persistScrollPositions();
+      saveScrollPosition(location.key, window.scrollY);
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
+    // Retorna uma função de limpeza que salva a posição ao mudar de rota
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Salva a posição da chave de localização atual ANTES de navegar para a próxima
+      saveScrollPosition(location.key, window.scrollY);
     };
-  }, [location.pathname, saveScrollPosition, persistScrollPositions]);
+  }, [location.key]); // Depende da chave da localização
 
-  // Listener de visibilidade (útil para voltar de outra aba)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && navigationType === 'POP') {
-        // Atraso adicional ao voltar de outra aba, pois a renderização pode ser mais lenta
-        setTimeout(() => restoreScrollPosition(location.pathname), 150);
+  // Restaura a posição de scroll ou rola para o topo APÓS a navegação
+  useLayoutEffect(() => {
+    // Rola para o topo se for uma nova navegação (PUSH/REPLACE)
+    // Ou se for a primeira renderização (lastNavigationType ainda não definido ou diferente)
+    if (navigationType !== 'POP') {
+      window.scrollTo(0, 0);
+    } else {
+      // Se for POP, tenta restaurar a posição salva
+      const positions = getScrollPositions();
+      const savedPosition = positions[location.key];
+
+      if (savedPosition !== undefined) {
+        // Adiciona um pequeno delay para garantir que o DOM esteja pronto
+        // Em alguns casos, especialmente com renderização assíncrona, isso pode ser necessário
+        const timer = setTimeout(() => {
+            window.scrollTo(0, savedPosition);
+        }, 50); // 50ms delay, ajuste se necessário
+        return () => clearTimeout(timer);
+      } else {
+        // Se não houver posição salva para esta chave (raro em POP), rola para o topo
+        window.scrollTo(0, 0);
       }
-    };
+    }
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Atualiza o último tipo de navegação
+    lastNavigationType.current = navigationType;
 
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [location.pathname, navigationType, restoreScrollPosition]);
-};
+  }, [location.key, navigationType]); // Depende da chave e do tipo de navegação
+
+}; // Fim do hook
 

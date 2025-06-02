@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState, useRef, TouchEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
-import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 
@@ -16,53 +15,99 @@ export type { Product } from '@/hooks/useProducts';
 
 interface ProductCardProps {
   product: Product;
-  // Update the prop type to expect the product object
   onAddToCart: (product: Product) => void;
 }
 
+// Limiar de movimento para diferenciar clique de arraste (em pixels)
+const DRAG_THRESHOLD = 10;
+
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const navigate = useNavigate();
-  const { saveScrollPosition } = useScrollPosition();
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+  const isDragging = useRef(false);
 
   const handleCardNavigation = () => {
-    saveScrollPosition();
-    navigate(`/produto/${product.id}`);
+    // Só navega se não estiver arrastando
+    if (!isDragging.current) {
+      navigate(`/produto/${product.id}`);
+    }
   };
 
-  // **Radical Redesign based on GameStop reference and user feedback**
+  const handleTouchStart = (e: TouchEvent) => {
+    // Reseta o estado de arraste
+    isDragging.current = false;
+    // Guarda a posição inicial do toque
+    if (e.touches.length === 1) {
+      touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    // Se já está arrastando, não faz nada
+    if (isDragging.current || !touchStartPos.current || e.touches.length !== 1) {
+      return;
+    }
+
+    // Calcula a distância do movimento
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const deltaX = Math.abs(currentX - touchStartPos.current.x);
+    const deltaY = Math.abs(currentY - touchStartPos.current.y);
+
+    // Se o movimento exceder o limiar, marca como arraste
+    if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
+      isDragging.current = true;
+      // console.log('Drag detectado');
+    }
+  };
+
+  const handleTouchEnd = (e: TouchEvent) => {
+    // Se não foi um arraste, considera um clique e navega
+    if (!isDragging.current) {
+      // Previne o clique simulado que pode ocorrer após o touchend
+      e.preventDefault(); 
+      handleCardNavigation();
+    }
+    // Reseta a posição inicial do toque
+    touchStartPos.current = null;
+    // Reseta o estado de arraste (importante para o próximo toque)
+    // isDragging.current = false; // Resetar aqui pode ser problemático se o onClick disparar logo depois
+    // É melhor resetar no onTouchStart
+  };
+
   return (
     <Card
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-card shadow-sm", // Even lighter border (gray-100), consistent radius
-        "transition-all duration-300 ease-in-out hover:shadow-md hover:-translate-y-1", // Subtle shadow and lift hover effect
-        "cursor-pointer",
-        "w-full" // Ensure card takes full width in its container (for carousel/grid)
-        // Removed fixed width/height to allow flexibility in carousel/grid
+        "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-card shadow-sm",
+        "transition-all duration-300 ease-in-out hover:shadow-md hover:-translate-y-1",
+        "cursor-pointer", // Mantém cursor para desktop
+        "w-full"
       )}
-      onClick={handleCardNavigation}
+      onClick={handleCardNavigation} // Mantém para desktop e acessibilidade
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      // style={{ touchAction: 'manipulation' }} // Remover 'manipulation' pode ajudar se houver conflitos, mas pode afetar o scroll nativo. Testar sem primeiro.
     >
-      {/* Image Section - Takes most space */}
+      {/* Image Section */}
       <ProductCardImage
         product={product}
       />
 
-      {/* Content Section - Minimalist, below image */}
-      <div className="flex flex-1 flex-col justify-between p-3"> {/* Use padding, justify-between */}
+      {/* Content Section */}
+      <div className="flex flex-1 flex-col justify-between p-3">
         {/* Top part: Info + Price */}
         <div>
-          {/* Ensure ProductCardInfo uses appropriate text sizes/styles */}
           <ProductCardInfo product={product} />
-          {/* Ensure ProductCardProPrice highlights the PRO price effectively */}
           <ProductCardProPrice product={product} />
         </div>
 
-        {/* Bottom part: Stock + Actions (aligned bottom) */}
-        <div className="mt-2 flex items-center justify-between"> {/* Align stock and actions */}
+        {/* Bottom part: Stock + Actions */}
+        <div className="mt-2 flex items-center justify-between">
           <ProductCardStock product={product} />
-          {/* Pass the product object to ProductCardActions */}
           <ProductCardActions
             product={product}
-            onAddToCart={onAddToCart} // Pass the function that expects the product
+            onAddToCart={onAddToCart}
           />
         </div>
       </div>
