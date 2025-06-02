@@ -1,6 +1,6 @@
+
 import { categories, Category } from './categories';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MobileCategoriesMenuProps {
   showCategories: boolean;
@@ -8,8 +8,6 @@ interface MobileCategoriesMenuProps {
 }
 
 const MobileCategoriesMenu = ({ showCategories, onCategoryClick }: MobileCategoriesMenuProps) => {
-  const isMobile = useIsMobile();
-  
   if (!showCategories) return null;
 
   return (
@@ -22,10 +20,8 @@ const MobileCategoriesMenu = ({ showCategories, onCategoryClick }: MobileCategor
               onClick={() => onCategoryClick(category)}
               className={cn(
                 "text-left py-2 px-3 text-sm font-medium text-uti-dark rounded-md",
-                // Remover completamente qualquer efeito de hover/transição no mobile
-                !isMobile 
-                  ? "transition-all duration-200 hover:text-uti-red hover:bg-red-50" 
-                  : ""
+                // Apply hover effects only on desktop (lg and above, since this is hidden on lg+)
+                "lg:transition-all lg:duration-200 lg:hover:text-uti-red lg:hover:bg-red-50"
               )}
             >
               {category.name}

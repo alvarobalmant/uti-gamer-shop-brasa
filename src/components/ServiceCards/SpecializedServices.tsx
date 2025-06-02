@@ -1,3 +1,4 @@
+
 import { useServiceCards } from "@/hooks/useServiceCards";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -61,7 +62,7 @@ const SpecializedServices = () => {
                 >
                   <Card
                     onClick={() => handleCardClick(card.link_url)}
-                    className="group h-full cursor-pointer transition-all duration-300 ease-in-out border border-border/80 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/40 hover:-translate-y-1 bg-card"
+                    className="group h-full cursor-pointer transition-all duration-300 ease-in-out border border-border/80 rounded-xl overflow-hidden bg-card md:hover:shadow-lg md:hover:border-primary/40 md:hover:-translate-y-1"
                   >
                     <CardContent className="flex flex-col items-center justify-center p-6 text-center">
                       <div className="mb-4 flex-shrink-0">
@@ -71,15 +72,15 @@ const SpecializedServices = () => {
                             <img
                               src={card.image_url}
                               alt={card.title}
-                              // Adjusted size and added hover effect directly to the image
-                              className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300"
+                              // Apply hover effect only on desktop
+                              className="w-10 h-10 object-contain transition-transform duration-300 md:group-hover:scale-110"
                               loading="lazy"
                               onError={() => handleImageError(card.id)}
                             />
                           ) : (
                             // Fallback icon (Box) when image fails to load or is missing
-                            // Adjusted size and color for consistency
-                            <div className="w-10 h-10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
+                            // Apply hover effect only on desktop
+                            <div className="w-10 h-10 flex items-center justify-center text-primary transition-transform duration-300 md:group-hover:scale-110">
                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                                 <polyline points="3.29 7 12 12 20.71 7"></polyline>
@@ -89,15 +90,15 @@ const SpecializedServices = () => {
                           )}
                         </div>
                       </div>
-                      <h3 className="text-base font-semibold text-foreground mb-1 group-hover:text-primary transition-colors duration-200">
+                      <h3 className="text-base font-semibold text-foreground mb-1 transition-colors duration-200 md:group-hover:text-primary">
                         {card.title}
                       </h3>
                       <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
                         {card.description}
                       </p>
-                      <div className="flex items-center justify-center text-primary group-hover:text-primary/80 transition-colors duration-300 font-medium text-xs mt-auto">
+                      <div className="flex items-center justify-center text-primary font-medium text-xs mt-auto transition-colors duration-300 md:group-hover:text-primary/80">
                         <span>Saiba mais</span>
-                        <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-0.5 transition-transform duration-300" />
+                        <ArrowRight className="w-3 h-3 ml-1 transition-transform duration-300 md:group-hover:translate-x-0.5" />
                       </div>
                     </CardContent>
                   </Card>

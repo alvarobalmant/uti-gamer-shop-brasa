@@ -7,11 +7,8 @@ import {
 } from "lucide-react";
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const WhyChooseUs = () => {
-  const isMobile = useIsMobile();
-
   const differentiators = [
     {
       icon: Award,
@@ -62,7 +59,7 @@ const WhyChooseUs = () => {
                 className={cn(
                   "text-center group bg-secondary/50 p-4 rounded-lg transition-colors duration-300",
                   "w-64 sm:w-72 flex-shrink-0 md:w-auto md:flex-shrink",
-                  // Remover hover background no mobile
+                  // Apply hover background only on desktop
                   "md:hover:bg-secondary-foreground/10"
                 )}
               >
@@ -70,7 +67,7 @@ const WhyChooseUs = () => {
                   <div className={cn(
                     "w-16 h-16 mx-auto bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg",
                     "transition-transform duration-300",
-                    // Remover hover scale no mobile
+                    // Apply hover scale only on desktop
                     "md:group-hover:scale-110"
                   )}>
                     <IconComponent className="w-8 h-8 text-primary-foreground" />
@@ -79,7 +76,7 @@ const WhyChooseUs = () => {
                 <h3 className={cn(
                   "text-base font-semibold text-secondary-foreground mb-2",
                   "transition-colors duration-300",
-                  // Remover hover color no mobile
+                  // Apply hover color only on desktop
                   "md:group-hover:text-primary/80"
                 )}>
                   {item.title}

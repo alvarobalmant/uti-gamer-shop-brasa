@@ -1,10 +1,10 @@
+
 import { User, ShoppingCart } from 'lucide-react'; // Removed Repeat import
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface HeaderActionsProps {
   onCartOpen: () => void; // Keep for GlobalCartIcon if needed internally
@@ -18,7 +18,6 @@ const HeaderActions = ({
 }: HeaderActionsProps) => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
   const handleLoginClick = () => {
     if (user && isAdmin) {
@@ -42,10 +41,8 @@ const HeaderActions = ({
         size="sm" // Smaller button size
         className={cn(
           "hidden md:flex items-center text-xs font-medium text-foreground px-2 py-1", // Adjusted styling
-          // Aplicar efeitos de hover apenas em desktop
-          !isMobile 
-            ? "hover:text-primary hover:bg-secondary" 
-            : ""
+          // Apply hover effects only on desktop (md and above)
+          "md:hover:text-primary md:hover:bg-secondary"
         )}
       >
         <User className="w-4 h-4 mr-1" />
