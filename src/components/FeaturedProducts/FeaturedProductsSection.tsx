@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -130,7 +131,6 @@ const FeaturedProductsSection = ({
         ) : (
           <div className="relative">
             {/* Container de scroll horizontal otimizado */}
-            {/* REMOVED touch-pan-x class and inline style touchAction: "pan-x" */}
             <div
               className={cn(
                 // Container base
@@ -138,14 +138,15 @@ const FeaturedProductsSection = ({
                 // Scrollbar styling
                 "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
                 // Scroll behavior otimizado
-                "overscroll-behavior-x-contain"
-                // Removed "touch-pan-x"
+                "overscroll-behavior-x-contain",
+                // Touch optimizations
+                "touch-pan-x"
               )}
               style={{
                 scrollbarWidth: "thin",
                 WebkitOverflowScrolling: "touch",
                 scrollBehavior: "smooth",
-                // Removed touchAction: "pan-x"
+                touchAction: "pan-x" // Permite apenas scroll horizontal
               } as React.CSSProperties}
             >
               {/* Inner flex container */}
@@ -182,4 +183,3 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
-

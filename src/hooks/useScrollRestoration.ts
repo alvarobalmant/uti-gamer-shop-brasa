@@ -1,19 +1,15 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigationType, NavigationType } from 'react-router-dom';
-import scrollManager from '@/lib/scrollRestorationManager';
+import scrollManager from '@/lib/scrollRestorationManager'; // Assuming default export
 
 /**
  * Hook para gerenciar a restauração da posição de scroll entre navegações.
- * Versão simplificada e otimizada para Safari mobile, com ajuste para navegação rápida
- * e correção para não interferir no carrossel de banners.
+ * Implementado com base nas melhores práticas e guias fornecidos.
  */
 export const useScrollRestoration = () => {
   const location = useLocation();
   const navigationType = useNavigationType();
   const lastPathRef = useRef<string>(location.pathname + location.search);
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const isSafariMobile = isSafari && isMobile;
 
   // Desabilita a restauração nativa do navegador
   useEffect(() => {
@@ -28,51 +24,53 @@ export const useScrollRestoration = () => {
     const currentPathKey = location.pathname + location.search;
     const previousPathKey = lastPathRef.current;
 
-    console.log(`[ScrollRestoration] Navigation: ${navigationType}, From: ${previousPathKey}, To: ${currentPathKey}`);
+    console.log(`[ScrollRestoration] Navigating. Type: ${navigationType}, From: ${previousPathKey}, To: ${currentPathKey}`);
 
+    // Salva a posição da página anterior ANTES de navegar para a nova
+    // Isso é feito no cleanup do effect anterior ou antes da mudança de estado
+    // A lógica do manager já inclui debounce/visibility checks para salvar durante o uso
+
+    // Lógica de restauração/scroll para a NOVA página
     if (navigationType === NavigationType.Pop) {
+      // Tentativa de restaurar a posição salva para esta página
       console.log(`[ScrollRestoration] POP detected. Attempting restore for: ${currentPathKey}`);
-      
-      const restoreDelay = isSafariMobile ? 500 : 200;
-      
+      // Adiciona um pequeno delay para garantir que o DOM esteja pronto
       const restoreTimer = setTimeout(async () => {
         const restored = await scrollManager.restorePosition(currentPathKey, 'POP navigation');
         if (!restored) {
-          console.log(`[ScrollRestoration] Restore failed for ${currentPathKey}. Scrolling top.`);
+          console.log(`[ScrollRestoration] Restore failed or no position saved for ${currentPathKey}. Scrolling top.`);
           window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
         }
-      }, restoreDelay);
-      
+      }, 100); // Delay pode precisar de ajuste
       return () => clearTimeout(restoreTimer);
 
     } else {
+      // Nova navegação (PUSH ou REPLACE), rolar para o topo
       console.log(`[ScrollRestoration] ${navigationType} detected. Scrolling top for: ${currentPathKey}`);
-      
+      // Remove qualquer posição salva para o caminho atual, pois é uma nova visita
       scrollManager.removePosition(currentPathKey);
       window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
 
+    // Atualiza a referência do último caminho *após* o processamento
     lastPathRef.current = currentPathKey;
 
-  }, [location.pathname, location.search, navigationType, isSafariMobile]);
+  }, [location.pathname, location.search, navigationType]); // Depende do pathname e search para identificar a página única
 
-  // Efeito para salvar a posição durante o scroll
+  // Efeito para salvar a posição durante o scroll (usa o manager interno)
   useEffect(() => {
     const currentPathKey = location.pathname + location.search;
     let scrollDebounceTimer: number | null = null;
 
     const handleScroll = () => {
-      if (scrollManager.getIsRestoring()) return;
+      if (scrollManager.getIsRestoring()) return; // Não salva enquanto restaura
 
       if (scrollDebounceTimer) {
         clearTimeout(scrollDebounceTimer);
       }
-      
-      const debounceTime = isSafariMobile ? 200 : 300;
-      
       scrollDebounceTimer = window.setTimeout(() => {
-        scrollManager.savePosition(currentPathKey, 'scroll');
-      }, debounceTime);
+        scrollManager.savePosition(currentPathKey, 'scroll debounce');
+      }, 300); // Ajuste o debounce conforme necessário
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -83,112 +81,38 @@ export const useScrollRestoration = () => {
         clearTimeout(scrollDebounceTimer);
       }
       window.removeEventListener('scroll', handleScroll);
-      
-      if (!scrollManager.getIsRestoring()) {
-        scrollManager.savePosition(currentPathKey, 'cleanup');
-      }
-      
+      // Salva uma última vez ao desmontar/mudar de rota
+      scrollManager.savePosition(currentPathKey, 'listener cleanup');
       console.log(`[ScrollRestoration] Scroll listener removed for: ${currentPathKey}`);
     };
-  }, [location.pathname, location.search, isSafariMobile]);
+  }, [location.pathname, location.search]);
 
-  // Efeito para salvar ao sair da página
+  // Efeito para salvar ao sair da página/mudar visibilidade
   useEffect(() => {
     const currentPathKey = location.pathname + location.search;
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden' && !scrollManager.getIsRestoring()) {
         scrollManager.savePosition(currentPathKey, 'visibility hidden');
-        if (isSafariMobile) {
-          scrollManager.forceSave(currentPathKey);
-        }
       }
     };
 
     const handleBeforeUnload = () => {
        if (!scrollManager.getIsRestoring()) {
          scrollManager.savePosition(currentPathKey, 'before unload');
-         if (isSafariMobile) {
-           scrollManager.forceSave(currentPathKey);
-         }
        }
-    };
-
-    const handlePageHide = () => {
-      if (!scrollManager.getIsRestoring()) {
-        scrollManager.savePosition(currentPathKey, 'page hide');
-        scrollManager.forceSave(currentPathKey);
-      }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    if (isSafari) {
-      window.addEventListener('pagehide', handlePageHide);
-    }
+    console.log(`[ScrollRestoration] Visibility/Unload listeners added for: ${currentPathKey}`);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      
-      if (isSafari) {
-        window.removeEventListener('pagehide', handlePageHide);
-      }
+      console.log(`[ScrollRestoration] Visibility/Unload listeners removed for: ${currentPathKey}`);
     };
-  }, [location.pathname, location.search, isSafari, isSafariMobile]);
+  }, [location.pathname, location.search]);
 
-  // Efeito especial para Safari Mobile - Garante salvamento antes de cliques de navegação
-  useEffect(() => {
-    if (!isSafariMobile) return;
-    
-    const currentPathKey = location.pathname + location.search;
-    
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-
-      // *** CORRIGIDO: Verifica se o clique NÃO originou dentro do carrossel antes de interferir ***
-      const isInsideCarousel = target.closest('[data-embla-carousel]');
-      if (isInsideCarousel) {
-          console.log('[ScrollRestoration] Click inside banner carousel, ignoring.');
-          return; // Não faz nada se o clique for dentro do carrossel
-      }
-
-      const clickableElement = target.closest('a'); // Foca apenas em links <a>
-      
-      if (clickableElement) {
-        const href = clickableElement.href;
-        if (!href || clickableElement.getAttribute('href')?.startsWith('#')) return;
-
-        const targetUrl = new URL(href, window.location.origin);
-        
-        // Verifica se é um link interno para uma página diferente da atual
-        if (targetUrl.origin === window.location.origin && targetUrl.pathname !== location.pathname) {
-          console.log(`[ScrollRestoration] Safari Mobile: Navigation link click detected OUTSIDE carousel. Force saving and delaying navigation.`);
-          
-          // 1. Força o salvamento imediatamente
-          scrollManager.forceSave(currentPathKey);
-          
-          // 2. Impede a navegação padrão
-          e.preventDefault();
-          
-          // 3. Usa requestAnimationFrame para executar antes do próximo repaint
-          requestAnimationFrame(() => {
-            // 4. Reativa a navegação programaticamente
-            console.log(`[ScrollRestoration] Safari Mobile: Resuming navigation to ${href}`);
-            window.location.href = href;
-          });
-        }
-      }
-    };
-    
-    // *** CORRIGIDO: Usa fase de bubble (false) para ser menos intrusivo ***
-    document.addEventListener('click', handleClick, false);
-    console.log('[ScrollRestoration] Safari Mobile navigation click listener added (bubble phase).');
-    
-    return () => {
-      document.removeEventListener('click', handleClick, false);
-      console.log('[ScrollRestoration] Safari Mobile navigation click listener removed.');
-    };
-  }, [location.pathname, location.search, isSafariMobile]);
 };
+
