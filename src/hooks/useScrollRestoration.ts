@@ -1,5 +1,3 @@
-# Código revisado para /home/ubuntu/uti-gamer-shop-brasa/uti-gamer-shop-brasa-main/src/hooks/useScrollRestoration.ts
-
 import { useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 import {
