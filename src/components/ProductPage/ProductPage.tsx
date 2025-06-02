@@ -4,11 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
-<<<<<<< HEAD
 // Removed import { useScrollPosition } from '@/hooks/useScrollPosition';
-=======
-import { useScrollPosition } from '@/hooks/useScrollPosition';
->>>>>>> 7ff55c08f35e80e8ace4e01bc0b5fcabc4e7d4be
 import ProductPageHeader from '@/components/ProductPage/ProductPageHeader';
 import ProductImageGallery from '@/components/ProductPage/ProductImageGallery';
 import ProductInfo from '@/components/ProductPage/ProductInfo';
@@ -22,11 +18,7 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const { products, loading } = useProducts();
   const { addToCart } = useCart();
-<<<<<<< HEAD
   // Removed const { restoreScrollPosition } = useScrollPosition();
-=======
-  const { restoreScrollPosition } = useScrollPosition();
->>>>>>> 7ff55c08f35e80e8ace4e01bc0b5fcabc4e7d4be
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = useState('');
@@ -93,20 +85,10 @@ const ProductPage = () => {
   };
 
   const handleBackClick = () => {
-<<<<<<< HEAD
     // Navigate back and let the global useScrollRestoration handle the position
     navigate(-1);
     
     // Removed fallback restoreScrollPosition call
-=======
-    // Navigate back and let the scroll restoration handle the position
-    navigate(-1);
-    
-    // Fallback: restore position after navigation
-    setTimeout(() => {
-      restoreScrollPosition();
-    }, 100);
->>>>>>> 7ff55c08f35e80e8ace4e01bc0b5fcabc4e7d4be
   };
 
   const handleWhatsAppContact = () => {

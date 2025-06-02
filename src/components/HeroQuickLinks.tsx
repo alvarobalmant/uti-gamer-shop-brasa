@@ -1,13 +1,16 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Removed useLocation
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuickLinks } from '@/hooks/useQuickLinks'; // Import the hook
 import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
 import { useIsMobile } from '@/hooks/use-mobile';
+// Removed import for saveScrollPosition as it's no longer called explicitly here
+// import { saveScrollPosition } from '@/lib/scrollRestorationManager';
 
 const HeroQuickLinks = () => {
   const navigate = useNavigate();
+  // const location = useLocation(); // Removed useLocation
   const { quickLinks, loading, fetchQuickLinks } = useQuickLinks(); // Use the hook
   const isMobile = useIsMobile();
 
@@ -19,6 +22,8 @@ const HeroQuickLinks = () => {
   const handleQuickLinkClick = (path: string) => {
     // Basic validation to prevent navigating to empty or invalid paths
     if (path && path.trim() !== '' && path !== '#') {
+      // REMOVED the explicit call to saveScrollPosition
+      // saveScrollPosition(location.pathname, 'HeroQuickLink click');
       navigate(path);
     } else {
       console.warn('Invalid path provided for quick link:', path);
@@ -96,3 +101,4 @@ const HeroQuickLinks = () => {
 };
 
 export default HeroQuickLinks;
+
