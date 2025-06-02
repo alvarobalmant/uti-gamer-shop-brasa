@@ -60,6 +60,8 @@ const Carousel = React.forwardRef<
       {
         ...opts,
         axis: orientation === "horizontal" ? "x" : "y",
+        // Ensure default drag behavior allows vertical scroll propagation
+        // Embla typically respects touch-action CSS property set on elements
       },
       plugins
     )
@@ -155,6 +157,8 @@ const CarouselContent = React.forwardRef<
   const { carouselRef, orientation } = useCarousel()
 
   return (
+    // The overflow-hidden on the outer div might interfere, but Embla usually handles this.
+    // We apply touch-action to the inner div that actually contains the flex items.
     <div ref={carouselRef} className="overflow-hidden">
       <div
         ref={ref}
@@ -163,6 +167,9 @@ const CarouselContent = React.forwardRef<
           orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
           className
         )}
+        // Apply touch-action: pan-y to allow vertical scrolling by the browser
+        // while Embla handles horizontal panning (pan-x).
+        style={{ touchAction: orientation === 'horizontal' ? 'pan-y' : 'pan-x' }}
         {...props}
       />
     </div>
@@ -183,6 +190,8 @@ const CarouselItem = React.forwardRef<
       aria-roledescription="slide"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
+        // Ensure items themselves don't block touch actions unnecessarily
+        "touch-manipulation", // Added for potentially better compatibility
         orientation === "horizontal" ? "pl-4" : "pt-4",
         className
       )}
@@ -258,3 +267,4 @@ export {
   CarouselPrevious,
   CarouselNext,
 }
+
