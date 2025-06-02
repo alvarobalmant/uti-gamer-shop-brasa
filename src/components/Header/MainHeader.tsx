@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DesktopSearchBar from './DesktopSearchBar';
@@ -41,7 +42,11 @@ const MainHeader = ({
             <Button
               variant="ghost"
               size="icon"
-              className="mr-2 md:hidden p-2 h-10 w-10 flex-shrink-0" // Added flex-shrink-0
+              className={cn(
+                "mr-2 md:hidden p-2 h-10 w-10 flex-shrink-0",
+                // Only apply hover effects on desktop (md and above)
+                "md:hover:bg-accent md:hover:text-accent-foreground"
+              )}
               onClick={onMobileMenuToggle}
               aria-label="Abrir menu"
             >
@@ -79,7 +84,11 @@ const MainHeader = ({
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden p-2 h-10 w-10" // Consistent size with menu toggle
+              className={cn(
+                "md:hidden p-2 h-10 w-10",
+                // Only apply hover effects on desktop (md and above)
+                "md:hover:bg-accent md:hover:text-accent-foreground"
+              )}
               onClick={toggleMobileSearch} // Opens the search overlay
               aria-label="Abrir busca"
             >

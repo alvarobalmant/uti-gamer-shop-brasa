@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { X, User, Crown, Home, Grid, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -72,7 +73,15 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
           </div>
           {/* This is the close button to keep */}
           <SheetClose asChild>
-            <Button variant="ghost" size="icon" className="text-gray-500 rounded-full w-8 h-8 md:hover:text-red-600 md:hover:bg-red-50">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={cn(
+                "text-gray-500 rounded-full w-8 h-8",
+                // Only apply hover effects on desktop (md and above)
+                "md:hover:text-red-600 md:hover:bg-red-50"
+              )}
+            >
               <X className="w-5 h-5" />
               <span className="sr-only">Fechar menu</span>
             </Button>
@@ -96,7 +105,11 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     <Button
                       onClick={() => handleNavigation(utiProLink.path)}
                       variant="ghost"
-                      className="w-full justify-start h-11 text-base px-3 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md md:hover:bg-yellow-200 md:hover:text-yellow-900"
+                      className={cn(
+                        "w-full justify-start h-11 text-base px-3 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md",
+                        // Only apply hover effects on desktop (md and above)
+                        "md:hover:bg-yellow-200 md:hover:text-yellow-900"
+                      )}
                     >
                       <utiProLink.icon className="w-5 h-5 mr-3" />
                       {utiProLink.name} (Ativo)
@@ -105,7 +118,11 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                   <Button
                     onClick={handleAuthClick}
                     variant="outline"
-                    className="w-full h-11 text-base border-gray-300"
+                    className={cn(
+                      "w-full h-11 text-base border-gray-300",
+                      // Only apply hover effects on desktop (md and above)
+                      "md:hover:bg-accent md:hover:text-accent-foreground"
+                    )}
                   >
                     {isAdmin ? 'Painel Admin' : 'Minha Conta'}
                   </Button>
@@ -113,7 +130,11 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
               ) : (
                 <Button
                   onClick={handleAuthClick}
-                  className="w-full bg-red-600 h-12 text-base flex items-center justify-center gap-2 text-white rounded-md font-semibold md:hover:bg-red-700"
+                  className={cn(
+                    "w-full bg-red-600 h-12 text-base flex items-center justify-center gap-2 text-white rounded-md font-semibold",
+                    // Only apply hover effects on desktop (md and above)
+                    "md:hover:bg-red-700"
+                  )}
                 >
                   <LogIn className="w-5 h-5" />
                   Entrar / Cadastrar
@@ -128,7 +149,11 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     key={link.id}
                     onClick={() => handleNavigation(link.path)}
                     variant="ghost"
-                    className="w-full justify-start h-12 text-base px-3 text-gray-700 rounded-md font-medium md:hover:text-red-600 md:hover:bg-red-50"
+                    className={cn(
+                      "w-full justify-start h-12 text-base px-3 text-gray-700 rounded-md font-medium",
+                      // Only apply hover effects on desktop (md and above)
+                      "md:hover:text-red-600 md:hover:bg-red-50"
+                    )}
                   >
                     {link.icon && <link.icon className="w-5 h-5 mr-3" />}
                     {link.name}
@@ -162,7 +187,11 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     key={category.id}
                     onClick={() => handleNavigation(category.path)}
                     variant="ghost"
-                    className="w-full justify-start h-12 text-base px-3 text-gray-700 rounded-md font-medium md:hover:text-red-600 md:hover:bg-red-50"
+                    className={cn(
+                      "w-full justify-start h-12 text-base px-3 text-gray-700 rounded-md font-medium",
+                      // Only apply hover effects on desktop (md and above)
+                      "md:hover:text-red-600 md:hover:bg-red-50"
+                    )}
                   >
                     {category.name}
                   </Button>
