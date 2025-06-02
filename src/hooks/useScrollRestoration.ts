@@ -4,7 +4,8 @@ import scrollManager from '@/lib/scrollRestorationManager';
 
 /**
  * Hook para gerenciar a restauração da posição de scroll entre navegações.
- * Versão simplificada e otimizada para Safari mobile, com ajuste para navegação rápida.
+ * Versão simplificada e otimizada para Safari mobile, com ajuste para navegação rápida
+ * e correção para não interferir no carrossel de banners.
  */
 export const useScrollRestoration = () => {
   const location = useLocation();
@@ -32,7 +33,6 @@ export const useScrollRestoration = () => {
     if (navigationType === NavigationType.Pop) {
       console.log(`[ScrollRestoration] POP detected. Attempting restore for: ${currentPathKey}`);
       
-      // Aumentamos um pouco o delay para Safari Mobile para dar mais tempo
       const restoreDelay = isSafariMobile ? 500 : 200;
       
       const restoreTimer = setTimeout(async () => {
@@ -46,7 +46,6 @@ export const useScrollRestoration = () => {
       return () => clearTimeout(restoreTimer);
 
     } else {
-      // Nova navegação (PUSH ou REPLACE), rolar para o topo
       console.log(`[ScrollRestoration] ${navigationType} detected. Scrolling top for: ${currentPathKey}`);
       
       scrollManager.removePosition(currentPathKey);
@@ -85,7 +84,6 @@ export const useScrollRestoration = () => {
       }
       window.removeEventListener('scroll', handleScroll);
       
-      // Salva uma última vez ao desmontar
       if (!scrollManager.getIsRestoring()) {
         scrollManager.savePosition(currentPathKey, 'cleanup');
       }
@@ -149,24 +147,24 @@ export const useScrollRestoration = () => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
-      // *** ADICIONADO: Verifica se o clique originou dentro do carrossel de banners para evitar interferência ***
-      if (target.closest('[data-embla-carousel]')) {
-          console.log('[ScrollRestoration] Click inside banner carousel, ignoring for forceSave/delay.');
-          return; // Não faz nada se o clique for dentro do carrossel de banners
+      // *** CORRIGIDO: Verifica se o clique NÃO originou dentro do carrossel antes de interferir ***
+      const isInsideCarousel = target.closest('[data-embla-carousel]');
+      if (isInsideCarousel) {
+          console.log('[ScrollRestoration] Click inside banner carousel, ignoring.');
+          return; // Não faz nada se o clique for dentro do carrossel
       }
 
       const clickableElement = target.closest('a'); // Foca apenas em links <a>
       
       if (clickableElement) {
         const href = clickableElement.href;
-        // Verifica se o link é válido e não é um link para a mesma página (âncora)
         if (!href || clickableElement.getAttribute('href')?.startsWith('#')) return;
 
         const targetUrl = new URL(href, window.location.origin);
         
         // Verifica se é um link interno para uma página diferente da atual
         if (targetUrl.origin === window.location.origin && targetUrl.pathname !== location.pathname) {
-          console.log(`[ScrollRestoration] Safari Mobile: Navigation link click detected. Force saving and delaying navigation.`);
+          console.log(`[ScrollRestoration] Safari Mobile: Navigation link click detected OUTSIDE carousel. Force saving and delaying navigation.`);
           
           // 1. Força o salvamento imediatamente
           scrollManager.forceSave(currentPathKey);
@@ -184,12 +182,12 @@ export const useScrollRestoration = () => {
       }
     };
     
-    // Adiciona o listener na fase de captura para garantir que rode antes de outros listeners
-    document.addEventListener('click', handleClick, true);
-    console.log('[ScrollRestoration] Safari Mobile navigation click listener added (capture phase).');
+    // *** CORRIGIDO: Usa fase de bubble (false) para ser menos intrusivo ***
+    document.addEventListener('click', handleClick, false);
+    console.log('[ScrollRestoration] Safari Mobile navigation click listener added (bubble phase).');
     
     return () => {
-      document.removeEventListener('click', handleClick, true);
+      document.removeEventListener('click', handleClick, false);
       console.log('[ScrollRestoration] Safari Mobile navigation click listener removed.');
     };
   }, [location.pathname, location.search, isSafariMobile]);
