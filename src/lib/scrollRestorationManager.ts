@@ -14,7 +14,7 @@ class ScrollRestorationManager {
   private isSafari: boolean;
   private isMobile: boolean;
   private isSafariMobile: boolean;
-  private lastSavedPath = ";
+  private lastSavedPath = '';
   private navigationLock = false;
   private lastSaveTimestamp = 0;
 
@@ -44,8 +44,8 @@ class ScrollRestorationManager {
     try {
       for (let i = 0; i < sessionStorage.length; i++) {
         const key = sessionStorage.key(i);
-        if (key?.startsWith("safari_scroll_")) {
-          const path = key.replace("safari_scroll_", ");
+        if (key?.startsWith('safari_scroll_')) {
+          const path = key.replace('safari_scroll_', '');
           const data = sessionStorage.getItem(key);
           if (data) {
             const position = JSON.parse(data);
@@ -55,11 +55,11 @@ class ScrollRestorationManager {
         }
       }
     } catch (e) {
-      console.warn("[ScrollManager] Safari Mobile: Backup restoration failed:", e);
+      console.warn('[ScrollManager] Safari Mobile: Backup restoration failed:', e);
     }
   }
 
-  savePosition(path: string, source: string = "unknown"): void {
+  savePosition(path: string, source: string = 'unknown'): void {
     if (this.isRestoring) {
       console.log(`[ScrollManager] Skipping save - currently restoring`);
       return;
@@ -76,7 +76,7 @@ class ScrollRestorationManager {
     // Para Safari Mobile, sempre salva mesmo com scroll pequeno para evitar perda
     const minScroll = this.isSafariMobile ? 5 : (this.isSafari ? 10 : 50);
     
-    if (position.y > minScroll || path.includes("/product/")) {
+    if (position.y > minScroll || path.includes('/product/')) {
       this.positions.set(path, position);
       this.lastSavedPath = path;
       this.lastSaveTimestamp = position.timestamp;
@@ -89,13 +89,13 @@ class ScrollRestorationManager {
           const safariKey = `safari_scroll_${path}`;
           sessionStorage.setItem(safariKey, JSON.stringify(position));
         } catch (e) {
-          console.warn("[ScrollManager] Safari backup save failed:", e);
+          console.warn('[ScrollManager] Safari backup save failed:', e);
         }
       }
     }
   }
 
-  async restorePosition(path: string, context: string = "unknown"): Promise<boolean> {
+  async restorePosition(path: string, context: string = 'unknown'): Promise<boolean> {
     let savedPosition = this.positions.get(path);
     
     // Safari Mobile: tenta recuperar do backup se posição principal não existe
@@ -111,7 +111,7 @@ class ScrollRestorationManager {
           this.positions.set(path, savedPosition);
         }
       } catch (e) {
-        console.warn("[ScrollManager] Safari backup recovery failed:", e);
+        console.warn('[ScrollManager] Safari backup recovery failed:', e);
       }
     }
     
@@ -131,7 +131,7 @@ class ScrollRestorationManager {
         try {
           sessionStorage.removeItem(`safari_scroll_${path}`);
         } catch (e) {
-          console.warn("[ScrollManager] Safari cleanup failed:", e);
+          console.warn('[ScrollManager] Safari cleanup failed:', e);
         }
       }
       return false;
@@ -139,7 +139,7 @@ class ScrollRestorationManager {
 
     // Safari Mobile: posição mínima menor
     const minPosition = this.isSafariMobile ? 10 : (this.isSafari ? 20 : 100);
-    if (savedPosition.y < minPosition && !path.includes("/product/")) {
+    if (savedPosition.y < minPosition && !path.includes('/product/')) {
       console.log(`[ScrollManager] Position too small for ${path}: ${savedPosition.y}px`);
       return false;
     }
@@ -160,11 +160,11 @@ class ScrollRestorationManager {
       
       const attemptRestore = (attemptNumber: number = 1) => {
         setTimeout(() => {
-          // Safari: scroll behavior sempre "auto" (instant não funciona bem)
+          // Safari: scroll behavior sempre 'auto' (instant não funciona bem)
           window.scrollTo({
             left: savedPosition.x,
             top: savedPosition.y,
-            behavior: "auto"
+            behavior: 'auto'
           });
 
           // Verificação de sucesso com timeout maior para Safari Mobile
@@ -205,7 +205,7 @@ class ScrollRestorationManager {
       try {
         sessionStorage.removeItem(`safari_scroll_${path}`);
       } catch (e) {
-        console.warn("[ScrollManager] Safari backup removal failed:", e);
+        console.warn('[ScrollManager] Safari backup removal failed:', e);
       }
     }
   }
@@ -226,7 +226,7 @@ class ScrollRestorationManager {
       y: window.scrollY,
       timestamp: Date.now(),
       attempts: 0,
-      source: "force save"
+      source: 'force save'
     };
     
     this.positions.set(path, position);
@@ -243,12 +243,12 @@ class ScrollRestorationManager {
         
         // Adiciona um flag especial para indicar que foi um salvamento forçado
         // Isso pode ser útil para diagnóstico
-        sessionStorage.setItem("safari_last_force_save", JSON.stringify({
+        sessionStorage.setItem('safari_last_force_save', JSON.stringify({
           path,
           timestamp: position.timestamp
         }));
       } catch (e) {
-        console.warn("[ScrollManager] Safari force backup save failed:", e);
+        console.warn('[ScrollManager] Safari force backup save failed:', e);
       }
     }
   }
@@ -287,7 +287,7 @@ class ScrollRestorationManager {
           try {
             sessionStorage.removeItem(`safari_scroll_${path}`);
           } catch (e) {
-            console.warn("[ScrollManager] Safari backup cleanup failed:", e);
+            console.warn('[ScrollManager] Safari backup cleanup failed:', e);
           }
         }
       }
@@ -305,13 +305,13 @@ class ScrollRestorationManager {
       try {
         for (let i = 0; i < sessionStorage.length; i++) {
           const key = sessionStorage.key(i);
-          if (key?.startsWith("safari_scroll_")) {
+          if (key?.startsWith('safari_scroll_')) {
             sessionStorage.removeItem(key);
           }
         }
-        sessionStorage.removeItem("safari_last_force_save");
+        sessionStorage.removeItem('safari_last_force_save');
       } catch (e) {
-        console.warn("[ScrollManager] Safari full cleanup failed:", e);
+        console.warn('[ScrollManager] Safari full cleanup failed:', e);
       }
     }
   }
