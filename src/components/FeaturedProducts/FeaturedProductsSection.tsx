@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react"; // Import useEffect
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,16 +7,15 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/hooks/useProducts";
 import { useIsMobile } from "@/hooks/use-mobile";
-// Removed import { useScrollPosition } from "@/hooks/useScrollPosition";
-import SectionTitle from "@/components/SectionTitle"; // Use the new SectionTitle component
+import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
 
 interface FeaturedProductsSectionProps {
   products: Product[];
   loading: boolean;
-  onAddToCart: (product: Product) => void; // Simplified prop
-  title: string; // Add title prop
-  viewAllLink?: string; // Optional link for "View All"
+  onAddToCart: (product: Product) => void;
+  title: string;
+  viewAllLink?: string;
 }
 
 const FeaturedProductsSection = ({
@@ -23,14 +23,12 @@ const FeaturedProductsSection = ({
   loading,
   onAddToCart,
   title,
-  viewAllLink = "/categoria/inicio", // Default link
+  viewAllLink = "/categoria/inicio",
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  // Removed const { saveScrollPosition } = useScrollPosition();
   const [selectedCategory, setSelectedCategory] = useState("todos");
-  // Start with animation enabled for initial load
-  const [animateProducts, setAnimateProducts] = useState(true); 
+  const [animateProducts, setAnimateProducts] = useState(true);
 
   // Define categories
   const categories = [
@@ -54,32 +52,23 @@ const FeaturedProductsSection = ({
   const displayedProducts = filterProductsByCategory(selectedCategory);
 
   const handleViewAllClick = () => {
-    // Removed saveScrollPosition(); - useScrollRestoration handles this globally
     navigate(viewAllLink);
   };
 
   // Handle category change with animation logic
   const handleCategoryChange = (category: string) => {
-    if (category === selectedCategory) return; // Do nothing if the category is the same
+    if (category === selectedCategory) return;
 
-    // 1. Trigger exit animation (set state to false)
     setAnimateProducts(false);
 
-    // 2. Wait for exit animation to start, then change category
     setTimeout(() => {
       setSelectedCategory(category);
-      // 3. Trigger enter animation for new items (set state back to true)
-      // Use useEffect based on displayedProducts or a small timeout
-      // Using a small timeout here for simplicity
       setTimeout(() => {
         setAnimateProducts(true);
-      }, 50); // Small delay to allow React to update the list before animating in
-    }, 150); // Delay should be slightly less than transition duration (300ms)
+      }, 50);
+    }, 150);
   };
 
-  // Ensure animation state is true when products initially load or change
-  // This useEffect might cause re-animation on initial load if displayedProducts changes reference
-  // Let's keep it simple for now, assuming initial load animation is desired.
   useEffect(() => {
     setAnimateProducts(true);
   }, [displayedProducts]);
@@ -117,7 +106,7 @@ const FeaturedProductsSection = ({
         <div className="mb-6 md:mb-8 flex justify-center">
           <Tabs
             value={selectedCategory}
-            onValueChange={handleCategoryChange} // Use the new handler
+            onValueChange={handleCategoryChange}
             className="w-full max-w-lg"
           >
             <TabsList className="grid w-full grid-cols-5 bg-muted p-1 rounded-lg h-auto">
@@ -141,34 +130,50 @@ const FeaturedProductsSection = ({
           </div>
         ) : (
           <div className="relative">
-            {/* *** MODIFICATION: Removed negative margins and padding compensation *** */}
+            {/* Container de scroll horizontal otimizado */}
             <div
               className={cn(
-                "flex space-x-4 md:space-x-6 overflow-x-auto pb-4" // Simplified classes
-                // Removed: "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+                // Container base
+                "w-full overflow-x-auto overflow-y-hidden pb-4",
+                // Scrollbar styling
+                "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
+                // Scroll behavior otimizado
+                "overscroll-behavior-x-contain",
+                // Touch optimizations
+                "touch-pan-x"
               )}
-              style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties} 
+              style={{
+                scrollbarWidth: "thin",
+                WebkitOverflowScrolling: "touch",
+                scrollBehavior: "smooth",
+                touchAction: "pan-x" // Permite apenas scroll horizontal
+              } as React.CSSProperties}
             >
-              {displayedProducts.map((product, index) => (
-                <div
-                  key={`${selectedCategory}-${product.id}`} 
-                  className={cn(
-                    "w-60 sm:w-64 flex-shrink-0", 
-                    "transition-all duration-300 ease-in-out", 
-                    animateProducts
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
-                  )}
-                  style={{
-                    transitionDelay: animateProducts ? `${index * 75}ms` : '0ms'
-                  }}
-                >
-                  <ProductCard
-                    product={product}
-                    onAddToCart={onAddToCart}
-                  />
-                </div>
-              ))}
+              {/* Inner flex container */}
+              <div className="flex gap-4 md:gap-6 min-w-max px-1">
+                {displayedProducts.map((product, index) => (
+                  <div
+                    key={`${selectedCategory}-${product.id}`}
+                    className={cn(
+                      // Fixed width para consistência no scroll
+                      "w-60 sm:w-64 flex-shrink-0",
+                      // Animation
+                      "transition-all duration-300 ease-in-out",
+                      animateProducts
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4"
+                    )}
+                    style={{
+                      transitionDelay: animateProducts ? `${index * 75}ms` : '0ms'
+                    }}
+                  >
+                    <ProductCard
+                      product={product}
+                      onAddToCart={onAddToCart}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -178,4 +183,3 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
-

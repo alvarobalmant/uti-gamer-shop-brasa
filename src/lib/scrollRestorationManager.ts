@@ -1,70 +1,150 @@
-import { useRef, useCallback } from 'react';
 
-// Tipos
-interface ScrollPositionEntry {
+// Sistema de restauração de scroll simplificado e robusto
+interface ScrollPosition {
   x: number;
   y: number;
   timestamp: number;
 }
-type ScrollPositionMap = Record<string, ScrollPositionEntry>;
 
-// Estado compartilhado (simulando um singleton/módulo)
-// REMOVIDO: Carregamento inicial do localStorage
-const scrollPositions: ScrollPositionMap = {};
-let isRestoring = false; // Flag para evitar salvar durante a restauração
+class ScrollRestorationManager {
+  private positions = new Map<string, ScrollPosition>();
+  private isRestoring = false;
+  private cleanupInterval: number;
 
-// REMOVIDO: Função para persistir posições no localStorage
-// const persistScrollPositions = () => { ... };
-
-// Função exportada para salvar a posição de scroll atual
-export const saveScrollPosition = (path: string, source: string = 'unknown') => {
-  // Não salva se estamos no processo de restauração
-  if (isRestoring) {
-    // console.log(`[ScrollManager] Save skipped for ${path} (source: ${source}) because restoration is in progress.`);
-    return;
+  constructor() {
+    // Limpa posições antigas a cada 10 minutos
+    this.cleanupInterval = window.setInterval(() => {
+      this.cleanup();
+    }, 10 * 60 * 1000);
   }
 
-  const scrollPos: ScrollPositionEntry = {
-    x: window.scrollX,
-    y: window.scrollY,
-    timestamp: Date.now()
-  };
+  savePosition(path: string, source: string = 'unknown'): void {
+    if (this.isRestoring) {
+      console.log(`[ScrollManager] Skipping save - currently restoring`);
+      return;
+    }
 
-  // Só salva se realmente houver scroll significativo (evita salvar 0,0)
-  // Armazena apenas na memória agora, não mais no localStorage
-  if (scrollPos.y > 10 || scrollPos.x > 10) {
-    scrollPositions[path] = scrollPos;
-    console.log(`[ScrollManager - Memory Only] Saved scroll position for ${path} (source: ${source}):`, scrollPos);
-    // REMOVIDO: persistScrollPositions();
-  } else {
-    // console.log(`[ScrollManager - Memory Only] Save skipped for ${path} (source: ${source}) due to insignificant scroll (y=${scrollPos.y}, x=${scrollPos.x}).`);
+    const position: ScrollPosition = {
+      x: window.scrollX,
+      y: window.scrollY,
+      timestamp: Date.now()
+    };
+
+    // Só salva se tiver scroll significativo
+    if (position.y > 50) {
+      this.positions.set(path, position);
+      console.log(`[ScrollManager] Saved position for ${path} (${source}): y=${position.y}`);
+    }
   }
+
+  async restorePosition(path: string, context: string = 'unknown'): Promise<boolean> {
+    const savedPosition = this.positions.get(path);
+    
+    if (!savedPosition) {
+      console.log(`[ScrollManager] No saved position for ${path}`);
+      return false;
+    }
+
+    // Verifica se não expirou (15 minutos)
+    const now = Date.now();
+    const maxAge = 15 * 60 * 1000;
+    
+    if (now - savedPosition.timestamp > maxAge) {
+      console.log(`[ScrollManager] Position expired for ${path}`);
+      this.positions.delete(path);
+      return false;
+    }
+
+    // Só restaura se for uma posição significativa
+    if (savedPosition.y < 100) {
+      console.log(`[ScrollManager] Position too small for ${path}: ${savedPosition.y}px`);
+      return false;
+    }
+
+    console.log(`[ScrollManager] Restoring position for ${path} (${context}): y=${savedPosition.y}`);
+    
+    this.isRestoring = true;
+
+    return new Promise((resolve) => {
+      // Aguarda o DOM estar pronto
+      setTimeout(() => {
+        window.scrollTo({
+          left: savedPosition.x,
+          top: savedPosition.y,
+          behavior: 'auto'
+        });
+
+        // Verifica se conseguiu restaurar
+        setTimeout(() => {
+          const currentY = window.scrollY;
+          const success = Math.abs(currentY - savedPosition.y) <= 100;
+          
+          console.log(`[ScrollManager] Restore result: target=${savedPosition.y}, current=${currentY}, success=${success}`);
+          
+          this.isRestoring = false;
+          resolve(success);
+        }, 200);
+      }, 150);
+    });
+  }
+
+  removePosition(path: string): void {
+    if (this.positions.has(path)) {
+      this.positions.delete(path);
+      console.log(`[ScrollManager] Removed position for ${path}`);
+    }
+  }
+
+  setIsRestoring(restoring: boolean): void {
+    this.isRestoring = restoring;
+  }
+
+  getIsRestoring(): boolean {
+    return this.isRestoring;
+  }
+
+  private cleanup(): void {
+    const now = Date.now();
+    const maxAge = 15 * 60 * 1000; // 15 minutos
+
+    for (const [path, position] of this.positions.entries()) {
+      if (now - position.timestamp > maxAge) {
+        this.positions.delete(path);
+        console.log(`[ScrollManager] Cleaned up expired position for ${path}`);
+      }
+    }
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+    this.positions.clear();
+  }
+}
+
+// Instância singleton
+const scrollManager = new ScrollRestorationManager();
+
+// Exports simplificados
+export const saveScrollPosition = (path: string, source?: string) => {
+  scrollManager.savePosition(path, source);
 };
 
-// Funções para controlar o estado de restauração (usadas pelo hook)
-export const setIsRestoring = (restoring: boolean) => {
-  // console.log(`[ScrollManager] Setting isRestoring to: ${restoring}`);
-  isRestoring = restoring;
+export const restoreScrollPosition = (path: string, context?: string) => {
+  return scrollManager.restorePosition(path, context);
 };
 
-export const getIsRestoring = () => {
-  return isRestoring;
-};
-
-// Função para obter a posição salva (usada pelo hook)
-export const getSavedScrollPosition = (path: string): ScrollPositionEntry | undefined => {
-  return scrollPositions[path];
-};
-
-// Função para remover posição (usada pelo hook para expiração)
 export const removeScrollPosition = (path: string) => {
-  if (scrollPositions[path]) {
-    delete scrollPositions[path];
-    console.log(`[ScrollManager - Memory Only] Removed scroll position for ${path}.`);
-    // REMOVIDO: persistScrollPositions();
-  }
+  scrollManager.removePosition(path);
 };
 
-// REMOVIDO: Listener de beforeunload para salvar no localStorage
-// window.addEventListener('beforeunload', () => { ... });
+export const setIsRestoring = (restoring: boolean) => {
+  scrollManager.setIsRestoring(restoring);
+};
 
+export const getIsRestoring = (): boolean => {
+  return scrollManager.getIsRestoring();
+};
+
+export default scrollManager;

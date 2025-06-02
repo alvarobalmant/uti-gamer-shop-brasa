@@ -18,7 +18,7 @@ const ProductCardActions: React.FC<ProductCardActionsProps> = ({
   const isOutOfStock = product.stock === 0;
   const isMobile = useIsMobile();
 
-  const handleAddToCartClick = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleAddToCartClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     if (!isOutOfStock) {
@@ -36,7 +36,6 @@ const ProductCardActions: React.FC<ProductCardActionsProps> = ({
         size="icon"
         variant="default"
         onClick={handleAddToCartClick}
-        onTouchEnd={handleAddToCartClick}
         disabled={isOutOfStock}
         className={cn(
           "h-8 w-8 rounded-full shadow-md transition-all duration-300 active:scale-90",
@@ -45,7 +44,6 @@ const ProductCardActions: React.FC<ProductCardActionsProps> = ({
             : "bg-uti-red text-primary-foreground md:hover:bg-uti-red/90"
         )}
         aria-label={isOutOfStock ? 'Esgotado' : 'Adicionar ao Carrinho'}
-        style={{ touchAction: 'manipulation' }}
       >
         <ShoppingCart className="h-4 w-4" />
       </Button>
