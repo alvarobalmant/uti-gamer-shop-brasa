@@ -1,6 +1,7 @@
+
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigationType, NavigationType } from 'react-router-dom';
-import scrollManager from '@/lib/scrollRestorationManager'; // Assuming default export
+import scrollManager from '@/lib/scrollRestorationManager';
 
 /**
  * Hook para gerenciar a restauração da posição de scroll entre navegações.
@@ -26,10 +27,6 @@ export const useScrollRestoration = () => {
 
     console.log(`[ScrollRestoration] Navigating. Type: ${navigationType}, From: ${previousPathKey}, To: ${currentPathKey}`);
 
-    // Salva a posição da página anterior ANTES de navegar para a nova
-    // Isso é feito no cleanup do effect anterior ou antes da mudança de estado
-    // A lógica do manager já inclui debounce/visibility checks para salvar durante o uso
-
     // Lógica de restauração/scroll para a NOVA página
     if (navigationType === NavigationType.Pop) {
       // Tentativa de restaurar a posição salva para esta página
@@ -41,7 +38,7 @@ export const useScrollRestoration = () => {
           console.log(`[ScrollRestoration] Restore failed or no position saved for ${currentPathKey}. Scrolling top.`);
           window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
         }
-      }, 100); // Delay pode precisar de ajuste
+      }, 100);
       return () => clearTimeout(restoreTimer);
 
     } else {
@@ -55,7 +52,7 @@ export const useScrollRestoration = () => {
     // Atualiza a referência do último caminho *após* o processamento
     lastPathRef.current = currentPathKey;
 
-  }, [location.pathname, location.search, navigationType]); // Depende do pathname e search para identificar a página única
+  }, [location.pathname, location.search, navigationType]);
 
   // Efeito para salvar a posição durante o scroll (usa o manager interno)
   useEffect(() => {
@@ -70,7 +67,7 @@ export const useScrollRestoration = () => {
       }
       scrollDebounceTimer = window.setTimeout(() => {
         scrollManager.savePosition(currentPathKey, 'scroll debounce');
-      }, 300); // Ajuste o debounce conforme necessário
+      }, 300);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -115,4 +112,3 @@ export const useScrollRestoration = () => {
   }, [location.pathname, location.search]);
 
 };
-
