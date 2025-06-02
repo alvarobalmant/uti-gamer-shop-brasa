@@ -1,14 +1,14 @@
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
-import scrollManager, { 
+import { 
   saveScrollPosition, 
   restoreScrollPosition,
   getIsRestoring 
 } from '@/lib/scrollRestorationManager';
 
 /**
- * Hook robusto para restauração de scroll
+ * Hook simplificado para restauração de scroll
  */
 export const useScrollRestoration = () => {
   const location = useLocation();
@@ -38,38 +38,25 @@ export const useScrollRestoration = () => {
     const previousPath = lastPathRef.current;
     console.log(`[useScrollRestoration] Navigation: ${previousPath} -> ${currentPath}, type: ${navigationType}`);
 
-    // Salva a posição da página anterior
+    // Salva a posição da página anterior se mudou de rota
     if (previousPath && previousPath !== currentPath) {
       saveScrollPosition(previousPath, 'route change');
     }
 
-    // Restaura posição apenas em navegação POP (voltar/avançar)
+    // Lógica de restauração baseada no tipo de navegação
     if (navigationType === 'POP') {
-      const isFromProduct = previousPath.includes('/produto/');
-      const isToHome = currentPath === '/';
-      
-      if (isFromProduct && isToHome) {
-        // Força ir para o topo quando volta de produto para home
-        console.log(`[useScrollRestoration] Forcing top scroll (product to home)`);
-        setTimeout(() => {
+      // Navegação de volta (botão voltar)
+      setTimeout(async () => {
+        const restored = await restoreScrollPosition(currentPath, 'POP navigation');
+        if (!restored) {
+          console.log(`[useScrollRestoration] Failed to restore, going to top`);
           window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
-        }, 100);
-      } else {
-        // Tenta restaurar posição salva
-        setTimeout(async () => {
-          const restored = await restoreScrollPosition(currentPath, 'POP navigation');
-          if (!restored) {
-            console.log(`[useScrollRestoration] Failed to restore, going to top`);
-            window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
-          }
-        }, 200);
-      }
+        }
+      }, 100);
     } else {
-      // Para navegação PUSH/REPLACE, vai para o topo
+      // Navegação nova (PUSH/REPLACE)
       console.log(`[useScrollRestoration] New navigation (${navigationType}), going to top`);
-      setTimeout(() => {
-        window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
-      }, 50);
+      window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
 
     lastPathRef.current = currentPath;
@@ -91,18 +78,16 @@ export const useScrollRestoration = () => {
 
       scrollTimer = window.setTimeout(() => {
         saveScrollPosition(currentPath, 'scroll');
-      }, 500); // Debounce aumentado
+      }, 300); // Debounce reduzido
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    console.log(`[useScrollRestoration] Added scroll listener for ${currentPath}`);
 
     return () => {
       if (scrollTimer) {
         clearTimeout(scrollTimer);
       }
       window.removeEventListener('scroll', handleScroll);
-      console.log(`[useScrollRestoration] Removed scroll listener for ${currentPath}`);
     };
   }, [location.pathname]);
 

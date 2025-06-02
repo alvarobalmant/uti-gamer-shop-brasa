@@ -24,30 +24,15 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  const handleCardNavigation = () => {
-    navigate(`/produto/${product.id}`);
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    // Só navega em desktop ou se for um tap simples em mobile
-    if (!isMobile) {
-      handleCardNavigation();
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    // Para mobile, usa um timeout curto para detectar tap vs scroll
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Verifica se clicou em um botão ou elemento de ação
     const target = e.target as HTMLElement;
-    
-    // Se tocou em um botão ou área de ação, não navega
     if (target.closest('button') || target.closest('[data-action]')) {
       return;
     }
-
-    // Timeout para permitir que o scroll seja detectado primeiro
-    setTimeout(() => {
-      handleCardNavigation();
-    }, 100);
+    
+    // Navega para a página do produto
+    navigate(`/produto/${product.id}`);
   };
 
   return (
@@ -60,8 +45,7 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
         "cursor-pointer",
         "w-full"
       )}
-      onClick={handleClick}
-      onTouchEnd={isMobile ? handleTouchEnd : undefined}
+      onClick={handleCardClick}
     >
       {/* Image Section - Takes most space */}
       <ProductCardImage

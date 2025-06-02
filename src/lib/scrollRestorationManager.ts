@@ -126,14 +126,13 @@ class ScrollRestorationManager {
 // Instância singleton
 const scrollManager = new ScrollRestorationManager();
 
-// Exports para compatibilidade
+// Exports simplificados
 export const saveScrollPosition = (path: string, source?: string) => {
   scrollManager.savePosition(path, source);
 };
 
-export const getSavedScrollPosition = (path: string) => {
-  // Retorna undefined para manter compatibilidade
-  return undefined;
+export const restoreScrollPosition = (path: string, context?: string) => {
+  return scrollManager.restorePosition(path, context);
 };
 
 export const removeScrollPosition = (path: string) => {
@@ -146,15 +145,6 @@ export const setIsRestoring = (restoring: boolean) => {
 
 export const getIsRestoring = (): boolean => {
   return scrollManager.getIsRestoring();
-};
-
-export const cleanupOldPositions = () => {
-  // Função vazia para compatibilidade
-};
-
-// Novos exports
-export const restoreScrollPosition = (path: string, context?: string) => {
-  return scrollManager.restorePosition(path, context);
 };
 
 export default scrollManager;
