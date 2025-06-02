@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -23,48 +23,31 @@ interface ProductCardProps {
 const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  
-  // Variáveis para rastrear eventos de toque
-  const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
 
   const handleCardNavigation = () => {
     navigate(`/produto/${product.id}`);
   };
 
-  // Manipulador de início de toque
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    touchStartRef.current = {
-      x: touch.clientX,
-      y: touch.clientY,
-      time: Date.now()
-    };
-  };
-
-  // Manipulador de fim de toque
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStartRef.current.time) return;
-    
-    const touchTime = Date.now() - touchStartRef.current.time;
-    
-    if (!e.changedTouches || e.changedTouches.length === 0) return;
-    
-    const touch = e.changedTouches[0];
-    const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
-    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
-    
-    const isValidTap = touchTime < 300 && deltaX < 10 && deltaY < 10;
-    
-    if (isValidTap) {
-      e.preventDefault();
+  const handleClick = (e: React.MouseEvent) => {
+    // Só navega em desktop ou se for um tap simples em mobile
+    if (!isMobile) {
       handleCardNavigation();
     }
-    
-    touchStartRef.current = { x: 0, y: 0, time: 0 };
   };
 
-  const handleClick = () => {
-    handleCardNavigation();
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    // Para mobile, usa um timeout curto para detectar tap vs scroll
+    const target = e.target as HTMLElement;
+    
+    // Se tocou em um botão ou área de ação, não navega
+    if (target.closest('button') || target.closest('[data-action]')) {
+      return;
+    }
+
+    // Timeout para permitir que o scroll seja detectado primeiro
+    setTimeout(() => {
+      handleCardNavigation();
+    }, 100);
   };
 
   return (
@@ -72,15 +55,13 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
       className={cn(
         "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-card shadow-sm",
         "transition-all duration-300 ease-in-out",
-        // Remover hover effects no mobile, aplicar apenas no desktop (md e acima)
+        // Hover effects apenas no desktop
         "md:hover:shadow-md md:hover:-translate-y-1",
         "cursor-pointer",
         "w-full"
       )}
       onClick={handleClick}
-      onTouchStart={isMobile ? handleTouchStart : undefined}
       onTouchEnd={isMobile ? handleTouchEnd : undefined}
-      style={{ touchAction: 'pan-y' }}
     >
       {/* Image Section - Takes most space */}
       <ProductCardImage
@@ -98,10 +79,12 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
         {/* Bottom part: Stock + Actions (aligned bottom) */}
         <div className="mt-2 flex items-center justify-between">
           <ProductCardStock product={product} />
-          <ProductCardActions
-            product={product}
-            onAddToCart={onAddToCart}
-          />
+          <div data-action="true">
+            <ProductCardActions
+              product={product}
+              onAddToCart={onAddToCart}
+            />
+          </div>
         </div>
       </div>
     </Card>

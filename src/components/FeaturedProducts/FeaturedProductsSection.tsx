@@ -130,34 +130,33 @@ const FeaturedProductsSection = ({
           </div>
         ) : (
           <div className="relative">
-            {/* Container de scroll horizontal otimizado para mobile */}
+            {/* Container de scroll horizontal otimizado */}
             <div
               className={cn(
                 // Container base
-                "w-full overflow-x-auto pb-4",
+                "w-full overflow-x-auto overflow-y-hidden pb-4",
                 // Scrollbar styling
                 "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
-                // Mobile-specific optimizations
-                "touch-pan-x", // Permite apenas scroll horizontal no touch
-                // Snap behavior for better UX on mobile
-                "snap-x snap-mandatory md:snap-none"
+                // Scroll behavior otimizado
+                "overscroll-behavior-x-contain",
+                // Touch optimizations
+                "touch-pan-x"
               )}
               style={{
                 scrollbarWidth: "thin",
                 WebkitOverflowScrolling: "touch",
-                scrollBehavior: "smooth"
+                scrollBehavior: "smooth",
+                touchAction: "pan-x" // Permite apenas scroll horizontal
               } as React.CSSProperties}
             >
               {/* Inner flex container */}
-              <div className="flex gap-4 md:gap-6 min-w-max">
+              <div className="flex gap-4 md:gap-6 min-w-max px-1">
                 {displayedProducts.map((product, index) => (
                   <div
                     key={`${selectedCategory}-${product.id}`}
                     className={cn(
-                      // Fixed width for consistent scrolling
+                      // Fixed width para consistência no scroll
                       "w-60 sm:w-64 flex-shrink-0",
-                      // Snap alignment
-                      "snap-start",
                       // Animation
                       "transition-all duration-300 ease-in-out",
                       animateProducts

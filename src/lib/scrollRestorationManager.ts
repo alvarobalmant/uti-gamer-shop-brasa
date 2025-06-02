@@ -1,69 +1,160 @@
 
-// Tipos
-interface ScrollPositionEntry {
+// Sistema de restauração de scroll simplificado e robusto
+interface ScrollPosition {
   x: number;
   y: number;
   timestamp: number;
 }
-type ScrollPositionMap = Record<string, ScrollPositionEntry>;
 
-// Estado compartilhado em memória
-const scrollPositions: ScrollPositionMap = {};
-let isRestoring = false;
+class ScrollRestorationManager {
+  private positions = new Map<string, ScrollPosition>();
+  private isRestoring = false;
+  private cleanupInterval: number;
 
-// Função para salvar a posição de scroll atual
-export const saveScrollPosition = (path: string, source: string = 'unknown') => {
-  if (isRestoring) {
-    return;
+  constructor() {
+    // Limpa posições antigas a cada 10 minutos
+    this.cleanupInterval = window.setInterval(() => {
+      this.cleanup();
+    }, 10 * 60 * 1000);
   }
 
-  const scrollPos: ScrollPositionEntry = {
-    x: window.scrollX,
-    y: window.scrollY,
-    timestamp: Date.now()
-  };
+  savePosition(path: string, source: string = 'unknown'): void {
+    if (this.isRestoring) {
+      console.log(`[ScrollManager] Skipping save - currently restoring`);
+      return;
+    }
 
-  // Só salva se houver scroll significativo (> 20px) para evitar salvar posições irrelevantes
-  if (scrollPos.y > 20 || scrollPos.x > 20) {
-    scrollPositions[path] = scrollPos;
-    console.log(`[ScrollManager v7] Saved scroll position for ${path} (source: ${source}):`, scrollPos);
+    const position: ScrollPosition = {
+      x: window.scrollX,
+      y: window.scrollY,
+      timestamp: Date.now()
+    };
+
+    // Só salva se tiver scroll significativo
+    if (position.y > 50) {
+      this.positions.set(path, position);
+      console.log(`[ScrollManager] Saved position for ${path} (${source}): y=${position.y}`);
+    }
   }
+
+  async restorePosition(path: string, context: string = 'unknown'): Promise<boolean> {
+    const savedPosition = this.positions.get(path);
+    
+    if (!savedPosition) {
+      console.log(`[ScrollManager] No saved position for ${path}`);
+      return false;
+    }
+
+    // Verifica se não expirou (15 minutos)
+    const now = Date.now();
+    const maxAge = 15 * 60 * 1000;
+    
+    if (now - savedPosition.timestamp > maxAge) {
+      console.log(`[ScrollManager] Position expired for ${path}`);
+      this.positions.delete(path);
+      return false;
+    }
+
+    // Só restaura se for uma posição significativa
+    if (savedPosition.y < 100) {
+      console.log(`[ScrollManager] Position too small for ${path}: ${savedPosition.y}px`);
+      return false;
+    }
+
+    console.log(`[ScrollManager] Restoring position for ${path} (${context}): y=${savedPosition.y}`);
+    
+    this.isRestoring = true;
+
+    return new Promise((resolve) => {
+      // Aguarda o DOM estar pronto
+      setTimeout(() => {
+        window.scrollTo({
+          left: savedPosition.x,
+          top: savedPosition.y,
+          behavior: 'auto'
+        });
+
+        // Verifica se conseguiu restaurar
+        setTimeout(() => {
+          const currentY = window.scrollY;
+          const success = Math.abs(currentY - savedPosition.y) <= 100;
+          
+          console.log(`[ScrollManager] Restore result: target=${savedPosition.y}, current=${currentY}, success=${success}`);
+          
+          this.isRestoring = false;
+          resolve(success);
+        }, 200);
+      }, 150);
+    });
+  }
+
+  removePosition(path: string): void {
+    if (this.positions.has(path)) {
+      this.positions.delete(path);
+      console.log(`[ScrollManager] Removed position for ${path}`);
+    }
+  }
+
+  setIsRestoring(restoring: boolean): void {
+    this.isRestoring = restoring;
+  }
+
+  getIsRestoring(): boolean {
+    return this.isRestoring;
+  }
+
+  private cleanup(): void {
+    const now = Date.now();
+    const maxAge = 15 * 60 * 1000; // 15 minutos
+
+    for (const [path, position] of this.positions.entries()) {
+      if (now - position.timestamp > maxAge) {
+        this.positions.delete(path);
+        console.log(`[ScrollManager] Cleaned up expired position for ${path}`);
+      }
+    }
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+    this.positions.clear();
+  }
+}
+
+// Instância singleton
+const scrollManager = new ScrollRestorationManager();
+
+// Exports para compatibilidade
+export const saveScrollPosition = (path: string, source?: string) => {
+  scrollManager.savePosition(path, source);
 };
 
-// Funções para controlar o estado de restauração
+export const getSavedScrollPosition = (path: string) => {
+  // Retorna undefined para manter compatibilidade
+  return undefined;
+};
+
+export const removeScrollPosition = (path: string) => {
+  scrollManager.removePosition(path);
+};
+
 export const setIsRestoring = (restoring: boolean) => {
-  isRestoring = restoring;
+  scrollManager.setIsRestoring(restoring);
 };
 
 export const getIsRestoring = () => {
-  return isRestoring;
+  scrollManager.getIsRestoring();
 };
 
-// Função para obter a posição salva
-export const getSavedScrollPosition = (path: string): ScrollPositionEntry | undefined => {
-  return scrollPositions[path];
-};
-
-// Função para remover posição
-export const removeScrollPosition = (path: string) => {
-  if (scrollPositions[path]) {
-    delete scrollPositions[path];
-    console.log(`[ScrollManager v7] Removed scroll position for ${path}.`);
-  }
-};
-
-// Função para limpar posições antigas (chamada periodicamente)
 export const cleanupOldPositions = () => {
-  const now = Date.now();
-  const maxAge = 30 * 60 * 1000; // 30 minutos
-
-  Object.keys(scrollPositions).forEach(path => {
-    if (now - scrollPositions[path].timestamp > maxAge) {
-      delete scrollPositions[path];
-      console.log(`[ScrollManager v7] Cleaned up old position for ${path}`);
-    }
-  });
+  // Função vazia para compatibilidade
 };
 
-// Limpeza automática a cada 5 minutos
-setInterval(cleanupOldPositions, 5 * 60 * 1000);
+// Novos exports
+export const restoreScrollPosition = (path: string, context?: string) => {
+  return scrollManager.restorePosition(path, context);
+};
+
+export default scrollManager;
