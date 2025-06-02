@@ -9,36 +9,18 @@ interface ScrollPositionEntry {
 type ScrollPositionMap = Record<string, ScrollPositionEntry>;
 
 // Estado compartilhado (simulando um singleton/módulo)
+// REMOVIDO: Carregamento inicial do localStorage
 const scrollPositions: ScrollPositionMap = {};
 let isRestoring = false; // Flag para evitar salvar durante a restauração
 
-// Carrega posições salvas do localStorage na inicialização do módulo
-try {
-  const savedPositions = localStorage.getItem('utiGamesScrollPositions');
-  if (savedPositions) {
-    Object.assign(scrollPositions, JSON.parse(savedPositions));
-    console.log('[ScrollManager] Loaded scroll positions from localStorage:', scrollPositions);
-  }
-} catch (error) {
-  console.warn('[ScrollManager] Failed to load scroll positions from localStorage:', error);
-  localStorage.removeItem('utiGamesScrollPositions');
-}
-
-// Função para persistir posições no localStorage
-const persistScrollPositions = () => {
-  try {
-    localStorage.setItem('utiGamesScrollPositions', JSON.stringify(scrollPositions));
-    // console.log('[ScrollManager] Persisted scroll positions to localStorage.');
-  } catch (error) {
-    console.warn('[ScrollManager] Failed to save scroll positions to localStorage:', error);
-  }
-};
+// REMOVIDO: Função para persistir posições no localStorage
+// const persistScrollPositions = () => { ... };
 
 // Função exportada para salvar a posição de scroll atual
 export const saveScrollPosition = (path: string, source: string = 'unknown') => {
   // Não salva se estamos no processo de restauração
   if (isRestoring) {
-    console.log(`[ScrollManager] Save skipped for ${path} (source: ${source}) because restoration is in progress.`);
+    // console.log(`[ScrollManager] Save skipped for ${path} (source: ${source}) because restoration is in progress.`);
     return;
   }
 
@@ -49,12 +31,13 @@ export const saveScrollPosition = (path: string, source: string = 'unknown') => 
   };
 
   // Só salva se realmente houver scroll significativo (evita salvar 0,0)
+  // Armazena apenas na memória agora, não mais no localStorage
   if (scrollPos.y > 10 || scrollPos.x > 10) {
     scrollPositions[path] = scrollPos;
-    console.log(`[ScrollManager] Saved scroll position for ${path} (source: ${source}):`, scrollPos);
-    persistScrollPositions(); // Atualiza localStorage
+    console.log(`[ScrollManager - Memory Only] Saved scroll position for ${path} (source: ${source}):`, scrollPos);
+    // REMOVIDO: persistScrollPositions();
   } else {
-    // console.log(`[ScrollManager] Save skipped for ${path} (source: ${source}) due to insignificant scroll (y=${scrollPos.y}, x=${scrollPos.x}).`);
+    // console.log(`[ScrollManager - Memory Only] Save skipped for ${path} (source: ${source}) due to insignificant scroll (y=${scrollPos.y}, x=${scrollPos.x}).`);
   }
 };
 
@@ -77,19 +60,11 @@ export const getSavedScrollPosition = (path: string): ScrollPositionEntry | unde
 export const removeScrollPosition = (path: string) => {
   if (scrollPositions[path]) {
     delete scrollPositions[path];
-    console.log(`[ScrollManager] Removed scroll position for ${path}.`);
-    persistScrollPositions();
+    console.log(`[ScrollManager - Memory Only] Removed scroll position for ${path}.`);
+    // REMOVIDO: persistScrollPositions();
   }
 };
 
-// Salva posições no localStorage ao descarregar a página
-// Isso garante que a última posição seja salva mesmo se o componente desmontar rápido
-window.addEventListener('beforeunload', () => {
-    // Tentativa de salvar a posição atual antes de sair
-    // Nota: O path pode não ser o mais preciso aqui, mas é um fallback
-    if (window.location) { // Verifica se window.location está disponível
-        saveScrollPosition(window.location.pathname, 'beforeunload');
-    }
-    persistScrollPositions();
-});
+// REMOVIDO: Listener de beforeunload para salvar no localStorage
+// window.addEventListener('beforeunload', () => { ... });
 

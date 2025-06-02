@@ -141,27 +141,26 @@ const FeaturedProductsSection = ({
           </div>
         ) : (
           <div className="relative">
+            {/* *** MODIFICATION: Removed negative margins and padding compensation *** */}
             <div
               className={cn(
-                "flex space-x-4 md:space-x-6 overflow-x-auto pb-4", // Ensure overflow-x-auto is present
-                "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+                "flex space-x-4 md:space-x-6 overflow-x-auto pb-4" // Simplified classes
+                // Removed: "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
               )}
-              style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties} // Added WebkitOverflowScrolling for iOS momentum scroll
+              style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties} 
             >
               {displayedProducts.map((product, index) => (
                 <div
-                  key={`${selectedCategory}-${product.id}`} // Change key to help React differentiate elements between renders
+                  key={`${selectedCategory}-${product.id}`} 
                   className={cn(
-                    "w-60 sm:w-64 flex-shrink-0", // Ensure items don't shrink and have a fixed width
-                    "transition-all duration-300 ease-in-out", // Animation duration
-                    // Apply animation classes based on state
+                    "w-60 sm:w-64 flex-shrink-0", 
+                    "transition-all duration-300 ease-in-out", 
                     animateProducts
                       ? "opacity-100 translate-y-0"
                       : "opacity-0 translate-y-4"
                   )}
                   style={{
-                    // Apply staggered delay only for the enter animation
-                    transitionDelay: animateProducts ? `${index * 75}ms` : '0ms' // Increased delay slightly
+                    transitionDelay: animateProducts ? `${index * 75}ms` : '0ms'
                   }}
                 >
                   <ProductCard
