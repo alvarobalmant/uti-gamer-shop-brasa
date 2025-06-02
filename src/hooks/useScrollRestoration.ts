@@ -84,11 +84,7 @@ export const useScrollRestoration = () => {
   // Efeito principal que gerencia a restauração de scroll
   useLayoutEffect(() => {
     const { pathname } = location;
-<<<<<<< HEAD
     console.log(`[useScrollRestoration v5] LayoutEffect triggered for path: ${pathname}, navigationType: ${navigationType}`);
-=======
-    console.log(`[useScrollRestoration v4] LayoutEffect triggered for path: ${pathname}, navigationType: ${navigationType}`);
->>>>>>> f854002784bfe0d1be3ada196fbb323c37497499
 
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
@@ -107,11 +103,7 @@ export const useScrollRestoration = () => {
       // Delay slightly to allow layout changes?
       setTimeout(() => restoreScrollPosition(pathname, 'LayoutEffect POP'), 50); 
     } else {
-<<<<<<< HEAD
       console.log(`[useScrollRestoration v5] Navigation type: ${navigationType} - New navigation to ${pathname}. Scrolling to top.`);
-=======
-      console.log(`[useScrollRestoration v4] Navigation type: ${navigationType} - New navigation to ${pathname}. Scrolling to top.`);
->>>>>>> f854002784bfe0d1be3ada196fbb323c37497499
       window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
 
@@ -148,19 +140,11 @@ export const useScrollRestoration = () => {
       }, 300); // Slightly reduced debounce time
     };
 
-<<<<<<< HEAD
     console.log(`[useScrollRestoration v5] Adding scroll listener for path: ${pathname}`);
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       console.log(`[useScrollRestoration v5] Removing scroll listener for path: ${pathname}`);
-=======
-    console.log(`[useScrollRestoration v4] Adding scroll listener for path: ${pathname}`);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      console.log(`[useScrollRestoration v4] Removing scroll listener for path: ${pathname}`);
->>>>>>> f854002784bfe0d1be3ada196fbb323c37497499
       if (scrollTimer) {
         clearTimeout(scrollTimer);
       }
@@ -172,7 +156,6 @@ export const useScrollRestoration = () => {
   useEffect(() => {
     const { pathname } = location;
     const handleVisibilityChange = () => {
-<<<<<<< HEAD
       console.log(`[useScrollRestoration v5] Visibility changed to: ${document.visibilityState}`);
       // REMOVED: Automatic restore on visibility change
       // if (document.visibilityState === 'visible' && navigationType === 'POP' && !getIsRestoring()) {
@@ -185,17 +168,6 @@ export const useScrollRestoration = () => {
       //   console.log('[useScrollRestoration v5] Saving position on becoming hidden.');
       //   managerSaveScrollPosition(pathname, 'visibility hidden');
       // }
-=======
-      console.log(`[useScrollRestoration v4] Visibility changed to: ${document.visibilityState}`);
-      // Only attempt restore if: becoming visible, was a POP navigation, and NOT currently restoring
-      if (document.visibilityState === 'visible' && navigationType === 'POP' && !getIsRestoring()) {
-        console.log('[useScrollRestoration v4] Visibility changed to visible on POP navigation, requesting restore.');
-        // Add a small delay before attempting restore on visibility change
-        setTimeout(() => restoreScrollPosition(pathname, 'VisibilityChange'), 100); 
-      }
-      // If page becomes hidden, maybe save the current position immediately?
-      // Let's rely on the cleanup and debounced scroll for now to avoid over-saving.
->>>>>>> f854002784bfe0d1be3ada196fbb323c37497499
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
