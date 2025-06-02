@@ -60,8 +60,7 @@ const Carousel = React.forwardRef<
       {
         ...opts,
         axis: orientation === "horizontal" ? "x" : "y",
-        // Ensure default drag behavior allows vertical scroll propagation
-        // Embla typically respects touch-action CSS property set on elements
+        // Let CSS handle touch action primarily
       },
       plugins
     )
@@ -134,15 +133,22 @@ const Carousel = React.forwardRef<
           canScrollNext,
         }}
       >
+        {/* Apply touch-action directly to the element Embla uses */}
         <div
-          ref={ref}
-          onKeyDownCapture={handleKeyDown}
-          className={cn("relative", className)}
-          role="region"
-          aria-roledescription="carousel"
-          {...props}
+          ref={carouselRef} // Apply ref here where useEmblaCarousel is initialized
+          style={{ touchAction: orientation === 'horizontal' ? 'pan-y' : 'pan-x' }}
+          className="overflow-hidden" // Embla needs overflow hidden on its root
         >
-          {children}
+          <div
+            ref={ref} // Keep original ref for external use if needed
+            onKeyDownCapture={handleKeyDown}
+            className={cn("relative", className)} // Keep relative for positioning arrows
+            role="region"
+            aria-roledescription="carousel"
+            {...props}
+          >
+            {children} 
+          </div>
         </div>
       </CarouselContext.Provider>
     )
@@ -150,29 +156,24 @@ const Carousel = React.forwardRef<
 )
 Carousel.displayName = "Carousel"
 
+// CarouselContent now just renders its children inside the structure provided by Carousel
 const CarouselContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const { carouselRef, orientation } = useCarousel()
+  const { orientation } = useCarousel()
 
   return (
-    // The overflow-hidden on the outer div might interfere, but Embla usually handles this.
-    // We apply touch-action to the inner div that actually contains the flex items.
-    <div ref={carouselRef} className="overflow-hidden">
-      <div
-        ref={ref}
-        className={cn(
-          "flex",
-          orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
-          className
-        )}
-        // Apply touch-action: pan-y to allow vertical scrolling by the browser
-        // while Embla handles horizontal panning (pan-x).
-        style={{ touchAction: orientation === 'horizontal' ? 'pan-y' : 'pan-x' }}
-        {...props}
-      />
-    </div>
+    <div
+      ref={ref}
+      className={cn(
+        "flex",
+        orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
+        className
+      )}
+      // Removed touch-action style from here
+      {...props}
+    />
   )
 })
 CarouselContent.displayName = "CarouselContent"
@@ -190,8 +191,7 @@ const CarouselItem = React.forwardRef<
       aria-roledescription="slide"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
-        // Ensure items themselves don't block touch actions unnecessarily
-        "touch-manipulation", // Added for potentially better compatibility
+        "touch-manipulation", 
         orientation === "horizontal" ? "pl-4" : "pt-4",
         className
       )}
@@ -201,6 +201,7 @@ const CarouselItem = React.forwardRef<
 })
 CarouselItem.displayName = "CarouselItem"
 
+// Previous/Next buttons remain the same
 const CarouselPrevious = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<typeof Button>
