@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
@@ -25,43 +25,25 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const navigate = useNavigate();
   const { saveScrollPosition } = useScrollPosition();
   const isMobile = useIsMobile();
-  
-  const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
 
   const handleCardNavigation = () => {
+    console.log(`[ProductCard] Navigating to product: ${product.name}`);
     // Salva a posição antes de navegar
     saveScrollPosition();
     navigate(`/produto/${product.id}`);
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    touchStartRef.current = {
-      x: touch.clientX,
-      y: touch.clientY,
-      time: Date.now()
-    };
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStartRef.current.time) return;
-    
-    const touchTime = Date.now() - touchStartRef.current.time;
-    
-    if (!e.changedTouches || e.changedTouches.length === 0) return;
-    
-    const touch = e.changedTouches[0];
-    const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
-    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
-    
-    const isValidTap = touchTime < 300 && deltaX < 10 && deltaY < 10;
-    
-    if (isValidTap) {
-      e.preventDefault();
-      handleCardNavigation();
+  // Handler unificado para cliques/toques
+  const handleCardClick = (e: React.MouseEvent | React.TouchEvent) => {
+    // Previne navegação se clicou no botão de adicionar ao carrinho
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) {
+      console.log('[ProductCard] Click on button, preventing navigation');
+      return;
     }
-    
-    touchStartRef.current = { x: 0, y: 0, time: 0 };
+
+    console.log('[ProductCard] Card clicked/touched, navigating');
+    handleCardNavigation();
   };
 
   return (
@@ -70,13 +52,13 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
         "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-card shadow-sm",
         "transition-all duration-300 ease-in-out hover:shadow-md", 
         !isMobile && "hover:-translate-y-1",
-        "cursor-pointer",
-        "w-full"
+        "cursor-pointer w-full"
       )}
-      onClick={isMobile ? undefined : handleCardNavigation}
-      onTouchStart={isMobile ? handleTouchStart : undefined}
-      onTouchEnd={isMobile ? handleTouchEnd : undefined}
-      style={{ touchAction: 'pan-y' }}
+      onClick={handleCardClick}
+      style={{ 
+        touchAction: 'manipulation', // Melhora a responsividade do toque
+        WebkitTapHighlightColor: 'transparent' // Remove highlight azul no iOS
+      }}
     >
       <ProductCardImage product={product} />
 

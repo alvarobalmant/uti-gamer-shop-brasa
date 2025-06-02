@@ -38,7 +38,6 @@ const CategoryPage = () => {
     
     const categoryLower = category?.toLowerCase() || '';
     
-    // Verificar se alguma das tags do produto contém a categoria
     return product.tags?.some(tag => 
       tag.name.toLowerCase().includes(categoryLower) ||
       categoryLower.includes(tag.name.toLowerCase())
@@ -46,16 +45,21 @@ const CategoryPage = () => {
   });
 
   const handleAddToCart = (product: Product) => {
+    console.log(`[CategoryPage] Adding to cart: ${product.name}`);
     addToCart(product);
+  };
+
+  const handleBackClick = () => {
+    console.log('[CategoryPage] Back button clicked');
+    navigate(-1);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header fixo */}
       <header className="bg-white shadow-lg sticky top-0 z-40">
         <div className="px-4 py-3 flex items-center gap-3">
           <Button
-            onClick={() => navigate('/')}
+            onClick={handleBackClick}
             variant="ghost"
             size="sm"
             className="flex items-center gap-2"
@@ -74,7 +78,6 @@ const CategoryPage = () => {
         </div>
       </header>
 
-      {/* Produtos da categoria */}
       <section className="py-6">
         <div className="px-4">
           <div className="mb-6">

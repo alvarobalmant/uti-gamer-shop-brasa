@@ -11,35 +11,48 @@ interface ScrollPositionEntry {
 type ScrollPositionMap = Record<string, ScrollPositionEntry>;
 
 /**
- * Hook simplificado para restauração de posição de scroll
- * Remove duplicações e conflitos de implementação
+ * Hook principal para restauração automática de posição de scroll
+ * Versão simplificada e robusta
  */
 export const useScrollRestoration = () => {
   const location = useLocation();
   const navigationType = useNavigationType();
   const scrollPositions = useRef<ScrollPositionMap>({});
   const isRestoringRef = useRef(false);
-  const hasRestoredRef = useRef(false);
+  const lastPathRef = useRef<string>('');
 
-  // Carrega posições salvas do localStorage
+  // Carrega posições salvas do sessionStorage
   useEffect(() => {
     try {
-      const savedPositions = localStorage.getItem('utiGamesScrollPositions');
+      const savedPositions = sessionStorage.getItem('appScrollPositions');
       if (savedPositions) {
-        scrollPositions.current = JSON.parse(savedPositions);
+        const parsed = JSON.parse(savedPositions);
+        // Filtra posições expiradas (30 minutos)
+        const now = Date.now();
+        const expirationTime = 30 * 60 * 1000;
+        
+        const validPositions: ScrollPositionMap = {};
+        Object.entries(parsed).forEach(([path, data]: [string, any]) => {
+          if (data && data.timestamp && (now - data.timestamp) <= expirationTime) {
+            validPositions[path] = data;
+          }
+        });
+        
+        scrollPositions.current = validPositions;
+        console.log('[ScrollRestoration] Loaded positions:', Object.keys(validPositions));
       }
     } catch (error) {
-      console.warn('Failed to load scroll positions:', error);
-      localStorage.removeItem('utiGamesScrollPositions');
+      console.warn('[ScrollRestoration] Failed to load positions:', error);
+      sessionStorage.removeItem('appScrollPositions');
     }
   }, []);
 
-  // Salva posições no localStorage
+  // Salva posições no sessionStorage
   const persistScrollPositions = useCallback(() => {
     try {
-      localStorage.setItem('utiGamesScrollPositions', JSON.stringify(scrollPositions.current));
+      sessionStorage.setItem('appScrollPositions', JSON.stringify(scrollPositions.current));
     } catch (error) {
-      console.warn('Failed to save scroll positions:', error);
+      console.warn('[ScrollRestoration] Failed to save positions:', error);
     }
   }, []);
 
@@ -53,10 +66,11 @@ export const useScrollRestoration = () => {
       timestamp: Date.now()
     };
 
-    if (scrollPos.y > 50) { // Só salva se realmente scrollou
+    // Só salva se scrollou significativamente
+    if (scrollPos.y > 100) {
       scrollPositions.current[path] = scrollPos;
       persistScrollPositions();
-      console.log(`Saved scroll position ${scrollPos.y} for ${path}`);
+      console.log(`[ScrollRestoration] Saved ${scrollPos.y} for ${path}`);
     }
   }, [persistScrollPositions]);
 
@@ -65,25 +79,15 @@ export const useScrollRestoration = () => {
     const savedPosition = scrollPositions.current[path];
     
     if (!savedPosition) {
-      // Sem posição salva, volta ao topo
+      // Sem posição salva, vai para o topo
       window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
-      return;
-    }
-
-    // Verifica se não expirou (1 hora)
-    const now = Date.now();
-    const expirationTime = 60 * 60 * 1000; // 1 hora
-    
-    if (now - savedPosition.timestamp > expirationTime) {
-      delete scrollPositions.current[path];
-      persistScrollPositions();
-      window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+      console.log(`[ScrollRestoration] No saved position for ${path}, scrolling to top`);
       return;
     }
 
     isRestoringRef.current = true;
     
-    // Tenta restaurar com um pequeno delay
+    // Aguarda um pouco para o DOM estar pronto
     setTimeout(() => {
       window.scrollTo({
         left: savedPosition.x,
@@ -91,42 +95,44 @@ export const useScrollRestoration = () => {
         behavior: 'auto'
       });
       
-      // Verifica se funcionou após um momento
+      console.log(`[ScrollRestoration] Restored ${savedPosition.y} for ${path}`);
+      
+      // Reset flag após um momento
       setTimeout(() => {
         isRestoringRef.current = false;
-        console.log(`Restored scroll position ${savedPosition.y} for ${path}`);
-      }, 100);
-    }, 50);
-  }, [persistScrollPositions]);
+      }, 200);
+    }, 100);
+  }, []);
 
   // Efeito principal para mudanças de rota
   useEffect(() => {
-    const { pathname } = location;
+    const currentPath = location.pathname;
+    const previousPath = lastPathRef.current;
     
-    // Reset flag ao mudar de página
-    hasRestoredRef.current = false;
+    console.log(`[ScrollRestoration] Navigation: ${previousPath} -> ${currentPath}, type: ${navigationType}`);
+    
+    // Salva posição da página anterior se houver
+    if (previousPath && previousPath !== currentPath) {
+      saveScrollPosition(previousPath);
+    }
     
     if (navigationType === 'POP') {
       // Navegação para trás - restaura posição
-      console.log('POP navigation - restoring scroll for:', pathname);
-      restoreScrollPosition(pathname);
+      console.log('[ScrollRestoration] POP navigation - restoring scroll');
+      restoreScrollPosition(currentPath);
     } else {
       // Nova navegação - vai para o topo
-      console.log('New navigation - scrolling to top for:', pathname);
+      console.log('[ScrollRestoration] New navigation - scrolling to top');
       window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
 
-    // Cleanup: salva posição ao sair da página
-    return () => {
-      if (!isRestoringRef.current) {
-        saveScrollPosition(pathname);
-      }
-    };
-  }, [location, navigationType, restoreScrollPosition, saveScrollPosition]);
+    // Atualiza referência do path atual
+    lastPathRef.current = currentPath;
+  }, [location.pathname, navigationType, restoreScrollPosition, saveScrollPosition]);
 
-  // Salva durante scroll (com debounce)
+  // Salva durante scroll (com throttle)
   useEffect(() => {
-    const { pathname } = location;
+    const currentPath = location.pathname;
     let scrollTimer: number | null = null;
 
     const handleScroll = () => {
@@ -137,8 +143,8 @@ export const useScrollRestoration = () => {
       }
 
       scrollTimer = window.setTimeout(() => {
-        saveScrollPosition(pathname);
-      }, 300) as unknown as number;
+        saveScrollPosition(currentPath);
+      }, 500) as unknown as number; // Throttle aumentado para 500ms
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -153,13 +159,23 @@ export const useScrollRestoration = () => {
 
   // Salva antes de sair da página
   useEffect(() => {
+    const currentPath = location.pathname;
+    
     const handleBeforeUnload = () => {
-      saveScrollPosition(location.pathname);
+      saveScrollPosition(currentPath);
       persistScrollPositions();
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Salva ao desmontar também
+      if (!isRestoringRef.current) {
+        saveScrollPosition(currentPath);
+        persistScrollPositions();
+      }
+    };
   }, [location.pathname, saveScrollPosition, persistScrollPositions]);
 
   return {

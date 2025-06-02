@@ -16,34 +16,43 @@ export const useScrollPosition = () => {
     };
     
     try {
-      const key = `utiGamesScrollPos_${window.location.pathname}`;
-      localStorage.setItem(key, JSON.stringify(scrollPos));
-      console.log(`Manual scroll position save: ${scrollPos.y} for ${window.location.pathname}`);
+      const key = `scrollPos_${window.location.pathname}`;
+      sessionStorage.setItem(key, JSON.stringify(scrollPos));
+      console.log(`[ScrollPosition] Manual save: ${scrollPos.y} for ${window.location.pathname}`);
     } catch (error) {
-      console.warn('Failed to manually save scroll position:', error);
+      console.warn('[ScrollPosition] Failed to manually save:', error);
     }
   }, []);
 
   // Função para restaurar posição manualmente
   const restoreScrollPosition = useCallback(() => {
     try {
-      const key = `utiGamesScrollPos_${window.location.pathname}`;
-      const scrollPosData = localStorage.getItem(key);
+      const key = `scrollPos_${window.location.pathname}`;
+      const scrollPosData = sessionStorage.getItem(key);
       
       if (scrollPosData) {
         const scrollPos = JSON.parse(scrollPosData);
         
-        setTimeout(() => {
-          window.scrollTo({
-            left: scrollPos.x,
-            top: scrollPos.y,
-            behavior: 'auto'
-          });
-          console.log(`Manual scroll restore: ${scrollPos.y}`);
-        }, 100);
+        // Verifica se não expirou (30 minutos)
+        const now = Date.now();
+        const expirationTime = 30 * 60 * 1000; // 30 minutos
+        
+        if (now - scrollPos.timestamp <= expirationTime) {
+          setTimeout(() => {
+            window.scrollTo({
+              left: scrollPos.x,
+              top: scrollPos.y,
+              behavior: 'auto'
+            });
+            console.log(`[ScrollPosition] Manual restore: ${scrollPos.y}`);
+          }, 100);
+        } else {
+          // Remove dados expirados
+          sessionStorage.removeItem(key);
+        }
       }
     } catch (error) {
-      console.warn('Failed to manually restore scroll position:', error);
+      console.warn('[ScrollPosition] Failed to manually restore:', error);
     }
   }, []);
 
