@@ -1,6 +1,5 @@
 import { useServiceCards } from "@/hooks/useServiceCards";
 import { useNavigate } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
   ArrowRight,
   Shield,
@@ -21,7 +20,6 @@ import { Card, CardContent } from "@/components/ui/card"; // Use shadcn Card
 const ServiceCards = () => {
   const { serviceCards, loading } = useServiceCards();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
   const handleCardClick = (linkUrl: string) => {
     if (linkUrl.startsWith("http")) {
@@ -95,20 +93,12 @@ const ServiceCards = () => {
                   >
                     <Card
                       onClick={() => handleCardClick(card.link_url)}
-                      className={cn(
-                        "group h-full cursor-pointer transition-all duration-300 ease-in-out border border-border/80 rounded-xl overflow-hidden bg-card",
-                        // Aplicar efeitos de hover apenas em desktop
-                        !isMobile && "hover:shadow-lg hover:border-primary/40 hover:-translate-y-1"
-                      )}
+                      className="group h-full cursor-pointer transition-all duration-300 ease-in-out border border-border/80 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/40 hover:-translate-y-1 bg-card"
                     >
                       <CardContent className="flex flex-col items-center justify-center p-6 text-center">
                         <div className="mb-4 flex-shrink-0">
                           <div className="relative w-14 h-14 mx-auto">
-                            <div className={cn(
-                              "w-full h-full bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center transition-transform duration-300",
-                              // Aplicar efeito de escala apenas em desktop
-                              !isMobile && "group-hover:scale-110"
-                            )}>
+                            <div className="w-full h-full bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                               <img
                                 src={card.image_url}
                                 alt=""
@@ -123,27 +113,15 @@ const ServiceCards = () => {
                             {/* <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-card"></div> */}
                           </div>
                         </div>
-                        <h3 className={cn(
-                          "text-base font-semibold text-foreground mb-1 transition-colors duration-200",
-                          // Aplicar mudança de cor apenas em desktop
-                          !isMobile && "group-hover:text-primary"
-                        )}>
+                        <h3 className="text-base font-semibold text-foreground mb-1 group-hover:text-primary transition-colors duration-200">
                           {card.title}
                         </h3>
                         <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
                           {card.description}
                         </p>
-                        <div className={cn(
-                          "flex items-center justify-center text-primary transition-colors duration-300 font-medium text-xs mt-auto",
-                          // Aplicar mudança de cor apenas em desktop
-                          !isMobile && "group-hover:text-primary/80"
-                        )}>
+                        <div className="flex items-center justify-center text-primary group-hover:text-primary/80 transition-colors duration-300 font-medium text-xs mt-auto">
                           <span>Saiba mais</span>
-                          <ArrowRight className={cn(
-                            "w-3 h-3 ml-1 transition-transform duration-300",
-                            // Aplicar efeito de movimento apenas em desktop
-                            !isMobile && "group-hover:translate-x-0.5"
-                          )} />
+                          <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-0.5 transition-transform duration-300" />
                         </div>
                       </CardContent>
                     </Card>
@@ -173,19 +151,11 @@ const ServiceCards = () => {
               return (
                 <div key={index} className="text-center group">
                   <div className="mb-4">
-                    <div className={cn(
-                      "w-16 h-16 mx-auto bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center transition-transform duration-300 shadow-lg",
-                      // Aplicar efeito de escala apenas em desktop
-                      !isMobile && "group-hover:scale-110"
-                    )}>
+                    <div className="w-16 h-16 mx-auto bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
                       <IconComponent className="w-8 h-8 text-primary-foreground" />
                     </div>
                   </div>
-                  <h3 className={cn(
-                    "text-sm font-semibold text-gray-800 mb-1 transition-colors duration-300",
-                    // Aplicar mudança de cor apenas em desktop
-                    !isMobile && "group-hover:text-primary/80"
-                  )}>
+                  <h3 className="text-sm font-semibold text-gray-800 mb-1 group-hover:text-primary/80 transition-colors duration-300">
                     {item.title}
                   </h3>
                   <p className="text-xs text-gray-600 leading-relaxed">
@@ -214,11 +184,7 @@ const ServiceCards = () => {
                   href="https://wa.me/5527996882090" // Direct link
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={cn(
-                    "inline-flex items-center bg-green-600 text-white font-bold py-2.5 px-6 rounded-lg transition-all duration-300 text-sm group",
-                    // Aplicar efeitos de hover apenas em desktop
-                    !isMobile && "hover:bg-green-700 hover:scale-105"
-                  )}
+                  className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-lg transition-all duration-300 hover:scale-105 text-sm group"
                 >
                   <MessageCircle className="w-4 h-4 mr-2" />
                   <span>Falar no WhatsApp</span>
@@ -283,3 +249,4 @@ const ServiceCards = () => {
 };
 
 export default ServiceCards;
+
