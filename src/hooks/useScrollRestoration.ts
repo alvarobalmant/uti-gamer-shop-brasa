@@ -10,61 +10,66 @@ import {
 } from '@/lib/scrollRestorationManager';
 
 /**
- * Hook avançado para restauração de posição de scroll entre navegações
- * Versão otimizada para eliminar o "flash" ao topo
+ * Hook para restauração de posição de scroll entre navegações
+ * Versão corrigida para evitar scroll incorreto
  */
 export const useScrollRestoration = () => {
   const location = useLocation();
   const navigationType = useNavigationType();
   const initialRenderRef = useRef(true);
   const isRestoringRef = useRef(false);
+  const lastPathRef = useRef<string>('');
 
   // Restaura a posição de scroll quando retornamos a uma página (POP)
   const restoreScrollPosition = useCallback((path: string, context: string) => {
     const savedPosition = getSavedScrollPosition(path);
-    console.log(`[useScrollRestoration v6 - ${context}] Attempting restore for ${path}. Found saved position:`, savedPosition);
+    console.log(`[useScrollRestoration v7 - ${context}] Attempting restore for ${path}. Found saved position:`, savedPosition);
 
     if (savedPosition) {
       const now = Date.now();
-      const expirationTime = 24 * 60 * 60 * 1000; // 24 horas em ms
+      const expirationTime = 10 * 60 * 1000; // 10 minutos em ms (reduzido)
 
       if (now - savedPosition.timestamp < expirationTime) {
-        setIsRestoring(true);
-        isRestoringRef.current = true;
-        console.log(`[useScrollRestoration v6 - ${context}] Setting isRestoring = true for ${path}`);
+        // Só restaura se a posição salva for significativa (> 50px)
+        if (savedPosition.y > 50) {
+          setIsRestoring(true);
+          isRestoringRef.current = true;
+          console.log(`[useScrollRestoration v7 - ${context}] Setting isRestoring = true for ${path}`);
 
-        // Usar requestAnimationFrame para garantir que a restauração aconteça no próximo frame
-        requestAnimationFrame(() => {
-          window.scrollTo({
-            left: savedPosition.x,
-            top: savedPosition.y,
-            behavior: 'auto'
-          });
-
-          // Verificar se a posição foi alcançada com timeout reduzido
+          // Usar setTimeout para garantir que o DOM esteja pronto
           setTimeout(() => {
-            const currentY = window.scrollY;
-            const isCloseEnough = Math.abs(currentY - savedPosition.y) <= 20;
-            console.log(`[useScrollRestoration v6 - ${context}] Restore result: currentY=${currentY}, targetY=${savedPosition.y}, success=${isCloseEnough}`);
-            
-            setIsRestoring(false);
-            isRestoringRef.current = false;
-          }, 100);
-        });
+            window.scrollTo({
+              left: savedPosition.x,
+              top: savedPosition.y,
+              behavior: 'auto'
+            });
 
+            // Verificar se a posição foi alcançada
+            setTimeout(() => {
+              const currentY = window.scrollY;
+              const isCloseEnough = Math.abs(currentY - savedPosition.y) <= 50;
+              console.log(`[useScrollRestoration v7 - ${context}] Restore result: currentY=${currentY}, targetY=${savedPosition.y}, success=${isCloseEnough}`);
+              
+              setIsRestoring(false);
+              isRestoringRef.current = false;
+            }, 150);
+          }, 100);
+        } else {
+          console.log(`[useScrollRestoration v7 - ${context}] Position for ${path} too small (${savedPosition.y}px), not restoring.`);
+        }
       } else {
-        console.log(`[useScrollRestoration v6 - ${context}] Position for ${path} expired.`);
+        console.log(`[useScrollRestoration v7 - ${context}] Position for ${path} expired.`);
         removeScrollPosition(path);
       }
     } else {
-      console.log(`[useScrollRestoration v6 - ${context}] No saved position for ${path}.`);
+      console.log(`[useScrollRestoration v7 - ${context}] No saved position for ${path}.`);
     }
   }, []);
 
   // Efeito principal que gerencia a restauração de scroll
   useLayoutEffect(() => {
     const { pathname } = location;
-    console.log(`[useScrollRestoration v6] LayoutEffect triggered for path: ${pathname}, navigationType: ${navigationType}`);
+    console.log(`[useScrollRestoration v7] LayoutEffect triggered for path: ${pathname}, navigationType: ${navigationType}, lastPath: ${lastPathRef.current}`);
 
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
@@ -72,24 +77,44 @@ export const useScrollRestoration = () => {
 
     if (initialRenderRef.current) {
       initialRenderRef.current = false;
-      console.log('[useScrollRestoration v6] Initial render, skipping logic.');
+      lastPathRef.current = pathname;
+      console.log('[useScrollRestoration v7] Initial render, skipping logic.');
       return;
     }
 
+    // Só restaura em navegação POP (voltar) e se não estamos vindo de uma página de produto
     if (navigationType === 'POP') {
-      console.log('[useScrollRestoration v6] Navigation type: POP - Requesting scroll restoration');
-      // Pequeno delay para permitir que o layout se estabilize
-      setTimeout(() => restoreScrollPosition(pathname, 'LayoutEffect POP'), 50);
+      const isComingFromProduct = lastPathRef.current.includes('/produto/');
+      const isGoingToHome = pathname === '/';
+      
+      if (isComingFromProduct && isGoingToHome) {
+        console.log('[useScrollRestoration v7] Coming from product to home - forcing top position');
+        // Força scroll para o topo quando volta de produto para home
+        setTimeout(() => {
+          window.scrollTo({
+            left: 0,
+            top: 0,
+            behavior: 'auto'
+          });
+        }, 50);
+      } else if (!isComingFromProduct) {
+        console.log('[useScrollRestoration v7] Navigation type: POP - Requesting scroll restoration');
+        setTimeout(() => restoreScrollPosition(pathname, 'LayoutEffect POP'), 100);
+      } else {
+        console.log('[useScrollRestoration v7] Skipping restoration - coming from product page');
+      }
     } else {
-      console.log(`[useScrollRestoration v6] Navigation type: ${navigationType} - New navigation to ${pathname}.`);
-      // REMOVIDO: window.scrollTo para evitar o "flash"
-      // O browser já inicia no topo por padrão em navegações PUSH/REPLACE
+      console.log(`[useScrollRestoration v7] Navigation type: ${navigationType} - New navigation to ${pathname}.`);
+      // Para navegações PUSH/REPLACE, o browser já vai para o topo
     }
 
-    // Função de limpeza: Salva a posição ANTES de desmontar
+    // Atualiza o último path
     const currentPath = pathname;
+    lastPathRef.current = currentPath;
+
+    // Função de limpeza: Salva a posição ANTES de desmontar
     return () => {
-      console.log(`[useScrollRestoration v6] Cleanup function running for path: ${currentPath}. isRestoring: ${getIsRestoring()}`);
+      console.log(`[useScrollRestoration v7] Cleanup function running for path: ${currentPath}. isRestoring: ${getIsRestoring()}`);
       if (!getIsRestoring() && !isRestoringRef.current) {
         managerSaveScrollPosition(currentPath, 'LayoutEffect cleanup');
       }
@@ -112,14 +137,14 @@ export const useScrollRestoration = () => {
 
       scrollTimer = window.setTimeout(() => {
         managerSaveScrollPosition(pathname, 'debounced scroll');
-      }, 250);
+      }, 300);
     };
 
-    console.log(`[useScrollRestoration v6] Adding scroll listener for path: ${pathname}`);
+    console.log(`[useScrollRestoration v7] Adding scroll listener for path: ${pathname}`);
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      console.log(`[useScrollRestoration v6] Removing scroll listener for path: ${pathname}`);
+      console.log(`[useScrollRestoration v7] Removing scroll listener for path: ${pathname}`);
       if (scrollTimer) {
         clearTimeout(scrollTimer);
       }
@@ -127,20 +152,22 @@ export const useScrollRestoration = () => {
     };
   }, [location]);
 
-  // Listener de visibilidade simplificado
+  // Listener de visibilidade para salvar ao sair da aba
   useEffect(() => {
     const { pathname } = location;
     const handleVisibilityChange = () => {
-      console.log(`[useScrollRestoration v6] Visibility changed to: ${document.visibilityState}`);
-      // Apenas log, sem ações automáticas
+      if (document.visibilityState === 'hidden' && !getIsRestoring() && !isRestoringRef.current) {
+        managerSaveScrollPosition(pathname, 'visibility hidden');
+        console.log(`[useScrollRestoration v7] Saved on visibility change for: ${pathname}`);
+      }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    console.log(`[useScrollRestoration v6] Added visibility listener for path: ${pathname}`);
+    console.log(`[useScrollRestoration v7] Added visibility listener for path: ${pathname}`);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      console.log(`[useScrollRestoration v6] Removed visibility listener for path: ${pathname}`);
+      console.log(`[useScrollRestoration v7] Removed visibility listener for path: ${pathname}`);
     };
-  }, [location.pathname, navigationType]);
+  }, [location.pathname]);
 };
