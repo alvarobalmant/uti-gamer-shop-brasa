@@ -1,3 +1,4 @@
+
 import { useServiceCards } from "@/hooks/useServiceCards";
 import { useNavigate } from "react-router-dom";
 import {
@@ -11,12 +12,10 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
-import SectionTitle from "@/components/SectionTitle"; // Use the new SectionTitle component
+import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card"; // Use shadcn Card
+import { Card, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-// **Redesign - Applying responsive layouts and horizontal scroll**
 
 const ServiceCards = () => {
   const { serviceCards, loading } = useServiceCards();
@@ -31,7 +30,6 @@ const ServiceCards = () => {
     }
   };
 
-  // Store differentiators data
   const differentiators = [
     {
       icon: Award,
@@ -56,7 +54,6 @@ const ServiceCards = () => {
   ];
 
   if (loading) {
-    // Simple loading state for all sections combined
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="text-center text-muted-foreground">Carregando...</div>
@@ -75,32 +72,30 @@ const ServiceCards = () => {
             className="text-center mb-8 md:mb-12"
           />
 
-          {/* Service Cards - Horizontal Scroll on Mobile */}
           {serviceCards.length > 0 && (
             <div className="relative">
               <div
                 className={cn(
-                  "grid grid-cols-1 gap-6", // Base grid for structure
-                  "md:grid-cols-2 lg:grid-cols-4", // Desktop grid
-                  "md:overflow-visible md:pb-0", // No scroll needed on desktop
-                  "overflow-x-auto pb-4 flex md:grid space-x-4 md:space-x-0", // Horizontal scroll on mobile
-                  "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 md:mx-0 md:px-0" // Edge-to-edge padding on mobile
+                  "grid grid-cols-1 gap-6",
+                  "md:grid-cols-2 lg:grid-cols-4",
+                  "md:overflow-visible md:pb-0",
+                  "overflow-x-auto pb-4 flex md:grid space-x-4 md:space-x-0",
+                  "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 md:mx-0 md:px-0"
                 )}
-                style={{ scrollbarWidth: "none" }} // Hide scrollbar
+                style={{ scrollbarWidth: "none" }}
               >
                 {serviceCards.map((card, index) => (
                   <div
                     key={card.id}
-                    className="w-72 md:w-auto flex-shrink-0 md:flex-shrink" // Fixed width for mobile scroll
+                    className="w-72 md:w-auto flex-shrink-0 md:flex-shrink"
                   >
                     <Card
                       onClick={() => handleCardClick(card.link_url)}
                       className={cn(
                         "h-full cursor-pointer border border-border/80 rounded-xl overflow-hidden bg-card",
-                        // Aplicar efeitos apenas no desktop
-                        !isMobile 
-                          ? "group transition-all duration-300 ease-in-out hover:shadow-lg hover:border-primary/40 hover:-translate-y-1" 
-                          : ""
+                        "group transition-all duration-300 ease-in-out",
+                        // Remover hover effects no mobile, aplicar apenas no desktop
+                        "md:hover:shadow-lg md:hover:border-primary/40 md:hover:-translate-y-1"
                       )}
                     >
                       <CardContent className="flex flex-col items-center justify-center p-6 text-center">
@@ -108,8 +103,9 @@ const ServiceCards = () => {
                           <div className="relative w-14 h-14 mx-auto">
                             <div className={cn(
                               "w-full h-full bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center",
-                              // Aplicar efeito de escala apenas no desktop
-                              !isMobile ? "group-hover:scale-110 transition-transform duration-300" : ""
+                              "transition-transform duration-300",
+                              // Remover hover scale no mobile
+                              "md:group-hover:scale-110"
                             )}>
                               <img
                                 src={card.image_url}
@@ -125,8 +121,9 @@ const ServiceCards = () => {
                         </div>
                         <h3 className={cn(
                           "text-base font-semibold text-foreground mb-1",
-                          // Aplicar efeito de cor apenas no desktop
-                          !isMobile ? "group-hover:text-primary transition-colors duration-200" : ""
+                          "transition-colors duration-200",
+                          // Remover hover color no mobile
+                          "md:group-hover:text-primary"
                         )}>
                           {card.title}
                         </h3>
@@ -135,14 +132,16 @@ const ServiceCards = () => {
                         </p>
                         <div className={cn(
                           "flex items-center justify-center text-primary font-medium text-xs mt-auto",
-                          // Aplicar efeitos apenas no desktop
-                          !isMobile ? "group-hover:text-primary/80 transition-colors duration-300" : ""
+                          "transition-colors duration-300",
+                          // Remover hover color no mobile
+                          "md:group-hover:text-primary/80"
                         )}>
                           <span>Saiba mais</span>
                           <ArrowRight className={cn(
                             "w-3 h-3 ml-1",
-                            // Aplicar efeito de movimento apenas no desktop
-                            !isMobile ? "group-hover:translate-x-0.5 transition-transform duration-300" : ""
+                            "transition-transform duration-300",
+                            // Remover hover translate no mobile
+                            "md:group-hover:translate-x-0.5"
                           )} />
                         </div>
                       </CardContent>
@@ -155,7 +154,7 @@ const ServiceCards = () => {
         </div>
       </section>
 
-      {/* Store Differentiators Section - Adjusted Mobile Layout */}
+      {/* Store Differentiators Section */}
       <section className="py-12 md:py-16 bg-secondary text-secondary-foreground">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <SectionTitle
@@ -166,29 +165,26 @@ const ServiceCards = () => {
             subtitleClassName="text-secondary-foreground/80"
           />
 
-          {/* Differentiators Grid - Adjusted for Mobile */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {differentiators.map((item, index) => {
               const IconComponent = item.icon;
               return (
-                <div key={index} className={cn(
-                  "text-center",
-                  // Aplicar grupo apenas no desktop
-                  !isMobile ? "group" : ""
-                )}>
+                <div key={index} className="text-center group">
                   <div className="mb-4">
                     <div className={cn(
                       "w-16 h-16 mx-auto bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg",
-                      // Aplicar efeito de escala apenas no desktop
-                      !isMobile ? "group-hover:scale-110 transition-transform duration-300" : ""
+                      "transition-transform duration-300",
+                      // Remover hover scale no mobile
+                      "md:group-hover:scale-110"
                     )}>
                       <IconComponent className="w-8 h-8 text-primary-foreground" />
                     </div>
                   </div>
                   <h3 className={cn(
                     "text-sm font-semibold text-gray-800 mb-1",
-                    // Aplicar efeito de cor apenas no desktop
-                    !isMobile ? "group-hover:text-primary/80 transition-colors duration-300" : ""
+                    "transition-colors duration-300",
+                    // Remover hover color no mobile
+                    "md:group-hover:text-primary/80"
                   )}>
                     {item.title}
                   </h3>
@@ -202,12 +198,11 @@ const ServiceCards = () => {
         </div>
       </section>
 
-      {/* Contact/Help Section - Adjusted Mobile Layout */}
+      {/* Contact/Help Section */}
       <section className="py-12 md:py-16 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto bg-card rounded-xl shadow-lg border border-border/60 overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2">
-              {/* Left: CTA */}
               <div className="p-6 md:p-8 text-center md:text-left">
                 <SectionTitle
                   title="Precisa de ajuda especializada?"
@@ -215,13 +210,14 @@ const ServiceCards = () => {
                   className="mb-6"
                 />
                 <a
-                  href="https://wa.me/5527996882090" // Direct link
+                  href="https://wa.me/5527996882090"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
                     "inline-flex items-center bg-green-600 text-white font-bold py-2.5 px-6 rounded-lg text-sm",
-                    // Aplicar efeitos apenas no desktop
-                    !isMobile ? "hover:bg-green-700 transition-all duration-300 hover:scale-105 group" : ""
+                    "transition-all duration-300",
+                    // Remover hover effects no mobile
+                    "md:hover:bg-green-700 md:hover:scale-105 group"
                   )}
                 >
                   <MessageCircle className="w-4 h-4 mr-2" />
@@ -229,7 +225,6 @@ const ServiceCards = () => {
                 </a>
               </div>
 
-              {/* Right: Contact Info */}
               <div className="bg-muted/50 p-6 md:p-8 border-t md:border-t-0 md:border-l border-border/60">
                 <h4 className="text-base font-semibold text-foreground mb-4">
                   Outras formas de contato

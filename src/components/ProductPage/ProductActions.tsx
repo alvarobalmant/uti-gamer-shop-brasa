@@ -14,27 +14,23 @@ interface ProductActionsProps {
   isLoading?: boolean;
 }
 
-// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductActions: React.FC<ProductActionsProps> = ({ 
   product, 
   onAddToCart, 
   isLoading
-  // onAddToWishlist, 
-  // isWishlisted 
 }) => {
   const isOutOfStock = product.stock === 0;
 
   return (
-    <div className="space-y-3 pt-2"> {/* Add padding top */}
-      {/* Main Add to Cart Button */}
+    <div className="space-y-3 pt-2">
       <Button
         onClick={onAddToCart}
-        size="lg" // Larger button for primary action
+        size="lg"
         className={cn(
-          "w-full font-bold text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-300 active:scale-[0.98]",
+          "w-full font-bold text-lg rounded-lg shadow-md transition-all duration-300 active:scale-[0.98]",
           isOutOfStock
             ? "bg-muted text-muted-foreground cursor-not-allowed"
-            : "bg-uti-red hover:bg-uti-red/90 text-primary-foreground"
+            : "bg-uti-red text-primary-foreground md:hover:bg-uti-red/90 md:hover:shadow-lg"
         )}
         disabled={isOutOfStock || isLoading}
       >
@@ -53,25 +49,8 @@ const ProductActions: React.FC<ProductActionsProps> = ({
           </>
         )}
       </Button>
-
-      {/* Optional: Wishlist Button (Subtle) */}
-      {/* 
-      <Button
-        variant="outline"
-        size="lg"
-        onClick={onAddToWishlist}
-        className="w-full font-semibold rounded-lg transition-all"
-        disabled={isLoading} // Disable while adding to cart potentially
-      >
-        <Heart className={cn("w-5 h-5 mr-2", isWishlisted ? "fill-uti-red text-uti-red" : "")} />
-        {isWishlisted ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}
-      </Button>
-      */}
-
-      {/* Removed WhatsApp contact button from here, should be in header/footer or specific contact section */}
     </div>
   );
 };
 
 export default ProductActions;
-

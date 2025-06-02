@@ -1,47 +1,48 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductCardActionsProps {
   product: Product;
-  // Change the prop type to expect the product object directly
   onAddToCart: (product: Product) => void;
 }
 
-// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductCardActions: React.FC<ProductCardActionsProps> = ({
   product,
   onAddToCart
 }) => {
   const isOutOfStock = product.stock === 0;
+  const isMobile = useIsMobile();
 
-  // Handler to prevent event propagation and call the actual add to cart function
   const handleAddToCartClick = (e: React.MouseEvent | React.TouchEvent) => {
-    e.stopPropagation(); // Prevent card navigation when clicking the button
+    e.stopPropagation();
     e.preventDefault();
     if (!isOutOfStock) {
-      onAddToCart(product); // Pass the product object
+      onAddToCart(product);
     }
   };
 
-  // Minimalist approach: Button appears subtly on hover (desktop)
-  // For mobile, clicking the card navigates, so button might be less critical here
-  // or could be a smaller icon button if desired.
   return (
-    <div className="absolute bottom-2 right-2 z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100"> {/* Show on hover */}
+    <div className={cn(
+      "absolute bottom-2 right-2 z-10 transition-opacity duration-300",
+      // No mobile: sempre visível, no desktop: aparece só no hover
+      isMobile ? "opacity-100" : "opacity-0 md:group-hover:opacity-100"
+    )}>
       <Button
-        size="icon" // Use icon size for a smaller footprint
-        variant="default" // Use primary color (UTI Red)
-        onClick={handleAddToCartClick} // Use the new handler
-        onTouchEnd={handleAddToCartClick} // Use the new handler for touch
+        size="icon"
+        variant="default"
+        onClick={handleAddToCartClick}
+        onTouchEnd={handleAddToCartClick}
         disabled={isOutOfStock}
         className={cn(
           "h-8 w-8 rounded-full shadow-md transition-all duration-300 active:scale-90",
           isOutOfStock
             ? "cursor-not-allowed bg-muted text-muted-foreground"
-            : "bg-uti-red text-primary-foreground hover:bg-uti-red/90"
+            : "bg-uti-red text-primary-foreground md:hover:bg-uti-red/90"
         )}
         aria-label={isOutOfStock ? 'Esgotado' : 'Adicionar ao Carrinho'}
         style={{ touchAction: 'manipulation' }}
@@ -53,4 +54,3 @@ const ProductCardActions: React.FC<ProductCardActionsProps> = ({
 };
 
 export default ProductCardActions;
-
