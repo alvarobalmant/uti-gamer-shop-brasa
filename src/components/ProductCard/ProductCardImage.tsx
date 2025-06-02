@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Heart } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
@@ -7,21 +8,15 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductCardImageProps {
   product: Product;
-  // Wishlist props can be added back if the feature is confirmed needed
-  // onWishlistClick: (e: React.MouseEvent | React.TouchEvent) => void;
-  // isWishlisted: boolean;
 }
 
-// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductCardImage: React.FC<ProductCardImageProps> = ({ product }) => {
   const isOutOfStock = product.stock === 0;
   const isMobile = useIsMobile();
 
-  // Simplified badge logic based on GameStop's cleaner look
   const getConditionBadge = () => {
     if (product.tags?.some(tag => tag.name.toLowerCase().includes('novo'))) {
-      // Optional: Could return a small "Novo" badge if desired, but GameStop often omits
-      return null; // Keep it clean like GameStop reference
+      return null;
     }
     if (product.tags?.some(tag => tag.name.toLowerCase().includes('usado'))) {
       return (
@@ -34,16 +29,15 @@ const ProductCardImage: React.FC<ProductCardImageProps> = ({ product }) => {
   };
 
   return (
-    <div className="relative aspect-square w-full overflow-hidden bg-uti-gray-light rounded-t-lg"> {/* Consistent square aspect ratio like many e-commerce sites */}
-      {/* Product Image - Centered and covers */}
+    <div className="relative aspect-square w-full overflow-hidden bg-uti-gray-light rounded-t-lg">
       <img
-        src={product.image || '/placeholder-image.webp'} // Use placeholder
+        src={product.image || '/placeholder-image.webp'}
         alt={product.name}
         className={cn(
-          "h-full w-full object-contain transition-transform duration-300 ease-in-out p-2", // Use contain to show full product, add padding
-          // Aplicar efeito de escala apenas em desktop
-          !isMobile && "group-hover:scale-105",
-          isOutOfStock ? "grayscale filter opacity-70" : "" // Subtle grayscale + opacity
+          "h-full w-full object-contain transition-transform duration-300 ease-in-out p-2",
+          // Remover hover scale no mobile, aplicar apenas no desktop
+          "md:group-hover:scale-105",
+          isOutOfStock ? "grayscale filter opacity-70" : ""
         )}
         loading="lazy"
         onError={(e) => {
@@ -52,25 +46,8 @@ const ProductCardImage: React.FC<ProductCardImageProps> = ({ product }) => {
         }}
       />
 
-      {/* Condition Badge (Optional & Subtle) */}
       {getConditionBadge()}
 
-      {/* Wishlist Button (Optional - Keep subtle if added) */}
-      {/* Example Wishlist Button - uncomment and style if needed
-      <button
-        onClick={onWishlistClick}
-        className={cn(
-          "absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-transparent bg-background/60 backdrop-blur-sm",
-          "text-muted-foreground transition-all duration-200 hover:bg-background hover:text-uti-red hover:border-uti-gray-dark/20 active:scale-90",
-          isWishlisted ? "text-uti-red border-uti-red/30 bg-uti-red/10" : ""
-        )}
-        aria-label={isWishlisted ? "Remover da lista de desejos" : "Adicionar à lista de desejos"}
-      >
-        <Heart className={cn("h-3.5 w-3.5", isWishlisted ? "fill-current" : "fill-none")} />
-      </button>
-      */}
-
-      {/* Out of Stock Overlay - Minimalist */}
       {isOutOfStock && (
         <div className="absolute inset-x-0 bottom-0 z-20 bg-black/50 p-1 text-center">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-white">

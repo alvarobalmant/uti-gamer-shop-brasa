@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DesktopSearchBar from './DesktopSearchBar';
@@ -37,11 +38,15 @@ const MainHeader = ({
           {/* Left side: Mobile Menu Toggle + Logo */}
           {/* Added flex-shrink to allow this section to shrink if needed */}
           <div className="flex items-center flex-shrink min-w-0"> 
-            {/* Mobile Menu Toggle Button */}
+            {/* Mobile Menu Toggle Button - REMOVED hover effects for mobile */}
             <Button
               variant="ghost"
               size="icon"
-              className="mr-2 md:hidden p-2 h-10 w-10 flex-shrink-0" // Added flex-shrink-0
+              className={cn(
+                "mr-2 md:hidden p-2 h-10 w-10 flex-shrink-0",
+                // Only apply hover effects on desktop (md and above)
+                "md:hover:bg-accent md:hover:text-accent-foreground"
+              )}
               onClick={onMobileMenuToggle}
               aria-label="Abrir menu"
             >
@@ -75,11 +80,15 @@ const MainHeader = ({
           {/* Right side: Header Actions + Mobile Search Toggle */}
           {/* Kept flex-shrink-0 to prevent actions from shrinking */}
           <div className="flex items-center justify-end flex-shrink-0 gap-1"> 
-            {/* Mobile Search Toggle Button - Always shows Search icon */}
+            {/* Mobile Search Toggle Button - REMOVED hover effects for mobile */}
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden p-2 h-10 w-10" // Consistent size with menu toggle
+              className={cn(
+                "md:hidden p-2 h-10 w-10",
+                // Only apply hover effects on desktop (md and above)
+                "md:hover:bg-accent md:hover:text-accent-foreground"
+              )}
               onClick={toggleMobileSearch} // Opens the search overlay
               aria-label="Abrir busca"
             >

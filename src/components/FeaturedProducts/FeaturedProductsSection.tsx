@@ -143,16 +143,16 @@ const FeaturedProductsSection = ({
           <div className="relative">
             <div
               className={cn(
-                "flex space-x-4 md:space-x-6 overflow-x-auto pb-4",
+                "flex space-x-4 md:space-x-6 overflow-x-auto pb-4", // Ensure overflow-x-auto is present
                 "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
               )}
-              style={{ scrollbarWidth: "none" }}
+              style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties} // Added WebkitOverflowScrolling for iOS momentum scroll
             >
               {displayedProducts.map((product, index) => (
                 <div
                   key={`${selectedCategory}-${product.id}`} // Change key to help React differentiate elements between renders
                   className={cn(
-                    "w-60 sm:w-64 flex-shrink-0",
+                    "w-60 sm:w-64 flex-shrink-0", // Ensure items don't shrink and have a fixed width
                     "transition-all duration-300 ease-in-out", // Animation duration
                     // Apply animation classes based on state
                     animateProducts

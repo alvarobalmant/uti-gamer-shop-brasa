@@ -1,9 +1,9 @@
+
 import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GlobalCartIconProps {
   onCartOpen: () => void;
@@ -12,7 +12,6 @@ interface GlobalCartIconProps {
 const GlobalCartIcon: React.FC<GlobalCartIconProps> = ({ onCartOpen }) => {
   const { getCartItemsCount } = useCart();
   const itemCount = getCartItemsCount();
-  const isMobile = useIsMobile();
 
   return (
     <Button
@@ -21,10 +20,8 @@ const GlobalCartIcon: React.FC<GlobalCartIconProps> = ({ onCartOpen }) => {
       size="sm"
       className={cn(
         "relative flex items-center text-xs font-medium text-foreground px-2 py-1",
-        // Aplicar efeitos de hover apenas em desktop
-        !isMobile 
-          ? "hover:text-primary hover:bg-secondary" 
-          : ""
+        // Apply hover effects only on desktop (md and above) - REMOVED hover effects for mobile
+        "md:hover:text-primary md:hover:bg-secondary"
       )}
     >
       <ShoppingCart className="w-4 h-4 mr-1" />
