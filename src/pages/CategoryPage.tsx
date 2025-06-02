@@ -8,11 +8,7 @@ import ProductCard from '@/components/ProductCard';
 import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
-<<<<<<< HEAD
 // Removed import { useScrollPosition } from '@/hooks/useScrollPosition';
-=======
-import { useScrollPosition } from '@/hooks/useScrollPosition';
->>>>>>> 7ff55c08f35e80e8ace4e01bc0b5fcabc4e7d4be
 
 const CategoryPage = () => {
   const { category } = useParams();
@@ -20,19 +16,9 @@ const CategoryPage = () => {
   const { products, loading } = useProducts();
   const { user } = useAuth();
   const { addToCart } = useCart();
-<<<<<<< HEAD
   // Removed const { setupScrollRestoration } = useScrollPosition();
 
   // Removed useEffect for setupScrollRestoration - This is handled globally by useScrollRestoration
-=======
-  const { setupScrollRestoration } = useScrollPosition();
-
-  // Configurar restauração de scroll quando o componente montar
-  useEffect(() => {
-    const cleanup = setupScrollRestoration();
-    return cleanup;
-  }, [setupScrollRestoration]);
->>>>>>> 7ff55c08f35e80e8ace4e01bc0b5fcabc4e7d4be
 
   const getCategoryTitle = (cat: string) => {
     const categoryMap: { [key: string]: string } = {
