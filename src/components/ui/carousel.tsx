@@ -60,7 +60,6 @@ const Carousel = React.forwardRef<
       {
         ...opts,
         axis: orientation === "horizontal" ? "x" : "y",
-        // Let CSS handle touch action primarily
       },
       plugins
     )
@@ -133,22 +132,15 @@ const Carousel = React.forwardRef<
           canScrollNext,
         }}
       >
-        {/* Apply touch-action directly to the element Embla uses */}
         <div
-          ref={carouselRef} // Apply ref here where useEmblaCarousel is initialized
-          style={{ touchAction: orientation === 'horizontal' ? 'pan-y' : 'pan-x' }}
-          className="overflow-hidden" // Embla needs overflow hidden on its root
+          ref={ref}
+          onKeyDownCapture={handleKeyDown}
+          className={cn("relative", className)}
+          role="region"
+          aria-roledescription="carousel"
+          {...props}
         >
-          <div
-            ref={ref} // Keep original ref for external use if needed
-            onKeyDownCapture={handleKeyDown}
-            className={cn("relative", className)} // Keep relative for positioning arrows
-            role="region"
-            aria-roledescription="carousel"
-            {...props}
-          >
-            {children} 
-          </div>
+          {children}
         </div>
       </CarouselContext.Provider>
     )
@@ -156,24 +148,24 @@ const Carousel = React.forwardRef<
 )
 Carousel.displayName = "Carousel"
 
-// CarouselContent now just renders its children inside the structure provided by Carousel
 const CarouselContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const { orientation } = useCarousel()
+  const { carouselRef, orientation } = useCarousel()
 
   return (
-    <div
-      ref={ref}
-      className={cn(
-        "flex",
-        orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
-        className
-      )}
-      // Removed touch-action style from here
-      {...props}
-    />
+    <div ref={carouselRef} className="overflow-hidden">
+      <div
+        ref={ref}
+        className={cn(
+          "flex",
+          orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
+          className
+        )}
+        {...props}
+      />
+    </div>
   )
 })
 CarouselContent.displayName = "CarouselContent"
@@ -191,7 +183,6 @@ const CarouselItem = React.forwardRef<
       aria-roledescription="slide"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
-        "touch-manipulation", 
         orientation === "horizontal" ? "pl-4" : "pt-4",
         className
       )}
@@ -201,7 +192,6 @@ const CarouselItem = React.forwardRef<
 })
 CarouselItem.displayName = "CarouselItem"
 
-// Previous/Next buttons remain the same
 const CarouselPrevious = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<typeof Button>
@@ -268,4 +258,3 @@ export {
   CarouselPrevious,
   CarouselNext,
 }
-
