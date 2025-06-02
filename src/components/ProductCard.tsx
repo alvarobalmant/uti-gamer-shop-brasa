@@ -30,7 +30,11 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
 
   const handleCardNavigation = () => {
+<<<<<<< HEAD
     // Removed saveScrollPosition(); - useScrollRestoration handles this globally
+=======
+    saveScrollPosition();
+>>>>>>> 7ff55c08f35e80e8ace4e01bc0b5fcabc4e7d4be
     navigate(`/produto/${product.id}`);
   };
 

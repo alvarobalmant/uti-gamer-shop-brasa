@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { useProducts, Product } from '@/hooks/useProducts'; // Import Product type
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 // Removed import { useScrollPosition } from '@/hooks/useScrollPosition';
+=======
+import { useScrollPosition } from '@/hooks/useScrollPosition';
+>>>>>>> 7ff55c08f35e80e8ace4e01bc0b5fcabc4e7d4be
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
@@ -27,7 +31,11 @@ const Index = () => {
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+<<<<<<< HEAD
   // Removed const { setupScrollRestoration } = useScrollPosition();
+=======
+  const { setupScrollRestoration } = useScrollPosition();
+>>>>>>> 7ff55c08f35e80e8ace4e01bc0b5fcabc4e7d4be
   
   // Fetch homepage layout and product sections
   const { layoutItems, loading: layoutLoading } = useHomepageLayout();
@@ -43,10 +51,18 @@ const Index = () => {
     targetBlank: false,
   });
 
+<<<<<<< HEAD
   // Removed useEffect for setupScrollRestoration - This is handled globally by useScrollRestoration
   useEffect(() => {
     // TODO: Fetch actual banner data
   }, []);
+=======
+  useEffect(() => {
+    const cleanup = setupScrollRestoration();
+    // TODO: Fetch actual banner data
+    return cleanup;
+  }, [setupScrollRestoration]);
+>>>>>>> 7ff55c08f35e80e8ace4e01bc0b5fcabc4e7d4be
 
   const handleAddToCart = (product: any, size?: string, color?: string) => {
     addToCart(product, size, color);
