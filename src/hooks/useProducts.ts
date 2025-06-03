@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export interface Tag {
   id: string;
@@ -20,12 +21,19 @@ export interface Product {
   created_at: string;
   updated_at: string;
   tags?: Tag[];
+  // Optional pricing fields that some components expect
+  pro_discount_percent?: number;
+  pro_price?: number;
+  list_price?: number;
+  new_price?: number;
+  digital_price?: number;
 }
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const fetchProducts = async () => {
     try {
@@ -93,6 +101,88 @@ export const useProducts = () => {
     }
   };
 
+  const addProduct = async (productData: Partial<Product>): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert([productData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso!",
+        description: "Produto criado com sucesso!",
+      });
+
+      await fetchProducts(); // Refresh the list
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao criar produto:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao criar produto.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const updateProduct = async (productId: string, productData: Partial<Product>): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update(productData)
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso!",
+        description: "Produto atualizado com sucesso!",
+      });
+
+      await fetchProducts(); // Refresh the list
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao atualizar produto:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar produto.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const deleteProduct = async (productId: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso!",
+        description: "Produto removido com sucesso!",
+      });
+
+      await fetchProducts(); // Refresh the list
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao remover produto:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover produto.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -106,6 +196,9 @@ export const useProducts = () => {
     loading,
     error,
     refetch,
-    fetchProducts
+    fetchProducts,
+    addProduct,
+    updateProduct,
+    deleteProduct,
   };
 };

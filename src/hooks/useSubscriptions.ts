@@ -82,7 +82,7 @@ export const useSubscriptions = () => {
         `)
         .eq('user_id', userId)
         .eq('status', 'active')
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to avoid errors when no data
 
       if (subscriptionError && subscriptionError.code !== 'PGRST116') {
         console.error('Erro ao buscar assinatura:', subscriptionError);
@@ -95,7 +95,7 @@ export const useSubscriptions = () => {
         .from('usuarios')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single
 
       if (usuarioError && usuarioError.code !== 'PGRST116') {
         console.error('Erro ao buscar usuário:', usuarioError);
@@ -244,6 +244,18 @@ export const useSubscriptions = () => {
     return false;
   };
 
+  const getDiscountPercentage = (): number => {
+    if (userSubscription?.subscription_plans) {
+      return userSubscription.subscription_plans.discount_percentage;
+    }
+    
+    if (usuario?.desconto) {
+      return usuario.desconto;
+    }
+    
+    return 10; // Default discount percentage
+  };
+
   const refetch = async () => {
     if (user?.id) {
       await fetchUserData(user.id);
@@ -258,6 +270,7 @@ export const useSubscriptions = () => {
     createSubscription,
     cancelSubscription,
     hasActiveSubscription,
+    getDiscountPercentage,
     refetch,
   };
 };
