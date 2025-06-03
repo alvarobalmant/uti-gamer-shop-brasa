@@ -1,135 +1,99 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export interface ServiceCard {
   id: string;
   title: string;
   description: string;
-  image_url: string;
-  link_url: string;
-  position: number;
+  icon_url?: string;
+  link_url?: string;
+  display_order: number;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// Mock data for offline mode
+const MOCK_SERVICE_CARDS: ServiceCard[] = [
+  {
+    id: '1',
+    title: 'Manutenção de Consoles',
+    description: 'Reparos especializados para PlayStation, Xbox e Nintendo. Diagnóstico gratuito e garantia de 3 meses.',
+    icon_url: '/lovable-uploads/icon-repair.png',
+    link_url: '/servicos/manutencao',
+    display_order: 1,
+    is_active: true
+  },
+  {
+    id: '2',
+    title: 'Instalação de Jogos',
+    description: 'Instalação de jogos digitais e atualizações. Configuração de contas e perfis.',
+    icon_url: '/lovable-uploads/icon-install.png',
+    link_url: '/servicos/instalacao',
+    display_order: 2,
+    is_active: true
+  },
+  {
+    id: '3',
+    title: 'Limpeza e Manutenção Preventiva',
+    description: 'Limpeza interna e externa, troca de pasta térmica e manutenção preventiva para prolongar a vida útil do seu console.',
+    icon_url: '/lovable-uploads/icon-cleaning.png',
+    link_url: '/servicos/limpeza',
+    display_order: 3,
+    is_active: true
+  },
+  {
+    id: '4',
+    title: 'Avaliação e Compra de Usados',
+    description: 'Avaliamos e compramos seus consoles, jogos e acessórios usados com os melhores preços do mercado.',
+    icon_url: '/lovable-uploads/icon-trade.png',
+    link_url: '/servicos/compra-usados',
+    display_order: 4,
+    is_active: true
+  }
+];
+
 export const useServiceCards = () => {
-  const [serviceCards, setServiceCards] = useState<ServiceCard[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [serviceCards, setServiceCards] = useState<ServiceCard[]>(MOCK_SERVICE_CARDS);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchServiceCards = async () => {
+  const fetchServiceCards = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('service_cards')
         .select('*')
         .eq('is_active', true)
-        .order('position');
+        .order('display_order', { ascending: true });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
+
       setServiceCards(data || []);
-    } catch (error: any) {
-      console.error('Erro ao buscar cards de serviços:', error);
-      toast({
-        title: "Erro ao carregar cards de serviços",
-        description: error.message,
-        variant: "destructive",
+    } catch (err: any) {
+      console.error('Error fetching service cards:', err);
+      setError('Falha ao carregar cartões de serviço.');
+      
+      // Use mock service cards on error
+      setServiceCards(MOCK_SERVICE_CARDS);
+      
+      toast({ 
+        title: 'Aviso', 
+        description: 'Usando cartões de serviço locais devido a um problema de conexão.', 
+        variant: 'default' 
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const addServiceCard = async (cardData: Omit<ServiceCard, 'id' | 'created_at' | 'updated_at'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('service_cards')
-        .insert([cardData])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setServiceCards(prev => [...prev, data]);
-      toast({
-        title: "Card de serviço adicionado com sucesso!",
-        description: "O card foi criado e está ativo.",
-      });
-    } catch (error: any) {
-      console.error('Erro ao adicionar card de serviço:', error);
-      toast({
-        title: "Erro ao adicionar card de serviço",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const updateServiceCard = async (id: string, cardData: Partial<ServiceCard>) => {
-    try {
-      const { data, error } = await supabase
-        .from('service_cards')
-        .update({ ...cardData, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setServiceCards(prev => prev.map(card => card.id === id ? data : card));
-      toast({
-        title: "Card de serviço atualizado com sucesso!",
-        description: "As alterações foram salvas.",
-      });
-    } catch (error: any) {
-      console.error('Erro ao atualizar card de serviço:', error);
-      toast({
-        title: "Erro ao atualizar card de serviço",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const deleteServiceCard = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('service_cards')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setServiceCards(prev => prev.filter(card => card.id !== id));
-      toast({
-        title: "Card de serviço excluído com sucesso!",
-        description: "O card foi removido permanentemente.",
-      });
-    } catch (error: any) {
-      console.error('Erro ao excluir card de serviço:', error);
-      toast({
-        title: "Erro ao excluir card de serviço",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
+  // Initial fetch
   useEffect(() => {
     fetchServiceCards();
-  }, []);
+  }, [fetchServiceCards]);
 
-  return {
-    serviceCards,
-    loading,
-    addServiceCard,
-    updateServiceCard,
-    deleteServiceCard,
-    refetch: fetchServiceCards
-  };
+  return { serviceCards, loading, error, fetchServiceCards };
 };

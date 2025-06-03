@@ -1,420 +1,530 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export interface Product {
   id: string;
-  name: string;
-  description?: string;
+  title: string;
+  description: string;
   price: number;
-  list_price?: number;
-  pro_price?: number;
-  pro_discount_percent?: number;
-  new_price?: number;
-  digital_price?: number;
-  image: string;
-  additional_images?: string[];
-  sizes?: string[];
-  colors?: string[];
-  stock?: number;
-  category_id?: string;
-  tags?: { id: string; name: string; }[];
+  discount_price?: number;
+  images: string[];
+  category: string;
+  platform?: string;
+  condition?: 'new' | 'used' | 'refurbished';
+  stock: number;
+  is_featured?: boolean;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  tags?: string[];
+  rating?: number;
+  pro_discount?: number;
 }
 
-// Dados mockados para uso offline/demonstrativo
+// Mock data for offline mode
 const MOCK_PRODUCTS: Product[] = [
   {
-    id: 'mock-product-1',
-    name: 'PlayStation 5 Digital Edition',
-    description: 'Console PlayStation 5 versão digital, sem leitor de disco, com controle DualSense.',
-    price: 3999.90,
-    list_price: 4499.90,
-    pro_price: 3799.90,
-    pro_discount_percent: 5,
-    image: '/products/ps5-digital.webp',
-    additional_images: ['/products/ps5-digital-2.webp', '/products/ps5-digital-3.webp'],
+    id: '1',
+    title: 'PlayStation 5 Digital Edition',
+    description: 'Console PlayStation 5 Digital Edition. Inclui controle DualSense branco, cabo HDMI 2.1, cabo de alimentação e jogos pré-instalados como Astro\'s Playroom. Experimente o poder do SSD ultrarrápido e dos gráficos em 4K.',
+    price: 3999.99,
+    discount_price: 3799.99,
+    images: ['/lovable-uploads/ps5-digital.png', '/lovable-uploads/ps5-digital-2.png', '/lovable-uploads/ps5-digital-3.png'],
+    category: 'consoles',
+    platform: 'playstation',
+    condition: 'new',
     stock: 15,
-    category_id: 'consoles',
-    tags: [
-      { id: 'playstation', name: 'PlayStation' },
-      { id: 'lancamento', name: 'Lançamento' },
-      { id: 'console', name: 'Console' }
-    ]
+    is_featured: true,
+    is_active: true,
+    tags: ['playstation', 'console', 'ps5', 'digital', 'nova geração'],
+    rating: 4.9,
+    pro_discount: 5
   },
   {
-    id: 'mock-product-2',
-    name: 'Xbox Series X',
-    description: 'Console Xbox Series X com 1TB de armazenamento e controle sem fio.',
-    price: 4299.90,
-    list_price: 4799.90,
-    pro_price: 4084.90,
-    pro_discount_percent: 5,
-    image: '/products/xbox-series-x.webp',
-    additional_images: ['/products/xbox-series-x-2.webp', '/products/xbox-series-x-3.webp'],
+    id: '2',
+    title: 'Xbox Series X',
+    description: 'Console Xbox Series X. O console mais poderoso da Microsoft com suporte a 4K e 120fps. Inclui controle sem fio, cabo HDMI de alta velocidade e acesso ao Xbox Game Pass (assinatura vendida separadamente).',
+    price: 4299.99,
+    discount_price: 4099.99,
+    images: ['/lovable-uploads/xbox-series-x.png', '/lovable-uploads/xbox-series-x-2.png', '/lovable-uploads/xbox-series-x-3.png'],
+    category: 'consoles',
+    platform: 'xbox',
+    condition: 'new',
     stock: 10,
-    category_id: 'consoles',
-    tags: [
-      { id: 'xbox', name: 'Xbox' },
-      { id: 'lancamento', name: 'Lançamento' },
-      { id: 'console', name: 'Console' }
-    ]
+    is_featured: true,
+    is_active: true,
+    tags: ['xbox', 'console', 'series x', 'microsoft', 'nova geração'],
+    rating: 4.8,
+    pro_discount: 5
   },
   {
-    id: 'mock-product-3',
-    name: 'Nintendo Switch OLED',
-    description: 'Console Nintendo Switch com tela OLED de 7 polegadas e 64GB de armazenamento.',
-    price: 2499.90,
-    list_price: 2799.90,
-    pro_price: 2374.90,
-    pro_discount_percent: 5,
-    image: '/products/switch-oled.webp',
-    additional_images: ['/products/switch-oled-2.webp', '/products/switch-oled-3.webp'],
+    id: '3',
+    title: 'Nintendo Switch OLED',
+    description: 'Console Nintendo Switch modelo OLED com tela de 7 polegadas e armazenamento de 64GB. Inclui dock com porta LAN, suporte ajustável mais largo e áudio aprimorado. Jogue em casa na TV ou em qualquer lugar no modo portátil.',
+    price: 2499.99,
+    discount_price: 2399.99,
+    images: ['/lovable-uploads/switch-oled.png', '/lovable-uploads/switch-oled-2.png', '/lovable-uploads/switch-oled-3.png'],
+    category: 'consoles',
+    platform: 'nintendo',
+    condition: 'new',
     stock: 20,
-    category_id: 'consoles',
-    tags: [
-      { id: 'nintendo', name: 'Nintendo' },
-      { id: 'popular', name: 'Popular' },
-      { id: 'console', name: 'Console' }
-    ]
+    is_featured: true,
+    is_active: true,
+    tags: ['nintendo', 'console', 'switch', 'oled', 'portátil'],
+    rating: 4.7,
+    pro_discount: 5
   },
   {
-    id: 'mock-product-4',
-    name: 'The Legend of Zelda: Tears of the Kingdom',
-    description: 'A sequência de Breath of the Wild leva você a uma jornada épica através de Hyrule e além.',
-    price: 299.90,
-    list_price: 349.90,
-    pro_price: 284.90,
-    pro_discount_percent: 5,
-    image: '/products/zelda-totk.webp',
-    additional_images: ['/products/zelda-totk-2.webp', '/products/zelda-totk-3.webp'],
+    id: '4',
+    title: 'God of War Ragnarök',
+    description: 'Embarque em uma jornada épica com Kratos e Atreus nos nove reinos nórdicos. Enfrente deuses e monstros em uma batalha pelo destino de Midgard enquanto o Ragnarök se aproxima. Gráficos impressionantes e combate visceral em uma das maiores aventuras para PlayStation.',
+    price: 299.99,
+    discount_price: 249.99,
+    images: ['/lovable-uploads/god-of-war.png', '/lovable-uploads/god-of-war-2.png', '/lovable-uploads/god-of-war-3.png'],
+    category: 'jogos',
+    platform: 'playstation',
+    condition: 'new',
     stock: 30,
-    category_id: 'jogos',
-    tags: [
-      { id: 'nintendo', name: 'Nintendo' },
-      { id: 'bestseller', name: 'Mais Vendido' },
-      { id: 'jogo', name: 'Jogo' }
-    ]
+    is_featured: true,
+    is_active: true,
+    tags: ['playstation', 'jogo', 'ação', 'aventura', 'exclusivo', 'kratos'],
+    rating: 4.9,
+    pro_discount: 10
   },
   {
-    id: 'mock-product-5',
-    name: 'God of War Ragnarök',
-    description: 'Kratos e Atreus devem viajar pelos Nove Reinos em busca de respostas enquanto as forças asgardianas se preparam para a guerra.',
-    price: 249.90,
-    list_price: 299.90,
-    pro_price: 237.40,
-    pro_discount_percent: 5,
-    image: '/products/god-of-war.webp',
-    additional_images: ['/products/god-of-war-2.webp', '/products/god-of-war-3.webp'],
+    id: '5',
+    title: 'Halo Infinite',
+    description: 'Master Chief retorna em sua aventura mais épica para salvar a humanidade. Explore o vasto mundo aberto de Zeta Halo, enfrente os Banished e descubra segredos que podem mudar o destino da galáxia. Multiplayer gratuito incluído com modos competitivos e cooperativos.',
+    price: 249.99,
+    discount_price: 199.99,
+    images: ['/lovable-uploads/halo-infinite.png', '/lovable-uploads/halo-infinite-2.png', '/lovable-uploads/halo-infinite-3.png'],
+    category: 'jogos',
+    platform: 'xbox',
+    condition: 'new',
     stock: 25,
-    category_id: 'jogos',
-    tags: [
-      { id: 'playstation', name: 'PlayStation' },
-      { id: 'bestseller', name: 'Mais Vendido' },
-      { id: 'jogo', name: 'Jogo' }
-    ]
+    is_featured: true,
+    is_active: true,
+    tags: ['xbox', 'jogo', 'fps', 'ação', 'exclusivo', 'master chief'],
+    rating: 4.7,
+    pro_discount: 10
   },
   {
-    id: 'mock-product-6',
-    name: 'Controle DualSense - Branco',
-    description: 'Controle sem fio DualSense para PlayStation 5 com feedback háptico e gatilhos adaptáveis.',
-    price: 449.90,
-    list_price: 499.90,
-    pro_price: 427.40,
-    pro_discount_percent: 5,
-    image: '/products/dualsense.webp',
-    additional_images: ['/products/dualsense-2.webp', '/products/dualsense-3.webp'],
+    id: '6',
+    title: 'The Legend of Zelda: Tears of the Kingdom',
+    description: 'Nova aventura de Link no reino de Hyrule com novos poderes e desafios. Explore ilhas flutuantes nos céus, descubra novas habilidades como Ultrahand e Fuse, e enfrente ameaças antigas e novas. A sequência do aclamado Breath of the Wild expande ainda mais o vasto mundo aberto.',
+    price: 349.99,
+    discount_price: 329.99,
+    images: ['/lovable-uploads/zelda-totk.png', '/lovable-uploads/zelda-totk-2.png', '/lovable-uploads/zelda-totk-3.png'],
+    category: 'jogos',
+    platform: 'nintendo',
+    condition: 'new',
+    stock: 20,
+    is_featured: true,
+    is_active: true,
+    tags: ['nintendo', 'jogo', 'aventura', 'zelda', 'exclusivo', 'link', 'mundo aberto'],
+    rating: 4.9,
+    pro_discount: 10
+  },
+  {
+    id: '7',
+    title: 'Controle DualSense - Branco',
+    description: 'Controle oficial para PlayStation 5 com feedback háptico e gatilhos adaptáveis. Sinta cada impacto nos jogos, desde o recuo de armas até a tensão ao puxar a corda de um arco. Inclui microfone embutido, alto-falante e bateria recarregável via USB-C.',
+    price: 449.99,
+    discount_price: 399.99,
+    images: ['/lovable-uploads/dualsense.png', '/lovable-uploads/dualsense-2.png', '/lovable-uploads/dualsense-3.png'],
+    category: 'acessorios',
+    platform: 'playstation',
+    condition: 'new',
     stock: 40,
-    category_id: 'acessorios',
-    tags: [
-      { id: 'playstation', name: 'PlayStation' },
-      { id: 'acessorio', name: 'Acessório' },
-      { id: 'controle', name: 'Controle' }
-    ]
+    is_featured: false,
+    is_active: true,
+    tags: ['playstation', 'acessório', 'controle', 'dualsense', 'ps5'],
+    rating: 4.8,
+    pro_discount: 15
   },
   {
-    id: 'mock-product-7',
-    name: 'Headset Gamer HyperX Cloud Alpha',
-    description: 'Headset gamer com som surround 7.1, drivers de 50mm e microfone destacável com cancelamento de ruído.',
-    price: 599.90,
-    list_price: 699.90,
-    pro_price: 569.90,
-    pro_discount_percent: 5,
-    image: '/products/hyperx-cloud.webp',
-    additional_images: ['/products/hyperx-cloud-2.webp', '/products/hyperx-cloud-3.webp'],
+    id: '8',
+    title: 'Headset Xbox Wireless',
+    description: 'Headset sem fio oficial para Xbox Series X|S com áudio espacial. Experimente som surround imersivo, microfone com isolamento de ruído e controles de volume integrados. Compatível com Xbox Series X|S, Xbox One e Windows 10/11 via Bluetooth.',
+    price: 599.99,
+    discount_price: 549.99,
+    images: ['/lovable-uploads/xbox-headset.png', '/lovable-uploads/xbox-headset-2.png', '/lovable-uploads/xbox-headset-3.png'],
+    category: 'acessorios',
+    platform: 'xbox',
+    condition: 'new',
     stock: 35,
-    category_id: 'acessorios',
-    tags: [
-      { id: 'acessorio', name: 'Acessório' },
-      { id: 'audio', name: 'Áudio' },
-      { id: 'oferta', name: 'Oferta' }
-    ]
+    is_featured: false,
+    is_active: true,
+    tags: ['xbox', 'acessório', 'headset', 'áudio', 'sem fio'],
+    rating: 4.6,
+    pro_discount: 15
   },
   {
-    id: 'mock-product-8',
-    name: 'Cadeira Gamer ThunderX3 TGC12',
-    description: 'Cadeira gamer ergonômica com encosto reclinável, apoio de braço ajustável e almofadas para lombar e pescoço.',
-    price: 1299.90,
-    list_price: 1499.90,
-    pro_price: 1234.90,
-    pro_discount_percent: 5,
-    image: '/products/cadeira-gamer.webp',
-    additional_images: ['/products/cadeira-gamer-2.webp', '/products/cadeira-gamer-3.webp'],
+    id: '9',
+    title: 'Nintendo Switch Pro Controller',
+    description: 'Controle profissional para Nintendo Switch com bateria de longa duração. Oferece controles precisos, feedback HD Rumble, NFC para amiibo e giroscópio para controle de movimento. Design ergonômico para sessões de jogo prolongadas.',
+    price: 399.99,
+    discount_price: 369.99,
+    images: ['/lovable-uploads/switch-pro-controller.png', '/lovable-uploads/switch-pro-controller-2.png', '/lovable-uploads/switch-pro-controller-3.png'],
+    category: 'acessorios',
+    platform: 'nintendo',
+    condition: 'new',
+    stock: 30,
+    is_featured: false,
+    is_active: true,
+    tags: ['nintendo', 'acessório', 'controle', 'pro controller', 'switch'],
+    rating: 4.7,
+    pro_discount: 15
+  },
+  {
+    id: '10',
+    title: 'PlayStation 4 Pro - Usado',
+    description: 'Console PlayStation 4 Pro usado em excelente estado. Inclui controle DualShock 4, cabos HDMI e de alimentação. Capacidade de 1TB, suporte a 4K e HDR. Testado e verificado pela equipe UTI DOS GAMES com garantia de 3 meses.',
+    price: 1999.99,
+    discount_price: 1799.99,
+    images: ['/lovable-uploads/ps4-pro.png', '/lovable-uploads/ps4-pro-2.png', '/lovable-uploads/ps4-pro-3.png'],
+    category: 'consoles',
+    platform: 'playstation',
+    condition: 'used',
+    stock: 5,
+    is_featured: false,
+    is_active: true,
+    tags: ['playstation', 'console', 'ps4', 'usado', 'pro', '4k'],
+    rating: 4.5,
+    pro_discount: 5
+  },
+  {
+    id: '11',
+    title: 'Xbox One X - Recondicionado',
+    description: 'Console Xbox One X recondicionado pela UTI DOS GAMES. Garantia de 6 meses. Inclui controle sem fio, cabos e fonte de alimentação originais. Capacidade de 1TB, suporte a 4K nativo e HDR. Todas as peças foram testadas e substituídas quando necessário.',
+    price: 1899.99,
+    discount_price: 1699.99,
+    images: ['/lovable-uploads/xbox-one-x.png', '/lovable-uploads/xbox-one-x-2.png', '/lovable-uploads/xbox-one-x-3.png'],
+    category: 'consoles',
+    platform: 'xbox',
+    condition: 'refurbished',
+    stock: 3,
+    is_featured: false,
+    is_active: true,
+    tags: ['xbox', 'console', 'one x', 'recondicionado', '4k'],
+    rating: 4.4,
+    pro_discount: 5
+  },
+  {
+    id: '12',
+    title: 'Figura Colecionável Kratos',
+    description: 'Figura colecionável premium de Kratos de God of War. Altura: 30cm. Esculpida com detalhes impressionantes, pintada à mão e feita de material de alta qualidade. Inclui base personalizada e acessórios como o Machado Leviatã. Edição limitada com certificado de autenticidade.',
+    price: 899.99,
+    discount_price: 849.99,
+    images: ['/lovable-uploads/kratos-figure.png', '/lovable-uploads/kratos-figure-2.png', '/lovable-uploads/kratos-figure-3.png'],
+    category: 'colecionaveis',
+    condition: 'new',
+    stock: 10,
+    is_featured: true,
+    is_active: true,
+    tags: ['colecionável', 'figura', 'god of war', 'kratos', 'premium', 'edição limitada'],
+    rating: 4.9,
+    pro_discount: 10
+  },
+  {
+    id: '13',
+    title: 'PlayStation 5 Standard Edition',
+    description: 'Console PlayStation 5 Standard Edition com leitor de disco. Inclui controle DualSense branco, cabo HDMI 2.1, cabo de alimentação e jogo Astro\'s Playroom pré-instalado. Experimente jogos em 4K a até 120fps com tempos de carregamento quase instantâneos.',
+    price: 4499.99,
+    discount_price: 4299.99,
+    images: ['/lovable-uploads/ps5-standard.png', '/lovable-uploads/ps5-standard-2.png', '/lovable-uploads/ps5-standard-3.png'],
+    category: 'consoles',
+    platform: 'playstation',
+    condition: 'new',
+    stock: 8,
+    is_featured: true,
+    is_active: true,
+    tags: ['playstation', 'console', 'ps5', 'standard', 'nova geração', 'disco'],
+    rating: 4.9,
+    pro_discount: 5
+  },
+  {
+    id: '14',
+    title: 'Xbox Series S',
+    description: 'Console Xbox Series S totalmente digital. Compacto mas poderoso, oferece jogos em 1440p a até 120fps. Inclui controle sem fio, cabo HDMI e acesso ao Xbox Game Pass (assinatura vendida separadamente). SSD de 512GB para carregamentos ultrarrápidos.',
+    price: 2799.99,
+    discount_price: 2599.99,
+    images: ['/lovable-uploads/xbox-series-s.png', '/lovable-uploads/xbox-series-s-2.png', '/lovable-uploads/xbox-series-s-3.png'],
+    category: 'consoles',
+    platform: 'xbox',
+    condition: 'new',
+    stock: 12,
+    is_featured: true,
+    is_active: true,
+    tags: ['xbox', 'console', 'series s', 'microsoft', 'nova geração', 'digital'],
+    rating: 4.7,
+    pro_discount: 5
+  },
+  {
+    id: '15',
+    title: 'Nintendo Switch Lite - Turquesa',
+    description: 'Console Nintendo Switch Lite na cor turquesa. Versão compacta e leve dedicada ao jogo portátil. Controles integrados e tela de 5,5 polegadas. Compatível com todos os jogos Nintendo Switch que suportam o modo portátil.',
+    price: 1799.99,
+    discount_price: 1699.99,
+    images: ['/lovable-uploads/switch-lite-turquoise.png', '/lovable-uploads/switch-lite-turquoise-2.png', '/lovable-uploads/switch-lite-turquoise-3.png'],
+    category: 'consoles',
+    platform: 'nintendo',
+    condition: 'new',
     stock: 15,
-    category_id: 'acessorios',
-    tags: [
-      { id: 'acessorio', name: 'Acessório' },
-      { id: 'setup', name: 'Setup' },
-      { id: 'oferta', name: 'Oferta' }
-    ]
+    is_featured: false,
+    is_active: true,
+    tags: ['nintendo', 'console', 'switch', 'lite', 'portátil', 'turquesa'],
+    rating: 4.6,
+    pro_discount: 5
+  },
+  {
+    id: '16',
+    title: 'Horizon Forbidden West',
+    description: 'Junte-se a Aloy em sua jornada pelo Oeste Proibido, uma fronteira perigosa que esconde novas ameaças misteriosas. Explore terras distantes, enfrente máquinas maiores e mais imponentes, e encontre tribos impressionantes enquanto retorna a um futuro distante em um mundo pós-apocalíptico.',
+    price: 299.99,
+    discount_price: 269.99,
+    images: ['/lovable-uploads/horizon-forbidden-west.png', '/lovable-uploads/horizon-forbidden-west-2.png', '/lovable-uploads/horizon-forbidden-west-3.png'],
+    category: 'jogos',
+    platform: 'playstation',
+    condition: 'new',
+    stock: 22,
+    is_featured: true,
+    is_active: true,
+    tags: ['playstation', 'jogo', 'ação', 'aventura', 'exclusivo', 'aloy', 'mundo aberto'],
+    rating: 4.8,
+    pro_discount: 10
+  },
+  {
+    id: '17',
+    title: 'Forza Horizon 5',
+    description: 'Explore um mundo aberto vibrante e em constante evolução nas paisagens do México, com uma ação de direção ilimitada em centenas dos melhores carros do mundo. Corra através de paisagens desérticas, florestas tropicais densas, cidades históricas, ruínas ocultas, praias pristinas, canyons profundos e um vulcão imponente.',
+    price: 249.99,
+    discount_price: 229.99,
+    images: ['/lovable-uploads/forza-horizon-5.png', '/lovable-uploads/forza-horizon-5-2.png', '/lovable-uploads/forza-horizon-5-3.png'],
+    category: 'jogos',
+    platform: 'xbox',
+    condition: 'new',
+    stock: 18,
+    is_featured: true,
+    is_active: true,
+    tags: ['xbox', 'jogo', 'corrida', 'mundo aberto', 'exclusivo', 'forza'],
+    rating: 4.9,
+    pro_discount: 10
+  },
+  {
+    id: '18',
+    title: 'Animal Crossing: New Horizons',
+    description: 'Escape para uma ilha deserta e crie seu paraíso como quiser em Animal Crossing: New Horizons! Colete recursos para criar tudo, desde ferramentas até itens de conforto. Interaja com personagens carismáticos, personalize sua casa e a ilha inteira, e desfrute do passar das estações em tempo real.',
+    price: 299.99,
+    discount_price: 279.99,
+    images: ['/lovable-uploads/animal-crossing.png', '/lovable-uploads/animal-crossing-2.png', '/lovable-uploads/animal-crossing-3.png'],
+    category: 'jogos',
+    platform: 'nintendo',
+    condition: 'new',
+    stock: 25,
+    is_featured: true,
+    is_active: true,
+    tags: ['nintendo', 'jogo', 'simulação', 'exclusivo', 'animal crossing', 'relaxante'],
+    rating: 4.8,
+    pro_discount: 10
+  },
+  {
+    id: '19',
+    title: 'Controle DualSense Edge',
+    description: 'Controle premium para PlayStation 5 com personalização avançada. Inclui gatilhos ajustáveis, botões traseiros mapeáveis, capas de analógicos intercambiáveis e perfis de controle salvos. O controle profissional definitivo para jogadores competitivos.',
+    price: 899.99,
+    discount_price: 849.99,
+    images: ['/lovable-uploads/dualsense-edge.png', '/lovable-uploads/dualsense-edge-2.png', '/lovable-uploads/dualsense-edge-3.png'],
+    category: 'acessorios',
+    platform: 'playstation',
+    condition: 'new',
+    stock: 15,
+    is_featured: true,
+    is_active: true,
+    tags: ['playstation', 'acessório', 'controle', 'dualsense', 'ps5', 'premium', 'profissional'],
+    rating: 4.9,
+    pro_discount: 15
+  },
+  {
+    id: '20',
+    title: 'Figura Colecionável Link',
+    description: 'Figura colecionável premium de Link de The Legend of Zelda: Tears of the Kingdom. Altura: 25cm. Detalhes impressionantes, pintada à mão e base personalizada. Inclui acessórios como a Master Sword e o escudo Hylian. Edição limitada com certificado de autenticidade.',
+    price: 799.99,
+    discount_price: 749.99,
+    images: ['/lovable-uploads/link-figure.png', '/lovable-uploads/link-figure-2.png', '/lovable-uploads/link-figure-3.png'],
+    category: 'colecionaveis',
+    condition: 'new',
+    stock: 8,
+    is_featured: true,
+    is_active: true,
+    tags: ['colecionável', 'figura', 'zelda', 'link', 'premium', 'edição limitada'],
+    rating: 4.9,
+    pro_discount: 10
   }
 ];
 
 export const useProducts = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS); // Initialize with MOCK_PRODUCTS
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async (options?: {
+    category?: string;
+    platform?: string;
+    condition?: string;
+    featured?: boolean;
+    search?: string;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      console.log('Buscando produtos...');
-      
-      // Buscar todos os produtos
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+      let query = supabase.from('products').select('*');
 
-      if (productsError) {
-        console.error('Erro ao buscar produtos:', productsError);
-        throw productsError;
+      // Apply filters
+      if (options?.category) {
+        query = query.eq('category', options.category);
+      }
+      if (options?.platform) {
+        query = query.eq('platform', options.platform);
+      }
+      if (options?.condition) {
+        query = query.eq('condition', options.condition);
+      }
+      if (options?.featured !== undefined) {
+        query = query.eq('is_featured', options.featured);
+      }
+      if (options?.search) {
+        query = query.ilike('title', `%${options.search}%`);
       }
 
-      // Se não houver produtos, usar dados mockados
-      if (!productsData || productsData.length === 0) {
-        console.log('Nenhum produto encontrado, usando dados mockados');
-        setProducts(MOCK_PRODUCTS);
-        setLoading(false);
-        return;
+      // Apply sorting
+      if (options?.sortBy) {
+        const order = options.sortOrder || 'asc';
+        query = query.order(options.sortBy, { ascending: order === 'asc' });
+      } else {
+        // Default sorting
+        query = query.order('created_at', { ascending: false });
       }
 
-      console.log('Produtos encontrados:', productsData?.length || 0);
+      // Apply limit
+      if (options?.limit) {
+        query = query.limit(options.limit);
+      }
 
-      // Buscar as tags para cada produto usando a view otimizada
-      const productsWithTags = await Promise.all(
-        (productsData || []).map(async (product) => {
-          console.log('Buscando tags para produto:', product.name);
-          
-          const { data: productTagsData, error: tagsError } = await supabase
-            .from('view_product_with_tags')
-            .select('tag_id, tag_name')
-            .eq('product_id', product.id);
+      // Only active products
+      query = query.eq('is_active', true);
 
-          if (tagsError) {
-            console.error('Erro ao buscar tags do produto:', product.name, tagsError);
-            return {
-              ...product,
-              tags: []
-            };
-          }
+      const { data, error: fetchError } = await query;
 
-          const tags = productTagsData?.map(row => ({
-            id: row.tag_id,
-            name: row.tag_name
-          })).filter(tag => tag.id && tag.name) || [];
+      if (fetchError) throw fetchError;
 
-          console.log(`Tags para ${product.name}:`, tags);
-
-          return {
-            ...product,
-            tags
-          };
-        })
-      );
-
-      console.log('Produtos com tags carregados:', productsWithTags.length);
-      setProducts(productsWithTags);
-    } catch (error: any) {
-      console.error('Erro ao carregar produtos:', error);
+      setProducts(data || []);
+    } catch (err: any) {
+      console.error('Error fetching products:', err);
+      setError('Falha ao carregar produtos.');
       
-      // Em caso de erro, usar dados mockados
-      console.log('Erro ao buscar produtos, usando dados mockados');
-      setProducts(MOCK_PRODUCTS);
+      // Filter mock products based on options
+      let filteredProducts = [...MOCK_PRODUCTS];
       
-      toast({
-        title: "Aviso",
-        description: "Usando dados de demonstração devido a um problema de conexão.",
-        variant: "default",
+      if (options?.category) {
+        filteredProducts = filteredProducts.filter(p => p.category === options.category);
+      }
+      if (options?.platform) {
+        filteredProducts = filteredProducts.filter(p => p.platform === options.platform);
+      }
+      if (options?.condition) {
+        filteredProducts = filteredProducts.filter(p => p.condition === options.condition);
+      }
+      if (options?.featured !== undefined) {
+        filteredProducts = filteredProducts.filter(p => p.is_featured === options.featured);
+      }
+      if (options?.search) {
+        const searchLower = options.search.toLowerCase();
+        filteredProducts = filteredProducts.filter(p => 
+          p.title.toLowerCase().includes(searchLower) || 
+          p.description.toLowerCase().includes(searchLower) ||
+          (p.tags && p.tags.some(tag => tag.toLowerCase().includes(searchLower)))
+        );
+      }
+      
+      // Apply sorting
+      if (options?.sortBy) {
+        const sortBy = options.sortBy as keyof Product;
+        const order = options.sortOrder || 'asc';
+        filteredProducts.sort((a, b) => {
+          if (a[sortBy] < b[sortBy]) return order === 'asc' ? -1 : 1;
+          if (a[sortBy] > b[sortBy]) return order === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+      
+      // Apply limit
+      if (options?.limit) {
+        filteredProducts = filteredProducts.slice(0, options.limit);
+      }
+      
+      setProducts(filteredProducts);
+      
+      toast({ 
+        title: 'Aviso', 
+        description: 'Usando dados locais devido a um problema de conexão.', 
+        variant: 'default' 
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const addProduct = async (productData: Omit<Product, 'id' | 'tags'> & { tagIds: string[] }) => {
+  const fetchProductById = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      console.log('Adicionando produto:', productData);
-      const { tagIds, ...product } = productData;
-      
-      const { data: productResult, error: productError } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('products')
-        .insert([product])
-        .select()
-        .single();
-
-      if (productError) {
-        console.error('Erro ao inserir produto:', productError);
-        throw productError;
-      }
-
-      console.log('Produto criado:', productResult.id);
-
-      // Adicionar relacionamentos com tags
-      if (tagIds && tagIds.length > 0) {
-        console.log('Adicionando tags ao produto:', tagIds);
-        const tagRelations = tagIds.map(tagId => ({
-          product_id: productResult.id,
-          tag_id: tagId
-        }));
-
-        const { error: tagError } = await supabase
-          .from('product_tags')
-          .insert(tagRelations);
-
-        if (tagError) {
-          console.error('Erro ao adicionar tags:', tagError);
-          throw tagError;
-        }
-        console.log('Tags adicionadas com sucesso');
-      }
-
-      await fetchProducts(); // Recarregar para obter as tags
-      toast({
-        title: "Produto adicionado com sucesso!",
-      });
-      
-      return productResult;
-    } catch (error: any) {
-      console.error('Erro completo ao adicionar produto:', error);
-      toast({
-        title: "Erro ao adicionar produto",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const updateProduct = async (id: string, updates: Partial<Product> & { tagIds?: string[] }) => {
-    try {
-      console.log('Atualizando produto:', id, updates);
-      const { tagIds, tags, ...productUpdates } = updates;
-
-      const { data, error } = await supabase
-        .from('products')
-        .update(productUpdates)
+        .select('*')
         .eq('id', id)
-        .select()
         .single();
 
-      if (error) {
-        console.error('Erro ao atualizar produto:', error);
-        throw error;
-      }
+      if (fetchError) throw fetchError;
 
-      console.log('Produto atualizado:', data.id);
-
-      // Atualizar tags se fornecidas
-      if (tagIds !== undefined) {
-        console.log('Atualizando tags do produto:', tagIds);
-        
-        // Remover relacionamentos existentes
-        const { error: deleteError } = await supabase
-          .from('product_tags')
-          .delete()
-          .eq('product_id', id);
-
-        if (deleteError) {
-          console.error('Erro ao remover tags antigas:', deleteError);
-          throw deleteError;
-        }
-
-        // Adicionar novos relacionamentos
-        if (tagIds.length > 0) {
-          const tagRelations = tagIds.map(tagId => ({
-            product_id: id,
-            tag_id: tagId
-          }));
-
-          const { error: tagError } = await supabase
-            .from('product_tags')
-            .insert(tagRelations);
-
-          if (tagError) {
-            console.error('Erro ao inserir novas tags:', tagError);
-            throw tagError;
-          }
-        }
-        console.log('Tags atualizadas com sucesso');
-      }
-
-      await fetchProducts(); // Recarregar para obter as tags atualizadas
-      toast({
-        title: "Produto atualizado com sucesso!",
-      });
-      
       return data;
-    } catch (error: any) {
-      console.error('Erro completo ao atualizar produto:', error);
-      toast({
-        title: "Erro ao atualizar produto",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const deleteProduct = async (id: string) => {
-    try {
-      console.log('Deletando produto:', id);
+    } catch (err: any) {
+      console.error(`Error fetching product with ID ${id}:`, err);
+      setError(`Falha ao carregar produto com ID ${id}.`);
       
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Erro ao deletar produto:', error);
-        throw error;
+      // Return mock product with matching ID
+      const mockProduct = MOCK_PRODUCTS.find(p => p.id === id);
+      
+      if (!mockProduct) {
+        toast({ 
+          title: 'Erro', 
+          description: 'Produto não encontrado.', 
+          variant: 'destructive' 
+        });
+        return null;
       }
-
-      setProducts(prev => prev.filter(p => p.id !== id));
-      toast({
-        title: "Produto removido com sucesso!",
+      
+      toast({ 
+        title: 'Aviso', 
+        description: 'Usando dados locais devido a um problema de conexão.', 
+        variant: 'default' 
       });
-      console.log('Produto deletado com sucesso');
-    } catch (error: any) {
-      console.error('Erro completo ao deletar produto:', error);
-      toast({
-        title: "Erro ao remover produto",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
+      
+      return mockProduct;
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [toast]);
 
+  // Initial fetch
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
-  return {
-    products,
-    loading,
-    addProduct,
-    updateProduct,
-    deleteProduct,
-    refetch: fetchProducts,
-  };
+  return { products, loading, error, fetchProducts, fetchProductById };
 };

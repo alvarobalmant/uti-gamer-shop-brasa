@@ -1,139 +1,117 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export interface Banner {
   id: string;
-  title?: string;
+  title: string;
   subtitle?: string;
-  button_text: string;
-  button_link: string;
-  image_url?: string;
-  button_image_url?: string;
-  gradient: string;
-  background_type?: string;
-  position: number;
+  image_url: string;
+  link_url?: string;
+  display_order: number;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// Mock data for offline mode
+const MOCK_BANNERS: Banner[] = [
+  {
+    id: '1',
+    title: 'PlayStation 5 em Estoque!',
+    subtitle: 'Garanta já o seu console da nova geração com frete grátis',
+    image_url: '/lovable-uploads/banner-ps5.png',
+    link_url: '/categoria/consoles/playstation',
+    display_order: 1,
+    is_active: true
+  },
+  {
+    id: '2',
+    title: 'Promoção de Jogos Xbox',
+    subtitle: 'Até 40% de desconto em jogos selecionados - Oferta por tempo limitado!',
+    image_url: '/lovable-uploads/banner-xbox-games.png',
+    link_url: '/categoria/jogos/xbox',
+    display_order: 2,
+    is_active: true
+  },
+  {
+    id: '3',
+    title: 'Nintendo Switch OLED',
+    subtitle: 'A melhor experiência portátil com tela vibrante e cores impressionantes',
+    image_url: '/lovable-uploads/banner-switch-oled.png',
+    link_url: '/categoria/consoles/nintendo',
+    display_order: 3,
+    is_active: true
+  },
+  {
+    id: '4',
+    title: 'Colecionáveis em Destaque',
+    subtitle: 'Figuras exclusivas dos seus personagens favoritos com 15% de desconto',
+    image_url: '/lovable-uploads/banner-colecionaveis.png',
+    link_url: '/categoria/colecionaveis',
+    display_order: 4,
+    is_active: true
+  },
+  {
+    id: '5',
+    title: 'Seja UTI PRO',
+    subtitle: 'Assine agora e ganhe descontos exclusivos em todo o site',
+    image_url: '/lovable-uploads/banner-uti-pro.png',
+    link_url: '/uti-pro',
+    display_order: 5,
+    is_active: true
+  },
+  {
+    id: '6',
+    title: 'Serviços Especializados',
+    subtitle: 'Manutenção de consoles com diagnóstico gratuito e garantia',
+    image_url: '/lovable-uploads/banner-servicos.png',
+    link_url: '/servicos',
+    display_order: 6,
+    is_active: true
+  }
+];
+
 export const useBanners = () => {
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [banners, setBanners] = useState<Banner[]>(MOCK_BANNERS);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchBanners = async () => {
+  const fetchBanners = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('banners')
         .select('*')
         .eq('is_active', true)
-        .order('position');
+        .order('display_order', { ascending: true });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
+
       setBanners(data || []);
-    } catch (error: any) {
-      console.error('Erro ao buscar banners:', error);
-      toast({
-        title: "Erro ao carregar banners",
-        description: error.message,
-        variant: "destructive",
+    } catch (err: any) {
+      console.error('Error fetching banners:', err);
+      setError('Falha ao carregar banners.');
+      
+      // Use mock banners on error
+      setBanners(MOCK_BANNERS);
+      
+      toast({ 
+        title: 'Aviso', 
+        description: 'Usando banners locais devido a um problema de conexão.', 
+        variant: 'default' 
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const addBanner = async (bannerData: Omit<Banner, 'id' | 'created_at' | 'updated_at'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('banners')
-        .insert([bannerData])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setBanners(prev => [...prev, data]);
-      toast({
-        title: "Banner adicionado com sucesso!",
-        description: "O banner foi criado e está ativo.",
-      });
-    } catch (error: any) {
-      console.error('Erro ao adicionar banner:', error);
-      toast({
-        title: "Erro ao adicionar banner",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const updateBanner = async (id: string, bannerData: Partial<Banner>) => {
-    try {
-      const { data, error } = await supabase
-        .from('banners')
-        .update({ ...bannerData, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setBanners(prev => prev.map(banner => banner.id === id ? data : banner));
-      toast({
-        title: "Banner atualizado com sucesso!",
-        description: "As alterações foram salvas.",
-      });
-    } catch (error: any) {
-      console.error('Erro ao atualizar banner:', error);
-      toast({
-        title: "Erro ao atualizar banner",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const deleteBanner = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('banners')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setBanners(prev => prev.filter(banner => banner.id !== id));
-      toast({
-        title: "Banner excluído com sucesso!",
-        description: "O banner foi removido permanentemente.",
-      });
-    } catch (error: any) {
-      console.error('Erro ao excluir banner:', error);
-      toast({
-        title: "Erro ao excluir banner",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
+  // Initial fetch
   useEffect(() => {
     fetchBanners();
-  }, []);
+  }, [fetchBanners]);
 
-  return {
-    banners,
-    loading,
-    addBanner,
-    updateBanner,
-    deleteBanner,
-    refetch: fetchBanners
-  };
+  return { banners, loading, error, fetchBanners };
 };

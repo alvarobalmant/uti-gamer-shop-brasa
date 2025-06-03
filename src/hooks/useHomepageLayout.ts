@@ -20,8 +20,21 @@ interface LayoutUpdatePayload {
   is_visible: boolean;
 }
 
+// Mock data for offline mode
+const MOCK_LAYOUT_ITEMS: HomepageLayoutItem[] = [
+  { id: 1, section_key: 'hero_banner', display_order: 1, is_visible: true, title: 'Carrossel de Banners Principal' },
+  { id: 2, section_key: 'hero_quick_links', display_order: 2, is_visible: true, title: 'Links Rápidos (Categorias)' },
+  { id: 3, section_key: 'promo_banner', display_order: 3, is_visible: true, title: 'Banner Promocional (UTI PRO)' },
+  { id: 4, section_key: 'product_section_novidades', display_order: 4, is_visible: true, title: 'Novidades' },
+  { id: 5, section_key: 'product_section_mais_vendidos', display_order: 5, is_visible: true, title: 'Mais Vendidos' },
+  { id: 6, section_key: 'product_section_ofertas', display_order: 6, is_visible: true, title: 'Ofertas Especiais' },
+  { id: 7, section_key: 'specialized_services', display_order: 7, is_visible: true, title: 'Seção: Nossos Serviços Especializados' },
+  { id: 8, section_key: 'why_choose_us', display_order: 8, is_visible: true, title: 'Seção: Por que escolher a UTI DOS GAMES?' },
+  { id: 9, section_key: 'contact_help', display_order: 9, is_visible: true, title: 'Seção: Precisa de Ajuda/Contato' }
+];
+
 export const useHomepageLayout = () => {
-  const [layoutItems, setLayoutItems] = useState<HomepageLayoutItem[]>([]);
+  const [layoutItems, setLayoutItems] = useState<HomepageLayoutItem[]>(MOCK_LAYOUT_ITEMS);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -60,22 +73,8 @@ export const useHomepageLayout = () => {
 
       // If no layout data exists, provide default layout
       if (!layoutData || layoutData.length === 0) {
-        const defaultLayout = [
-          { id: 1, section_key: 'hero_banner', display_order: 1, is_visible: true },
-          { id: 2, section_key: 'hero_quick_links', display_order: 2, is_visible: true },
-          { id: 3, section_key: 'promo_banner', display_order: 3, is_visible: true },
-          { id: 4, section_key: 'specialized_services', display_order: 4, is_visible: true },
-          { id: 5, section_key: 'why_choose_us', display_order: 5, is_visible: true },
-          { id: 6, section_key: 'contact_help', display_order: 6, is_visible: true }
-        ];
-        
-        // Add titles to default layout
-        const enrichedDefaultLayout = defaultLayout.map(item => ({
-          ...item,
-          title: getSectionTitle(item.section_key)
-        }));
-        
-        setLayoutItems(enrichedDefaultLayout);
+        const defaultLayout = MOCK_LAYOUT_ITEMS;
+        setLayoutItems(defaultLayout);
         setLoading(false);
         return;
       }
@@ -120,22 +119,7 @@ export const useHomepageLayout = () => {
       setError('Falha ao carregar o layout da página inicial.');
       
       // Provide fallback layout on error
-      const fallbackLayout = [
-        { id: 1, section_key: 'hero_banner', display_order: 1, is_visible: true },
-        { id: 2, section_key: 'hero_quick_links', display_order: 2, is_visible: true },
-        { id: 3, section_key: 'promo_banner', display_order: 3, is_visible: true },
-        { id: 4, section_key: 'specialized_services', display_order: 4, is_visible: true },
-        { id: 5, section_key: 'why_choose_us', display_order: 5, is_visible: true },
-        { id: 6, section_key: 'contact_help', display_order: 6, is_visible: true }
-      ];
-      
-      // Add titles to fallback layout
-      const enrichedFallbackLayout = fallbackLayout.map(item => ({
-        ...item,
-        title: getSectionTitle(item.section_key)
-      }));
-      
-      setLayoutItems(enrichedFallbackLayout);
+      setLayoutItems(MOCK_LAYOUT_ITEMS);
       
       toast({ 
         title: 'Aviso', 

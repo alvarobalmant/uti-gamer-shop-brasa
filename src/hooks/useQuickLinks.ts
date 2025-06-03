@@ -1,155 +1,134 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export interface QuickLink {
   id: string;
-  label: string;
-  path: string;
-  icon_url: string;
-  position: number;
+  title: string;
+  icon_url?: string;
+  link_url: string;
+  display_order: number;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// Mock data for offline mode
+const MOCK_QUICK_LINKS: QuickLink[] = [
+  {
+    id: '1',
+    title: 'Consoles PS',
+    icon_url: '/lovable-uploads/icon-playstation.png',
+    link_url: '/categoria/consoles/playstation',
+    display_order: 1,
+    is_active: true
+  },
+  {
+    id: '2',
+    title: 'Consoles Xbox',
+    icon_url: '/lovable-uploads/icon-xbox.png',
+    link_url: '/categoria/consoles/xbox',
+    display_order: 2,
+    is_active: true
+  },
+  {
+    id: '3',
+    title: 'Consoles Nintendo',
+    icon_url: '/lovable-uploads/icon-nintendo.png',
+    link_url: '/categoria/consoles/nintendo',
+    display_order: 3,
+    is_active: true
+  },
+  {
+    id: '4',
+    title: 'Jogos em Mídia Física',
+    icon_url: '/lovable-uploads/icon-games.png',
+    link_url: '/categoria/jogos',
+    display_order: 4,
+    is_active: true
+  },
+  {
+    id: '5',
+    title: 'Acessórios Gamer',
+    icon_url: '/lovable-uploads/icon-accessories.png',
+    link_url: '/categoria/acessorios',
+    display_order: 5,
+    is_active: true
+  },
+  {
+    id: '6',
+    title: 'Colecionáveis Raros',
+    icon_url: '/lovable-uploads/icon-collectibles.png',
+    link_url: '/categoria/colecionaveis',
+    display_order: 6,
+    is_active: true
+  },
+  {
+    id: '7',
+    title: 'Ofertas Imperdíveis',
+    icon_url: '/lovable-uploads/icon-sales.png',
+    link_url: '/ofertas',
+    display_order: 7,
+    is_active: true
+  },
+  {
+    id: '8',
+    title: 'Clube UTI PRO',
+    icon_url: '/lovable-uploads/icon-utipro.png',
+    link_url: '/uti-pro',
+    display_order: 8,
+    is_active: true
+  },
+  {
+    id: '9',
+    title: 'Serviços Técnicos',
+    icon_url: '/lovable-uploads/icon-repair.png',
+    link_url: '/servicos',
+    display_order: 9,
+    is_active: true
+  }
+];
+
 export const useQuickLinks = () => {
-  const [quickLinks, setQuickLinks] = useState<QuickLink[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [quickLinks, setQuickLinks] = useState<QuickLink[]>(MOCK_QUICK_LINKS);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchQuickLinks = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('quick_links')
         .select('*')
-        .eq('is_active', true) // Fetch only active links for frontend display
-        .order('position');
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
+
       setQuickLinks(data || []);
-    } catch (error: any) {
-      console.error('Erro ao buscar links rápidos:', error);
-      // Toast might not be appropriate for frontend display errors, maybe handle silently
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Fetch all links (including inactive) for admin panel
-  const fetchAllQuickLinksForAdmin = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('quick_links')
-        .select('*')
-        .order('position');
-
-      if (error) throw error;
-      setQuickLinks(data || []);
-    } catch (error: any) {
-      console.error('Erro ao buscar todos os links rápidos para admin:', error);
-      toast({
-        title: "Erro ao carregar links rápidos",
-        description: error.message,
-        variant: "destructive",
+    } catch (err: any) {
+      console.error('Error fetching quick links:', err);
+      setError('Falha ao carregar links rápidos.');
+      
+      // Use mock quick links on error
+      setQuickLinks(MOCK_QUICK_LINKS);
+      
+      toast({ 
+        title: 'Aviso', 
+        description: 'Usando links rápidos locais devido a um problema de conexão.', 
+        variant: 'default' 
       });
     } finally {
       setLoading(false);
     }
   }, [toast]);
 
-  const addQuickLink = async (linkData: Omit<QuickLink, 'id' | 'created_at' | 'updated_at'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('quick_links')
-        .insert([linkData])
-        .select()
-        .single();
+  // Initial fetch
+  useEffect(() => {
+    fetchQuickLinks();
+  }, [fetchQuickLinks]);
 
-      if (error) throw error;
-
-      setQuickLinks(prev => [...prev, data].sort((a, b) => a.position - b.position));
-      toast({
-        title: "Link rápido adicionado com sucesso!",
-      });
-      return data;
-    } catch (error: any) {
-      console.error('Erro ao adicionar link rápido:', error);
-      toast({
-        title: "Erro ao adicionar link rápido",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const updateQuickLink = async (id: string, linkData: Partial<Omit<QuickLink, 'id' | 'created_at'>>) => {
-    try {
-      const { data, error } = await supabase
-        .from('quick_links')
-        .update({ ...linkData, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setQuickLinks(prev => prev.map(link => link.id === id ? data : link).sort((a, b) => a.position - b.position));
-      toast({
-        title: "Link rápido atualizado com sucesso!",
-      });
-      return data;
-    } catch (error: any) {
-      console.error('Erro ao atualizar link rápido:', error);
-      toast({
-        title: "Erro ao atualizar link rápido",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const deleteQuickLink = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('quick_links')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setQuickLinks(prev => prev.filter(link => link.id !== id));
-      toast({
-        title: "Link rápido excluído com sucesso!",
-      });
-    } catch (error: any) {
-      console.error('Erro ao excluir link rápido:', error);
-      toast({
-        title: "Erro ao excluir link rápido",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  // Initial fetch for frontend usage (can be called specifically in admin too)
-  // useEffect(() => {
-  //   fetchQuickLinks();
-  // }, [fetchQuickLinks]);
-
-  return {
-    quickLinks,
-    loading,
-    fetchQuickLinks, // For frontend
-    fetchAllQuickLinksForAdmin, // For admin panel
-    addQuickLink,
-    updateQuickLink,
-    deleteQuickLink,
-  };
+  return { quickLinks, loading, error, fetchQuickLinks };
 };
-
