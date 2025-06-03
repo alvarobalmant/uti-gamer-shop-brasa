@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -24,11 +23,7 @@ interface ProfessionalHeaderProps {
 const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps) => {
   // Implementação com tratamento de erro e fallback para todos os hooks
   let authData = { user: null, isAdmin: false };
-<<<<<<< HEAD
   let cartData = { cartItems: [] };
-=======
-  let cartData = { items: [] }; // Changed from cartItems to items
->>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
   let subscriptionData = { hasActiveSubscription: () => false };
   
   try {
@@ -52,11 +47,7 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
   // Extrair valores com fallback seguro
   const user = authData?.user || null;
   const isAdmin = authData?.isAdmin || false;
-<<<<<<< HEAD
   const cartItems = cartData?.cartItems || [];
-=======
-  const cartItems = cartData?.items || []; // Changed from cartItems to items
->>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
   const hasActiveSubscription = () => {
     try {
       return subscriptionData?.hasActiveSubscription() || false;

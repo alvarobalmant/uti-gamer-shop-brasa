@@ -68,7 +68,6 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
       );
     }
     
-<<<<<<< HEAD
     // Filtrar por categorias
     if (categoryIds && categoryIds.length > 0) {
       filtered = filtered.filter(product => 
@@ -77,10 +76,6 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
         )
       );
     }
-=======
-    // Note: Since Product type doesn't have categories property, we'll skip category filtering
-    // If you need category filtering, you'll need to add categories to the Product type
->>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
     
     // Limitar quantidade
     if (limit && limit > 0) {
@@ -124,6 +119,7 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
             loading={productsLoading}
             onAddToCart={addToCart}
             title={section.title || ''}
+            onCardClick={handleProductCardClick}
           />
         );
       
