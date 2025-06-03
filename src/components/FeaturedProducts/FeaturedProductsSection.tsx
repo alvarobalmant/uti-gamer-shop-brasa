@@ -139,6 +139,7 @@ const FeaturedProductsSection = ({
             Nenhum produto encontrado nesta categoria.
           </div>
         ) : (
+<<<<<<< HEAD
           <Carousel
             opts={{
               align: "start",
@@ -185,6 +186,55 @@ const FeaturedProductsSection = ({
               </>
             )}
           </Carousel>
+=======
+          <div className="relative">
+            {/* Container de scroll horizontal otimizado */}
+            <div
+              className={cn(
+                // Container base
+                "w-full overflow-x-auto overflow-y-hidden pb-4",
+                // Scrollbar styling
+                "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
+                // Scroll behavior otimizado
+                "overscroll-behavior-x-contain",
+                // Touch optimizations
+                "touch-pan-x"
+              )}
+              style={{
+                scrollbarWidth: "thin",
+                WebkitOverflowScrolling: "touch",
+                scrollBehavior: "smooth",
+                touchAction: "pan-x" // Permite apenas scroll horizontal
+              } as React.CSSProperties}
+            >
+              {/* Inner flex container */}
+              <div className="flex gap-4 md:gap-6 min-w-max px-1">
+                {displayedProducts.map((product, index) => (
+                  <div
+                    key={`${selectedCategory}-${product.id}`}
+                    className={cn(
+                      // Fixed width para consistência no scroll
+                      "w-60 sm:w-64 flex-shrink-0",
+                      // Animation
+                      "transition-all duration-300 ease-in-out",
+                      animateProducts
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4"
+                    )}
+                    style={{
+                      transitionDelay: animateProducts ? `${index * 75}ms` : '0ms'
+                    }}
+                  >
+                    <ProductCard
+                      product={product}
+                      onAddToCart={onAddToCart}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+>>>>>>> 224930db262611ff579de0add673e817e59d686b
         )}
       </div>
     </section>
@@ -192,4 +242,3 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
-
