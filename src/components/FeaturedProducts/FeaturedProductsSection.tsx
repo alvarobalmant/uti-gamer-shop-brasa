@@ -6,9 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/hooks/useProducts";
-// import { useIsMobile } from "@/hooks/use-mobile"; // Not strictly needed for this implementation
+import { useIsMobile } from "@/hooks/use-mobile";
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"; // Import Carousel components
 
 interface FeaturedProductsSectionProps {
   products: Product[];
@@ -26,7 +33,7 @@ const FeaturedProductsSection = ({
   viewAllLink = "/categoria/inicio",
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
-  // const isMobile = useIsMobile(); // Keep if needed elsewhere, but not for scroll logic here
+  const isMobile = useIsMobile();
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [animateProducts, setAnimateProducts] = useState(true);
 
@@ -65,8 +72,8 @@ const FeaturedProductsSection = ({
       setSelectedCategory(category);
       setTimeout(() => {
         setAnimateProducts(true);
-      }, 50); // Short delay for animation trigger
-    }, 150); // Delay for category switch visual feedback
+      }, 50);
+    }, 150);
   };
 
   useEffect(() => {
@@ -126,57 +133,58 @@ const FeaturedProductsSection = ({
           </Tabs>
         </div>
 
-        {/* Products Grid / Scroll Container - Reverted to original structure with corrected touch-action */}
+        {/* Products Carousel */}
         {displayedProducts.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             Nenhum produto encontrado nesta categoria.
           </div>
         ) : (
-          <div className="relative">
-            {/* Container de scroll horizontal (funciona com touch no mobile, scrollbar/wheel no desktop) */}
-            <div
-              className={cn(
-                // Container base
-                "w-full overflow-x-auto overflow-y-hidden pb-4", // Permite scroll X, esconde scroll Y
-                // Scrollbar styling (opcional, mas bom para desktop)
-                "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
-                // Scroll behavior otimizado
-                "overscroll-behavior-x-contain" // Evita scroll da página inteira ao chegar no fim do container
-              )}
-              style={{
-                scrollbarWidth: "thin", // Para Firefox
-                WebkitOverflowScrolling: "touch", // Scroll suave no iOS
-                scrollBehavior: "smooth",
-                touchAction: "pan-y pinch-zoom" // *** CORREÇÃO PRINCIPAL: Permite scroll vertical (pan-y) e zoom, o navegador cuida do pan-x automaticamente ***
-              } as React.CSSProperties}
-            >
-              {/* Inner flex container (mantém layout original) */}
-              <div className="flex gap-4 md:gap-6 min-w-max px-1">
-                {displayedProducts.map((product, index) => (
-                  <div
-                    key={`${selectedCategory}-${product.id}`}
-                    className={cn(
-                      // Estilo original do card (mantido)
-                      "w-60 sm:w-64 flex-shrink-0",
-                      // Animation
-                      "transition-all duration-300 ease-in-out",
-                      animateProducts
-                        ? "opacity-100 translate-y-0"
-                        : "opacity-0 translate-y-4"
-                    )}
-                    style={{
-                      transitionDelay: animateProducts ? `${index * 75}ms` : '0ms'
-                    }}
-                  >
-                    <ProductCard
-                      product={product}
-                      onAddToCart={onAddToCart}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: false, // Or true, depending on desired behavior
+              dragFree: true, // Allows free scrolling without snapping
+              // Ensure touch actions allow vertical page scroll
+              watchDrag: (emblaApi, event) => {
+                // Basic check for vertical drag dominance
+                if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+                  return false; // Prevent Embla from handling vertical drags
+                }
+                return true; // Allow Embla to handle horizontal drags
+              }
+            }}
+            className="relative w-full"
+          >
+            <CarouselContent className="-ml-4">
+              {displayedProducts.map((product, index) => (
+                <CarouselItem
+                  key={`${selectedCategory}-${product.id}`}
+                  className={cn(
+                    // Adjust basis for desired number of items visible
+                    "basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6",
+                    "pl-4", // Padding for spacing
+                    // Animation
+                    "transition-opacity duration-300 ease-in-out",
+                    animateProducts ? "opacity-100" : "opacity-0"
+                  )}
+                  style={{
+                    transitionDelay: animateProducts ? `${index * 75}ms` : '0ms'
+                  }}
+                >
+                  <ProductCard
+                    product={product}
+                    onAddToCart={onAddToCart}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            {!isMobile && (
+              <>
+                <CarouselPrevious className="absolute left-[-10px] top-1/2 -translate-y-1/2 z-10" />
+                <CarouselNext className="absolute right-[-10px] top-1/2 -translate-y-1/2 z-10" />
+              </>
+            )}
+          </Carousel>
         )}
       </div>
     </section>
