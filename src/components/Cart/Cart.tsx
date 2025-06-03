@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,18 +6,12 @@ import { X, ShoppingBag, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { sendToWhatsApp } from '@/utils/whatsapp';
+import { formatCurrency } from '@/utils/format';
 
 interface CartProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value);
-};
 
 const Cart = ({ isOpen, onClose }: CartProps) => {
   const { items: cartItems, removeItem, updateQuantity, clearCart } = useCart();

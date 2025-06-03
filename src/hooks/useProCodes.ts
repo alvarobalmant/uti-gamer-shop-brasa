@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -132,7 +131,7 @@ export const useProCodes = () => {
     }
   }, [toast, fetchProCodes]);
 
-  const deactivateProCode = useCallback(async (id: string) => {
+  const deactivateProCode = useCallback(async (id: string): Promise<boolean> => {
     try {
       const { error: updateError } = await supabase
         .from('pro_codes')
@@ -147,6 +146,7 @@ export const useProCodes = () => {
       });
 
       await fetchProCodes();
+      return true;
     } catch (err: any) {
       console.error('Error deactivating pro code:', err);
       toast({ 
@@ -154,13 +154,12 @@ export const useProCodes = () => {
         description: 'Falha ao desativar código PRO.', 
         variant: 'destructive' 
       });
-      throw err;
+      return false;
     }
   }, [toast, fetchProCodes]);
 
-  const deactivateCode = useCallback(async (id: string) => {
-    const success = await deactivateProCode(id);
-    return !!success;
+  const deactivateCode = useCallback(async (id: string): Promise<boolean> => {
+    return await deactivateProCode(id);
   }, [deactivateProCode]);
 
   const redeemProCode = useCallback(async (codeId: string) => {

@@ -14,3 +14,6 @@ export const formatDate = (date: string | Date): string => {
 export const formatNumber = (value: number): string => {
   return new Intl.NumberFormat('pt-BR').format(value);
 };
+
+// Export a default function for backward compatibility
+export default { formatCurrency, formatDate, formatNumber };
