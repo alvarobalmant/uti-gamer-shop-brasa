@@ -132,6 +132,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pro_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by: string | null
+          duration_months: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          duration_months: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          duration_months?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       product_section_items: {
         Row: {
           created_at: string | null
@@ -288,21 +324,27 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          is_pro_member: boolean | null
           name: string | null
+          pro_expires_at: string | null
           role: string
         }
         Insert: {
           created_at?: string
           email?: string | null
           id: string
+          is_pro_member?: boolean | null
           name?: string | null
+          pro_expires_at?: string | null
           role?: string
         }
         Update: {
           created_at?: string
           email?: string | null
           id?: string
+          is_pro_member?: boolean | null
           name?: string | null
+          pro_expires_at?: string | null
           role?: string
         }
         Relationships: []
@@ -649,9 +691,17 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_user_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      redeem_pro_code: {
+        Args: { p_code_id: string; p_user_id: string; p_end_date: string }
+        Returns: Json
       }
       remover_meses_assinatura: {
         Args: { user_id: string; meses: number }
