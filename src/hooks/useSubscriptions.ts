@@ -73,7 +73,7 @@ export const useSubscriptions = () => {
     try {
       console.log('Buscando dados do usuário:', userId);
 
-      // Fetch user subscription with improved query
+      // Fetch user subscription with explicit foreign key reference
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('user_subscriptions')
         .select(`
@@ -85,7 +85,7 @@ export const useSubscriptions = () => {
           end_date,
           created_at,
           updated_at,
-          subscription_plans (
+          subscription_plans:plan_id (
             id,
             name,
             description,

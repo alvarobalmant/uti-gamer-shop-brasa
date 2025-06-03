@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +26,18 @@ export interface Product {
   list_price?: number;
   new_price?: number;
   digital_price?: number;
+}
+
+// Type for creating new products - ensures required fields are present
+export interface CreateProductData {
+  name: string;
+  price: number;
+  description?: string;
+  image?: string;
+  additional_images?: string[];
+  sizes?: string[];
+  colors?: string[];
+  stock?: number;
 }
 
 export const useProducts = () => {
@@ -101,7 +112,7 @@ export const useProducts = () => {
     }
   };
 
-  const addProduct = async (productData: Partial<Product>): Promise<boolean> => {
+  const addProduct = async (productData: CreateProductData): Promise<boolean> => {
     try {
       const { data, error } = await supabase
         .from('products')
