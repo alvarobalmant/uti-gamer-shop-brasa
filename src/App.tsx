@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
 import SearchResults from "./pages/SearchResults";
 import CategoryPage from "./pages/CategoryPage";
-import ProductPage from "./pages/ProductPage";
+// import ProductPage from "./pages/ProductPage"; // Removed import
 import NotFound from "./pages/NotFound";
 import UTIPro from "./pages/UTIPro";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
@@ -48,21 +49,18 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/busca" element={<SearchResults />} />
                 <Route path="/categoria/:category" element={<CategoryPage />} />
-                <Route path="/produto/:id" element={<ProductPage />} />
+                {/* <Route path="/produto/:id" element={<ProductPage />} /> // Removed route */}
                 <Route path="/uti-pro" element={<UTIPro />} />
 
                 {/* Admin Route - Protected */}
-                {/* The AdminPanel component itself handles the different admin sections via Tabs */}
                 <Route 
                   path="/admin" 
                   element={
                     <ProtectedAdminRoute>
-                      {/* Render the main AdminPanel component directly */}
                       <AdminPanel /> 
                     </ProtectedAdminRoute>
                   }
                 />
-                {/* No need for nested routes here if AdminPanel uses Tabs for navigation */}
 
                 {/* Catch-all Not Found Route */}
                 <Route path="*" element={<NotFound />} />
@@ -76,3 +74,4 @@ const App = () => (
 );
 
 export default App;
+
