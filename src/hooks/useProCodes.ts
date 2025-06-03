@@ -148,14 +148,25 @@ export const useProCodes = () => {
       
       console.log('Resultado da função:', result);
       
-      if (result && result.success) {
+      // Handle the result properly - it could be a boolean or an object
+      let success = false;
+      let message = '';
+      
+      if (typeof result === 'boolean') {
+        success = result;
+      } else if (typeof result === 'object' && result !== null) {
+        success = (result as any).success === true;
+        message = (result as any).message || '';
+      }
+      
+      if (success) {
         toast({
           title: "Código resgatado com sucesso!",
           description: `Sua assinatura UTI PRO foi ativada por ${codeData.duration_months} meses.`,
         });
         return true;
       } else {
-        throw new Error(result?.message || 'Erro desconhecido ao resgatar código');
+        throw new Error(message || 'Erro desconhecido ao resgatar código');
       }
     } catch (error: any) {
       console.error('Erro ao resgatar código:', error);
