@@ -20,12 +20,9 @@ export interface Product {
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
-  tags?: Array<{ id: string; name: string }>; // Estrutura corrigida para tags
+  tags?: string[]; // Assumindo que tags são armazenadas como array de strings no Supabase ou tratadas no fetch
   rating?: number;
   pro_discount?: number;
-  pro_price?: number;
-  pro_discount_percent?: number;
-  list_price?: number;
   // Campos adicionados para compatibilidade com Admin/Form
   additional_images?: string[]; 
   sizes?: string[];
@@ -51,142 +48,103 @@ export const useProducts = () => {
     sortBy?: string;
     sortOrder?: 'desc' | 'asc';
   }) => {
-    console.log(`[useProducts] 🚀 Iniciando busca de produtos com opções:`, options);
     setLoading(true);
     setError(null);
-    
     try {
-      console.log('[useProducts] 📡 Criando query base para produtos...');
-      let query = supabase.from('products').select(`
-        *,
-        product_tags!inner(
-          tag_id,
-          tags!inner(
-            id,
-            name
-          )
-        )
-      `);
+      console.log(`[useProducts] Iniciando busca de produtos com opções: ${JSON.stringify(options)}`);
+      setLoading(true);
+      setError(null);
       
-      console.log('[useProducts] ✅ Query base criada com join para tags');
+      let query = supabase.from('products').select('*');
+      console.log('[useProducts] Query base criada: supabase.from("products").select("*")');
 
       // Apply filters based on options
       if (options?.category) {
         query = query.eq('category', options.category);
-        console.log(`[useProducts] 🔍 Filtro adicionado: category = ${options.category}`);
+        console.log(`[useProducts] Filtro adicionado: category = ${options.category}`);
       }
       if (options?.platform) {
         query = query.eq('platform', options.platform);
-        console.log(`[useProducts] 🔍 Filtro adicionado: platform = ${options.platform}`);
+        console.log(`[useProducts] Filtro adicionado: platform = ${options.platform}`);
       }
       if (options?.condition) {
         query = query.eq('condition', options.condition);
-        console.log(`[useProducts] 🔍 Filtro adicionado: condition = ${options.condition}`);
+        console.log(`[useProducts] Filtro adicionado: condition = ${options.condition}`);
       }
       if (options?.featured !== undefined) {
         query = query.eq('is_featured', options.featured);
-        console.log(`[useProducts] 🔍 Filtro adicionado: is_featured = ${options.featured}`);
+        console.log(`[useProducts] Filtro adicionado: is_featured = ${options.featured}`);
       }
       if (options?.search) {
-        query = query.ilike('name', `%${options.search}%`); 
-        console.log(`[useProducts] 🔍 Filtro adicionado: name ilike %${options.search}%`);
+        query = query.ilike('title', `%${options.search}%`); 
+        console.log(`[useProducts] Filtro adicionado: title ilike %${options.search}%`);
       }
       if (options?.sortBy) {
         query = query.order(options.sortBy, { ascending: options.sortOrder === 'asc' });
-        console.log(`[useProducts] 📊 Ordenação adicionada: ${options.sortBy} ${options.sortOrder}`);
+        console.log(`[useProducts] Ordenação adicionada: ${options.sortBy} ${options.sortOrder}`);
       }
       if (options?.limit) {
         query = query.limit(options.limit);
-        console.log(`[useProducts] 📏 Limite adicionado: ${options.limit}`);
+        console.log(`[useProducts] Limite adicionado: ${options.limit}`);
       }
 
-      console.log('[useProducts] 🔄 Executando query Supabase...');
+      console.log('[useProducts] Executando query Supabase...');
       const { data, error: fetchError } = await query;
+      console.log('[useProducts] Query Supabase concluída.');
       
       // Log raw response immediately
-      console.log('[useProducts] 📦 Resposta RAW da busca de produtos:', { 
+      console.log('[useProducts] Resposta RAW da busca de produtos:', { 
         data: data, 
         error: fetchError,
         count: data?.length || 0
       });
 
       if (fetchError) {
-        console.error('[useProducts] ❌ Erro DETALHADO retornado pelo Supabase:', fetchError);
-        throw fetchError;
+        console.error('[useProducts] Erro DETALHADO retornado pelo Supabase:', fetchError);
+        throw fetchError; // Re-throw to be caught by the main catch block
       }
 
       // Garantir que os dados não sejam nulos e fazer o mapeamento correto
       if (data && data.length > 0) {
-        console.log(`[useProducts] 🎯 ${data.length} produtos recebidos. Processando...`);
-        
+        console.log(`[useProducts] ${data.length} produtos recebidos. Mapeando...`);
         const mappedData = data.map(p => {
-          // Processar imagens
-          const images = Array.isArray(p.additional_images) && p.additional_images.length > 0 
-            ? p.additional_images 
-            : (p.image ? [p.image] : []);
-          
-          // Processar tags
-          const tags = Array.isArray(p.product_tags) 
-            ? p.product_tags.map((pt: any) => ({
-                id: pt.tags?.id || pt.tag_id,
-                name: pt.tags?.name || 'Tag sem nome'
-              }))
-            : [];
-
-          // Calcular preço pro (exemplo: 10% de desconto)
-          const proDiscountPercent = p.pro_discount_percent || 0.10;
-          const proPrice = p.price * (1 - proDiscountPercent);
-
+          const images = Array.isArray(p.images) ? p.images : (p.images ? [p.images] : []);
           return {
             ...p,
-            // Manter compatibilidade com ambos os campos
-            name: p.name || p.title || 'Produto sem nome',
+            name: p.title || p.name || 'Produto sem título',
             title: p.title || p.name || 'Produto sem título',
-            // Processar imagens
             image: images[0] || '',
             images: images,
-            additional_images: images,
-            // Garantir campos obrigatórios
             description: p.description || '',
             price: typeof p.price === 'number' ? p.price : 0,
             stock: typeof p.stock === 'number' ? p.stock : 0,
-            category: p.category || 'Sem categoria',
-            // Processar tags
-            tags: tags,
-            // Calcular preços especiais
-            pro_price: proPrice,
-            pro_discount_percent: proDiscountPercent,
-            list_price: p.list_price || p.price * 1.2 // Preço de lista simulado se não existir
+            category: p.category || 'Sem categoria'
           };
         });
-        
-        console.log('[useProducts] ✅ Dados mapeados e normalizados:', mappedData.length, 'produtos');
-        console.log('[useProducts] 🏷️ Exemplo de produto processado:', mappedData[0]);
+        console.log('[useProducts] Dados mapeados e normalizados:', mappedData.length);
         setProducts(mappedData);
       } else {
-        console.log('[useProducts] ⚠️ Nenhum produto encontrado ou array vazio retornado.');
+        console.log('[useProducts] Nenhum produto encontrado ou array vazio retornado pelo Supabase.');
         setProducts([]);
       }
 
     } catch (err: any) {
-      console.error('[useProducts] 💥 Erro GERAL no bloco catch:', err);
-      
-      // Log more specific details
-      if (err?.message) console.error('[useProducts] 📝 Mensagem:', err.message);
-      if (err?.details) console.error('[useProducts] 🔍 Detalhes:', err.details);
-      if (err?.hint) console.error('[useProducts] 💡 Hint:', err.hint);
-      if (err?.code) console.error('[useProducts] 🔢 Código:', err.code);
-      
+      console.error('[useProducts] Erro GERAL no bloco catch ao buscar produtos:', err);
+      // Log specific details if available
+      if (err && err.message) {
+        console.error('[useProducts] Mensagem de erro:', err.message);
+      }
+      if (err && err.details) {
+        console.error('[useProducts] Detalhes do erro:', err.details);
+      }
+      if (err && err.hint) {
+        console.error('[useProducts] Hint do erro:', err.hint);
+      }
       setError('Falha ao carregar produtos.');
       setProducts([]); // Limpa produtos em caso de erro
-      
-      toast({ 
-        title: 'Erro ao carregar produtos', 
-        description: err.message || 'Não foi possível buscar os produtos.', 
-        variant: 'destructive' 
-      });
+      toast({ title: 'Erro', description: 'Não foi possível buscar os produtos.', variant: 'destructive' });
     } finally {
-      console.log('[useProducts] 🏁 Finalizando fetchProducts. Loading = false');
+      console.log('[useProducts] Finalizando fetchProducts (finally). Loading set to false.');
       setLoading(false);
     }
   }, [toast]);
@@ -328,16 +286,16 @@ export const useProducts = () => {
 
   // Initial fetch with forced delay to ensure proper loading
   useEffect(() => {
-    console.log('[useProducts] 🎬 Iniciando efeito de carregamento inicial');
+    console.log('[useProducts] Iniciando efeito de carregamento inicial');
     
+    // Forçar um pequeno delay para garantir que outros hooks tenham tempo de inicializar
     const timer = setTimeout(() => {
-      console.log('[useProducts] ⏰ Executando fetchProducts após delay');
+      console.log('[useProducts] Executando fetchProducts após delay');
       fetchProducts();
-    }, 100); // Reduced delay since RLS policies are now in place
+    }, 500);
     
     return () => clearTimeout(timer);
   }, [fetchProducts]);
 
   // Retorna todas as funções, incluindo as CRUD
-  return { products, loading, error, fetchProducts, fetchProductById, addProduct, updateProduct, deleteProduct };
-};
+  return { products, loading, error, fetchProducts, fetchProductById, addProduct, updateProduct, deleteProduct };};

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -74,46 +73,26 @@ const MOCK_BANNERS: Banner[] = [
 ];
 
 export const useBanners = () => {
-  const [banners, setBanners] = useState<Banner[]>([]);
+  const [banners, setBanners] = useState<Banner[]>(MOCK_BANNERS);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchBanners = useCallback(async () => {
-    console.log('[useBanners] 🚀 Iniciando busca de banners...');
     setLoading(true);
     setError(null);
-    
     try {
-      console.log('[useBanners] 📡 Fazendo query para banners ativos...');
       const { data, error: fetchError } = await supabase
         .from('banners')
         .select('*')
         .eq('is_active', true)
-        .order('position', { ascending: true });
+        .order('display_order', { ascending: true });
 
-      console.log('[useBanners] 📦 Resposta da query:', { data, error: fetchError, count: data?.length });
+      if (fetchError) throw fetchError;
 
-      if (fetchError) {
-        console.error('[useBanners] ❌ Erro ao buscar banners:', fetchError);
-        throw fetchError;
-      }
-
-      if (data && data.length > 0) {
-        console.log('[useBanners] ✅ Banners carregados com sucesso:', data.length);
-        setBanners(data);
-      } else {
-        console.log('[useBanners] ⚠️ Nenhum banner encontrado, usando mock data');
-        setBanners(MOCK_BANNERS);
-        
-        toast({ 
-          title: 'Aviso', 
-          description: 'Usando banners padrão. Nenhum banner personalizado encontrado.', 
-          variant: 'default' 
-        });
-      }
+      setBanners(data || []);
     } catch (err: any) {
-      console.error('[useBanners] 💥 Erro ao carregar banners:', err);
+      console.error('Error fetching banners:', err);
       setError('Falha ao carregar banners.');
       
       // Use mock banners on error
@@ -125,14 +104,12 @@ export const useBanners = () => {
         variant: 'default' 
       });
     } finally {
-      console.log('[useBanners] 🏁 Finalizando busca de banners');
       setLoading(false);
     }
   }, [toast]);
 
   // Initial fetch
   useEffect(() => {
-    console.log('[useBanners] 🎬 Iniciando efeito de carregamento de banners');
     fetchBanners();
   }, [fetchBanners]);
 
