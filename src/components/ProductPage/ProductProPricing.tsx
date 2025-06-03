@@ -74,17 +74,17 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
             </div>
             <div className="flex items-center gap-3">
               <span className="text-3xl font-bold text-yellow-800">
-                R$ {proPrice.toFixed(2)}
+                R$ {proPrice.toFixed(2).replace('.', ',')}
               </span>
               <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
                 -{discountPercentage}% OFF
               </span>
             </div>
             <div className="text-sm text-yellow-700 mt-2">
-              Você está economizando R$ {savings.toFixed(2)}
+              Você está economizando R$ {savings.toFixed(2).replace('.', ',')}
             </div>
             <div className="text-xs text-yellow-600 mt-1">
-              ou 12x de R$ {(proPrice / 12).toFixed(2)} sem juros
+              ou 12x de R$ {(proPrice / 12).toFixed(2).replace('.', ',')} sem juros
             </div>
           </div>
         )}
@@ -93,18 +93,18 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <span className={`text-2xl font-bold ${isProMember ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
-              R$ {basePrice.toFixed(2)}
+              R$ {basePrice.toFixed(2).replace('.', ',')}
             </span>
             {!isProMember && (
               <span className="text-lg text-gray-500 line-through">
-                R$ {originalPrice.toFixed(2)}
+                R$ {originalPrice.toFixed(2).replace('.', ',')}
               </span>
             )}
           </div>
           
           {!isProMember && (
             <div className="text-gray-600">
-              ou 12x de R$ {(basePrice / 12).toFixed(2)} sem juros
+              ou 12x de R$ {(basePrice / 12).toFixed(2).replace('.', ',')} sem juros
             </div>
           )}
         </div>
@@ -119,10 +119,10 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xl font-bold text-purple-700">
-                  R$ {proPrice.toFixed(2)}
+                  R$ {proPrice.toFixed(2).replace('.', ',')}
                 </span>
                 <div className="text-sm text-purple-600">
-                  Economize R$ {savings.toFixed(2)} (-{discountPercentage}%)
+                  Economize R$ {savings.toFixed(2).replace('.', ',')} (-{discountPercentage || 10}%)
                 </div>
               </div>
               <Button

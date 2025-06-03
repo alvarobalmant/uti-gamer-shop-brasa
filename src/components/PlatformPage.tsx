@@ -68,14 +68,7 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
       );
     }
     
-    // Filtrar por categorias
-    if (categoryIds && categoryIds.length > 0) {
-      filtered = filtered.filter(product => 
-        product.categories?.some(category => 
-          categoryIds.includes(category.id) || categoryIds.includes(category.name.toLowerCase())
-        )
-      );
-    }
+    // Note: Removed category filtering since Product doesn't have categories property
     
     // Limitar quantidade
     if (limit && limit > 0) {
@@ -119,7 +112,6 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
             loading={productsLoading}
             onAddToCart={addToCart}
             title={section.title || ''}
-            onCardClick={handleProductCardClick}
           />
         );
       
