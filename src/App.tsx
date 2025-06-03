@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,10 +8,14 @@ import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
 import SearchResults from "./pages/SearchResults";
 import CategoryPage from "./pages/CategoryPage";
-// import ProductPage from "./pages/ProductPage"; // Removed import
 import NotFound from "./pages/NotFound";
 import UTIPro from "./pages/UTIPro";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
+
+// Importações para as novas páginas de categoria específicas
+import XboxPage from "./pages/platforms/XboxPage";
+import PlayStationPage from "./pages/platforms/PlayStationPage";
+import NintendoPage from "./pages/platforms/NintendoPage";
 
 // Import the main Admin Panel component which now includes all tabs
 import { AdminPanel } from "@/components/Admin/AdminPanel"; 
@@ -49,7 +52,12 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/busca" element={<SearchResults />} />
                 <Route path="/categoria/:category" element={<CategoryPage />} />
-                {/* <Route path="/produto/:id" element={<ProductPage />} /> // Removed route */}
+                
+                {/* Novas rotas para páginas de plataforma específicas */}
+                <Route path="/xbox" element={<XboxPage />} />
+                <Route path="/playstation" element={<PlayStationPage />} />
+                <Route path="/nintendo" element={<NintendoPage />} />
+                
                 <Route path="/uti-pro" element={<UTIPro />} />
 
                 {/* Admin Route - Protected */}
@@ -74,4 +82,3 @@ const App = () => (
 );
 
 export default App;
-

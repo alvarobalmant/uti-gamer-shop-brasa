@@ -5,9 +5,10 @@ import { BannerManager } from './BannerManager';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
 import UserSubscriptionManagement from './UserSubscriptionManagement';
-import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager'; // Renamed component
-import ProductSectionManager from './ProductSectionManager'; // New component for managing product sections
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks } from 'lucide-react'; // Added ListChecks icon
+import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
+import ProductSectionManager from './ProductSectionManager';
+import PageManager from './PageManager'; // Importar o novo PageManager
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe } from 'lucide-react'; // Adicionado ícone Globe
 
 export const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('layout'); // Default to layout management
@@ -25,11 +26,15 @@ export const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Updated grid-cols-7 to accommodate the new tabs */}
-          <TabsList className="grid w-full grid-cols-7 bg-gray-800 border-gray-700">
+          {/* Updated grid-cols-8 to accommodate the new tab */}
+          <TabsList className="grid w-full grid-cols-8 bg-gray-800 border-gray-700">
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutList className="w-4 h-4" />
               Layout Home
+            </TabsTrigger>
+            <TabsTrigger value="pages" className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              Páginas
             </TabsTrigger>
             <TabsTrigger value="product_sections" className="flex items-center gap-2">
               <ListChecks className="w-4 h-4" />
@@ -62,6 +67,11 @@ export const AdminPanel = () => {
             <HomepageLayoutManager />
           </TabsContent>
 
+          {/* Content for Pages Management */}
+          <TabsContent value="pages">
+            <PageManager />
+          </TabsContent>
+
           {/* Content for Product Section Management */}
           <TabsContent value="product_sections">
             <ProductSectionManager />
@@ -92,4 +102,3 @@ export const AdminPanel = () => {
     </div>
   );
 };
-
