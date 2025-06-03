@@ -1,5 +1,5 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "./components/ui/toaster"; // Corrigido para caminho relativo
+import { Toaster as Sonner } from "./components/ui/sonner"; // Corrigido para caminho relativo
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import CategoryPage from "./pages/CategoryPage";
 import NotFound from "./pages/NotFound";
 import UTIPro from "./pages/UTIPro";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
+import HookTest from "./pages/HookTest"; // Importar a página de teste
 
 // Importações para as novas páginas de categoria específicas
 import XboxPage from "./pages/platforms/XboxPage";
@@ -59,6 +60,9 @@ const App = () => (
                 <Route path="/nintendo" element={<NintendoPage />} />
                 
                 <Route path="/uti-pro" element={<UTIPro />} />
+                
+                {/* Rota de teste para hooks */}
+                <Route path="/test-hooks" element={<HookTest />} />
 
                 {/* Admin Route - Protected */}
                 <Route 
