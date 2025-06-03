@@ -6,16 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/hooks/useProducts";
-import { useIsMobile } from "@/hooks/use-mobile";
+// import { useIsMobile } from "@/hooks/use-mobile"; // Not strictly needed for this implementation
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"; // Import Carousel components
 
 interface FeaturedProductsSectionProps {
   products: Product[];
@@ -33,7 +26,7 @@ const FeaturedProductsSection = ({
   viewAllLink = "/categoria/inicio",
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  // const isMobile = useIsMobile(); // Keep if needed elsewhere, but not for scroll logic here
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [animateProducts, setAnimateProducts] = useState(true);
 
@@ -72,8 +65,8 @@ const FeaturedProductsSection = ({
       setSelectedCategory(category);
       setTimeout(() => {
         setAnimateProducts(true);
-      }, 50);
-    }, 150);
+      }, 50); // Short delay for animation trigger
+    }, 150); // Delay for category switch visual feedback
   };
 
   useEffect(() => {
@@ -133,17 +126,12 @@ const FeaturedProductsSection = ({
           </Tabs>
         </div>
 
-<<<<<<< HEAD
         {/* Products Grid / Scroll Container - Attempting fix for mobile horizontal scroll */}
-=======
-        {/* Products Carousel */}
->>>>>>> 989b50147339e1ab3b250f9f4de65d797b3aa034
         {displayedProducts.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             Nenhum produto encontrado nesta categoria.
           </div>
         ) : (
-<<<<<<< HEAD
           <div className="relative">
             {/* Container de scroll horizontal */}
             <div
@@ -192,54 +180,6 @@ const FeaturedProductsSection = ({
               </div>
             </div>
           </div>
-=======
-          <Carousel
-            opts={{
-              align: "start",
-              loop: false, // Or true, depending on desired behavior
-              dragFree: true, // Allows free scrolling without snapping
-              // Ensure touch actions allow vertical page scroll
-              watchDrag: (emblaApi, event) => {
-                // Basic check for vertical drag dominance
-                if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
-                  return false; // Prevent Embla from handling vertical drags
-                }
-                return true; // Allow Embla to handle horizontal drags
-              }
-            }}
-            className="relative w-full"
-          >
-            <CarouselContent className="-ml-4">
-              {displayedProducts.map((product, index) => (
-                <CarouselItem
-                  key={`${selectedCategory}-${product.id}`}
-                  className={cn(
-                    // Adjust basis for desired number of items visible
-                    "basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6",
-                    "pl-4", // Padding for spacing
-                    // Animation
-                    "transition-opacity duration-300 ease-in-out",
-                    animateProducts ? "opacity-100" : "opacity-0"
-                  )}
-                  style={{
-                    transitionDelay: animateProducts ? `${index * 75}ms` : '0ms'
-                  }}
-                >
-                  <ProductCard
-                    product={product}
-                    onAddToCart={onAddToCart}
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            {!isMobile && (
-              <>
-                <CarouselPrevious className="absolute left-[-10px] top-1/2 -translate-y-1/2 z-10" />
-                <CarouselNext className="absolute right-[-10px] top-1/2 -translate-y-1/2 z-10" />
-              </>
-            )}
-          </Carousel>
->>>>>>> 989b50147339e1ab3b250f9f4de65d797b3aa034
         )}
       </div>
     </section>
