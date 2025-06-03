@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -73,39 +72,38 @@ export const useSubscriptions = () => {
     try {
       console.log('Buscando dados do usuário:', userId);
 
-      // Fetch user subscription with explicit foreign key reference
+      // First fetch user subscription
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('user_subscriptions')
-        .select(`
-          id,
-          user_id,
-          plan_id,
-          status,
-          start_date,
-          end_date,
-          created_at,
-          updated_at,
-          subscription_plans:plan_id (
-            id,
-            name,
-            description,
-            price,
-            duration_months,
-            discount_percentage,
-            is_active,
-            created_at,
-            updated_at
-          )
-        `)
+        .select('*')
         .eq('user_id', userId)
         .eq('status', 'active')
         .maybeSingle();
 
       if (subscriptionError && subscriptionError.code !== 'PGRST116') {
         console.error('Erro ao buscar assinatura:', subscriptionError);
-      } else {
-        setUserSubscription(subscriptionData);
       }
+
+      // If we have a subscription, fetch the plan details separately
+      let fullSubscriptionData = null;
+      if (subscriptionData) {
+        const { data: planData, error: planError } = await supabase
+          .from('subscription_plans')
+          .select('*')
+          .eq('id', subscriptionData.plan_id)
+          .single();
+
+        if (planError) {
+          console.error('Erro ao buscar plano:', planError);
+        } else {
+          fullSubscriptionData = {
+            ...subscriptionData,
+            subscription_plans: planData
+          };
+        }
+      }
+
+      setUserSubscription(fullSubscriptionData);
 
       // Fetch usuario data (legacy table)
       const { data: usuarioData, error: usuarioError } = await supabase
