@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -23,47 +22,62 @@ export interface ProductSection {
 }
 
 export const useProductSections = () => {
-  // Renomeado para sections para clareza
   const [sections, setSections] = useState<ProductSection[]>([]); 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Função fetch atualizada para buscar seções E seus itens
   const fetchProductSections = useCallback(async () => {
+    console.log('[useProductSections] 🚀 Iniciando busca de seções...');
     setLoading(true);
     setError(null);
+    
     try {
-      console.log('[useProductSections] Iniciando busca de seções...');
-      
       // 1. Buscar dados básicos das seções
+      console.log('[useProductSections] 📡 Buscando seções de produtos...');
       const { data: sectionsData, error: sectionsError } = await supabase
         .from('product_sections')
         .select('*')
         .order('created_at', { ascending: false });
 
-      console.log('[useProductSections] Resposta da busca de seções:', { data: sectionsData, error: sectionsError });
+      console.log('[useProductSections] 📦 Resposta das seções:', { 
+        data: sectionsData, 
+        error: sectionsError, 
+        count: sectionsData?.length 
+      });
       
-      if (sectionsError) throw sectionsError;
-      if (!sectionsData) {
-        console.log('[useProductSections] Nenhuma seção encontrada');
+      if (sectionsError) {
+        console.error('[useProductSections] ❌ Erro ao buscar seções:', sectionsError);
+        throw sectionsError;
+      }
+      
+      if (!sectionsData || sectionsData.length === 0) {
+        console.log('[useProductSections] ⚠️ Nenhuma seção encontrada');
         setSections([]);
         return;
       }
 
       // 2. Buscar todos os itens de todas as seções de uma vez
-      console.log('[useProductSections] Buscando itens das seções...');
+      console.log('[useProductSections] 📡 Buscando itens das seções...');
       const { data: itemsData, error: itemsError } = await supabase
         .from('product_section_items')
         .select('*')
         .order('display_order', { ascending: true });
         
-      console.log('[useProductSections] Resposta da busca de itens:', { data: itemsData, error: itemsError });
+      console.log('[useProductSections] 📦 Resposta dos itens:', { 
+        data: itemsData, 
+        error: itemsError, 
+        count: itemsData?.length 
+      });
 
       if (itemsError) {
-        // Logar o erro, mas continuar com as seções (sem itens)
-        console.error('Error fetching product section items:', itemsError);
-        toast({ title: 'Aviso', description: 'Não foi possível carregar os itens das seções de produtos.', variant: 'default' });
+        console.error('[useProductSections] ⚠️ Erro ao buscar itens das seções:', itemsError);
+        // Continuar sem itens em caso de erro
+        toast({ 
+          title: 'Aviso', 
+          description: 'Não foi possível carregar os itens das seções de produtos.', 
+          variant: 'default' 
+        });
       }
 
       // 3. Agrupar itens por section_id
@@ -80,26 +94,30 @@ export const useProductSections = () => {
       // 4. Combinar dados das seções com seus itens
       const combinedSections = sectionsData.map(section => ({
         ...section,
-        items: itemsBySection[section.id] || [], // Adiciona array de itens (ou vazio se não houver)
-        // Garantir que campos obrigatórios existam
+        items: itemsBySection[section.id] || [],
         title: section.title || 'Seção sem título',
         view_all_link: section.view_all_link || `/categoria/${section.id}`
       }));
 
-      console.log('[useProductSections] Seções combinadas com itens:', combinedSections);
+      console.log('[useProductSections] ✅ Seções processadas:', combinedSections.length);
+      console.log('[useProductSections] 🏷️ Exemplo de seção:', combinedSections[0]);
       setSections(combinedSections);
 
     } catch (err: any) {
-      console.error('Error fetching product sections:', err);
+      console.error('[useProductSections] 💥 Erro ao carregar seções:', err);
       setError('Falha ao carregar seções de produtos.');
-      setSections([]); // Limpa em caso de erro
-      toast({ title: 'Erro', description: 'Não foi possível carregar as seções de produtos.', variant: 'destructive' });
+      setSections([]);
+      toast({ 
+        title: 'Erro', 
+        description: 'Não foi possível carregar as seções de produtos.', 
+        variant: 'destructive' 
+      });
     } finally {
+      console.log('[useProductSections] 🏁 Finalizando busca de seções');
       setLoading(false);
     }
   }, [toast]);
 
-  // fetchProductSectionById também precisa ser atualizado para buscar itens
   const fetchProductSectionById = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
@@ -140,17 +158,16 @@ export const useProductSections = () => {
     }
   }, [toast]);
 
-  // Initial fetch with forced delay
+  // Initial fetch
   useEffect(() => {
-    console.log("[useProductSections] Iniciando efeito de carregamento inicial");
+    console.log("[useProductSections] 🎬 Iniciando efeito de carregamento inicial");
     const timer = setTimeout(() => {
-      console.log("[useProductSections] Executando fetchProductSections após delay");
+      console.log("[useProductSections] ⏰ Executando fetchProductSections após delay");
       fetchProductSections();
-    }, 600); // Slightly longer delay than useProducts
+    }, 200); // Short delay after RLS policies are in place
     
     return () => clearTimeout(timer);
   }, [fetchProductSections]);
 
-  // Retorna 'sections' em vez de 'productSections'
   return { sections, loading, error, fetchProductSections, fetchProductSectionById }; 
 };
