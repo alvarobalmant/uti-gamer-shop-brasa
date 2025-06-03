@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -17,8 +18,6 @@ export interface ProCode {
 export const useProCodes = () => {
   const [proCodes, setProCodes] = useState<ProCode[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [generatingCode, setGeneratingCode] = useState<boolean>(false);
-  const [redeemingCode, setRedeemingCode] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -40,66 +39,6 @@ export const useProCodes = () => {
       setProCodes([]);
     } finally {
       setLoading(false);
-    }
-  }, []);
-
-  const generateRandomCode = () => {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 12; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return result;
-  };
-
-  const generateCode = useCallback(async (durationMonths: number) => {
-    setGeneratingCode(true);
-    try {
-      const code = generateRandomCode();
-      const { data, error: insertError } = await supabase
-        .from('pro_codes')
-        .insert([{ 
-          code, 
-          duration_months: durationMonths, 
-          is_active: true 
-        }])
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
-      toast({ 
-        title: 'Sucesso', 
-        description: 'Código PRO gerado com sucesso.' 
-      });
-
-      await fetchProCodes();
-      return data;
-    } catch (err: any) {
-      console.error('Error generating pro code:', err);
-      toast({ 
-        title: 'Erro', 
-        description: 'Falha ao gerar código PRO.', 
-        variant: 'destructive' 
-      });
-      throw err;
-    } finally {
-      setGeneratingCode(false);
-    }
-  }, [toast, fetchProCodes]);
-
-  const listCodes = useCallback(async () => {
-    try {
-      const { data, error: fetchError } = await supabase
-        .from('pro_codes')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (fetchError) throw fetchError;
-      return data || [];
-    } catch (err: any) {
-      console.error('Error listing pro codes:', err);
-      return [];
     }
   }, []);
 
@@ -131,7 +70,7 @@ export const useProCodes = () => {
     }
   }, [toast, fetchProCodes]);
 
-  const deactivateProCode = useCallback(async (id: string): Promise<boolean> => {
+  const deactivateProCode = useCallback(async (id: string) => {
     try {
       const { error: updateError } = await supabase
         .from('pro_codes')
@@ -146,7 +85,6 @@ export const useProCodes = () => {
       });
 
       await fetchProCodes();
-      return true;
     } catch (err: any) {
       console.error('Error deactivating pro code:', err);
       toast({ 
@@ -154,22 +92,18 @@ export const useProCodes = () => {
         description: 'Falha ao desativar código PRO.', 
         variant: 'destructive' 
       });
-      return false;
+      throw err;
     }
   }, [toast, fetchProCodes]);
 
-  const deactivateCode = useCallback(async (id: string): Promise<boolean> => {
-    return await deactivateProCode(id);
-  }, [deactivateProCode]);
-
   const redeemProCode = useCallback(async (codeId: string) => {
-    setRedeemingCode(true);
     try {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) {
         throw new Error('Usuário não autenticado');
       }
 
+      // Calculate end date based on code duration
       const code = proCodes.find(c => c.id === codeId);
       if (!code) {
         throw new Error('Código não encontrado');
@@ -207,18 +141,8 @@ export const useProCodes = () => {
         variant: 'destructive' 
       });
       throw err;
-    } finally {
-      setRedeemingCode(false);
     }
   }, [proCodes, toast, fetchProCodes]);
-
-  const redeemCode = useCallback(async (code: string) => {
-    const foundCode = proCodes.find(c => c.code === code);
-    if (!foundCode) {
-      throw new Error('Código não encontrado');
-    }
-    return await redeemProCode(foundCode.id);
-  }, [proCodes, redeemProCode]);
 
   useEffect(() => {
     fetchProCodes();
@@ -228,15 +152,9 @@ export const useProCodes = () => {
     proCodes, 
     loading, 
     error, 
-    generatingCode,
-    redeemingCode,
     fetchProCodes, 
-    generateCode,
-    listCodes,
     createProCode, 
-    deactivateProCode,
-    deactivateCode,
-    redeemProCode,
-    redeemCode
+    deactivateProCode, 
+    redeemProCode 
   };
 };
