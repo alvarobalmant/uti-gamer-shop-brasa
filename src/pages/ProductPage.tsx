@@ -51,6 +51,10 @@ const ProductPage = () => {
 
   const handleBackClick = () => navigate(-1);
 
+  const handleCardClick = (productId: string) => {
+    navigate(`/product/${productId}`);
+  };
+
   // --- Loading State --- 
   if (productsLoading) {
     return (
@@ -142,7 +146,7 @@ const ProductPage = () => {
         </div>
 
         <Separator className="my-12" />
-        <RelatedProducts product={product} />
+        <RelatedProducts product={product} onCardClick={handleCardClick} />
 
       </main>
     </div>
@@ -150,4 +154,3 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
-
