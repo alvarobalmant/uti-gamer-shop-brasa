@@ -67,7 +67,14 @@ export const useQuickLinks = () => {
     try {
       const { data, error: insertError } = await supabase
         .from('quick_links')
+<<<<<<< HEAD
         .insert([linkData])
+=======
+        .insert([{
+          ...linkData,
+          icon_url: linkData.icon_url || ''
+        }])
+>>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
         .select()
         .single();
 

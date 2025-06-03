@@ -44,13 +44,17 @@ export const useHomepageLayout = () => {
     setLoading(true);
     setError(null);
     try {
+<<<<<<< HEAD
       console.log("[useHomepageLayout] Iniciando busca de layout...");
+=======
+>>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
       const { data: layoutData, error: layoutError } = await supabase
         .from('homepage_layout')
         .select('*')
         .order('display_order', { ascending: true });
 
       if (layoutError) throw layoutError;
+<<<<<<< HEAD
       console.log("[useHomepageLayout] Raw layoutData:", layoutData, "count:", layoutData?.length || 0); // DEBUG LOG
       
       // Se não houver dados, criar layout padrão para garantir renderização
@@ -71,6 +75,8 @@ export const useHomepageLayout = () => {
           title: getSectionTitle(item.section_key)
         })));
       }
+=======
+>>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
 
       const productSectionKeys = layoutData
         ?.map(item => item.section_key)
@@ -135,15 +141,12 @@ export const useHomepageLayout = () => {
     }
   }, [toast, fetchLayout]);
 
+<<<<<<< HEAD
   // Initial fetch with forced delay
+=======
+>>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
   useEffect(() => {
-    console.log("[useHomepageLayout] Iniciando efeito de carregamento inicial");
-    const timer = setTimeout(() => {
-      console.log("[useHomepageLayout] Executando fetchLayout após delay");
-      fetchLayout();
-    }, 700); // Slightly longer delay than other hooks
-    
-    return () => clearTimeout(timer);
+    fetchLayout();
   }, [fetchLayout]);
 
   return { layoutItems, setLayoutItems, loading, error, fetchLayout, updateLayout };

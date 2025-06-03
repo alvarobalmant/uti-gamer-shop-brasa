@@ -35,10 +35,13 @@ const Index = () => {
   const { layoutItems, loading: layoutLoading, fetchLayout } = useHomepageLayout(); // Adicionado fetchLayout
   const { sections, loading: sectionsLoading, fetchSections } = useProductSections(); // Adicionado fetchSections
 
+<<<<<<< HEAD
   console.log("[Index] Produtos recebidos (estado):", products); // DEBUG LOG
   console.log("[Index] Seções recebidas (estado):", sections); // DEBUG LOG
   console.log("[Index] Layout recebido (estado):", layoutItems); // DEBUG LOG
 
+=======
+>>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
   // Placeholder for fetching banner data (replace with actual logic)
   // TODO: Implementar useBanners hook
   const [bannerData, setBannerData] = useState({
@@ -77,8 +80,6 @@ const Index = () => {
 
   // Render section based on section key
   const renderSection = (sectionKey: string) => {
-    console.log(`[Index] Renderizando seção: ${sectionKey}`);
-    
     switch (sectionKey) {
       case 'hero_banner':
         // TODO: Usar dados reais do useBanners quando implementado
@@ -114,6 +115,7 @@ const Index = () => {
         // Handle product sections
         if (sectionKey.startsWith('product_section_')) {
           const sectionId = sectionKey.replace('product_section_', '');
+<<<<<<< HEAD
           console.log(`[Index] Buscando seção de produto com ID: ${sectionId}, disponíveis:`, sections.map(s => s.id));
           
           // CORREÇÃO: Usar fallback para seção se não encontrar
@@ -131,13 +133,22 @@ const Index = () => {
           } else {
             console.log(`[Index] Encontrada seção de produto para key ${sectionKey}:`, section);
           }
+=======
+          const section = sections.find(s => s.id === sectionId);
+          
+          if (!section) return null;
+>>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
           
           // --- BUG FIX: Deduplicate products --- 
           const productMap = new Map<string, Product>(); // Use a Map to store unique products by ID
           
+<<<<<<< HEAD
           // CORREÇÃO: Garantir que sempre tenhamos produtos para mostrar
           if (section.items && section.items.length > 0) {
             console.log(`[Index] Processando itens específicos para seção ${sectionKey}`);
+=======
+          if (section.items) {
+>>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
             for (const item of section.items) {
               if (item.item_type === 'product') {
                 // Find specific product by ID
@@ -150,7 +161,7 @@ const Index = () => {
                 // Find products with this tag
                 console.log(`[Index] Buscando produtos com tag ${item.item_id} para seção ${sectionKey}`);
                 const tagProducts = products.filter(p => 
-                  p.tags?.some(tag => tag.name?.toLowerCase() === item.item_id.toLowerCase() || tag.id === item.item_id)
+                  p.tags?.some(tag => tag.name.toLowerCase() === item.item_id.toLowerCase() || tag.id === item.item_id)
                 );
                 // Add tag products to the map, overwriting duplicates (which is fine)
                 tagProducts.forEach(product => {
@@ -161,17 +172,10 @@ const Index = () => {
                 });
               }
             }
-          } else if (products.length > 0) {
-            // CORREÇÃO: Se não houver itens específicos, mostrar alguns produtos aleatórios
-            console.log(`[Index] Sem itens específicos para seção ${sectionKey}, usando produtos aleatórios`);
-            // Pegar até 4 produtos aleatórios
-            const randomProducts = [...products].sort(() => 0.5 - Math.random()).slice(0, 4);
-            randomProducts.forEach(product => {
-              productMap.set(product.id, product);
-            });
           }
           
           const uniqueSectionProducts = Array.from(productMap.values()); // Get unique products from the map
+<<<<<<< HEAD
           console.log(`[Index] Produtos finais para seção ${sectionKey}:`, uniqueSectionProducts.length);
           
           // CORREÇÃO: Garantir que sempre tenhamos um título válido
@@ -179,14 +183,18 @@ const Index = () => {
           
           // CORREÇÃO: Sempre renderizar a seção, mesmo sem produtos
           console.log(`[Index] Renderizando FeaturedProductsSection para ${sectionKey} com ${uniqueSectionProducts.length} produtos`);
+=======
+          // --- END BUG FIX ---
+          
+>>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
           return (
             <FeaturedProductsSection
               key={sectionKey}
-              products={uniqueSectionProducts}
+              products={uniqueSectionProducts} // Pass unique products
               loading={productsLoading || sectionsLoading}
               onAddToCart={handleAddToCart}
-              title={sectionTitle}
-              viewAllLink={section.view_all_link || `/categoria/${sectionId}`}
+              title={section.title}
+              viewAllLink={section.view_all_link || undefined}
             />
           );
         }

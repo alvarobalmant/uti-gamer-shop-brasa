@@ -62,6 +62,10 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
               key={relatedProduct.id} 
               product={relatedProduct} 
               onAddToCart={handleAddToCart}
+<<<<<<< HEAD
+=======
+              onCardClick={onCardClick}
+>>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
             />
           ))}
         </div>

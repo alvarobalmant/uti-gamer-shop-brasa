@@ -93,6 +93,10 @@ const SearchResults = () => {
                   key={product.id}
                   product={product}
                   onAddToCart={handleAddToCart}
+<<<<<<< HEAD
+=======
+                  onCardClick={handleCardClick}
+>>>>>>> da2b0b990b4d707ba50852d48a4480b97c38074b
                 />
               ))}
             </div>
@@ -104,4 +108,3 @@ const SearchResults = () => {
 };
 
 export default SearchResults;
-
