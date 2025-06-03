@@ -122,7 +122,7 @@ export const QuickLinksManager = () => {
       // Upload new image if selected
       if (selectedFile) {
         const uploadResult = await uploadImage(selectedFile);
-        if (uploadResult?.url) {
+        if (uploadResult && typeof uploadResult === 'object' && 'url' in uploadResult) {
           iconUrl = uploadResult.url;
         }
       }
