@@ -132,7 +132,6 @@ const FeaturedProductsSection = ({
             Nenhum produto encontrado nesta categoria.
           </div>
         ) : (
-<<<<<<< HEAD
           <div className="relative">
             {/* Container de scroll horizontal (funciona com touch no mobile, scrollbar/wheel no desktop) */}
             <div
@@ -178,54 +177,6 @@ const FeaturedProductsSection = ({
               </div>
             </div>
           </div>
-=======
-          <Carousel
-            opts={{
-              align: "start",
-              loop: false, // Or true, depending on desired behavior
-              dragFree: true, // Allows free scrolling without snapping
-              // Ensure touch actions allow vertical page scroll
-              watchDrag: (emblaApi, event) => {
-                // Basic check for vertical drag dominance
-                if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
-                  return false; // Prevent Embla from handling vertical drags
-                }
-                return true; // Allow Embla to handle horizontal drags
-              }
-            }}
-            className="relative w-full"
-          >
-            <CarouselContent className="-ml-4">
-              {displayedProducts.map((product, index) => (
-                <CarouselItem
-                  key={`${selectedCategory}-${product.id}`}
-                  className={cn(
-                    // Adjust basis for desired number of items visible
-                    "basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6",
-                    "pl-4", // Padding for spacing
-                    // Animation
-                    "transition-opacity duration-300 ease-in-out",
-                    animateProducts ? "opacity-100" : "opacity-0"
-                  )}
-                  style={{
-                    transitionDelay: animateProducts ? `${index * 75}ms` : '0ms'
-                  }}
-                >
-                  <ProductCard
-                    product={product}
-                    onAddToCart={onAddToCart}
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            {!isMobile && (
-              <>
-                <CarouselPrevious className="absolute left-[-10px] top-1/2 -translate-y-1/2 z-10" />
-                <CarouselNext className="absolute right-[-10px] top-1/2 -translate-y-1/2 z-10" />
-              </>
-            )}
-          </Carousel>
->>>>>>> e4a22a0610d221fd701982f651ba71a79668f9a3
         )}
       </div>
     </section>
