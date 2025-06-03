@@ -6,9 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/hooks/useProducts";
+<<<<<<< HEAD
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
 import ProductModal from "@/components/ProductModal"; // Import the modal component
+=======
+// import { useIsMobile } from "@/hooks/use-mobile"; // Not strictly needed for this implementation
+import SectionTitle from "@/components/SectionTitle";
+import { cn } from "@/lib/utils";
+>>>>>>> 850dba59fd1f2487717a3e26641183443dc56f31
 
 interface FeaturedProductsSectionProps {
   products: Product[];
@@ -26,6 +32,10 @@ const FeaturedProductsSection = ({
   viewAllLink = "/categoria/inicio",
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
+<<<<<<< HEAD
+=======
+  // const isMobile = useIsMobile(); // Keep if needed elsewhere, but not for scroll logic here
+>>>>>>> 850dba59fd1f2487717a3e26641183443dc56f31
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [animateProducts, setAnimateProducts] = useState(true);
 
@@ -66,8 +76,8 @@ const FeaturedProductsSection = ({
       setSelectedCategory(category);
       setTimeout(() => {
         setAnimateProducts(true);
-      }, 50);
-    }, 150);
+      }, 50); // Short delay for animation trigger
+    }, 150); // Delay for category switch visual feedback
   };
 
   // Function to handle opening the modal
@@ -133,7 +143,11 @@ const FeaturedProductsSection = ({
           </Tabs>
         </div>
 
+<<<<<<< HEAD
         {/* Products Grid / Scroll Container */}
+=======
+        {/* Products Grid / Scroll Container - Attempting fix for mobile horizontal scroll */}
+>>>>>>> 850dba59fd1f2487717a3e26641183443dc56f31
         {displayedProducts.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             Nenhum produto encontrado nesta categoria.
