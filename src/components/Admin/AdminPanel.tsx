@@ -7,8 +7,9 @@ import { TagManager } from './TagManager';
 import UserSubscriptionManagement from './UserSubscriptionManagement';
 import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
 import ProductSectionManager from './ProductSectionManager';
-import PageManager from './PageManager'; // Importar o novo PageManager
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe } from 'lucide-react'; // Adicionado ícone Globe
+import PageManager from './PageManager';
+import QuickLinksManager from './QuickLinksManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link } from 'lucide-react';
 
 export const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('layout'); // Default to layout management
@@ -26,8 +27,8 @@ export const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Updated grid-cols-8 to accommodate the new tab */}
-          <TabsList className="grid w-full grid-cols-8 bg-gray-800 border-gray-700">
+          {/* Updated grid-cols-9 to accommodate the new tab */}
+          <TabsList className="grid w-full grid-cols-9 bg-gray-800 border-gray-700">
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutList className="w-4 h-4" />
               Layout Home
@@ -35,6 +36,10 @@ export const AdminPanel = () => {
             <TabsTrigger value="pages" className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
               Páginas
+            </TabsTrigger>
+            <TabsTrigger value="quick_links" className="flex items-center gap-2">
+              <Link className="w-4 h-4" />
+              Links Rápidos
             </TabsTrigger>
             <TabsTrigger value="product_sections" className="flex items-center gap-2">
               <ListChecks className="w-4 h-4" />
@@ -70,6 +75,11 @@ export const AdminPanel = () => {
           {/* Content for Pages Management */}
           <TabsContent value="pages">
             <PageManager />
+          </TabsContent>
+
+          {/* Content for Quick Links Management */}
+          <TabsContent value="quick_links">
+            <QuickLinksManager />
           </TabsContent>
 
           {/* Content for Product Section Management */}
