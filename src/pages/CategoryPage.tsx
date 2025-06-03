@@ -53,10 +53,6 @@ const CategoryPage = () => {
     addToCart(product);
   };
 
-  const handleCardClick = (productId: string) => {
-    navigate(`/product/${productId}`);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header fixo */}
@@ -121,7 +117,6 @@ const CategoryPage = () => {
                   key={product.id}
                   product={product}
                   onAddToCart={handleAddToCart}
-                  onCardClick={handleCardClick}
                 />
               ))}
             </div>
@@ -133,3 +128,4 @@ const CategoryPage = () => {
 };
 
 export default CategoryPage;
+
