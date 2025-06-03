@@ -1,4 +1,3 @@
-
 import { Product } from '@/hooks/useProducts';
 
 export const dummyProducts: Product[] = [
@@ -8,12 +7,9 @@ export const dummyProducts: Product[] = [
     description: 'A épica aventura de Kratos e Atreus continua neste aclamado jogo de ação e aventura.',
     price: 249.90,
     image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=400&fit=crop',
-    additional_images: null,
     sizes: ['Físico', 'Digital'],
     colors: ['Standard'],
     stock: 3,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
     tags: [{ id: '1', name: 'PlayStation' }, { id: '8', name: 'Jogos Físicos' }]
   },
   {
@@ -22,12 +18,9 @@ export const dummyProducts: Product[] = [
     description: 'Explore um mundo pós-apocalíptico vibrante e perigoso nesta sequência épica.',
     price: 199.90,
     image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400&h=400&fit=crop',
-    additional_images: null,
     sizes: ['Físico', 'Digital'],
     colors: ['Standard', 'Deluxe'],
     stock: 15,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
     tags: [{ id: '1', name: 'PlayStation' }, { id: '8', name: 'Jogos Físicos' }]
   },
   {
@@ -36,12 +29,9 @@ export const dummyProducts: Product[] = [
     description: 'O Master Chief retorna nesta nova aventura épica da franquia Halo.',
     price: 179.90,
     image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=400&fit=crop',
-    additional_images: null,
     sizes: ['Físico', 'Digital'],
     colors: ['Standard'],
     stock: 8,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
     tags: [{ id: '3', name: 'Xbox' }, { id: '8', name: 'Jogos Físicos' }]
   },
   {
@@ -50,12 +40,9 @@ export const dummyProducts: Product[] = [
     description: 'Uma aventura épica em mundo aberto que redefiniu a série Zelda.',
     price: 299.90,
     image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-    additional_images: null,
     sizes: ['Físico', 'Digital'],
     colors: ['Standard'],
     stock: 12,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
     tags: [{ id: '2', name: 'Nintendo' }, { id: '8', name: 'Jogos Físicos' }]
   },
   {
@@ -64,12 +51,9 @@ export const dummyProducts: Product[] = [
     description: 'Controle sem fio oficial do PlayStation 5 com feedback háptico avançado.',
     price: 349.90,
     image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=400&fit=crop',
-    additional_images: null,
     sizes: ['Único'],
     colors: ['Branco', 'Preto', 'Azul'],
     stock: 25,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
     tags: [{ id: '1', name: 'PlayStation' }, { id: '6', name: 'Acessórios' }]
   },
   {
@@ -78,12 +62,9 @@ export const dummyProducts: Product[] = [
     description: 'Controle sem fio oficial do Xbox Series X com tecnologia avançada.',
     price: 299.90,
     image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=400&fit=crop',
-    additional_images: null,
     sizes: ['Único'],
     colors: ['Preto', 'Branco', 'Verde'],
     stock: 18,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
     tags: [{ id: '3', name: 'Xbox' }, { id: '6', name: 'Acessórios' }]
   },
   {
@@ -92,12 +73,9 @@ export const dummyProducts: Product[] = [
     description: 'Controle profissional para Nintendo Switch com design ergonômico.',
     price: 399.90,
     image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-    additional_images: null,
     sizes: ['Único'],
     colors: ['Preto'],
     stock: 7,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
     tags: [{ id: '2', name: 'Nintendo' }, { id: '6', name: 'Acessórios' }]
   },
   {
@@ -106,12 +84,9 @@ export const dummyProducts: Product[] = [
     description: 'RPG futurista em mundo aberto ambientado na metrópole de Night City.',
     price: 149.90,
     image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=400&fit=crop',
-    additional_images: null,
     sizes: ['Digital', 'Físico'],
     colors: ['Standard', 'Deluxe'],
     stock: 0,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
     tags: [{ id: '4', name: 'PC' }, { id: '9', name: 'Jogos Digitais' }]
   },
   {
@@ -120,12 +95,9 @@ export const dummyProducts: Product[] = [
     description: 'Headset gamer com som surround 7.1 e iluminação RGB personalizável.',
     price: 199.90,
     image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400&h=400&fit=crop',
-    additional_images: null,
     sizes: ['Único'],
     colors: ['Preto', 'Vermelho', 'Azul'],
     stock: 22,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
     tags: [{ id: '6', name: 'Acessórios' }]
   }
 ];
