@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -31,43 +32,6 @@ export interface ProductSectionInput {
   items: { type: SectionItemType; id: string }[]; // Simplified item structure for input
 }
 
-// Mock data for offline/demo mode
-const MOCK_SECTIONS: ProductSection[] = [
-  {
-    id: 'mock-section-1',
-    title: 'Lançamentos',
-    view_all_link: '/categoria/lancamentos',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    items: [
-      { section_id: 'mock-section-1', item_type: 'tag', item_id: 'lancamento', display_order: 0 },
-      { section_id: 'mock-section-1', item_type: 'tag', item_id: 'novo', display_order: 1 }
-    ]
-  },
-  {
-    id: 'mock-section-2',
-    title: 'Mais Vendidos',
-    view_all_link: '/categoria/mais-vendidos',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    items: [
-      { section_id: 'mock-section-2', item_type: 'tag', item_id: 'popular', display_order: 0 },
-      { section_id: 'mock-section-2', item_type: 'tag', item_id: 'bestseller', display_order: 1 }
-    ]
-  },
-  {
-    id: 'mock-section-3',
-    title: 'Ofertas Especiais',
-    view_all_link: '/ofertas',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    items: [
-      { section_id: 'mock-section-3', item_type: 'tag', item_id: 'oferta', display_order: 0 },
-      { section_id: 'mock-section-3', item_type: 'tag', item_id: 'desconto', display_order: 1 }
-    ]
-  }
-];
-
 export const useProductSections = () => {
   const [sections, setSections] = useState<ProductSection[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -85,14 +49,6 @@ export const useProductSections = () => {
         .order('created_at', { ascending: false });
 
       if (sectionsError) throw sectionsError;
-
-      // If no sections found, use mock data
-      if (!sectionsData || sectionsData.length === 0) {
-        console.log('No product sections found, using mock data');
-        setSections(MOCK_SECTIONS);
-        setLoading(false);
-        return;
-      }
 
       // Fetch items for each section
       const sectionIds = sectionsData.map(s => s.id);
@@ -117,18 +73,9 @@ export const useProductSections = () => {
 
     } catch (err: any) {
       console.error('Error fetching product sections:', err);
-      
-      // Use mock data on error
-      console.log('Error fetching product sections, using mock data');
-      setSections(MOCK_SECTIONS);
-      
       const errorMessage = err instanceof PostgrestError ? err.message : 'Falha ao carregar as seções de produtos.';
       setError(errorMessage);
-      toast({ 
-        title: 'Aviso', 
-        description: 'Usando dados de demonstração devido a um problema de conexão.', 
-        variant: 'default' 
-      });
+      toast({ title: 'Erro', description: errorMessage, variant: 'destructive' });
     } finally {
       setLoading(false);
     }

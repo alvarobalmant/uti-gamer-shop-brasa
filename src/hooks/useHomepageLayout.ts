@@ -58,28 +58,6 @@ export const useHomepageLayout = () => {
 
       if (layoutError) throw layoutError;
 
-      // If no layout data exists, provide default layout
-      if (!layoutData || layoutData.length === 0) {
-        const defaultLayout = [
-          { id: 1, section_key: 'hero_banner', display_order: 1, is_visible: true },
-          { id: 2, section_key: 'hero_quick_links', display_order: 2, is_visible: true },
-          { id: 3, section_key: 'promo_banner', display_order: 3, is_visible: true },
-          { id: 4, section_key: 'specialized_services', display_order: 4, is_visible: true },
-          { id: 5, section_key: 'why_choose_us', display_order: 5, is_visible: true },
-          { id: 6, section_key: 'contact_help', display_order: 6, is_visible: true }
-        ];
-        
-        // Add titles to default layout
-        const enrichedDefaultLayout = defaultLayout.map(item => ({
-          ...item,
-          title: getSectionTitle(item.section_key)
-        }));
-        
-        setLayoutItems(enrichedDefaultLayout);
-        setLoading(false);
-        return;
-      }
-
       // Fetch product section details to get titles
       const productSectionKeys = layoutData
         .map(item => item.section_key)
@@ -118,30 +96,7 @@ export const useHomepageLayout = () => {
     } catch (err: any) {
       console.error('Error fetching homepage layout:', err);
       setError('Falha ao carregar o layout da página inicial.');
-      
-      // Provide fallback layout on error
-      const fallbackLayout = [
-        { id: 1, section_key: 'hero_banner', display_order: 1, is_visible: true },
-        { id: 2, section_key: 'hero_quick_links', display_order: 2, is_visible: true },
-        { id: 3, section_key: 'promo_banner', display_order: 3, is_visible: true },
-        { id: 4, section_key: 'specialized_services', display_order: 4, is_visible: true },
-        { id: 5, section_key: 'why_choose_us', display_order: 5, is_visible: true },
-        { id: 6, section_key: 'contact_help', display_order: 6, is_visible: true }
-      ];
-      
-      // Add titles to fallback layout
-      const enrichedFallbackLayout = fallbackLayout.map(item => ({
-        ...item,
-        title: getSectionTitle(item.section_key)
-      }));
-      
-      setLayoutItems(enrichedFallbackLayout);
-      
-      toast({ 
-        title: 'Aviso', 
-        description: 'Usando layout padrão devido a um problema de conexão.', 
-        variant: 'default' 
-      });
+      toast({ title: 'Erro', description: 'Não foi possível carregar a configuração do layout.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }

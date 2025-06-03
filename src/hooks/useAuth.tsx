@@ -24,61 +24,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    let mounted = true;
-
-    const initializeAuth = async () => {
-      try {
-        // Set up auth state listener first
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            if (!mounted) return;
-
-            console.log('Auth state changed:', event, session?.user?.id);
-            setSession(session);
-            setUser(session?.user ?? null);
-            
-            if (session?.user) {
-              // Use setTimeout to avoid potential deadlock
-              setTimeout(async () => {
-                try {
-                  const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .single();
-                  
-                  if (mounted) {
-                    setIsAdmin(profile?.role === 'admin');
-                  }
-                } catch (error) {
-                  console.log('Erro ao verificar perfil:', error);
-                  if (mounted) {
-                    setIsAdmin(false);
-                  }
-                }
-              }, 0);
-            } else {
-              setIsAdmin(false);
-            }
-            
-            if (mounted) {
-              setLoading(false);
-            }
-          }
-        );
-
-        // Check for existing session
-        const { data: { session }, error } = await supabase.auth.getSession();
+    // Configurar listener de mudança de auth
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
         
-        if (error) {
-          console.error('Erro ao verificar sessão:', error);
-        }
-        
-        if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
+        if (session?.user) {
+          // Verificar se é admin
+          setTimeout(async () => {
             try {
               const { data: profile } = await supabase
                 .from('profiles')
@@ -91,27 +45,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               console.log('Erro ao verificar perfil:', error);
               setIsAdmin(false);
             }
-          }
-          
-          setLoading(false);
+          }, 0);
+        } else {
+          setIsAdmin(false);
         }
-
-        return () => {
-          subscription.unsubscribe();
-        };
-      } catch (error) {
-        console.error('Erro ao inicializar autenticação:', error);
-        if (mounted) {
-          setLoading(false);
-        }
+        
+        setLoading(false);
       }
-    };
+    );
 
-    initializeAuth();
+    // Verificar sessão existente
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    return () => {
-      mounted = false;
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -128,10 +78,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Bem-vindo de volta!",
       });
     } catch (error: any) {
-      console.error('Erro no login:', error);
       toast({
         title: "Erro no login",
-        description: error.message || "Erro desconhecido",
+        description: error.message,
         variant: "destructive",
       });
       throw error;
@@ -157,10 +106,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Você já pode fazer login.",
       });
     } catch (error: any) {
-      console.error('Erro ao criar conta:', error);
       toast({
         title: "Erro ao criar conta",
-        description: error.message || "Erro desconhecido",
+        description: error.message,
         variant: "destructive",
       });
       throw error;
@@ -176,10 +124,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         title: "Logout realizado com sucesso!",
       });
     } catch (error: any) {
-      console.error('Erro no logout:', error);
       toast({
         title: "Erro no logout",
-        description: error.message || "Erro desconhecido",
+        description: error.message,
         variant: "destructive",
       });
     }
