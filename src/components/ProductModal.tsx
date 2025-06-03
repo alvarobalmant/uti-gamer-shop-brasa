@@ -1,235 +1,191 @@
-import { useState, useEffect } from 'react';
-import { X, Heart, ShoppingCart } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { useProducts, Product } from '@/hooks/useProducts';
+import { useCart } from '@/contexts/CartContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer"; // Use Drawer for mobile
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Product } from '@/hooks/useProducts';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle, X } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
+
+// Import and adapt subcomponents from ProductPage
+import ProductImageGallery from '@/components/ProductPage/ProductImageGallery';
+import ProductInfo from '@/components/ProductPage/ProductInfo';
+import ProductPricing from '@/components/ProductPage/ProductPricing';
+import ProductOptions from '@/components/ProductPage/ProductOptions';
+import ProductActions from '@/components/ProductPage/ProductActions';
+import ProductDescription from '@/components/ProductPage/ProductDescription';
+import RelatedProducts from '@/components/ProductPage/RelatedProducts';
+import { Separator } from '@/components/ui/separator';
 
 interface ProductModalProps {
-  product: Product | null;
+  productId: string | null;
   isOpen: boolean;
-  onClose: () => void;
-  onAddToCart: (product: Product, size: string, color: string) => void;
-  getPlatformColor: (product: Product) => string;
+  onOpenChange: (isOpen: boolean) => void;
 }
 
-const ProductModal = ({ product, isOpen, onClose, onAddToCart, getPlatformColor }: ProductModalProps) => {
-  if (!product || !isOpen) return null;
+const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenChange }) => {
+  const isMobile = useIsMobile();
+  const { products, loading: productsLoading } = useProducts();
+  const { addToCart, loading: cartLoading } = useCart();
+  const [product, setProduct] = useState<Product | null>(null);
 
+  // State for product options (similar to ProductPage)
+  const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [quantity, setQuantity] = useState(1);
 
-  const isLowStock = product.stock && product.stock <= 5;
-  const isOutOfStock = product.stock === 0;
-
+  // Fetch product details when productId changes and modal is open
   useEffect(() => {
-    if (product) {
-      setSelectedSize(product.sizes?.[0] || '');
-      setSelectedColor(product.colors?.[0] || '');
+    if (isOpen && productId && products.length > 0) {
+      const foundProduct = products.find(p => p.id === productId);
+      setProduct(foundProduct || null);
+      // Reset and set default options if product found
+      if (foundProduct) {
+        setSelectedCondition(foundProduct.tags?.some(t => t.name.toLowerCase() === 'novo') ? 'new' : 'pre-owned');
+        setSelectedSize(foundProduct.sizes && foundProduct.sizes.length > 0 ? foundProduct.sizes[0] : '');
+        setSelectedColor(foundProduct.colors && foundProduct.colors.length > 0 ? foundProduct.colors[0] : '');
+        setQuantity(1);
+      } else {
+        // Reset if product not found (or ID is null)
+        setProduct(null);
+      }
+    } else if (!isOpen) {
+      // Optionally reset product when modal closes to prevent stale data flash
+      // setProduct(null);
     }
-  }, [product]);
+  }, [isOpen, productId, products]);
 
-  const handleAddToCart = () => {
-    if (!isOutOfStock && selectedSize) {
-      onAddToCart(product, selectedSize, selectedColor);
-      onClose();
-    }
+  const handleAddToCart = async () => {
+    if (!product) return;
+    await addToCart(product, selectedSize || undefined, selectedColor || undefined);
+    // Maybe close modal after adding? Or show success message?
+    // onOpenChange(false); 
   };
 
-  const primaryTag = product.tags?.[0]?.name || '';
-  const originalPrice = product.price * 1.15;
-  const proPrice = product.price * 0.95;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
-        onClick={onClose}
-      />
-      
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        {/* Close Button */}
-        <Button
-          onClick={onClose}
-          variant="ghost"
-          className="absolute top-4 right-4 z-10 bg-white/90 hover:bg-white rounded-full w-10 h-10 p-0 shadow-lg"
-        >
-          <X className="w-5 h-5" />
-        </Button>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-          {/* Image Section */}
-          <div className="relative">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-96 lg:h-full object-cover rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none"
-              onError={(e) => {
-                e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=600&fit=crop';
-              }}
-            />
-            
-            {/* Badges */}
-            <div className="absolute top-4 left-4 flex flex-col gap-2">
-              {product.tags?.some(tag => tag.name.toLowerCase().includes('novo')) && (
-                <Badge className="bg-green-600 text-white font-bold text-sm px-3 py-1 shadow-lg">
-                  NOVO
-                </Badge>
-              )}
-              {isLowStock && !isOutOfStock && (
-                <Badge className="bg-orange-500 text-white font-bold text-sm px-3 py-1 shadow-lg">
-                  Últimas {product.stock} unidades!
-                </Badge>
-              )}
-              {isOutOfStock && (
-                <Badge className="bg-gray-500 text-white font-bold text-sm px-3 py-1 shadow-lg">
-                  ESGOTADO
-                </Badge>
-              )}
-            </div>
-
-            {primaryTag && (
-              <Badge className={`absolute top-4 right-4 ${getPlatformColor(product)} text-white font-bold text-sm px-3 py-1 shadow-lg`}>
-                {primaryTag}
-              </Badge>
-            )}
-          </div>
-
-          {/* Content Section */}
-          <div className="p-8 space-y-6">
-            {/* Product Title */}
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2 leading-tight">
-                {product.name}
-              </h2>
-              {product.description && (
-                <p className="text-gray-600 leading-relaxed">
-                  {product.description}
-                </p>
-              )}
-            </div>
-
-            {/* Pricing Block */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-3xl font-bold text-gray-900">
-                  R$ {product.price.toFixed(2)}
-                </span>
-                <span className="text-lg text-gray-500 line-through">
-                  R$ {originalPrice.toFixed(2)}
-                </span>
-              </div>
-              <div className="text-lg font-semibold text-purple-600 mb-2">
-                R$ {proPrice.toFixed(2)} Membros Pro
-              </div>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p>💳 ou 12x de R$ {(product.price / 12).toFixed(2)}</p>
-                <p>🚚 Frete grátis acima de R$ 200</p>
-              </div>
-            </div>
-
-            {/* Options */}
-            <div className="space-y-4">
-              {/* Sizes */}
-              {product.sizes && product.sizes.length > 0 && (
-                <div>
-                  <label className="text-lg font-semibold text-gray-900 mb-3 block">
-                    {product.sizes[0] === 'Físico' || product.sizes[0] === 'Digital' ? 'Formato:' : 'Tamanho:'}
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {product.sizes.map((size) => (
-                      <Button
-                        key={size}
-                        variant={selectedSize === size ? "default" : "outline"}
-                        onClick={() => setSelectedSize(size)}
-                        className={`transition-all duration-200 font-medium px-4 py-2 ${
-                          selectedSize === size 
-                            ? 'bg-red-600 text-white border-red-600' 
-                            : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'
-                        }`}
-                      >
-                        {size}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Colors */}
-              {product.colors && product.colors.length > 0 && (
-                <div>
-                  <label className="text-lg font-semibold text-gray-900 mb-3 block">Cor:</label>
-                  <div className="flex flex-wrap gap-3">
-                    {product.colors.map((color) => (
-                      <Button
-                        key={color}
-                        variant={selectedColor === color ? "default" : "outline"}
-                        onClick={() => setSelectedColor(color)}
-                        className={`transition-all duration-200 font-medium px-4 py-2 ${
-                          selectedColor === color 
-                            ? 'bg-red-600 text-white border-red-600' 
-                            : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'
-                        }`}
-                      >
-                        {color}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={handleAddToCart}
-                disabled={isOutOfStock || (!selectedSize && product.sizes && product.sizes.length > 0)}
-                className={`w-full font-bold py-4 text-lg rounded-lg transition-all duration-300 shadow-md hover:shadow-lg ${
-                  isOutOfStock 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-red-600 hover:bg-red-700 text-white'
-                }`}
-              >
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                {isOutOfStock ? 'Produto Esgotado' : 'Adicionar ao Carrinho'}
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="w-full border-2 border-gray-300 text-gray-700 hover:border-red-600 hover:text-red-600 font-semibold py-3 rounded-lg transition-all duration-300"
-              >
-                <Heart className="w-5 h-5 mr-2" />
-                Adicionar aos Favoritos
-              </Button>
-            </div>
-
-            {/* Trust Badges */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Produto em estoque</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Entrega rápida</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Suporte WhatsApp</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Garantia oficial</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+  const renderLoadingSkeleton = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 p-6 h-full overflow-y-auto">
+      <Skeleton className="aspect-square w-full rounded-lg" />
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-3/4 rounded" />
+        <Skeleton className="h-6 w-1/4 rounded" />
+        <Skeleton className="h-10 w-1/2 rounded" />
+        <Skeleton className="h-12 w-full rounded" />
+        <Skeleton className="h-10 w-full rounded" />
       </div>
     </div>
+  );
+
+  const renderNotFound = () => (
+    <div className="flex flex-col items-center justify-center text-center p-6 h-full">
+      <AlertCircle className="w-16 h-16 text-destructive mb-4" />
+      <h2 className="text-2xl font-bold text-foreground mb-2">Produto Não Encontrado</h2>
+      <p className="text-muted-foreground mb-6">Não conseguimos encontrar os detalhes deste produto.</p>
+      <DrawerClose asChild>
+         <Button variant="outline">Fechar</Button>
+      </DrawerClose>
+    </div>
+  );
+
+  const renderProductContent = () => {
+    if (!product) return null; // Should be handled by loading/not found states
+
+    return (
+      <div className="p-4 md:p-6 lg:p-8 h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300">
+        {/* Top Section: Gallery + Info/Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 mb-8">
+          {/* Left Column: Image Gallery */}
+          <ProductImageGallery product={product} />
+
+          {/* Right Column: Info, Pricing, Options, Actions */}
+          <div className="flex flex-col space-y-4">
+            <ProductInfo product={product} />
+            <ProductPricing
+              product={product}
+              selectedCondition={selectedCondition}
+              onConditionChange={setSelectedCondition}
+            />
+            <ProductOptions
+              product={product}
+              selectedSize={selectedSize}
+              selectedColor={selectedColor}
+              quantity={quantity}
+              onSizeChange={setSelectedSize}
+              onColorChange={setSelectedColor}
+              onQuantityChange={setQuantity}
+            />
+            <Separator className="my-2" />
+            <ProductActions
+              product={product}
+              onAddToCart={handleAddToCart}
+              isLoading={cartLoading}
+            />
+          </div>
+        </div>
+
+        {/* Bottom Section: Description + Related Products */}
+        <Separator className="mb-6" />
+        <div className="grid grid-cols-1 gap-8">
+           {/* Removed lg:grid-cols-3 and lg:col-span-2 for simplicity in modal */}
+          <div>
+            <ProductDescription product={product} />
+          </div>
+        </div>
+
+        {/* Related products might be too much for a modal, consider removing or simplifying */}
+        {/* <Separator className="my-8" />
+        <RelatedProducts product={product} /> */}
+      </div>
+    );
+  };
+
+  const ModalComponent = isMobile ? Drawer : Dialog;
+  const ModalContentComponent = isMobile ? DrawerContent : DialogContent;
+
+  return (
+    <ModalComponent open={isOpen} onOpenChange={onOpenChange}>
+      <ModalContentComponent
+        className={cn(
+          // Base styling for both Dialog and Drawer
+          "p-0 border-none overflow-hidden",
+          // Desktop specific (Dialog)
+          "sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl", // Control max width
+          "h-[90vh] max-h-[90vh]", // Control height
+          // Mobile specific (Drawer)
+          "h-[90%]" // Drawer takes 90% height from bottom
+        )}
+      >
+        {/* Custom Header with Close Button */}
+        <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-background z-10">
+          <h2 className="text-lg font-semibold truncate pr-4">
+            {product ? product.name : productsLoading ? 'Carregando...' : 'Produto'}
+          </h2>
+          <DialogClose asChild>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <X className="h-5 w-5" />
+              <span className="sr-only">Fechar</span>
+            </Button>
+          </DialogClose>
+        </div>
+
+        {/* Content Area */}
+        <div className="h-[calc(100%-65px)]"> {/* Adjust height based on header height */}
+          {productsLoading ? (
+            renderLoadingSkeleton()
+          ) : product ? (
+            renderProductContent()
+          ) : (
+            renderNotFound()
+          )}
+        </div>
+
+      </ModalContentComponent>
+    </ModalComponent>
   );
 };
 
 export default ProductModal;
+
