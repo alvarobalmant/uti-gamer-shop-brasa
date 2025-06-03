@@ -1,7 +1,7 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProCodes, ProCode } from '@/hooks/useProCodes';
 import { Loader2, Copy, Check, X, AlertCircle } from 'lucide-react';
@@ -55,7 +55,7 @@ const ProCodesManager = () => {
   };
 
   // Carregar códigos ao montar o componente
-  useState(() => {
+  useEffect(() => {
     loadCodes();
   }, []);
 
