@@ -1,135 +1,146 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export interface ServiceCard {
   id: string;
   title: string;
   description: string;
-  image_url: string;
-  link_url: string;
+  image_url?: string;
+  link_url?: string;
   position: number;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const useServiceCards = () => {
   const [serviceCards, setServiceCards] = useState<ServiceCard[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchServiceCards = async () => {
+  const fetchServiceCards = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('service_cards')
         .select('*')
         .eq('is_active', true)
-        .order('position');
+        .order('position', { ascending: true });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
+
       setServiceCards(data || []);
-    } catch (error: any) {
-      console.error('Erro ao buscar cards de serviços:', error);
-      toast({
-        title: "Erro ao carregar cards de serviços",
-        description: error.message,
-        variant: "destructive",
-      });
+    } catch (err: any) {
+      console.error('Error fetching service cards:', err);
+      setError('Falha ao carregar cartões de serviço.');
+      setServiceCards([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const addServiceCard = async (cardData: Omit<ServiceCard, 'id' | 'created_at' | 'updated_at'>) => {
+  const addServiceCard = useCallback(async (cardData: Omit<ServiceCard, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('service_cards')
-        .insert([cardData])
+        .insert([{
+          ...cardData,
+          image_url: cardData.image_url || '',
+          link_url: cardData.link_url || ''
+        }])
         .select()
         .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
-      setServiceCards(prev => [...prev, data]);
-      toast({
-        title: "Card de serviço adicionado com sucesso!",
-        description: "O card foi criado e está ativo.",
+      toast({ 
+        title: 'Sucesso', 
+        description: 'Card de serviço adicionado com sucesso.' 
       });
-    } catch (error: any) {
-      console.error('Erro ao adicionar card de serviço:', error);
-      toast({
-        title: "Erro ao adicionar card de serviço",
-        description: error.message,
-        variant: "destructive",
+
+      await fetchServiceCards();
+      return data;
+    } catch (err: any) {
+      console.error('Error adding service card:', err);
+      toast({ 
+        title: 'Erro', 
+        description: 'Falha ao adicionar card de serviço.', 
+        variant: 'destructive' 
       });
-      throw error;
+      throw err;
     }
-  };
+  }, [toast, fetchServiceCards]);
 
-  const updateServiceCard = async (id: string, cardData: Partial<ServiceCard>) => {
+  const updateServiceCard = useCallback(async (id: string, cardData: Partial<Omit<ServiceCard, 'id' | 'created_at' | 'updated_at'>>) => {
     try {
-      const { data, error } = await supabase
+      const { data, error: updateError } = await supabase
         .from('service_cards')
-        .update({ ...cardData, updated_at: new Date().toISOString() })
+        .update(cardData)
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      setServiceCards(prev => prev.map(card => card.id === id ? data : card));
-      toast({
-        title: "Card de serviço atualizado com sucesso!",
-        description: "As alterações foram salvas.",
+      toast({ 
+        title: 'Sucesso', 
+        description: 'Card de serviço atualizado com sucesso.' 
       });
-    } catch (error: any) {
-      console.error('Erro ao atualizar card de serviço:', error);
-      toast({
-        title: "Erro ao atualizar card de serviço",
-        description: error.message,
-        variant: "destructive",
+
+      await fetchServiceCards();
+      return data;
+    } catch (err: any) {
+      console.error('Error updating service card:', err);
+      toast({ 
+        title: 'Erro', 
+        description: 'Falha ao atualizar card de serviço.', 
+        variant: 'destructive' 
       });
-      throw error;
+      throw err;
     }
-  };
+  }, [toast, fetchServiceCards]);
 
-  const deleteServiceCard = async (id: string) => {
+  const deleteServiceCard = useCallback(async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('service_cards')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
-      setServiceCards(prev => prev.filter(card => card.id !== id));
-      toast({
-        title: "Card de serviço excluído com sucesso!",
-        description: "O card foi removido permanentemente.",
+      toast({ 
+        title: 'Sucesso', 
+        description: 'Card de serviço removido com sucesso.' 
       });
-    } catch (error: any) {
-      console.error('Erro ao excluir card de serviço:', error);
-      toast({
-        title: "Erro ao excluir card de serviço",
-        description: error.message,
-        variant: "destructive",
+
+      await fetchServiceCards();
+    } catch (err: any) {
+      console.error('Error deleting service card:', err);
+      toast({ 
+        title: 'Erro', 
+        description: 'Falha ao remover card de serviço.', 
+        variant: 'destructive' 
       });
-      throw error;
+      throw err;
     }
-  };
+  }, [toast, fetchServiceCards]);
 
   useEffect(() => {
     fetchServiceCards();
-  }, []);
+  }, [fetchServiceCards]);
 
-  return {
-    serviceCards,
-    loading,
+  return { 
+    serviceCards, 
+    loading, 
+    error, 
+    fetchServiceCards,
     addServiceCard,
     updateServiceCard,
-    deleteServiceCard,
-    refetch: fetchServiceCards
+    deleteServiceCard
   };
 };

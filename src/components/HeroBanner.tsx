@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import HeroBannerCarousel from './HeroBannerCarousel';
 
 interface HeroBannerProps {
   title?: string;
@@ -15,43 +15,44 @@ interface HeroBannerProps {
   };
 }
 
-const HeroBanner: React.FC<HeroBannerProps> = ({
-  title,
-  subtitle,
-  imageUrl,
-  ctaText,
-  ctaLink,
-  theme
-}) => {
-  const primaryColor = theme?.primaryColor || '#107C10';
+// Este arquivo serve como um ponto de entrada para o componente HeroBanner
+// Isso resolve o problema de importação em outros componentes que usam '@/components/HeroBanner'
+const HeroBanner: React.FC<HeroBannerProps> = (props) => {
+  // Use props with HeroBannerCarousel or create a simple banner implementation
+  // For now, let's create a simple banner that uses the props
+  const { title, subtitle, imageUrl, ctaText, ctaLink, theme } = props;
   
+  const bannerStyle = theme ? {
+    backgroundColor: theme.primaryColor || '#107C10',
+    '--primary-color': theme.primaryColor || '#107C10',
+    '--secondary-color': theme.secondaryColor || '#3A3A3A',
+    '--accent-color': theme.accentColor || theme.primaryColor || '#107C10',
+  } as React.CSSProperties : {};
+
   return (
-    <section 
-      className="relative py-16 bg-cover bg-center"
-      style={{ 
-        backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
-        backgroundColor: !imageUrl ? primaryColor : undefined
-      }}
+    <div 
+      className="relative w-full h-64 md:h-80 lg:h-96 flex items-center justify-center bg-gradient-to-r from-primary to-primary/80 text-white"
+      style={bannerStyle}
     >
-      <div className="absolute inset-0 bg-black/50" />
-      <div className="relative container mx-auto px-4 text-center text-white">
-        {title && (
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            {title}
-          </h1>
-        )}
-        {subtitle && (
-          <p className="text-xl md:text-2xl mb-8">
-            {subtitle}
-          </p>
-        )}
+      {imageUrl && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${imageUrl})` }}
+        />
+      )}
+      <div className="relative z-10 text-center px-4">
+        {title && <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">{title}</h1>}
+        {subtitle && <p className="text-lg md:text-xl mb-6">{subtitle}</p>}
         {ctaText && ctaLink && (
-          <Button asChild className="bg-white text-black hover:bg-gray-100">
-            <a href={ctaLink}>{ctaText}</a>
-          </Button>
+          <a 
+            href={ctaLink}
+            className="inline-block bg-white text-primary px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+          >
+            {ctaText}
+          </a>
         )}
       </div>
-    </section>
+    </div>
   );
 };
 

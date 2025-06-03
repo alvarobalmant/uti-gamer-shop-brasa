@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -22,10 +23,14 @@ const SearchResults = () => {
   // Removed useEffect for setupScrollRestoration - This is handled globally by useScrollRestoration
 
   // Usar busca fuzzy para filtrar produtos
-  const filteredResults = searchProducts(products, query);
+  const filteredProducts = searchProducts(products, query);
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);
+  };
+
+  const handleCardClick = (productId: string) => {
+    navigate(`/product/${productId}`);
   };
 
   return (
@@ -61,7 +66,7 @@ const SearchResults = () => {
               Resultados para "{query}"
             </h2>
             <p className="text-gray-600">
-              {loading ? 'Buscando...' : `${filteredResults.length} produtos encontrados`}
+              {loading ? 'Buscando...' : `${filteredProducts.length} produtos encontrados`}
             </p>
           </div>
 
@@ -70,7 +75,7 @@ const SearchResults = () => {
               <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
               <div className="text-xl text-gray-500">Carregando produtos...</div>
             </div>
-          ) : filteredResults.length === 0 ? (
+          ) : filteredProducts.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-2xl text-gray-400 mb-2">
                 Nenhum produto encontrado
@@ -87,12 +92,12 @@ const SearchResults = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
-              {filteredResults.map((product) => (
+              {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={addToCart}
-                  onCardClick={() => {}} // Stub function for now
+                  onAddToCart={handleAddToCart}
+                  onCardClick={handleCardClick}
                 />
               ))}
             </div>

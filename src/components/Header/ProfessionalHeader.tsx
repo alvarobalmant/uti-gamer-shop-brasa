@@ -24,7 +24,7 @@ interface ProfessionalHeaderProps {
 const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps) => {
   // Implementação com tratamento de erro e fallback para todos os hooks
   let authData = { user: null, isAdmin: false };
-  let cartData = { items: [] };
+  let cartData = { items: [] }; // Changed from cartItems to items
   let subscriptionData = { hasActiveSubscription: () => false };
   
   try {
@@ -48,7 +48,7 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
   // Extrair valores com fallback seguro
   const user = authData?.user || null;
   const isAdmin = authData?.isAdmin || false;
-  const cartItems = cartData?.items || [];
+  const cartItems = cartData?.items || []; // Changed from cartItems to items
   const hasActiveSubscription = () => {
     try {
       return subscriptionData?.hasActiveSubscription() || false;
