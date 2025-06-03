@@ -5,9 +5,12 @@ import { BannerManager } from './BannerManager';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
 import UserSubscriptionManagement from './UserSubscriptionManagement';
-import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager'; // Renamed component
-import ProductSectionManager from './ProductSectionManager'; // New component for managing product sections
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks } from 'lucide-react'; // Added ListChecks icon
+import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
+import ProductSectionManager from './ProductSectionManager';
+import PageManager from './PageManager';
+import QuickLinksManager from './QuickLinksManager';
+import ProCodesManager from './ProCodesManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Crown } from 'lucide-react';
 
 export const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('layout'); // Default to layout management
@@ -25,11 +28,19 @@ export const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Updated grid-cols-7 to accommodate the new tabs */}
-          <TabsList className="grid w-full grid-cols-7 bg-gray-800 border-gray-700">
+          {/* Updated grid-cols-10 to accommodate the new tab */}
+          <TabsList className="grid w-full grid-cols-10 bg-gray-800 border-gray-700">
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutList className="w-4 h-4" />
               Layout Home
+            </TabsTrigger>
+            <TabsTrigger value="pages" className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              Páginas
+            </TabsTrigger>
+            <TabsTrigger value="quick_links" className="flex items-center gap-2">
+              <Link className="w-4 h-4" />
+              Links Rápidos
             </TabsTrigger>
             <TabsTrigger value="product_sections" className="flex items-center gap-2">
               <ListChecks className="w-4 h-4" />
@@ -55,11 +66,25 @@ export const AdminPanel = () => {
               <Users className="w-4 h-4" />
               Usuários/PRO
             </TabsTrigger>
+            <TabsTrigger value="pro_codes" className="flex items-center gap-2">
+              <Crown className="w-4 h-4" />
+              Códigos UTI PRO
+            </TabsTrigger>
           </TabsList>
 
           {/* Content for Homepage Layout Management */}
           <TabsContent value="layout">
             <HomepageLayoutManager />
+          </TabsContent>
+
+          {/* Content for Pages Management */}
+          <TabsContent value="pages">
+            <PageManager />
+          </TabsContent>
+
+          {/* Content for Quick Links Management */}
+          <TabsContent value="quick_links">
+            <QuickLinksManager />
           </TabsContent>
 
           {/* Content for Product Section Management */}
@@ -87,9 +112,12 @@ export const AdminPanel = () => {
             <UserSubscriptionManagement />
           </TabsContent>
 
+          <TabsContent value="pro_codes">
+            <ProCodesManager />
+          </TabsContent>
+
         </Tabs>
       </div>
     </div>
   );
 };
-

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -37,7 +36,7 @@ const CategoryPage = () => {
     return categoryMap[cat] || cat;
   };
 
-  const filteredProducts = products.filter(product => {
+  const filteredAndSortedProducts = products.filter(product => {
     if (category === 'inicio') return true;
     
     const categoryLower = category?.toLowerCase() || '';
@@ -86,7 +85,7 @@ const CategoryPage = () => {
               {getCategoryTitle(category || '')}
             </h2>
             <p className="text-gray-600">
-              {loading ? 'Carregando...' : `${filteredProducts.length} produtos encontrados`}
+              {loading ? 'Carregando...' : `${filteredAndSortedProducts.length} produtos encontrados`}
             </p>
           </div>
 
@@ -95,7 +94,7 @@ const CategoryPage = () => {
               <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
               <div className="text-xl text-gray-500">Carregando produtos...</div>
             </div>
-          ) : filteredProducts.length === 0 ? (
+          ) : filteredAndSortedProducts.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-2xl text-gray-400 mb-2">
                 Nenhum produto encontrado
@@ -112,11 +111,12 @@ const CategoryPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
-              {filteredProducts.map((product) => (
+              {filteredAndSortedProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={handleAddToCart}
+                  onAddToCart={addToCart}
+                  onCardClick={() => {}} // Stub function for now
                 />
               ))}
             </div>
@@ -128,4 +128,3 @@ const CategoryPage = () => {
 };
 
 export default CategoryPage;
-

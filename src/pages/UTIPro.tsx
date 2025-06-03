@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useAuth } from '@/hooks/useAuth';
-// Removed import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import Footer from '@/components/Footer';
@@ -19,6 +17,7 @@ import {
   AccordionItem, 
   AccordionTrigger 
 } from '@/components/ui/accordion';
+import RedeemCodeSection from '@/components/UTIPro/RedeemCodeSection';
 
 // Animation Variants
 const fadeIn = {
@@ -47,8 +46,6 @@ const UTIPro = () => {
   const { plans, userSubscription, usuario, loading, createSubscription, cancelSubscription, hasActiveSubscription } = useSubscriptions();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
-
-  // Removed useScrollPosition(); - This is handled globally by useScrollRestoration
 
   const handleSubscribe = async (planId: string) => {
     if (!user) {
@@ -138,9 +135,9 @@ const UTIPro = () => {
                 <Button 
                   size="lg"
                   className="bg-uti-red text-white hover:bg-uti-red/90 font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 px-6 py-2.5 md:px-8 md:py-3 text-base md:text-lg rounded-full"
-                  onClick={() => document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => document.getElementById('resgatar-codigo')?.scrollIntoView({ behavior: 'smooth' })}
                 >
-                  Ver Planos
+                  Adquirir UTI PRO
                 </Button>
               </motion.div>
             )}
@@ -235,188 +232,10 @@ const UTIPro = () => {
           </div>
         </section>
 
-        {/* Pricing Plans Section - Added padding */}
-        {!hasActiveSubscription() && (
-          <section id="planos" className="py-12 md:py-24 bg-gradient-to-b from-black via-uti-dark to-black">
-            {/* Increased horizontal padding for the container */}
-            <div className="container-professional px-4 sm:px-6 lg:px-8">
-              <motion.h2 
-                className="text-2xl md:text-4xl font-bold text-center mb-8 md:mb-12 text-white"
-                initial={{ opacity: 0, y: 20 }} 
-                whileInView={{ opacity: 1, y: 0 }} 
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.5 }}
-              >
-                Escolha seu Plano UTI PRO
-              </motion.h2>
-              {/* Horizontal Scroll Container for Mobile - Adjusted padding/margin */}
-              {/* Added pt-6 to give space for the badge */}
-              <div className="md:hidden overflow-x-auto pb-6 -mx-4 px-4 pt-6 scrollbar-thin scrollbar-thumb-uti-red/50 scrollbar-track-transparent">
-                <motion.div 
-                  className="flex gap-4 w-max"
-                  variants={staggerContainer}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.1 }}
-                >
-                  {plans.map((plan) => {
-                    const isPopular = plan.duration_months === 6;
-                    const monthlyPrice = calculateMonthlyPrice(plan.price, plan.duration_months);
-                    
-                    return (
-                      <motion.div 
-                        key={plan.id} 
-                        variants={fadeInUp} 
-                        className={cn(
-                          "flex-shrink-0",
-                          // Removed negative margin, let padding handle space
-                          isPopular ? "w-[80vw] sm:w-[55vw]" : "w-[75vw] sm:w-[50vw]"
-                        )}
-                      >
-                        <Card className={cn(
-                          "relative bg-gray-800/60 border border-gray-700 shadow-xl h-full flex flex-col transition-all duration-300",
-                          isPopular ? 'border-uti-red ring-2 ring-uti-red z-10' : '' 
-                        )}>
-                          {isPopular && (
-                            // Adjusted badge position slightly
-                            <Badge className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-uti-red text-white px-3 py-1.5 text-xs sm:text-sm font-semibold shadow-md z-20">
-                              Mais Popular
-                            </Badge>
-                          )}
-                          
-                          <CardHeader className="text-center pt-6 md:pt-8 pb-3 md:pb-4">
-                            <CardTitle className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">{plan.name}</CardTitle>
-                            <CardDescription className="text-white/70 text-xs sm:text-sm min-h-[30px] md:min-h-[40px]">{plan.description}</CardDescription>
-                            <div className="mt-4 md:mt-6">
-                              <span className="text-3xl md:text-4xl font-extrabold text-uti-red">
-                                {formatPrice(plan.price)}
-                              </span>
-                              <div className="text-xs sm:text-sm text-white/60 mt-1">
-                                Equivalente a {formatPrice(monthlyPrice)}/mês
-                              </div>
-                            </div>
-                          </CardHeader>
-
-                          <CardContent className="flex-grow flex flex-col justify-between pt-0 pb-6 md:pb-8 px-4 md:px-6">
-                            <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 text-left text-white/80 text-sm md:text-base">
-                              {[ 
-                                  '10% de desconto em tudo',
-                                  'Ofertas exclusivas para membros',
-                                  'Acesso prioritário a novidades',
-                                  'Suporte premium via WhatsApp'
-                              ].map((feature, i) => (
-                                  <li key={i} className="flex items-center gap-2 md:gap-3">
-                                  <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
-                                  <span>{feature}</span>
-                                  </li>
-                              ))}
-                            </ul>
-
-                            <Button
-                              onClick={() => handleSubscribe(plan.id)}
-                              disabled={processingPlan === plan.id}
-                              size="lg"
-                              className={cn(
-                                "w-full font-bold text-base md:text-lg py-2.5 md:py-3 rounded-lg transition-all duration-300 transform hover:scale-105",
-                                isPopular 
-                                  ? "bg-uti-red text-white hover:bg-uti-red/90 shadow-lg hover:shadow-xl"
-                                  : "bg-white/10 text-white hover:bg-white/20"
-                              )}
-                            >
-                              {processingPlan === plan.id ? (
-                                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                              ) : (
-                                <Crown className="w-4 h-4 mr-2" />
-                              )}
-                              {processingPlan === plan.id ? "Processando..." : "Assinar Agora"}
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              </div>
-              {/* Grid Layout for Desktop - Added padding */}
-              {/* Added pt-6 to give space for the badge */}
-              <motion.div 
-                className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 pt-6"
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-              >
-                {plans.map((plan) => {
-                  const isPopular = plan.duration_months === 6;
-                  const monthlyPrice = calculateMonthlyPrice(plan.price, plan.duration_months);
-
-                  return (
-                    <motion.div key={plan.id} variants={fadeInUp} className={cn(isPopular ? "lg:scale-105" : "")}>
-                      <Card className={cn(
-                        "relative bg-gray-800/60 border border-gray-700 shadow-xl h-full flex flex-col transition-all duration-300",
-                        isPopular ? 'border-uti-red ring-2 ring-uti-red z-10' : 'hover:border-gray-500'
-                      )}>
-                        {isPopular && (
-                          <Badge className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-uti-red text-white px-4 py-1.5 text-sm font-semibold shadow-md z-20">
-                            Mais Popular
-                          </Badge>
-                        )}
-                        
-                        <CardHeader className="text-center pt-8 pb-4">
-                          <CardTitle className="text-2xl font-bold text-white mb-2">{plan.name}</CardTitle>
-                          <CardDescription className="text-white/70 min-h-[40px]">{plan.description}</CardDescription>
-                          <div className="mt-6">
-                            <span className="text-4xl font-extrabold text-uti-red">
-                              {formatPrice(plan.price)}
-                            </span>
-                            <div className="text-sm text-white/60 mt-1">
-                              Equivalente a {formatPrice(monthlyPrice)}/mês
-                            </div>
-                          </div>
-                        </CardHeader>
-
-                        <CardContent className="flex-grow flex flex-col justify-between pt-0 pb-8 px-6">
-                          <ul className="space-y-3 mb-8 text-left text-white/80">
-                            {[ 
-                                '10% de desconto em tudo',
-                                'Ofertas exclusivas para membros',
-                                'Acesso prioritário a novidades',
-                                'Suporte premium via WhatsApp'
-                            ].map((feature, i) => (
-                                <li key={i} className="flex items-center gap-3">
-                                <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                                <span>{feature}</span>
-                                </li>
-                            ))}
-                          </ul>
-
-                          <Button
-                            onClick={() => handleSubscribe(plan.id)}
-                            disabled={processingPlan === plan.id}
-                            size="lg"
-                            className={cn(
-                              "w-full font-bold text-lg py-3 rounded-lg transition-all duration-300 transform hover:scale-105",
-                              isPopular 
-                                ? "bg-uti-red text-white hover:bg-uti-red/90 shadow-lg hover:shadow-xl"
-                                : "bg-white/10 text-white hover:bg-white/20"
-                            )}
-                          >
-                            {processingPlan === plan.id ? (
-                              <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                            ) : (
-                              <Crown className="w-4 h-4 mr-2" />
-                            )}
-                            {processingPlan === plan.id ? "Processando..." : "Assinar Agora"}
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            </div>
-          </section>
-        )}
+        {/* Redeem Code Section */}
+        <div id="resgatar-codigo">
+          <RedeemCodeSection />
+        </div>
 
         {/* FAQ Section - Added padding */}
         <section className="py-12 md:py-24 bg-uti-dark">
@@ -440,7 +259,7 @@ const UTIPro = () => {
               <Accordion type="single" collapsible className="w-full space-y-4">
                 {[ 
                   { q: "Como funciona o desconto de 10%?", a: "O desconto é aplicado automaticamente em todos os produtos da loja ao finalizar a compra, desde que você esteja logado com sua conta UTI PRO ativa." },
-                  { q: "Posso cancelar minha assinatura a qualquer momento?", a: "Sim, você pode cancelar sua assinatura UTI PRO quando quiser através do painel da sua conta. O cancelamento impede futuras cobranças, mas você continua com os benefícios até o fim do período já pago." },
+                  { q: "Como adquirir o UTI PRO?", a: "Você pode adquirir o UTI PRO entrando em contato via WhatsApp. Após o pagamento, você receberá um código que pode ser resgatado na seção 'Resgatar Código' desta página." },
                   { q: "As ofertas exclusivas são cumulativas com o desconto de 10%?", a: "Geralmente sim! As ofertas exclusivas para membros PRO costumam ser adicionais ao seu desconto padrão de 10%, maximizando sua economia." },
                   { q: "Como funciona o acesso prioritário a lançamentos?", a: "Membros UTI PRO recebem notificações antecipadas e, em alguns casos, têm a oportunidade de comprar lançamentos selecionados antes do público geral." },
                 ].map((faq, index) => (
