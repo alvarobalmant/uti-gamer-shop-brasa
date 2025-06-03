@@ -75,13 +75,8 @@ const PageManager: React.FC = () => {
         slug: selectedPage.slug,
         description: selectedPage.description || '',
         isActive: selectedPage.isActive,
-<<<<<<< HEAD
         theme: { ...selectedPage.theme },
         filters: { ...selectedPage.filters }
-=======
-        theme: selectedPage.theme ? { ...selectedPage.theme } : { primaryColor: '#107C10', secondaryColor: '#3A3A3A' },
-        filters: selectedPage.filters ? { ...selectedPage.filters } : { tagIds: [], categoryIds: [] }
->>>>>>> 112f740a79595fc063ed369e4d53e6bfc044da5f
       });
     }
   }, [isEditing, selectedPage]);

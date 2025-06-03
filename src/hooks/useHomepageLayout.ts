@@ -44,17 +44,13 @@ export const useHomepageLayout = () => {
     setLoading(true);
     setError(null);
     try {
-<<<<<<< HEAD
       console.log("[useHomepageLayout] Iniciando busca de layout...");
-=======
->>>>>>> 112f740a79595fc063ed369e4d53e6bfc044da5f
       const { data: layoutData, error: layoutError } = await supabase
         .from('homepage_layout')
         .select('*')
         .order('display_order', { ascending: true });
 
       if (layoutError) throw layoutError;
-<<<<<<< HEAD
       console.log("[useHomepageLayout] Raw layoutData:", layoutData, "count:", layoutData?.length || 0); // DEBUG LOG
       
       // Se não houver dados, criar layout padrão para garantir renderização
@@ -75,8 +71,6 @@ export const useHomepageLayout = () => {
           title: getSectionTitle(item.section_key)
         })));
       }
-=======
->>>>>>> 112f740a79595fc063ed369e4d53e6bfc044da5f
 
       const productSectionKeys = layoutData
         ?.map(item => item.section_key)
@@ -141,10 +135,7 @@ export const useHomepageLayout = () => {
     }
   }, [toast, fetchLayout]);
 
-<<<<<<< HEAD
   // Initial fetch with forced delay
-=======
->>>>>>> 112f740a79595fc063ed369e4d53e6bfc044da5f
   useEffect(() => {
     console.log("[useHomepageLayout] Iniciando efeito de carregamento inicial");
     const timer = setTimeout(() => {
