@@ -1,199 +1,335 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { PostgrestError } from '@supabase/supabase-js';
 
-export interface ProductSection {
-  id: string;
-  title: string;
-  view_all_link?: string;
-  created_at?: string;
-  updated_at?: string;
-  items?: ProductSectionItem[];
-}
-
-export interface ProductSectionItem {
-  id: number;
-  item_id: string;
-  item_type: 'product' | 'tag';
-  display_order?: number;
-  section_id: string;
-}
-
-export interface ProductSectionInput {
-  title: string;
-  view_all_link?: string;
-}
-
+// Types matching DB structure
 export type SectionItemType = 'product' | 'tag';
 
+export interface ProductSectionItem {
+  id?: number; // Optional for creation
+  section_id: string; // UUID
+  item_type: SectionItemType;
+  item_id: string; // Product UUID or Tag Name/ID (using name for simplicity now)
+  display_order?: number;
+}
+
+export interface ProductSection {
+  id: string; // UUID
+  title: string;
+  view_all_link?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  items?: ProductSectionItem[]; // Populated after fetch
+}
+
+// Type for creating/updating a section with its items
+export interface ProductSectionInput {
+  id?: string; // Required for update, absent for create
+  title: string;
+  view_all_link?: string | null;
+  items: { type: SectionItemType; id: string }[]; // Simplified item structure for input
+}
+
+// Mock data for offline/demo mode
+const MOCK_SECTIONS: ProductSection[] = [
+  {
+    id: 'mock-section-1',
+    title: 'Lançamentos',
+    view_all_link: '/categoria/lancamentos',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    items: [
+      { section_id: 'mock-section-1', item_type: 'tag', item_id: 'lancamento', display_order: 0 },
+      { section_id: 'mock-section-1', item_type: 'tag', item_id: 'novo', display_order: 1 }
+    ]
+  },
+  {
+    id: 'mock-section-2',
+    title: 'Mais Vendidos',
+    view_all_link: '/categoria/mais-vendidos',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    items: [
+      { section_id: 'mock-section-2', item_type: 'tag', item_id: 'popular', display_order: 0 },
+      { section_id: 'mock-section-2', item_type: 'tag', item_id: 'bestseller', display_order: 1 }
+    ]
+  },
+  {
+    id: 'mock-section-3',
+    title: 'Ofertas Especiais',
+    view_all_link: '/ofertas',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    items: [
+      { section_id: 'mock-section-3', item_type: 'tag', item_id: 'oferta', display_order: 0 },
+      { section_id: 'mock-section-3', item_type: 'tag', item_id: 'desconto', display_order: 1 }
+    ]
+  }
+];
+
 export const useProductSections = () => {
-  const [productSections, setProductSections] = useState<ProductSection[]>([]);
+  const [sections, setSections] = useState<ProductSection[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchProductSections = useCallback(async () => {
+  const fetchSections = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: fetchError } = await supabase
+      // Fetch sections
+      const { data: sectionsData, error: sectionsError } = await supabase
         .from('product_sections')
-        .select(`
-          *,
-          product_section_items(*)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (fetchError) throw fetchError;
+      if (sectionsError) throw sectionsError;
 
-      const sectionsWithItems = data?.map(section => ({
+      // If no sections found, use mock data
+      if (!sectionsData || sectionsData.length === 0) {
+        console.log('No product sections found, using mock data');
+        setSections(MOCK_SECTIONS);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch items for each section
+      const sectionIds = sectionsData.map(s => s.id);
+      let allItems: ProductSectionItem[] = [];
+      if (sectionIds.length > 0) {
+        const { data: itemsData, error: itemsError } = await supabase
+          .from('product_section_items')
+          .select('*')
+          .in('section_id', sectionIds)
+          .order('display_order', { ascending: true });
+        if (itemsError) throw itemsError;
+        allItems = itemsData || [];
+      }
+
+      // Combine sections with their items
+      const combinedSections = sectionsData.map(section => ({
         ...section,
-        items: section.product_section_items || []
-      })) || [];
+        items: allItems.filter(item => item.section_id === section.id),
+      }));
 
-      setProductSections(sectionsWithItems);
+      setSections(combinedSections);
+
     } catch (err: any) {
       console.error('Error fetching product sections:', err);
-      setError('Falha ao carregar seções de produtos.');
-      setProductSections([]);
+      
+      // Use mock data on error
+      console.log('Error fetching product sections, using mock data');
+      setSections(MOCK_SECTIONS);
+      
+      const errorMessage = err instanceof PostgrestError ? err.message : 'Falha ao carregar as seções de produtos.';
+      setError(errorMessage);
+      toast({ 
+        title: 'Aviso', 
+        description: 'Usando dados de demonstração devido a um problema de conexão.', 
+        variant: 'default' 
+      });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
-  const fetchProductSectionById = useCallback(async (id: string) => {
+  const createSection = useCallback(async (sectionInput: ProductSectionInput): Promise<ProductSection | null> => {
     setLoading(true);
     setError(null);
+    let newSectionId: string | null = null;
     try {
-      const { data, error: fetchError } = await supabase
+      // 1. Create the section entry
+      const { data: newSectionData, error: sectionError } = await supabase
         .from('product_sections')
-        .select(`
-          *,
-          product_section_items(*)
-        `)
-        .eq('id', id)
+        .insert({
+          title: sectionInput.title,
+          view_all_link: sectionInput.view_all_link,
+        })
+        .select()
         .single();
 
-      if (fetchError) throw fetchError;
+      if (sectionError) throw sectionError;
+      if (!newSectionData) throw new Error('Failed to create section, no data returned.');
+      
+      newSectionId = newSectionData.id;
 
-      return {
-        ...data,
-        items: data.product_section_items || []
-      };
+      // 2. Create the section items
+      if (sectionInput.items && sectionInput.items.length > 0) {
+        const itemsToInsert = sectionInput.items.map((item, index) => ({
+          section_id: newSectionId,
+          item_type: item.type,
+          item_id: item.id,
+          display_order: index, // Simple order based on input array
+        }));
+        const { error: itemsError } = await supabase
+          .from('product_section_items')
+          .insert(itemsToInsert);
+        if (itemsError) throw itemsError;
+      }
+
+      // 3. Add to homepage_layout (find the last order and add 1)
+      const { data: lastOrderItem, error: orderError } = await supabase
+        .from('homepage_layout')
+        .select('display_order')
+        .order('display_order', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (orderError && orderError.code !== 'PGRST116') { // Ignore 'No rows found' error
+         throw orderError;
+      }
+
+      const nextOrder = lastOrderItem ? lastOrderItem.display_order + 1 : 1;
+      const sectionKey = `product_section_${newSectionId}`;
+
+      const { error: layoutError } = await supabase
+        .from('homepage_layout')
+        .insert({
+          section_key: sectionKey,
+          display_order: nextOrder,
+          is_visible: true, // Default to visible
+        });
+
+      if (layoutError) {
+        // Attempt to rollback or notify user about layout inconsistency
+        console.error('Failed to add section to layout:', layoutError);
+        toast({ title: 'Aviso', description: 'Seção criada, mas falha ao adicionar ao layout da home.', variant: 'destructive' });
+        // Don't throw here, section is created, but needs manual layout adjustment
+      } else {
+         toast({ title: 'Sucesso', description: 'Seção de produtos criada e adicionada ao layout.' });
+      }
+
+      // Refetch sections to update the list
+      await fetchSections();
+      
+      // Return the created section with properly mapped items
+      const mappedItems: ProductSectionItem[] = sectionInput.items.map((item, index) => ({
+        section_id: newSectionId!,
+        item_type: item.type,
+        item_id: item.id,
+        display_order: index
+      }));
+      
+      return { ...newSectionData, items: mappedItems };
+
     } catch (err: any) {
-      console.error(`Error fetching product section with ID ${id}:`, err);
-      setError(`Falha ao carregar seção de produtos com ID ${id}.`);
-      return null;
-    } finally {
+      console.error('Error creating product section:', err);
+      const errorMessage = err instanceof PostgrestError ? err.message : 'Falha ao criar a seção de produtos.';
+      setError(errorMessage);
+      toast({ title: 'Erro', description: errorMessage, variant: 'destructive' });
+      // Attempt to clean up if section was created but items failed?
+      // Consider more robust transaction handling if possible
       setLoading(false);
+      return null;
     }
-  }, []);
+  }, [toast, fetchSections]);
 
-  const createSection = useCallback(async (sectionData: ProductSectionInput) => {
+  const updateSection = useCallback(async (sectionInput: ProductSectionInput): Promise<ProductSection | null> => {
+    if (!sectionInput.id) {
+      toast({ title: 'Erro', description: 'ID da seção é necessário para atualização.', variant: 'destructive' });
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    const sectionId = sectionInput.id;
+
     try {
-      const { data, error: insertError } = await supabase
+      // 1. Update section details
+      const { error: sectionUpdateError } = await supabase
         .from('product_sections')
-        .insert([sectionData])
-        .select()
-        .single();
+        .update({
+          title: sectionInput.title,
+          view_all_link: sectionInput.view_all_link,
+          updated_at: new Date().toISOString(), // Manually update timestamp
+        })
+        .eq('id', sectionId);
 
-      if (insertError) throw insertError;
+      if (sectionUpdateError) throw sectionUpdateError;
 
-      toast({ 
-        title: 'Sucesso', 
-        description: 'Seção criada com sucesso.' 
-      });
-
-      await fetchProductSections();
-      return data;
-    } catch (err: any) {
-      console.error('Error creating section:', err);
-      toast({ 
-        title: 'Erro', 
-        description: 'Falha ao criar seção.', 
-        variant: 'destructive' 
-      });
-      throw err;
-    }
-  }, [toast, fetchProductSections]);
-
-  const updateSection = useCallback(async (id: string, sectionData: Partial<ProductSectionInput>) => {
-    try {
-      const { data, error: updateError } = await supabase
-        .from('product_sections')
-        .update(sectionData)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (updateError) throw updateError;
-
-      toast({ 
-        title: 'Sucesso', 
-        description: 'Seção atualizada com sucesso.' 
-      });
-
-      await fetchProductSections();
-      return data;
-    } catch (err: any) {
-      console.error('Error updating section:', err);
-      toast({ 
-        title: 'Erro', 
-        description: 'Falha ao atualizar seção.', 
-        variant: 'destructive' 
-      });
-      throw err;
-    }
-  }, [toast, fetchProductSections]);
-
-  const deleteSection = useCallback(async (id: string) => {
-    try {
-      // First delete related items
-      await supabase
+      // 2. Replace section items (delete old, insert new)
+      const { error: deleteError } = await supabase
         .from('product_section_items')
         .delete()
-        .eq('section_id', id);
-
-      // Then delete the section
-      const { error: deleteError } = await supabase
-        .from('product_sections')
-        .delete()
-        .eq('id', id);
+        .eq('section_id', sectionId);
 
       if (deleteError) throw deleteError;
 
-      toast({ 
-        title: 'Sucesso', 
-        description: 'Seção removida com sucesso.' 
-      });
+      if (sectionInput.items && sectionInput.items.length > 0) {
+        const itemsToInsert = sectionInput.items.map((item, index) => ({
+          section_id: sectionId,
+          item_type: item.type,
+          item_id: item.id,
+          display_order: index,
+        }));
+        const { error: itemsInsertError } = await supabase
+          .from('product_section_items')
+          .insert(itemsToInsert);
+        if (itemsInsertError) throw itemsInsertError;
+      }
+      
+      // 3. Update title in homepage_layout if necessary (optional, title is fetched dynamically there)
+      // We might not need to update homepage_layout here unless the key changes (which it shouldn't)
 
-      await fetchProductSections();
+      toast({ title: 'Sucesso', description: 'Seção de produtos atualizada.' });
+      await fetchSections(); // Refetch
+      // Find the updated section in the newly fetched list
+      const updatedSection = sections.find(s => s.id === sectionId);
+      return updatedSection || null; // Return updated data
+
     } catch (err: any) {
-      console.error('Error deleting section:', err);
-      toast({ 
-        title: 'Erro', 
-        description: 'Falha ao remover seção.', 
-        variant: 'destructive' 
-      });
-      throw err;
+      console.error('Error updating product section:', err);
+      const errorMessage = err instanceof PostgrestError ? err.message : 'Falha ao atualizar a seção de produtos.';
+      setError(errorMessage);
+      toast({ title: 'Erro', description: errorMessage, variant: 'destructive' });
+      setLoading(false);
+      return null;
     }
-  }, [toast, fetchProductSections]);
+  }, [toast, fetchSections, sections]); // Added sections dependency for return value
 
+  const deleteSection = useCallback(async (sectionId: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      // 1. Delete from homepage_layout first (to avoid foreign key issues if cascade isn't immediate)
+      const sectionKey = `product_section_${sectionId}`;
+      const { error: layoutDeleteError } = await supabase
+        .from('homepage_layout')
+        .delete()
+        .eq('section_key', sectionKey);
+
+      // Log error but continue, maybe it was already removed
+      if (layoutDeleteError) {
+         console.warn('Could not delete section from layout:', layoutDeleteError.message);
+         // toast({ title: 'Aviso', description: 'Não foi possível remover a seção do layout da home.', variant: 'default' });
+      }
+
+      // 2. Delete the section (should cascade to items)
+      const { error: sectionDeleteError } = await supabase
+        .from('product_sections')
+        .delete()
+        .eq('id', sectionId);
+
+      if (sectionDeleteError) throw sectionDeleteError;
+
+      toast({ title: 'Sucesso', description: 'Seção de produtos removida.' });
+      await fetchSections(); // Refetch
+      return true;
+
+    } catch (err: any) {
+      console.error('Error deleting product section:', err);
+      const errorMessage = err instanceof PostgrestError ? err.message : 'Falha ao remover a seção de produtos.';
+      setError(errorMessage);
+      toast({ title: 'Erro', description: errorMessage, variant: 'destructive' });
+      setLoading(false);
+      return false;
+    }
+  }, [toast, fetchSections]);
+
+  // Initial fetch
   useEffect(() => {
-    fetchProductSections();
-  }, [fetchProductSections]);
+    fetchSections();
+  }, [fetchSections]);
 
-  return { 
-    productSections,
-    sections: productSections, // Alias for compatibility
-    loading, 
-    error, 
-    fetchProductSections,
-    fetchSections: fetchProductSections, // Alias for compatibility
-    fetchProductSectionById,
-    createSection,
-    updateSection,
-    deleteSection
-  };
+  return { sections, loading, error, fetchSections, createSection, updateSection, deleteSection };
 };

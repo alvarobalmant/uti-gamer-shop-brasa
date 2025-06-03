@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { usePages, Page } from '@/hooks/usePages';
 import { Button } from '@/components/ui/button';
@@ -75,8 +76,20 @@ const PageManager: React.FC = () => {
         slug: selectedPage.slug,
         description: selectedPage.description || '',
         isActive: selectedPage.isActive,
-        theme: { ...selectedPage.theme },
-        filters: { ...selectedPage.filters }
+        theme: selectedPage.theme ? { 
+          primaryColor: selectedPage.theme.primaryColor || '#107C10',
+          secondaryColor: selectedPage.theme.secondaryColor || '#3A3A3A',
+        } : {
+          primaryColor: '#107C10',
+          secondaryColor: '#3A3A3A',
+        },
+        filters: selectedPage.filters ? { 
+          tagIds: selectedPage.filters.tagIds || [],
+          categoryIds: selectedPage.filters.categoryIds || []
+        } : {
+          tagIds: [],
+          categoryIds: []
+        }
       });
     }
   }, [isEditing, selectedPage]);
@@ -89,7 +102,7 @@ const PageManager: React.FC = () => {
       setFormData(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof typeof prev],
+          ...(prev[parent as keyof typeof prev] as object || {}),
           [child]: value
         }
       }));

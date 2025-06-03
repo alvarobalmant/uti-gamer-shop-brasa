@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
@@ -85,7 +86,6 @@ const TestPlatformPage: React.FC = () => {
               loading={false}
               onAddToCart={addToCart}
               title="Destaques Xbox"
-              onCardClick={handleProductCardClick}
             />
           </div>
           
@@ -105,7 +105,6 @@ const TestPlatformPage: React.FC = () => {
               loading={false}
               onAddToCart={addToCart}
               title="Destaques PlayStation"
-              onCardClick={handleProductCardClick}
             />
           </div>
           
@@ -125,7 +124,6 @@ const TestPlatformPage: React.FC = () => {
               loading={false}
               onAddToCart={addToCart}
               title="Destaques Nintendo"
-              onCardClick={handleProductCardClick}
             />
           </div>
         </div>

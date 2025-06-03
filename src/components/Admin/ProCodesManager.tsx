@@ -1,7 +1,7 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProCodes, ProCode } from '@/hooks/useProCodes';
 import { Loader2, Copy, Check, X, AlertCircle } from 'lucide-react';
@@ -55,7 +55,7 @@ const ProCodesManager = () => {
   };
 
   // Carregar códigos ao montar o componente
-  useState(() => {
+  useEffect(() => {
     loadCodes();
   }, []);
 
@@ -101,6 +101,16 @@ const ProCodesManager = () => {
       }
     },
     {
+      accessorKey: "expires_at",
+      header: "Expira em",
+      cell: ({ row }) => {
+        const expiresAt = row.getValue("expires_at") as string | null;
+        if (!expiresAt) return <span className="text-gray-400">-</span>;
+        const date = new Date(expiresAt);
+        return <span>{format(date, "dd/MM/yyyy", { locale: ptBR })}</span>;
+      }
+    },
+    {
       accessorKey: "is_active",
       header: "Status",
       cell: ({ row }) => {
@@ -133,6 +143,7 @@ const ProCodesManager = () => {
     },
     {
       id: "actions",
+      header: "Ações",
       cell: ({ row }) => {
         const isActive = row.getValue("is_active") as boolean;
         const usedBy = row.original.used_by;
@@ -212,7 +223,7 @@ const ProCodesManager = () => {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : codes.length > 0 ? (
-            <DataTable columns={columns} data={codes} />
+            <DataTable columns={columns} data={codes} searchKey="code" />
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />

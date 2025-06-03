@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
@@ -129,6 +130,8 @@ export const useCartSync = () => {
           sizes: item.products.sizes,
           colors: item.products.colors,
           stock: item.products.stock,
+          created_at: item.products.created_at,
+          updated_at: item.products.updated_at,
           tags: [] // Tags will be loaded separately if needed
         },
         size: item.size,

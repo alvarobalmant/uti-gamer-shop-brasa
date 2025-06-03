@@ -1,142 +1,135 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export interface ServiceCard {
   id: string;
   title: string;
   description: string;
-  image_url?: string;
-  link_url?: string;
+  image_url: string;
+  link_url: string;
   position: number;
   is_active: boolean;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export const useServiceCards = () => {
   const [serviceCards, setServiceCards] = useState<ServiceCard[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchServiceCards = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchServiceCards = async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error } = await supabase
         .from('service_cards')
         .select('*')
         .eq('is_active', true)
-        .order('position', { ascending: true });
+        .order('position');
 
-      if (fetchError) throw fetchError;
-
+      if (error) throw error;
       setServiceCards(data || []);
-    } catch (err: any) {
-      console.error('Error fetching service cards:', err);
-      setError('Falha ao carregar cartões de serviço.');
-      setServiceCards([]);
+    } catch (error: any) {
+      console.error('Erro ao buscar cards de serviços:', error);
+      toast({
+        title: "Erro ao carregar cards de serviços",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const addServiceCard = useCallback(async (cardData: Omit<ServiceCard, 'id' | 'created_at' | 'updated_at'>) => {
+  const addServiceCard = async (cardData: Omit<ServiceCard, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const { data, error: insertError } = await supabase
+      const { data, error } = await supabase
         .from('service_cards')
         .insert([cardData])
         .select()
         .single();
 
-      if (insertError) throw insertError;
+      if (error) throw error;
 
-      toast({ 
-        title: 'Sucesso', 
-        description: 'Card de serviço adicionado com sucesso.' 
+      setServiceCards(prev => [...prev, data]);
+      toast({
+        title: "Card de serviço adicionado com sucesso!",
+        description: "O card foi criado e está ativo.",
       });
-
-      await fetchServiceCards();
-      return data;
-    } catch (err: any) {
-      console.error('Error adding service card:', err);
-      toast({ 
-        title: 'Erro', 
-        description: 'Falha ao adicionar card de serviço.', 
-        variant: 'destructive' 
+    } catch (error: any) {
+      console.error('Erro ao adicionar card de serviço:', error);
+      toast({
+        title: "Erro ao adicionar card de serviço",
+        description: error.message,
+        variant: "destructive",
       });
-      throw err;
+      throw error;
     }
-  }, [toast, fetchServiceCards]);
+  };
 
-  const updateServiceCard = useCallback(async (id: string, cardData: Partial<Omit<ServiceCard, 'id' | 'created_at' | 'updated_at'>>) => {
+  const updateServiceCard = async (id: string, cardData: Partial<ServiceCard>) => {
     try {
-      const { data, error: updateError } = await supabase
+      const { data, error } = await supabase
         .from('service_cards')
-        .update(cardData)
+        .update({ ...cardData, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
         .single();
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
-      toast({ 
-        title: 'Sucesso', 
-        description: 'Card de serviço atualizado com sucesso.' 
+      setServiceCards(prev => prev.map(card => card.id === id ? data : card));
+      toast({
+        title: "Card de serviço atualizado com sucesso!",
+        description: "As alterações foram salvas.",
       });
-
-      await fetchServiceCards();
-      return data;
-    } catch (err: any) {
-      console.error('Error updating service card:', err);
-      toast({ 
-        title: 'Erro', 
-        description: 'Falha ao atualizar card de serviço.', 
-        variant: 'destructive' 
+    } catch (error: any) {
+      console.error('Erro ao atualizar card de serviço:', error);
+      toast({
+        title: "Erro ao atualizar card de serviço",
+        description: error.message,
+        variant: "destructive",
       });
-      throw err;
+      throw error;
     }
-  }, [toast, fetchServiceCards]);
+  };
 
-  const deleteServiceCard = useCallback(async (id: string) => {
+  const deleteServiceCard = async (id: string) => {
     try {
-      const { error: deleteError } = await supabase
+      const { error } = await supabase
         .from('service_cards')
         .delete()
         .eq('id', id);
 
-      if (deleteError) throw deleteError;
+      if (error) throw error;
 
-      toast({ 
-        title: 'Sucesso', 
-        description: 'Card de serviço removido com sucesso.' 
+      setServiceCards(prev => prev.filter(card => card.id !== id));
+      toast({
+        title: "Card de serviço excluído com sucesso!",
+        description: "O card foi removido permanentemente.",
       });
-
-      await fetchServiceCards();
-    } catch (err: any) {
-      console.error('Error deleting service card:', err);
-      toast({ 
-        title: 'Erro', 
-        description: 'Falha ao remover card de serviço.', 
-        variant: 'destructive' 
+    } catch (error: any) {
+      console.error('Erro ao excluir card de serviço:', error);
+      toast({
+        title: "Erro ao excluir card de serviço",
+        description: error.message,
+        variant: "destructive",
       });
-      throw err;
+      throw error;
     }
-  }, [toast, fetchServiceCards]);
+  };
 
   useEffect(() => {
     fetchServiceCards();
-  }, [fetchServiceCards]);
+  }, []);
 
-  return { 
-    serviceCards, 
-    loading, 
-    error, 
-    fetchServiceCards,
+  return {
+    serviceCards,
+    loading,
     addServiceCard,
     updateServiceCard,
-    deleteServiceCard
+    deleteServiceCard,
+    refetch: fetchServiceCards
   };
 };
