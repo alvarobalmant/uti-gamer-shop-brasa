@@ -73,16 +73,33 @@ export const useSubscriptions = () => {
     try {
       console.log('Buscando dados do usuário:', userId);
 
-      // Fetch user subscription
+      // Fetch user subscription with improved query
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('user_subscriptions')
         .select(`
-          *,
-          subscription_plans(*)
+          id,
+          user_id,
+          plan_id,
+          status,
+          start_date,
+          end_date,
+          created_at,
+          updated_at,
+          subscription_plans (
+            id,
+            name,
+            description,
+            price,
+            duration_months,
+            discount_percentage,
+            is_active,
+            created_at,
+            updated_at
+          )
         `)
         .eq('user_id', userId)
         .eq('status', 'active')
-        .maybeSingle(); // Use maybeSingle instead of single to avoid errors when no data
+        .maybeSingle();
 
       if (subscriptionError && subscriptionError.code !== 'PGRST116') {
         console.error('Erro ao buscar assinatura:', subscriptionError);
@@ -95,7 +112,7 @@ export const useSubscriptions = () => {
         .from('usuarios')
         .select('*')
         .eq('id', userId)
-        .maybeSingle(); // Use maybeSingle instead of single
+        .maybeSingle();
 
       if (usuarioError && usuarioError.code !== 'PGRST116') {
         console.error('Erro ao buscar usuário:', usuarioError);

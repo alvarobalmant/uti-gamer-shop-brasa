@@ -105,7 +105,7 @@ export const useProducts = () => {
     try {
       const { data, error } = await supabase
         .from('products')
-        .insert([productData])
+        .insert(productData)
         .select()
         .single();
 
