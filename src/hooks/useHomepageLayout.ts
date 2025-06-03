@@ -44,33 +44,12 @@ export const useHomepageLayout = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log("[useHomepageLayout] Iniciando busca de layout...");
       const { data: layoutData, error: layoutError } = await supabase
         .from('homepage_layout')
         .select('*')
         .order('display_order', { ascending: true });
 
       if (layoutError) throw layoutError;
-      console.log("[useHomepageLayout] Raw layoutData:", layoutData, "count:", layoutData?.length || 0); // DEBUG LOG
-      
-      // Se não houver dados, criar layout padrão para garantir renderização
-      if (!layoutData || layoutData.length === 0) {
-        console.log("[useHomepageLayout] Nenhum dado de layout encontrado, usando layout padrão");
-        const defaultLayout = [
-          { id: 1, section_key: 'hero_banner', display_order: 1, is_visible: true },
-          { id: 2, section_key: 'hero_quick_links', display_order: 2, is_visible: true },
-          { id: 3, section_key: 'promo_banner', display_order: 3, is_visible: true },
-          { id: 4, section_key: 'product_section_novidades', display_order: 4, is_visible: true },
-          { id: 5, section_key: 'product_section_mais_vendidos', display_order: 5, is_visible: true },
-          { id: 6, section_key: 'specialized_services', display_order: 6, is_visible: true },
-          { id: 7, section_key: 'why_choose_us', display_order: 7, is_visible: true },
-          { id: 8, section_key: 'contact_help', display_order: 8, is_visible: true }
-        ];
-        return setLayoutItems(defaultLayout.map(item => ({
-          ...item,
-          title: getSectionTitle(item.section_key)
-        })));
-      }
 
       const productSectionKeys = layoutData
         ?.map(item => item.section_key)
@@ -135,15 +114,8 @@ export const useHomepageLayout = () => {
     }
   }, [toast, fetchLayout]);
 
-  // Initial fetch with forced delay
   useEffect(() => {
-    console.log("[useHomepageLayout] Iniciando efeito de carregamento inicial");
-    const timer = setTimeout(() => {
-      console.log("[useHomepageLayout] Executando fetchLayout após delay");
-      fetchLayout();
-    }, 700); // Slightly longer delay than other hooks
-    
-    return () => clearTimeout(timer);
+    fetchLayout();
   }, [fetchLayout]);
 
   return { layoutItems, setLayoutItems, loading, error, fetchLayout, updateLayout };

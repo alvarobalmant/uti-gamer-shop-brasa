@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
     host: "0.0.0.0", // Changed to 0.0.0.0 to listen on all interfaces
     port: 8080,
     // Add the allowed host for external access
-    allowedHosts: ["8080-ithr9o0yt0w3h64qdro03-ec22c9b2.manus.computer"],
+    allowedHosts: ["8080-irlxbd46sr91dkznbemlj-b10e4af0.manusvm.computer"],
   },
   plugins: [
     react(),

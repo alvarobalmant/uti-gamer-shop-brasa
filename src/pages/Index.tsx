@@ -33,9 +33,6 @@ const Index = () => {
   const { layoutItems, loading: layoutLoading } = useHomepageLayout();
   const { sections, loading: sectionsLoading } = useProductSections();
 
-  console.log("[Index] Products received:", products); // DEBUG LOG
-  console.log("[Index] Sections received:", sections); // DEBUG LOG
-
   // Placeholder for fetching banner data (replace with actual logic)
   const [bannerData, setBannerData] = useState({
     imageUrl: '/banners/uti-pro-banner.webp',
@@ -57,8 +54,6 @@ const Index = () => {
 
   // Render section based on section key
   const renderSection = (sectionKey: string) => {
-    console.log(`[Index] Renderizando seção: ${sectionKey}`);
-    
     switch (sectionKey) {
       case 'hero_banner':
         return <HeroBannerCarousel key="hero_banner" />;
@@ -86,29 +81,14 @@ const Index = () => {
         // Handle product sections
         if (sectionKey.startsWith('product_section_')) {
           const sectionId = sectionKey.replace('product_section_', '');
-          console.log(`[Index] Buscando seção com ID: ${sectionId}, disponíveis:`, sections.map(s => s.id));
+          const section = sections.find(s => s.id === sectionId);
           
-          // CORREÇÃO: Usar fallback para seção se não encontrar
-          let section = sections.find(s => s.id === sectionId);
-          
-          if (!section) {
-            console.log(`[Index] Seção não encontrada para key: ${sectionKey}, criando fallback`);
-            // Criar uma seção fallback para garantir renderização
-            section = {
-              id: sectionId,
-              title: sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace('_', ' '),
-              view_all_link: `/categoria/${sectionId}`,
-              items: []
-            };
-          } else {
-            console.log(`[Index] Encontrada seção para key ${sectionKey}:`, section);
-          }
+          if (!section) return null;
           
           // --- BUG FIX: Deduplicate products --- 
           const productMap = new Map<string, Product>(); // Use a Map to store unique products by ID
           
-          // CORREÇÃO: Garantir que sempre tenhamos produtos para mostrar
-          if (section.items && section.items.length > 0) {
+          if (section.items) {
             for (const item of section.items) {
               if (item.item_type === 'product') {
                 // Find specific product by ID
@@ -119,7 +99,7 @@ const Index = () => {
               } else if (item.item_type === 'tag') {
                 // Find products with this tag
                 const tagProducts = products.filter(p => 
-                  p.tags?.some(tag => tag.name?.toLowerCase() === item.item_id.toLowerCase() || tag.id === item.item_id)
+                  p.tags?.some(tag => tag.name.toLowerCase() === item.item_id.toLowerCase() || tag.id === item.item_id)
                 );
                 // Add tag products to the map, overwriting duplicates (which is fine)
                 tagProducts.forEach(product => {
@@ -129,31 +109,19 @@ const Index = () => {
                 });
               }
             }
-          } else if (products.length > 0) {
-            // CORREÇÃO: Se não houver itens específicos, mostrar alguns produtos aleatórios
-            console.log(`[Index] Sem itens específicos para seção ${sectionKey}, usando produtos aleatórios`);
-            // Pegar até 4 produtos aleatórios
-            const randomProducts = [...products].sort(() => 0.5 - Math.random()).slice(0, 4);
-            randomProducts.forEach(product => {
-              productMap.set(product.id, product);
-            });
           }
           
           const uniqueSectionProducts = Array.from(productMap.values()); // Get unique products from the map
-          console.log(`[Index] Produtos para seção ${sectionKey}:`, uniqueSectionProducts.length);
+          // --- END BUG FIX ---
           
-          // CORREÇÃO: Garantir que sempre tenhamos um título válido
-          const sectionTitle = section.title || sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace('_', ' ');
-          
-          // CORREÇÃO: Sempre renderizar a seção, mesmo sem produtos
           return (
             <FeaturedProductsSection
               key={sectionKey}
-              products={uniqueSectionProducts}
+              products={uniqueSectionProducts} // Pass unique products
               loading={productsLoading || sectionsLoading}
               onAddToCart={handleAddToCart}
-              title={sectionTitle}
-              viewAllLink={section.view_all_link || `/categoria/${sectionId}`}
+              title={section.title}
+              viewAllLink={section.view_all_link || undefined}
             />
           );
         }
