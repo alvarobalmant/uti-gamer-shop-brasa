@@ -40,10 +40,6 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
     addToCart(product);
   };
 
-  const handleCardClick = () => {
-    // Stub function for now
-  };
-
   return (
     <div>
       <h2 className="text-xl lg:text-2xl font-semibold text-foreground mb-4">
@@ -66,7 +62,6 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
               key={relatedProduct.id} 
               product={relatedProduct} 
               onAddToCart={handleAddToCart}
-              onCardClick={handleCardClick}
             />
           ))}
         </div>
