@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
-import { formatCurrency } from '@/utils/format';
 import { X, ShoppingBag, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { sendToWhatsApp } from '@/utils/whatsapp';
+import { formatCurrency } from '@/utils/format';
 
 interface CartProps {
   isOpen: boolean;

@@ -47,7 +47,15 @@ export const useServiceCards = () => {
     try {
       const { data, error: insertError } = await supabase
         .from('service_cards')
+<<<<<<< HEAD
         .insert([cardData])
+=======
+        .insert([{
+          ...cardData,
+          image_url: cardData.image_url || '',
+          link_url: cardData.link_url || ''
+        }])
+>>>>>>> 112f740a79595fc063ed369e4d53e6bfc044da5f
         .select()
         .single();
 
