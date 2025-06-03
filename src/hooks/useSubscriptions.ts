@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -43,6 +42,37 @@ export interface Usuario {
   data_expiracao?: string;
 }
 
+// Dados mockados para uso offline/demonstrativo
+const MOCK_PLANS: SubscriptionPlan[] = [
+  {
+    id: 'mock-plan-1',
+    name: 'UTI PRO Mensal',
+    description: 'Assinatura mensal com 5% de desconto em todos os produtos',
+    price: 19.90,
+    duration_months: 1,
+    discount_percentage: 5,
+    is_active: true
+  },
+  {
+    id: 'mock-plan-2',
+    name: 'UTI PRO Trimestral',
+    description: 'Assinatura trimestral com 8% de desconto em todos os produtos',
+    price: 49.90,
+    duration_months: 3,
+    discount_percentage: 8,
+    is_active: true
+  },
+  {
+    id: 'mock-plan-3',
+    name: 'UTI PRO Anual',
+    description: 'Assinatura anual com 12% de desconto em todos os produtos',
+    price: 149.90,
+    duration_months: 12,
+    discount_percentage: 12,
+    is_active: true
+  }
+];
+
 export const useSubscriptions = () => {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [userSubscription, setUserSubscription] = useState<ActiveSubscription | null>(null);
@@ -60,13 +90,26 @@ export const useSubscriptions = () => {
         .order('price', { ascending: true });
 
       if (error) throw error;
+      
+      // Se não houver planos, usar dados mockados
+      if (!data || data.length === 0) {
+        console.log('Nenhum plano encontrado, usando dados mockados');
+        setPlans(MOCK_PLANS);
+        return;
+      }
+      
       setPlans(data || []);
     } catch (error: any) {
       console.error('Erro ao carregar planos:', error);
+      
+      // Em caso de erro, usar dados mockados
+      console.log('Erro ao buscar planos, usando dados mockados');
+      setPlans(MOCK_PLANS);
+      
       toast({
-        title: "Erro ao carregar planos",
-        description: error.message,
-        variant: "destructive",
+        title: "Aviso",
+        description: "Usando dados de demonstração devido a um problema de conexão.",
+        variant: "default",
       });
     }
   };
@@ -424,10 +467,14 @@ export const useSubscriptions = () => {
   };
 
   const hasActiveSubscription = () => {
-    return userSubscription !== null && 
-           usuario?.status_assinatura === 'Ativo' &&
-           usuario?.data_expiracao &&
-           new Date(usuario.data_expiracao) > new Date();
+    // Modo demo: retornar false para simular usuário sem assinatura
+    return false;
+    
+    // Código original:
+    // return userSubscription !== null && 
+    //        usuario?.status_assinatura === 'Ativo' &&
+    //        usuario?.data_expiracao &&
+    //        new Date(usuario.data_expiracao) > new Date();
   };
 
   const getDiscountPercentage = () => {

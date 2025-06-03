@@ -9,7 +9,8 @@ import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
 import ProductSectionManager from './ProductSectionManager';
 import PageManager from './PageManager';
 import QuickLinksManager from './QuickLinksManager';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link } from 'lucide-react';
+import ProCodesManager from './ProCodesManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Crown } from 'lucide-react';
 
 export const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('layout'); // Default to layout management
@@ -27,8 +28,8 @@ export const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Updated grid-cols-9 to accommodate the new tab */}
-          <TabsList className="grid w-full grid-cols-9 bg-gray-800 border-gray-700">
+          {/* Updated grid-cols-10 to accommodate the new tab */}
+          <TabsList className="grid w-full grid-cols-10 bg-gray-800 border-gray-700">
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutList className="w-4 h-4" />
               Layout Home
@@ -64,6 +65,10 @@ export const AdminPanel = () => {
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Usuários/PRO
+            </TabsTrigger>
+            <TabsTrigger value="pro_codes" className="flex items-center gap-2">
+              <Crown className="w-4 h-4" />
+              Códigos UTI PRO
             </TabsTrigger>
           </TabsList>
 
@@ -105,6 +110,10 @@ export const AdminPanel = () => {
 
           <TabsContent value="users">
             <UserSubscriptionManagement />
+          </TabsContent>
+
+          <TabsContent value="pro_codes">
+            <ProCodesManager />
           </TabsContent>
 
         </Tabs>

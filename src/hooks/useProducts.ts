@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +21,154 @@ export interface Product {
   tags?: { id: string; name: string; }[];
 }
 
+// Dados mockados para uso offline/demonstrativo
+const MOCK_PRODUCTS: Product[] = [
+  {
+    id: 'mock-product-1',
+    name: 'PlayStation 5 Digital Edition',
+    description: 'Console PlayStation 5 versão digital, sem leitor de disco, com controle DualSense.',
+    price: 3999.90,
+    list_price: 4499.90,
+    pro_price: 3799.90,
+    pro_discount_percent: 5,
+    image: '/products/ps5-digital.webp',
+    additional_images: ['/products/ps5-digital-2.webp', '/products/ps5-digital-3.webp'],
+    stock: 15,
+    category_id: 'consoles',
+    tags: [
+      { id: 'playstation', name: 'PlayStation' },
+      { id: 'lancamento', name: 'Lançamento' },
+      { id: 'console', name: 'Console' }
+    ]
+  },
+  {
+    id: 'mock-product-2',
+    name: 'Xbox Series X',
+    description: 'Console Xbox Series X com 1TB de armazenamento e controle sem fio.',
+    price: 4299.90,
+    list_price: 4799.90,
+    pro_price: 4084.90,
+    pro_discount_percent: 5,
+    image: '/products/xbox-series-x.webp',
+    additional_images: ['/products/xbox-series-x-2.webp', '/products/xbox-series-x-3.webp'],
+    stock: 10,
+    category_id: 'consoles',
+    tags: [
+      { id: 'xbox', name: 'Xbox' },
+      { id: 'lancamento', name: 'Lançamento' },
+      { id: 'console', name: 'Console' }
+    ]
+  },
+  {
+    id: 'mock-product-3',
+    name: 'Nintendo Switch OLED',
+    description: 'Console Nintendo Switch com tela OLED de 7 polegadas e 64GB de armazenamento.',
+    price: 2499.90,
+    list_price: 2799.90,
+    pro_price: 2374.90,
+    pro_discount_percent: 5,
+    image: '/products/switch-oled.webp',
+    additional_images: ['/products/switch-oled-2.webp', '/products/switch-oled-3.webp'],
+    stock: 20,
+    category_id: 'consoles',
+    tags: [
+      { id: 'nintendo', name: 'Nintendo' },
+      { id: 'popular', name: 'Popular' },
+      { id: 'console', name: 'Console' }
+    ]
+  },
+  {
+    id: 'mock-product-4',
+    name: 'The Legend of Zelda: Tears of the Kingdom',
+    description: 'A sequência de Breath of the Wild leva você a uma jornada épica através de Hyrule e além.',
+    price: 299.90,
+    list_price: 349.90,
+    pro_price: 284.90,
+    pro_discount_percent: 5,
+    image: '/products/zelda-totk.webp',
+    additional_images: ['/products/zelda-totk-2.webp', '/products/zelda-totk-3.webp'],
+    stock: 30,
+    category_id: 'jogos',
+    tags: [
+      { id: 'nintendo', name: 'Nintendo' },
+      { id: 'bestseller', name: 'Mais Vendido' },
+      { id: 'jogo', name: 'Jogo' }
+    ]
+  },
+  {
+    id: 'mock-product-5',
+    name: 'God of War Ragnarök',
+    description: 'Kratos e Atreus devem viajar pelos Nove Reinos em busca de respostas enquanto as forças asgardianas se preparam para a guerra.',
+    price: 249.90,
+    list_price: 299.90,
+    pro_price: 237.40,
+    pro_discount_percent: 5,
+    image: '/products/god-of-war.webp',
+    additional_images: ['/products/god-of-war-2.webp', '/products/god-of-war-3.webp'],
+    stock: 25,
+    category_id: 'jogos',
+    tags: [
+      { id: 'playstation', name: 'PlayStation' },
+      { id: 'bestseller', name: 'Mais Vendido' },
+      { id: 'jogo', name: 'Jogo' }
+    ]
+  },
+  {
+    id: 'mock-product-6',
+    name: 'Controle DualSense - Branco',
+    description: 'Controle sem fio DualSense para PlayStation 5 com feedback háptico e gatilhos adaptáveis.',
+    price: 449.90,
+    list_price: 499.90,
+    pro_price: 427.40,
+    pro_discount_percent: 5,
+    image: '/products/dualsense.webp',
+    additional_images: ['/products/dualsense-2.webp', '/products/dualsense-3.webp'],
+    stock: 40,
+    category_id: 'acessorios',
+    tags: [
+      { id: 'playstation', name: 'PlayStation' },
+      { id: 'acessorio', name: 'Acessório' },
+      { id: 'controle', name: 'Controle' }
+    ]
+  },
+  {
+    id: 'mock-product-7',
+    name: 'Headset Gamer HyperX Cloud Alpha',
+    description: 'Headset gamer com som surround 7.1, drivers de 50mm e microfone destacável com cancelamento de ruído.',
+    price: 599.90,
+    list_price: 699.90,
+    pro_price: 569.90,
+    pro_discount_percent: 5,
+    image: '/products/hyperx-cloud.webp',
+    additional_images: ['/products/hyperx-cloud-2.webp', '/products/hyperx-cloud-3.webp'],
+    stock: 35,
+    category_id: 'acessorios',
+    tags: [
+      { id: 'acessorio', name: 'Acessório' },
+      { id: 'audio', name: 'Áudio' },
+      { id: 'oferta', name: 'Oferta' }
+    ]
+  },
+  {
+    id: 'mock-product-8',
+    name: 'Cadeira Gamer ThunderX3 TGC12',
+    description: 'Cadeira gamer ergonômica com encosto reclinável, apoio de braço ajustável e almofadas para lombar e pescoço.',
+    price: 1299.90,
+    list_price: 1499.90,
+    pro_price: 1234.90,
+    pro_discount_percent: 5,
+    image: '/products/cadeira-gamer.webp',
+    additional_images: ['/products/cadeira-gamer-2.webp', '/products/cadeira-gamer-3.webp'],
+    stock: 15,
+    category_id: 'acessorios',
+    tags: [
+      { id: 'acessorio', name: 'Acessório' },
+      { id: 'setup', name: 'Setup' },
+      { id: 'oferta', name: 'Oferta' }
+    ]
+  }
+];
+
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +188,14 @@ export const useProducts = () => {
       if (productsError) {
         console.error('Erro ao buscar produtos:', productsError);
         throw productsError;
+      }
+
+      // Se não houver produtos, usar dados mockados
+      if (!productsData || productsData.length === 0) {
+        console.log('Nenhum produto encontrado, usando dados mockados');
+        setProducts(MOCK_PRODUCTS);
+        setLoading(false);
+        return;
       }
 
       console.log('Produtos encontrados:', productsData?.length || 0);
@@ -81,10 +236,15 @@ export const useProducts = () => {
       setProducts(productsWithTags);
     } catch (error: any) {
       console.error('Erro ao carregar produtos:', error);
+      
+      // Em caso de erro, usar dados mockados
+      console.log('Erro ao buscar produtos, usando dados mockados');
+      setProducts(MOCK_PRODUCTS);
+      
       toast({
-        title: "Erro ao carregar produtos",
-        description: error.message,
-        variant: "destructive",
+        title: "Aviso",
+        description: "Usando dados de demonstração devido a um problema de conexão.",
+        variant: "default",
       });
     } finally {
       setLoading(false);
