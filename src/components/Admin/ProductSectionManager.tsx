@@ -64,7 +64,7 @@ const ProductSectionManager: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<ProductSection | null>(null);
   const [formData, setFormData] = useState<Omit<ProductSectionInput, 'items'>>({ title: '', view_all_link: '' });
   const [selectedItems, setSelectedItems] = useState<{ type: SectionItemType; id: string }[]>([]);
-  const [itemTypeToAdd, setItemTypeToAdd] = useState<SectionItemType>('product');
+  const [itemTypeToAdd, setItemTypeToAdd] = useState<SectionItemType>('product'); // 'product' or 'tag'
 
   const isLoading = sectionsLoading || productsLoading || tagsLoading;
 
@@ -72,6 +72,7 @@ const ProductSectionManager: React.FC = () => {
     setCurrentSection(section);
     setFormData({ title: section.title, view_all_link: section.view_all_link || '' });
     setSelectedItems(section.items?.map(item => ({ type: item.item_type, id: item.item_id })) || []);
+    // Determine initial item type based on first item, if any
     setItemTypeToAdd(section.items?.[0]?.item_type || 'product'); 
     setIsModalOpen(true);
   };
@@ -85,6 +86,7 @@ const ProductSectionManager: React.FC = () => {
   };
 
   const handleDeleteClick = async (id: string) => {
+    // Add confirmation dialog here
     const confirmed = confirm('Tem certeza que deseja remover esta seção? Ela também será removida do layout da página inicial.');
     if (confirmed) {
       await deleteSection(id);
@@ -102,7 +104,8 @@ const ProductSectionManager: React.FC = () => {
         return;
     }
 
-    const sectionInput: ProductSectionInput & { items: { type: SectionItemType; id: string }[] } = {
+    const sectionInput: ProductSectionInput = {
+      id: currentSection?.id,
       title: formData.title,
       view_all_link: formData.view_all_link || null,
       items: selectedItems,
@@ -110,7 +113,7 @@ const ProductSectionManager: React.FC = () => {
 
     let success = false;
     if (currentSection) {
-      const result = await updateSection(currentSection.id, sectionInput);
+      const result = await updateSection(sectionInput);
       success = !!result;
     } else {
       const result = await createSection(sectionInput);
@@ -123,12 +126,14 @@ const ProductSectionManager: React.FC = () => {
   };
 
   const handleItemTypeChange = (value: string) => {
+    // Clear selected items when changing type to avoid mixing
     setSelectedItems([]); 
     setItemTypeToAdd(value as SectionItemType);
   };
 
   const handleItemSelect = (itemId: string) => {
     setSelectedItems(prev => {
+      // Prevent duplicates
       if (prev.some(item => item.id === itemId && item.type === itemTypeToAdd)) {
         return prev;
       }
@@ -353,3 +358,4 @@ const ProductSectionManager: React.FC = () => {
 };
 
 export default ProductSectionManager;
+

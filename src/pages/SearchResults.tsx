@@ -29,10 +29,6 @@ const SearchResults = () => {
     addToCart(product);
   };
 
-  const handleCardClick = (productId: string) => {
-    navigate(`/product/${productId}`);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header fixo */}
@@ -97,7 +93,6 @@ const SearchResults = () => {
                   key={product.id}
                   product={product}
                   onAddToCart={handleAddToCart}
-                  onCardClick={handleCardClick}
                 />
               ))}
             </div>
@@ -109,3 +104,4 @@ const SearchResults = () => {
 };
 
 export default SearchResults;
+

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuickLinks, QuickLink } from '@/hooks/useQuickLinks';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -123,8 +122,8 @@ export const QuickLinksManager = () => {
       // Upload new image if selected
       if (selectedFile) {
         const uploadResult = await uploadImage(selectedFile);
-        if (uploadResult) {
-          iconUrl = uploadResult;
+        if (uploadResult?.url) {
+          iconUrl = uploadResult.url;
         }
       }
       
