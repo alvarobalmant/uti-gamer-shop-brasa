@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,95 +14,103 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-// Dados mockados para uso offline/demonstrativo
-const MOCK_USER: User | null = null; // Simulando usuário não logado por padrão
-const MOCK_SESSION: Session | null = null;
-const MOCK_IS_ADMIN = false;
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(MOCK_USER);
-  const [session, setSession] = useState<Session | null>(MOCK_SESSION);
-  const [isAdmin, setIsAdmin] = useState(MOCK_IS_ADMIN);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Função para carregar dados de autenticação
-    const loadAuthData = async () => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
       try {
-        // Configurar listener de mudança de auth
+        // Set up auth state listener first
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
           async (event, session) => {
+            if (!mounted) return;
+
+            console.log('Auth state changed:', event, session?.user?.id);
             setSession(session);
             setUser(session?.user ?? null);
             
             if (session?.user) {
-              // Verificar se é admin
-              try {
-                const { data: profile } = await supabase
-                  .from('profiles')
-                  .select('role')
-                  .eq('id', session.user.id)
-                  .single();
-                
-                setIsAdmin(profile?.role === 'admin');
-              } catch (error) {
-                console.log('Erro ao verificar perfil:', error);
-                setIsAdmin(false);
-              }
+              // Use setTimeout to avoid potential deadlock
+              setTimeout(async () => {
+                try {
+                  const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .single();
+                  
+                  if (mounted) {
+                    setIsAdmin(profile?.role === 'admin');
+                  }
+                } catch (error) {
+                  console.log('Erro ao verificar perfil:', error);
+                  if (mounted) {
+                    setIsAdmin(false);
+                  }
+                }
+              }, 0);
             } else {
               setIsAdmin(false);
             }
             
-            setLoading(false);
+            if (mounted) {
+              setLoading(false);
+            }
           }
         );
 
-        // Verificar sessão existente
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        setUser(session?.user ?? null);
+        // Check for existing session
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (session?.user) {
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', session.user.id)
-              .single();
-            
-            setIsAdmin(profile?.role === 'admin');
-          } catch (error) {
-            console.log('Erro ao verificar perfil:', error);
-            setIsAdmin(false);
-          }
+        if (error) {
+          console.error('Erro ao verificar sessão:', error);
         }
         
-        setLoading(false);
-        return subscription;
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+              
+              setIsAdmin(profile?.role === 'admin');
+            } catch (error) {
+              console.log('Erro ao verificar perfil:', error);
+              setIsAdmin(false);
+            }
+          }
+          
+          setLoading(false);
+        }
+
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
-        console.error('Erro ao carregar dados de autenticação:', error);
-        // Fallback para modo offline - usar dados mockados
-        setUser(MOCK_USER);
-        setSession(MOCK_SESSION);
-        setIsAdmin(MOCK_IS_ADMIN);
-        setLoading(false);
-        return { unsubscribe: () => {} };
+        console.error('Erro ao inicializar autenticação:', error);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    // Iniciar carregamento com tratamento de erro
-    const subscription = loadAuthData();
-    
-    // Cleanup
+    initializeAuth();
+
     return () => {
-      subscription.then(sub => {
-        if (typeof sub.unsubscribe === 'function') {
-          sub.unsubscribe();
-        }
-      }).catch(err => console.error('Erro ao desinscrever:', err));
+      mounted = false;
     };
   }, []);
 
@@ -119,9 +128,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Bem-vindo de volta!",
       });
     } catch (error: any) {
+      console.error('Erro no login:', error);
       toast({
         title: "Erro no login",
-        description: error.message,
+        description: error.message || "Erro desconhecido",
         variant: "destructive",
       });
       throw error;
@@ -147,9 +157,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Você já pode fazer login.",
       });
     } catch (error: any) {
+      console.error('Erro ao criar conta:', error);
       toast({
         title: "Erro ao criar conta",
-        description: error.message,
+        description: error.message || "Erro desconhecido",
         variant: "destructive",
       });
       throw error;
@@ -165,9 +176,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         title: "Logout realizado com sucesso!",
       });
     } catch (error: any) {
+      console.error('Erro no logout:', error);
       toast({
         title: "Erro no logout",
-        description: error.message,
+        description: error.message || "Erro desconhecido",
         variant: "destructive",
       });
     }
