@@ -7,10 +7,9 @@ import { useCart } from '@/contexts/CartContext';
 
 interface RelatedProductsProps {
   product: Product;
-  onCardClick: (productId: string) => void;
 }
 
-const RelatedProducts: React.FC<RelatedProductsProps> = ({ product, onCardClick }) => {
+const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
   const { products: allProducts, loading } = useProducts();
   const { addToCart } = useCart();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -63,10 +62,6 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product, onCardClick 
               key={relatedProduct.id} 
               product={relatedProduct} 
               onAddToCart={handleAddToCart}
-<<<<<<< HEAD
-=======
-              onCardClick={onCardClick}
->>>>>>> 112f740a79595fc063ed369e4d53e6bfc044da5f
             />
           ))}
         </div>
