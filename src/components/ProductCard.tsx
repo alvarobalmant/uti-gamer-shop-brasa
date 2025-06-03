@@ -1,8 +1,8 @@
 
 import React from 'react';
-// import { useNavigate } from 'react-router-dom'; // No longer needed for navigation
+import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
-// import { useIsMobile } from '@/hooks/use-mobile'; // Keep if needed for other logic
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 
@@ -18,22 +18,21 @@ export type { Product } from '@/hooks/useProducts';
 interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product) => void;
-  onCardClick: (productId: string) => void; // New prop to handle card click and open modal
 }
 
-const ProductCard = ({ product, onAddToCart, onCardClick }: ProductCardProps) => {
-  // const navigate = useNavigate(); // Removed
-  // const isMobile = useIsMobile(); // Keep if needed
+const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent modal opening if clicking on action buttons (like add to cart)
+    // Verifica se clicou em um botão ou elemento de ação
     const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('[data-action="true"]')) {
+    if (target.closest('button') || target.closest('[data-action]')) {
       return;
     }
     
-    // Call the callback function passed from the parent to open the modal
-    onCardClick(product.id);
+    // Navega para a página do produto
+    navigate(`/produto/${product.id}`);
   };
 
   return (
@@ -41,19 +40,19 @@ const ProductCard = ({ product, onAddToCart, onCardClick }: ProductCardProps) =>
       className={cn(
         "group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-card shadow-sm",
         "transition-all duration-300 ease-in-out",
-        // Hover effects only on desktop
+        // Hover effects apenas no desktop
         "md:hover:shadow-md md:hover:-translate-y-1",
-        "cursor-pointer", // Keep cursor pointer to indicate clickability
+        "cursor-pointer",
         "w-full"
       )}
-      onClick={handleCardClick} // Use the modified handler
+      onClick={handleCardClick}
     >
-      {/* Image Section */}
+      {/* Image Section - Takes most space */}
       <ProductCardImage
         product={product}
       />
 
-      {/* Content Section */}
+      {/* Content Section - Minimalist, below image */}
       <div className="flex flex-1 flex-col justify-between p-3">
         {/* Top part: Info + Price */}
         <div>
@@ -61,10 +60,9 @@ const ProductCard = ({ product, onAddToCart, onCardClick }: ProductCardProps) =>
           <ProductCardProPrice product={product} />
         </div>
 
-        {/* Bottom part: Stock + Actions */}
+        {/* Bottom part: Stock + Actions (aligned bottom) */}
         <div className="mt-2 flex items-center justify-between">
           <ProductCardStock product={product} />
-          {/* Mark the actions container to prevent card click */}
           <div data-action="true">
             <ProductCardActions
               product={product}
@@ -78,4 +76,3 @@ const ProductCard = ({ product, onAddToCart, onCardClick }: ProductCardProps) =>
 };
 
 export default ProductCard;
-

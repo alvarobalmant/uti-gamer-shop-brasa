@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/hooks/useProducts";
+// import { useIsMobile } from "@/hooks/use-mobile"; // Not strictly needed for this implementation
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
-import ProductModal from "@/components/ProductModal"; // Import the modal component
 
 interface FeaturedProductsSectionProps {
   products: Product[];
@@ -26,12 +26,9 @@ const FeaturedProductsSection = ({
   viewAllLink = "/categoria/inicio",
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
+  // const isMobile = useIsMobile(); // Keep if needed elsewhere, but not for scroll logic here
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [animateProducts, setAnimateProducts] = useState(true);
-
-  // State for managing the product modal
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   // Define categories
   const categories = [
@@ -61,29 +58,25 @@ const FeaturedProductsSection = ({
   // Handle category change with animation logic
   const handleCategoryChange = (category: string) => {
     if (category === selectedCategory) return;
+
     setAnimateProducts(false);
+
     setTimeout(() => {
       setSelectedCategory(category);
       setTimeout(() => {
         setAnimateProducts(true);
-      }, 50);
-    }, 150);
-  };
-
-  // Function to handle opening the modal
-  const handleProductCardClick = (productId: string) => {
-    setSelectedProductId(productId);
-    setIsModalOpen(true);
+      }, 50); // Short delay for animation trigger
+    }, 150); // Delay for category switch visual feedback
   };
 
   useEffect(() => {
+    // Reset animation state when products change
     setAnimateProducts(false);
-    const timer = setTimeout(() => setAnimateProducts(true), 50);
+    const timer = setTimeout(() => setAnimateProducts(true), 50); // Trigger animation shortly after update
     return () => clearTimeout(timer);
   }, [displayedProducts]);
 
   if (loading) {
-    // Render loading state if needed
     return (
       <section className="py-12 md:py-16 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -133,32 +126,42 @@ const FeaturedProductsSection = ({
           </Tabs>
         </div>
 
-        {/* Products Grid / Scroll Container */}
+        {/* Products Grid / Scroll Container - Attempting fix for mobile horizontal scroll */}
         {displayedProducts.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             Nenhum produto encontrado nesta categoria.
           </div>
         ) : (
           <div className="relative">
+            {/* Container de scroll horizontal */}
             <div
               className={cn(
-                "w-full overflow-x-auto overflow-y-hidden pb-4",
+                // Container base
+                "w-full overflow-x-auto overflow-y-hidden pb-4", // Permite scroll X, esconde scroll Y
+                // Scrollbar styling (opcional, mas bom para desktop)
                 "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
-                "overscroll-behavior-x-contain"
+                // Scroll behavior otimizado
+                "overscroll-behavior-x-contain" // Evita scroll da página inteira ao chegar no fim do container
               )}
               style={{
-                scrollbarWidth: "thin",
-                WebkitOverflowScrolling: "touch",
+                scrollbarWidth: "thin", // Para Firefox
+                WebkitOverflowScrolling: "touch", // Scroll suave no iOS
                 scrollBehavior: "smooth",
+                // *** NOVA TENTATIVA: Permitir pan-x (horizontal) e pan-y (vertical) ***
+                // O navegador deve priorizar pan-x para este container com overflow-x
+                // e deixar pan-y para a rolagem da página.
                 touchAction: "pan-x pan-y"
               } as React.CSSProperties}
             >
+              {/* Inner flex container (mantém layout original) */}
               <div className="flex gap-4 md:gap-6 min-w-max px-1">
                 {displayedProducts.map((product, index) => (
                   <div
                     key={`${selectedCategory}-${product.id}`}
                     className={cn(
+                      // Estilo original do card (mantido)
                       "w-60 sm:w-64 flex-shrink-0",
+                      // Animation
                       "transition-all duration-300 ease-in-out",
                       animateProducts
                         ? "opacity-100 translate-y-0"
@@ -171,7 +174,6 @@ const FeaturedProductsSection = ({
                     <ProductCard
                       product={product}
                       onAddToCart={onAddToCart}
-                      onCardClick={handleProductCardClick} // Pass the handler here
                     />
                   </div>
                 ))}
@@ -180,13 +182,6 @@ const FeaturedProductsSection = ({
           </div>
         )}
       </div>
-
-      {/* Render the Product Modal */}
-      <ProductModal
-        productId={selectedProductId}
-        isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      />
     </section>
   );
 };

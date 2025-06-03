@@ -8,14 +8,10 @@ import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
 import SearchResults from "./pages/SearchResults";
 import CategoryPage from "./pages/CategoryPage";
+import ProductPage from "./pages/ProductPage";
 import NotFound from "./pages/NotFound";
 import UTIPro from "./pages/UTIPro";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
-
-// Importações para as novas páginas de categoria específicas
-import XboxPage from "./pages/platforms/XboxPage";
-import PlayStationPage from "./pages/platforms/PlayStationPage";
-import NintendoPage from "./pages/platforms/NintendoPage";
 
 // Import the main Admin Panel component which now includes all tabs
 import { AdminPanel } from "@/components/Admin/AdminPanel"; 
@@ -52,23 +48,21 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/busca" element={<SearchResults />} />
                 <Route path="/categoria/:category" element={<CategoryPage />} />
-                
-                {/* Novas rotas para páginas de plataforma específicas */}
-                <Route path="/xbox" element={<XboxPage />} />
-                <Route path="/playstation" element={<PlayStationPage />} />
-                <Route path="/nintendo" element={<NintendoPage />} />
-                
+                <Route path="/produto/:id" element={<ProductPage />} />
                 <Route path="/uti-pro" element={<UTIPro />} />
 
                 {/* Admin Route - Protected */}
+                {/* The AdminPanel component itself handles the different admin sections via Tabs */}
                 <Route 
                   path="/admin" 
                   element={
                     <ProtectedAdminRoute>
+                      {/* Render the main AdminPanel component directly */}
                       <AdminPanel /> 
                     </ProtectedAdminRoute>
                   }
                 />
+                {/* No need for nested routes here if AdminPanel uses Tabs for navigation */}
 
                 {/* Catch-all Not Found Route */}
                 <Route path="*" element={<NotFound />} />
