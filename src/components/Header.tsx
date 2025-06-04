@@ -1,10 +1,25 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import MainHeader from './Header/MainHeader';
 
-// Este arquivo serve como um ponto de entrada para o componente Header
-// Isso resolve o problema de importação em outros componentes que usam '@/components/Header'
-const Header: React.FC = () => {
-  return <MainHeader />;
+const Header: React.FC<{
+  onCartOpen: () => void;
+  onAuthOpen: () => void;
+}> = ({ onCartOpen, onAuthOpen }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleMobileMenuToggle = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    // Add any additional mobile menu logic here if needed
+  };
+
+  return (
+    <MainHeader 
+      onCartOpen={onCartOpen}
+      onAuthOpen={onAuthOpen}
+      onMobileMenuToggle={handleMobileMenuToggle}
+    />
+  );
 };
 
 export default Header;

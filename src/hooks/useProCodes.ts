@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -13,7 +12,6 @@ export interface ProCode {
   used_by: string | null;
   used_at: string | null;
   is_active: boolean;
-  created_by?: string | null;
 }
 
 export const useProCodes = () => {
@@ -43,7 +41,7 @@ export const useProCodes = () => {
       
       // Calcular data de expiração (3 meses após geração)
       const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 3);
+      expiresAt.setMonth(expiresAt.getMonth() + 3); // Códigos expiram em 3 meses se não usados
       
       // Inserir no banco de dados
       const { data, error } = await supabase
@@ -52,8 +50,7 @@ export const useProCodes = () => {
           code,
           duration_months: durationMonths,
           expires_at: expiresAt.toISOString(),
-          is_active: true,
-          created_by: user?.id
+          is_active: true
         })
         .select()
         .single();
@@ -67,7 +64,6 @@ export const useProCodes = () => {
       
       return data;
     } catch (error: any) {
-      console.error('Erro ao gerar código:', error);
       toast({
         title: "Erro ao gerar código",
         description: error.message || "Ocorreu um erro ao gerar o código UTI PRO.",
@@ -93,8 +89,6 @@ export const useProCodes = () => {
     setRedeemingCode(true);
     
     try {
-      console.log('Tentando resgatar código:', code);
-      
       // Verificar se o código existe e está ativo
       const { data: codeData, error: codeError } = await supabase
         .from('pro_codes')
@@ -105,7 +99,6 @@ export const useProCodes = () => {
         .single();
       
       if (codeError || !codeData) {
-        console.error('Código não encontrado:', codeError);
         toast({
           title: "Código inválido",
           description: "O código informado não existe, já foi utilizado ou está expirado.",
@@ -128,37 +121,22 @@ export const useProCodes = () => {
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + codeData.duration_months);
       
-      console.log('Chamando função redeem_pro_code com:', {
+      // Iniciar transação para atualizar o código e criar/atualizar a assinatura
+      const { data: subscription, error: subscriptionError } = await supabase.rpc('redeem_pro_code', {
         p_code_id: codeData.id,
         p_user_id: user.id,
         p_end_date: endDate.toISOString()
       });
       
-      // Usar a função RPC para resgatar o código
-      const { data: result, error: redeemError } = await supabase.rpc('redeem_pro_code', {
-        p_code_id: codeData.id,
-        p_user_id: user.id,
-        p_end_date: endDate.toISOString()
+      if (subscriptionError) throw subscriptionError;
+      
+      toast({
+        title: "Código resgatado com sucesso!",
+        description: `Sua assinatura UTI PRO foi ativada por ${codeData.duration_months} meses.`,
       });
       
-      if (redeemError) {
-        console.error('Erro na função redeem_pro_code:', redeemError);
-        throw redeemError;
-      }
-      
-      console.log('Resultado da função:', result);
-      
-      if (result && result.success) {
-        toast({
-          title: "Código resgatado com sucesso!",
-          description: `Sua assinatura UTI PRO foi ativada por ${codeData.duration_months} meses.`,
-        });
-        return true;
-      } else {
-        throw new Error(result?.message || 'Erro desconhecido ao resgatar código');
-      }
+      return true;
     } catch (error: any) {
-      console.error('Erro ao resgatar código:', error);
       toast({
         title: "Erro ao resgatar código",
         description: error.message || "Ocorreu um erro ao processar o código UTI PRO.",
@@ -193,7 +171,6 @@ export const useProCodes = () => {
       
       return data || [];
     } catch (error: any) {
-      console.error('Erro ao listar códigos:', error);
       toast({
         title: "Erro ao listar códigos",
         description: error.message || "Ocorreu um erro ao buscar os códigos UTI PRO.",
@@ -233,7 +210,6 @@ export const useProCodes = () => {
       
       return true;
     } catch (error: any) {
-      console.error('Erro ao desativar código:', error);
       toast({
         title: "Erro ao desativar código",
         description: error.message || "Ocorreu um erro ao desativar o código UTI PRO.",
