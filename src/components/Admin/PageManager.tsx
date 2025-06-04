@@ -75,8 +75,14 @@ const PageManager: React.FC = () => {
         slug: selectedPage.slug,
         description: selectedPage.description || '',
         isActive: selectedPage.isActive,
-        theme: { ...selectedPage.theme },
-        filters: { ...selectedPage.filters }
+        theme: selectedPage.theme ? { ...selectedPage.theme } : {
+          primaryColor: '#107C10',
+          secondaryColor: '#3A3A3A',
+        },
+        filters: selectedPage.filters ? { ...selectedPage.filters } : {
+          tagIds: [],
+          categoryIds: []
+        }
       });
     }
   }, [isEditing, selectedPage]);
@@ -89,7 +95,7 @@ const PageManager: React.FC = () => {
       setFormData(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof typeof prev],
+          ...(prev[parent as keyof typeof prev] as object || {}),
           [child]: value
         }
       }));
