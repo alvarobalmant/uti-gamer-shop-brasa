@@ -52,19 +52,40 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
     <ModalComponent open={isOpen} onOpenChange={onOpenChange}>
       <ModalContentComponent
         className={cn(
-          // Base styling for both Dialog and Drawer
+          // Base styling - Remove all default paddings and margins
           "p-0 border-none overflow-hidden",
-          // Desktop specific (Dialog) - Increased max height for better scrolling
-          "sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl",
-          "max-h-[95vh]", // Increased from 90vh to 95vh for more content space
-          // Mobile specific (Drawer) - Remove black margins
-          isMobile ? "h-[98%] bg-background" : "" // Increased height and explicit background
+          // Mobile specific (Drawer) - Complete coverage with no margins
+          isMobile ? [
+            "h-[100dvh] w-full", // Use dvh for better mobile support
+            "bg-background",
+            "fixed inset-0", // Ensure complete coverage
+            "m-0", // Force no margins
+            "rounded-none", // Remove any border radius that could show background
+            "border-0" // Remove any borders
+          ] : [
+            // Desktop specific (Dialog) - Much larger and better scrolling
+            "sm:max-w-[95vw] md:max-w-[90vw] lg:max-w-[85vw] xl:max-w-[80vw]",
+            "max-h-[98vh]", // Almost full height for maximum scroll area
+            "w-[95vw]" // Ensure good width utilization
+          ]
         )}
         style={isMobile ? {
-          // Remove any black margins on mobile
+          // Force remove any potential margins/padding on mobile
           margin: 0,
-          backgroundColor: 'hsl(var(--background))'
-        } : {}}
+          padding: 0,
+          backgroundColor: 'hsl(var(--background))',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          borderRadius: 0
+        } : {
+          // Desktop - ensure good positioning
+          maxWidth: '90vw',
+          width: '90vw',
+          maxHeight: '98vh'
+        }}
       >
         {/* Custom Header with Close Button */}
         <ProductModalHeader 
@@ -72,8 +93,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
           shouldShowLoading={shouldShowLoading}
         />
 
-        {/* Content Area */}
-        <div className="h-[calc(100%-45px)]">
+        {/* Content Area - Optimized for both mobile and desktop */}
+        <div className={cn(
+          isMobile ? "h-[calc(100dvh-45px)]" : "h-[calc(98vh-45px)]"
+        )}>
           {shouldShowLoading ? (
             <ProductModalSkeleton />
           ) : shouldShowProduct ? (

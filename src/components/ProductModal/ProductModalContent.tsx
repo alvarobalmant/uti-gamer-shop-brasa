@@ -4,6 +4,7 @@ import { Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Import subcomponents from ProductPage
 import ProductImageGallery from '@/components/ProductPage/ProductImageGallery';
@@ -47,6 +48,7 @@ const ProductModalContent: React.FC<ProductModalContentProps> = ({
   onQuantityChange,
   onRelatedProductClick
 }) => {
+  const isMobile = useIsMobile();
   const { addToCart, loading: cartLoading } = useCart();
 
   const handleAddToCart = async () => {
@@ -58,17 +60,30 @@ const ProductModalContent: React.FC<ProductModalContentProps> = ({
     <div 
       ref={scrollContainerRef}
       className={cn(
-        "p-4 md:p-6 lg:p-8 h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
-        isTransitioning ? "opacity-0" : "opacity-100 transition-opacity duration-300"
+        // Enhanced scrolling area with better space utilization
+        "h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
+        "overscroll-behavior-y-contain",
+        isTransitioning ? "opacity-0" : "opacity-100 transition-opacity duration-300",
+        // Responsive padding - less on mobile, more space on desktop
+        isMobile ? "p-3" : "p-4 md:p-6 lg:p-8"
       )}
+      style={{
+        // Ensure smooth scrolling
+        scrollBehavior: 'smooth',
+        WebkitOverflowScrolling: 'touch'
+      }}
     >
       {/* Top Section: Gallery + Info/Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 mb-8">
+      <div className={cn(
+        "grid gap-4 mb-6",
+        // Responsive layout - stack on mobile, side-by-side on desktop
+        isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2 lg:gap-8 xl:gap-12"
+      )}>
         {/* Left Column: Image Gallery */}
         <ProductImageGallery product={product} />
 
         {/* Right Column: Info, Pricing, Options, Actions */}
-        <div className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-3 lg:space-y-4">
           <ProductInfo product={product} />
           <ProductPricing
             product={product}
@@ -94,11 +109,9 @@ const ProductModalContent: React.FC<ProductModalContentProps> = ({
       </div>
 
       {/* Bottom Section: Description */}
-      <Separator className="mb-6" />
-      <div className="grid grid-cols-1 gap-8">
-        <div>
-          <ProductDescription product={product} />
-        </div>
+      <Separator className="mb-4 lg:mb-6" />
+      <div className="grid grid-cols-1 gap-4 mb-6">
+        <ProductDescription product={product} />
       </div>
 
       {/* Related Products Section */}
@@ -107,6 +120,9 @@ const ProductModalContent: React.FC<ProductModalContentProps> = ({
         currentProductId={currentProductId}
         onRelatedProductClick={onRelatedProductClick}
       />
+      
+      {/* Extra bottom padding to ensure full scroll access */}
+      <div className="h-8 lg:h-12" />
     </div>
   );
 };

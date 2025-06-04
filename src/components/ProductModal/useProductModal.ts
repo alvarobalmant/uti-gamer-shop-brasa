@@ -24,12 +24,13 @@ export const useProductModal = ({ productId, isOpen, products, productsLoading }
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
 
-  // Function to scroll to top of modal content
+  // Enhanced function to scroll to top of modal content
   const scrollToTop = () => {
     if (scrollContainerRef.current) {
+      // Force immediate scroll to top for better UX
       scrollContainerRef.current.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: 'auto' // Changed to auto for immediate effect
       });
     }
   };
@@ -59,21 +60,36 @@ export const useProductModal = ({ productId, isOpen, products, productsLoading }
   const handleRelatedProductClick = (relatedProductId: string) => {
     if (relatedProductId !== productId) {
       setIsTransitioning(true);
+      
+      // Immediate scroll to top when starting transition
+      scrollToTop();
+      
       setTimeout(() => {
         const foundProduct = products.find(p => p.id === relatedProductId);
         if (foundProduct) {
           setProduct(foundProduct);
           findRelatedProducts(foundProduct);
           
-          // Scroll to top when switching products
-          setTimeout(() => {
-            scrollToTop();
-          }, 100);
+          // Reset product options
+          setSelectedCondition(foundProduct.tags?.some(t => t.name.toLowerCase() === 'novo') ? 'new' : 'pre-owned');
+          setSelectedSize(foundProduct.sizes && foundProduct.sizes.length > 0 ? foundProduct.sizes[0] : '');
+          setSelectedColor(foundProduct.colors && foundProduct.colors.length > 0 ? foundProduct.colors[0] : '');
+          setQuantity(1);
         }
         setIsTransitioning(false);
-      }, 300);
+      }, 200); // Reduced transition time for better responsiveness
     }
   };
+
+  // Reset scroll position when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        scrollToTop();
+      }, 50);
+    }
+  }, [isOpen]);
 
   // Fetch product details when productId changes and modal is open
   useEffect(() => {
@@ -85,6 +101,9 @@ export const useProductModal = ({ productId, isOpen, products, productsLoading }
       
       if (foundProduct) {
         setIsTransitioning(true);
+        
+        // Immediate scroll to top
+        scrollToTop();
         
         // Short delay for transition effect when changing products
         setTimeout(() => {
@@ -102,20 +121,15 @@ export const useProductModal = ({ productId, isOpen, products, productsLoading }
           setIsTransitioning(false);
           setIsLoadingProduct(false);
           
-          // Scroll to top when product changes
-          setTimeout(() => {
-            scrollToTop();
-          }, 100);
-          
           console.log('Product loaded successfully:', foundProduct.name);
-        }, 300);
+        }, 200);
       } else {
         setTimeout(() => {
           setIsLoadingProduct(false);
           setProduct(null);
           setRelatedProducts([]);
           console.log('Product not found for ID:', productId);
-        }, 300);
+        }, 200);
       }
     } else if (isOpen && productId && products.length === 0 && !productsLoading) {
       console.log('No products available but productId provided:', productId);
