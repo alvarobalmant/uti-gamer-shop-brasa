@@ -1,6 +1,8 @@
 
 import React from 'react';
+// import { useNavigate } from 'react-router-dom'; // No longer needed for navigation
 import { Product } from '@/hooks/useProducts';
+// import { useIsMobile } from '@/hooks/use-mobile'; // Keep if needed for other logic
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 
@@ -16,10 +18,13 @@ export type { Product } from '@/hooks/useProducts';
 interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product) => void;
-  onCardClick?: (productId: string) => void; // Make this optional for compatibility
+  onCardClick: (productId: string) => void; // New prop to handle card click and open modal
 }
 
 const ProductCard = ({ product, onAddToCart, onCardClick }: ProductCardProps) => {
+  // const navigate = useNavigate(); // Removed
+  // const isMobile = useIsMobile(); // Keep if needed
+
   const handleCardClick = (e: React.MouseEvent) => {
     // Prevent modal opening if clicking on action buttons (like add to cart)
     const target = e.target as HTMLElement;
@@ -28,9 +33,7 @@ const ProductCard = ({ product, onAddToCart, onCardClick }: ProductCardProps) =>
     }
     
     // Call the callback function passed from the parent to open the modal
-    if (onCardClick) {
-      onCardClick(product.id);
-    }
+    onCardClick(product.id);
   };
 
   return (
@@ -43,7 +46,7 @@ const ProductCard = ({ product, onAddToCart, onCardClick }: ProductCardProps) =>
         "cursor-pointer", // Keep cursor pointer to indicate clickability
         "w-full"
       )}
-      onClick={handleCardClick} 
+      onClick={handleCardClick} // Use the modified handler
     >
       {/* Image Section */}
       <ProductCardImage
@@ -75,3 +78,4 @@ const ProductCard = ({ product, onAddToCart, onCardClick }: ProductCardProps) =>
 };
 
 export default ProductCard;
+

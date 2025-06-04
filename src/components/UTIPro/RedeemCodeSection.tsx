@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useProCodes } from '@/hooks/useProCodes';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { openWhatsApp } from '@/utils/whatsapp';
 import { Loader2, Check, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -13,6 +15,7 @@ const RedeemCodeSection = () => {
   const [redeemStatus, setRedeemStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const { redeemCode, redeemingCode } = useProCodes();
   const { user } = useAuth();
+  const { refetch } = useSubscriptions();
 
   const handleRedeem = async () => {
     if (!code.trim()) return;
@@ -20,8 +23,11 @@ const RedeemCodeSection = () => {
     const success = await redeemCode(code.trim());
     setRedeemStatus(success ? 'success' : 'error');
     
-    // Reset status after 5 seconds
     if (success) {
+      // Atualizar dados da assinatura
+      await refetch();
+      
+      // Reset após 5 segundos
       setTimeout(() => {
         setRedeemStatus('idle');
         setCode('');
@@ -31,7 +37,7 @@ const RedeemCodeSection = () => {
 
   const handleWhatsAppRedirect = () => {
     openWhatsApp({
-      phone: "5511999999999", // Número fictício, substituir pelo real
+      phone: "5511999999999", // Substitua pelo número real
       message: "Olá! Gostaria de adquirir um código UTI PRO."
     });
   };

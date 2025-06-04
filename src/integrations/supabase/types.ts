@@ -16,7 +16,6 @@ export type Database = {
           button_link: string
           button_text: string
           created_at: string
-          display_order: number | null
           gradient: string
           id: string
           image_url: string | null
@@ -32,7 +31,6 @@ export type Database = {
           button_link: string
           button_text: string
           created_at?: string
-          display_order?: number | null
           gradient?: string
           id?: string
           image_url?: string | null
@@ -48,7 +46,6 @@ export type Database = {
           button_link?: string
           button_text?: string
           created_at?: string
-          display_order?: number | null
           gradient?: string
           id?: string
           image_url?: string | null
@@ -283,83 +280,41 @@ export type Database = {
       products: {
         Row: {
           additional_images: string[] | null
-          category: string | null
           colors: string[] | null
-          condition: string | null
           created_at: string
           description: string | null
-          digital_price: number | null
-          discount_price: number | null
           id: string
           image: string | null
-          images: string[] | null
-          is_active: boolean | null
-          is_featured: boolean | null
-          list_price: number | null
           name: string
-          new_price: number | null
-          platform: string | null
           price: number
-          pro_discount_percent: number | null
-          pro_price: number | null
-          rating: number | null
           sizes: string[] | null
           stock: number | null
-          title: string | null
           updated_at: string
         }
         Insert: {
           additional_images?: string[] | null
-          category?: string | null
           colors?: string[] | null
-          condition?: string | null
           created_at?: string
           description?: string | null
-          digital_price?: number | null
-          discount_price?: number | null
           id?: string
           image?: string | null
-          images?: string[] | null
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          list_price?: number | null
           name: string
-          new_price?: number | null
-          platform?: string | null
           price: number
-          pro_discount_percent?: number | null
-          pro_price?: number | null
-          rating?: number | null
           sizes?: string[] | null
           stock?: number | null
-          title?: string | null
           updated_at?: string
         }
         Update: {
           additional_images?: string[] | null
-          category?: string | null
           colors?: string[] | null
-          condition?: string | null
           created_at?: string
           description?: string | null
-          digital_price?: number | null
-          discount_price?: number | null
           id?: string
           image?: string | null
-          images?: string[] | null
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          list_price?: number | null
           name?: string
-          new_price?: number | null
-          platform?: string | null
           price?: number
-          pro_discount_percent?: number | null
-          pro_price?: number | null
-          rating?: number | null
           sizes?: string[] | null
           stock?: number | null
-          title?: string | null
           updated_at?: string
         }
         Relationships: []

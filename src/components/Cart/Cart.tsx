@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ interface CartProps {
 }
 
 const Cart = ({ isOpen, onClose }: CartProps) => {
-  const { items: cartItems, removeItem, updateQuantity, clearCart } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
   const { hasActiveSubscription } = useSubscriptions();
   const [mounted, setMounted] = useState(false);
   
@@ -24,17 +23,13 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
     setMounted(true);
   }, []);
 
-  const handleRemoveItem = (itemId: string) => {
-    removeItem(itemId);
+  const handleRemoveItem = (index: number) => {
+    removeFromCart(index);
   };
 
-  const handleQuantityChange = (itemId: string, newQuantity: number) => {
+  const handleQuantityChange = (index: number, newQuantity: number) => {
     if (newQuantity > 0 && newQuantity <= 10) {
-      // Find the cart item to get the product details
-      const cartItem = cartItems.find(item => item.id === itemId);
-      if (cartItem) {
-        updateQuantity(cartItem.product.id, cartItem.size || '', cartItem.color || '', newQuantity);
-      }
+      updateQuantity(index, newQuantity);
     }
   };
 
@@ -112,8 +107,8 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <Card key={`${item.product.id}-${item.size}-${item.color}-${item.id}`} className="bg-gray-800 border-gray-700">
+                  {cartItems.map((item, index) => (
+                    <Card key={`${item.product.id}-${item.size}-${item.color}-${index}`} className="bg-gray-800 border-gray-700">
                       <CardContent className="p-3">
                         <div className="flex gap-3">
                           {/* Product Image */}
@@ -132,7 +127,7 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                onClick={() => handleRemoveItem(item.id)}
+                                onClick={() => handleRemoveItem(index)}
                                 className="h-5 w-5 text-gray-400 hover:text-white -mr-1 -mt-1"
                                 aria-label={`Remover ${item.product.name} do carrinho`}
                               >
@@ -156,7 +151,7 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                  onClick={() => handleQuantityChange(index, item.quantity - 1)}
                                   disabled={item.quantity <= 1}
                                   className="h-7 w-7 text-gray-400 hover:text-white"
                                   aria-label="Diminuir quantidade"
@@ -169,7 +164,7 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                  onClick={() => handleQuantityChange(index, item.quantity + 1)}
                                   disabled={item.quantity >= 10}
                                   className="h-7 w-7 text-gray-400 hover:text-white"
                                   aria-label="Aumentar quantidade"

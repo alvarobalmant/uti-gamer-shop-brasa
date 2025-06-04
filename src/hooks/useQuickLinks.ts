@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,69 +16,55 @@ export interface QuickLink {
 export const useQuickLinks = () => {
   const [quickLinks, setQuickLinks] = useState<QuickLink[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchActiveQuickLinks = async () => {
+  const fetchQuickLinks = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from('quick_links')
         .select('*')
-        .eq('is_active', true)
-        .order('position', { ascending: true });
+        .eq('is_active', true) // Fetch only active links for frontend display
+        .order('position');
 
       if (error) throw error;
-      
       setQuickLinks(data || []);
-    } catch (err: any) {
-      console.error('Erro ao buscar quick links:', err);
-      setError(err.message);
+    } catch (error: any) {
+      console.error('Erro ao buscar links rápidos:', error);
+      // Toast might not be appropriate for frontend display errors, maybe handle silently
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch all links (including inactive) for admin panel
+  const fetchAllQuickLinksForAdmin = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('quick_links')
+        .select('*')
+        .order('position');
+
+      if (error) throw error;
+      setQuickLinks(data || []);
+    } catch (error: any) {
+      console.error('Erro ao buscar todos os links rápidos para admin:', error);
       toast({
         title: "Erro ao carregar links rápidos",
-        description: err.message,
+        description: error.message,
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const fetchAllQuickLinksForAdmin = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('quick_links')
-        .select('*')
-        .order('position', { ascending: true });
-
-      if (error) throw error;
-      
-      setQuickLinks(data || []);
-    } catch (err: any) {
-      console.error('Erro ao buscar todos quick links:', err);
-      setError(err.message);
-      toast({
-        title: "Erro ao carregar links rápidos",
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const addQuickLink = async (quickLinkData: Omit<QuickLink, 'id' | 'created_at' | 'updated_at'>) => {
+  const addQuickLink = async (linkData: Omit<QuickLink, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const { data, error } = await supabase
         .from('quick_links')
-        .insert([{
-          label: quickLinkData.label,
-          path: quickLinkData.path,
-          icon_url: quickLinkData.icon_url,
-          position: quickLinkData.position,
-          is_active: quickLinkData.is_active
-        }])
+        .insert([linkData])
         .select()
         .single();
 
@@ -89,45 +74,42 @@ export const useQuickLinks = () => {
       toast({
         title: "Link rápido adicionado com sucesso!",
       });
-      
       return data;
-    } catch (err: any) {
+    } catch (error: any) {
+      console.error('Erro ao adicionar link rápido:', error);
       toast({
         title: "Erro ao adicionar link rápido",
-        description: err.message,
+        description: error.message,
         variant: "destructive",
       });
-      throw err;
+      throw error;
     }
   };
 
-  const updateQuickLink = async (id: string, quickLinkData: Partial<QuickLink>) => {
+  const updateQuickLink = async (id: string, linkData: Partial<Omit<QuickLink, 'id' | 'created_at'>>) => {
     try {
       const { data, error } = await supabase
         .from('quick_links')
-        .update(quickLinkData)
+        .update({ ...linkData, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
 
-      setQuickLinks(prev => prev.map(link => 
-        link.id === id ? { ...link, ...data } : link
-      ).sort((a, b) => a.position - b.position));
-      
+      setQuickLinks(prev => prev.map(link => link.id === id ? data : link).sort((a, b) => a.position - b.position));
       toast({
         title: "Link rápido atualizado com sucesso!",
       });
-      
       return data;
-    } catch (err: any) {
+    } catch (error: any) {
+      console.error('Erro ao atualizar link rápido:', error);
       toast({
         title: "Erro ao atualizar link rápido",
-        description: err.message,
+        description: error.message,
         variant: "destructive",
       });
-      throw err;
+      throw error;
     }
   };
 
@@ -142,31 +124,32 @@ export const useQuickLinks = () => {
 
       setQuickLinks(prev => prev.filter(link => link.id !== id));
       toast({
-        title: "Link rápido removido com sucesso!",
+        title: "Link rápido excluído com sucesso!",
       });
-    } catch (err: any) {
+    } catch (error: any) {
+      console.error('Erro ao excluir link rápido:', error);
       toast({
-        title: "Erro ao remover link rápido",
-        description: err.message,
+        title: "Erro ao excluir link rápido",
+        description: error.message,
         variant: "destructive",
       });
-      throw err;
+      throw error;
     }
   };
 
-  useEffect(() => {
-    fetchActiveQuickLinks();
-  }, []);
+  // Initial fetch for frontend usage (can be called specifically in admin too)
+  // useEffect(() => {
+  //   fetchQuickLinks();
+  // }, [fetchQuickLinks]);
 
   return {
     quickLinks,
     loading,
-    error,
-    fetchActiveQuickLinks,
-    fetchAllQuickLinksForAdmin,
+    fetchQuickLinks, // For frontend
+    fetchAllQuickLinksForAdmin, // For admin panel
     addQuickLink,
     updateQuickLink,
     deleteQuickLink,
-    refetch: fetchActiveQuickLinks,
   };
 };
+

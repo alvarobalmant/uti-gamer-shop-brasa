@@ -3,29 +3,25 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search } from 'lucide-react';
-import { useProducts, Product } from '@/hooks/useProducts';
-import { useTags, Tag } from '@/hooks/useTags';
+import { Plus, Search, Filter } from 'lucide-react';
+import { useProducts } from '@/hooks/useProducts';
+import { useTags } from '@/hooks/useTags';
 import ProductList from './ProductManager/ProductList';
 import ProductForm from './ProductManager/ProductForm';
+import { Product } from '@/hooks/useProducts';
 
 const ProductManager = () => {
-  const { products, loading, addProduct, updateProduct, deleteProduct, fetchProducts } = useProducts(); 
+  const { products, loading, addProduct, updateProduct, deleteProduct } = useProducts();
   const { tags } = useTags();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTagId, setSelectedTagId] = useState<string>('');
+  const [selectedTag, setSelectedTag] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = 
-      (product.title?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (product.description?.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-    const matchesTag = 
-      !selectedTagId || 
-      (Array.isArray(product.tags) && product.tags.some((tag: Tag) => tag.id === selectedTagId));
-      
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTag = !selectedTag || product.tags?.some(tag => tag.id === selectedTag);
     return matchesSearch && matchesTag;
   });
 
@@ -94,24 +90,25 @@ const ProductManager = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        {/* Filtros e Busca */}
+        <div className="flex gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input
-              placeholder="Buscar por título ou descrição..."
+              placeholder="Buscar produtos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-gray-700 border-gray-600 text-white"
             />
           </div>
-          <div className="w-full sm:w-48">
+          <div className="w-48">
             <select
-              value={selectedTagId}
-              onChange={(e) => setSelectedTagId(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white h-10"
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
             >
-              <option value="">Todas as Tags</option>
-              {Array.isArray(tags) && tags.map((tag: Tag) => (
+              <option value="">Todas as categorias</option>
+              {tags.map((tag) => (
                 <option key={tag.id} value={tag.id}>
                   {tag.name}
                 </option>
@@ -120,6 +117,7 @@ const ProductManager = () => {
           </div>
         </div>
 
+        {/* Lista de Produtos */}
         <ProductList
           products={filteredProducts}
           loading={loading}

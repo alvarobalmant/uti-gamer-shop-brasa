@@ -39,7 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from '@/components/ui/use-toast';
 import { useProductSections, ProductSection, ProductSectionInput, SectionItemType } from '@/hooks/useProductSections';
-import { useProducts, Product } from '@/hooks/useProducts'; 
+import { useProducts, Product } from '@/hooks/useProducts'; // Assuming Product type is exported
 import { useTags, Tag } from '@/hooks/useTags';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -47,16 +47,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 const getItemName = (itemId: string, type: SectionItemType, products: Product[], tags: Tag[]): string => {
   if (type === 'product') {
     const product = products.find(p => p.id === itemId);
-    return product?.name || itemId; 
+    return product?.name || itemId; // Fallback to ID if not found
   } else {
-    const tag = tags.find(t => t.id === itemId); 
-    return tag?.name || itemId; 
+    const tag = tags.find(t => t.id === itemId); // Assuming tag ID is used
+    return tag?.name || itemId; // Fallback to ID/name
   }
 };
 
 const ProductSectionManager: React.FC = () => {
   const { toast } = useToast();
-  const { sections, loading: sectionsLoading, error: sectionsError, createSection, updateSection, deleteSection, fetchProductSections } = useProductSections();
+  const { sections, loading: sectionsLoading, error: sectionsError, createSection, updateSection, deleteSection, fetchSections } = useProductSections();
   const { products, loading: productsLoading } = useProducts();
   const { tags, loading: tagsLoading } = useTags();
 
@@ -64,7 +64,7 @@ const ProductSectionManager: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<ProductSection | null>(null);
   const [formData, setFormData] = useState<Omit<ProductSectionInput, 'items'>>({ title: '', view_all_link: '' });
   const [selectedItems, setSelectedItems] = useState<{ type: SectionItemType; id: string }[]>([]);
-  const [itemTypeToAdd, setItemTypeToAdd] = useState<SectionItemType>('product'); 
+  const [itemTypeToAdd, setItemTypeToAdd] = useState<SectionItemType>('product'); // 'product' or 'tag'
 
   const isLoading = sectionsLoading || productsLoading || tagsLoading;
 
@@ -72,6 +72,7 @@ const ProductSectionManager: React.FC = () => {
     setCurrentSection(section);
     setFormData({ title: section.title, view_all_link: section.view_all_link || '' });
     setSelectedItems(section.items?.map(item => ({ type: item.item_type, id: item.item_id })) || []);
+    // Determine initial item type based on first item, if any
     setItemTypeToAdd(section.items?.[0]?.item_type || 'product'); 
     setIsModalOpen(true);
   };
@@ -85,6 +86,7 @@ const ProductSectionManager: React.FC = () => {
   };
 
   const handleDeleteClick = async (id: string) => {
+    // Add confirmation dialog here
     const confirmed = confirm('Tem certeza que deseja remover esta seção? Ela também será removida do layout da página inicial.');
     if (confirmed) {
       await deleteSection(id);
@@ -103,18 +105,15 @@ const ProductSectionManager: React.FC = () => {
     }
 
     const sectionInput: ProductSectionInput = {
+      id: currentSection?.id,
       title: formData.title,
       view_all_link: formData.view_all_link || null,
-      items: selectedItems.map((item, index) => ({
-        item_id: item.id,
-        item_type: item.type,
-        display_order: index + 1
-      })),
+      items: selectedItems,
     };
 
     let success = false;
     if (currentSection) {
-      const result = await updateSection(currentSection.id, sectionInput);
+      const result = await updateSection(sectionInput);
       success = !!result;
     } else {
       const result = await createSection(sectionInput);
@@ -127,12 +126,14 @@ const ProductSectionManager: React.FC = () => {
   };
 
   const handleItemTypeChange = (value: string) => {
+    // Clear selected items when changing type to avoid mixing
     setSelectedItems([]); 
     setItemTypeToAdd(value as SectionItemType);
   };
 
   const handleItemSelect = (itemId: string) => {
     setSelectedItems(prev => {
+      // Prevent duplicates
       if (prev.some(item => item.id === itemId && item.type === itemTypeToAdd)) {
         return prev;
       }
@@ -144,8 +145,9 @@ const ProductSectionManager: React.FC = () => {
     setSelectedItems(prev => prev.filter(item => !(item.id === itemIdToRemove && item.type === typeToRemove)));
   };
 
+  // Memoize options for selectors
   const productOptions = useMemo(() => products.map(p => ({ value: p.id, label: p.name })), [products]);
-  const tagOptions = useMemo(() => tags.map(t => ({ value: t.id, label: t.name })), [tags]); 
+  const tagOptions = useMemo(() => tags.map(t => ({ value: t.id, label: t.name })), [tags]); // Assuming tags have unique IDs
 
   return (
     <Card>
@@ -271,7 +273,7 @@ const ProductSectionManager: React.FC = () => {
                 <Select 
                   value={itemTypeToAdd}
                   onValueChange={handleItemTypeChange}
-                  disabled={selectedItems.length > 0} 
+                  disabled={selectedItems.length > 0} // Disable changing type if items are already selected
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Selecione o tipo" />
@@ -304,7 +306,7 @@ const ProductSectionManager: React.FC = () => {
                             {(itemTypeToAdd === 'product' ? productOptions : tagOptions).map((option) => (
                               <CommandItem
                                 key={option.value}
-                                value={option.value} 
+                                value={option.value} // Use value for CommandItem value
                                 onSelect={() => handleItemSelect(option.value)}
                                 disabled={selectedItems.some(item => item.id === option.value && item.type === itemTypeToAdd)}
                               >
@@ -356,3 +358,4 @@ const ProductSectionManager: React.FC = () => {
 };
 
 export default ProductSectionManager;
+
