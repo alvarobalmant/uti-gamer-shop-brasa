@@ -60,15 +60,13 @@ const ProductModalContent: React.FC<ProductModalContentProps> = ({
     <div 
       ref={scrollContainerRef}
       className={cn(
-        // Enhanced scrolling area with better space utilization
         "h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
         "overscroll-behavior-y-contain",
         isTransitioning ? "opacity-0" : "opacity-100 transition-opacity duration-300",
-        // Responsive padding - less on mobile, more space on desktop
-        isMobile ? "p-3" : "p-4 md:p-6 lg:p-8"
+        // Mantém padding original no mobile, aumentado no desktop
+        isMobile ? "p-4" : "p-4 md:p-6 lg:p-8"
       )}
       style={{
-        // Ensure smooth scrolling
         scrollBehavior: 'smooth',
         WebkitOverflowScrolling: 'touch'
       }}
@@ -76,7 +74,6 @@ const ProductModalContent: React.FC<ProductModalContentProps> = ({
       {/* Top Section: Gallery + Info/Actions */}
       <div className={cn(
         "grid gap-4 mb-6",
-        // Responsive layout - stack on mobile, side-by-side on desktop
         isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2 lg:gap-8 xl:gap-12"
       )}>
         {/* Left Column: Image Gallery */}
