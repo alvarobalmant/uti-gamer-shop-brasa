@@ -2,38 +2,55 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
-// Interface restaurada para incluir campos usados no frontend/admin
+// Interface para Tags (assumindo que existe uma tabela 'tags' com id e name)
+export interface ProductTag {
+  id: string; // ou number, dependendo do schema
+  name: string;
+}
+
+// Interface Product atualizada para refletir o schema e erros
 export interface Product {
   id: string;
-  title: string; // Usar 'title' consistentemente
-  name?: string; // Adicionar 'name' como opcional se ainda for usado em algum lugar legado, mas priorizar 'title'
+  title: string; // Campo principal
   description: string;
   price: number;
-  discount_price?: number;
-  images: string[]; // Campo principal para imagens
-  image?: string; // Adicionar 'image' como opcional se ainda for usado em algum lugar legado, mas priorizar 'images[0]'
-  category: string;
-  platform?: string;
+  discount_price?: number; // Preço com desconto padrão
+  images: string[]; // Array de URLs de imagem
+  category: string; // ID ou nome da categoria
+  platform?: string; // ID ou nome da plataforma
   condition?: 'new' | 'used' | 'refurbished';
   stock: number;
   is_featured?: boolean;
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
-  tags?: string[]; // Assumindo que tags são armazenadas como array de strings no Supabase ou tratadas no fetch
+  tags?: ProductTag[]; // Usar a interface ProductTag
   rating?: number;
-  pro_discount?: number;
-  // Campos adicionados para compatibilidade com Admin/Form
-  additional_images?: string[]; 
+  // Campos relacionados a UTI PRO (precisam existir na tabela 'products')
+  pro_discount_percent?: number; // Percentual de desconto PRO
+  pro_price?: number; // Preço calculado para PRO (pode ser calculado no frontend ou backend)
+  // Campos que parecem ser de versões anteriores ou nomes diferentes
+  list_price?: number; // Pode ser o mesmo que 'price'? Verificar schema.
+  new_price?: number; // Pode ser o mesmo que 'price' ou 'discount_price'? Verificar.
+  digital_price?: number; // Preço para versão digital?
+  // Campos adicionais para formulário/admin
+  additional_images?: string[];
   sizes?: string[];
   colors?: string[];
+  // Campos opcionais que podem ter sido usados antes
+  name?: string; // Manter opcional, mas priorizar 'title'
+  image?: string; // Manter opcional, mas priorizar 'images[0]'
 }
 
 // Tipo para dados de entrada ao criar/atualizar produto
-export type ProductInput = Omit<Product, 'id' | 'created_at' | 'updated_at'> & { id?: string };
+// Omitir campos gerados e ajustar conforme a necessidade do insert/update
+export type ProductInput = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'pro_price' | 'tags'> & {
+  id?: string;
+  tags?: string[]; // Para input, podemos aceitar IDs ou nomes de tags como strings
+};
 
 export const useProducts = () => {
-  const [products, setProducts] = useState<Product[]>([]); // Inicializa vazio, busca no useEffect
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -47,79 +64,75 @@ export const useProducts = () => {
     limit?: number;
     sortBy?: string;
     sortOrder?: 'desc' | 'asc';
+    tag?: string; // Adicionar filtro por tag
   }) => {
+    console.log(`[useProducts] Iniciando busca de produtos com opções: ${JSON.stringify(options)}`);
     setLoading(true);
     setError(null);
     try {
-      console.log(`[useProducts] Iniciando busca de produtos com opções: ${JSON.stringify(options)}`);
-      setLoading(true);
-      setError(null);
-      
-      let query = supabase.from('products').select('*');
-      console.log('[useProducts] Query base criada: supabase.from("products").select("*")');
+      // Incluir busca de tags relacionadas
+      let query = supabase.from('products').select('*'); // TESTE: Simplificado para depuração
+      console.log('[useProducts] Query base criada: supabase.from("products").select("*, tags(*)")');
 
-      // Apply filters based on options
-      if (options?.category) {
-        query = query.eq('category', options.category);
-        console.log(`[useProducts] Filtro adicionado: category = ${options.category}`);
-      }
-      if (options?.platform) {
-        query = query.eq('platform', options.platform);
-        console.log(`[useProducts] Filtro adicionado: platform = ${options.platform}`);
-      }
-      if (options?.condition) {
-        query = query.eq('condition', options.condition);
-        console.log(`[useProducts] Filtro adicionado: condition = ${options.condition}`);
-      }
-      if (options?.featured !== undefined) {
-        query = query.eq('is_featured', options.featured);
-        console.log(`[useProducts] Filtro adicionado: is_featured = ${options.featured}`);
-      }
-      if (options?.search) {
-        query = query.ilike('title', `%${options.search}%`); 
-        console.log(`[useProducts] Filtro adicionado: title ilike %${options.search}%`);
-      }
-      if (options?.sortBy) {
-        query = query.order(options.sortBy, { ascending: options.sortOrder === 'asc' });
-        console.log(`[useProducts] Ordenação adicionada: ${options.sortBy} ${options.sortOrder}`);
-      }
-      if (options?.limit) {
-        query = query.limit(options.limit);
-        console.log(`[useProducts] Limite adicionado: ${options.limit}`);
-      }
+      // Aplicar filtros
+      if (options?.category) query = query.eq('category', options.category);
+      if (options?.platform) query = query.eq('platform', options.platform);
+      if (options?.condition) query = query.eq('condition', options.condition);
+      if (options?.featured !== undefined) query = query.eq('is_featured', options.featured);
+      if (options?.search) query = query.ilike('title', `%${options.search}%`);
+      // Filtro por tag (assumindo que 'tags' é uma tabela relacionada e queremos produtos que TENHAM a tag)
+      // Esta forma de filtrar por relação pode precisar de ajuste dependendo da estrutura exata
+      // Uma abordagem mais simples seria buscar todos e filtrar no frontend, ou usar uma função RPC no Supabase
+      // if (options?.tag) query = query.contains('tags', [{ name: options.tag }]); // Exemplo, pode não funcionar diretamente
+
+      // Ordenação e Limite
+      if (options?.sortBy) query = query.order(options.sortBy, { ascending: options.sortOrder === 'asc' });
+      if (options?.limit) query = query.limit(options.limit);
 
       console.log('[useProducts] Executando query Supabase...');
       const { data, error: fetchError } = await query;
       console.log('[useProducts] Query Supabase concluída.');
-      
-      // Log raw response immediately
-      console.log('[useProducts] Resposta RAW da busca de produtos:', { 
-        data: data, 
-        error: fetchError,
-        count: data?.length || 0
-      });
+      console.log('[useProducts] Resposta RAW da busca de produtos:', { data, fetchError, count: data?.length || 0 });
 
-      if (fetchError) {
-        console.error('[useProducts] Erro DETALHADO retornado pelo Supabase:', fetchError);
-        throw fetchError; // Re-throw to be caught by the main catch block
-      }
+      if (fetchError) throw fetchError;
 
-      // Garantir que os dados não sejam nulos e fazer o mapeamento correto
       if (data && data.length > 0) {
         console.log(`[useProducts] ${data.length} produtos recebidos. Mapeando...`);
         const mappedData = data.map(p => {
           const images = Array.isArray(p.images) ? p.images : (p.images ? [p.images] : []);
+          // Calcular pro_price se necessário e pro_discount_percent existir
+          let calculatedProPrice = p.pro_price;
+          if (p.pro_discount_percent && typeof p.price === 'number') {
+            calculatedProPrice = p.price * (1 - p.pro_discount_percent / 100);
+          }
+
           return {
             ...p,
-            name: p.title || p.name || 'Produto sem título',
             title: p.title || p.name || 'Produto sem título',
-            image: images[0] || '',
+            name: p.title || p.name || 'Produto sem título', // Manter name sincronizado com title
+            image: images[0] || '', // Usar a primeira imagem como 'image' principal
             images: images,
             description: p.description || '',
             price: typeof p.price === 'number' ? p.price : 0,
             stock: typeof p.stock === 'number' ? p.stock : 0,
-            category: p.category || 'Sem categoria'
-          };
+            category: p.category || 'Sem categoria',
+            tags: Array.isArray(p.tags) ? p.tags : [], // Garantir que tags seja um array
+            pro_price: calculatedProPrice, // Usar preço calculado se disponível
+            // Mapear outros campos garantindo tipos corretos
+            discount_price: p.discount_price,
+            platform: p.platform,
+            condition: p.condition,
+            is_featured: p.is_featured,
+            is_active: p.is_active,
+            rating: p.rating,
+            pro_discount_percent: p.pro_discount_percent,
+            list_price: p.list_price ?? p.price, // Usar price como fallback para list_price
+            new_price: p.new_price ?? p.discount_price ?? p.price, // Tentar discount_price ou price como fallback
+            digital_price: p.digital_price,
+            additional_images: p.additional_images,
+            sizes: p.sizes,
+            colors: p.colors,
+          } as Product; // Forçar o tipo após mapeamento
         });
         console.log('[useProducts] Dados mapeados e normalizados:', mappedData.length);
         setProducts(mappedData);
@@ -130,18 +143,8 @@ export const useProducts = () => {
 
     } catch (err: any) {
       console.error('[useProducts] Erro GERAL no bloco catch ao buscar produtos:', err);
-      // Log specific details if available
-      if (err && err.message) {
-        console.error('[useProducts] Mensagem de erro:', err.message);
-      }
-      if (err && err.details) {
-        console.error('[useProducts] Detalhes do erro:', err.details);
-      }
-      if (err && err.hint) {
-        console.error('[useProducts] Hint do erro:', err.hint);
-      }
       setError('Falha ao carregar produtos.');
-      setProducts([]); // Limpa produtos em caso de erro
+      setProducts([]);
       toast({ title: 'Erro', description: 'Não foi possível buscar os produtos.', variant: 'destructive' });
     } finally {
       console.log('[useProducts] Finalizando fetchProducts (finally). Loading set to false.');
@@ -149,20 +152,54 @@ export const useProducts = () => {
     }
   }, [toast]);
 
-  const fetchProductById = useCallback(async (id: string) => {
+  const fetchProductById = useCallback(async (id: string): Promise<Product | null> => {
+    console.log(`[useProducts] Buscando produto por ID: ${id}`);
     setLoading(true);
     setError(null);
     try {
       const { data, error: fetchError } = await supabase
         .from('products')
-        .select('*')
+        .select('*, tags(*)') // Incluir tags
         .eq('id', id)
         .single();
 
       if (fetchError) throw fetchError;
-      
-      // Mapear 'title' para 'name' se necessário
-      const mappedData = data ? { ...data, name: data.title, image: data.images?.[0] } : null;
+      if (!data) return null;
+
+      // Mapear dados como em fetchProducts
+      const images = Array.isArray(data.images) ? data.images : (data.images ? [data.images] : []);
+      let calculatedProPrice = data.pro_price;
+      if (data.pro_discount_percent && typeof data.price === 'number') {
+        calculatedProPrice = data.price * (1 - data.pro_discount_percent / 100);
+      }
+
+      const mappedData: Product = {
+        ...data,
+        title: data.title || data.name || 'Produto sem título',
+        name: data.title || data.name || 'Produto sem título',
+        image: images[0] || '',
+        images: images,
+        description: data.description || '',
+        price: typeof data.price === 'number' ? data.price : 0,
+        stock: typeof data.stock === 'number' ? data.stock : 0,
+        category: data.category || 'Sem categoria',
+        tags: Array.isArray(data.tags) ? data.tags : [],
+        pro_price: calculatedProPrice,
+        discount_price: data.discount_price,
+        platform: data.platform,
+        condition: data.condition,
+        is_featured: data.is_featured,
+        is_active: data.is_active,
+        rating: data.rating,
+        pro_discount_percent: data.pro_discount_percent,
+        list_price: data.list_price ?? data.price,
+        new_price: data.new_price ?? data.discount_price ?? data.price,
+        digital_price: data.digital_price,
+        additional_images: data.additional_images,
+        sizes: data.sizes,
+        colors: data.colors,
+      };
+      console.log(`[useProducts] Produto ID ${id} encontrado e mapeado.`);
       return mappedData;
 
     } catch (err: any) {
@@ -175,36 +212,58 @@ export const useProducts = () => {
     }
   }, [toast]);
 
-  // --- Funções CRUD Restauradas --- 
+  // --- Funções CRUD --- 
+  // (Manter as funções add, update, delete como estavam, mas garantir que usem a interface ProductInput e tratem 'tags' se necessário)
+  // Exemplo: A função addProduct/updateProduct pode precisar converter o array de IDs/nomes de tags do input para o formato esperado pelo Supabase (ex: many-to-many relation)
+
   const addProduct = useCallback(async (productData: ProductInput) => {
+    console.log('[useProducts] Adicionando produto:', productData);
     setLoading(true);
     setError(null);
     try {
-      // Remover campos que não devem ser enviados ou são opcionais e vazios
-      const { name, image, ...restData } = productData;
-      const payload: any = { ...restData };
-      if (!payload.discount_price) delete payload.discount_price;
-      if (!payload.platform) delete payload.platform;
-      if (!payload.condition) delete payload.condition;
-      if (!payload.tags) delete payload.tags;
-      if (!payload.rating) delete payload.rating;
-      if (!payload.pro_discount) delete payload.pro_discount;
-      if (!payload.additional_images) delete payload.additional_images;
-      if (!payload.sizes) delete payload.sizes;
-      if (!payload.colors) delete payload.colors;
+      // Separar tags se forem relacionais
+      const { tags, ...restData } = productData;
+      const payload: Omit<ProductInput, 'tags'> = { ...restData };
 
-      const { data, error: insertError } = await supabase
+      // Limpar campos opcionais vazios antes de enviar
+      Object.keys(payload).forEach(key => {
+        if (payload[key as keyof typeof payload] === undefined || payload[key as keyof typeof payload] === null || payload[key as keyof typeof payload] === '') {
+          delete payload[key as keyof typeof payload];
+        }
+      });
+
+      // 1. Inserir o produto principal
+      const { data: insertedProduct, error: insertError } = await supabase
         .from('products')
-        .insert(payload)
+        .insert(payload as any)
         .select()
         .single();
 
       if (insertError) throw insertError;
+      if (!insertedProduct) throw new Error('Falha ao retornar dados do produto inserido.');
 
-      // Atualiza a lista local
-      await fetchProducts(); 
+      console.log('[useProducts] Produto base inserido:', insertedProduct.id);
+
+      // 2. Lidar com tags (se for uma relação many-to-many)
+      // Isso assume uma tabela de junção como 'product_tags' com 'product_id' e 'tag_id'
+      if (tags && tags.length > 0) {
+        console.log('[useProducts] Associando tags:', tags);
+        // Aqui você precisaria buscar os IDs das tags se o input for nomes, ou usar os IDs diretamente
+        // Exemplo simplificado assumindo que 'tags' no input são IDs:
+        const tagRelations = tags.map(tagId => ({ product_id: insertedProduct.id, tag_id: tagId }));
+        const { error: tagError } = await supabase.from('product_tags').insert(tagRelations);
+        if (tagError) {
+          console.warn('[useProducts] Erro ao associar tags:', tagError);
+          // Não lançar erro fatal, mas avisar
+          toast({ title: 'Aviso', description: 'Produto criado, mas houve um erro ao associar tags.', variant: 'default' });
+        } else {
+          console.log('[useProducts] Tags associadas com sucesso.');
+        }
+      }
+
+      await fetchProducts();
       toast({ title: 'Sucesso', description: 'Produto adicionado com sucesso.' });
-      return data;
+      return insertedProduct;
 
     } catch (err: any) {
       console.error('Error adding product:', err);
@@ -217,35 +276,56 @@ export const useProducts = () => {
   }, [toast, fetchProducts]);
 
   const updateProduct = useCallback(async (id: string, productData: ProductInput) => {
+    console.log(`[useProducts] Atualizando produto ID: ${id}`, productData);
     setLoading(true);
     setError(null);
     try {
-      // Remover campos que não devem ser enviados ou são opcionais e vazios
-      const { name, image, id: inputId, created_at, updated_at, ...restData } = productData;
-      const payload: any = { ...restData };
-      if (!payload.discount_price) delete payload.discount_price;
-      if (!payload.platform) delete payload.platform;
-      if (!payload.condition) delete payload.condition;
-      if (!payload.tags) delete payload.tags;
-      if (!payload.rating) delete payload.rating;
-      if (!payload.pro_discount) delete payload.pro_discount;
-      if (!payload.additional_images) delete payload.additional_images;
-      if (!payload.sizes) delete payload.sizes;
-      if (!payload.colors) delete payload.colors;
+      const { tags, id: inputId, ...restData } = productData;
+      const payload: Omit<ProductInput, 'tags' | 'id'> = { ...restData };
 
-      const { data, error: updateError } = await supabase
+      // Limpar campos opcionais vazios
+      Object.keys(payload).forEach(key => {
+        if (payload[key as keyof typeof payload] === undefined || payload[key as keyof typeof payload] === null) {
+           delete payload[key as keyof typeof payload];
+        }
+      });
+
+      // 1. Atualizar produto principal
+      const { data: updatedProduct, error: updateError } = await supabase
         .from('products')
-        .update(payload)
+        .update(payload as any)
         .eq('id', id)
         .select()
         .single();
 
       if (updateError) throw updateError;
+      if (!updatedProduct) throw new Error('Falha ao retornar dados do produto atualizado.');
 
-      // Atualiza a lista local
-      await fetchProducts(); 
+      console.log('[useProducts] Produto base atualizado:', updatedProduct.id);
+
+      // 2. Lidar com tags (exemplo: remover todas as antigas e adicionar as novas)
+      if (tags !== undefined) { // Permitir atualizar tags mesmo se for um array vazio
+        console.log('[useProducts] Atualizando associações de tags:', tags);
+        // Remover associações antigas
+        const { error: deleteTagsError } = await supabase.from('product_tags').delete().eq('product_id', id);
+        if (deleteTagsError) console.warn('[useProducts] Erro ao remover tags antigas:', deleteTagsError);
+
+        // Adicionar novas associações
+        if (tags.length > 0) {
+          const tagRelations = tags.map(tagId => ({ product_id: id, tag_id: tagId }));
+          const { error: tagError } = await supabase.from('product_tags').insert(tagRelations);
+          if (tagError) {
+            console.warn('[useProducts] Erro ao associar novas tags:', tagError);
+            toast({ title: 'Aviso', description: 'Produto atualizado, mas houve um erro ao atualizar tags.', variant: 'default' });
+          } else {
+            console.log('[useProducts] Tags atualizadas com sucesso.');
+          }
+        }
+      }
+
+      await fetchProducts();
       toast({ title: 'Sucesso', description: 'Produto atualizado com sucesso.' });
-      return data;
+      return updatedProduct;
 
     } catch (err: any) {
       console.error('Error updating product:', err);
@@ -258,9 +338,15 @@ export const useProducts = () => {
   }, [toast, fetchProducts]);
 
   const deleteProduct = useCallback(async (id: string) => {
+    console.log(`[useProducts] Deletando produto ID: ${id}`);
     setLoading(true);
     setError(null);
     try {
+      // Considerar deletar relações (ex: product_tags) primeiro se houver constraints
+      const { error: deleteTagsError } = await supabase.from('product_tags').delete().eq('product_id', id);
+      if (deleteTagsError) console.warn('[useProducts] Erro ao deletar associações de tags:', deleteTagsError);
+
+      // Deletar o produto
       const { error: deleteError } = await supabase
         .from('products')
         .delete()
@@ -268,8 +354,7 @@ export const useProducts = () => {
 
       if (deleteError) throw deleteError;
 
-      // Atualiza a lista local
-      await fetchProducts(); 
+      await fetchProducts();
       toast({ title: 'Sucesso', description: 'Produto excluído com sucesso.' });
       return true;
 
@@ -282,20 +367,12 @@ export const useProducts = () => {
       setLoading(false);
     }
   }, [toast, fetchProducts]);
-  // --- Fim Funções CRUD Restauradas ---
 
-  // Initial fetch with forced delay to ensure proper loading
+  // Initial fetch
   useEffect(() => {
-    console.log('[useProducts] Iniciando efeito de carregamento inicial');
-    
-    // Forçar um pequeno delay para garantir que outros hooks tenham tempo de inicializar
-    const timer = setTimeout(() => {
-      console.log('[useProducts] Executando fetchProducts após delay');
-      fetchProducts();
-    }, 500);
-    
-    return () => clearTimeout(timer);
+    console.log('[useProducts] useEffect inicial: Chamando fetchProducts()');
+    fetchProducts();
   }, [fetchProducts]);
 
-  // Retorna todas as funções, incluindo as CRUD
-  return { products, loading, error, fetchProducts, fetchProductById, addProduct, updateProduct, deleteProduct };};
+  return { products, loading, error, fetchProducts, fetchProductById, addProduct, updateProduct, deleteProduct };
+};

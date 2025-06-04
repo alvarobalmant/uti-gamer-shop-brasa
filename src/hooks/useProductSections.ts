@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -7,9 +6,10 @@ import { useToast } from '@/components/ui/use-toast';
 export interface ProductSectionItem {
   id: number;
   section_id: string;
-  item_id: string; // Pode ser ID do produto ou ID/nome da tag
+  item_id: string; // ID do produto ou ID/nome da tag
   item_type: 'product' | 'tag';
   display_order: number;
+  created_at?: string; // Adicionado para consistência
 }
 
 // Interface atualizada para ProductSection incluindo os itens
@@ -19,54 +19,57 @@ export interface ProductSection {
   view_all_link?: string;
   created_at?: string;
   updated_at?: string;
-  items?: ProductSectionItem[]; // Adicionado campo para itens
+  items?: ProductSectionItem[]; // Array de itens
 }
 
+// Tipo para input de itens (omitir id, section_id, created_at)
+export type SectionItemInput = Omit<ProductSectionItem, 'id' | 'section_id' | 'created_at'>;
+
+// Tipo para input de seção (omitir id, created_at, updated_at, items)
+// Incluir 'items' como array de SectionItemInput para criação/atualização
+export type ProductSectionInput = Omit<ProductSection, 'id' | 'created_at' | 'updated_at' | 'items'> & {
+  items?: SectionItemInput[];
+};
+
+// Exportar SectionItemType (embora seja apenas 'product' | 'tag', exportar explicitamente)
+export type SectionItemType = 'product' | 'tag';
+
 export const useProductSections = () => {
-  // Renomeado para sections para clareza
-  const [sections, setSections] = useState<ProductSection[]>([]); 
+  const [sections, setSections] = useState<ProductSection[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Função fetch atualizada para buscar seções E seus itens
   const fetchProductSections = useCallback(async () => {
+    // ... (fetchProductSections implementation remains the same) ...
     setLoading(true);
     setError(null);
     try {
       console.log('[useProductSections] Iniciando busca de seções...');
-      
-      // 1. Buscar dados básicos das seções
       const { data: sectionsData, error: sectionsError } = await supabase
         .from('product_sections')
         .select('*')
         .order('created_at', { ascending: false });
 
       console.log('[useProductSections] Resposta da busca de seções:', { data: sectionsData, error: sectionsError });
-      
       if (sectionsError) throw sectionsError;
       if (!sectionsData) {
-        console.log('[useProductSections] Nenhuma seção encontrada');
         setSections([]);
         return;
       }
 
-      // 2. Buscar todos os itens de todas as seções de uma vez
       console.log('[useProductSections] Buscando itens das seções...');
       const { data: itemsData, error: itemsError } = await supabase
         .from('product_section_items')
         .select('*')
         .order('display_order', { ascending: true });
-        
-      console.log('[useProductSections] Resposta da busca de itens:', { data: itemsData, error: itemsError });
 
+      console.log('[useProductSections] Resposta da busca de itens:', { data: itemsData, error: itemsError });
       if (itemsError) {
-        // Logar o erro, mas continuar com as seções (sem itens)
         console.error('Error fetching product section items:', itemsError);
         toast({ title: 'Aviso', description: 'Não foi possível carregar os itens das seções de produtos.', variant: 'default' });
       }
 
-      // 3. Agrupar itens por section_id
       const itemsBySection: { [key: string]: ProductSectionItem[] } = {};
       if (itemsData) {
         for (const item of itemsData) {
@@ -77,11 +80,9 @@ export const useProductSections = () => {
         }
       }
 
-      // 4. Combinar dados das seções com seus itens
       const combinedSections = sectionsData.map(section => ({
         ...section,
-        items: itemsBySection[section.id] || [], // Adiciona array de itens (ou vazio se não houver)
-        // Garantir que campos obrigatórios existam
+        items: itemsBySection[section.id] || [],
         title: section.title || 'Seção sem título',
         view_all_link: section.view_all_link || `/categoria/${section.id}`
       }));
@@ -92,19 +93,18 @@ export const useProductSections = () => {
     } catch (err: any) {
       console.error('Error fetching product sections:', err);
       setError('Falha ao carregar seções de produtos.');
-      setSections([]); // Limpa em caso de erro
+      setSections([]);
       toast({ title: 'Erro', description: 'Não foi possível carregar as seções de produtos.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   }, [toast]);
 
-  // fetchProductSectionById também precisa ser atualizado para buscar itens
-  const fetchProductSectionById = useCallback(async (id: string) => {
+  const fetchProductSectionById = useCallback(async (id: string): Promise<ProductSection | null> => {
+    // ... (fetchProductSectionById implementation remains the same) ...
     setLoading(true);
     setError(null);
     try {
-      // 1. Buscar dados da seção específica
       const { data: sectionData, error: sectionError } = await supabase
         .from('product_sections')
         .select('*')
@@ -114,7 +114,6 @@ export const useProductSections = () => {
       if (sectionError) throw sectionError;
       if (!sectionData) return null;
 
-      // 2. Buscar itens para esta seção específica
       const { data: itemsData, error: itemsError } = await supabase
         .from('product_section_items')
         .select('*')
@@ -123,11 +122,9 @@ export const useProductSections = () => {
 
       if (itemsError) {
         console.error(`Error fetching items for section ${id}:`, itemsError);
-        // Retorna a seção sem itens em caso de erro nos itens
-        return { ...sectionData, items: [] }; 
+        return { ...sectionData, items: [] };
       }
 
-      // 3. Combinar seção e itens
       return { ...sectionData, items: itemsData || [] };
 
     } catch (err: any) {
@@ -140,17 +137,155 @@ export const useProductSections = () => {
     }
   }, [toast]);
 
-  // Initial fetch with forced delay
+  // --- Funções CRUD Adicionadas --- 
+
+  const createSection = useCallback(async (sectionData: ProductSectionInput) => {
+    console.log('[useProductSections] Criando nova seção:', sectionData);
+    setLoading(true);
+    setError(null);
+    try {
+      const { items, ...sectionPayload } = sectionData;
+
+      // 1. Inserir a seção principal
+      const { data: insertedSection, error: insertError } = await supabase
+        .from('product_sections')
+        .insert(sectionPayload as any)
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+      if (!insertedSection) throw new Error('Falha ao retornar dados da seção inserida.');
+
+      console.log('[useProductSections] Seção base inserida:', insertedSection.id);
+
+      // 2. Inserir os itens da seção (se houver)
+      if (items && items.length > 0) {
+        const itemsPayload = items.map(item => ({ ...item, section_id: insertedSection.id }));
+        console.log('[useProductSections] Inserindo itens:', itemsPayload);
+        const { error: itemsError } = await supabase.from('product_section_items').insert(itemsPayload);
+        if (itemsError) {
+          console.warn('[useProductSections] Erro ao inserir itens da seção:', itemsError);
+          toast({ title: 'Aviso', description: 'Seção criada, mas houve erro ao adicionar itens.', variant: 'default' });
+        } else {
+          console.log('[useProductSections] Itens da seção inseridos com sucesso.');
+        }
+      }
+
+      await fetchProductSections();
+      toast({ title: 'Sucesso', description: 'Seção de produtos criada com sucesso.' });
+      return insertedSection;
+
+    } catch (err: any) {
+      console.error('Error creating product section:', err);
+      setError('Falha ao criar seção de produtos.');
+      toast({ title: 'Erro', description: err.message || 'Não foi possível criar a seção.', variant: 'destructive' });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast, fetchProductSections]);
+
+  const updateSection = useCallback(async (id: string, sectionData: ProductSectionInput) => {
+    console.log(`[useProductSections] Atualizando seção ID: ${id}`, sectionData);
+    setLoading(true);
+    setError(null);
+    try {
+      const { items, ...sectionPayload } = sectionData;
+
+      // 1. Atualizar a seção principal
+      const { data: updatedSection, error: updateError } = await supabase
+        .from('product_sections')
+        .update(sectionPayload as any)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+      if (!updatedSection) throw new Error('Falha ao retornar dados da seção atualizada.');
+
+      console.log('[useProductSections] Seção base atualizada:', updatedSection.id);
+
+      // 2. Atualizar itens (ex: deletar antigos e inserir novos)
+      if (items !== undefined) { // Permitir atualizar itens mesmo se for array vazio
+        console.log('[useProductSections] Atualizando itens da seção:', items);
+        // Deletar itens antigos
+        const { error: deleteItemsError } = await supabase.from('product_section_items').delete().eq('section_id', id);
+        if (deleteItemsError) console.warn('[useProductSections] Erro ao deletar itens antigos:', deleteItemsError);
+
+        // Inserir itens novos (se houver)
+        if (items.length > 0) {
+          const itemsPayload = items.map(item => ({ ...item, section_id: id }));
+          const { error: itemsError } = await supabase.from('product_section_items').insert(itemsPayload);
+          if (itemsError) {
+            console.warn('[useProductSections] Erro ao inserir novos itens:', itemsError);
+            toast({ title: 'Aviso', description: 'Seção atualizada, mas houve erro ao atualizar itens.', variant: 'default' });
+          } else {
+            console.log('[useProductSections] Itens da seção atualizados com sucesso.');
+          }
+        }
+      }
+
+      await fetchProductSections();
+      toast({ title: 'Sucesso', description: 'Seção de produtos atualizada com sucesso.' });
+      return updatedSection;
+
+    } catch (err: any) {
+      console.error('Error updating product section:', err);
+      setError('Falha ao atualizar seção de produtos.');
+      toast({ title: 'Erro', description: err.message || 'Não foi possível atualizar a seção.', variant: 'destructive' });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast, fetchProductSections]);
+
+  const deleteSection = useCallback(async (id: string) => {
+    console.log(`[useProductSections] Deletando seção ID: ${id}`);
+    setLoading(true);
+    setError(null);
+    try {
+      // 1. Deletar itens associados primeiro
+      const { error: deleteItemsError } = await supabase.from('product_section_items').delete().eq('section_id', id);
+      if (deleteItemsError) console.warn('[useProductSections] Erro ao deletar itens da seção:', deleteItemsError);
+
+      // 2. Deletar a seção principal
+      const { error: deleteError } = await supabase
+        .from('product_sections')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) throw deleteError;
+
+      console.log('[useProductSections] Seção deletada com sucesso.');
+      await fetchProductSections();
+      toast({ title: 'Sucesso', description: 'Seção de produtos excluída com sucesso.' });
+      return true;
+
+    } catch (err: any) {
+      console.error('Error deleting product section:', err);
+      setError('Falha ao excluir seção de produtos.');
+      toast({ title: 'Erro', description: err.message || 'Não foi possível excluir a seção.', variant: 'destructive' });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast, fetchProductSections]);
+
+  // --- Fim Funções CRUD --- 
+
   useEffect(() => {
-    console.log("[useProductSections] Iniciando efeito de carregamento inicial");
-    const timer = setTimeout(() => {
-      console.log("[useProductSections] Executando fetchProductSections após delay");
-      fetchProductSections();
-    }, 600); // Slightly longer delay than useProducts
-    
-    return () => clearTimeout(timer);
+    fetchProductSections();
   }, [fetchProductSections]);
 
-  // Retorna 'sections' em vez de 'productSections'
-  return { sections, loading, error, fetchProductSections, fetchProductSectionById }; 
+  // Retornar todas as funções, incluindo CRUD
+  return {
+    sections,
+    loading,
+    error,
+    fetchProductSections,
+    fetchProductSectionById,
+    createSection,
+    updateSection,
+    deleteSection
+  };
 };

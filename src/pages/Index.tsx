@@ -59,8 +59,8 @@ const Index = () => {
       fetchLayout();
     }
     if (!sectionsLoading) {
-      console.log('[Index] useEffect inicial: Chamando fetchSections...'); // LOG ADICIONADO
-      fetchSections();
+      console.log("[Index] useEffect inicial: Chamando fetchProductSections..."); // LOG ADICIONADO
+      fetchProductSections();
     }
     // Note: useProducts fetches automatically internally now
     // if (!productsLoading) {
@@ -69,7 +69,7 @@ const Index = () => {
     // }
     // TODO: Fetch actual banner data
     console.log('[Index] useEffect inicial: Buscando banners (placeholder)...'); // LOG ADICIONADO
-  }, [fetchLayout, fetchSections, layoutLoading, sectionsLoading]); // Dependências ajustadas
+  }, [fetchLayout, fetchProductSections, layoutLoading, sectionsLoading]); // CORRIGIDO: fetchSections -> fetchProductSections
 
   const handleAddToCart = (product: any, size?: string, color?: string) => {
     addToCart(product, size, color);
@@ -238,4 +238,3 @@ const Index = () => {
 };
 
 export default Index;
-
