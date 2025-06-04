@@ -30,8 +30,8 @@ const Index = () => {
   // Removed const { setupScrollRestoration } = useScrollPosition();
   
   // Fetch homepage layout and product sections
-  const { layoutItems, loading: layoutLoading } = useHomepageLayout();
-  const { sections, loading: sectionsLoading } = useProductSections();
+  const { layoutItems, loading: layoutLoading, error: layoutError } = useHomepageLayout(); // Added layoutError
+  const { sections, loading: sectionsLoading, error: sectionsError } = useProductSections(); // Added sectionsError
 
   // Placeholder for fetching banner data (replace with actual logic)
   const [bannerData, setBannerData] = useState({
@@ -144,7 +144,18 @@ const Index = () => {
         {/* Render sections dynamically based on layout configuration */}
         {isLoading ? (
           <div className="container mx-auto px-4 py-8">
-            <div className="text-center">Carregando...</div>
+            <div className="text-center">Carregando layout da página...</div>
+          </div>
+        ) : layoutError || sectionsError || (layoutItems.length === 0 && !isLoading) ? (
+          // Fallback UI if loading finished but there's an error or no layout items
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center text-red-600">
+              <p>Ocorreu um erro ao carregar o conteúdo da página inicial.</p>
+              <p>Por favor, tente recarregar a página ou contate o suporte se o problema persistir.</p>
+              {/* Optionally display specific error messages for debugging */}
+              {/* {layoutError && <p>Erro Layout: {layoutError}</p>} */}
+              {/* {sectionsError && <p>Erro Seções: {sectionsError}</p>} */}
+            </div>
           </div>
         ) : (
           layoutItems
