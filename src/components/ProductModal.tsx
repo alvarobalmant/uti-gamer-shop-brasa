@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerClose } from "@/components/ui/drawer"; // Use Drawer for mobile
+import { Drawer, DrawerContent, DrawerClose } from "@/components/ui/drawer";
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -31,7 +32,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isLoadingProduct, setIsLoadingProduct] = useState(false); // New state for product loading
+  const [isLoadingProduct, setIsLoadingProduct] = useState(false);
+  
+  // Ref for scroll container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // State for product options (similar to ProductPage)
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
@@ -39,11 +43,21 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
 
+  // Function to scroll to top of modal content
+  const scrollToTop = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   // Fetch product details when productId changes and modal is open
   useEffect(() => {
     if (isOpen && productId && products.length > 0) {
       console.log('Loading product with ID:', productId);
-      setIsLoadingProduct(true); // Set loading state
+      setIsLoadingProduct(true);
       
       const foundProduct = products.find(p => p.id === productId);
       
@@ -64,11 +78,16 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
           findRelatedProducts(foundProduct);
           
           setIsTransitioning(false);
-          setIsLoadingProduct(false); // Clear loading state
+          setIsLoadingProduct(false);
+          
+          // Scroll to top when product changes
+          setTimeout(() => {
+            scrollToTop();
+          }, 100);
+          
           console.log('Product loaded successfully:', foundProduct.name);
         }, 300);
       } else {
-        // Product not found after a delay - this means it's actually missing
         setTimeout(() => {
           setIsLoadingProduct(false);
           setProduct(null);
@@ -77,16 +96,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
         }, 300);
       }
     } else if (isOpen && productId && products.length === 0 && !productsLoading) {
-      // Products are loaded but empty, and we have a productId
       console.log('No products available but productId provided:', productId);
       setIsLoadingProduct(false);
       setProduct(null);
     } else if (isOpen && productId) {
-      // Still loading products from database
       console.log('Waiting for products to load...');
       setIsLoadingProduct(true);
     } else if (!isOpen) {
-      // Modal closed, reset states
       setIsLoadingProduct(false);
       setProduct(null);
       setRelatedProducts([]);
@@ -96,14 +112,12 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
   // Find related products based on tags
   const findRelatedProducts = (currentProduct: Product) => {
     if (products.length > 0) {
-      // Simple related logic: find products with at least one common tag (excluding self)
       const currentProductTags = currentProduct.tags?.map(t => t.id) || [];
       const related = products.filter(p => 
         p.id !== currentProduct.id && 
         p.tags?.some(tag => currentProductTags.includes(tag.id))
-      ).slice(0, 6); // Show up to 6 related products
+      ).slice(0, 6);
       
-      // If not enough tag-related products, fill with others (excluding self)
       if (related.length < 4) {
         const otherProducts = products.filter(p => 
           p.id !== currentProduct.id && 
@@ -119,7 +133,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
   const handleAddToCart = async () => {
     if (!product) return;
     await addToCart(product, selectedSize || undefined, selectedColor || undefined);
-    // Maybe show success message?
   };
 
   // Handle clicking on a related product
@@ -127,11 +140,15 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
     if (relatedProductId !== productId) {
       setIsTransitioning(true);
       setTimeout(() => {
-        // This will trigger the useEffect to load the new product
         const foundProduct = products.find(p => p.id === relatedProductId);
         if (foundProduct) {
           setProduct(foundProduct);
           findRelatedProducts(foundProduct);
+          
+          // Scroll to top when switching products
+          setTimeout(() => {
+            scrollToTop();
+          }, 100);
         }
         setIsTransitioning(false);
       }, 300);
@@ -206,10 +223,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
   };
 
   const renderProductContent = () => {
-    if (!product) return null; // Should be handled by loading/not found states
+    if (!product) return null;
 
     return (
       <div 
+        ref={scrollContainerRef}
         className={cn(
           "p-4 md:p-6 lg:p-8 h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
           isTransitioning ? "opacity-0" : "opacity-100 transition-opacity duration-300"
@@ -274,14 +292,19 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
         className={cn(
           // Base styling for both Dialog and Drawer
           "p-0 border-none overflow-hidden",
-          // Desktop specific (Dialog)
-          "sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl", // Control max width
-          "h-[90vh] max-h-[90vh]", // Control height
-          // Mobile specific (Drawer)
-          isMobile ? "h-[95%]" : "" // Drawer takes 95% height from bottom (increased from 90%)
+          // Desktop specific (Dialog) - Increased max height for better scrolling
+          "sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl",
+          "max-h-[95vh]", // Increased from 90vh to 95vh for more content space
+          // Mobile specific (Drawer) - Remove black margins
+          isMobile ? "h-[98%] bg-background" : "" // Increased height and explicit background
         )}
+        style={isMobile ? {
+          // Remove any black margins on mobile
+          margin: 0,
+          backgroundColor: 'hsl(var(--background))'
+        } : {}}
       >
-        {/* Custom Header with Close Button - REDUCED HEIGHT */}
+        {/* Custom Header with Close Button */}
         <div className="flex items-center justify-between p-2 border-b sticky top-0 bg-background z-10">
           <h2 className="text-base font-medium truncate pr-4 ml-2">
             {product ? product.name : shouldShowLoading ? 'Carregando...' : 'Produto'}
@@ -294,8 +317,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
           </DialogClose>
         </div>
 
-        {/* Content Area - ADJUSTED HEIGHT FOR SMALLER HEADER */}
-        <div className="h-[calc(100%-45px)]"> {/* Reduced from 65px to 45px */}
+        {/* Content Area */}
+        <div className="h-[calc(100%-45px)]">
           {shouldShowLoading ? (
             renderLoadingSkeleton()
           ) : shouldShowProduct ? (
