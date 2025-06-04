@@ -14,6 +14,7 @@ export interface Product {
   new_price?: number;
   digital_price?: number;
   image: string;
+  images?: string[]; // Add this for compatibility
   additional_images?: string[];
   sizes?: string[];
   colors?: string[];

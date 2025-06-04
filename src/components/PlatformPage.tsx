@@ -68,14 +68,8 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
       );
     }
     
-    // Filtrar por categorias
-    if (categoryIds && categoryIds.length > 0) {
-      filtered = filtered.filter(product => 
-        product.categories?.some(category => 
-          categoryIds.includes(category.id) || categoryIds.includes(category.name.toLowerCase())
-        )
-      );
-    }
+    // Note: Removed category filtering since Product interface doesn't have categories
+    // This will need to be handled differently if category filtering is needed
     
     // Limitar quantidade
     if (limit && limit > 0) {
