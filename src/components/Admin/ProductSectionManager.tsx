@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,7 +103,6 @@ const ProductSectionManager: React.FC = () => {
     }
 
     const sectionInput: ProductSectionInput = {
-      id: currentSection?.id,
       title: formData.title,
       view_all_link: formData.view_all_link || null,
       items: selectedItems.map((item, index) => ({
