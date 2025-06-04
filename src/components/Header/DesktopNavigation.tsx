@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown } from 'lucide-react';
 import { categories, Category } from './categories';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useScrollDirection } from '@/hooks/useScrollDirection'; // Import the custom hook
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 
 interface DesktopNavigationProps {
   className?: string;
@@ -12,27 +13,27 @@ interface DesktopNavigationProps {
 
 const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
   const navigate = useNavigate();
-  const { scrollDirection, isScrolled } = useScrollDirection(50); // Use the hook, threshold 50px
+  const { scrollDirection, isScrolled } = useScrollDirection(50);
 
   const handleCategoryClick = (category: Category) => {
     navigate(category.path);
   };
 
+  // Determina se a barra deve estar oculta
+  const isHidden = scrollDirection === 'down' && isScrolled;
+
   return (
-    // Navigation bar below the main header, visible on large screens only
-    // Added transition and conditional transform based on scroll direction
     <nav
       className={cn(
-        'hidden lg:block bg-background border-t border-border/60 sticky top-[72px] z-30',
+        'hidden lg:block bg-background border-t border-border/60',
+        'sticky top-[72px] z-40', // Posicionado abaixo do MainHeader (altura 72px)
         'transition-transform duration-300 ease-in-out',
         {
-          '-translate-y-full': scrollDirection === 'down' && isScrolled, // Hide when scrolling down past threshold
-          'translate-y-0': scrollDirection === 'up' || !isScrolled, // Show when scrolling up or near top
+          '-translate-y-full': isHidden, // Oculta completamente quando rola para baixo
+          'translate-y-0': !isHidden, // Mostra quando rola para cima ou está no topo
         },
         className
       )}
-      // The main header has height 72px, so this nav sticks below it (top-[72px])
-      // z-index is lower than main header (z-40) but higher than content
     >
       <div className="container mx-auto">
         <div className="flex h-12 items-center justify-center gap-x-6 xl:gap-x-8">
@@ -63,4 +64,3 @@ const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
 };
 
 export default DesktopNavigation;
-

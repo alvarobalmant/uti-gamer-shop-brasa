@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom'; // Keep useLocation for now, might be needed elsewhere or for context
 import MainHeader from './MainHeader';
@@ -74,4 +73,3 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
 };
 
 export default ProfessionalHeader;
-
