@@ -1,10 +1,9 @@
-
 import React from 'react';
 import HeroBannerCarousel from './HeroBannerCarousel';
 
 // Este arquivo serve como um ponto de entrada para o componente HeroBanner
 // Isso resolve o problema de importação em outros componentes que usam '@/components/HeroBanner'
-interface HeroBannerProps {
+const HeroBanner: React.FC<{
   title?: string;
   subtitle?: string;
   imageUrl?: string;
@@ -15,12 +14,9 @@ interface HeroBannerProps {
     secondaryColor?: string;
     accentColor?: string;
   };
-}
-
-const HeroBanner: React.FC<HeroBannerProps> = (props) => {
-  // For now, just render the HeroBannerCarousel since it doesn't accept these specific props
-  // TODO: Modify HeroBannerCarousel to accept these props or create a new banner component
-  return <HeroBannerCarousel />;
+}> = (props) => {
+  // Usando o HeroBannerCarousel como base, mas adaptando para aceitar as props específicas
+  return <HeroBannerCarousel {...props} />;
 };
 
 export default HeroBanner;

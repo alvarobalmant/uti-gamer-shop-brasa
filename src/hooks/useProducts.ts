@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -13,13 +14,11 @@ export interface Product {
   new_price?: number;
   digital_price?: number;
   image: string;
-  images?: string[]; // Add images array property
   additional_images?: string[];
   sizes?: string[];
   colors?: string[];
   stock?: number;
   category_id?: string;
-  categories?: { id: string; name: string; }[]; // Add categories property
   tags?: { id: string; name: string; }[];
 }
 
@@ -60,8 +59,7 @@ export const useProducts = () => {
             console.error('Erro ao buscar tags do produto:', product.name, tagsError);
             return {
               ...product,
-              tags: [],
-              images: product.additional_images || [product.image].filter(Boolean) // Map images from additional_images
+              tags: []
             };
           }
 
@@ -74,8 +72,7 @@ export const useProducts = () => {
 
           return {
             ...product,
-            tags,
-            images: product.additional_images || [product.image].filter(Boolean) // Map images from additional_images
+            tags
           };
         })
       );

@@ -16,7 +16,6 @@ export type Database = {
           button_link: string
           button_text: string
           created_at: string
-          display_order: number | null
           gradient: string
           id: string
           image_url: string | null
@@ -32,7 +31,6 @@ export type Database = {
           button_link: string
           button_text: string
           created_at?: string
-          display_order?: number | null
           gradient?: string
           id?: string
           image_url?: string | null
@@ -48,7 +46,6 @@ export type Database = {
           button_link?: string
           button_text?: string
           created_at?: string
-          display_order?: number | null
           gradient?: string
           id?: string
           image_url?: string | null
@@ -132,42 +129,6 @@ export type Database = {
           is_visible?: boolean
           section_key?: string
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      pro_codes: {
-        Row: {
-          code: string
-          created_at: string | null
-          created_by: string | null
-          duration_months: number
-          expires_at: string | null
-          id: string
-          is_active: boolean | null
-          used_at: string | null
-          used_by: string | null
-        }
-        Insert: {
-          code: string
-          created_at?: string | null
-          created_by?: string | null
-          duration_months: number
-          expires_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          used_at?: string | null
-          used_by?: string | null
-        }
-        Update: {
-          code?: string
-          created_at?: string | null
-          created_by?: string | null
-          duration_months?: number
-          expires_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          used_at?: string | null
-          used_by?: string | null
         }
         Relationships: []
       }
@@ -283,83 +244,41 @@ export type Database = {
       products: {
         Row: {
           additional_images: string[] | null
-          category: string | null
           colors: string[] | null
-          condition: string | null
           created_at: string
           description: string | null
-          digital_price: number | null
-          discount_price: number | null
           id: string
           image: string | null
-          images: string[] | null
-          is_active: boolean | null
-          is_featured: boolean | null
-          list_price: number | null
           name: string
-          new_price: number | null
-          platform: string | null
           price: number
-          pro_discount_percent: number | null
-          pro_price: number | null
-          rating: number | null
           sizes: string[] | null
           stock: number | null
-          title: string | null
           updated_at: string
         }
         Insert: {
           additional_images?: string[] | null
-          category?: string | null
           colors?: string[] | null
-          condition?: string | null
           created_at?: string
           description?: string | null
-          digital_price?: number | null
-          discount_price?: number | null
           id?: string
           image?: string | null
-          images?: string[] | null
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          list_price?: number | null
           name: string
-          new_price?: number | null
-          platform?: string | null
           price: number
-          pro_discount_percent?: number | null
-          pro_price?: number | null
-          rating?: number | null
           sizes?: string[] | null
           stock?: number | null
-          title?: string | null
           updated_at?: string
         }
         Update: {
           additional_images?: string[] | null
-          category?: string | null
           colors?: string[] | null
-          condition?: string | null
           created_at?: string
           description?: string | null
-          digital_price?: number | null
-          discount_price?: number | null
           id?: string
           image?: string | null
-          images?: string[] | null
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          list_price?: number | null
           name?: string
-          new_price?: number | null
-          platform?: string | null
           price?: number
-          pro_discount_percent?: number | null
-          pro_price?: number | null
-          rating?: number | null
           sizes?: string[] | null
           stock?: number | null
-          title?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -369,27 +288,21 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
-          is_pro_member: boolean | null
           name: string | null
-          pro_expires_at: string | null
           role: string
         }
         Insert: {
           created_at?: string
           email?: string | null
           id: string
-          is_pro_member?: boolean | null
           name?: string | null
-          pro_expires_at?: string | null
           role?: string
         }
         Update: {
           created_at?: string
           email?: string | null
           id?: string
-          is_pro_member?: boolean | null
           name?: string | null
-          pro_expires_at?: string | null
           role?: string
         }
         Relationships: []
@@ -736,17 +649,9 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      is_admin_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
       is_user_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
-      }
-      redeem_pro_code: {
-        Args: { p_code_id: string; p_user_id: string; p_end_date: string }
-        Returns: Json
       }
       remover_meses_assinatura: {
         Args: { user_id: string; meses: number }

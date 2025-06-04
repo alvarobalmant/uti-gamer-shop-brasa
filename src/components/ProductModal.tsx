@@ -164,7 +164,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
                 >
                   <div className="aspect-square relative overflow-hidden">
                     <img 
-                      src={relatedProduct.image || '/placeholder-product.png'} 
+                      src={relatedProduct.images?.[0] || '/placeholder-product.png'} 
                       alt={relatedProduct.name}
                       className="object-cover w-full h-full"
                     />
@@ -235,9 +235,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
 
         {/* Related Products Section */}
         {renderRelatedProducts()}
-
-        {/* Add padding at the bottom to ensure related products are fully scrollable */}
-        <div className="pb-16"></div> {/* Added padding bottom */}
       </div>
     );
   };

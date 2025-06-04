@@ -79,7 +79,7 @@ export const useSubscriptions = () => {
     }
 
     try {
-      // console.log('Buscando dados do usuário:', user.id); // Sensitive log removed
+      console.log('Buscando dados do usuário:', user.id);
       
       // Buscar dados do usuário na tabela usuarios
       const { data: usuarioData, error: usuarioError } = await supabase
@@ -95,7 +95,7 @@ export const useSubscriptions = () => {
 
       if (usuarioData) {
         setUsuario(usuarioData);
-        // console.log('Dados do usuário encontrados:', usuarioData); // Sensitive log removed
+        console.log('Dados do usuário encontrados:', usuarioData);
 
         // Verificar se tem assinatura ativa
         if (usuarioData.status_assinatura === 'Ativo' && 
@@ -110,7 +110,7 @@ export const useSubscriptions = () => {
             console.error('Erro na função get_active_subscription:', subError);
           } else if (subscriptionData && subscriptionData.length > 0) {
             setUserSubscription(subscriptionData[0]);
-            // console.log('Assinatura ativa encontrada:', subscriptionData[0]); // Sensitive log removed
+            console.log('Assinatura ativa encontrada:', subscriptionData[0]);
           } else {
             // Usar dados da tabela usuarios como fallback
             setUserSubscription({
@@ -122,12 +122,12 @@ export const useSubscriptions = () => {
           }
         } else {
           setUserSubscription(null);
-          // console.log('Nenhuma assinatura ativa encontrada'); // Debug log removed
+          console.log('Nenhuma assinatura ativa encontrada');
         }
       } else {
         setUsuario(null);
         setUserSubscription(null);
-        // console.log('Usuário não encontrado na tabela usuarios'); // Debug log removed
+        console.log('Usuário não encontrado na tabela usuarios');
       }
     } catch (error: any) {
       console.error('Erro ao carregar dados do usuário:', error);
@@ -150,12 +150,12 @@ export const useSubscriptions = () => {
       const plan = plans.find(p => p.id === planId);
       if (!plan) throw new Error('Plano não encontrado');
 
-      // console.log('=== INICIANDO CRIAÇÃO DE ASSINATURA ==='); // Debug log removed
-      // console.log('Usuário:', user.id); // Sensitive log removed
-      // console.log('Plano:', planId, plan.name); // Sensitive log removed
+      console.log('=== INICIANDO CRIAÇÃO DE ASSINATURA ===');
+      console.log('Usuário:', user.id);
+      console.log('Plano:', planId, plan.name);
 
       // PASSO 1: BUSCAR E CANCELAR TODAS AS ASSINATURAS ATIVAS
-      // console.log('PASSO 1: Buscando assinaturas ativas...'); // Debug log removed
+      console.log('PASSO 1: Buscando assinaturas ativas...');
       const { data: activeSubscriptions, error: fetchError } = await supabase
         .from('user_subscriptions')
         .select('id, status, end_date')
@@ -167,14 +167,14 @@ export const useSubscriptions = () => {
         throw fetchError;
       }
 
-      // console.log('Assinaturas ativas encontradas:', activeSubscriptions?.length || 0); // Debug log removed
+      console.log('Assinaturas ativas encontradas:', activeSubscriptions?.length || 0);
 
       // PASSO 2: CANCELAR ASSINATURAS EXISTENTES (SE HOUVER)
       if (activeSubscriptions && activeSubscriptions.length > 0) {
-        // console.log('PASSO 2: Cancelando', activeSubscriptions.length, 'assinaturas ativas...'); // Debug log removed
+        console.log('PASSO 2: Cancelando', activeSubscriptions.length, 'assinaturas ativas...');
         
         for (const subscription of activeSubscriptions) {
-          // console.log('Cancelando assinatura:', subscription.id); // Sensitive log removed
+          console.log('Cancelando assinatura:', subscription.id);
           const { error: cancelError } = await supabase
             .from('user_subscriptions')
             .update({ 
@@ -187,12 +187,12 @@ export const useSubscriptions = () => {
             console.error('Erro ao cancelar assinatura:', subscription.id, cancelError);
             throw cancelError;
           }
-          // console.log('Assinatura cancelada com sucesso:', subscription.id); // Debug log removed
+          console.log('Assinatura cancelada com sucesso:', subscription.id);
         }
       }
 
       // PASSO 3: VERIFICAR SE NÃO HÁ MAIS ASSINATURAS ATIVAS
-      // console.log('PASSO 3: Verificando se todas as assinaturas foram canceladas...'); // Debug log removed
+      console.log('PASSO 3: Verificando se todas as assinaturas foram canceladas...');
       const { data: remainingActive, error: verifyError } = await supabase
         .from('user_subscriptions')
         .select('id')
@@ -209,15 +209,15 @@ export const useSubscriptions = () => {
         throw new Error('Falha ao cancelar assinaturas existentes');
       }
 
-      // console.log('✅ Todas as assinaturas foram canceladas com sucesso'); // Debug log removed
+      console.log('✅ Todas as assinaturas foram canceladas com sucesso');
 
       // PASSO 4: CALCULAR DATA DE EXPIRAÇÃO
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + plan.duration_months);
-      // console.log('PASSO 4: Data de expiração calculada:', endDate.toISOString()); // Debug log removed
+      console.log('PASSO 4: Data de expiração calculada:', endDate.toISOString());
 
       // PASSO 5: CRIAR NOVA ASSINATURA
-      // console.log('PASSO 5: Criando nova assinatura...'); // Debug log removed
+      console.log('PASSO 5: Criando nova assinatura...');
       const { data: newSubscription, error: insertError } = await supabase
         .from('user_subscriptions')
         .insert({
@@ -235,10 +235,10 @@ export const useSubscriptions = () => {
         throw insertError;
       }
 
-      // console.log('✅ Nova assinatura criada:', newSubscription.id); // Sensitive log removed
+      console.log('✅ Nova assinatura criada:', newSubscription.id);
 
       // PASSO 6: ATUALIZAR TABELA USUARIOS
-      // console.log('PASSO 6: Atualizando tabela usuarios...'); // Debug log removed
+      console.log('PASSO 6: Atualizando tabela usuarios...');
       const { error: upsertError } = await supabase
         .from('usuarios')
         .upsert({
@@ -258,10 +258,10 @@ export const useSubscriptions = () => {
         throw upsertError;
       }
 
-      // console.log('✅ Tabela usuarios atualizada com sucesso'); // Debug log removed
+      console.log('✅ Tabela usuarios atualizada com sucesso');
 
       // PASSO 7: VERIFICAÇÃO FINAL
-      // console.log('PASSO 7: Verificação final...'); // Debug log removed
+      console.log('PASSO 7: Verificação final...');
       const { data: finalCheck, error: finalError } = await supabase
         .from('user_subscriptions')
         .select('id, status')
@@ -273,13 +273,13 @@ export const useSubscriptions = () => {
         throw finalError;
       }
 
-      // console.log('Assinaturas ativas após criação:', finalCheck?.length || 0); // Debug log removed
+      console.log('Assinaturas ativas após criação:', finalCheck?.length || 0);
       if (finalCheck && finalCheck.length !== 1) {
         console.error('ERRO: Deveria haver exatamente 1 assinatura ativa, mas foram encontradas:', finalCheck?.length);
         throw new Error('Estado inconsistente após criação da assinatura');
       }
 
-      // console.log('=== ASSINATURA CRIADA COM SUCESSO ==='); // Debug log removed
+      console.log('=== ASSINATURA CRIADA COM SUCESSO ===');
 
       // Atualizar dados imediatamente
       await fetchUserSubscription();
@@ -313,13 +313,13 @@ export const useSubscriptions = () => {
     }
 
     try {
-      // console.log('=== INICIANDO CANCELAMENTO DE ASSINATURA ==='); // Debug log removed
-      // console.log('Usuário:', user?.id); // Sensitive log removed
+      console.log('=== INICIANDO CANCELAMENTO DE ASSINATURA ===');
+      console.log('Usuário:', user?.id);
 
       if (!user) throw new Error('Usuário não autenticado');
 
       // PASSO 1: BUSCAR TODAS AS ASSINATURAS ATIVAS
-      // console.log('PASSO 1: Buscando assinaturas ativas...'); // Debug log removed
+      console.log('PASSO 1: Buscando assinaturas ativas...');
       const { data: activeSubscriptions, error: fetchError } = await supabase
         .from('user_subscriptions')
         .select('id, status')
@@ -331,10 +331,10 @@ export const useSubscriptions = () => {
         throw fetchError;
       }
 
-      // console.log('Assinaturas ativas encontradas:', activeSubscriptions?.length || 0); // Debug log removed
+      console.log('Assinaturas ativas encontradas:', activeSubscriptions?.length || 0);
 
       if (!activeSubscriptions || activeSubscriptions.length === 0) {
-        // console.log('Nenhuma assinatura ativa encontrada para cancelar'); // Debug log removed
+        console.log('Nenhuma assinatura ativa encontrada para cancelar');
         toast({
           title: "Aviso",
           description: "Nenhuma assinatura ativa encontrada para cancelar.",
@@ -344,9 +344,9 @@ export const useSubscriptions = () => {
       }
 
       // PASSO 2: CANCELAR TODAS AS ASSINATURAS ATIVAS
-      // console.log('PASSO 2: Cancelando', activeSubscriptions.length, 'assinaturas...'); // Debug log removed
+      console.log('PASSO 2: Cancelando', activeSubscriptions.length, 'assinaturas...');
       for (const subscription of activeSubscriptions) {
-        // console.log('Cancelando assinatura:', subscription.id); // Sensitive log removed
+        console.log('Cancelando assinatura:', subscription.id);
         const { error: cancelError } = await supabase
           .from('user_subscriptions')
           .update({ 
@@ -359,11 +359,11 @@ export const useSubscriptions = () => {
           console.error('Erro ao cancelar assinatura:', subscription.id, cancelError);
           throw cancelError;
         }
-        // console.log('Assinatura cancelada:', subscription.id); // Debug log removed
+        console.log('Assinatura cancelada:', subscription.id);
       }
 
       // PASSO 3: ATUALIZAR TABELA USUARIOS
-      // console.log('PASSO 3: Atualizando tabela usuarios...'); // Debug log removed
+      console.log('PASSO 3: Atualizando tabela usuarios...');
       const { error: updateError } = await supabase
         .from('usuarios')
         .update({
@@ -381,7 +381,7 @@ export const useSubscriptions = () => {
       }
 
       // PASSO 4: VERIFICAÇÃO FINAL
-      // console.log('PASSO 4: Verificação final...'); // Debug log removed
+      console.log('PASSO 4: Verificação final...');
       const { data: finalCheck, error: finalError } = await supabase
         .from('user_subscriptions')
         .select('id, status')
@@ -393,13 +393,13 @@ export const useSubscriptions = () => {
         throw finalError;
       }
 
-      // console.log('Assinaturas ativas após cancelamento:', finalCheck?.length || 0); // Debug log removed
+      console.log('Assinaturas ativas após cancelamento:', finalCheck?.length || 0);
       if (finalCheck && finalCheck.length > 0) {
         console.error('ERRO: Ainda existem assinaturas ativas após cancelamento!');
         throw new Error('Falha ao cancelar todas as assinaturas');
       }
 
-      // console.log('=== CANCELAMENTO CONCLUÍDO COM SUCESSO ==='); // Debug log removed
+      console.log('=== CANCELAMENTO CONCLUÍDO COM SUCESSO ===');
 
       // Atualizar estado imediatamente
       setUserSubscription(null);
@@ -470,9 +470,8 @@ export const useSubscriptions = () => {
     hasActiveSubscription,
     getDiscountPercentage,
     refetch: async () => {
-      // console.log('Refazendo busca de dados...'); // Debug log removed
+      console.log('Refazendo busca de dados...');
       await Promise.all([fetchPlans(), fetchUserSubscription()]);
     },
   };
 };
-
