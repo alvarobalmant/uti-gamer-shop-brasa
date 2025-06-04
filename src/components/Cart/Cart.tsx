@@ -15,7 +15,7 @@ interface CartProps {
 }
 
 const Cart = ({ isOpen, onClose }: CartProps) => {
-  const { items: cartItems, removeItem, updateItemQuantity, clearCart } = useCart();
+  const { items: cartItems, removeItem, updateQuantity, clearCart } = useCart();
   const { hasActiveSubscription } = useSubscriptions();
   const [mounted, setMounted] = useState(false);
   
@@ -30,7 +30,11 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
 
   const handleQuantityChange = (itemId: string, newQuantity: number) => {
     if (newQuantity > 0 && newQuantity <= 10) {
-      updateItemQuantity(itemId, newQuantity);
+      // Find the cart item to get the product details
+      const cartItem = cartItems.find(item => item.id === itemId);
+      if (cartItem) {
+        updateQuantity(cartItem.product.id, cartItem.size || '', cartItem.color || '', newQuantity);
+      }
     }
   };
 

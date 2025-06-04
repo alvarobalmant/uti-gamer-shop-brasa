@@ -117,7 +117,7 @@ export const useProducts = () => {
       
       const productPayload = {
         ...productFields,
-        condition: productFields.condition || 'new' as const,
+        condition: (productFields.condition as 'new' | 'used' | 'refurbished') || 'new',
       };
 
       const { data: product, error: productError } = await supabase
@@ -175,7 +175,7 @@ export const useProducts = () => {
 
       const productPayload = {
         ...productFields,
-        condition: productFields.condition || 'new' as const,
+        condition: (productFields.condition as 'new' | 'used' | 'refurbished') || 'new',
       };
 
       const { data: product, error: productError } = await supabase
