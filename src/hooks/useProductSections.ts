@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -30,6 +29,14 @@ export interface ProductSectionInput {
   title: string;
   view_all_link?: string | null;
   items: { type: SectionItemType; id: string }[]; // Simplified item structure for input
+}
+
+export interface HomepageLayoutItem {
+  id: number;
+  section_key: string;
+  display_order: number;
+  is_visible: boolean;
+  title?: string;
 }
 
 export const useProductSections = () => {
