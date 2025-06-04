@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { usePages, Page, PageLayoutItem } from '@/hooks/usePages';
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
+import { Product } from '@/hooks/useProducts';
 import PlatformPageLoading from './PlatformPage/PlatformPageLoading';
 import PlatformPageNotFound from './PlatformPage/PlatformPageNotFound';
 import PlatformPageContent from './PlatformPage/PlatformPageContent';
@@ -65,6 +66,12 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
     setIsModalOpen(true);
   };
 
+  // Wrapper function to adapt addToCart signature for FeaturedProductsSection
+  const handleAddToCart = (product: Product, quantity?: number) => {
+    // Call the cart's addToCart function with the expected signature
+    addToCart(product);
+  };
+
   // Show loading only during initialization
   if (!isInitialized || pageLoading) {
     return <PlatformPageLoading />;
@@ -80,7 +87,7 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
       page={page}
       layout={layout}
       products={products}
-      onAddToCart={addToCart}
+      onAddToCart={handleAddToCart}
       isModalOpen={isModalOpen}
       selectedProductId={selectedProductId}
       setIsModalOpen={setIsModalOpen}
