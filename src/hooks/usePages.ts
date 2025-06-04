@@ -13,27 +13,39 @@ export const usePages = () => {
   const [pageLayouts, setPageLayouts] = useState<Record<string, PageLayoutItem[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Create operation utilities
   const pageOps = createPageOperations(setPages, setError);
   const layoutOps = createLayoutOperations(pageLayouts, setPageLayouts, setError);
 
-  // Wrapper functions to handle loading state
+  // Função otimizada para buscar páginas
   const fetchPages = useCallback(async () => {
+    if (isInitialized) return; // Evita recarregamentos desnecessários
+    
     setLoading(true);
     try {
       await pageOps.fetchPages();
+      setIsInitialized(true);
+    } catch (err) {
+      console.error('Erro ao carregar páginas:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isInitialized]);
 
+  // Função otimizada para buscar layout
   const fetchPageLayout = useCallback(async (pageId: string) => {
-    setLoading(true);
+    // Evita recarregar layout já existente
+    if (pageLayouts[pageId]) {
+      return pageLayouts[pageId];
+    }
+
     try {
       return await layoutOps.fetchPageLayout(pageId);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error('Erro ao carregar layout:', err);
+      return [];
     }
   }, [pageLayouts]);
 
@@ -71,7 +83,7 @@ export const usePages = () => {
     return layoutOps.removePageSection(pageId, sectionId);
   }, [pageLayouts]);
 
-  // Carregar páginas ao inicializar
+  // Carregar páginas ao inicializar (apenas uma vez)
   useEffect(() => {
     fetchPages();
   }, [fetchPages]);

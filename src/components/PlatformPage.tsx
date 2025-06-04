@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+
+import React, { useEffect, useState, useMemo } from 'react';
 import { usePages, Page, PageLayoutItem } from '@/hooks/usePages';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
@@ -22,28 +22,41 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
   const [layout, setLayout] = useState<PageLayoutItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Carregar dados da página
+  // Memoizar a página para evitar re-renderizações desnecessárias
+  const currentPage = useMemo(() => {
+    return getPageBySlug(slug);
+  }, [slug, getPageBySlug]);
+
+  // Carregar dados da página uma única vez
   useEffect(() => {
-    const loadPage = async () => {
-      const foundPage = getPageBySlug(slug);
-      if (foundPage) {
-        setPage(foundPage);
-        
-        // Carregar layout da página
-        if (foundPage.id) {
-          await fetchPageLayout(foundPage.id);
+    const loadPageData = async () => {
+      if (!currentPage) {
+        setIsInitialized(true);
+        return;
+      }
+
+      setPage(currentPage);
+      
+      try {
+        // Carregar layout apenas se necessário
+        if (currentPage.id && !pageLayouts[currentPage.id]) {
+          await fetchPageLayout(currentPage.id);
         }
+      } catch (error) {
+        console.error('Erro ao carregar layout:', error);
+      } finally {
+        setIsInitialized(true);
       }
     };
     
-    loadPage();
-  }, [slug, getPageBySlug, fetchPageLayout]);
+    loadPageData();
+  }, [currentPage, fetchPageLayout, pageLayouts]);
 
-  // Atualizar layout quando os dados forem carregados
+  // Atualizar layout quando os dados estiverem disponíveis
   useEffect(() => {
     if (page && pageLayouts[page.id]) {
-      // Ordenar seções por displayOrder
       const sortedLayout = [...pageLayouts[page.id]].sort(
         (a, b) => a.displayOrder - b.displayOrder
       );
@@ -55,7 +68,7 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
   const getFilteredProducts = (sectionConfig: any) => {
     if (!sectionConfig || !sectionConfig.filter) return products;
     
-    const { tagIds, categoryIds, limit } = sectionConfig.filter;
+    const { tagIds, limit } = sectionConfig.filter;
     
     let filtered = products;
     
@@ -67,9 +80,6 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
         )
       );
     }
-    
-    // Note: Removed category filtering since Product interface doesn't have categories
-    // This will need to be handled differently if category filtering is needed
     
     // Limitar quantidade
     if (limit && limit > 0) {
@@ -110,7 +120,7 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
           <FeaturedProductsSection
             key={section.id}
             products={sectionProducts}
-            loading={productsLoading}
+            loading={false} // Não mostrar loading aqui para evitar flickering
             onAddToCart={addToCart}
             title={section.title || ''}
             onCardClick={handleProductCardClick}
@@ -118,7 +128,6 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
         );
       
       case 'custom':
-        // Renderizar conteúdo personalizado
         return (
           <div key={section.id} className="py-8 container mx-auto">
             <h2 className="text-2xl font-bold mb-4">{section.title}</h2>
@@ -131,12 +140,12 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
     }
   };
 
-  // Renderizar estado de carregamento
-  if (pageLoading || productsLoading) {
+  // Mostrar loading apenas durante a inicialização
+  if (!isInitialized || pageLoading) {
     return (
-      <>
+      <div className="min-h-screen flex flex-col">
         <Header />
-        <main>
+        <main className="flex-1">
           <div className="container mx-auto py-8">
             <Skeleton className="h-64 w-full rounded-lg mb-8" />
             <Skeleton className="h-8 w-1/3 mb-4" />
@@ -148,16 +157,16 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
           </div>
         </main>
         <Footer />
-      </>
+      </div>
     );
   }
 
-  // Renderizar página não encontrada
+  // Página não encontrada
   if (!page) {
     return (
-      <>
+      <div className="min-h-screen flex flex-col">
         <Header />
-        <main>
+        <main className="flex-1">
           <div className="container mx-auto py-16">
             <Alert variant="destructive" className="max-w-lg mx-auto">
               <AlertCircle className="h-4 w-4" />
@@ -169,11 +178,11 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
           </div>
         </main>
         <Footer />
-      </>
+      </div>
     );
   }
 
-  // Aplicar tema da página ao estilo
+  // Aplicar tema da página
   const pageStyle = {
     '--primary-color': page.theme.primaryColor,
     '--secondary-color': page.theme.secondaryColor,
@@ -181,9 +190,9 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
   } as React.CSSProperties;
 
   return (
-    <div style={pageStyle} className="platform-page">
+    <div style={pageStyle} className="platform-page min-h-screen flex flex-col">
       <Header />
-      <main>
+      <main className="flex-1">
         {/* Renderizar seções na ordem definida */}
         {layout.length > 0 ? (
           layout.map(section => renderSection(section))
