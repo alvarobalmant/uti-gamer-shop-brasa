@@ -5,10 +5,10 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
-import { Product } from "@/hooks/useProducts";
+import { Product, ProductTag } from "@/hooks/useProducts";
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
-import ProductModal from "@/components/ProductModal"; // Import the modal component
+import ProductModal from "@/components/ProductModal";
 
 interface FeaturedProductsSectionProps {
   products: Product[];
@@ -46,9 +46,10 @@ const FeaturedProductsSection = ({
   const filterProductsByCategory = (category: string) => {
     if (category === "todos") return products;
     return products.filter((product) =>
-      product.tags?.some((tag) =>
-        tag.name.toLowerCase().includes(category.toLowerCase())
-      )
+      product.tags?.some((tag: ProductTag) => {
+        const tagName = typeof tag === 'string' ? tag : tag.name;
+        return tagName?.toLowerCase().includes(category.toLowerCase());
+      })
     );
   };
 
@@ -171,7 +172,7 @@ const FeaturedProductsSection = ({
                     <ProductCard
                       product={product}
                       onAddToCart={onAddToCart}
-                      onCardClick={handleProductCardClick} // Pass the handler here
+                      onCardClick={handleProductCardClick}
                     />
                   </div>
                 ))}
@@ -192,4 +193,3 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
-
