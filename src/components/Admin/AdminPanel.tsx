@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProductManager } from './ProductManager';
+import ProductManager from './ProductManager';
 import { BannerManager } from './BannerManager';
 import { QuickLinkManager } from './QuickLinkManager';
 import { ServiceCardManager } from './ServiceCardManager';
@@ -11,7 +11,7 @@ import { UserSubscriptionManager } from './UserSubscriptionManager';
 import { PageManager } from './PageManager';
 import { SpecialSectionManager } from './SpecialSectionManager';
 import { PageLayoutManager } from './PageLayoutManager';
-import { AdminLayout } from './AdminLayout';
+import AdminLayout from './AdminLayout';
 
 export const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('products');
