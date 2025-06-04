@@ -1,104 +1,81 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProductManager from './ProductManager';
+import { ProductManager } from './ProductManager';
 import { BannerManager } from './BannerManager';
+import { QuickLinkManager } from './QuickLinkManager';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
-import UserSubscriptionManagement from './UserSubscriptionManagement';
-import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
-import ProductSectionManager from './ProductSectionManager';
-import PageManager from './PageManager'; // Importar o novo PageManager
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe } from 'lucide-react'; // Adicionado ícone Globe
+import { ProductSectionManager } from './ProductSectionManager';
+import { UserSubscriptionManager } from './UserSubscriptionManager';
+import { PageManager } from './PageManager';
+import { SpecialSectionManager } from './SpecialSectionManager';
+import { PageLayoutManager } from './PageLayoutManager';
+import { AdminLayout } from './AdminLayout';
 
 export const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('layout'); // Default to layout management
+  const [activeTab, setActiveTab] = useState('products');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Painel Administrativo
-          </h1>
-          <p className="text-gray-400">
-            Gerencie o conteúdo e as configurações do site UTI dos Games
+    <AdminLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Painel Administrativo</h1>
+          <p className="text-muted-foreground">
+            Gerencie produtos, banners, links rápidos e outros elementos do site.
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Updated grid-cols-8 to accommodate the new tab */}
-          <TabsList className="grid w-full grid-cols-8 bg-gray-800 border-gray-700">
-            <TabsTrigger value="layout" className="flex items-center gap-2">
-              <LayoutList className="w-4 h-4" />
-              Layout Home
-            </TabsTrigger>
-            <TabsTrigger value="pages" className="flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              Páginas
-            </TabsTrigger>
-            <TabsTrigger value="product_sections" className="flex items-center gap-2">
-              <ListChecks className="w-4 h-4" />
-              Seções Produtos
-            </TabsTrigger>
-            <TabsTrigger value="products" className="flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              Produtos
-            </TabsTrigger>
-            <TabsTrigger value="banners" className="flex items-center gap-2">
-              <Image className="w-4 h-4" />
-              Banners
-            </TabsTrigger>
-            <TabsTrigger value="services" className="flex items-center gap-2">
-              <Briefcase className="w-4 h-4" />
-              Serviços
-            </TabsTrigger>
-            <TabsTrigger value="tags" className="flex items-center gap-2">
-              <Tag className="w-4 h-4" />
-              Tags
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Usuários/PRO
-            </TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
+            <TabsTrigger value="products">Produtos</TabsTrigger>
+            <TabsTrigger value="banners">Banners</TabsTrigger>
+            <TabsTrigger value="quick-links">Links</TabsTrigger>
+            <TabsTrigger value="service-cards">Serviços</TabsTrigger>
+            <TabsTrigger value="tags">Tags</TabsTrigger>
+            <TabsTrigger value="product-sections">Seções</TabsTrigger>
+            <TabsTrigger value="special-sections">Especiais</TabsTrigger>
+            <TabsTrigger value="subscriptions">Assinaturas</TabsTrigger>
+            <TabsTrigger value="pages">Páginas</TabsTrigger>
           </TabsList>
 
-          {/* Content for Homepage Layout Management */}
-          <TabsContent value="layout">
-            <HomepageLayoutManager />
-          </TabsContent>
-
-          {/* Content for Pages Management */}
-          <TabsContent value="pages">
-            <PageManager />
-          </TabsContent>
-
-          {/* Content for Product Section Management */}
-          <TabsContent value="product_sections">
-            <ProductSectionManager />
-          </TabsContent>
-
-          <TabsContent value="products">
+          <TabsContent value="products" className="mt-6">
             <ProductManager />
           </TabsContent>
 
-          <TabsContent value="banners">
+          <TabsContent value="banners" className="mt-6">
             <BannerManager />
           </TabsContent>
 
-          <TabsContent value="services">
+          <TabsContent value="quick-links" className="mt-6">
+            <QuickLinkManager />
+          </TabsContent>
+
+          <TabsContent value="service-cards" className="mt-6">
             <ServiceCardManager />
           </TabsContent>
 
-          <TabsContent value="tags">
+          <TabsContent value="tags" className="mt-6">
             <TagManager />
           </TabsContent>
 
-          <TabsContent value="users">
-            <UserSubscriptionManagement />
+          <TabsContent value="product-sections" className="mt-6">
+            <ProductSectionManager />
           </TabsContent>
 
+          <TabsContent value="special-sections" className="mt-6">
+            <SpecialSectionManager />
+          </TabsContent>
+
+          <TabsContent value="subscriptions" className="mt-6">
+            <UserSubscriptionManager />
+          </TabsContent>
+
+          <TabsContent value="pages" className="mt-6">
+            <PageManager />
+          </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
