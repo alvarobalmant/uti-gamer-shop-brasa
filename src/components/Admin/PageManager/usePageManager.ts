@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { usePages, Page } from '@/hooks/usePages';
 import { useToast } from '@/hooks/use-toast';
@@ -71,9 +70,9 @@ export const usePageManager = () => {
           primaryColor: '#107C10',
           secondaryColor: '#3A3A3A',
         },
-        filters: selectedPage.filters ? { ...selectedPage.filters } : {
-          tagIds: [],
-          categoryIds: []
+        filters: {
+          tagIds: selectedPage.filters?.tagIds || [],
+          categoryIds: selectedPage.filters?.categoryIds || []
         }
       });
     }
@@ -122,7 +121,10 @@ export const usePageManager = () => {
         description: formData.description,
         isActive: formData.isActive ?? true,
         theme: formData.theme as Page['theme'],
-        filters: formData.filters as Page['filters']
+        filters: {
+          tagIds: formData.filters?.tagIds || [],
+          categoryIds: formData.filters?.categoryIds || []
+        }
       });
 
       toast({
@@ -164,7 +166,10 @@ export const usePageManager = () => {
         description: formData.description,
         isActive: formData.isActive,
         theme: formData.theme,
-        filters: formData.filters
+        filters: {
+          tagIds: formData.filters?.tagIds || [],
+          categoryIds: formData.filters?.categoryIds || []
+        }
       });
 
       toast({
