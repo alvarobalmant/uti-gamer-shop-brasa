@@ -1,17 +1,24 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
+// Define tag interface
+export interface ProductTag {
+  id: string;
+  name: string;
+}
+
 // Interface restaurada para incluir campos usados no frontend/admin
 export interface Product {
   id: string;
-  title: string; // Usar 'title' consistentemente
-  name?: string; // Adicionar 'name' como opcional se ainda for usado em algum lugar legado, mas priorizar 'title'
+  title: string;
+  name?: string;
   description: string;
   price: number;
   discount_price?: number;
-  images: string[]; // Campo principal para imagens
-  image?: string; // Adicionar 'image' como opcional se ainda for usado em algum lugar legado, mas priorizar 'images[0]'
+  images: string[];
+  image?: string;
   category: string;
   platform?: string;
   condition?: 'new' | 'used' | 'refurbished';
@@ -20,7 +27,7 @@ export interface Product {
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
-  tags?: string[]; // Assumindo que tags são armazenadas como array de strings no Supabase ou tratadas no fetch
+  tags?: ProductTag[]; // Changed to ProductTag[]
   rating?: number;
   pro_discount?: number;
   // Campos adicionados para compatibilidade com Admin/Form
@@ -33,7 +40,7 @@ export interface Product {
 export type ProductInput = Omit<Product, 'id' | 'created_at' | 'updated_at'> & { id?: string };
 
 export const useProducts = () => {
-  const [products, setProducts] = useState<Product[]>([]); // Inicializa vazio, busca no useEffect
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -52,8 +59,6 @@ export const useProducts = () => {
     setError(null);
     try {
       console.log(`[useProducts] Iniciando busca de produtos com opções: ${JSON.stringify(options)}`);
-      setLoading(true);
-      setError(null);
       
       let query = supabase.from('products').select('*');
       console.log('[useProducts] Query base criada: supabase.from("products").select("*")');
@@ -101,7 +106,7 @@ export const useProducts = () => {
 
       if (fetchError) {
         console.error('[useProducts] Erro DETALHADO retornado pelo Supabase:', fetchError);
-        throw fetchError; // Re-throw to be caught by the main catch block
+        throw fetchError;
       }
 
       // Garantir que os dados não sejam nulos e fazer o mapeamento correto
@@ -109,12 +114,18 @@ export const useProducts = () => {
         console.log(`[useProducts] ${data.length} produtos recebidos. Mapeando...`);
         const mappedData = data.map(p => {
           const images = Array.isArray(p.images) ? p.images : (p.images ? [p.images] : []);
+          // Convert string tags to proper tag objects if needed
+          const tags = Array.isArray(p.tags) ? p.tags.map((tag: any) => 
+            typeof tag === 'string' ? { id: tag, name: tag } : tag
+          ) : [];
+          
           return {
             ...p,
             name: p.title || p.name || 'Produto sem título',
             title: p.title || p.name || 'Produto sem título',
             image: images[0] || '',
             images: images,
+            tags: tags,
             description: p.description || '',
             price: typeof p.price === 'number' ? p.price : 0,
             stock: typeof p.stock === 'number' ? p.stock : 0,
@@ -130,7 +141,6 @@ export const useProducts = () => {
 
     } catch (err: any) {
       console.error('[useProducts] Erro GERAL no bloco catch ao buscar produtos:', err);
-      // Log specific details if available
       if (err && err.message) {
         console.error('[useProducts] Mensagem de erro:', err.message);
       }
@@ -141,7 +151,7 @@ export const useProducts = () => {
         console.error('[useProducts] Hint do erro:', err.hint);
       }
       setError('Falha ao carregar produtos.');
-      setProducts([]); // Limpa produtos em caso de erro
+      setProducts([]);
       toast({ title: 'Erro', description: 'Não foi possível buscar os produtos.', variant: 'destructive' });
     } finally {
       console.log('[useProducts] Finalizando fetchProducts (finally). Loading set to false.');
@@ -161,8 +171,15 @@ export const useProducts = () => {
 
       if (fetchError) throw fetchError;
       
-      // Mapear 'title' para 'name' se necessário
-      const mappedData = data ? { ...data, name: data.title, image: data.images?.[0] } : null;
+      // Mapear 'title' para 'name' se necessário e tratar tags
+      const mappedData = data ? { 
+        ...data, 
+        name: data.title, 
+        image: data.images?.[0],
+        tags: Array.isArray(data.tags) ? data.tags.map((tag: any) => 
+          typeof tag === 'string' ? { id: tag, name: tag } : tag
+        ) : []
+      } : null;
       return mappedData;
 
     } catch (err: any) {
@@ -282,7 +299,6 @@ export const useProducts = () => {
       setLoading(false);
     }
   }, [toast, fetchProducts]);
-  // --- Fim Funções CRUD Restauradas ---
 
   // Initial fetch with forced delay to ensure proper loading
   useEffect(() => {
@@ -298,4 +314,5 @@ export const useProducts = () => {
   }, [fetchProducts]);
 
   // Retorna todas as funções, incluindo as CRUD
-  return { products, loading, error, fetchProducts, fetchProductById, addProduct, updateProduct, deleteProduct };};
+  return { products, loading, error, fetchProducts, fetchProductById, addProduct, updateProduct, deleteProduct };
+};

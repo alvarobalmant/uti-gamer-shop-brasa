@@ -12,6 +12,12 @@ export interface ProductSectionItem {
   display_order: number;
 }
 
+// Tipo para input de seção de produto (sem id, timestamps e items)
+export type ProductSectionInput = Omit<ProductSection, 'id' | 'created_at' | 'updated_at' | 'items'>;
+
+// Tipo para tipos de item
+export type SectionItemType = 'product' | 'tag';
+
 // Interface atualizada para ProductSection incluindo os itens
 export interface ProductSection {
   id: string;
@@ -140,7 +146,7 @@ export const useProductSections = () => {
     }
   }, [toast]);
 
-  const createSection = useCallback(async (sectionData: Omit<ProductSection, 'id' | 'created_at' | 'updated_at' | 'items'>) => {
+  const createSection = useCallback(async (sectionData: ProductSectionInput) => {
     try {
       const { data, error: insertError } = await supabase
         .from('product_sections')
@@ -168,7 +174,7 @@ export const useProductSections = () => {
     }
   }, [toast, fetchProductSections]);
 
-  const updateSection = useCallback(async (id: string, sectionData: Partial<Omit<ProductSection, 'id' | 'created_at' | 'updated_at' | 'items'>>) => {
+  const updateSection = useCallback(async (id: string, sectionData: Partial<ProductSectionInput>) => {
     try {
       const { data, error: updateError } = await supabase
         .from('product_sections')
