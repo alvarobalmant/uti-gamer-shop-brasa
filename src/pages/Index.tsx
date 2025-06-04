@@ -1,8 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { useProducts, Product } from '@/hooks/useProducts'; // Import Product type
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-// Removed import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
@@ -21,13 +21,12 @@ import { useProductSections } from '@/hooks/useProductSections';
 
 // Dynamic Homepage Layout based on database configuration
 const Index = () => {
-  const { products, loading: productsLoading } = useProducts();
+  const { products, loading: productsLoading, refetch: refetchProducts } = useProducts();
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  // Removed const { setupScrollRestoration } = useScrollPosition();
   
   // Fetch homepage layout and product sections
   const { layoutItems, loading: layoutLoading } = useHomepageLayout();
@@ -43,7 +42,24 @@ const Index = () => {
     targetBlank: false,
   });
 
-  // Removed useEffect for setupScrollRestoration - This is handled globally by useScrollRestoration
+  // Retry mechanism for failed loads
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
+
+  useEffect(() => {
+    // Se houve erro no carregamento e ainda temos tentativas, tenta novamente
+    if (products.length === 0 && !productsLoading && retryCount < MAX_RETRIES) {
+      const timer = setTimeout(() => {
+        console.log(`Tentativa ${retryCount + 1} de ${MAX_RETRIES} para carregar produtos`);
+        setRetryCount(prev => prev + 1);
+        refetchProducts();
+      }, 2000 * (retryCount + 1)); // Delay incrementa a cada tentativa
+
+      return () => clearTimeout(timer);
+    }
+  }, [products.length, productsLoading, retryCount, refetchProducts]);
+
+  // TODO: Fetch actual banner data
   useEffect(() => {
     // TODO: Fetch actual banner data
   }, []);
@@ -132,6 +148,9 @@ const Index = () => {
 
   const isLoading = layoutLoading || sectionsLoading;
 
+  // Show error state if we've exhausted retries and still no products
+  const showErrorState = !productsLoading && products.length === 0 && retryCount >= MAX_RETRIES;
+
   return (
     <div className="min-h-screen bg-background w-full overflow-x-hidden flex flex-col">
       {/* Header */}
@@ -141,8 +160,31 @@ const Index = () => {
       />
 
       <main className="flex-grow">
+        {/* Show error state if products failed to load */}
+        {showErrorState && (
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center bg-red-50 border border-red-200 rounded-lg p-8">
+              <h2 className="text-xl font-semibold text-red-800 mb-2">
+                Erro ao carregar produtos
+              </h2>
+              <p className="text-red-600 mb-4">
+                Não foi possível carregar os produtos. Verifique sua conexão com a internet.
+              </p>
+              <button 
+                onClick={() => {
+                  setRetryCount(0);
+                  refetchProducts();
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Render sections dynamically based on layout configuration */}
-        {isLoading ? (
+        {!showErrorState && (isLoading ? (
           <div className="container mx-auto px-4 py-8">
             <div className="text-center">Carregando...</div>
           </div>
@@ -152,7 +194,7 @@ const Index = () => {
             .sort((a, b) => a.display_order - b.display_order) // Sort by display order
             .map(item => renderSection(item.section_key))
             .filter(Boolean) // Remove null sections
-        )}
+        ))}
       </main>
 
       {/* Footer */}
@@ -171,4 +213,3 @@ const Index = () => {
 };
 
 export default Index;
-

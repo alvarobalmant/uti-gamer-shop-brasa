@@ -33,60 +33,122 @@ export const useProducts = () => {
       setLoading(true);
       console.log('Buscando produtos...');
       
-      // Buscar todos os produtos
+      // Primeiro, vamos verificar se a sessão está válida
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Erro na sessão:', sessionError);
+        // Se houver erro de JWT, vamos tentar renovar a sessão
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          console.error('Erro ao renovar sessão:', refreshError);
+        }
+      }
+      
+      // Buscar todos os produtos - removendo filtros de autenticação se houver
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*')
+        .eq('is_active', true) // Só produtos ativos
         .order('created_at', { ascending: false });
 
       if (productsError) {
         console.error('Erro ao buscar produtos:', productsError);
+        
+        // Se o erro for de JWT, vamos mostrar uma mensagem específica
+        if (productsError.message?.includes('JWT') || productsError.message?.includes('expired')) {
+          toast({
+            title: "Erro de autenticação",
+            description: "Sessão expirada. Recarregando a página...",
+            variant: "destructive",
+          });
+          // Recarregar a página após um delay para renovar completamente a sessão
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+          return;
+        }
+        
         throw productsError;
       }
 
       console.log('Produtos encontrados:', productsData?.length || 0);
 
+      if (!productsData || productsData.length === 0) {
+        console.log('Nenhum produto encontrado, usando array vazio');
+        setProducts([]);
+        return;
+      }
+
       // Buscar as tags para cada produto usando a view otimizada
       const productsWithTags = await Promise.all(
-        (productsData || []).map(async (product) => {
+        productsData.map(async (product) => {
           console.log('Buscando tags para produto:', product.name);
           
-          const { data: productTagsData, error: tagsError } = await supabase
-            .from('view_product_with_tags')
-            .select('tag_id, tag_name')
-            .eq('product_id', product.id);
+          try {
+            const { data: productTagsData, error: tagsError } = await supabase
+              .from('view_product_with_tags')
+              .select('tag_id, tag_name')
+              .eq('product_id', product.id);
 
-          if (tagsError) {
-            console.error('Erro ao buscar tags do produto:', product.name, tagsError);
+            if (tagsError) {
+              console.error('Erro ao buscar tags do produto:', product.name, tagsError);
+              // Se houver erro nas tags, continuar sem elas
+              return {
+                ...product,
+                tags: []
+              };
+            }
+
+            const tags = productTagsData?.map(row => ({
+              id: row.tag_id,
+              name: row.tag_name
+            })).filter(tag => tag.id && tag.name) || [];
+
+            console.log(`Tags para ${product.name}:`, tags);
+
+            return {
+              ...product,
+              tags
+            };
+          } catch (error) {
+            console.error('Erro inesperado ao buscar tags para:', product.name, error);
             return {
               ...product,
               tags: []
             };
           }
-
-          const tags = productTagsData?.map(row => ({
-            id: row.tag_id,
-            name: row.tag_name
-          })).filter(tag => tag.id && tag.name) || [];
-
-          console.log(`Tags para ${product.name}:`, tags);
-
-          return {
-            ...product,
-            tags
-          };
         })
       );
 
       console.log('Produtos com tags carregados:', productsWithTags.length);
       setProducts(productsWithTags);
+      
     } catch (error: any) {
       console.error('Erro ao carregar produtos:', error);
+      
+      // Tratamento específico para diferentes tipos de erro
+      let errorMessage = 'Erro desconhecido ao carregar produtos';
+      
+      if (error.message?.includes('JWT') || error.message?.includes('expired')) {
+        errorMessage = 'Sessão expirada. A página será recarregada.';
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = 'Erro de conexão. Verifique sua internet.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erro ao carregar produtos",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      // Em caso de erro, definir produtos como array vazio para não quebrar a interface
+      setProducts([]);
     } finally {
       setLoading(false);
     }
