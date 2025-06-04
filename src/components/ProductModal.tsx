@@ -31,6 +31,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(false); // New state for product loading
 
   // State for product options (similar to ProductPage)
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
@@ -41,6 +42,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
   // Fetch product details when productId changes and modal is open
   useEffect(() => {
     if (isOpen && productId && products.length > 0) {
+      console.log('Loading product with ID:', productId);
+      setIsLoadingProduct(true); // Set loading state
+      
       const foundProduct = products.find(p => p.id === productId);
       
       if (foundProduct) {
@@ -60,17 +64,34 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
           findRelatedProducts(foundProduct);
           
           setIsTransitioning(false);
+          setIsLoadingProduct(false); // Clear loading state
+          console.log('Product loaded successfully:', foundProduct.name);
         }, 300);
       } else {
-        // Reset if product not found
-        setProduct(null);
-        setRelatedProducts([]);
+        // Product not found after a delay - this means it's actually missing
+        setTimeout(() => {
+          setIsLoadingProduct(false);
+          setProduct(null);
+          setRelatedProducts([]);
+          console.log('Product not found for ID:', productId);
+        }, 300);
       }
+    } else if (isOpen && productId && products.length === 0 && !productsLoading) {
+      // Products are loaded but empty, and we have a productId
+      console.log('No products available but productId provided:', productId);
+      setIsLoadingProduct(false);
+      setProduct(null);
+    } else if (isOpen && productId) {
+      // Still loading products from database
+      console.log('Waiting for products to load...');
+      setIsLoadingProduct(true);
     } else if (!isOpen) {
-      // Optional: reset product when modal closes
-      // setProduct(null);
+      // Modal closed, reset states
+      setIsLoadingProduct(false);
+      setProduct(null);
+      setRelatedProducts([]);
     }
-  }, [isOpen, productId, products]);
+  }, [isOpen, productId, products, productsLoading]);
 
   // Find related products based on tags
   const findRelatedProducts = (currentProduct: Product) => {
@@ -135,9 +156,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
       <AlertCircle className="w-16 h-16 text-destructive mb-4" />
       <h2 className="text-2xl font-bold text-foreground mb-2">Produto Não Encontrado</h2>
       <p className="text-muted-foreground mb-6">Não conseguimos encontrar os detalhes deste produto.</p>
-      <DrawerClose asChild>
+      <DialogClose asChild>
          <Button variant="outline">Fechar</Button>
-      </DrawerClose>
+      </DialogClose>
     </div>
   );
 
@@ -242,6 +263,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
   const ModalComponent = isMobile ? Drawer : Dialog;
   const ModalContentComponent = isMobile ? DrawerContent : DialogContent;
 
+  // Determine what to show based on loading states
+  const shouldShowLoading = productsLoading || isLoadingProduct;
+  const shouldShowNotFound = !shouldShowLoading && !product && productId;
+  const shouldShowProduct = !shouldShowLoading && product;
+
   return (
     <ModalComponent open={isOpen} onOpenChange={onOpenChange}>
       <ModalContentComponent
@@ -258,7 +284,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
         {/* Custom Header with Close Button - REDUCED HEIGHT */}
         <div className="flex items-center justify-between p-2 border-b sticky top-0 bg-background z-10">
           <h2 className="text-base font-medium truncate pr-4 ml-2">
-            {product ? product.name : productsLoading ? 'Carregando...' : 'Produto'}
+            {product ? product.name : shouldShowLoading ? 'Carregando...' : 'Produto'}
           </h2>
           <DialogClose asChild>
             <Button variant="ghost" size="sm" className="rounded-full">
@@ -270,13 +296,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
 
         {/* Content Area - ADJUSTED HEIGHT FOR SMALLER HEADER */}
         <div className="h-[calc(100%-45px)]"> {/* Reduced from 65px to 45px */}
-          {productsLoading ? (
+          {shouldShowLoading ? (
             renderLoadingSkeleton()
-          ) : product ? (
+          ) : shouldShowProduct ? (
             renderProductContent()
-          ) : (
+          ) : shouldShowNotFound ? (
             renderNotFound()
-          )}
+          ) : null}
         </div>
 
       </ModalContentComponent>
