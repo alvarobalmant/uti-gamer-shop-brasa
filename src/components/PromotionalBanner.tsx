@@ -30,20 +30,21 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
       backgroundColor
     )}>
       {/* Desktop layout - Text on left, Image on right */}
+      {/* Reduced vertical padding and adjusted image width/aspect for a more compact banner */}
       <div className="hidden md:flex flex-row items-center">
         {/* Text Content Area */}
         <div className={cn(
           "flex-grow flex flex-col justify-center",
-          "p-8 lg:p-10" // Adjusted padding for desktop
+          "p-6 lg:p-8" // Reduced padding for desktop (was p-8 lg:p-10)
         )}>
           <h2 className={cn(
-            "text-3xl lg:text-4xl font-bold mb-3", // Desktop text size
+            "text-2xl lg:text-3xl font-bold mb-2", // Slightly smaller text size
             textColor
           )}>
             {title}
           </h2>
           <p className={cn(
-            "text-lg mb-6 opacity-90", // Desktop description
+            "text-base mb-4 opacity-90", // Slightly smaller text size
             textColor
           )}>
             {description}
@@ -51,7 +52,7 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
           <a href={buttonLink} target="_blank" rel="noopener noreferrer" className="self-start mt-auto">
             <Button 
               variant="outline" 
-              size="default" // Desktop button size
+              size="default" // Keep button size
               className={cn(
                 "bg-transparent border-white/80 hover:bg-white/10 active:bg-white/20",
                 textColor
@@ -63,8 +64,8 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
           </a>
         </div>
         
-        {/* Image Area - Fixed width on desktop */}
-        <div className="w-2/5 flex-shrink-0 h-auto aspect-[4/3]">
+        {/* Image Area - Adjusted width and aspect ratio for compactness */}
+        <div className="w-1/3 flex-shrink-0 h-auto aspect-[16/9]"> {/* Changed width to 1/3 and aspect to 16/9 */}
           <img 
             src={imageUrl || "/placeholder-banner.webp"} 
             alt={title} 
@@ -78,7 +79,7 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
         </div>
       </div>
       
-      {/* Mobile layout - Text only, aligned left, rectangular */}
+      {/* Mobile layout - Remains unchanged */}
       <div className="flex md:hidden flex-col">
         {/* Text Content Area - Takes full width */}
         <div className={cn(
@@ -114,3 +115,4 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
 };
 
 export default PromotionalBanner;
+

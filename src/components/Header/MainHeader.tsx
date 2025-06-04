@@ -72,8 +72,8 @@ const MainHeader = ({
             </a>
           </div>
 
-          {/* Center: Desktop Search Bar */}
-          <div className="flex-1 justify-center px-4 hidden md:flex max-w-xl">
+          {/* Center: Desktop Search Bar - Removed max-w-xl to allow flex-1 to expand more */}
+          <div className="flex-1 justify-center px-4 hidden md:flex">
              <DesktopSearchBar />
           </div>
 
@@ -113,3 +113,4 @@ const MainHeader = ({
 };
 
 export default MainHeader;
+

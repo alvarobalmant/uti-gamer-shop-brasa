@@ -45,19 +45,23 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
   };
 
   return (
+    // REMOVED sticky positioning from the parent header.
+    // MainHeader and DesktopNavigation now handle their own sticky behavior independently.
     <header className={cn(
-      "sticky top-0 z-50 w-full border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm"
+      "w-full border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm"
+      // REMOVED: "sticky top-0 z-50"
     )}>
+      {/* MainHeader handles its own sticky top-0 z-40 */}
       <MainHeader
         onCartOpen={onCartOpen}
         onAuthOpen={onAuthOpen}
         onMobileMenuToggle={toggleMobileMenu}
       />
 
-      {/* DesktopNavigation might also need adjustment if it handles category clicks directly */}
-      {/* Assuming DesktopNavigation uses a similar pattern or relies on MobileMenu logic for now */}
+      {/* DesktopNavigation handles its own sticky top-[72px] z-30 and animation */}
       <DesktopNavigation />
 
+      {/* MobileMenu remains unchanged */}
       <MobileMenu
         isOpen={mobileMenuOpen}
         onClose={closeMobileMenu}

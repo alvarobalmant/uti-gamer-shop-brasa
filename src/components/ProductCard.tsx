@@ -1,7 +1,6 @@
-
 import React from 'react';
 // import { useNavigate } from 'react-router-dom'; // No longer needed for navigation
-import { Product } from '@/hooks/useProducts';
+import { Product } from '@/hooks/useProducts'; // Updated import
 // import { useIsMobile } from '@/hooks/use-mobile'; // Keep if needed for other logic
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
@@ -13,7 +12,7 @@ import ProductCardProPrice from './ProductCard/ProductCardProPrice';
 import ProductCardStock from './ProductCard/ProductCardStock';
 import ProductCardActions from './ProductCard/ProductCardActions';
 
-export type { Product } from '@/hooks/useProducts';
+export type { Product } from '@/hooks/useProducts'; // Updated export
 
 interface ProductCardProps {
   product: Product;
@@ -78,4 +77,3 @@ const ProductCard = ({ product, onAddToCart, onCardClick }: ProductCardProps) =>
 };
 
 export default ProductCard;
-

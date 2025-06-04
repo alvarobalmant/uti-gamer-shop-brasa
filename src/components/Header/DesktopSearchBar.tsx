@@ -1,10 +1,10 @@
 
 import { useRef, useState } from 'react';
 import { Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import SearchSuggestions from '@/components/SearchSuggestions';
+import { cn } from '@/lib/utils'; // Import cn for conditional classes
 
 const DesktopSearchBar = () => {
   const navigate = useNavigate();
@@ -16,6 +16,9 @@ const DesktopSearchBar = () => {
     if (searchQuery.trim()) {
       navigate(`/busca?q=${encodeURIComponent(searchQuery.trim())}`);
       setShowSuggestions(false);
+      if (searchInputRef.current) {
+        searchInputRef.current.blur(); // Optionally blur input after search
+      }
     }
   };
 
@@ -32,9 +35,18 @@ const DesktopSearchBar = () => {
   };
 
   return (
-    <div className="hidden lg:block flex-1 max-w-2xl mx-8 relative">
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+    // Changed lg:block to md:flex as per MainHeader.tsx
+    // Removed max-w-2xl and mx-8 to allow full flex expansion
+    <div className="hidden md:flex flex-1 relative">
+      <div className="relative w-full"> {/* Ensure relative positioning spans full width */}
+        {/* Make the Search icon clickable */}
+        <Search
+          className={cn(
+            "absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5",
+            "cursor-pointer hover:text-gray-600 transition-colors" // Add cursor and hover effect
+          )}
+          onClick={handleSearchSubmit} // Trigger search on icon click
+        />
         <Input
           ref={searchInputRef}
           type="text"
@@ -46,17 +58,15 @@ const DesktopSearchBar = () => {
           }}
           onKeyPress={handleSearchKeyPress}
           onFocus={() => setShowSuggestions(searchQuery.length > 1)}
-          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-          className="input-professional pl-12 pr-12 h-12 text-base bg-gray-50 border-gray-200 focus:bg-white"
+          // Delay blur slightly to allow suggestion click
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 150)} 
+          // Adjusted padding: pl-12 for icon, pr-4 since button is removed
+          className="input-professional pl-12 pr-4 h-12 text-base bg-gray-50 border-gray-200 focus:bg-white w-full" 
         />
-        <Button
-          onClick={handleSearchSubmit}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-uti-red hover:bg-red-700 text-white px-4 py-2 rounded-md"
-        >
-          Buscar
-        </Button>
+        {/* Removed the Buscar Button */}
       </div>
       
+      {/* Suggestions remain the same */}
       <SearchSuggestions
         searchQuery={searchQuery}
         onSelectSuggestion={handleSuggestionSelect}
@@ -68,3 +78,4 @@ const DesktopSearchBar = () => {
 };
 
 export default DesktopSearchBar;
+

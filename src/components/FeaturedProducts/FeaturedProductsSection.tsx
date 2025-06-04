@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
-import { Product } from "@/hooks/useProducts";
+import { Product } from "@/hooks/useProducts"; // Updated import
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
 import ProductModal from "@/components/ProductModal"; // Import the modal component
@@ -16,6 +15,7 @@ interface FeaturedProductsSectionProps {
   onAddToCart: (product: Product) => void;
   title: string;
   viewAllLink?: string;
+  onCardClick?: (productId: string) => void; // Make this optional with default behavior
 }
 
 const FeaturedProductsSection = ({
@@ -24,12 +24,13 @@ const FeaturedProductsSection = ({
   onAddToCart,
   title,
   viewAllLink = "/categoria/inicio",
+  onCardClick,
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [animateProducts, setAnimateProducts] = useState(true);
 
-  // State for managing the product modal
+  // State for managing the product modal (only if onCardClick is not provided)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
@@ -72,8 +73,12 @@ const FeaturedProductsSection = ({
 
   // Function to handle opening the modal
   const handleProductCardClick = (productId: string) => {
-    setSelectedProductId(productId);
-    setIsModalOpen(true);
+    if (onCardClick) {
+      onCardClick(productId);
+    } else {
+      setSelectedProductId(productId);
+      setIsModalOpen(true);
+    }
   };
 
   useEffect(() => {
@@ -181,15 +186,16 @@ const FeaturedProductsSection = ({
         )}
       </div>
 
-      {/* Render the Product Modal */}
-      <ProductModal
-        productId={selectedProductId}
-        isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      />
+      {/* Render the Product Modal only if no external onCardClick handler is provided */}
+      {!onCardClick && (
+        <ProductModal
+          productId={selectedProductId}
+          isOpen={isModalOpen}
+          onOpenChange={setIsModalOpen}
+        />
+      )}
     </section>
   );
 };
 
 export default FeaturedProductsSection;
-

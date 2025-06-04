@@ -3,13 +3,12 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts, Product } from '@/hooks/useProducts'; // Updated import
 import ProductCard from '@/components/ProductCard';
-import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { searchProducts } from '@/utils/fuzzySearch';
-// Removed import { useScrollPosition } from '@/hooks/useScrollPosition';
+import ProductModal from '@/components/ProductModal';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -18,15 +17,21 @@ const SearchResults = () => {
   const { products, loading } = useProducts();
   const { user } = useAuth();
   const { addToCart } = useCart();
-  // Removed const { setupScrollRestoration } = useScrollPosition();
-
-  // Removed useEffect for setupScrollRestoration - This is handled globally by useScrollRestoration
+  
+  // State for managing the product modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   // Usar busca fuzzy para filtrar produtos
   const filteredProducts = searchProducts(products, query);
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);
+  };
+
+  const handleProductClick = (productId: string) => {
+    setSelectedProductId(productId);
+    setIsModalOpen(true);
   };
 
   return (
@@ -93,15 +98,22 @@ const SearchResults = () => {
                   key={product.id}
                   product={product}
                   onAddToCart={handleAddToCart}
+                  onCardClick={handleProductClick}
                 />
               ))}
             </div>
           )}
         </div>
       </section>
+
+      {/* Product Modal */}
+      <ProductModal
+        productId={selectedProductId}
+        isOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
   );
 };
 
 export default SearchResults;
-

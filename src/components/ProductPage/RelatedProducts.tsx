@@ -4,6 +4,7 @@ import { Product, useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 interface RelatedProductsProps {
   product: Product;
@@ -12,6 +13,7 @@ interface RelatedProductsProps {
 const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
   const { products: allProducts, loading } = useProducts();
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -40,6 +42,10 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
     addToCart(product);
   };
 
+  const handleProductClick = (productId: string) => {
+    navigate(`/produto/${productId}`);
+  };
+
   return (
     <div>
       <h2 className="text-xl lg:text-2xl font-semibold text-foreground mb-4">
@@ -62,6 +68,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
               key={relatedProduct.id} 
               product={relatedProduct} 
               onAddToCart={handleAddToCart}
+              onCardClick={handleProductClick}
             />
           ))}
         </div>

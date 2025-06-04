@@ -8,7 +8,7 @@ import ProductCard from '@/components/ProductCard';
 import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
-// Removed import { useScrollPosition } from '@/hooks/useScrollPosition';
+import ProductModal from '@/components/ProductModal';
 
 const CategoryPage = () => {
   const { category } = useParams();
@@ -16,9 +16,10 @@ const CategoryPage = () => {
   const { products, loading } = useProducts();
   const { user } = useAuth();
   const { addToCart } = useCart();
-  // Removed const { setupScrollRestoration } = useScrollPosition();
-
-  // Removed useEffect for setupScrollRestoration - This is handled globally by useScrollRestoration
+  
+  // State for managing the product modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   const getCategoryTitle = (cat: string) => {
     const categoryMap: { [key: string]: string } = {
@@ -51,6 +52,11 @@ const CategoryPage = () => {
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);
+  };
+
+  const handleProductClick = (productId: string) => {
+    setSelectedProductId(productId);
+    setIsModalOpen(true);
   };
 
   return (
@@ -117,15 +123,22 @@ const CategoryPage = () => {
                   key={product.id}
                   product={product}
                   onAddToCart={handleAddToCart}
+                  onCardClick={handleProductClick}
                 />
               ))}
             </div>
           )}
         </div>
       </section>
+
+      {/* Product Modal */}
+      <ProductModal
+        productId={selectedProductId}
+        isOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
   );
 };
 
 export default CategoryPage;
-
