@@ -46,9 +46,10 @@ const FeaturedProductsSection = ({
   const filterProductsByCategory = (category: string) => {
     if (category === "todos") return products;
     return products.filter((product) =>
-      product.tags?.some((tag) =>
-        tag.name.toLowerCase().includes(category.toLowerCase())
-      )
+      product.tags?.some((tag) => {
+        const tagName = typeof tag === 'string' ? tag : tag.name;
+        return tagName?.toLowerCase().includes(category.toLowerCase());
+      })
     );
   };
 
@@ -192,4 +193,3 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
-

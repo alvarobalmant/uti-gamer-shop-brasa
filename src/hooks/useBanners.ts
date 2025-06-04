@@ -5,13 +5,17 @@ import { useToast } from '@/components/ui/use-toast';
 
 export interface Banner {
   id: string;
-  title: string;
+  title?: string;
   subtitle?: string;
-  image_url: string;
+  image_url?: string;
   button_link?: string;
   button_text?: string;
+  button_image_url?: string;
   display_order: number;
+  position: number;
   is_active: boolean;
+  gradient: string;
+  background_type?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -52,9 +56,92 @@ export const useBanners = () => {
     }
   }, []);
 
+  const addBanner = useCallback(async (bannerData: Omit<Banner, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      const { data, error: insertError } = await supabase
+        .from('banners')
+        .insert([bannerData])
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      toast({ 
+        title: 'Sucesso', 
+        description: 'Banner adicionado com sucesso.' 
+      });
+
+      await fetchBanners();
+      return data;
+    } catch (err: any) {
+      console.error('Error adding banner:', err);
+      toast({ 
+        title: 'Erro', 
+        description: 'Falha ao adicionar banner.', 
+        variant: 'destructive' 
+      });
+      throw err;
+    }
+  }, [toast, fetchBanners]);
+
+  const updateBanner = useCallback(async (id: string, bannerData: Partial<Omit<Banner, 'id' | 'created_at' | 'updated_at'>>) => {
+    try {
+      const { data, error: updateError } = await supabase
+        .from('banners')
+        .update(bannerData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      toast({ 
+        title: 'Sucesso', 
+        description: 'Banner atualizado com sucesso.' 
+      });
+
+      await fetchBanners();
+      return data;
+    } catch (err: any) {
+      console.error('Error updating banner:', err);
+      toast({ 
+        title: 'Erro', 
+        description: 'Falha ao atualizar banner.', 
+        variant: 'destructive' 
+      });
+      throw err;
+    }
+  }, [toast, fetchBanners]);
+
+  const deleteBanner = useCallback(async (id: string) => {
+    try {
+      const { error: deleteError } = await supabase
+        .from('banners')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) throw deleteError;
+
+      toast({ 
+        title: 'Sucesso', 
+        description: 'Banner removido com sucesso.' 
+      });
+
+      await fetchBanners();
+    } catch (err: any) {
+      console.error('Error deleting banner:', err);
+      toast({ 
+        title: 'Erro', 
+        description: 'Falha ao remover banner.', 
+        variant: 'destructive' 
+      });
+      throw err;
+    }
+  }, [toast, fetchBanners]);
+
   useEffect(() => {
     fetchBanners();
   }, [fetchBanners]);
 
-  return { banners, loading, error, fetchBanners };
+  return { banners, loading, error, fetchBanners, addBanner, updateBanner, deleteBanner };
 };

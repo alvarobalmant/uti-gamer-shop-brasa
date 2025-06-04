@@ -140,6 +140,89 @@ export const useProductSections = () => {
     }
   }, [toast]);
 
+  const createSection = useCallback(async (sectionData: Omit<ProductSection, 'id' | 'created_at' | 'updated_at' | 'items'>) => {
+    try {
+      const { data, error: insertError } = await supabase
+        .from('product_sections')
+        .insert([sectionData])
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      toast({ 
+        title: 'Sucesso', 
+        description: 'Seção criada com sucesso.' 
+      });
+
+      await fetchProductSections();
+      return data;
+    } catch (err: any) {
+      console.error('Error creating section:', err);
+      toast({ 
+        title: 'Erro', 
+        description: 'Falha ao criar seção.', 
+        variant: 'destructive' 
+      });
+      throw err;
+    }
+  }, [toast, fetchProductSections]);
+
+  const updateSection = useCallback(async (id: string, sectionData: Partial<Omit<ProductSection, 'id' | 'created_at' | 'updated_at' | 'items'>>) => {
+    try {
+      const { data, error: updateError } = await supabase
+        .from('product_sections')
+        .update(sectionData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      toast({ 
+        title: 'Sucesso', 
+        description: 'Seção atualizada com sucesso.' 
+      });
+
+      await fetchProductSections();
+      return data;
+    } catch (err: any) {
+      console.error('Error updating section:', err);
+      toast({ 
+        title: 'Erro', 
+        description: 'Falha ao atualizar seção.', 
+        variant: 'destructive' 
+      });
+      throw err;
+    }
+  }, [toast, fetchProductSections]);
+
+  const deleteSection = useCallback(async (id: string) => {
+    try {
+      const { error: deleteError } = await supabase
+        .from('product_sections')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) throw deleteError;
+
+      toast({ 
+        title: 'Sucesso', 
+        description: 'Seção removida com sucesso.' 
+      });
+
+      await fetchProductSections();
+    } catch (err: any) {
+      console.error('Error deleting section:', err);
+      toast({ 
+        title: 'Erro', 
+        description: 'Falha ao remover seção.', 
+        variant: 'destructive' 
+      });
+      throw err;
+    }
+  }, [toast, fetchProductSections]);
+
   // Initial fetch with forced delay
   useEffect(() => {
     console.log("[useProductSections] Iniciando efeito de carregamento inicial");
@@ -152,5 +235,15 @@ export const useProductSections = () => {
   }, [fetchProductSections]);
 
   // Retorna 'sections' em vez de 'productSections'
-  return { sections, loading, error, fetchProductSections, fetchProductSectionById }; 
+  return { 
+    sections, 
+    loading, 
+    error, 
+    fetchProductSections, 
+    fetchProductSectionById,
+    createSection,
+    updateSection,
+    deleteSection,
+    fetchSections: fetchProductSections // Alias for backward compatibility
+  }; 
 };
