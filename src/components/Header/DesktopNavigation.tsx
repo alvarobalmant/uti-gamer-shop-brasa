@@ -26,7 +26,7 @@ const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
     <nav
       className={cn(
         'hidden lg:block bg-background border-t border-border/60',
-        'sticky top-[72px] z-40', // Posicionado abaixo do MainHeader (altura 72px)
+        'fixed top-[72px] left-0 right-0 z-40', // Fixo ao invés de sticky, posicionado abaixo do MainHeader
         'transition-transform duration-300 ease-in-out',
         {
           '-translate-y-full': isHidden, // Oculta completamente quando rola para baixo

@@ -32,7 +32,7 @@ const MainHeader = ({
     <>
       <div className={cn(
         "w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border/80 shadow-sm",
-        "sticky top-0 z-50", // Fixo permanentemente no topo com z-index alto
+        "fixed top-0 left-0 right-0 z-50", // Mudança aqui: fixed ao invés de sticky
         className
       )}>
         <div className="container flex h-[72px] items-center justify-between px-4 gap-2">
