@@ -6,11 +6,11 @@ import { BannerManager } from './BannerManager';
 import { QuickLinkManager } from './QuickLinkManager';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
-import { ProductSectionManager } from './ProductSectionManager';
-import { UserSubscriptionManager } from './UserSubscriptionManager';
-import { PageManager } from './PageManager';
+import ProductSectionManager from './ProductSectionManager';
+import UserSubscriptionManager from './UserSubscriptionManager';
+import PageManager from './PageManager';
 import { SpecialSectionManager } from './SpecialSectionManager';
-import { PageLayoutManager } from './PageLayoutManager';
+import PageLayoutManager from './PageLayoutManager';
 import AdminLayout from './AdminLayout';
 
 export const AdminPanel = () => {
