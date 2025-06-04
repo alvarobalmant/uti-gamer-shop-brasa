@@ -1,33 +1,28 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
-// Interface atualizada para incluir campos usados pelo BannerManager
 export interface Banner {
   id: string;
-  title?: string; // Tornar opcional, pois pode não existir
+  title?: string;
   subtitle?: string;
-  image_url: string; // Imagem principal é obrigatória
+  image_url: string;
   link_url?: string;
   display_order: number;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
-  // Campos adicionais do BannerManager
   button_text?: string;
   button_link?: string;
   button_image_url?: string;
-  gradient?: string; // Assumindo que é uma string de classe Tailwind
-  background_type?: 'gradient' | 'image-only'; // Tipo de fundo
+  gradient?: string;
+  background_type?: 'gradient' | 'image-only';
 }
 
-// Tipo para dados de entrada ao criar/atualizar banner
-// Omitimos id, created_at, updated_at. Incluímos todos os outros campos.
 export type BannerInput = Omit<Banner, 'id' | 'created_at' | 'updated_at'>;
 
-// Mock data for offline mode (mantido para fallback)
 const MOCK_BANNERS: Banner[] = [
-  // ... (mock data mantido como estava) ...
   {
     id: '1',
     title: 'PlayStation 5 em Estoque!',
@@ -54,16 +49,14 @@ const MOCK_BANNERS: Banner[] = [
     gradient: 'from-green-600 via-lime-500 to-yellow-400',
     background_type: 'gradient',
   },
-   // ... (restante dos mocks podem ser adicionados se necessário) ...
 ];
 
 export const useBanners = () => {
-  const [banners, setBanners] = useState<Banner[]>([]); // Iniciar vazio
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Fetch all banners (for admin panel and initial load)
   const fetchBanners = useCallback(async (onlyActive = false) => {
     console.log(`[useBanners] Iniciando busca de banners. OnlyActive: ${onlyActive}`);
     setLoading(true);
@@ -84,7 +77,6 @@ export const useBanners = () => {
 
       if (fetchError) throw fetchError;
 
-      // Garantir que display_order seja um número
       const processedData = (data || []).map(b => ({
         ...b,
         display_order: typeof b.display_order === 'number' ? b.display_order : parseInt(b.display_order || '1', 10) || 1,
@@ -96,7 +88,7 @@ export const useBanners = () => {
     } catch (err: any) {
       console.error('Error fetching banners:', err);
       setError('Falha ao carregar banners.');
-      setBanners(MOCK_BANNERS); // Usar mocks como fallback
+      setBanners(MOCK_BANNERS);
       toast({ 
         title: 'Aviso',
         description: 'Usando banners locais devido a um problema de conexão.',
@@ -108,13 +100,11 @@ export const useBanners = () => {
     }
   }, [toast]);
 
-  // Add Banner function
   const addBanner = useCallback(async (bannerData: BannerInput) => {
     console.log('[useBanners] Adicionando novo banner:', bannerData);
     setLoading(true);
     setError(null);
     try {
-      // Remover campos potencialmente nulos/undefined que não devem ir vazios
       const payload: Partial<BannerInput> = { ...bannerData };
       if (!payload.subtitle) delete payload.subtitle;
       if (!payload.link_url) delete payload.link_url;
@@ -122,18 +112,18 @@ export const useBanners = () => {
       if (!payload.button_link) delete payload.button_link;
       if (!payload.button_image_url) delete payload.button_image_url;
       if (!payload.gradient) delete payload.gradient;
-      if (!payload.background_type) payload.background_type = 'gradient'; // Default
+      if (!payload.background_type) payload.background_type = 'gradient';
 
       const { data, error: insertError } = await supabase
         .from('banners')
-        .insert(payload as any) // Usar 'as any' pode ser necessário se o tipo Supabase for estrito
+        .insert(payload as any)
         .select()
         .single();
 
       if (insertError) throw insertError;
 
       console.log('[useBanners] Banner adicionado com sucesso:', data);
-      await fetchBanners(); // Re-fetch all banners
+      await fetchBanners();
       toast({ title: 'Sucesso', description: 'Banner adicionado com sucesso.' });
       return data;
 
@@ -147,16 +137,12 @@ export const useBanners = () => {
     }
   }, [toast, fetchBanners]);
 
-  // Update Banner function
   const updateBanner = useCallback(async (id: string, bannerData: Partial<BannerInput>) => {
     console.log(`[useBanners] Atualizando banner ID: ${id}`, bannerData);
     setLoading(true);
     setError(null);
     try {
-      // Remover campos que não devem ser enviados se vazios/undefined
       const payload: Partial<BannerInput> = { ...bannerData };
-      // Não remover campos que podem ser intencionalmente definidos como vazios (ex: subtitle)
-      // Apenas garantir que tipos corretos sejam enviados
 
       const { data, error: updateError } = await supabase
         .from('banners')
@@ -168,7 +154,7 @@ export const useBanners = () => {
       if (updateError) throw updateError;
 
       console.log('[useBanners] Banner atualizado com sucesso:', data);
-      await fetchBanners(); // Re-fetch all banners
+      await fetchBanners();
       toast({ title: 'Sucesso', description: 'Banner atualizado com sucesso.' });
       return data;
 
@@ -182,7 +168,6 @@ export const useBanners = () => {
     }
   }, [toast, fetchBanners]);
 
-  // Delete Banner function
   const deleteBanner = useCallback(async (id: string) => {
     console.log(`[useBanners] Deletando banner ID: ${id}`);
     setLoading(true);
@@ -196,7 +181,7 @@ export const useBanners = () => {
       if (deleteError) throw deleteError;
 
       console.log('[useBanners] Banner deletado com sucesso.');
-      await fetchBanners(); // Re-fetch all banners
+      await fetchBanners();
       toast({ title: 'Sucesso', description: 'Banner excluído com sucesso.' });
       return true;
 
@@ -210,12 +195,10 @@ export const useBanners = () => {
     }
   }, [toast, fetchBanners]);
 
-  // Initial fetch (fetch all for potential admin use)
   useEffect(() => {
     console.log('[useBanners] useEffect inicial: Chamando fetchBanners(false)');
-    fetchBanners(false); // Fetch all initially
+    fetchBanners(false);
   }, [fetchBanners]);
 
-  // Return all functions including CRUD
   return { banners, loading, error, fetchBanners, addBanner, updateBanner, deleteBanner };
 };
