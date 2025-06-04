@@ -79,6 +79,12 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
     return filtered;
   };
 
+  // Wrapper function to adapt addToCart signature for FeaturedProductsSection
+  const handleAddToCart = (product: Product, quantity?: number) => {
+    // Call the cart's addToCart with default size and color
+    addToCart(product);
+  };
+
   // Abrir modal de produto
   const handleProductCardClick = (productId: string) => {
     setSelectedProductId(productId);
@@ -111,7 +117,7 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
             key={section.id}
             products={sectionProducts}
             loading={productsLoading}
-            onAddToCart={addToCart}
+            onAddToCart={handleAddToCart}
             title={section.title || ''}
             onCardClick={handleProductCardClick}
           />
