@@ -10,6 +10,12 @@ export interface Product {
   title?: string;
   description?: string;
   price: number;
+  pro_price?: number;
+  list_price?: number;
+  new_price?: number;
+  digital_price?: number;
+  discount_price?: number;
+  pro_discount_percent?: number;
   image?: string;
   images?: string[];
   additional_images?: string[];
@@ -63,6 +69,12 @@ export const useProducts = () => {
           title: product.title || product.name || '',
           description: product.description,
           price: product.price || 0,
+          pro_price: product.pro_price,
+          list_price: product.list_price,
+          new_price: product.new_price,
+          digital_price: product.digital_price,
+          discount_price: product.discount_price,
+          pro_discount_percent: product.pro_discount_percent,
           image: product.image,
           images: product.additional_images || [product.image].filter(Boolean),
           additional_images: product.additional_images || [],
@@ -70,7 +82,7 @@ export const useProducts = () => {
           colors: product.colors || [],
           stock: product.stock || 0,
           category: product.category || '',
-          condition: product.condition as 'new' | 'used' | 'refurbished' || 'new',
+          condition: (product.condition as 'new' | 'used' | 'refurbished') || 'new',
           tags: product.product_tags?.map((pt: any) => pt.tags) || [],
           created_at: product.created_at,
           updated_at: product.updated_at,
