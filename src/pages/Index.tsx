@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { useProducts, Product } from '@/hooks/useProducts'; // Import Product type
+import { useProducts, Product } from '@/hooks/useProducts'; // Updated import
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { AuthModal } from '@/components/Auth/AuthModal';
@@ -59,7 +58,7 @@ const Index = () => {
     }
   }, [products.length, productsLoading, retryCount, refetchProducts]);
 
-  // TODO: Fetch actual banner data
+  // Placeholder for fetching banner data (replace with actual logic)
   useEffect(() => {
     // TODO: Fetch actual banner data
   }, []);

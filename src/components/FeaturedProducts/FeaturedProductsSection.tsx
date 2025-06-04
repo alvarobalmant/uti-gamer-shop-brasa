@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
-import { Product } from "@/hooks/useProducts";
+import { Product } from "@/hooks/useProducts"; // Updated import
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
 import ProductModal from "@/components/ProductModal"; // Import the modal component
