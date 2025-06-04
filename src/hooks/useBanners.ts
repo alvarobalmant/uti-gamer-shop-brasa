@@ -7,17 +7,16 @@ export interface Banner {
   id: string;
   title?: string;
   subtitle?: string;
-  image_url: string;
-  link_url?: string;
+  image_url?: string;
+  button_text?: string;
+  button_link?: string;
+  button_image_url?: string;
+  gradient: string;
+  background_type: 'gradient' | 'image-only';
   display_order: number;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
-  button_text?: string;
-  button_link?: string;
-  button_image_url?: string;
-  gradient?: string;
-  background_type?: 'gradient' | 'image-only';
 }
 
 export type BannerInput = Omit<Banner, 'id' | 'created_at' | 'updated_at'>;
@@ -28,26 +27,24 @@ const MOCK_BANNERS: Banner[] = [
     title: 'PlayStation 5 em Estoque!',
     subtitle: 'Garanta já o seu console da nova geração com frete grátis',
     image_url: '/lovable-uploads/banner-ps5.png',
-    link_url: '/categoria/consoles/playstation',
-    display_order: 1,
-    is_active: true,
     button_text: 'Comprar Agora',
     button_link: '/produto/ps5',
     gradient: 'from-blue-600 via-purple-600 to-red-600',
     background_type: 'gradient',
+    display_order: 1,
+    is_active: true,
   },
   {
     id: '2',
     title: 'Promoção de Jogos Xbox',
     subtitle: 'Até 40% de desconto em jogos selecionados - Oferta por tempo limitado!',
     image_url: '/lovable-uploads/banner-xbox-games.png',
-    link_url: '/categoria/jogos/xbox',
-    display_order: 2,
-    is_active: true,
     button_text: 'Ver Ofertas',
     button_link: '/categoria/jogos/xbox?promocao=true',
     gradient: 'from-green-600 via-lime-500 to-yellow-400',
     background_type: 'gradient',
+    display_order: 2,
+    is_active: true,
   },
 ];
 
@@ -80,7 +77,9 @@ export const useBanners = () => {
       const processedData = (data || []).map(b => ({
         ...b,
         display_order: typeof b.display_order === 'number' ? b.display_order : parseInt(b.display_order || '1', 10) || 1,
-      }));
+        background_type: (b.background_type === 'gradient' || b.background_type === 'image-only') ? b.background_type : 'gradient',
+        gradient: b.gradient || 'from-red-600 via-red-600 to-red-700',
+      })) as Banner[];
 
       setBanners(processedData);
       console.log('[useBanners] Banners definidos no estado:', processedData.length);
@@ -107,11 +106,11 @@ export const useBanners = () => {
     try {
       const payload: Partial<BannerInput> = { ...bannerData };
       if (!payload.subtitle) delete payload.subtitle;
-      if (!payload.link_url) delete payload.link_url;
+      if (!payload.image_url) delete payload.image_url;
       if (!payload.button_text) delete payload.button_text;
       if (!payload.button_link) delete payload.button_link;
       if (!payload.button_image_url) delete payload.button_image_url;
-      if (!payload.gradient) delete payload.gradient;
+      if (!payload.gradient) payload.gradient = 'from-red-600 via-red-600 to-red-700';
       if (!payload.background_type) payload.background_type = 'gradient';
 
       const { data, error: insertError } = await supabase

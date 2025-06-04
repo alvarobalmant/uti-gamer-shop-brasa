@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useBanners, Banner } from '@/hooks/useBanners';
 import { Button } from '@/components/ui/button';
@@ -34,8 +33,8 @@ export const BannerManager = () => {
     image_url: '',
     button_image_url: '',
     gradient: 'from-red-600 via-red-600 to-red-700',
-    background_type: 'gradient',
-    position: 1,
+    background_type: 'gradient' as 'gradient' | 'image-only',
+    display_order: 1,
     is_active: true,
   });
 
@@ -49,7 +48,7 @@ export const BannerManager = () => {
       button_image_url: '',
       gradient: 'from-red-600 via-red-600 to-red-700',
       background_type: 'gradient',
-      position: (banners.length + 1),
+      display_order: (banners.length + 1),
       is_active: true,
     });
     setEditingBanner(null);
@@ -65,8 +64,8 @@ export const BannerManager = () => {
       image_url: banner.image_url || '',
       button_image_url: banner.button_image_url || '',
       gradient: banner.gradient,
-      background_type: (banner as any).background_type || 'gradient',
-      position: banner.position,
+      background_type: banner.background_type || 'gradient',
+      display_order: banner.display_order,
       is_active: banner.is_active,
     });
     setIsDialogOpen(true);
@@ -108,8 +107,8 @@ export const BannerManager = () => {
   };
 
   const backgroundOptions = [
-    { value: 'gradient', label: 'Gradiente' },
-    { value: 'image-only', label: 'Somente Imagem' },
+    { value: 'gradient' as const, label: 'Gradiente' },
+    { value: 'image-only' as const, label: 'Somente Imagem' },
   ];
 
   const gradientOptions = [
@@ -181,14 +180,14 @@ export const BannerManager = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="position">Posição</Label>
+                    <Label htmlFor="display_order">Posição</Label>
                     <Input
-                      id="position"
+                      id="display_order"
                       type="number"
                       min="1"
                       max="5"
-                      value={formData.position}
-                      onChange={(e) => setFormData(prev => ({ ...prev, position: parseInt(e.target.value) }))}
+                      value={formData.display_order}
+                      onChange={(e) => setFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) }))}
                     />
                   </div>
                 </div>
@@ -317,11 +316,11 @@ export const BannerManager = () => {
               <Card key={banner.id} className="border-2 border-gray-200">
                 <CardContent className="p-4">
                   <div className={`relative text-white p-4 rounded-lg mb-4 ${
-                    (banner as any).background_type === 'image-only' 
+                    banner.background_type === 'image-only' 
                       ? 'bg-gray-800' 
                       : `bg-gradient-to-br ${banner.gradient}`
                   }`}>
-                    {banner.image_url && (banner as any).background_type === 'image-only' && (
+                    {banner.image_url && banner.background_type === 'image-only' && (
                       <div 
                         className="absolute inset-0 bg-cover bg-center rounded-lg"
                         style={{ backgroundImage: `url(${banner.image_url})` }}
@@ -348,8 +347,8 @@ export const BannerManager = () => {
                   </div>
                   
                   <div className="space-y-2 text-sm">
-                    <div><strong>Posição:</strong> {banner.position}</div>
-                    <div><strong>Tipo:</strong> {(banner as any).background_type === 'image-only' ? 'Somente Imagem' : 'Gradiente'}</div>
+                    <div><strong>Posição:</strong> {banner.display_order}</div>
+                    <div><strong>Tipo:</strong> {banner.background_type === 'image-only' ? 'Somente Imagem' : 'Gradiente'}</div>
                     {banner.button_link && <div><strong>Link:</strong> {banner.button_link}</div>}
                     {banner.image_url && <div><strong>Imagem:</strong> Configurada</div>}
                     <Badge className={banner.is_active ? "bg-green-600" : "bg-gray-600"}>
