@@ -6,10 +6,10 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "0.0.0.0", // Changed to 0.0.0.0 to listen on all interfaces
-    port: 8080,
-    // Add the allowed host for external access
-    allowedHosts: ["8080-irlxbd46sr91dkznbemlj-b10e4af0.manusvm.computer"],
+    host: "0.0.0.0", // Listen on all interfaces
+    port: 8082, // Use port 8082 consistent with exposure
+    // Add the correct allowed host for external access
+    allowedHosts: ["8082-ine9jezr5qaemao0adl2j-e2caa596.manusvm.computer"],
   },
   plugins: [
     react(),

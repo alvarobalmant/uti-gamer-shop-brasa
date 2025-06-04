@@ -235,6 +235,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
 
         {/* Related Products Section */}
         {renderRelatedProducts()}
+
+        {/* Add padding at the bottom to ensure related products are fully scrollable */}
+        <div className="pb-16"></div> {/* Added padding bottom */}
       </div>
     );
   };
