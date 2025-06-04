@@ -1,5 +1,6 @@
-import { Toaster } from "./components/ui/toaster"; // Corrigido para caminho relativo
-import { Toaster as Sonner } from "./components/ui/sonner"; // Corrigido para caminho relativo
+
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -8,15 +9,10 @@ import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
 import SearchResults from "./pages/SearchResults";
 import CategoryPage from "./pages/CategoryPage";
+// import ProductPage from "./pages/ProductPage"; // Removed import
 import NotFound from "./pages/NotFound";
 import UTIPro from "./pages/UTIPro";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
-import HookTest from "./pages/HookTest"; // Importar a página de teste
-
-// Importações para as novas páginas de categoria específicas
-import XboxPage from "./pages/platforms/XboxPage";
-import PlayStationPage from "./pages/platforms/PlayStationPage";
-import NintendoPage from "./pages/platforms/NintendoPage";
 
 // Import the main Admin Panel component which now includes all tabs
 import { AdminPanel } from "@/components/Admin/AdminPanel"; 
@@ -53,16 +49,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/busca" element={<SearchResults />} />
                 <Route path="/categoria/:category" element={<CategoryPage />} />
-                
-                {/* Novas rotas para páginas de plataforma específicas */}
-                <Route path="/xbox" element={<XboxPage />} />
-                <Route path="/playstation" element={<PlayStationPage />} />
-                <Route path="/nintendo" element={<NintendoPage />} />
-                
+                {/* <Route path="/produto/:id" element={<ProductPage />} /> // Removed route */}
                 <Route path="/uti-pro" element={<UTIPro />} />
-                
-                {/* Rota de teste para hooks */}
-                <Route path="/test-hooks" element={<HookTest />} />
 
                 {/* Admin Route - Protected */}
                 <Route 
@@ -86,3 +74,4 @@ const App = () => (
 );
 
 export default App;
+
