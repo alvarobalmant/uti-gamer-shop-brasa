@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useBanners, Banner } from '@/hooks/useBanners';
 import { Button } from '@/components/ui/button';
@@ -47,7 +48,7 @@ export const BannerManager = () => {
       image_url: '',
       button_image_url: '',
       gradient: 'from-red-600 via-red-600 to-red-700',
-      background_type: 'gradient',
+      background_type: 'gradient' as 'gradient' | 'image-only',
       display_order: (banners.length + 1),
       is_active: true,
     });
@@ -216,7 +217,7 @@ export const BannerManager = () => {
                     <select
                       id="background_type"
                       value={formData.background_type}
-                      onChange={(e) => setFormData(prev => ({ ...prev, background_type: e.target.value }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, background_type: e.target.value as 'gradient' | 'image-only' }))}
                       className="w-full p-2 border border-gray-300 rounded-lg"
                     >
                       {backgroundOptions.map((option) => (
