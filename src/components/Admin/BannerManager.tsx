@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useBanners, Banner } from '@/hooks/useBanners';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,6 @@ export const BannerManager = () => {
     gradient: 'from-red-600 via-red-600 to-red-700',
     background_type: 'gradient',
     position: 1,
-    display_order: 1,
     is_active: true,
   });
 
@@ -50,7 +50,6 @@ export const BannerManager = () => {
       gradient: 'from-red-600 via-red-600 to-red-700',
       background_type: 'gradient',
       position: (banners.length + 1),
-      display_order: (banners.length + 1),
       is_active: true,
     });
     setEditingBanner(null);
@@ -68,7 +67,6 @@ export const BannerManager = () => {
       gradient: banner.gradient,
       background_type: (banner as any).background_type || 'gradient',
       position: banner.position,
-      display_order: banner.display_order,
       is_active: banner.is_active,
     });
     setIsDialogOpen(true);

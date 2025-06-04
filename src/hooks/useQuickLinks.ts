@@ -24,25 +24,17 @@ export const useQuickLinks = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('[useQuickLinks] Fetching quick links from Supabase...');
-      
       const { data, error: fetchError } = await supabase
         .from('quick_links')
         .select('*')
         .eq('is_active', true)
         .order('position', { ascending: true });
 
-      console.log('[useQuickLinks] Supabase response:', { data, error: fetchError });
-
-      if (fetchError) {
-        console.error('[useQuickLinks] Supabase error:', fetchError);
-        throw fetchError;
-      }
+      if (fetchError) throw fetchError;
 
       setQuickLinks(data || []);
-      console.log('[useQuickLinks] Quick links loaded successfully:', data?.length || 0);
     } catch (err: any) {
-      console.error('[useQuickLinks] Error fetching quick links:', err);
+      console.error('Error fetching quick links:', err);
       setError('Falha ao carregar links rápidos.');
       setQuickLinks([]);
     } finally {

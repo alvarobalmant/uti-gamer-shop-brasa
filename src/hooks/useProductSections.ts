@@ -12,12 +12,6 @@ export interface ProductSectionItem {
   created_at?: string; // Adicionado para consistência
 }
 
-// Tipo para input de seção de produto (sem id, timestamps e items)
-export type ProductSectionInput = Omit<ProductSection, 'id' | 'created_at' | 'updated_at' | 'items'>;
-
-// Tipo para tipos de item
-export type SectionItemType = 'product' | 'tag';
-
 // Interface atualizada para ProductSection incluindo os itens
 export interface ProductSection {
   id: string;
@@ -143,7 +137,6 @@ export const useProductSections = () => {
     }
   }, [toast]);
 
-<<<<<<< HEAD
   // --- Funções CRUD Adicionadas --- 
 
   const createSection = useCallback(async (sectionData: ProductSectionInput) => {
@@ -157,18 +150,10 @@ export const useProductSections = () => {
       const { data: insertedSection, error: insertError } = await supabase
         .from('product_sections')
         .insert(sectionPayload as any)
-=======
-  const createSection = useCallback(async (sectionData: ProductSectionInput) => {
-    try {
-      const { data, error: insertError } = await supabase
-        .from('product_sections')
-        .insert([sectionData])
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
         .select()
         .single();
 
       if (insertError) throw insertError;
-<<<<<<< HEAD
       if (!insertedSection) throw new Error('Falha ao retornar dados da seção inserida.');
 
       console.log('[useProductSections] Seção base inserida:', insertedSection.id);
@@ -211,38 +196,11 @@ export const useProductSections = () => {
       const { data: updatedSection, error: updateError } = await supabase
         .from('product_sections')
         .update(sectionPayload as any)
-=======
-
-      toast({ 
-        title: 'Sucesso', 
-        description: 'Seção criada com sucesso.' 
-      });
-
-      await fetchProductSections();
-      return data;
-    } catch (err: any) {
-      console.error('Error creating section:', err);
-      toast({ 
-        title: 'Erro', 
-        description: 'Falha ao criar seção.', 
-        variant: 'destructive' 
-      });
-      throw err;
-    }
-  }, [toast, fetchProductSections]);
-
-  const updateSection = useCallback(async (id: string, sectionData: Partial<ProductSectionInput>) => {
-    try {
-      const { data, error: updateError } = await supabase
-        .from('product_sections')
-        .update(sectionData)
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
         .eq('id', id)
         .select()
         .single();
 
       if (updateError) throw updateError;
-<<<<<<< HEAD
       if (!updatedSection) throw new Error('Falha ao retornar dados da seção atualizada.');
 
       console.log('[useProductSections] Seção base atualizada:', updatedSection.id);
@@ -278,29 +236,10 @@ export const useProductSections = () => {
       return null;
     } finally {
       setLoading(false);
-=======
-
-      toast({ 
-        title: 'Sucesso', 
-        description: 'Seção atualizada com sucesso.' 
-      });
-
-      await fetchProductSections();
-      return data;
-    } catch (err: any) {
-      console.error('Error updating section:', err);
-      toast({ 
-        title: 'Erro', 
-        description: 'Falha ao atualizar seção.', 
-        variant: 'destructive' 
-      });
-      throw err;
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
     }
   }, [toast, fetchProductSections]);
 
   const deleteSection = useCallback(async (id: string) => {
-<<<<<<< HEAD
     console.log(`[useProductSections] Deletando seção ID: ${id}`);
     setLoading(true);
     setError(null);
@@ -310,9 +249,6 @@ export const useProductSections = () => {
       if (deleteItemsError) console.warn('[useProductSections] Erro ao deletar itens da seção:', deleteItemsError);
 
       // 2. Deletar a seção principal
-=======
-    try {
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
       const { error: deleteError } = await supabase
         .from('product_sections')
         .delete()
@@ -320,7 +256,6 @@ export const useProductSections = () => {
 
       if (deleteError) throw deleteError;
 
-<<<<<<< HEAD
       console.log('[useProductSections] Seção deletada com sucesso.');
       await fetchProductSections();
       toast({ title: 'Sucesso', description: 'Seção de produtos excluída com sucesso.' });
@@ -338,31 +273,10 @@ export const useProductSections = () => {
 
   // --- Fim Funções CRUD --- 
 
-=======
-      toast({ 
-        title: 'Sucesso', 
-        description: 'Seção removida com sucesso.' 
-      });
-
-      await fetchProductSections();
-    } catch (err: any) {
-      console.error('Error deleting section:', err);
-      toast({ 
-        title: 'Erro', 
-        description: 'Falha ao remover seção.', 
-        variant: 'destructive' 
-      });
-      throw err;
-    }
-  }, [toast, fetchProductSections]);
-
-  // Initial fetch with forced delay
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
   useEffect(() => {
     fetchProductSections();
   }, [fetchProductSections]);
 
-<<<<<<< HEAD
   // Retornar todas as funções, incluindo CRUD
   return {
     sections,
@@ -374,18 +288,4 @@ export const useProductSections = () => {
     updateSection,
     deleteSection
   };
-=======
-  // Retorna 'sections' em vez de 'productSections'
-  return { 
-    sections, 
-    loading, 
-    error, 
-    fetchProductSections, 
-    fetchProductSectionById,
-    createSection,
-    updateSection,
-    deleteSection,
-    fetchSections: fetchProductSections // Alias for backward compatibility
-  }; 
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
 };

@@ -16,7 +16,6 @@ export type Database = {
           button_link: string
           button_text: string
           created_at: string
-          display_order: number | null
           gradient: string
           id: string
           image_url: string | null
@@ -32,7 +31,6 @@ export type Database = {
           button_link: string
           button_text: string
           created_at?: string
-          display_order?: number | null
           gradient?: string
           id?: string
           image_url?: string | null
@@ -48,7 +46,6 @@ export type Database = {
           button_link?: string
           button_text?: string
           created_at?: string
-          display_order?: number | null
           gradient?: string
           id?: string
           image_url?: string | null

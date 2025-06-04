@@ -1,9 +1,7 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
-<<<<<<< HEAD
 // Interface para Tags (assumindo que existe uma tabela 'tags' com id e name)
 export interface ProductTag {
   id: string; // ou number, dependendo do schema
@@ -20,37 +18,13 @@ export interface Product {
   images: string[]; // Array de URLs de imagem
   category: string; // ID ou nome da categoria
   platform?: string; // ID ou nome da plataforma
-=======
-// Define tag interface
-export interface ProductTag {
-  id: string;
-  name: string;
-}
-
-// Interface restaurada para incluir campos usados no frontend/admin
-export interface Product {
-  id: string;
-  title: string;
-  name?: string;
-  description: string;
-  price: number;
-  discount_price?: number;
-  images: string[];
-  image?: string;
-  category: string;
-  platform?: string;
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
   condition?: 'new' | 'used' | 'refurbished';
   stock: number;
   is_featured?: boolean;
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
-<<<<<<< HEAD
   tags?: ProductTag[]; // Usar a interface ProductTag
-=======
-  tags?: ProductTag[]; // Changed to ProductTag[]
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
   rating?: number;
   // Campos relacionados a UTI PRO (precisam existir na tabela 'products')
   pro_discount_percent?: number; // Percentual de desconto PRO
@@ -96,16 +70,9 @@ export const useProducts = () => {
     setLoading(true);
     setError(null);
     try {
-<<<<<<< HEAD
       // Incluir busca de tags relacionadas
       let query = supabase.from('products').select('*'); // TESTE: Simplificado para depuração
       console.log('[useProducts] Query base criada: supabase.from("products").select("*, tags(*)")');
-=======
-      console.log(`[useProducts] Iniciando busca de produtos com opções: ${JSON.stringify(options)}`);
-      
-      let query = supabase.from('products').select('*');
-      console.log('[useProducts] Query base criada: supabase.from("products").select("*")');
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
 
       // Aplicar filtros
       if (options?.category) query = query.eq('category', options.category);
@@ -127,40 +94,24 @@ export const useProducts = () => {
       console.log('[useProducts] Query Supabase concluída.');
       console.log('[useProducts] Resposta RAW da busca de produtos:', { data, fetchError, count: data?.length || 0 });
 
-<<<<<<< HEAD
       if (fetchError) throw fetchError;
-=======
-      if (fetchError) {
-        console.error('[useProducts] Erro DETALHADO retornado pelo Supabase:', fetchError);
-        throw fetchError;
-      }
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
 
       if (data && data.length > 0) {
         console.log(`[useProducts] ${data.length} produtos recebidos. Mapeando...`);
         const mappedData = data.map(p => {
           const images = Array.isArray(p.images) ? p.images : (p.images ? [p.images] : []);
-<<<<<<< HEAD
           // Calcular pro_price se necessário e pro_discount_percent existir
           let calculatedProPrice = p.pro_price;
           if (p.pro_discount_percent && typeof p.price === 'number') {
             calculatedProPrice = p.price * (1 - p.pro_discount_percent / 100);
           }
 
-=======
-          // Convert string tags to proper tag objects if needed
-          const tags = Array.isArray(p.tags) ? p.tags.map((tag: any) => 
-            typeof tag === 'string' ? { id: tag, name: tag } : tag
-          ) : [];
-          
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
           return {
             ...p,
             title: p.title || p.name || 'Produto sem título',
             name: p.title || p.name || 'Produto sem título', // Manter name sincronizado com title
             image: images[0] || '', // Usar a primeira imagem como 'image' principal
             images: images,
-            tags: tags,
             description: p.description || '',
             price: typeof p.price === 'number' ? p.price : 0,
             stock: typeof p.stock === 'number' ? p.stock : 0,
@@ -192,18 +143,6 @@ export const useProducts = () => {
 
     } catch (err: any) {
       console.error('[useProducts] Erro GERAL no bloco catch ao buscar produtos:', err);
-<<<<<<< HEAD
-=======
-      if (err && err.message) {
-        console.error('[useProducts] Mensagem de erro:', err.message);
-      }
-      if (err && err.details) {
-        console.error('[useProducts] Detalhes do erro:', err.details);
-      }
-      if (err && err.hint) {
-        console.error('[useProducts] Hint do erro:', err.hint);
-      }
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
       setError('Falha ao carregar produtos.');
       setProducts([]);
       toast({ title: 'Erro', description: 'Não foi possível buscar os produtos.', variant: 'destructive' });
@@ -225,7 +164,6 @@ export const useProducts = () => {
         .single();
 
       if (fetchError) throw fetchError;
-<<<<<<< HEAD
       if (!data) return null;
 
       // Mapear dados como em fetchProducts
@@ -262,18 +200,6 @@ export const useProducts = () => {
         colors: data.colors,
       };
       console.log(`[useProducts] Produto ID ${id} encontrado e mapeado.`);
-=======
-      
-      // Mapear 'title' para 'name' se necessário e tratar tags
-      const mappedData = data ? { 
-        ...data, 
-        name: data.title, 
-        image: data.images?.[0],
-        tags: Array.isArray(data.tags) ? data.tags.map((tag: any) => 
-          typeof tag === 'string' ? { id: tag, name: tag } : tag
-        ) : []
-      } : null;
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
       return mappedData;
 
     } catch (err: any) {
@@ -448,9 +374,5 @@ export const useProducts = () => {
     fetchProducts();
   }, [fetchProducts]);
 
-<<<<<<< HEAD
-=======
-  // Retorna todas as funções, incluindo as CRUD
->>>>>>> d9e7072385b2fd1de8d1c790dab60f58904b15df
   return { products, loading, error, fetchProducts, fetchProductById, addProduct, updateProduct, deleteProduct };
 };

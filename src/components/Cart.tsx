@@ -25,19 +25,18 @@ interface CartSheetProps {
 
 const Cart = ({ showCart, setShowCart }: CartSheetProps) => {
   const { 
-    items, 
+    items: cart, 
     updateQuantity, 
     removeFromCart, 
     clearCart, 
     getCartTotal, 
-    getCartItemsCount, 
     sendToWhatsApp 
   } = useCart();
 
   const handleQuantityChange = (itemId: string, currentQuantity: number, change: number) => {
     const newQuantity = Math.max(0, currentQuantity + change);
     // Find the cart item to get the product, size, and color
-    const cartItem = items.find(item => item.id === itemId);
+    const cartItem = cart.find(item => item.id === itemId);
     if (cartItem) {
       updateQuantity(cartItem.product.id, cartItem.size || '', cartItem.color || '', newQuantity);
     }
@@ -77,10 +76,10 @@ const Cart = ({ showCart, setShowCart }: CartSheetProps) => {
           <div className="flex items-center gap-2">
              <ShoppingCart className="w-5 h-5 text-gray-700" />
              <SheetTitle id="cart-title" className="text-lg font-semibold text-gray-800">Carrinho</SheetTitle>
-             <span className="text-sm text-gray-500">({items.length} {items.length === 1 ? 'item' : 'itens'})</span>
+             <span className="text-sm text-gray-500">({cart.length} {cart.length === 1 ? 'item' : 'itens'})</span>
           </div>
           <div className="flex items-center gap-1">
-            {items.length > 0 && clearCart && (
+            {cart.length > 0 && clearCart && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -104,7 +103,7 @@ const Cart = ({ showCart, setShowCart }: CartSheetProps) => {
         {/* Scrollable Content Area */}
         <ScrollArea className="flex-grow bg-gray-50">
           <div className="p-4"> 
-            {items.length === 0 ? (
+            {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center h-[calc(90vh-150px)]">
                 <ShoppingCart className="w-16 h-16 text-gray-300 mb-6" />
                 <h4 className="text-xl font-semibold text-gray-700 mb-2">Seu carrinho está vazio</h4>
@@ -119,7 +118,7 @@ const Cart = ({ showCart, setShowCart }: CartSheetProps) => {
               </div>
             ) : (
               <div className="space-y-3 pb-4">
-                {items.map((item) => (
+                {cart.map((item) => (
                   <div
                     key={item.id}
                     className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm flex items-start space-x-3"
@@ -186,7 +185,7 @@ const Cart = ({ showCart, setShowCart }: CartSheetProps) => {
           </div>
         </ScrollArea>
 
-        {items.length > 0 && (
+        {cart.length > 0 && (
           <SheetFooter className="border-t p-4 bg-white flex-shrink-0 flex-col sm:flex-col sm:justify-start sm:items-stretch space-y-3">
             <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 space-y-2">
                <div className="flex justify-between items-center">
