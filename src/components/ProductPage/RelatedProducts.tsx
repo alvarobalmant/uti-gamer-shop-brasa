@@ -40,6 +40,12 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
     addToCart(product);
   };
 
+  // Simple card click handler (could navigate to product page or do nothing)
+  const handleCardClick = (productId: string) => {
+    // For now, do nothing - could navigate to the product page
+    console.log('Related product clicked:', productId);
+  };
+
   return (
     <div>
       <h2 className="text-xl lg:text-2xl font-semibold text-foreground mb-4">
@@ -62,6 +68,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
               key={relatedProduct.id} 
               product={relatedProduct} 
               onAddToCart={handleAddToCart}
+              onCardClick={handleCardClick}
             />
           ))}
         </div>

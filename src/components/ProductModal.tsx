@@ -164,7 +164,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ productId, isOpen, onOpenCh
                 >
                   <div className="aspect-square relative overflow-hidden">
                     <img 
-                      src={relatedProduct.images?.[0] || '/placeholder-product.png'} 
+                      src={relatedProduct.image || '/placeholder-product.png'} 
                       alt={relatedProduct.name}
                       className="object-cover w-full h-full"
                     />
