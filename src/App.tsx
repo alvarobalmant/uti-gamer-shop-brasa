@@ -20,6 +20,9 @@ import NintendoPage from "./pages/platforms/NintendoPage";
 // Import the main Admin Panel component which now includes all tabs
 import { AdminPanel } from "@/components/Admin/AdminPanel"; 
 
+// Import the new dynamic carousel page
+import SpecialSectionCarouselPage from "./pages/SpecialSectionCarouselPage";
+
 const queryClient = new QueryClient();
 
 // Protected Route Component for Admin
@@ -59,6 +62,12 @@ const App = () => (
                 <Route path="/nintendo" element={<NintendoPage />} />
                 
                 <Route path="/uti-pro" element={<UTIPro />} />
+
+                {/* Dynamic Carousel Page Route */}
+                <Route 
+                  path="/secao-especial/:sectionId/carrossel/:carouselIndex" 
+                  element={<SpecialSectionCarouselPage />} 
+                />
 
                 {/* Admin Route - Protected */}
                 <Route 

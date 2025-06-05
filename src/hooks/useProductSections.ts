@@ -46,6 +46,7 @@ export const useProductSections = () => {
   const { toast } = useToast();
 
   const fetchSections = useCallback(async () => {
+    console.log('[useProductSections] Fetching sections...'); // Log start
     setLoading(true);
     setError(null);
     try {
@@ -56,11 +57,13 @@ export const useProductSections = () => {
         .order('created_at', { ascending: false });
 
       if (sectionsError) throw sectionsError;
+      console.log('[useProductSections] Raw sections data:', sectionsData); // Log raw sections
 
       // Fetch items for each section
       const sectionIds = sectionsData.map(s => s.id);
       let allItems: ProductSectionItem[] = [];
       if (sectionIds.length > 0) {
+        console.log('[useProductSections] Fetching items for section IDs:', sectionIds);
         const { data: itemsData, error: itemsError } = await supabase
           .from('product_section_items')
           .select('*')
@@ -68,6 +71,7 @@ export const useProductSections = () => {
           .order('display_order', { ascending: true });
         if (itemsError) throw itemsError;
         allItems = itemsData || [];
+        console.log('[useProductSections] Fetched items data:', allItems); // Log fetched items
       }
 
       // Combine sections with their items
@@ -76,10 +80,11 @@ export const useProductSections = () => {
         items: allItems.filter(item => item.section_id === section.id),
       }));
 
+      console.log('[useProductSections] Combined sections with items:', combinedSections); // Log final data
       setSections(combinedSections);
 
     } catch (err: any) {
-      console.error('Error fetching product sections:', err);
+      console.error('[useProductSections] Error fetching product sections:', err);
       const errorMessage = err instanceof PostgrestError ? err.message : 'Falha ao carregar as seções de produtos.';
       setError(errorMessage);
       toast({ title: 'Erro', description: errorMessage, variant: 'destructive' });
@@ -287,3 +292,4 @@ export const useProductSections = () => {
 
   return { sections, loading, error, fetchSections, createSection, updateSection, deleteSection };
 };
+

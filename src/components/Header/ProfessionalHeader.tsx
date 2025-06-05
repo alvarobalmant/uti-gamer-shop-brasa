@@ -1,13 +1,11 @@
 
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom'; // Keep useLocation for now, might be needed elsewhere or for context
+import { useNavigate, useLocation } from 'react-router-dom';
 import MainHeader from './MainHeader';
 import DesktopNavigation from './DesktopNavigation';
 import MobileMenu from './MobileMenu';
 import { categories, Category } from './categories';
 import { cn } from '@/lib/utils';
-// Removed import for saveScrollPosition as it's no longer called explicitly here
-// import { saveScrollPosition } from '@/lib/scrollRestorationManager';
 
 interface ProfessionalHeaderProps {
   onCartOpen: () => void;
@@ -16,12 +14,9 @@ interface ProfessionalHeaderProps {
 
 const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps) => {
   const navigate = useNavigate();
-  // const location = useLocation(); // Keep location if needed elsewhere, otherwise remove
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleCategoryClick = (category: Category) => {
-    // REMOVED the explicit call to saveScrollPosition
-    // saveScrollPosition(location.pathname, 'ProfessionalHeader category click');
     navigate(category.path);
     setMobileMenuOpen(false);
     document.body.style.overflow = 'unset';
@@ -45,33 +40,30 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
   };
 
   return (
-    // REMOVED sticky positioning from the parent header.
-    // MainHeader and DesktopNavigation now handle their own sticky behavior independently.
-    <header className={cn(
-      "w-full border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm"
-      // REMOVED: "sticky top-0 z-50"
-    )}>
-      {/* MainHeader handles its own sticky top-0 z-40 */}
+    <>
+      {/* MainHeader agora é fixed e não precisa de container wrapper */}
       <MainHeader
         onCartOpen={onCartOpen}
         onAuthOpen={onAuthOpen}
         onMobileMenuToggle={toggleMobileMenu}
       />
 
-      {/* DesktopNavigation handles its own sticky top-[72px] z-30 and animation */}
+      {/* DesktopNavigation agora é fixed e posicionado abaixo do MainHeader */}
       <DesktopNavigation />
 
-      {/* MobileMenu remains unchanged */}
+      {/* Espaçador para compensar o header fixo */}
+      <div className="h-[72px] lg:h-[84px]" />
+
+      {/* MobileMenu permanece inalterado */}
       <MobileMenu
         isOpen={mobileMenuOpen}
         onClose={closeMobileMenu}
         onAuthOpen={onAuthOpen}
         categories={categories}
-        onCategoryClick={handleCategoryClick} // Pass the modified handler
+        onCategoryClick={handleCategoryClick}
       />
-    </header>
+    </>
   );
 };
 
 export default ProfessionalHeader;
-

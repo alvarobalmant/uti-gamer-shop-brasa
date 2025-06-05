@@ -1,14 +1,16 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { useToast } from '@/hooks/use-toast';
 import { Product } from './useProducts/types';
 import { 
   fetchProductsFromDatabase, 
   addProductToDatabase, 
   updateProductInDatabase, 
-  deleteProductFromDatabase 
+  deleteProductFromDatabase,
+  fetchProductsByCriteria // Import the new API function
 } from './useProducts/productApi';
 import { handleProductError } from './useProducts/productErrorHandler';
+import { CarouselConfig } from '@/types/specialSections'; // Import CarouselConfig type
 
 export type { Product } from './useProducts/types';
 
@@ -17,7 +19,7 @@ export const useProducts = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => { // Wrap in useCallback
     try {
       setLoading(true);
       const productsData = await fetchProductsFromDatabase();
@@ -36,7 +38,27 @@ export const useProducts = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]); // Add dependencies
+
+  // New function to fetch products based on carousel config
+  const fetchProductsByConfig = useCallback(async (config: CarouselConfig) => {
+    if (!config) return;
+    setLoading(true);
+    try {
+      const productsData = await fetchProductsByCriteria(config);
+      setProducts(productsData);
+    } catch (error: any) {
+      const errorMessage = handleProductError(error, 'ao carregar produtos do carrossel');
+      toast({
+        title: "Erro ao carregar produtos do carrossel",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]); // Add dependencies
 
   const addProduct = async (productData: Omit<Product, 'id' | 'tags'> & { tagIds: string[] }) => {
     try {
@@ -95,8 +117,9 @@ export const useProducts = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    // Initial fetch is needed for general product sections on the homepage
+    fetchProducts(); 
+  }, [fetchProducts]); // Corrected dependency array
 
   return {
     products,
@@ -104,6 +127,8 @@ export const useProducts = () => {
     addProduct,
     updateProduct,
     deleteProduct,
-    refetch: fetchProducts,
+    refetch: fetchProducts, // Keep refetch for general product list if needed elsewhere
+    fetchProductsByConfig, // Expose the new function
   };
 };
+

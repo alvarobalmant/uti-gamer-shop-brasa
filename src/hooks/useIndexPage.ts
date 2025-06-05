@@ -1,15 +1,17 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useHomepageLayout } from '@/hooks/useHomepageLayout';
 import { useProductSections } from '@/hooks/useProductSections';
+import { useSpecialSections } from '@/hooks/useSpecialSections'; // Import the new hook
 
 export const useIndexPage = () => {
   const { products, loading: productsLoading, refetch: refetchProducts } = useProducts();
   const { layoutItems, loading: layoutLoading } = useHomepageLayout();
   const { sections, loading: sectionsLoading } = useProductSections();
+  const { specialSections, loading: specialSectionsLoading } = useSpecialSections(); // Use the hook
 
-  // Banner data state
+  // Banner data state (Consider moving this to DB if dynamic banners are needed)
   const [bannerData] = useState({
     imageUrl: '/banners/uti-pro-banner.webp',
     title: 'Desbloqueie Vantagens com UTI PRO!',
@@ -24,19 +26,20 @@ export const useIndexPage = () => {
   const MAX_RETRIES = 3;
 
   useEffect(() => {
-    // Se houve erro no carregamento e ainda temos tentativas, tenta novamente
+    // If product loading failed and we still have retries, try again
     if (products.length === 0 && !productsLoading && retryCount < MAX_RETRIES) {
       const timer = setTimeout(() => {
-        console.log(`Tentativa ${retryCount + 1} de ${MAX_RETRIES} para carregar produtos`);
+        console.log(`Attempt ${retryCount + 1} of ${MAX_RETRIES} to load products`);
         setRetryCount(prev => prev + 1);
         refetchProducts();
-      }, 2000 * (retryCount + 1)); // Delay incrementa a cada tentativa
+      }, 2000 * (retryCount + 1)); // Delay increases with each retry
 
       return () => clearTimeout(timer);
     }
   }, [products.length, productsLoading, retryCount, refetchProducts]);
 
-  const isLoading = layoutLoading || sectionsLoading;
+  // Combine loading states
+  const isLoading = layoutLoading || sectionsLoading || specialSectionsLoading;
   const showErrorState = !productsLoading && products.length === 0 && retryCount >= MAX_RETRIES;
 
   const handleRetryProducts = () => {
@@ -49,10 +52,13 @@ export const useIndexPage = () => {
     productsLoading,
     layoutItems,
     sections,
+    specialSections, // Return special sections
     bannerData,
     isLoading,
     showErrorState,
     sectionsLoading,
+    specialSectionsLoading, // Return loading state for special sections
     handleRetryProducts
   };
 };
+
