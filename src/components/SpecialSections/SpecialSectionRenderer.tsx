@@ -47,6 +47,46 @@ const GameStopStyleProductCard: React.FC<GameStopStyleProductCardProps> = ({ pro
 };
 // --- End GameStop Style Product Card ---
 
+// Helper function to get background styles from the new fields
+const getBackgroundStyles = (section: SpecialSection): React.CSSProperties => {
+  const styles: React.CSSProperties = {};
+
+  switch (section.background_type) {
+    case 'color':
+      styles.backgroundColor = section.background_value || section.background_color || '#003087';
+      break;
+    case 'image':
+      if (section.background_value) {
+        styles.backgroundImage = `url(${section.background_value})`;
+        styles.backgroundSize = 'cover';
+        styles.backgroundRepeat = 'no-repeat';
+        styles.backgroundPosition = section.background_image_position || 'center';
+      } else {
+        // Fallback to old background_color
+        styles.backgroundColor = section.background_color || '#003087';
+      }
+      break;
+    case 'gradient':
+      if (section.background_value) {
+        styles.background = section.background_value;
+      } else if (section.background_gradient) {
+        styles.background = section.background_gradient;
+      } else {
+        // Fallback to old background_color
+        styles.backgroundColor = section.background_color || '#003087';
+      }
+      break;
+    case 'transparent':
+      styles.backgroundColor = 'transparent';
+      break;
+    default:
+      // Fallback to the old background_color field for backward compatibility
+      styles.backgroundColor = section.background_color || '#003087';
+      break;
+  }
+
+  return styles;
+};
 
 // Estrutura fixa baseada no modelo da GameStop
 const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section }) => {
@@ -118,11 +158,8 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
   };
   // --- End Carousel Rendering Logic --- 
 
-  // Determine background color, default to GameStop blue if not set
-  const bgColor = section.background_color || '#003087'; // Default GameStop blue
-  const sectionStyle: React.CSSProperties = {
-    backgroundColor: bgColor,
-  };
+  // Get background styles using the new background configuration
+  const sectionStyle = getBackgroundStyles(section);
 
   return (
     // Outer section for semantic structure, no background or padding here
@@ -213,4 +250,3 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
 };
 
 export default SpecialSectionRenderer;
-
