@@ -7,11 +7,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0", // Changed to 0.0.0.0 to listen on all interfaces
-<<<<<<< HEAD
     port: 8080, // Updated port to 8080
-=======
-    port: 8081, // Updated port to 8081
->>>>>>> 1db84d29c00c49b36e61408c2b46d8714bce4cfa
     // This allowedHosts is for the dev server (`npm run dev`)
     allowedHosts: [
         "8080-ia7rp8j83n0fk28il71r1-f878a32f.manus.computer", // Add the new host for port 8080

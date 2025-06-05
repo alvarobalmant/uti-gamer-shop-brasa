@@ -13,88 +13,7 @@ interface SpecialSectionRendererProps {
   onProductCardClick: (productId: string) => void; // Prop to handle product card clicks
 }
 
-<<<<<<< HEAD
 const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section, onProductCardClick }) => {
-=======
-// --- GameStop Style Product Card (Internal Component) ---
-interface GameStopStyleProductCardProps {
-  product: Product;
-  onAddToCart: (product: Product) => void;
-  className?: string;
-}
-
-const GameStopStyleProductCard: React.FC<GameStopStyleProductCardProps> = ({ product, onAddToCart, className }) => {
-  // Mimicking GameStop card: White background, minimal padding, image focus
-  return (
-    <div className={cn("bg-white rounded-md overflow-hidden border border-gray-200 flex flex-col h-full group", className)}>
-      <Link to={`/product/${product.id}`} className="block aspect-square overflow-hidden p-2 relative">
-        <img
-          src={product.images?.[0] || '/placeholder-product.png'}
-          alt={product.name}
-          className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-          onError={(e) => (e.currentTarget.src = '/placeholder-product.png')}
-        />
-      </Link>
-      <div className="p-3 pt-1 flex flex-col flex-grow text-center"> {/* Centered text */}
-        <h4 className="text-xs sm:text-sm font-medium text-gray-800 flex-grow mb-1 leading-tight hover:underline">
-          <Link to={`/product/${product.id}`}>{product.name}</Link>
-        </h4>
-        <div className="mt-auto">
-          <p className="text-sm sm:text-base font-semibold text-red-600"> {/* GameStop price color */}
-            {product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-          </p>
-          {/* Add to Cart button could be added here if needed, styled like GameStop */}
-        </div>
-      </div>
-    </div>
-  );
-};
-// --- End GameStop Style Product Card ---
-
-// Helper function to get background styles from the new fields
-const getBackgroundStyles = (section: SpecialSection): React.CSSProperties => {
-  const styles: React.CSSProperties = {};
-
-  switch (section.background_type) {
-    case 'color':
-      styles.backgroundColor = section.background_value || section.background_color || '#003087';
-      break;
-    case 'image':
-      if (section.background_value) {
-        styles.backgroundImage = `url(${section.background_value})`;
-        styles.backgroundSize = 'cover';
-        styles.backgroundRepeat = 'no-repeat';
-        styles.backgroundPosition = section.background_image_position || 'center';
-      } else {
-        // Fallback to old background_color
-        styles.backgroundColor = section.background_color || '#003087';
-      }
-      break;
-    case 'gradient':
-      if (section.background_value) {
-        styles.background = section.background_value;
-      } else if (section.background_gradient) {
-        styles.background = section.background_gradient;
-      } else {
-        // Fallback to old background_color
-        styles.backgroundColor = section.background_color || '#003087';
-      }
-      break;
-    case 'transparent':
-      styles.backgroundColor = 'transparent';
-      break;
-    default:
-      // Fallback to the old background_color field for backward compatibility
-      styles.backgroundColor = section.background_color || '#003087';
-      break;
-  }
-
-  return styles;
-};
-
-// Estrutura fixa baseada no modelo da GameStop
-const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section }) => {
->>>>>>> 1db84d29c00c49b36e61408c2b46d8714bce4cfa
   const { products, loading: productsLoading } = useProducts();
   const { addToCart } = useCart();
 
@@ -162,7 +81,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
   };
   // --- End Carousel Rendering Logic ---
 
-<<<<<<< HEAD
   // Determine background style
   const sectionStyle: React.CSSProperties = {};
   if (section.background_type === 'image' && section.background_value) {
@@ -173,10 +91,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
   } else {
     sectionStyle.backgroundColor = section.background_value || '#003087'; // Default GameStop blue
   }
-=======
-  // Get background styles using the new background configuration
-  const sectionStyle = getBackgroundStyles(section);
->>>>>>> 1db84d29c00c49b36e61408c2b46d8714bce4cfa
 
   return (
     <section aria-label={section.title} className="w-full">
@@ -265,8 +179,5 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
 };
 
 export default SpecialSectionRenderer;
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 1db84d29c00c49b36e61408c2b46d8714bce4cfa
