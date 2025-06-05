@@ -109,9 +109,30 @@ export const useSpecialSections = () => {
 
   const createSection = async (sectionData: Partial<SpecialSection>) => {
     try {
+      // Ensure required fields are present
+      const dataToInsert = {
+        title: sectionData.title || '',
+        description: sectionData.description,
+        background_type: sectionData.background_type || 'color',
+        background_color: sectionData.background_color,
+        background_gradient: sectionData.background_gradient,
+        background_image_url: sectionData.background_image_url,
+        padding_top: sectionData.padding_top,
+        padding_bottom: sectionData.padding_bottom,
+        padding_left: sectionData.padding_left,
+        padding_right: sectionData.padding_right,
+        margin_top: sectionData.margin_top,
+        margin_bottom: sectionData.margin_bottom,
+        border_radius: sectionData.border_radius,
+        display_order: sectionData.display_order,
+        is_active: sectionData.is_active,
+        content_config: sectionData.content_config,
+        mobile_settings: sectionData.mobile_settings,
+      };
+
       const { data, error } = await supabase
         .from('special_sections')
-        .insert([sectionData])
+        .insert([dataToInsert])
         .select()
         .single();
 
@@ -174,9 +195,43 @@ export const useSpecialSections = () => {
 
   const createElement = async (elementData: Partial<SpecialSectionElement>) => {
     try {
+      // Ensure required fields are present
+      const dataToInsert = {
+        special_section_id: elementData.special_section_id || '',
+        element_type: elementData.element_type || 'banner',
+        title: elementData.title,
+        subtitle: elementData.subtitle,
+        content_type: elementData.content_type,
+        content_ids: elementData.content_ids,
+        image_url: elementData.image_url,
+        link_url: elementData.link_url,
+        link_text: elementData.link_text,
+        background_type: elementData.background_type,
+        background_color: elementData.background_color,
+        background_gradient: elementData.background_gradient,
+        background_image_url: elementData.background_image_url,
+        text_color: elementData.text_color,
+        button_color: elementData.button_color,
+        button_text_color: elementData.button_text_color,
+        width_percentage: elementData.width_percentage,
+        height_desktop: elementData.height_desktop,
+        height_mobile: elementData.height_mobile,
+        padding: elementData.padding,
+        margin_bottom: elementData.margin_bottom,
+        border_radius: elementData.border_radius,
+        grid_position: elementData.grid_position,
+        grid_size: elementData.grid_size,
+        visible_items_desktop: elementData.visible_items_desktop,
+        visible_items_tablet: elementData.visible_items_tablet,
+        visible_items_mobile: elementData.visible_items_mobile,
+        display_order: elementData.display_order,
+        is_active: elementData.is_active,
+        mobile_settings: elementData.mobile_settings,
+      };
+
       const { data, error } = await supabase
         .from('special_section_elements')
-        .insert([elementData])
+        .insert([dataToInsert])
         .select()
         .single();
 

@@ -226,16 +226,24 @@ export const SpecialSectionManager = () => {
     setIsEditingElement(false);
   };
 
-  const editSection = (section: SpecialSection) => {
-    setSelectedSection(section);
-    setSectionForm(section);
+  const editSection = (section: any) => {
+    const typedSection: SpecialSection = {
+      ...section,
+      background_type: section.background_type as 'color' | 'gradient' | 'image'
+    };
+    setSelectedSection(typedSection);
+    setSectionForm(typedSection);
     setIsEditingSection(true);
     setActiveTab('section-form');
   };
 
-  const editElement = (element: SpecialSectionElement) => {
-    setSelectedElement(element);
-    setElementForm(element);
+  const editElement = (element: any) => {
+    const typedElement: SpecialSectionElement = {
+      ...element,
+      element_type: element.element_type as 'banner' | 'products' | 'text' | 'image' | 'grid'
+    };
+    setSelectedElement(typedElement);
+    setElementForm(typedElement);
     setIsEditingElement(true);
     setActiveTab('element-form');
   };
@@ -299,7 +307,7 @@ export const SpecialSectionManager = () => {
                   <div
                     key={section.id}
                     className="flex items-center justify-between p-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600"
-                    onClick={() => setSelectedSection(section)}
+                    onClick={() => setSelectedSection(section as SpecialSection)}
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
@@ -450,8 +458,8 @@ export const SpecialSectionManager = () => {
                 <div className="space-y-2">
                   <Label className="text-white">Imagem de Fundo</Label>
                   <ImageUpload
-                    onImageSelect={(url) => setSectionForm({ ...sectionForm, background_image_url: url })}
-                    currentImage={sectionForm.background_image_url}
+                    value={sectionForm.background_image_url}
+                    onImageUpload={(url) => setSectionForm({ ...sectionForm, background_image_url: url })}
                   />
                 </div>
               )}
@@ -693,8 +701,8 @@ export const SpecialSectionManager = () => {
                   <div className="space-y-2">
                     <Label className="text-white">Imagem</Label>
                     <ImageUpload
-                      onImageSelect={(url) => setElementForm({ ...elementForm, image_url: url })}
-                      currentImage={elementForm.image_url}
+                      value={elementForm.image_url}
+                      onImageUpload={(url) => setElementForm({ ...elementForm, image_url: url })}
                     />
                   </div>
                 )}
