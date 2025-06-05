@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductManager from './ProductManager';
@@ -8,12 +9,17 @@ import UserSubscriptionManagement from './UserSubscriptionManagement'; // Correc
 import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
 import ProductSectionManager from './ProductSectionManager';
 import PageManager from './PageManager';
+<<<<<<< HEAD
 import { QuickLinkManager } from './QuickLinkManager';
 import SpecialSectionManager from './SpecialSectionManager'; // Import SpecialSectionManager
 import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star } from 'lucide-react'; // Added Star icon
+=======
+import { SpecialSectionManager } from './SpecialSectionManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Sparkles } from 'lucide-react';
+>>>>>>> bd49f3b49065df2bbc5b430822c2d2a5b13e95b5
 
 export const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('layout'); // Default to layout management
+  const [activeTab, setActiveTab] = useState('layout');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
@@ -28,8 +34,12 @@ export const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+<<<<<<< HEAD
           {/* Updated grid-cols-10 to accommodate the new tab */}
           <TabsList className="grid w-full grid-cols-10 bg-gray-800 border-gray-700">
+=======
+          <TabsList className="grid w-full grid-cols-9 bg-gray-800 border-gray-700">
+>>>>>>> bd49f3b49065df2bbc5b430822c2d2a5b13e95b5
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutList className="w-4 h-4" />
               Layout Home
@@ -37,6 +47,10 @@ export const AdminPanel = () => {
             <TabsTrigger value="pages" className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
               Páginas
+            </TabsTrigger>
+            <TabsTrigger value="special_sections" className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Seções Especiais
             </TabsTrigger>
             <TabsTrigger value="product_sections" className="flex items-center gap-2">
               <ListChecks className="w-4 h-4" />
@@ -73,17 +87,18 @@ export const AdminPanel = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Content for Homepage Layout Management */}
           <TabsContent value="layout">
             <HomepageLayoutManager />
           </TabsContent>
 
-          {/* Content for Pages Management */}
           <TabsContent value="pages">
             <PageManager />
           </TabsContent>
 
-          {/* Content for Product Section Management */}
+          <TabsContent value="special_sections">
+            <SpecialSectionManager />
+          </TabsContent>
+
           <TabsContent value="product_sections">
             <ProductSectionManager />
           </TabsContent>
