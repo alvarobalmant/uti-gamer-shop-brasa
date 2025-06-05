@@ -1,7 +1,11 @@
 import { Database } from "./supabase/types";
 
 // Base type for Special Section from the database
-export type SpecialSection = Database["public"]["Tables"]["special_sections"]["Row"];
+export type SpecialSection = Database["public"]["Tables"]["special_sections"]["Row"] & {
+  background_type?: 'color' | 'image';
+  background_value?: string;
+  background_image_position?: string;
+};
 
 // Base type for Special Section Element from the database
 export type SpecialSectionElement = Database["public"]["Tables"]["special_section_elements"]["Row"];
@@ -35,4 +39,5 @@ export type SpecialSectionGridLayoutCreateInput = Omit<
 
 // Input type for updating an existing Special Section Grid Layout
 export type SpecialSectionGridLayoutUpdateInput = Partial<SpecialSectionGridLayoutCreateInput>;
+
 

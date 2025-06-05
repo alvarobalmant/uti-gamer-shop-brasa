@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductCardActionsProps {
   product: Product;
@@ -16,7 +14,6 @@ const ProductCardActions: React.FC<ProductCardActionsProps> = ({
   onAddToCart
 }) => {
   const isOutOfStock = product.stock === 0;
-  const isMobile = useIsMobile();
 
   const handleAddToCartClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -27,28 +24,35 @@ const ProductCardActions: React.FC<ProductCardActionsProps> = ({
   };
 
   return (
-    <div className={cn(
-      "absolute bottom-2 right-2 z-10 transition-opacity duration-300",
-      // No mobile: sempre visível, no desktop: aparece só no hover
-      isMobile ? "opacity-100" : "opacity-0 md:group-hover:opacity-100"
-    )}>
+    <div className="w-full"> {/* Ensure the container takes full width */}
       <Button
-        size="icon"
+        size="default" // Use default size for a full-width button
         variant="default"
         onClick={handleAddToCartClick}
         disabled={isOutOfStock}
         className={cn(
-          "h-8 w-8 rounded-full shadow-md transition-all duration-300 active:scale-90",
+          "w-full rounded-md py-2 text-base font-semibold", // Full width, adjusted padding and font
+          "transition-all duration-200 ease-in-out",
           isOutOfStock
-            ? "cursor-not-allowed bg-muted text-muted-foreground"
-            : "bg-uti-red text-primary-foreground md:hover:bg-uti-red/90"
+            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+            : "bg-red-600 text-white hover:bg-red-700", // GameStop-like red button
+          "flex items-center justify-center gap-2" // Center content and add gap for icon/text
         )}
         aria-label={isOutOfStock ? 'Esgotado' : 'Adicionar ao Carrinho'}
       >
-        <ShoppingCart className="h-4 w-4" />
+        {!isOutOfStock ? (
+          <>
+            <ShoppingCart className="h-5 w-5" />
+            <span>Adicionar ao Carrinho</span>
+          </>
+        ) : (
+          <span>Esgotado</span>
+        )}
       </Button>
     </div>
   );
 };
 
 export default ProductCardActions;
+
+

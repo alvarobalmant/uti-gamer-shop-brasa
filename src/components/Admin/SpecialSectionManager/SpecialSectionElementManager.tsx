@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import SpecialSectionElementList from './SpecialSectionElementList';
 import SpecialSectionElementForm from './SpecialSectionElementForm';
-// import { useSpecialSectionElements } from '@/hooks/useSpecialSectionElements'; // Assuming this hook exists or will be created
-import { SpecialSectionElement } from '@/types/specialSections'; // Assuming type exists
+import { useSpecialSectionElements } from '@/hooks/useSpecialSectionElements';
+import { SpecialSectionElement } from '@/types/specialSections';
 
 interface SpecialSectionElementManagerProps {
   sectionId: string;
@@ -14,16 +14,7 @@ const SpecialSectionElementManager: React.FC<SpecialSectionElementManagerProps> 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingElement, setEditingElement] = useState<SpecialSectionElement | null>(null);
 
-  // TODO: Replace with actual hook data
-  const { elements, addElement, updateElement, deleteElement, loading, error } = {
-      elements: [], // Placeholder
-      addElement: async (data: any) => { console.log('Adding element:', data); }, // Placeholder
-      updateElement: async (id: string, data: any) => { console.log('Updating element:', id, data); }, // Placeholder
-      deleteElement: async (id: string) => { console.log('Deleting element:', id); }, // Placeholder
-      loading: false, // Placeholder
-      error: null, // Placeholder
-  };
-  // const { elements, addElement, updateElement, deleteElement, loading, error } = useSpecialSectionElements(sectionId);
+  const { elements, addElement, updateElement, deleteElement, loading, error } = useSpecialSectionElements(sectionId);
 
   const handleAddNew = () => {
     setEditingElement(null);
@@ -82,7 +73,7 @@ const SpecialSectionElementManager: React.FC<SpecialSectionElementManagerProps> 
       {isFormOpen && (
         <div className="mt-4 p-4 border border-gray-600 rounded-md bg-gray-850">
           <SpecialSectionElementForm
-            // element={editingElement} // Pass element data to form
+            element={editingElement}
             onSubmit={handleFormSubmit}
             onCancel={handleCancelForm}
           />
@@ -93,4 +84,5 @@ const SpecialSectionElementManager: React.FC<SpecialSectionElementManagerProps> 
 };
 
 export default SpecialSectionElementManager;
+
 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Heart } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
@@ -29,14 +28,12 @@ const ProductCardImage: React.FC<ProductCardImageProps> = ({ product }) => {
   };
 
   return (
-    <div className="relative aspect-square w-full overflow-hidden bg-uti-gray-light rounded-t-lg">
+    <div className="relative w-full overflow-hidden flex items-center justify-center bg-gray-100" style={{ minHeight: '180px' }}> {/* Adjusted for GameStop-like image container */}
       <img
         src={product.image || '/placeholder-image.webp'}
         alt={product.name}
         className={cn(
-          "h-full w-full object-contain transition-transform duration-300 ease-in-out p-2",
-          // Remover hover scale no mobile, aplicar apenas no desktop
-          "md:group-hover:scale-105",
+          "h-full w-full object-contain transition-transform duration-300 ease-in-out p-4", // Added padding to image
           isOutOfStock ? "grayscale filter opacity-70" : ""
         )}
         loading="lazy"
@@ -60,3 +57,5 @@ const ProductCardImage: React.FC<ProductCardImageProps> = ({ product }) => {
 };
 
 export default ProductCardImage;
+
+

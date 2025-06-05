@@ -29,7 +29,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
         if (session?.user) {
           // Verificar se é admin
           setTimeout(async () => {
@@ -154,3 +153,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

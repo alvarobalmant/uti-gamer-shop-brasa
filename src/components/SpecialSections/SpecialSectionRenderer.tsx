@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SpecialSection } from '@/types/specialSections';
 import { Link } from 'react-router-dom';
@@ -7,49 +6,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from "@/lib/utils";
+import ProductCard from '@/components/ProductCard'; // Import the main ProductCard
 
 interface SpecialSectionRendererProps {
   section: SpecialSection;
+  onProductCardClick: (productId: string) => void; // Prop to handle product card clicks
 }
 
-// --- GameStop Style Product Card (Internal Component) ---
-interface GameStopStyleProductCardProps {
-  product: Product;
-  onAddToCart: (product: Product) => void;
-  className?: string;
-}
-
-const GameStopStyleProductCard: React.FC<GameStopStyleProductCardProps> = ({ product, onAddToCart, className }) => {
-  // Mimicking GameStop card: White background, minimal padding, image focus
-  return (
-    <div className={cn("bg-white rounded-md overflow-hidden border border-gray-200 flex flex-col h-full group", className)}>
-      <Link to={`/product/${product.id}`} className="block aspect-square overflow-hidden p-2 relative">
-        <img
-          src={product.images?.[0] || '/placeholder-product.png'}
-          alt={product.name}
-          className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-          onError={(e) => (e.currentTarget.src = '/placeholder-product.png')}
-        />
-      </Link>
-      <div className="p-3 pt-1 flex flex-col flex-grow text-center"> {/* Centered text */}
-        <h4 className="text-xs sm:text-sm font-medium text-gray-800 flex-grow mb-1 leading-tight hover:underline">
-          <Link to={`/product/${product.id}`}>{product.name}</Link>
-        </h4>
-        <div className="mt-auto">
-          <p className="text-sm sm:text-base font-semibold text-red-600"> {/* GameStop price color */}
-            {product.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-          </p>
-          {/* Add to Cart button could be added here if needed, styled like GameStop */}
-        </div>
-      </div>
-    </div>
-  );
-};
-// --- End GameStop Style Product Card ---
-
-
-// Estrutura fixa baseada no modelo da GameStop
-const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section }) => {
+const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section, onProductCardClick }) => {
   const { products, loading: productsLoading } = useProducts();
   const { addToCart } = useCart();
 
@@ -71,11 +35,10 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
   const getProductsByIds = (ids: string[] = []): Product[] => {
     if (!ids || ids.length === 0) return [];
     if (productsLoading || !products || !Array.isArray(products)) return [];
-    // Ensure products are found before accessing properties
     return products.filter(product => product && ids.includes(product.id));
   };
 
-  // --- Carousel Rendering Logic --- 
+  // --- Carousel Rendering Logic ---
   const renderCarousel = (carouselConfig: any, carouselKey: string) => {
     if (!carouselConfig?.title) return null;
 
@@ -87,7 +50,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
       <div className="mb-6 md:mb-8">
         <div className="flex justify-between items-center mb-3 md:mb-4">
           <h3 className="text-lg md:text-xl font-bold text-white">{carouselConfig.title}</h3>
-          {/* Removed shop_all_link as it's not part of the fixed GameStop structure */}
         </div>
         
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4">
@@ -103,10 +65,11 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
             ))
           ) : carouselProducts.length > 0 ? (
             carouselProducts.map(product => (
-              <GameStopStyleProductCard 
+              <ProductCard 
                 key={`${carouselKey}-${product.id}`} 
                 product={product} 
                 onAddToCart={() => addToCart(product)} 
+                onCardClick={onProductCardClick} // Pass the click handler
               />
             ))
           ) : (
@@ -116,24 +79,27 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
       </div>
     );
   };
-  // --- End Carousel Rendering Logic --- 
+  // --- End Carousel Rendering Logic ---
 
-  // Determine background color, default to GameStop blue if not set
-  const bgColor = section.background_color || '#003087'; // Default GameStop blue
-  const sectionStyle: React.CSSProperties = {
-    backgroundColor: bgColor,
-  };
+  // Determine background style
+  const sectionStyle: React.CSSProperties = {};
+  if (section.background_type === 'image' && section.background_value) {
+    sectionStyle.backgroundImage = `url(${section.background_value})`;
+    sectionStyle.backgroundSize = 'cover'; // Always cover the section
+    sectionStyle.backgroundPosition = section.background_image_position || 'center';
+    sectionStyle.backgroundRepeat = 'no-repeat';
+  } else {
+    sectionStyle.backgroundColor = section.background_value || '#003087'; // Default GameStop blue
+  }
 
   return (
-    // Outer section for semantic structure, no background or padding here
     <section aria-label={section.title} className="w-full">
-      {/* Inner container applies background, padding, and max-width */}
       <div 
         style={sectionStyle} 
-        className="container max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 rounded-lg my-4 md:my-6 overflow-hidden" // Added rounded-lg and margin (my-4/my-6)
+        className="container max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 rounded-lg my-4 md:my-6 overflow-hidden"
       >
         
-        {/* Banner Principal - Reduced margin */}
+        {/* Banner Principal */}
         {config.banner_principal?.image_url && (
           <div className="w-full mb-4 md:mb-6">
             <Link to={config.banner_principal.link_url || '#'}>
@@ -147,7 +113,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
           </div>
         )}
 
-        {/* Banners Médios - Reduced gap and margin */}
+        {/* Banners Médios */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-6">
           {config.banner_medio_1?.image_url && (
             <div className="relative overflow-hidden rounded-md group">
@@ -187,7 +153,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
           )}
         </div>
 
-        {/* Banner Pequeno - Reduced margin */}
+        {/* Banner Pequeno */}
         {config.banner_pequeno?.image_url && (
           <div className="w-full mb-6 md:mb-8">
             <Link to={config.banner_pequeno.link_url || '#'}>
@@ -213,4 +179,5 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
 };
 
 export default SpecialSectionRenderer;
+
 
