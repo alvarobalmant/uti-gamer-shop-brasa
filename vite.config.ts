@@ -7,7 +7,6 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0", // Changed to 0.0.0.0 to listen on all interfaces
-<<<<<<< HEAD
     port: 8081, // Updated port to 8081
     // This allowedHosts is for the dev server (`npm run dev`)
     allowedHosts: [
@@ -20,11 +19,6 @@ export default defineConfig(({ mode }) => ({
     port: 4173, // Default preview port
     // Add the allowed host for external access during preview
     allowedHosts: ["4173-iwouq7408dg1jkwgigdus-814311ac.manusvm.computer"],
-=======
-    port: 8080,
-    // Add the allowed host for external access
-    allowedHosts: ["8080-iyih8moe5zgfzjzhpaqum-e2caa596.manusvm.computer"],
->>>>>>> bd49f3b49065df2bbc5b430822c2d2a5b13e95b5
   },
   plugins: [
     react(),
