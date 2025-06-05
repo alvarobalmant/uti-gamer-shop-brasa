@@ -1,15 +1,10 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Settings, Box, LogOut } from 'lucide-react';
+import { LayoutDashboard, Settings, Box, LogOut } from 'lucide-react'; // Example icons
 import { useAuth } from '@/hooks/useAuth';
 
-interface AdminLayoutProps {
-  children: React.ReactNode;
-}
-
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+const AdminLayout: React.FC = () => {
   const { signOut } = useAuth();
 
   // Basic sidebar navigation items
@@ -63,7 +58,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <div className="flex flex-col flex-1">
         {/* Optional: Add a mobile header here if needed */}
         <main className="flex-1 p-4 md:p-6 lg:p-8">
-          {children}
+          <Outlet /> {/* Renders the nested admin route component */}
         </main>
       </div>
     </div>
@@ -71,3 +66,4 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 };
 
 export default AdminLayout;
+

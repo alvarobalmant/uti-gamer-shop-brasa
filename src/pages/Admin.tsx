@@ -2,7 +2,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { AdminPanel } from '@/components/Admin/AdminPanel';
 import { LoginPage } from '@/components/Auth/LoginPage';
-import AdminLayout from '@/components/Admin/AdminLayout';
 
 const Admin = () => {
   const { user, isAdmin, loading } = useAuth();
@@ -30,11 +29,7 @@ const Admin = () => {
     );
   }
 
-  return (
-    <AdminLayout>
-      <AdminPanel />
-    </AdminLayout>
-  );
+  return <AdminPanel />;
 };
 
 export default Admin;
