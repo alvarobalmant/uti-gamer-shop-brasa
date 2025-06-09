@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from './types';
 import { CarouselConfig } from '@/types/specialSections';
@@ -14,28 +13,39 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
       throw error;
     }
 
-    // Agrupar produtos por ID para evitar duplicatas devido às tags
+    // Group products by ID to avoid duplicates due to tags
     const productsMap = new Map<string, Product>();
     
     data?.forEach((row: any) => {
       const productId = row.product_id;
       
       if (!productsMap.has(productId)) {
+        // Parse specifications if it exists
+        let specifications;
+        try {
+          specifications = row.product_specifications ? JSON.parse(row.product_specifications) : undefined;
+        } catch (e) {
+          console.warn('Failed to parse specifications for product', productId, e);
+          specifications = undefined;
+        }
+
         productsMap.set(productId, {
           id: productId,
           name: row.product_name || '',
           description: row.product_description || '',
           price: Number(row.product_price) || 0,
           image: row.product_image || '',
+          images: row.product_images || [], // New images field
           stock: row.product_stock || 0,
           badge_text: row.badge_text || '',
           badge_color: row.badge_color || '#22c55e',
           badge_visible: row.badge_visible || false,
+          specifications: specifications, // New specifications field
           tags: []
         });
       }
       
-      // Adicionar tag se existir
+      // Add tag if exists
       if (row.tag_id && row.tag_name) {
         const product = productsMap.get(productId)!;
         const tagExists = product.tags?.some(tag => tag.id === row.tag_id);
@@ -85,16 +95,27 @@ export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<P
       const productId = row.product_id;
       
       if (!productsMap.has(productId)) {
+        // Parse specifications if it exists
+        let specifications;
+        try {
+          specifications = row.product_specifications ? JSON.parse(row.product_specifications) : undefined;
+        } catch (e) {
+          console.warn('Failed to parse specifications for product', productId, e);
+          specifications = undefined;
+        }
+
         productsMap.set(productId, {
           id: productId,
           name: row.product_name || '',
           description: row.product_description || '',
           price: Number(row.product_price) || 0,
           image: row.product_image || '',
+          images: row.product_images || [], // New images field
           stock: row.product_stock || 0,
           badge_text: row.badge_text || '',
           badge_color: row.badge_color || '#22c55e',
           badge_visible: row.badge_visible || false,
+          specifications: specifications, // New specifications field
           tags: []
         });
       }
@@ -123,17 +144,24 @@ export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<P
 
 export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'tags'> & { tagIds: string[] }) => {
   try {
-    const { tagIds, ...productInfo } = productData;
+    const { tagIds, specifications, images, ...productInfo } = productData;
+    
+    // Prepare the product data for insertion
+    const insertData = {
+      ...productInfo,
+      specifications: specifications ? JSON.stringify(specifications) : null,
+      images: images || []
+    };
     
     const { data: product, error: productError } = await supabase
       .from('products')
-      .insert([productInfo])
+      .insert([insertData])
       .select()
       .single();
 
     if (productError) throw productError;
 
-    // Adicionar tags se fornecidas
+    // Add tags if provided
     if (tagIds && tagIds.length > 0) {
       const tagInserts = tagIds.map(tagId => ({
         product_id: product.id,
@@ -156,19 +184,26 @@ export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'ta
 
 export const updateProductInDatabase = async (id: string, updates: Partial<Product> & { tagIds?: string[] }) => {
   try {
-    const { tagIds, tags, ...productUpdates } = updates;
+    const { tagIds, tags, specifications, images, ...productUpdates } = updates;
     
-    // Atualizar produto
+    // Prepare the update data
+    const updateData = {
+      ...productUpdates,
+      specifications: specifications ? JSON.stringify(specifications) : undefined,
+      images: images
+    };
+    
+    // Update product
     const { error: productError } = await supabase
       .from('products')
-      .update(productUpdates)
+      .update(updateData)
       .eq('id', id);
 
     if (productError) throw productError;
 
-    // Atualizar tags se fornecidas
+    // Update tags if provided
     if (tagIds !== undefined) {
-      // Remover tags existentes
+      // Remove existing tags
       const { error: deleteError } = await supabase
         .from('product_tags')
         .delete()
@@ -176,7 +211,7 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
 
       if (deleteError) throw deleteError;
 
-      // Adicionar novas tags
+      // Add new tags
       if (tagIds.length > 0) {
         const tagInserts = tagIds.map(tagId => ({
           product_id: id,
@@ -200,7 +235,7 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
 
 export const deleteProductFromDatabase = async (id: string) => {
   try {
-    // Primeiro, remover as associações de tags
+    // First, remove tag associations
     const { error: tagError } = await supabase
       .from('product_tags')
       .delete()
@@ -208,7 +243,7 @@ export const deleteProductFromDatabase = async (id: string) => {
 
     if (tagError) throw tagError;
 
-    // Depois, remover o produto
+    // Then, remove the product
     const { error: productError } = await supabase
       .from('products')
       .delete()

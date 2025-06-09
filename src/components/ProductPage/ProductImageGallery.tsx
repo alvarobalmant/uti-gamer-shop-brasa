@@ -1,30 +1,34 @@
+
 import { useState, useEffect } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/skeleton'; // For image loading
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProductImageGalleryProps {
   product: Product;
 }
 
-// **Radical Redesign based on GameStop reference and plan_transformacao_radical.md**
 const ProductImageGallery = ({ product }: ProductImageGalleryProps) => {
   const [currentImage, setCurrentImage] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Combine main and additional images, ensuring main image is first
-  const allImages = [product.image, ...(product.additional_images || [])].filter(Boolean) as string[];
+  // Combine main image and additional images, prioritizing the new images field
+  const allImages = [
+    product.image,
+    ...(product.images || []), // Use new images field
+    ...(product.additional_images || []) // Fallback to legacy field
+  ].filter(Boolean) as string[];
 
   useEffect(() => {
     // Set initial image and reset loading state when product changes
     if (allImages.length > 0) {
       setCurrentImage(allImages[0]);
-      setIsLoading(true); // Reset loading for new product image
+      setIsLoading(true);
     } else {
-      setCurrentImage('/placeholder-image-error.webp'); // Fallback if no images
+      setCurrentImage('/placeholder-image-error.webp');
       setIsLoading(false);
     }
-  }, [product.id]); // Depend on product ID to reset on product change
+  }, [product.id]);
 
   const handleThumbnailClick = (image: string) => {
     if (image !== currentImage) {
@@ -39,14 +43,14 @@ const ProductImageGallery = ({ product }: ProductImageGalleryProps) => {
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     setIsLoading(false);
-    e.currentTarget.onerror = null; // Prevent infinite loop
-    e.currentTarget.src = '/placeholder-image-error.webp'; // Show error placeholder
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = '/placeholder-image-error.webp';
   };
 
   return (
-    <div className="flex flex-col-reverse md:flex-row gap-3 md:gap-4"> {/* Thumbnails below on mobile, left on desktop */}
+    <div className="flex flex-col-reverse md:flex-row gap-3 md:gap-4">
       {/* Thumbnails Column/Row */}
-      <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible md:overflow-y-auto md:max-h-[500px] pr-1 md:pr-0"> {/* Scrollable thumbnails */}
+      <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible md:overflow-y-auto md:max-h-[500px] pr-1 md:pr-0">
         {allImages.map((image, index) => (
           <button
             key={index}
@@ -62,9 +66,9 @@ const ProductImageGallery = ({ product }: ProductImageGalleryProps) => {
             <img
               src={image}
               alt={`${product.name} - miniatura ${index + 1}`}
-              className="w-full h-full object-contain bg-white" // Use contain for thumbs
+              className="w-full h-full object-contain bg-white"
               loading="lazy"
-              onError={(e) => { // Handle thumbnail errors gracefully
+              onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = '/placeholder-image-error.webp';
               }}
@@ -74,7 +78,7 @@ const ProductImageGallery = ({ product }: ProductImageGalleryProps) => {
       </div>
 
       {/* Main Image Display */}
-      <div className="relative flex-1 aspect-square bg-white rounded-lg overflow-hidden border border-border/50 flex items-center justify-center"> {/* Consistent aspect ratio */}
+      <div className="relative flex-1 aspect-square bg-white rounded-lg overflow-hidden border border-border/50 flex items-center justify-center">
         {isLoading && (
           <Skeleton className="absolute inset-0 w-full h-full" />
         )}
@@ -94,4 +98,3 @@ const ProductImageGallery = ({ product }: ProductImageGalleryProps) => {
 };
 
 export default ProductImageGallery;
-
