@@ -158,12 +158,12 @@ const FeaturedProductsSection = ({
                 touchAction: "pan-x pan-y"
               } as React.CSSProperties}
             >
-              <div className="flex gap-0 md:gap-0.5 min-w-max px-1"> {/* Reduzindo ainda mais o gap entre os cards para ficar como na GameStop */}
+              <div className="flex gap-3 min-w-max px-1"> {/* Adjusted gap for GameStop spacing */}
                 {displayedProducts.map((product, index) => (
                   <div
                     key={`${selectedCategory}-${product.id}`}
                     className={cn(
-                      "w-60 sm:w-64 flex-shrink-0",
+                      "w-[200px] flex-shrink-0", // GameStop card width
                       "transition-all duration-300 ease-in-out",
                       animateProducts
                         ? "opacity-100 translate-y-0"
@@ -175,8 +175,7 @@ const FeaturedProductsSection = ({
                   >
                     <ProductCard
                       product={product}
-                      onAddToCart={onAddToCart}
-                      onCardClick={handleProductCardClick} // Pass the handler here
+                      onCardClick={handleProductCardClick}
                     />
                   </div>
                 ))}
@@ -199,5 +198,3 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
-
-

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
@@ -8,11 +9,12 @@ interface ProductCardInfoProps {
 
 const ProductCardInfo: React.FC<ProductCardInfoProps> = ({ product }) => {
   return (
-    <div className="mb-4"> {/* Aumentando margem inferior para criar mais espaço entre título e preço */}
+    <div className="mb-3">
       <h3
         className={cn(
-          "font-sans text-base font-semibold leading-tight text-gray-900 text-left",
-          "line-clamp-2"
+          "font-sans text-sm font-medium leading-tight text-gray-900 text-left",
+          "line-clamp-2",
+          "min-h-[2.5rem]" // Ensure consistent height for title area
         )}
         title={product.name}
       >
@@ -23,5 +25,3 @@ const ProductCardInfo: React.FC<ProductCardInfoProps> = ({ product }) => {
 };
 
 export default ProductCardInfo;
-
-
