@@ -1,6 +1,5 @@
-
 import { useState, useEffect, useCallback } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast'; // Corrected import path
 import { supabase } from '@/integrations/supabase/client';
 import { SpecialSection, SpecialSectionCreateInput, SpecialSectionUpdateInput } from '@/types/specialSections';
 
@@ -15,7 +14,7 @@ export const useSpecialSections = () => {
       const { data, error } = await supabase
         .from('special_sections')
         .select('*')
-        .order('title', { ascending: true });
+        .order('title', { ascending: true }); // Order by title for consistency in admin list
 
       if (error) throw error;
       setSpecialSections(data || []);
@@ -212,3 +211,4 @@ export const useSpecialSections = () => {
     deleteSpecialSection,
   };
 };
+

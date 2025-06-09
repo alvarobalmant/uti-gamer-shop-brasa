@@ -6,14 +6,14 @@ import { useProducts, Product } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FixedContentFormData, CarouselConfig } from '@/types/specialSections';
+import { FixedContentFormData, CarouselConfig } from '@/types/specialSections'; // Assuming types are centralized
 
 const SpecialSectionCarouselPage: React.FC = () => {
   const { sectionId, carouselIndex } = useParams<{ sectionId: string; carouselIndex: string }>();
   const [carouselConfig, setCarouselConfig] = useState<CarouselConfig | null>(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
   const [errorConfig, setErrorConfig] = useState<string | null>(null);
-  const { products, loading: loadingProducts, fetchProductsByConfig } = useProducts();
+  const { products, loading: loadingProducts, fetchProductsByConfig } = useProducts(); // Need a new fetch function
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -38,8 +38,8 @@ const SpecialSectionCarouselPage: React.FC = () => {
           const config = data.content_config as FixedContentFormData;
           const key = `carrossel_${carouselIndex}` as keyof FixedContentFormData;
           const specificCarouselConfig = config[key];
-          if (specificCarouselConfig && 'title' in specificCarouselConfig) {
-            setCarouselConfig(specificCarouselConfig as CarouselConfig);
+          if (specificCarouselConfig) {
+            setCarouselConfig(specificCarouselConfig);
           } else {
             throw new Error(`Configuração para carrossel ${carouselIndex} não encontrada.`);
           }
@@ -64,11 +64,6 @@ const SpecialSectionCarouselPage: React.FC = () => {
     }
   }, [carouselConfig, fetchProductsByConfig]);
 
-  const handleProductCardClick = (productId: string) => {
-    // Handle product card click
-    console.log('Product clicked:', productId);
-  };
-
   if (loadingConfig) {
     return <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[50vh]"><Loader2 className="h-12 w-12 animate-spin text-gray-500" /></div>;
   }
@@ -87,6 +82,7 @@ const SpecialSectionCarouselPage: React.FC = () => {
         <ol className="flex items-center space-x-2 text-sm text-gray-500">
           <li><Link to="/" className="hover:text-gray-700">Início</Link></li>
           <li><span className="mx-2">/</span></li>
+          {/* Maybe add link back to section if needed */}
           <li className="font-medium text-gray-700" aria-current="page">{carouselConfig.title || `Carrossel ${carouselIndex}`}</li>
         </ol>
       </nav>
@@ -98,7 +94,7 @@ const SpecialSectionCarouselPage: React.FC = () => {
       ) : products.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} onCardClick={handleProductCardClick} />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (
@@ -109,3 +105,4 @@ const SpecialSectionCarouselPage: React.FC = () => {
 };
 
 export default SpecialSectionCarouselPage;
+

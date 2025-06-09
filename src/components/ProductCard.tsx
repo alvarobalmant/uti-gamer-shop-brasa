@@ -14,10 +14,9 @@ export type { Product } from '@/hooks/useProducts';
 interface ProductCardProps {
   product: Product;
   onCardClick: (productId: string) => void;
-  onAddToCart?: (product: Product) => void;
 }
 
-const ProductCard = ({ product, onCardClick, onAddToCart }: ProductCardProps) => {
+const ProductCard = ({ product, onCardClick }: ProductCardProps) => {
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('[data-action="true"]')) {
