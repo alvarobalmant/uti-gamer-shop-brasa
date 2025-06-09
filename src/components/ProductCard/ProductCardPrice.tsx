@@ -20,15 +20,18 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
           ${product.price.toFixed(2)}
         </span>
         {discount > 0 && (
-          <span className="text-sm text-gray-500 line-through">
+          <span className="text-sm text-gray-400 line-through">
             ${originalPrice.toFixed(2)}
           </span>
         )}
       </div>
       
       {/* Pro Price Section */}
-      <div className="text-sm text-purple-600 font-medium">
-        ${proPrice.toFixed(2)} for Pros
+      <div className="text-sm">
+        <span className="font-bold text-purple-600">
+          ${proPrice.toFixed(2)}
+        </span>
+        <span className="text-gray-400 ml-1">for Pros</span>
       </div>
     </div>
   );
