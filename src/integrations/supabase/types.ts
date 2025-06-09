@@ -271,13 +271,6 @@ export type Database = {
             referencedRelation: "tags"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_product_tags_tag_id"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["tag_id"]
-          },
         ]
       }
       products: {
@@ -934,6 +927,9 @@ export type Database = {
     Views: {
       view_product_with_tags: {
         Row: {
+          badge_color: string | null
+          badge_text: string | null
+          badge_visible: boolean | null
           product_description: string | null
           product_id: string | null
           product_image: string | null
@@ -943,7 +939,15 @@ export type Database = {
           tag_id: string | null
           tag_name: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_product_tags_tag_id"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
