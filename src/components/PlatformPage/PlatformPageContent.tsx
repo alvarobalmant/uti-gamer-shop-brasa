@@ -64,7 +64,7 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
 
       {/* Product Modal */}
       <ProductModal
-        productId={selectedProductId}
+        product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
       />

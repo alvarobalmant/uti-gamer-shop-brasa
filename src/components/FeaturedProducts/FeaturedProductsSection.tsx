@@ -177,6 +177,7 @@ const FeaturedProductsSection = ({
                     <ProductCard
                       product={product}
                       onCardClick={handleProductCardClick}
+                      onAddToCart={onAddToCart}
                     />
                   </div>
                 ))}
