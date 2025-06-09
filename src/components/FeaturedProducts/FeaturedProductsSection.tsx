@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -147,7 +148,7 @@ const FeaturedProductsSection = ({
           <div className="relative">
             <div
               className={cn(
-                "w-full overflow-x-auto overflow-y-hidden pb-4",
+                "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2", // Added pt-2 for top padding
                 "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
                 "overscroll-behavior-x-contain"
               )}
@@ -158,7 +159,7 @@ const FeaturedProductsSection = ({
                 touchAction: "pan-x pan-y"
               } as React.CSSProperties}
             >
-              <div className="flex gap-3 min-w-max px-1"> {/* Adjusted gap for GameStop spacing */}
+              <div className="flex gap-3 min-w-max px-1 py-1"> {/* Added py-1 for vertical padding */}
                 {displayedProducts.map((product, index) => (
                   <div
                     key={`${selectedCategory}-${product.id}`}
@@ -186,9 +187,9 @@ const FeaturedProductsSection = ({
       </div>
 
       {/* Render the Product Modal only if no external onCardClick handler is provided */}
-      {!onCardClick && (
+      {!onCardClick && selectedProductId && (
         <ProductModal
-          productId={selectedProductId}
+          product={products.find(p => p.id === selectedProductId) || null}
           isOpen={isModalOpen}
           onOpenChange={setIsModalOpen}
         />

@@ -16,7 +16,7 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
     <div className="space-y-1">
       {/* Main Price Section */}
       <div className="flex items-center gap-2">
-        <span className="text-lg font-bold text-gray-900">
+        <span className="text-lg font-bold text-muted-foreground">
           ${product.price.toFixed(2)}
         </span>
         {discount > 0 && (
@@ -31,7 +31,7 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
         <span className="font-bold text-purple-600">
           ${proPrice.toFixed(2)}
         </span>
-        <span className="text-gray-400 ml-1">for Pros</span>
+        <span className="text-muted-foreground ml-1">for Pros</span>
       </div>
     </div>
   );
