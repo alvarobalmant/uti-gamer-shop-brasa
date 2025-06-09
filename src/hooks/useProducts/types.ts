@@ -18,4 +18,7 @@ export interface Product {
   category_id?: string;
   tags?: { id: string; name: string; }[];
   sku?: string; // Add the missing sku property
+  badge_text?: string; // New badge text
+  badge_color?: string; // New badge color
+  badge_visible?: boolean; // New badge visibility flag
 }

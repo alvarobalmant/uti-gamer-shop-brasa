@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from './types';
 import { CarouselConfig } from '@/types/specialSections';
@@ -28,6 +27,9 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
           price: Number(row.product_price) || 0,
           image: row.product_image || '',
           stock: row.product_stock || 0,
+          badge_text: row.badge_text || undefined,
+          badge_color: row.badge_color || undefined,
+          badge_visible: row.badge_visible || false,
           tags: []
         });
       }
@@ -89,6 +91,9 @@ export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<P
           price: Number(row.product_price) || 0,
           image: row.product_image || '',
           stock: row.product_stock || 0,
+          badge_text: row.badge_text || undefined,
+          badge_color: row.badge_color || undefined,
+          badge_visible: row.badge_visible || false,
           tags: []
         });
       }

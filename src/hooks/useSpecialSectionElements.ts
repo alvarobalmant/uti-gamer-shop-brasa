@@ -28,13 +28,13 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
 
       if (fetchError) throw fetchError;
       
-      // Transform the data to handle content_ids as string array
-      const transformedData = (data || []).map(element => ({
+      // Transform the data to handle content_ids as string array and ensure proper typing
+      const transformedData: SpecialSectionElement[] = (data || []).map(element => ({
         ...element,
         content_ids: Array.isArray(element.content_ids) 
-          ? element.content_ids 
+          ? element.content_ids.filter((id): id is string => typeof id === 'string')
           : element.content_ids 
-            ? [element.content_ids as string] 
+            ? [String(element.content_ids)] 
             : []
       }));
       

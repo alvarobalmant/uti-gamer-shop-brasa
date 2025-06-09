@@ -8,6 +8,7 @@ import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
 import ProductCardPrice from './ProductCard/ProductCardPrice';
 import ProductCardReducedPriceBadge from './ProductCard/ProductCardReducedPriceBadge';
+import ProductCardBadge from './ProductCard/ProductCardBadge';
 
 export type { Product } from '@/hooks/useProducts';
 
@@ -46,6 +47,11 @@ const ProductCard = ({ product, onCardClick, onAddToCart }: ProductCardProps) =>
       onClick={handleCardClick}
     >
       <ProductCardReducedPriceBadge isVisible={hasDiscount} />
+      <ProductCardBadge 
+        badgeText={product.badge_text} 
+        badgeColor={product.badge_color} 
+        badgeVisible={product.badge_visible} 
+      />
       
       <ProductCardImage product={product} />
 

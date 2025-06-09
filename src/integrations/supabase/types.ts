@@ -283,6 +283,9 @@ export type Database = {
       products: {
         Row: {
           additional_images: string[] | null
+          badge_color: string | null
+          badge_text: string | null
+          badge_visible: boolean | null
           category: string | null
           colors: string[] | null
           condition: string | null
@@ -310,6 +313,9 @@ export type Database = {
         }
         Insert: {
           additional_images?: string[] | null
+          badge_color?: string | null
+          badge_text?: string | null
+          badge_visible?: boolean | null
           category?: string | null
           colors?: string[] | null
           condition?: string | null
@@ -337,6 +343,9 @@ export type Database = {
         }
         Update: {
           additional_images?: string[] | null
+          badge_color?: string | null
+          badge_text?: string | null
+          badge_visible?: boolean | null
           category?: string | null
           colors?: string[] | null
           condition?: string | null
