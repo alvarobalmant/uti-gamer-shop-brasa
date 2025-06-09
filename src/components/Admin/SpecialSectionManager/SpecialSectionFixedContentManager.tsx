@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -57,8 +58,8 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
         banner_medio_2: { image_url: '', title: '', subtitle: '', link_url: '' },
         banner_pequeno: { image_url: '', link_url: '' },
         banner_destaque: { title: '', subtitle: '', link_url: '', button_text: '' },
-        carrossel_1: { title: '', selection_mode: 'products', tag_ids: [], product_ids: [] },
-        carrossel_2: { title: '', selection_mode: 'products', tag_ids: [], product_ids: [] },
+        carrossel_1: { title: '', selection_mode: 'products' as const, tag_ids: [], product_ids: [] },
+        carrossel_2: { title: '', selection_mode: 'products' as const, tag_ids: [], product_ids: [] },
     }
   });
 
@@ -88,7 +89,7 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
       } else if (data?.content_config) {
         const fetchedConfig = data.content_config as FixedContentFormData;
         const defaults = {
-            selection_mode: 'products',
+            selection_mode: 'products' as const,
             tag_ids: [],
             product_ids: [],
         };
@@ -142,10 +143,10 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
     const nameMatch = product.name && typeof product.name === 'string' 
                       ? product.name.toLowerCase().includes(searchTerm.toLowerCase()) 
                       : false;
-    const skuMatch = product.sku && typeof product.sku === 'string' 
-                     ? product.sku.toLowerCase().includes(searchTerm.toLowerCase()) 
+    const idMatch = product.id && typeof product.id === 'string' 
+                     ? product.id.toLowerCase().includes(searchTerm.toLowerCase()) 
                      : false;
-    return nameMatch || skuMatch;
+    return nameMatch || idMatch;
   });
 
   const CarouselConfigSection = ({ 
@@ -232,7 +233,7 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
           <div className="space-y-2">
             <Label>Selecione os Produtos</Label>
             <Input
-              placeholder="Buscar produtos por nome ou SKU..."
+              placeholder="Buscar produtos por nome ou ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-gray-700 border-gray-600 text-white mb-2"
@@ -265,7 +266,7 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
                         )}
                       />
                       <Label htmlFor={`product-${product.id}-${carouselKey}`} className="text-sm">
-                        {product.name || 'Produto sem nome'} ({product.sku || 'Sem SKU'})
+                        {product.name || 'Produto sem nome'} ({product.id || 'Sem ID'})
                       </Label>
                     </div>
                   ))}
@@ -405,4 +406,3 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
 };
 
 export default SpecialSectionFixedContentManager;
-

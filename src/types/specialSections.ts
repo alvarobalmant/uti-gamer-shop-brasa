@@ -1,4 +1,5 @@
-import { Database } from "./supabase/types";
+
+import { Database } from "../integrations/supabase/types";
 
 // Base type for Special Section from the database
 export type SpecialSection = Database["public"]["Tables"]["special_sections"]["Row"] & {
@@ -40,4 +41,21 @@ export type SpecialSectionGridLayoutCreateInput = Omit<
 // Input type for updating an existing Special Section Grid Layout
 export type SpecialSectionGridLayoutUpdateInput = Partial<SpecialSectionGridLayoutCreateInput>;
 
+// Add the missing CarouselConfig type
+export interface CarouselConfig {
+  title?: string;
+  selection_mode?: 'tags' | 'products' | 'combined';
+  tag_ids?: string[];
+  product_ids?: string[];
+}
 
+// Add the missing FixedContentFormData type
+export interface FixedContentFormData {
+  banner_principal?: { image_url?: string; link_url?: string; };
+  banner_medio_1?: { image_url?: string; title?: string; subtitle?: string; link_url?: string; };
+  banner_medio_2?: { image_url?: string; title?: string; subtitle?: string; link_url?: string; };
+  banner_pequeno?: { image_url?: string; link_url?: string; };
+  banner_destaque?: { title?: string; subtitle?: string; link_url?: string; button_text?: string; };
+  carrossel_1?: CarouselConfig;
+  carrossel_2?: CarouselConfig;
+}

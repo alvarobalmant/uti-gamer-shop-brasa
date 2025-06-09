@@ -17,4 +17,5 @@ export interface Product {
   stock?: number;
   category_id?: string;
   tags?: { id: string; name: string; }[];
+  sku?: string; // Add the missing sku property
 }

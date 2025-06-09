@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -40,15 +41,19 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
     if (!sectionId) return; // Should not happen if called correctly
     setLoading(true);
     try {
+      const elementWithType = {
+        ...elementData,
+        special_section_id: sectionId,
+        element_type: elementData.element_type || 'banner' // Ensure element_type is provided
+      };
+
       const { data, error: insertError } = await supabase
         .from('special_section_elements')
-        .insert([{ ...elementData, special_section_id: sectionId }])
+        .insert([elementWithType])
         .select();
 
       if (insertError) throw insertError;
       if (data) {
-        // Add to local state optimistically or refetch
-        // setElements(prev => [...prev, ...data].sort((a, b) => a.display_order - b.display_order));
         await fetchElements(); // Refetch for simplicity and consistency
         toast({ title: 'Sucesso', description: 'Elemento adicionado à seção.' });
       }
@@ -71,8 +76,6 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
 
       if (updateError) throw updateError;
 
-      // Update local state optimistically or refetch
-      // setElements(prev => prev.map(el => el.id === elementId ? { ...el, ...elementData } : el).sort((a, b) => a.display_order - b.display_order));
       await fetchElements(); // Refetch for simplicity
       toast({ title: 'Sucesso', description: 'Elemento atualizado.' });
     } catch (err: any) {
@@ -94,8 +97,6 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
 
       if (deleteError) throw deleteError;
 
-      // Remove from local state optimistically or refetch
-      // setElements(prev => prev.filter(el => el.id !== elementId));
       await fetchElements(); // Refetch for simplicity
       toast({ title: 'Sucesso', description: 'Elemento excluído.' });
     } catch (err: any) {
@@ -114,4 +115,3 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
 
   return { elements, setElements, loading, error, fetchElements, addElement, updateElement, deleteElement };
 };
-
