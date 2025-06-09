@@ -27,7 +27,18 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
         .order('display_order', { ascending: true });
 
       if (fetchError) throw fetchError;
-      setElements(data || []);
+      
+      // Transform the data to handle content_ids as string array
+      const transformedData = (data || []).map(element => ({
+        ...element,
+        content_ids: Array.isArray(element.content_ids) 
+          ? element.content_ids 
+          : element.content_ids 
+            ? [element.content_ids as string] 
+            : []
+      }));
+      
+      setElements(transformedData);
     } catch (err: any) {
       console.error('Error fetching special section elements:', err);
       setError('Falha ao carregar os elementos da seção.');

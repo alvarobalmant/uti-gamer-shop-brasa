@@ -5,11 +5,13 @@ import { Database } from "../integrations/supabase/types";
 export type SpecialSection = Database["public"]["Tables"]["special_sections"]["Row"] & {
   background_type?: 'color' | 'image';
   background_value?: string;
-  background_image_position?: string;
+  background_image_position?: 'center' | 'top' | 'bottom' | 'left' | 'right';
 };
 
 // Base type for Special Section Element from the database
-export type SpecialSectionElement = Database["public"]["Tables"]["special_section_elements"]["Row"];
+export type SpecialSectionElement = Database["public"]["Tables"]["special_section_elements"]["Row"] & {
+  content_ids?: string[];
+};
 
 // Base type for Special Section Grid Layout from the database
 export type SpecialSectionGridLayout = Database["public"]["Tables"]["special_section_grid_layouts"]["Row"];

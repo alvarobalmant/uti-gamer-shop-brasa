@@ -119,14 +119,12 @@ const Index = () => {
       {/* Product Modal */}
       <ProductModal 
         isOpen={showProductModal} 
-        onClose={() => setShowProductModal(false)} 
+        onOpenChange={setShowProductModal} 
         product={selectedProduct} 
-        loading={productsLoading} // Pass productsLoading to the modal
+        loading={productsLoading}
       />
     </div>
   );
 };
 
 export default Index;
-
-
