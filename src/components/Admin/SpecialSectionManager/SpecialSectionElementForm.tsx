@@ -73,7 +73,7 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({ e
         image_url: element.image_url ?? '',
         link_url: element.link_url ?? '',
         background_image_url: element.background_image_url ?? '',
-        content_ids: element.content_ids ?? [],
+        content_ids: Array.isArray(element.content_ids) ? element.content_ids : [],
         // Ensure numbers are numbers
         width_percentage: element.width_percentage ?? undefined,
         height_desktop: element.height_desktop ?? undefined,
@@ -258,4 +258,3 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({ e
 };
 
 export default SpecialSectionElementForm;
-

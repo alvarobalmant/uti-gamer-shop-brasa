@@ -83,14 +83,14 @@ const SpecialSectionElementRenderer: React.FC<SpecialSectionElementRendererProps
       case 'product_carousel':
         // TODO: Fetch actual products using element.content_type and element.content_ids
         // const { products, loading } = useProductsByIds(element.content_ids || []);
-        const productIds = element.content_ids || []; // Placeholder
+        const productIds = Array.isArray(element.content_ids) ? element.content_ids : []; // Handle Json type properly
         return (
           <div style={getElementStyle()} className="w-full">
             {element.title && <h3 className="text-xl font-semibold mb-3 text-white">{element.title}</h3>}
             {/* Basic Grid Placeholder - Replace with actual Carousel */}
             <div className={`grid grid-cols-${element.visible_items_mobile} md:grid-cols-${element.visible_items_tablet} lg:grid-cols-${element.visible_items_desktop} gap-4`}>
               {productIds.length > 0 ? (
-                productIds.map(id => <PlaceholderProductCard key={id} productId={id} />)
+                productIds.map(id => <PlaceholderProductCard key={id} productId={String(id)} />)
               ) : (
                 <p className="text-gray-500 col-span-full text-center">Nenhum produto selecionado para este carrossel.</p>
               )}
@@ -123,4 +123,3 @@ const SpecialSectionElementRenderer: React.FC<SpecialSectionElementRendererProps
 };
 
 export default SpecialSectionElementRenderer;
-

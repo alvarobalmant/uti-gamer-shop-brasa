@@ -38,9 +38,9 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
       title: section.title ?? '',
       description: section.description ?? '',
       is_active: section.is_active ?? true,
-      background_type: section.background_type ?? 'color',
+      background_type: (section.background_type === 'color' || section.background_type === 'image') ? section.background_type : 'color',
       background_value: section.background_value ?? '',
-      background_image_position: section.background_image_position ?? 'center',
+      background_image_position: (section.background_image_position as 'center' | 'top' | 'bottom' | 'left' | 'right') ?? 'center',
     } : {
       title: '',
       description: '',
@@ -184,7 +184,7 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
                     <Label htmlFor="image_recommendation">Recomendação de Tamanho da Imagem</Label>
                     <Textarea
                       id="image_recommendation"
-                      value={getImageRecommendation(section?.type)} // Use section.type if available
+                      value={getImageRecommendation(undefined)} // Remove section.type reference
                       readOnly
                       className="bg-gray-700 border-gray-600 text-white resize-none"
                     />
@@ -215,5 +215,3 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
 };
 
 export default SpecialSectionForm;
-
-
