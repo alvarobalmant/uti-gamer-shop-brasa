@@ -7,8 +7,13 @@ import { Card } from '@/components/ui/card';
 import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
 import ProductCardPrice from './ProductCard/ProductCardPrice';
+<<<<<<< HEAD
 import ProductCardBadge from './ProductCard/ProductCardBadge';
 
+=======
+import ProductCardReducedPriceBadge from './ProductCard/ProductCardReducedPriceBadge';
+import ProductCardBadge from './ProductCard/ProductCardBadge';
+>>>>>>> 5a443887cf3fbab70105dd954c113ef55db70b7a
 
 export type { Product } from '@/hooks/useProducts';
 
@@ -46,10 +51,18 @@ const ProductCard = ({ product, onCardClick, onAddToCart }: ProductCardProps) =>
       )}
       onClick={handleCardClick}
     >
+<<<<<<< HEAD
       <ProductCardBadge 
         text={product.badge_text || ''} 
         color={product.badge_color || '#22c55e'} 
         isVisible={product.badge_visible || false} 
+=======
+      <ProductCardReducedPriceBadge isVisible={hasDiscount} />
+      <ProductCardBadge 
+        badgeText={product.badge_text} 
+        badgeColor={product.badge_color} 
+        badgeVisible={product.badge_visible} 
+>>>>>>> 5a443887cf3fbab70105dd954c113ef55db70b7a
       />
       
       <ProductCardImage product={product} />
