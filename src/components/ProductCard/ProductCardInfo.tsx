@@ -8,12 +8,11 @@ interface ProductCardInfoProps {
 
 const ProductCardInfo: React.FC<ProductCardInfoProps> = ({ product }) => {
   return (
-    <div className="mb-1">
+    <div className="mb-4"> {/* Aumentando margem inferior para criar mais espaço entre título e preço */}
       <h3
         className={cn(
-          "text-sm font-bold leading-tight text-gray-900 uppercase", // GameStop-like title style
-          "line-clamp-2 transition-colors duration-200",
-          "group-hover:text-red-600" // Example hover effect, adjust as needed
+          "font-sans text-base font-semibold leading-tight text-gray-900 text-left",
+          "line-clamp-2"
         )}
         title={product.name}
       >

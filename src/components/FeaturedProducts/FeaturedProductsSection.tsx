@@ -158,7 +158,7 @@ const FeaturedProductsSection = ({
                 touchAction: "pan-x pan-y"
               } as React.CSSProperties}
             >
-              <div className="flex gap-4 md:gap-6 min-w-max px-1">
+              <div className="flex gap-0 md:gap-0.5 min-w-max px-1"> {/* Reduzindo ainda mais o gap entre os cards para ficar como na GameStop */}
                 {displayedProducts.map((product, index) => (
                   <div
                     key={`${selectedCategory}-${product.id}`}
@@ -199,3 +199,5 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
+
+

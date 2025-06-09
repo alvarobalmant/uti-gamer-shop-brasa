@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 
@@ -13,30 +12,27 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
   const discount = Math.round(((originalPrice - product.price) / originalPrice) * 100);
 
   return (
-    <div className="mb-4 md:mb-4 mb-3">
+    <div className="mt-0"> {/* Removendo margem superior já que o espaçamento vem do título */}
       {/* Main Price */}
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-xl font-bold text-gray-900 md:text-xl text-lg">
+      <div className="flex items-center gap-1">
+        <span className="text-base font-bold text-gray-900"> {/* Ajustado para tamanho e peso da Gamestop */}
           R$ {product.price.toFixed(2)}
         </span>
         {discount > 0 && (
-          <span className="text-sm text-gray-500 line-through md:text-sm text-xs">
+          <span className="text-xs text-gray-400 line-through"> {/* Ajustado para cor e tamanho da Gamestop */}
             R$ {originalPrice.toFixed(2)}
           </span>
         )}
       </div>
       
       {/* Pro Price */}
-      <div className="text-sm font-medium text-purple-600 mb-1 md:text-sm text-xs">
-        R$ {proPrice.toFixed(2)} Membros Pro
-      </div>
-      
-      {/* Installments */}
-      <div className="text-xs text-gray-500 md:text-xs text-[10px]">
-        ou 12x de R$ {(product.price / 12).toFixed(2)}
+      <div className="text-sm font-medium text-[#800080]"> {/* Ajustado para cor e tamanho da Gamestop */}
+        R$ {proPrice.toFixed(2)} for Pros
       </div>
     </div>
   );
 };
 
 export default ProductCardPrice;
+
+
