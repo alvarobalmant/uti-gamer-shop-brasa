@@ -7,6 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FixedContentFormData, CarouselConfig } from '@/types/specialSections'; // Assuming types are centralized
+import ProductModal from '@/components/ProductModal';
 
 const SpecialSectionCarouselPage: React.FC = () => {
   const { sectionId, carouselIndex } = useParams<{ sectionId: string; carouselIndex: string }>();
@@ -14,6 +15,10 @@ const SpecialSectionCarouselPage: React.FC = () => {
   const [loadingConfig, setLoadingConfig] = useState(true);
   const [errorConfig, setErrorConfig] = useState<string | null>(null);
   const { products, loading: loadingProducts, fetchProductsByConfig } = useProducts(); // Need a new fetch function
+  
+  // State for managing the product modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -38,8 +43,8 @@ const SpecialSectionCarouselPage: React.FC = () => {
           const config = data.content_config as FixedContentFormData;
           const key = `carrossel_${carouselIndex}` as keyof FixedContentFormData;
           const specificCarouselConfig = config[key];
-          if (specificCarouselConfig) {
-            setCarouselConfig(specificCarouselConfig);
+          if (specificCarouselConfig && 'title' in specificCarouselConfig) {
+            setCarouselConfig(specificCarouselConfig as CarouselConfig);
           } else {
             throw new Error(`Configuração para carrossel ${carouselIndex} não encontrada.`);
           }
@@ -63,6 +68,12 @@ const SpecialSectionCarouselPage: React.FC = () => {
       fetchProductsByConfig(carouselConfig);
     }
   }, [carouselConfig, fetchProductsByConfig]);
+
+  // Function to handle opening the modal
+  const handleProductCardClick = (productId: string) => {
+    setSelectedProductId(productId);
+    setIsModalOpen(true);
+  };
 
   if (loadingConfig) {
     return <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[50vh]"><Loader2 className="h-12 w-12 animate-spin text-gray-500" /></div>;
@@ -92,17 +103,29 @@ const SpecialSectionCarouselPage: React.FC = () => {
       {loadingProducts ? (
         <div className="flex justify-center items-center min-h-[30vh]"><Loader2 className="h-8 w-8 animate-spin text-gray-500" /></div>
       ) : products.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pt-2 pb-4">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              onCardClick={handleProductCardClick}
+            />
           ))}
         </div>
       ) : (
         <p className="text-center text-gray-500">Nenhum produto encontrado para este carrossel.</p>
+      )}
+
+      {/* Product Modal */}
+      {selectedProductId && (
+        <ProductModal
+          product={products.find(p => p.id === selectedProductId) || null}
+          isOpen={isModalOpen}
+          onOpenChange={setIsModalOpen}
+        />
       )}
     </div>
   );
 };
 
 export default SpecialSectionCarouselPage;
-

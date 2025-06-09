@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SpecialSectionElement } from '@/types/specialSections';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -83,7 +84,24 @@ const SpecialSectionElementRenderer: React.FC<SpecialSectionElementRendererProps
       case 'product_carousel':
         // TODO: Fetch actual products using element.content_type and element.content_ids
         // const { products, loading } = useProductsByIds(element.content_ids || []);
-        const productIds = element.content_ids || []; // Placeholder
+        const contentIds = element.content_ids;
+        let productIds: string[] = [];
+        
+        // Safely handle the Json type for content_ids
+        if (Array.isArray(contentIds)) {
+          productIds = contentIds.filter(id => typeof id === 'string') as string[];
+        } else if (typeof contentIds === 'string') {
+          try {
+            const parsed = JSON.parse(contentIds);
+            if (Array.isArray(parsed)) {
+              productIds = parsed.filter(id => typeof id === 'string');
+            }
+          } catch {
+            // If parsing fails, treat as empty array
+            productIds = [];
+          }
+        }
+        
         return (
           <div style={getElementStyle()} className="w-full">
             {element.title && <h3 className="text-xl font-semibold mb-3 text-white">{element.title}</h3>}
@@ -123,4 +141,3 @@ const SpecialSectionElementRenderer: React.FC<SpecialSectionElementRendererProps
 };
 
 export default SpecialSectionElementRenderer;
-

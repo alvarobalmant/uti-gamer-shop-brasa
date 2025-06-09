@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SpecialSection } from '@/types/specialSections';
 import { Link } from 'react-router-dom';
@@ -68,7 +69,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
               <ProductCard 
                 key={`${carouselKey}-${product.id}`} 
                 product={product} 
-                onAddToCart={() => addToCart(product)} 
                 onCardClick={onProductCardClick} // Pass the click handler
               />
             ))
@@ -179,5 +179,3 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
 };
 
 export default SpecialSectionRenderer;
-
-

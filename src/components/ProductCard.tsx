@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
@@ -6,17 +7,18 @@ import { Card } from '@/components/ui/card';
 import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
 import ProductCardPrice from './ProductCard/ProductCardPrice';
-import ProductCardProPrice from './ProductCard/ProductCardProPrice';
-import ProductCardReducedPriceBadge from './ProductCard/ProductCardReducedPriceBadge';
+import ProductCardBadge from './ProductCard/ProductCardBadge';
+
 
 export type { Product } from '@/hooks/useProducts';
 
 interface ProductCardProps {
   product: Product;
   onCardClick: (productId: string) => void;
+  onAddToCart?: (product: Product) => void;
 }
 
-const ProductCard = ({ product, onCardClick }: ProductCardProps) => {
+const ProductCard = ({ product, onCardClick, onAddToCart }: ProductCardProps) => {
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('[data-action="true"]')) {
@@ -25,37 +27,37 @@ const ProductCard = ({ product, onCardClick }: ProductCardProps) => {
     onCardClick(product.id);
   };
 
-  const hasDiscount = product.price < (product.originalPrice || product.price);
+  // Calculate if there's a discount for the badge
+  const originalPrice = product.price * 1.15;
+  const hasDiscount = product.price < originalPrice;
 
   return (
     <Card
       className={cn(
-        "group relative flex flex-col bg-white", // Removido overflow-hidden aqui
+        "group relative flex flex-col bg-white overflow-hidden",
         "border border-gray-200",
-        "rounded-xl",
+        "rounded-lg",
         "shadow-none",
         "transition-all duration-200 ease-in-out",
-        "hover:shadow-sm hover:-translate-y-0.5",
+        "hover:shadow-md hover:-translate-y-1",
         "cursor-pointer",
-        "w-[210px] h-[340px]",
-        "px-2 py-3",
-        "m-0.5" // Reduzindo margem para diminuir espaçamento entre cards
+        "w-[200px] h-[320px]", // GameStop card dimensions
+        "p-0"
       )}
       onClick={handleCardClick}
     >
-      <ProductCardReducedPriceBadge isVisible={hasDiscount} />
-      <ProductCardImage
-        product={product}
+      <ProductCardBadge 
+        text={product.badge_text || ''} 
+        color={product.badge_color || '#22c55e'} 
+        isVisible={product.badge_visible || false} 
       />
+      
+      <ProductCardImage product={product} />
 
-      <div className="flex flex-1 flex-col justify-between p-3 text-left">
-        <div>
+      <div className="flex flex-1 flex-col justify-between p-3">
+        <div className="space-y-2">
           <ProductCardInfo product={product} />
-          {product.price ? (
-            <ProductCardPrice product={product} />
-          ) : (
-            <ProductCardProPrice product={product} />
-          )}
+          <ProductCardPrice product={product} />
         </div>
       </div>
     </Card>
@@ -63,5 +65,3 @@ const ProductCard = ({ product, onCardClick }: ProductCardProps) => {
 };
 
 export default ProductCard;
-
-

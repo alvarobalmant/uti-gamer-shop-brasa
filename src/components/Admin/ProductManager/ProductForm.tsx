@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { ArrowLeft } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
@@ -33,6 +34,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     sizes: [] as string[],
     colors: [] as string[],
     tagIds: [] as string[],
+    badge_text: '',
+    badge_color: '#22c55e',
+    badge_visible: false,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,6 +54,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
         sizes: product.sizes || [],
         colors: product.colors || [],
         tagIds: product.tags?.map(tag => tag.id) || [],
+        badge_text: product.badge_text || '',
+        badge_color: product.badge_color || '#22c55e',
+        badge_visible: product.badge_visible || false,
       });
     } else {
       // Reset form for new product
@@ -63,6 +70,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
         sizes: [],
         colors: [],
         tagIds: [],
+        badge_text: '',
+        badge_color: '#22c55e',
+        badge_visible: false,
       });
     }
   }, [product]);
@@ -119,6 +129,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
         sizes: formData.sizes,
         colors: formData.colors,
         tagIds: formData.tagIds,
+        badge_text: formData.badge_text?.trim() || null,
+        badge_color: formData.badge_color || '#22c55e',
+        badge_visible: formData.badge_visible,
       };
 
       console.log('Dados finais do produto:', productData);
@@ -239,6 +252,56 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 selectedTagIds={formData.tagIds}
                 onTagChange={handleTagChange}
               />
+
+              {/* Badge Configuration */}
+              <div className="space-y-4 p-4 border border-gray-600 rounded-lg">
+                <h3 className="text-white font-medium">Configuração da Badge</h3>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="badge_visible"
+                    checked={formData.badge_visible}
+                    onCheckedChange={(checked) => handleInputChange('badge_visible', checked)}
+                  />
+                  <Label htmlFor="badge_visible" className="text-white">
+                    Exibir badge no produto
+                  </Label>
+                </div>
+
+                {formData.badge_visible && (
+                  <>
+                    <div>
+                      <Label htmlFor="badge_text" className="text-white">Texto da Badge</Label>
+                      <Input
+                        id="badge_text"
+                        value={formData.badge_text}
+                        onChange={(e) => handleInputChange('badge_text', e.target.value)}
+                        className="bg-gray-700 border-gray-600 text-white"
+                        placeholder="Ex: PRE-OWNED BUNDLE DEAL"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="badge_color" className="text-white">Cor da Badge</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="badge_color"
+                          type="color"
+                          value={formData.badge_color}
+                          onChange={(e) => handleInputChange('badge_color', e.target.value)}
+                          className="bg-gray-700 border-gray-600 w-16 h-10"
+                        />
+                        <Input
+                          value={formData.badge_color}
+                          onChange={(e) => handleInputChange('badge_color', e.target.value)}
+                          className="bg-gray-700 border-gray-600 text-white flex-1"
+                          placeholder="#22c55e"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">

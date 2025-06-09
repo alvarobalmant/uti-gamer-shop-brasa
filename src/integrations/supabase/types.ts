@@ -283,6 +283,9 @@ export type Database = {
       products: {
         Row: {
           additional_images: string[] | null
+          badge_color: string | null
+          badge_text: string | null
+          badge_visible: boolean | null
           category: string | null
           colors: string[] | null
           condition: string | null
@@ -310,6 +313,9 @@ export type Database = {
         }
         Insert: {
           additional_images?: string[] | null
+          badge_color?: string | null
+          badge_text?: string | null
+          badge_visible?: boolean | null
           category?: string | null
           colors?: string[] | null
           condition?: string | null
@@ -337,6 +343,9 @@ export type Database = {
         }
         Update: {
           additional_images?: string[] | null
+          badge_color?: string | null
+          badge_text?: string | null
+          badge_visible?: boolean | null
           category?: string | null
           colors?: string[] | null
           condition?: string | null
@@ -460,6 +469,233 @@ export type Database = {
           position?: number
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      special_section_elements: {
+        Row: {
+          background_color: string | null
+          background_gradient: string | null
+          background_image_url: string | null
+          background_type: string | null
+          border_radius: number | null
+          button_color: string | null
+          button_text_color: string | null
+          content_ids: Json | null
+          content_type: string | null
+          created_at: string | null
+          display_order: number | null
+          element_type: string
+          grid_position: string | null
+          grid_size: string | null
+          height_desktop: number | null
+          height_mobile: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          link_text: string | null
+          link_url: string | null
+          margin_bottom: number | null
+          mobile_settings: Json | null
+          padding: number | null
+          special_section_id: string | null
+          subtitle: string | null
+          text_color: string | null
+          title: string | null
+          updated_at: string | null
+          visible_items_desktop: number | null
+          visible_items_mobile: number | null
+          visible_items_tablet: number | null
+          width_percentage: number | null
+        }
+        Insert: {
+          background_color?: string | null
+          background_gradient?: string | null
+          background_image_url?: string | null
+          background_type?: string | null
+          border_radius?: number | null
+          button_color?: string | null
+          button_text_color?: string | null
+          content_ids?: Json | null
+          content_type?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          element_type: string
+          grid_position?: string | null
+          grid_size?: string | null
+          height_desktop?: number | null
+          height_mobile?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          link_text?: string | null
+          link_url?: string | null
+          margin_bottom?: number | null
+          mobile_settings?: Json | null
+          padding?: number | null
+          special_section_id?: string | null
+          subtitle?: string | null
+          text_color?: string | null
+          title?: string | null
+          updated_at?: string | null
+          visible_items_desktop?: number | null
+          visible_items_mobile?: number | null
+          visible_items_tablet?: number | null
+          width_percentage?: number | null
+        }
+        Update: {
+          background_color?: string | null
+          background_gradient?: string | null
+          background_image_url?: string | null
+          background_type?: string | null
+          border_radius?: number | null
+          button_color?: string | null
+          button_text_color?: string | null
+          content_ids?: Json | null
+          content_type?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          element_type?: string
+          grid_position?: string | null
+          grid_size?: string | null
+          height_desktop?: number | null
+          height_mobile?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          link_text?: string | null
+          link_url?: string | null
+          margin_bottom?: number | null
+          mobile_settings?: Json | null
+          padding?: number | null
+          special_section_id?: string | null
+          subtitle?: string | null
+          text_color?: string | null
+          title?: string | null
+          updated_at?: string | null
+          visible_items_desktop?: number | null
+          visible_items_mobile?: number | null
+          visible_items_tablet?: number | null
+          width_percentage?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "special_section_elements_special_section_id_fkey"
+            columns: ["special_section_id"]
+            isOneToOne: false
+            referencedRelation: "special_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      special_section_grid_layouts: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          layout_structure: Json
+          name: string
+          preview_image_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          layout_structure: Json
+          name: string
+          preview_image_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          layout_structure?: Json
+          name?: string
+          preview_image_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      special_sections: {
+        Row: {
+          background_color: string | null
+          background_gradient: string | null
+          background_image_crop_data: Json | null
+          background_image_position: string | null
+          background_image_url: string | null
+          background_type: string
+          background_value: string | null
+          border_radius: number | null
+          content_config: Json | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          margin_bottom: number | null
+          margin_top: number | null
+          mobile_settings: Json | null
+          padding_bottom: number | null
+          padding_left: number | null
+          padding_right: number | null
+          padding_top: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          background_gradient?: string | null
+          background_image_crop_data?: Json | null
+          background_image_position?: string | null
+          background_image_url?: string | null
+          background_type?: string
+          background_value?: string | null
+          border_radius?: number | null
+          content_config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          margin_bottom?: number | null
+          margin_top?: number | null
+          mobile_settings?: Json | null
+          padding_bottom?: number | null
+          padding_left?: number | null
+          padding_right?: number | null
+          padding_top?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          background_gradient?: string | null
+          background_image_crop_data?: Json | null
+          background_image_position?: string | null
+          background_image_url?: string | null
+          background_type?: string
+          background_value?: string | null
+          border_radius?: number | null
+          content_config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          margin_bottom?: number | null
+          margin_top?: number | null
+          mobile_settings?: Json | null
+          padding_bottom?: number | null
+          padding_left?: number | null
+          padding_right?: number | null
+          padding_top?: number | null
+          title?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

@@ -38,14 +38,14 @@ const WhyChooseUs = () => {
         <SectionTitle
           title="Por que escolher a UTI DOS GAMES?"
           subtitle="Nossos diferenciais que fazem a diferença na sua experiência"
-          className="text-center mb-8 md:mb-12"
+          className="mb-8 md:mb-12"
           titleClassName="text-white"
           subtitleClassName="text-secondary-foreground/80"
         />
 
         <div
           className={cn(
-            "md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 md:max-w-4xl md:mx-auto",
+            "md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 md:max-w-4xl md:mx-auto md:justify-items-center",
             "flex overflow-x-auto space-x-6 pb-4 md:space-x-0 md:pb-0 md:overflow-visible",
             "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 md:mx-auto md:px-0"
           )}
@@ -74,14 +74,14 @@ const WhyChooseUs = () => {
                   </div>
                 </div>
                 <h3 className={cn(
-                  "text-base font-semibold text-secondary-foreground mb-2",
+                  "text-base font-semibold text-secondary-foreground mb-2 text-center",
                   "transition-colors duration-300",
                   // Apply hover color only on desktop
                   "md:group-hover:text-primary/80"
                 )}>
                   {item.title}
                 </h3>
-                <p className="text-sm text-secondary-foreground/90 leading-relaxed">
+                <p className="text-sm text-secondary-foreground/90 leading-relaxed text-center">
                   {item.description}
                 </p>
               </div>

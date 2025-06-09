@@ -34,7 +34,7 @@ const SpecializedServices = () => {
         <SectionTitle
           title="Nossos Serviços Especializados"
           subtitle="Mais de 10 anos oferecendo os melhores serviços em games para Colatina e região"
-          className="text-center mb-8 md:mb-12"
+          className="mb-8 md:mb-12"
         />
 
         {loading && (

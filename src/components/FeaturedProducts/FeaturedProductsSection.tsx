@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -147,7 +148,7 @@ const FeaturedProductsSection = ({
           <div className="relative">
             <div
               className={cn(
-                "w-full overflow-x-auto overflow-y-hidden pb-4",
+                "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2", // Added pt-2 for top padding
                 "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
                 "overscroll-behavior-x-contain"
               )}
@@ -158,12 +159,12 @@ const FeaturedProductsSection = ({
                 touchAction: "pan-x pan-y"
               } as React.CSSProperties}
             >
-              <div className="flex gap-0 md:gap-0.5 min-w-max px-1"> {/* Reduzindo ainda mais o gap entre os cards para ficar como na GameStop */}
+              <div className="flex gap-3 min-w-max px-1 py-1"> {/* Added py-1 for vertical padding */}
                 {displayedProducts.map((product, index) => (
                   <div
                     key={`${selectedCategory}-${product.id}`}
                     className={cn(
-                      "w-60 sm:w-64 flex-shrink-0",
+                      "w-[200px] flex-shrink-0", // GameStop card width
                       "transition-all duration-300 ease-in-out",
                       animateProducts
                         ? "opacity-100 translate-y-0"
@@ -175,8 +176,8 @@ const FeaturedProductsSection = ({
                   >
                     <ProductCard
                       product={product}
+                      onCardClick={handleProductCardClick}
                       onAddToCart={onAddToCart}
-                      onCardClick={handleProductCardClick} // Pass the handler here
                     />
                   </div>
                 ))}
@@ -187,9 +188,9 @@ const FeaturedProductsSection = ({
       </div>
 
       {/* Render the Product Modal only if no external onCardClick handler is provided */}
-      {!onCardClick && (
+      {!onCardClick && selectedProductId && (
         <ProductModal
-          productId={selectedProductId}
+          product={products.find(p => p.id === selectedProductId) || null}
           isOpen={isModalOpen}
           onOpenChange={setIsModalOpen}
         />
@@ -199,5 +200,3 @@ const FeaturedProductsSection = ({
 };
 
 export default FeaturedProductsSection;
-
-

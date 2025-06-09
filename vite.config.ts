@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => ({
     allowedHosts: [
         "8080-ia7rp8j83n0fk28il71r1-f878a32f.manus.computer", // Add the new host for port 8080
         "8080-ilbtoswv6dslzakui24z6-0fb3bda1.manusvm.computer",
+        "8080-i99wp7okhgwt2i5jx06di-2ab66ca5.manus.computer",
     ],
   },
   preview: {

@@ -66,7 +66,7 @@ const HeroQuickLinks = () => {
                   src={link.icon_url}
                   alt={link.label}
                   className={cn(
-                    "w-7 h-7 md:w-8 md:h-8 mb-3 object-contain transition-transform duration-300",
+                    "w-12 h-12 md:w-16 md:h-16 mb-3 object-contain transition-transform duration-300",
                     // Remover hover scale no mobile
                     "md:group-hover:scale-110"
                   )}
@@ -74,7 +74,7 @@ const HeroQuickLinks = () => {
                   onError={handleImageError}
                 />
                 <span className={cn(
-                  "text-xs sm:text-sm font-semibold text-gray-800 text-center leading-tight transition-colors duration-200",
+                  "text-sm sm:text-base md:text-lg font-semibold text-gray-800 text-center leading-tight transition-colors duration-200",
                   // Remover hover color no mobile
                   "md:group-hover:text-primary"
                 )}>

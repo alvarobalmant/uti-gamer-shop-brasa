@@ -17,4 +17,8 @@ export interface Product {
   stock?: number;
   category_id?: string;
   tags?: { id: string; name: string; }[];
+  sku?: string; // Add the missing sku property
+  badge_text?: string;
+  badge_color?: string;
+  badge_visible?: boolean;
 }

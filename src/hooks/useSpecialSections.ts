@@ -5,26 +5,33 @@ import { SpecialSection, SpecialSectionCreateInput, SpecialSectionUpdateInput } 
 
 export const useSpecialSections = () => {
   const [specialSections, setSpecialSections] = useState<SpecialSection[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchSpecialSections = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('special_sections')
         .select('*')
-        .order('title', { ascending: true }); // Order by title for consistency in admin list
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setSpecialSections(data || []);
-    } catch (error: any) {
-      toast({
-        title: 'Erro ao carregar seções especiais',
-        description: error.message,
-        variant: 'destructive',
-      });
-      setSpecialSections([]);
+      if (fetchError) throw fetchError;
+      
+      // Transform the data to match our SpecialSection type
+      const transformedData = (data || []).map(section => ({
+        ...section,
+        background_type: section.background_type as 'color' | 'image' | undefined,
+        background_image_position: section.background_image_position as 'center' | 'top' | 'bottom' | 'left' | 'right' | undefined,
+      }));
+      
+      setSpecialSections(transformedData);
+    } catch (err: any) {
+      console.error('Error fetching special sections:', err);
+      setError('Falha ao carregar as seções especiais.');
+      toast({ title: 'Erro', description: 'Não foi possível carregar as seções especiais.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -211,4 +218,3 @@ export const useSpecialSections = () => {
     deleteSpecialSection,
   };
 };
-

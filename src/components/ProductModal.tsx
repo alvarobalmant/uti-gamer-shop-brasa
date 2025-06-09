@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Product } from '@/hooks/useProducts';
@@ -16,12 +17,19 @@ import ProductDescription from '@/components/ProductPage/ProductDescription';
 
 interface ProductModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
   product: Product | null;
-  loading: boolean;
+  loading?: boolean;
+  productId?: string | null;
 }
 
-const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, product, loading }) => {
+const ProductModal: React.FC<ProductModalProps> = ({ 
+  isOpen, 
+  onOpenChange, 
+  product, 
+  loading = false,
+  productId 
+}) => {
   const { addToCart, loading: cartLoading } = useCart();
   const [selectedCondition, setSelectedCondition] = React.useState<'new' | 'pre-owned' | 'digital'>('pre-owned');
   const [selectedSize, setSelectedSize] = React.useState('');
@@ -43,7 +51,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, product, l
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[900px] w-full h-[90vh] flex flex-col p-0">
         <DialogHeader className="p-4 pb-0">
           <DialogTitle>{product?.name || 'Detalhes do Produto'}</DialogTitle>
@@ -96,5 +104,3 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, product, l
 };
 
 export default ProductModal;
-
-
