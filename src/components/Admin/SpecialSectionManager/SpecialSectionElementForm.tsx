@@ -58,7 +58,7 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({
     defaultValues: element ? {
       title: element.title || '',
       subtitle: element.subtitle || '',
-      element_type: element.element_type as 'banner_full' | 'banner_medium' | 'banner_small' | 'banner_product_highlight' | 'product_carousel' | 'text_block',
+      element_type: element.element_type,
       image_url: element.image_url || '',
       link_url: element.link_url || '',
       link_text: element.link_text || '',
@@ -124,7 +124,7 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({
       reset({
         title: element.title || '',
         subtitle: element.subtitle || '',
-        element_type: element.element_type as 'banner_full' | 'banner_medium' | 'banner_small' | 'banner_product_highlight' | 'product_carousel' | 'text_block',
+        element_type: element.element_type,
         image_url: element.image_url || '',
         link_url: element.link_url || '',
         link_text: element.link_text || '',
@@ -176,7 +176,7 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({
               <Label htmlFor="element_type">Tipo de Elemento</Label>
               <Select 
                 value={selectedElementType} 
-                onValueChange={(value) => setValue('element_type', value as ElementFormData['element_type'])}
+                onValueChange={(value) => setValue('element_type', value as any)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />
@@ -239,7 +239,7 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({
               <Label htmlFor="background_type">Tipo de Fundo</Label>
               <Select 
                 value={selectedBackgroundType || 'transparent'} 
-                onValueChange={(value) => setValue('background_type', value as ElementFormData['background_type'])}
+                onValueChange={(value) => setValue('background_type', value as any)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo de fundo" />

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
@@ -42,11 +41,6 @@ const TestPlatformPage: React.FC = () => {
   const handleProductCardClick = (productId: string) => {
     setSelectedProductId(productId);
     setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedProductId(null);
   };
   
   // Renderizar estado de carregamento
@@ -143,7 +137,6 @@ const TestPlatformPage: React.FC = () => {
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
-        onClose={handleCloseModal}
       />
     </>
   );
