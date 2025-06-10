@@ -1,6 +1,6 @@
 
 import { Page } from './types';
-import { mockPages } from './mockData';
+import { supabase } from '@/integrations/supabase/client';
 
 // Utility functions for page operations
 export const createPageOperations = (
@@ -17,82 +17,176 @@ export const createPageOperations = (
     return pages.find(page => page.id === id) || null;
   };
 
-  // Carregar todas as páginas
+  // Carregar todas as páginas do Supabase
   const fetchPages = async () => {
     try {
-      // Simulação de chamada API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setPages(mockPages);
+      console.log("Fetching pages from Supabase...");
+      const { data, error } = await supabase
+        .from('pages')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+
+      console.log("Raw pages data from Supabase:", data);
+
+      // Mapear dados do Supabase para o formato esperado
+      const mappedPages: Page[] = (data || []).map(pageData => ({
+        id: pageData.id,
+        title: pageData.title,
+        slug: pageData.slug,
+        description: pageData.description || '',
+        isActive: pageData.is_active,
+        theme: pageData.theme || {
+          primaryColor: '#107C10',
+          secondaryColor: '#3A3A3A'
+        },
+        filters: {
+          tagIds: [],
+          categoryIds: [],
+          excludeTagIds: [],
+          excludeCategoryIds: []
+        },
+        createdAt: pageData.created_at,
+        updatedAt: pageData.updated_at
+      }));
+
+      console.log("Mapped pages:", mappedPages);
+      setPages(mappedPages);
       setError(null);
-    } catch (err) {
+    } catch (err: any) {
+      console.error("Error fetching pages:", err);
       setError('Erro ao carregar páginas');
-      console.error(err);
     }
   };
 
-  // Criar uma nova página
+  // Criar uma nova página no Supabase
   const createPage = async (pageData: Omit<Page, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      // Simulação de chamada API
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log("Creating page:", pageData);
       
+      const { data, error } = await supabase
+        .from('pages')
+        .insert({
+          title: pageData.title,
+          slug: pageData.slug,
+          description: pageData.description,
+          is_active: pageData.isActive,
+          theme: pageData.theme
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating page:", error);
+        throw error;
+      }
+
+      console.log("Created page:", data);
+
       const newPage: Page = {
-        ...pageData,
-        id: `${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        id: data.id,
+        title: data.title,
+        slug: data.slug,
+        description: data.description || '',
+        isActive: data.is_active,
+        theme: data.theme || {
+          primaryColor: '#107C10',
+          secondaryColor: '#3A3A3A'
+        },
+        filters: pageData.filters,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
       };
       
       setPages(prev => [...prev, newPage]);
       return newPage;
-    } catch (err) {
+    } catch (err: any) {
+      console.error("Error creating page:", err);
       setError('Erro ao criar página');
-      console.error(err);
       throw err;
     }
   };
 
-  // Atualizar uma página existente
+  // Atualizar uma página existente no Supabase
   const updatePage = async (id: string, pageData: Partial<Omit<Page, 'id' | 'createdAt' | 'updatedAt'>>) => {
     try {
-      // Simulação de chamada API
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log("Updating page:", id, pageData);
       
-      let updatedPage: Page | undefined;
-      setPages(prev => {
-        const updated = prev.map(page => {
-          if (page.id === id) {
-            updatedPage = { 
-              ...page, 
-              ...pageData, 
-              updatedAt: new Date().toISOString() 
-            };
-            return updatedPage;
-          }
-          return page;
-        });
-        return updated;
-      });
+      const { data, error } = await supabase
+        .from('pages')
+        .update({
+          title: pageData.title,
+          slug: pageData.slug,
+          description: pageData.description,
+          is_active: pageData.isActive,
+          theme: pageData.theme
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating page:", error);
+        throw error;
+      }
+
+      console.log("Updated page:", data);
+
+      const updatedPage: Page = {
+        id: data.id,
+        title: data.title,
+        slug: data.slug,
+        description: data.description || '',
+        isActive: data.is_active,
+        theme: data.theme || {
+          primaryColor: '#107C10',
+          secondaryColor: '#3A3A3A'
+        },
+        filters: pageData.filters || {
+          tagIds: [],
+          categoryIds: [],
+          excludeTagIds: [],
+          excludeCategoryIds: []
+        },
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
       
+      setPages(prev => prev.map(page => page.id === id ? updatedPage : page));
       return updatedPage;
-    } catch (err) {
+    } catch (err: any) {
+      console.error("Error updating page:", err);
       setError(`Erro ao atualizar página ${id}`);
-      console.error(err);
       throw err;
     }
   };
 
-  // Excluir uma página
+  // Excluir uma página do Supabase
   const deletePage = async (id: string) => {
     try {
-      // Simulação de chamada API
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log("Deleting page:", id);
       
+      const { error } = await supabase
+        .from('pages')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error("Error deleting page:", error);
+        throw error;
+      }
+
+      console.log("Deleted page:", id);
       setPages(prev => prev.filter(page => page.id !== id));
       return true;
-    } catch (err) {
+    } catch (err: any) {
+      console.error("Error deleting page:", err);
       setError(`Erro ao excluir página ${id}`);
-      console.error(err);
       throw err;
     }
   };
