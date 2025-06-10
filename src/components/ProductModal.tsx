@@ -8,7 +8,7 @@ import ProductModalNotFound from './ProductModal/ProductModalNotFound';
 
 interface ProductModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   onOpenChange?: (open: boolean) => void;
   productId?: string | null;
   product?: Product | null;
@@ -24,7 +24,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
   productId,
   product,
   loading = false,
-  relatedProducts,
+  relatedProducts = [],
   onRelatedProductClick
 }) => {
   if (!isOpen) return null;
@@ -33,7 +33,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     if (onOpenChange) {
       onOpenChange(open);
     }
-    if (!open) {
+    if (!open && onClose) {
       onClose();
     }
   };
@@ -44,7 +44,22 @@ const ProductModal: React.FC<ProductModalProps> = ({
         {loading ? (
           <ProductModalSkeleton />
         ) : product ? (
-          <ProductModalContent product={product} />
+          <ProductModalContent 
+            product={product}
+            relatedProducts={relatedProducts}
+            currentProductId={product.id}
+            isTransitioning={false}
+            scrollContainerRef={{ current: null }}
+            selectedCondition="new"
+            selectedSize=""
+            selectedColor=""
+            quantity={1}
+            onConditionChange={() => {}}
+            onSizeChange={() => {}}
+            onColorChange={() => {}}
+            onQuantityChange={() => {}}
+            onRelatedProductClick={onRelatedProductClick || (() => {})}
+          />
         ) : (
           <ProductModalNotFound />
         )}
