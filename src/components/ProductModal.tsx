@@ -8,7 +8,7 @@ import ProductModalNotFound from './ProductModal/ProductModalNotFound';
 
 interface ProductModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   onOpenChange?: (open: boolean) => void;
   productId?: string | null;
   product?: Product | null;
@@ -33,7 +33,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     if (onOpenChange) {
       onOpenChange(open);
     }
-    if (!open) {
+    if (!open && onClose) {
       onClose();
     }
   };
@@ -51,10 +51,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
             isTransitioning={false}
             scrollContainerRef={null}
             onRelatedProductClick={onRelatedProductClick}
-            onClose={onClose}
-            onShareProduct={() => {}}
-            onToggleFavorite={() => {}}
-            isFavorite={false}
           />
         ) : (
           <ProductModalNotFound />
