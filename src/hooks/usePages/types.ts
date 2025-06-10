@@ -27,12 +27,13 @@ export interface Page {
 }
 
 export interface PageLayoutItem {
-  id: number;
-  pageId: string;
-  sectionKey: string;
+  id: string;
+  page_id: string;
+  section_key: string;
+
   title?: string;
-  displayOrder: number;
-  isVisible: boolean;
-  sectionType: 'banner' | 'products' | 'featured' | 'custom';
+  display_order: number;
+  is_visible: boolean;
+  section_type: 'banner' | 'products' | 'featured' | 'custom';
   sectionConfig?: any;
 }

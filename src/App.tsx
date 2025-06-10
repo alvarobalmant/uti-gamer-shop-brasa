@@ -16,6 +16,9 @@ import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import XboxPage from "./pages/platforms/XboxPage";
 import PlayStationPage from "./pages/platforms/PlayStationPage";
 import NintendoPage from "./pages/platforms/NintendoPage";
+import PCGamingPage from "./pages/platforms/PCGamingPage";
+import RetroGamingPage from "./pages/platforms/RetroGamingPage";
+import AreaGeekPage from "./pages/platforms/AreaGeekPage";
 
 // Import the main Admin Panel component which now includes all tabs
 import { AdminPanel } from "@/components/Admin/AdminPanel"; 
@@ -60,6 +63,9 @@ const App = () => (
                 <Route path="/xbox" element={<XboxPage />} />
                 <Route path="/playstation" element={<PlayStationPage />} />
                 <Route path="/nintendo" element={<NintendoPage />} />
+                <Route path="/pc-gaming" element={<PCGamingPage />} />
+                <Route path="/retro-gaming" element={<RetroGamingPage />} />
+                <Route path="/area-geek" element={<AreaGeekPage />} />
                 
                 <Route path="/uti-pro" element={<UTIPro />} />
 
@@ -91,3 +97,5 @@ const App = () => (
 );
 
 export default App;
+
+

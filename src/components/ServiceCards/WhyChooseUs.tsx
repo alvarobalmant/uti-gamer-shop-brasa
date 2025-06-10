@@ -45,9 +45,9 @@ const WhyChooseUs = () => {
 
         <div
           className={cn(
-            "md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 md:max-w-4xl md:mx-auto md:justify-items-center",
+            "md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 place-items-center justify-center",
             "flex overflow-x-auto space-x-6 pb-4 md:space-x-0 md:pb-0 md:overflow-visible",
-            "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 md:mx-auto md:px-0"
+            "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 md:px-0"
           )}
           style={{ scrollbarWidth: "none" }}
         >
@@ -58,7 +58,7 @@ const WhyChooseUs = () => {
                 key={index} 
                 className={cn(
                   "text-center group bg-secondary/50 p-4 rounded-lg transition-colors duration-300",
-                  "w-64 sm:w-72 flex-shrink-0 md:w-auto md:flex-shrink",
+                  "flex-shrink-0 md:w-auto md:flex-shrink",
                   // Apply hover background only on desktop
                   "md:hover:bg-secondary-foreground/10"
                 )}

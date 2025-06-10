@@ -122,6 +122,8 @@ const Index = () => {
         onOpenChange={setShowProductModal} 
         product={selectedProduct} 
         loading={productsLoading}
+        relatedProducts={products.filter(p => p.id !== selectedProduct?.id).slice(0, 4)}
+        onRelatedProductClick={handleProductCardClick}
       />
     </div>
   );

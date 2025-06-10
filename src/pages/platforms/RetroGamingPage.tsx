@@ -5,11 +5,11 @@ import CustomPlatformPage from '@/components/Platform/CustomPlatformPage';
 import { customPlatformPages } from '@/data/customPlatformPages';
 import PlatformPageNotFound from '@/components/PlatformPage/PlatformPageNotFound';
 
-const NintendoPage: React.FC = () => {
+const RetroGamingPage: React.FC = () => {
   const { products } = useProducts();
   const { addToCart } = useCart();
 
-  const pageData = customPlatformPages.find(page => page.slug === 'nintendo');
+  const pageData = customPlatformPages.find(page => page.slug === 'retro-gaming');
 
   if (!pageData) {
     return <PlatformPageNotFound />;
@@ -33,6 +33,6 @@ const NintendoPage: React.FC = () => {
   );
 };
 
-export default NintendoPage;
+export default RetroGamingPage;
 
 

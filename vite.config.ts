@@ -13,6 +13,10 @@ export default defineConfig(({ mode }) => ({
         "8080-ia7rp8j83n0fk28il71r1-f878a32f.manus.computer", // Add the new host for port 8080
         "8080-ilbtoswv6dslzakui24z6-0fb3bda1.manusvm.computer",
         "8080-i99wp7okhgwt2i5jx06di-2ab66ca5.manus.computer",
+        "8081-ijgmkwfok50gh2m84lph8-2ab66ca5.manus.computer", // Add the new host for port 8081
+        "8080-ikx3apra83mu2dzlameai-2ab66ca5.manus.computer", // Add the current host
+        "8080-ik3kpjzy2inctgydlzw1a-82dc8031.manusvm.computer", // Add the current host
+        "8081-igmv19nvkoa2092m27yjq-82dc8031.manusvm.computer", // Add the new host for port 8081
     ],
   },
   preview: {

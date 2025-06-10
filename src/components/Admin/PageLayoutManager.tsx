@@ -26,7 +26,7 @@ const SECTION_TYPES = [
 // Componente para item ordenável
 interface SortableItemProps {
   item: PageLayoutItem;
-  onVisibilityToggle: (id: number, isVisible: boolean) => void;
+  onVisibilityToggle: (id: string, isVisible: boolean) => void;
   onEditSection: (item: PageLayoutItem) => void;
 }
 
@@ -240,7 +240,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     }
   }, []);
 
-  const handleVisibilityToggle = useCallback((id: number, isVisible: boolean) => {
+  const handleVisibilityToggle = useCallback((id: string, isVisible: boolean) => {
     setLayoutItems((items) =>
       items.map((item) => (item.id === id ? { ...item, isVisible } : item))
     );
@@ -280,6 +280,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         ? Math.max(...layoutItems.map(item => item.displayOrder)) + 1 
         : 1;
       
+      console.log("Page ID being used for addPageSection:", page.id);
       const newSection = await addPageSection(page.id, {
         ...sectionData,
         pageId: page.id,
@@ -288,6 +289,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         sectionType: sectionData.sectionType || 'products',
       } as PageLayoutItem);
       
+      setLayoutItems(prev => [...prev, newSection]); // Adiciona a nova seção ao estado local
       setIsAddingSectionOpen(false);
       
       toast({

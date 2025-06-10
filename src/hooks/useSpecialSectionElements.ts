@@ -28,7 +28,6 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
 
       if (fetchError) throw fetchError;
       
-<<<<<<< HEAD
       // Transform the data to handle content_ids as string array
       const transformedData = (data || []).map(element => ({
         ...element,
@@ -36,15 +35,6 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
           ? element.content_ids 
           : element.content_ids 
             ? [element.content_ids as string] 
-=======
-      // Transform the data to handle content_ids as string array and ensure proper typing
-      const transformedData: SpecialSectionElement[] = (data || []).map(element => ({
-        ...element,
-        content_ids: Array.isArray(element.content_ids) 
-          ? element.content_ids.filter((id): id is string => typeof id === 'string')
-          : element.content_ids 
-            ? [String(element.content_ids)] 
->>>>>>> 5a443887cf3fbab70105dd954c113ef55db70b7a
             : []
       }));
       
