@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -224,7 +223,12 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
   useEffect(() => {
     if (pageLayouts[page.id]) {
       console.log("Updating local layout items from pageLayouts:", pageLayouts[page.id]);
-      setLayoutItems(pageLayouts[page.id]);
+      // Type conversion to ensure compatibility
+      const typedLayoutItems = pageLayouts[page.id].map(item => ({
+        ...item,
+        section_type: item.section_type as string,
+      })) as PageLayoutItem[];
+      setLayoutItems(typedLayoutItems);
     }
   }, [pageLayouts, page.id]);
 
@@ -296,7 +300,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         display_order: nextOrder,
         is_visible: sectionData.is_visible ?? true,
         section_type: sectionData.section_type || 'products',
-      } as Omit<PageLayoutItem, 'id'>);
+      } as Omit<PageLayoutItem, 'id' | 'created_at' | 'updated_at'>);
       
       setIsAddingSectionOpen(false);
       

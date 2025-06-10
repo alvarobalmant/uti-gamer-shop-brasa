@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SpecialSectionElement, SpecialSectionElementCreateInput, SpecialSectionElementUpdateInput } from '@/types/specialSections'; // Assuming types exist
+import { SpecialSectionElement, SpecialSectionElementCreateInput, SpecialSectionElementUpdateInput } from '@/types/specialSections';
 
 // Define element types based on analysis
 const elementTypes = [
@@ -74,6 +75,10 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({ e
         link_url: element.link_url ?? '',
         background_image_url: element.background_image_url ?? '',
         content_ids: Array.isArray(element.content_ids) ? element.content_ids : [],
+        // Ensure background_type is a valid value
+        background_type: (['color', 'image', 'gradient', 'transparent'] as const).includes(element.background_type as any) 
+          ? element.background_type as 'color' | 'image' | 'gradient' | 'transparent'
+          : 'transparent',
         // Ensure numbers are numbers
         width_percentage: element.width_percentage ?? undefined,
         height_desktop: element.height_desktop ?? undefined,

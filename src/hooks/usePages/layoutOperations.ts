@@ -8,6 +8,20 @@ export const createLayoutOperations = (
   setPageLayouts: React.Dispatch<React.SetStateAction<Record<string, PageLayoutItem[]>>>,
   setError: React.Dispatch<React.SetStateAction<string | null>>
 ) => {
+  // Convert database row to PageLayoutItem
+  const convertToPageLayoutItem = (dbItem: any): PageLayoutItem => ({
+    id: dbItem.id,
+    page_id: dbItem.page_id,
+    section_key: dbItem.section_key,
+    title: dbItem.title,
+    display_order: dbItem.display_order,
+    is_visible: dbItem.is_visible,
+    section_type: dbItem.section_type,
+    section_config: dbItem.section_config,
+    created_at: dbItem.created_at,
+    updated_at: dbItem.updated_at,
+  });
+
   // Carregar layout de uma página específica
   const fetchPageLayout = async (pageId: string) => {
     try {
@@ -25,9 +39,10 @@ export const createLayoutOperations = (
       
       console.log("Fetched layout data:", data);
 
-      setPageLayouts((prev) => ({ ...prev, [pageId]: data || [] }));
+      const convertedData = (data || []).map(convertToPageLayoutItem);
+      setPageLayouts((prev) => ({ ...prev, [pageId]: convertedData }));
       setError(null);
-      return data || [];
+      return convertedData;
     } catch (err) {
       const errorMsg = `Erro ao carregar layout da página ${pageId}: ${err instanceof Error ? err.message : 'Erro desconhecido'}`;
       setError(errorMsg);
@@ -67,7 +82,8 @@ export const createLayoutOperations = (
 
       console.log("Upsert successful, returned data:", data);
 
-      setPageLayouts(prev => ({ ...prev, [pageId]: data as PageLayoutItem[] }));
+      const convertedData = (data || []).map(convertToPageLayoutItem);
+      setPageLayouts(prev => ({ ...prev, [pageId]: convertedData }));
       setError(null);
       return data;
     } catch (err) {
@@ -79,7 +95,7 @@ export const createLayoutOperations = (
   };
 
   // Adicionar uma nova seção ao layout
-  const addPageSection = async (pageId: string, section: Omit<PageLayoutItem, 'id'>) => {
+  const addPageSection = async (pageId: string, section: Omit<PageLayoutItem, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const newId = `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const newSection = {
@@ -109,12 +125,13 @@ export const createLayoutOperations = (
       console.log("Insert successful, returned data:", data);
 
       if (data) {
+        const convertedItem = convertToPageLayoutItem(data);
         setPageLayouts((prev) => ({
           ...prev,
-          [pageId]: [...(prev[pageId] || []), data],
+          [pageId]: [...(prev[pageId] || []), convertedItem],
         }));
         setError(null);
-        return data as PageLayoutItem;
+        return convertedItem;
       } else {
         throw new Error("Erro ao adicionar seção: Nenhum dado retornado após a inserção.");
       }

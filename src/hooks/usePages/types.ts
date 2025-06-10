@@ -19,11 +19,11 @@ export interface Page {
   title: string;
   slug: string;
   description?: string;
-  isActive: boolean;
+  is_active: boolean;
   theme: PageTheme;
   filters: PageFilter;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PageLayoutItem {
@@ -33,6 +33,8 @@ export interface PageLayoutItem {
   title?: string;
   display_order: number;
   is_visible: boolean;
-  section_type: 'banner' | 'products' | 'featured' | 'custom';
+  section_type: string; // Changed from union type to string to match database
   section_config?: any;
+  created_at: string;
+  updated_at: string;
 }
