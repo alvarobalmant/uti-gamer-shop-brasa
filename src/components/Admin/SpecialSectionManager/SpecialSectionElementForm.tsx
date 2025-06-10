@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -417,5 +418,3 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({
 };
 
 export default SpecialSectionElementForm;
-
-</edits_to_apply>
