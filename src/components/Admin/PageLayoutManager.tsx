@@ -21,7 +21,7 @@ const SECTION_TYPES = [
   { id: 'products', label: 'Produtos' },
   { id: 'featured', label: 'Destaques' },
   { id: 'custom', label: 'Conteúdo Personalizado' }
-];
+] as const;
 
 // Componente para item ordenável
 interface SortableItemProps {
@@ -42,7 +42,7 @@ const SortableItem: React.FC<SortableItemProps> = ({ item, onVisibilityToggle, o
 
   // Use both is_visible and isVisible for compatibility
   const isVisible = item.is_visible ?? item.isVisible ?? true;
-  const sectionType = item.section_type || item.sectionType || 'products';
+  const sectionType = (item.section_type || item.sectionType || 'products') as SectionType;
   const sectionKey = item.section_key || item.sectionKey || '';
 
   return (
@@ -114,8 +114,8 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
         displayOrder: section.display_order ?? section.displayOrder ?? 999,
         is_visible: section.is_visible ?? section.isVisible ?? true,
         isVisible: section.is_visible ?? section.isVisible ?? true,
-        section_type: section.section_type || section.sectionType || 'products',
-        sectionType: section.section_type || section.sectionType || 'products',
+        section_type: (section.section_type || section.sectionType || 'products') as SectionType,
+        sectionType: (section.section_type || section.sectionType || 'products') as SectionType,
       });
     }
   }, [section, pageId]);
@@ -138,13 +138,13 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
 
   const handleSelectChange = (name: string, value: string) => {
     setFormData(prev => {
-      const updated = { ...prev, [name]: value };
+      const updated = { ...prev, [name]: value as SectionType };
       
       // Keep both naming conventions in sync
       if (name === 'section_type') {
-        updated.sectionType = value;
+        updated.sectionType = value as SectionType;
       } else if (name === 'sectionType') {
-        updated.section_type = value;
+        updated.section_type = value as SectionType;
       }
       
       return updated;
@@ -287,7 +287,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     };
     
     loadPageLayout();
-  }, [page.id, fetchPageLayout]);
+  }, [page.id, fetchPageLayout, toast]);
 
   // Atualizar layout local quando o layout da página mudar
   useEffect(() => {
@@ -366,8 +366,8 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         displayOrder: nextOrder,
         is_visible: sectionData.is_visible ?? sectionData.isVisible ?? true,
         isVisible: sectionData.is_visible ?? sectionData.isVisible ?? true,
-        section_type: sectionData.section_type || sectionData.sectionType || 'products',
-        sectionType: sectionData.section_type || sectionData.sectionType || 'products',
+        section_type: (sectionData.section_type || sectionData.sectionType || 'products') as SectionType,
+        sectionType: (sectionData.section_type || sectionData.sectionType || 'products') as SectionType,
       };
       
       console.log("Section to add with calculated order:", sectionToAdd);
@@ -381,7 +381,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         title: "Seção adicionada",
         description: `A seção "${sectionData.title || sectionData.section_key || sectionData.sectionKey}" foi adicionada com sucesso.`
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error adding section:", err);
       toast({
         title: "Erro ao adicionar seção",
@@ -559,3 +559,5 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
 };
 
 export default PageLayoutManager;
+
+}

@@ -1,256 +1,218 @@
 
 import { Page, PageLayoutItem } from './types';
 
-// Mock de dados iniciais para as páginas de plataforma
-export const initialPages: Page[] = [
+// Mock pages data with string IDs
+export const mockPages: Page[] = [
   {
-    id: '1',
-    title: 'Xbox',
-    slug: 'xbox',
-    description: 'Tudo sobre Xbox: jogos, consoles e acessórios',
+    id: "xbox-page",
+    title: "Xbox",
+    slug: "xbox",
+    description: "Página dedicada aos produtos Xbox",
     isActive: true,
     theme: {
-      primaryColor: '#107C10',
-      secondaryColor: '#3A3A3A',
-      accentColor: '#52B043',
-      bannerImage: '/banners/xbox-banner.jpg'
+      primaryColor: "#107C10",
+      secondaryColor: "#3A3A3A"
     },
     filters: {
-      tagIds: ['xbox', 'microsoft'],
-      categoryIds: ['consoles', 'jogos', 'acessorios']
+      tagIds: ["xbox", "console", "gaming"],
+      categoryIds: ["consoles"]
     },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z"
   },
   {
-    id: '2',
-    title: 'PlayStation',
-    slug: 'playstation',
-    description: 'Descubra o universo PlayStation: PS5, PS4, jogos exclusivos e mais',
+    id: "playstation-page",
+    title: "PlayStation",
+    slug: "playstation",
+    description: "Página dedicada aos produtos PlayStation",
     isActive: true,
     theme: {
-      primaryColor: '#0070D1',
-      secondaryColor: '#1F1F1F',
-      accentColor: '#FFFFFF',
-      bannerImage: '/banners/playstation-banner.jpg'
+      primaryColor: "#003087",
+      secondaryColor: "#FFFFFF"
     },
     filters: {
-      tagIds: ['playstation', 'sony'],
-      categoryIds: ['consoles', 'jogos', 'acessorios']
+      tagIds: ["playstation", "console", "gaming"],
+      categoryIds: ["consoles"]
     },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z"
   },
   {
-    id: '3',
-    title: 'Nintendo',
-    slug: 'nintendo',
-    description: 'O mundo mágico da Nintendo: Switch, jogos para toda a família e personagens icônicos',
+    id: "nintendo-page",
+    title: "Nintendo",
+    slug: "nintendo",
+    description: "Página dedicada aos produtos Nintendo",
     isActive: true,
     theme: {
-      primaryColor: '#E60012',
-      secondaryColor: '#FFFFFF',
-      accentColor: '#00C3E3',
-      bannerImage: '/banners/nintendo-banner.jpg'
+      primaryColor: "#E60012",
+      secondaryColor: "#0066CC"
     },
     filters: {
-      tagIds: ['nintendo', 'switch'],
-      categoryIds: ['consoles', 'jogos', 'acessorios']
+      tagIds: ["nintendo", "console", "gaming"],
+      categoryIds: ["consoles"]
     },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: "pc-gaming-page",
+    title: "PC Gaming",
+    slug: "pc-gaming",
+    description: "Página dedicada aos produtos de PC Gaming",
+    isActive: true,
+    theme: {
+      primaryColor: "#FF6B00",
+      secondaryColor: "#2D2D2D"
+    },
+    filters: {
+      tagIds: ["pc", "gaming", "computer"],
+      categoryIds: ["pc-gaming"]
+    },
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: "retro-gaming-page",
+    title: "Retro Gaming",
+    slug: "retro-gaming",
+    description: "Página dedicada aos produtos de Retro Gaming",
+    isActive: true,
+    theme: {
+      primaryColor: "#8B4513",
+      secondaryColor: "#F4A460"
+    },
+    filters: {
+      tagIds: ["retro", "vintage", "classic"],
+      categoryIds: ["retro-gaming"]
+    },
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: "area-geek-page",
+    title: "Área Geek",
+    slug: "area-geek",
+    description: "Página dedicada aos produtos da Área Geek",
+    isActive: true,
+    theme: {
+      primaryColor: "#9932CC",
+      secondaryColor: "#FFD700"
+    },
+    filters: {
+      tagIds: ["geek", "collectibles", "merchandise"],
+      categoryIds: ["area-geek"]
+    },
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z"
   }
 ];
 
-// Mock de dados iniciais para o layout das páginas
-export const initialPageLayouts: Record<string, PageLayoutItem[]> = {
-  '1': [ // Xbox
+// Mock layout items for the Xbox page
+export const mockPageLayoutItems: Record<string, PageLayoutItem[]> = {
+  "xbox-page": [
     {
-      id: 101,
-      pageId: '1',
-      sectionKey: 'hero_banner',
-      title: 'Banner Principal',
+      id: "xbox-banner-1",
+      page_id: "xbox-page",
+      section_key: "hero_banner",
+      title: "Banner Principal Xbox",
+      display_order: 1,
+      is_visible: true,
+      section_type: "banner",
+      sectionConfig: {
+        title: "Xbox Series X|S",
+        subtitle: "A nova geração de gaming está aqui",
+        imageUrl: "/banners/xbox-banner.jpg",
+        ctaText: "Ver Consoles",
+        ctaLink: "/xbox/consoles"
+      },
+      pageId: "xbox-page",
+      sectionKey: "hero_banner",
       displayOrder: 1,
       isVisible: true,
-      sectionType: 'banner',
-      sectionConfig: {
-        imageUrl: '/banners/xbox-hero.jpg',
-        title: 'Xbox Series X|S',
-        subtitle: 'Poder Inigualável',
-        ctaText: 'Comprar Agora',
-        ctaLink: '/categoria/xbox-consoles'
-      }
+      sectionType: "banner"
     },
     {
-      id: 102,
-      pageId: '1',
-      sectionKey: 'featured_products',
-      title: 'Destaques Xbox',
-      displayOrder: 2,
-      isVisible: true,
-      sectionType: 'products',
+      id: "xbox-products-1",
+      page_id: "xbox-page",
+      section_key: "featured_products",
+      title: "Produtos em Destaque",
+      display_order: 2,
+      is_visible: true,
+      section_type: "products",
       sectionConfig: {
         filter: {
-          tagIds: ['xbox', 'destaque'],
+          tagIds: ["xbox", "featured"],
           limit: 8
         }
-      }
+      },
+      pageId: "xbox-page",
+      sectionKey: "featured_products",
+      displayOrder: 2,
+      isVisible: true,
+      sectionType: "products"
     },
     {
-      id: 103,
-      pageId: '1',
-      sectionKey: 'new_releases',
-      title: 'Lançamentos',
-      displayOrder: 3,
-      isVisible: true,
-      sectionType: 'products',
+      id: "xbox-accessories-1",
+      page_id: "xbox-page",
+      section_key: "accessories",
+      title: "Acessórios Xbox",
+      display_order: 3,
+      is_visible: true,
+      section_type: "products",
       sectionConfig: {
         filter: {
-          tagIds: ['xbox', 'lancamento'],
+          tagIds: ["xbox", "accessories"],
           limit: 6
         }
-      }
-    },
-    {
-      id: 104,
-      pageId: '1',
-      sectionKey: 'accessories',
-      title: 'Acessórios',
-      displayOrder: 4,
+      },
+      pageId: "xbox-page",
+      sectionKey: "accessories",
+      displayOrder: 3,
       isVisible: true,
-      sectionType: 'products',
-      sectionConfig: {
-        filter: {
-          tagIds: ['xbox', 'acessorio'],
-          limit: 4
-        }
-      }
+      sectionType: "products"
     }
   ],
-  '2': [ // PlayStation
+  "playstation-page": [
     {
-      id: 201,
-      pageId: '2',
-      sectionKey: 'hero_banner',
-      title: 'Banner Principal',
+      id: "ps-banner-1",
+      page_id: "playstation-page",
+      section_key: "hero_banner",
+      title: "Banner Principal PlayStation",
+      display_order: 1,
+      is_visible: true,
+      section_type: "banner",
+      sectionConfig: {
+        title: "PlayStation 5",
+        subtitle: "Play Has No Limits",
+        imageUrl: "/banners/ps-banner.jpg",
+        ctaText: "Ver Consoles",
+        ctaLink: "/playstation/consoles"
+      },
+      pageId: "playstation-page",
+      sectionKey: "hero_banner",
       displayOrder: 1,
       isVisible: true,
-      sectionType: 'banner',
-      sectionConfig: {
-        imageUrl: '/banners/playstation-hero.jpg',
-        title: 'PlayStation 5',
-        subtitle: 'Jogue Sem Limites',
-        ctaText: 'Explorar',
-        ctaLink: '/categoria/playstation-consoles'
-      }
+      sectionType: "banner"
     },
     {
-      id: 202,
-      pageId: '2',
-      sectionKey: 'featured_products',
-      title: 'Destaques PlayStation',
-      displayOrder: 2,
-      isVisible: true,
-      sectionType: 'products',
+      id: "ps-products-1",
+      page_id: "playstation-page",
+      section_key: "featured_products",
+      title: "Produtos em Destaque",
+      display_order: 2,
+      is_visible: true,
+      section_type: "products",
       sectionConfig: {
         filter: {
-          tagIds: ['playstation', 'destaque'],
+          tagIds: ["playstation", "featured"],
           limit: 8
         }
-      }
-    },
-    {
-      id: 203,
-      pageId: '2',
-      sectionKey: 'exclusives',
-      title: 'Exclusivos',
-      displayOrder: 3,
-      isVisible: true,
-      sectionType: 'products',
-      sectionConfig: {
-        filter: {
-          tagIds: ['playstation', 'exclusivo'],
-          limit: 6
-        }
-      }
-    },
-    {
-      id: 204,
-      pageId: '2',
-      sectionKey: 'accessories',
-      title: 'Acessórios',
-      displayOrder: 4,
-      isVisible: true,
-      sectionType: 'products',
-      sectionConfig: {
-        filter: {
-          tagIds: ['playstation', 'acessorio'],
-          limit: 4
-        }
-      }
-    }
-  ],
-  '3': [ // Nintendo
-    {
-      id: 301,
-      pageId: '3',
-      sectionKey: 'hero_banner',
-      title: 'Banner Principal',
-      displayOrder: 1,
-      isVisible: true,
-      sectionType: 'banner',
-      sectionConfig: {
-        imageUrl: '/banners/nintendo-hero.jpg',
-        title: 'Nintendo Switch',
-        subtitle: 'Diversão Para Todos',
-        ctaText: 'Descubra',
-        ctaLink: '/categoria/nintendo-consoles'
-      }
-    },
-    {
-      id: 302,
-      pageId: '3',
-      sectionKey: 'featured_products',
-      title: 'Destaques Nintendo',
+      },
+      pageId: "playstation-page",
+      sectionKey: "featured_products",
       displayOrder: 2,
       isVisible: true,
-      sectionType: 'products',
-      sectionConfig: {
-        filter: {
-          tagIds: ['nintendo', 'destaque'],
-          limit: 8
-        }
-      }
-    },
-    {
-      id: 303,
-      pageId: '3',
-      sectionKey: 'family_games',
-      title: 'Jogos para Família',
-      displayOrder: 3,
-      isVisible: true,
-      sectionType: 'products',
-      sectionConfig: {
-        filter: {
-          tagIds: ['nintendo', 'familia'],
-          limit: 6
-        }
-      }
-    },
-    {
-      id: 304,
-      pageId: '3',
-      sectionKey: 'accessories',
-      title: 'Acessórios',
-      displayOrder: 4,
-      isVisible: true,
-      sectionType: 'products',
-      sectionConfig: {
-        filter: {
-          tagIds: ['nintendo', 'acessorio'],
-          limit: 4
-        }
-      }
+      sectionType: "products"
     }
   ]
 };

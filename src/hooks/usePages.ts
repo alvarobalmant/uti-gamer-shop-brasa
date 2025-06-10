@@ -7,7 +7,7 @@ import { createLayoutOperations } from './usePages/layoutOperations';
 // Export types for backward compatibility
 export type { Page, PageLayoutItem, PageTheme, PageFilter } from './usePages/types';
 
-// Hook para gerenciar páginas dinâmicas
+// Hook to manage dynamic pages
 export const usePages = () => {
   const [pages, setPages] = useState<Page[]>([]);
   const [pageLayouts, setPageLayouts] = useState<Record<string, PageLayoutItem[]>>({});
@@ -19,9 +19,9 @@ export const usePages = () => {
   const pageOps = createPageOperations(setPages, setError);
   const layoutOps = createLayoutOperations(pageLayouts, setPageLayouts, setError);
 
-  // Função otimizada para buscar páginas
+  // Optimized function to fetch pages
   const fetchPages = useCallback(async () => {
-    if (isInitialized) return; // Evita recarregamentos desnecessários
+    if (isInitialized) return; // Avoid unnecessary reloads
     
     setLoading(true);
     try {
@@ -34,9 +34,9 @@ export const usePages = () => {
     }
   }, [isInitialized]);
 
-  // Função otimizada para buscar layout
+  // Optimized function to fetch layout
   const fetchPageLayout = useCallback(async (pageId: string) => {
-    // Evita recarregar layout já existente
+    // Avoid reloading existing layout
     if (pageLayouts[pageId]) {
       return pageLayouts[pageId];
     }
@@ -79,11 +79,11 @@ export const usePages = () => {
     return layoutOps.addPageSection(pageId, section);
   }, [pageLayouts]);
 
-  const removePageSection = useCallback(async (pageId: string, sectionId: number) => {
+  const removePageSection = useCallback(async (pageId: string, sectionId: string) => {
     return layoutOps.removePageSection(pageId, sectionId);
   }, [pageLayouts]);
 
-  // Carregar páginas ao inicializar (apenas uma vez)
+  // Load pages on initialization (only once)
   useEffect(() => {
     fetchPages();
   }, [fetchPages]);
