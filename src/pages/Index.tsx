@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
@@ -136,5 +137,3 @@ const Index = () => {
 };
 
 export default Index;
-
-</initial_code>
