@@ -1,33 +1,32 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { SpecialSectionElement, SpecialSectionElementCreateInput, SpecialSectionElementUpdateInput } from '@/types/specialSections';
 
-export const useSpecialSectionElements = (sectionId: string | null) => {
+export const useSpecialSectionElements = (specialSectionId?: string) => {
   const [elements, setElements] = useState<SpecialSectionElement[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
   const fetchElements = useCallback(async () => {
-    if (!sectionId) {
+    if (!specialSectionId) {
       setElements([]);
       setLoading(false);
       return;
     }
 
     setLoading(true);
-    setError(null);
     try {
       const { data, error: fetchError } = await supabase
         .from('special_section_elements')
         .select('*')
-        .eq('special_section_id', sectionId)
+        .eq('special_section_id', specialSectionId)
         .order('display_order', { ascending: true });
 
       if (fetchError) throw fetchError;
       
+<<<<<<< HEAD
       // Transform the data to handle content_ids as string array
       const transformedData = (data || []).map(element => ({
         ...element,
@@ -36,93 +35,120 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
           : element.content_ids 
             ? [element.content_ids as string] 
             : []
+=======
+      // Transform the data to match our SpecialSectionElement type
+      const transformedData = (data || []).map(element => ({
+        ...element,
+        content_ids: Array.isArray(element.content_ids) 
+          ? element.content_ids.filter((id): id is string => typeof id === 'string')
+          : [],
+        background_type: element.background_type as 'color' | 'image' | 'gradient' | 'transparent' | undefined,
+>>>>>>> 2a7be71a14c09c0620955a61b86c872ec27417c8
       }));
       
       setElements(transformedData);
     } catch (err: any) {
       console.error('Error fetching special section elements:', err);
-      setError('Falha ao carregar os elementos da seção.');
-      toast({ title: 'Erro', description: 'Não foi possível carregar os elementos.', variant: 'destructive' });
+      toast({ title: 'Erro', description: 'Não foi possível carregar os elementos da seção especial.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
-  }, [sectionId, toast]);
+  }, [specialSectionId, toast]);
 
-  const addElement = useCallback(async (elementData: SpecialSectionElementCreateInput) => {
-    if (!sectionId) return; // Should not happen if called correctly
-    setLoading(true);
+  const addElement = async (elementData: SpecialSectionElementCreateInput) => {
     try {
-      const elementWithType = {
-        ...elementData,
-        special_section_id: sectionId,
-        element_type: elementData.element_type || 'banner' // Ensure element_type is provided
-      };
-
-      const { data, error: insertError } = await supabase
+      const { data: newElement, error } = await supabase
         .from('special_section_elements')
-        .insert([elementWithType])
-        .select();
+        .insert([{
+          ...elementData,
+          content_ids: elementData.content_ids || []
+        }])
+        .select()
+        .single();
 
-      if (insertError) throw insertError;
-      if (data) {
-        await fetchElements(); // Refetch for simplicity and consistency
-        toast({ title: 'Sucesso', description: 'Elemento adicionado à seção.' });
-      }
-    } catch (err: any) {
-      console.error('Error adding special section element:', err);
-      setError('Falha ao adicionar o elemento.');
-      toast({ title: 'Erro', description: 'Não foi possível adicionar o elemento.', variant: 'destructive' });
-    } finally {
-      setLoading(false);
+      if (error) throw error;
+      if (!newElement) throw new Error('Failed to create special section element, no data returned.');
+
+      await fetchElements(); // Refetch to update the list
+
+      toast({
+        title: 'Elemento criado com sucesso!',
+      });
+      return newElement;
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao criar elemento',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
     }
-  }, [sectionId, toast, fetchElements]);
+  };
 
-  const updateElement = useCallback(async (elementId: string, elementData: SpecialSectionElementUpdateInput) => {
-    setLoading(true);
+  const updateElement = async (id: string, updates: SpecialSectionElementUpdateInput) => {
     try {
-      const { error: updateError } = await supabase
+      const { data, error } = await supabase
         .from('special_section_elements')
-        .update(elementData)
-        .eq('id', elementId);
+        .update({
+          ...updates,
+          content_ids: updates.content_ids || []
+        })
+        .eq('id', id)
+        .select()
+        .single();
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
-      await fetchElements(); // Refetch for simplicity
-      toast({ title: 'Sucesso', description: 'Elemento atualizado.' });
-    } catch (err: any) {
-      console.error('Error updating special section element:', err);
-      setError('Falha ao atualizar o elemento.');
-      toast({ title: 'Erro', description: 'Não foi possível atualizar o elemento.', variant: 'destructive' });
-    } finally {
-      setLoading(false);
+      await fetchElements();
+
+      toast({
+        title: 'Elemento atualizado com sucesso!',
+      });
+      return data;
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao atualizar elemento',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
     }
-  }, [toast, fetchElements]);
+  };
 
-  const deleteElement = useCallback(async (elementId: string) => {
-    setLoading(true);
+  const deleteElement = async (id: string) => {
     try {
-      const { error: deleteError } = await supabase
+      const { error } = await supabase
         .from('special_section_elements')
         .delete()
-        .eq('id', elementId);
+        .eq('id', id);
 
-      if (deleteError) throw deleteError;
+      if (error) throw error;
 
-      await fetchElements(); // Refetch for simplicity
-      toast({ title: 'Sucesso', description: 'Elemento excluído.' });
-    } catch (err: any) {
-      console.error('Error deleting special section element:', err);
-      setError('Falha ao excluir o elemento.');
-      toast({ title: 'Erro', description: 'Não foi possível excluir o elemento.', variant: 'destructive' });
-    } finally {
-      setLoading(false);
+      await fetchElements();
+
+      toast({
+        title: 'Elemento removido com sucesso!',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao remover elemento',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
     }
-  }, [toast, fetchElements]);
+  };
 
-  // Initial fetch when sectionId is available
   useEffect(() => {
     fetchElements();
   }, [fetchElements]);
 
-  return { elements, setElements, loading, error, fetchElements, addElement, updateElement, deleteElement };
+  return {
+    elements,
+    loading,
+    refetch: fetchElements,
+    addElement,
+    updateElement,
+    deleteElement,
+  };
 };

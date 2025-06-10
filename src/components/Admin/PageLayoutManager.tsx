@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -9,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { GripVertical, Eye, EyeOff, Plus, Settings } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,8 +46,8 @@ const SortableItem: React.FC<SortableItemProps> = ({ item, onVisibilityToggle, o
       <TableCell className="w-10 cursor-grab touch-none">
         <GripVertical {...listeners} className="h-5 w-5 text-muted-foreground" />
       </TableCell>
-      <TableCell className="font-medium">{item.title || item.sectionKey}</TableCell>
-      <TableCell>{SECTION_TYPES.find(t => t.id === item.sectionType)?.label || item.sectionType}</TableCell>
+      <TableCell className="font-medium">{item.title || item.section_key}</TableCell>
+      <TableCell>{SECTION_TYPES.find(t => t.id === item.section_type)?.label || item.section_type}</TableCell>
       <TableCell className="text-right w-24 flex items-center justify-end gap-2">
         <Button 
           variant="ghost" 
@@ -59,11 +60,11 @@ const SortableItem: React.FC<SortableItemProps> = ({ item, onVisibilityToggle, o
         </Button>
         <Switch
           id={`visibility-${item.id}`}
-          checked={item.isVisible}
+          checked={item.is_visible}
           onCheckedChange={(checked) => onVisibilityToggle(item.id, checked)}
-          aria-label={item.isVisible ? 'Ocultar seção' : 'Mostrar seção'}
+          aria-label={item.is_visible ? 'Ocultar seção' : 'Mostrar seção'}
         />
-        {item.isVisible ? 
+        {item.is_visible ? 
           <Eye className="h-4 w-4 text-green-500 ml-1" /> : 
           <EyeOff className="h-4 w-4 text-red-500 ml-1" />
         }
@@ -82,13 +83,13 @@ interface SectionFormProps {
 
 const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCancel }) => {
   const [formData, setFormData] = useState<Partial<PageLayoutItem>>({
-    pageId,
-    sectionKey: '',
+    page_id: pageId,
+    section_key: '',
     title: '',
-    displayOrder: 999,
-    isVisible: true,
-    sectionType: 'products',
-    sectionConfig: {}
+    display_order: 999,
+    is_visible: true,
+    section_type: 'products',
+    section_config: {}
   });
 
   // Preencher formulário se estiver editando
@@ -128,11 +129,11 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="sectionKey">Chave da Seção</Label>
+          <Label htmlFor="section_key">Chave da Seção</Label>
           <Input
-            id="sectionKey"
-            name="sectionKey"
-            value={formData.sectionKey || ''}
+            id="section_key"
+            name="section_key"
+            value={formData.section_key || ''}
             onChange={handleInputChange}
             placeholder="Ex: featured_products"
           />
@@ -140,10 +141,10 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="sectionType">Tipo de Seção</Label>
+        <Label htmlFor="section_type">Tipo de Seção</Label>
         <Select
-          value={formData.sectionType}
-          onValueChange={(value) => handleSelectChange('sectionType', value)}
+          value={formData.section_type}
+          onValueChange={(value) => handleSelectChange('section_type', value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Selecione o tipo de seção" />
@@ -160,11 +161,11 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
 
       <div className="flex items-center space-x-2">
         <Switch
-          id="isVisible"
-          checked={formData.isVisible}
-          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isVisible: checked }))}
+          id="is_visible"
+          checked={formData.is_visible}
+          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_visible: checked }))}
         />
-        <Label htmlFor="isVisible">Seção Visível</Label>
+        <Label htmlFor="is_visible">Seção Visível</Label>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
@@ -192,8 +193,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     updatePageLayout, 
     addPageSection, 
     removePageSection,
-    loading, 
-    error 
+    loading
   } = usePages();
   
   const [layoutItems, setLayoutItems] = useState<PageLayoutItem[]>([]);
@@ -233,8 +233,8 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
         const newItems = arrayMove(items, oldIndex, newIndex);
-        // Atualizar displayOrder com base no novo índice
-        return newItems.map((item, index) => ({ ...item, displayOrder: index + 1 }));
+        // Atualizar display_order com base no novo índice
+        return newItems.map((item, index) => ({ ...item, display_order: index + 1 }));
       });
       setHasChanges(true);
     }
@@ -242,7 +242,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
 
   const handleVisibilityToggle = useCallback((id: string, isVisible: boolean) => {
     setLayoutItems((items) =>
-      items.map((item) => (item.id === id ? { ...item, isVisible } : item))
+      items.map((item) => (item.id === id ? { ...item, is_visible: isVisible } : item))
     );
     setHasChanges(true);
   }, []);
@@ -251,10 +251,10 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     try {
       const updates = layoutItems.map(item => ({
         id: item.id,
-        pageId: item.pageId,
-        sectionKey: item.sectionKey,
-        displayOrder: item.displayOrder,
-        isVisible: item.isVisible,
+        page_id: item.page_id,
+        section_key: item.section_key,
+        display_order: item.display_order,
+        is_visible: item.is_visible,
       }));
       
       await updatePageLayout(page.id, updates);
@@ -277,16 +277,21 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     try {
       // Calcular a próxima ordem de exibição
       const nextOrder = layoutItems.length > 0 
-        ? Math.max(...layoutItems.map(item => item.displayOrder)) + 1 
+        ? Math.max(...layoutItems.map(item => item.display_order)) + 1 
         : 1;
       
+<<<<<<< HEAD
       console.log("Page ID being used for addPageSection:", page.id);
       const newSection = await addPageSection(page.id, {
+=======
+      await addPageSection(page.id, {
+>>>>>>> 2a7be71a14c09c0620955a61b86c872ec27417c8
         ...sectionData,
-        pageId: page.id,
-        displayOrder: nextOrder,
-        isVisible: sectionData.isVisible ?? true,
-        sectionType: sectionData.sectionType || 'products',
+        page_id: page.id,
+        display_order: nextOrder,
+        is_visible: sectionData.is_visible ?? true,
+        section_type: sectionData.section_type || 'products',
+        id: '', // This will be generated by the database
       } as PageLayoutItem);
       
       setLayoutItems(prev => [...prev, newSection]); // Adiciona a nova seção ao estado local
@@ -294,7 +299,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
       
       toast({
         title: "Seção adicionada",
-        description: `A seção "${sectionData.title || sectionData.sectionKey}" foi adicionada com sucesso.`
+        description: `A seção "${sectionData.title || sectionData.section_key}" foi adicionada com sucesso.`
       });
     } catch (err) {
       toast({
@@ -320,7 +325,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
       
       toast({
         title: "Seção atualizada",
-        description: `A seção "${sectionData.title || sectionData.sectionKey}" foi atualizada com sucesso.`
+        description: `A seção "${sectionData.title || sectionData.section_key}" foi atualizada com sucesso.`
       });
     } catch (err) {
       toast({
@@ -360,8 +365,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
             <Skeleton className="h-12 w-full" />
           </div>
         )}
-        {error && <p className="text-red-500">{error}</p>}
-        {!loading && !error && (
+        {!loading && (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={layoutItems.map(item => item.id)} strategy={verticalListSortingStrategy}>
               <Table>

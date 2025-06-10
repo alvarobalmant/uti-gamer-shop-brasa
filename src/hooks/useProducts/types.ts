@@ -9,13 +9,14 @@ export interface Product {
   new_price?: number;
   digital_price?: number;
   image: string;
-  images?: string[]; // Add this for compatibility
-  additional_images?: string[];
+  images?: string[]; // Main images array from database
+  additional_images?: string[]; // Legacy compatibility field
   sizes?: string[];
   colors?: string[];
   stock?: number;
   category_id?: string;
   tags?: { id: string; name: string; }[];
+<<<<<<< HEAD
   sku?: string; // Add the missing sku property
   badge_text?: string;
   badge_color?: string;
@@ -24,5 +25,12 @@ export interface Product {
     label: string;
     value: string;
   }>;
+=======
+  sku?: string;
+  badge_text?: string;
+  badge_color?: string;
+  badge_visible?: boolean;
+  specifications?: Array<{ label: string; value: string; }>; // New specifications field
+>>>>>>> 2a7be71a14c09c0620955a61b86c872ec27417c8
 }
 
