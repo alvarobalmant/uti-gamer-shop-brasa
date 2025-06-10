@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +26,9 @@ import { AdminPanel } from "@/components/Admin/AdminPanel";
 
 // Import the new dynamic carousel page
 import SpecialSectionCarouselPage from "./pages/SpecialSectionCarouselPage";
+
+// Import the dynamic platform page component
+import PlatformPage from "./components/PlatformPage";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +89,12 @@ const App = () => (
                   }
                 />
 
+                {/* Dynamic Page Route - This will catch any slug that matches a dynamic page */}
+                <Route 
+                  path="/:slug" 
+                  element={<PlatformPage slug={window.location.pathname.substring(1)} />} 
+                />
+
                 {/* Catch-all Not Found Route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -97,5 +107,3 @@ const App = () => (
 );
 
 export default App;
-
-
