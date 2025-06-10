@@ -28,11 +28,11 @@ export interface Page {
 
 export interface PageLayoutItem {
   id: string;
-  pageId: string;
-  sectionKey: string;
+  page_id: string;
+  section_key: string;
   title?: string;
-  displayOrder: number;
-  isVisible: boolean;
-  sectionType: 'banner' | 'products' | 'featured' | 'custom';
-  sectionConfig?: any;
+  display_order: number;
+  is_visible: boolean;
+  section_type: 'banner' | 'products' | 'featured' | 'custom';
+  section_config?: any;
 }

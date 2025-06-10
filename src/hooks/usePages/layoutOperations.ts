@@ -22,13 +22,13 @@ export const createLayoutOperations = (
 
       const layout: PageLayoutItem[] = (data || []).map(section => ({
         id: section.id,
-        pageId: section.page_id,
-        sectionKey: section.section_key,
+        page_id: section.page_id,
+        section_key: section.section_key,
         title: section.title || '',
-        displayOrder: section.display_order,
-        isVisible: section.is_visible,
-        sectionType: section.section_type as 'banner' | 'products' | 'featured' | 'custom',
-        sectionConfig: section.section_config || {}
+        display_order: section.display_order,
+        is_visible: section.is_visible,
+        section_type: section.section_type as 'banner' | 'products' | 'featured' | 'custom',
+        section_config: section.section_config || {}
       }));
 
       setPageLayouts(prev => ({ ...prev, [pageId]: layout }));
@@ -52,10 +52,10 @@ export const createLayoutOperations = (
           .from('page_layout_items')
           .update({
             title: item.title,
-            display_order: item.displayOrder,
-            is_visible: item.isVisible,
-            section_type: item.sectionType,
-            section_config: item.sectionConfig
+            display_order: item.display_order,
+            is_visible: item.is_visible,
+            section_type: item.section_type,
+            section_config: item.section_config
           })
           .eq('id', item.id)
           .eq('page_id', pageId)
@@ -85,12 +85,12 @@ export const createLayoutOperations = (
         .from('page_layout_items')
         .insert([{
           page_id: pageId,
-          section_type: section.sectionType,
-          section_key: section.sectionKey,
+          section_type: section.section_type,
+          section_key: section.section_key,
           title: section.title,
-          display_order: section.displayOrder,
-          is_visible: section.isVisible,
-          section_config: section.sectionConfig
+          display_order: section.display_order,
+          is_visible: section.is_visible,
+          section_config: section.section_config
         }])
         .select()
         .single();
@@ -99,13 +99,13 @@ export const createLayoutOperations = (
 
       const newSection: PageLayoutItem = {
         id: data.id,
-        pageId: data.page_id,
-        sectionKey: data.section_key,
+        page_id: data.page_id,
+        section_key: data.section_key,
         title: data.title || '',
-        displayOrder: data.display_order,
-        isVisible: data.is_visible,
-        sectionType: data.section_type as 'banner' | 'products' | 'featured' | 'custom',
-        sectionConfig: data.section_config || {}
+        display_order: data.display_order,
+        is_visible: data.is_visible,
+        section_type: data.section_type as 'banner' | 'products' | 'featured' | 'custom',
+        section_config: data.section_config || {}
       };
       
       const currentLayout = pageLayouts[pageId] || [];

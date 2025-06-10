@@ -28,19 +28,28 @@ export const createPageOperations = (
 
       if (error) throw error;
 
-      const transformedPages: Page[] = (data || []).map(page => ({
-        id: page.id,
-        title: page.title,
-        slug: page.slug,
-        description: page.description || '',
-        isActive: page.is_active,
-        theme: typeof page.theme === 'object' && page.theme !== null ? 
-          page.theme as Page['theme'] : 
-          { primaryColor: '#107C10', secondaryColor: '#3A3A3A' },
-        filters: { tagIds: [], categoryIds: [] },
-        createdAt: page.created_at,
-        updatedAt: page.updated_at
-      }));
+      const transformedPages: Page[] = (data || []).map(page => {
+        let theme: Page['theme'] = { primaryColor: '#107C10', secondaryColor: '#3A3A3A' };
+        
+        if (page.theme && typeof page.theme === 'object' && !Array.isArray(page.theme)) {
+          const themeObj = page.theme as Record<string, any>;
+          if (themeObj.primaryColor && themeObj.secondaryColor) {
+            theme = themeObj as Page['theme'];
+          }
+        }
+
+        return {
+          id: page.id,
+          title: page.title,
+          slug: page.slug,
+          description: page.description || '',
+          isActive: page.is_active,
+          theme,
+          filters: { tagIds: [], categoryIds: [] },
+          createdAt: page.created_at,
+          updatedAt: page.updated_at
+        };
+      });
 
       setPages(transformedPages);
       setError(null);
@@ -67,15 +76,22 @@ export const createPageOperations = (
 
       if (error) throw error;
 
+      let theme: Page['theme'] = { primaryColor: '#107C10', secondaryColor: '#3A3A3A' };
+      
+      if (data.theme && typeof data.theme === 'object' && !Array.isArray(data.theme)) {
+        const themeObj = data.theme as Record<string, any>;
+        if (themeObj.primaryColor && themeObj.secondaryColor) {
+          theme = themeObj as Page['theme'];
+        }
+      }
+
       const newPage: Page = {
         id: data.id,
         title: data.title,
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-        theme: typeof data.theme === 'object' && data.theme !== null ? 
-          data.theme as Page['theme'] : 
-          { primaryColor: '#107C10', secondaryColor: '#3A3A3A' },
+        theme,
         filters: { tagIds: [], categoryIds: [] },
         createdAt: data.created_at,
         updatedAt: data.updated_at
@@ -108,15 +124,22 @@ export const createPageOperations = (
 
       if (error) throw error;
 
+      let theme: Page['theme'] = { primaryColor: '#107C10', secondaryColor: '#3A3A3A' };
+      
+      if (data.theme && typeof data.theme === 'object' && !Array.isArray(data.theme)) {
+        const themeObj = data.theme as Record<string, any>;
+        if (themeObj.primaryColor && themeObj.secondaryColor) {
+          theme = themeObj as Page['theme'];
+        }
+      }
+
       const updatedPage: Page = {
         id: data.id,
         title: data.title,
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-        theme: typeof data.theme === 'object' && data.theme !== null ? 
-          data.theme as Page['theme'] : 
-          { primaryColor: '#107C10', secondaryColor: '#3A3A3A' },
+        theme,
         filters: { tagIds: [], categoryIds: [] },
         createdAt: data.created_at,
         updatedAt: data.updated_at

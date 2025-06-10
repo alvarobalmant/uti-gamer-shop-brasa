@@ -79,7 +79,7 @@ export const usePages = () => {
     return layoutOps.addPageSection(pageId, section);
   }, [pageLayouts]);
 
-  const removePageSection = useCallback(async (pageId: string, sectionId: number) => {
+  const removePageSection = useCallback(async (pageId: string, sectionId: string) => {
     return layoutOps.removePageSection(pageId, sectionId);
   }, [pageLayouts]);
 
