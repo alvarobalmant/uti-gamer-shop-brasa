@@ -52,7 +52,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
 
   // Use both naming conventions for compatibility
   const isVisible = section.is_visible ?? section.isVisible ?? true;
-  const sectionType = section.section_type || section.sectionType || 'products';
+  const sectionType = (section.section_type || section.sectionType || 'products') as 'products' | 'banner' | 'featured' | 'custom' | 'special';
   const sectionConfig = section.sectionConfig || {};
 
   console.log(`[PlatformSectionRenderer] Rendering section ${section.id} (${section.title}):`, {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -7,14 +8,14 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { GripVertical, Eye, EyeOff, Plus, Settings, RefreshCw } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { usePages, Page, PageLayoutItem } from '@/hooks/usePages';
-import { usePageLayouts } from '@/hooks/usePageLayouts'; // Usar novo hook
+import { usePageLayouts } from '@/hooks/usePageLayouts';
 
 // Tipos de seção disponíveis
 const SECTION_TYPES = [
@@ -42,7 +43,6 @@ const SortableItem: React.FC<SortableItemProps> = ({ item, onVisibilityToggle, o
     zIndex: isDragging ? 10 : 'auto',
   };
 
-  // Use both is_visible and isVisible for compatibility
   const isVisible = item.is_visible ?? item.isVisible ?? true;
   const sectionType = (item.section_type || item.sectionType || 'products') as 'banner' | 'products' | 'featured' | 'custom' | 'special';
   const sectionKey = item.section_key || item.sectionKey || '';
@@ -107,7 +107,6 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
     if (section) {
       setFormData({
         ...section,
-        // Ensure both naming conventions are set
         page_id: section.page_id || section.pageId || pageId,
         pageId: section.page_id || section.pageId || pageId,
         section_key: section.section_key || section.sectionKey || '',
@@ -127,7 +126,6 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
     setFormData(prev => {
       const updated = { ...prev, [name]: value };
       
-      // Keep both naming conventions in sync
       if (name === 'section_key') {
         updated.sectionKey = value;
       } else if (name === 'sectionKey') {
@@ -142,7 +140,6 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
     setFormData(prev => {
       const updated = { ...prev, [name]: value as 'banner' | 'products' | 'featured' | 'custom' };
       
-      // Keep both naming conventions in sync
       if (name === 'section_type') {
         updated.sectionType = value as 'banner' | 'products' | 'featured' | 'custom';
       } else if (name === 'sectionType') {
@@ -156,7 +153,6 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Generate section_key if not provided
     const sectionKey = formData.section_key || formData.sectionKey || `section-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
     
     const finalData = {
@@ -248,8 +244,8 @@ interface PageLayoutManagerProps {
 
 const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
   const { toast } = useToast();
-  const { addPageSection, removePageSection } = usePages();
-  const { layouts, fetchLayout, updateLayout, loading, error, invalidateCache } = usePageLayouts(); // Novo hook
+  const { addPageSection } = usePages();
+  const { layouts, fetchLayout, updateLayout, loading, error, invalidateCache } = usePageLayouts();
   
   const [layoutItems, setLayoutItems] = useState<PageLayoutItem[]>([]);
   const [isAddingSectionOpen, setIsAddingSectionOpen] = useState(false);
@@ -264,12 +260,12 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     })
   );
 
-  // Carregar layout da página usando novo hook
+  // Carregar layout da página
   useEffect(() => {
     const loadPageLayout = async () => {
       try {
         console.log("Loading page layout for page:", page.id);
-        await fetchLayout(page.id, true); // Sempre force reload
+        await fetchLayout(page.id, true);
       } catch (err) {
         console.error('Erro ao carregar layout:', err);
         toast({
@@ -283,7 +279,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     loadPageLayout();
   }, [page.id, fetchLayout, toast]);
 
-  // Atualizar layout local quando o layout da página mudar
+  // Atualizar layout local
   useEffect(() => {
     if (layouts[page.id]) {
       console.log("Updating local layout items from layouts:", layouts[page.id]);
@@ -291,7 +287,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         (a.display_order || a.displayOrder || 0) - (b.display_order || b.displayOrder || 0)
       );
       setLayoutItems(sortedItems);
-      setHasChanges(false); // Reset changes quando dados frescos chegam
+      setHasChanges(false);
     }
   }, [layouts, page.id]);
 
@@ -304,7 +300,6 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         const newIndex = items.findIndex((item) => item.id === over.id);
         const newItems = arrayMove(items, oldIndex, newIndex);
         
-        // Update both naming conventions for display_order
         return newItems.map((item, index) => ({ 
           ...item, 
           display_order: index + 1,
@@ -329,15 +324,8 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
   const handleSaveChanges = async () => {
     try {
       console.log("Saving changes for items:", layoutItems);
-      
       await updateLayout(page.id, layoutItems);
       setHasChanges(false);
-      
-      // Forçar refresh da página para garantir que as mudanças sejam visíveis
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-      
     } catch (err) {
       console.error("Error saving changes:", err);
     }
@@ -369,7 +357,6 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     try {
       console.log("Adding new section:", sectionData);
       
-      // Calculate the next display order
       const nextOrder = layoutItems.length > 0 
         ? Math.max(...layoutItems.map(item => item.display_order || item.displayOrder || 0)) + 1 
         : 1;
@@ -443,7 +430,6 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
 
   const handleCancelChanges = async () => {
     try {
-      // Recarregar layout original
       const originalLayout = await fetchLayout(page.id);
       setLayoutItems(originalLayout);
       setHasChanges(false);

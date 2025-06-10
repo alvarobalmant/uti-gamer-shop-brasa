@@ -10,16 +10,19 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SpecialSectionElement } from '@/types/specialSections';
 
+type ElementType = 'banner_full' | 'banner_medium' | 'banner_small' | 'banner_product_highlight' | 'product_carousel' | 'text_block';
+type BackgroundType = 'color' | 'image' | 'gradient' | 'transparent';
+
 interface ElementFormData {
   title?: string;
   subtitle?: string;
-  element_type: 'banner_full' | 'banner_medium' | 'banner_small' | 'banner_product_highlight' | 'product_carousel' | 'text_block';
+  element_type: ElementType;
   image_url?: string;
   link_url?: string;
   link_text?: string;
   display_order?: number;
   is_active?: boolean;
-  background_type?: 'color' | 'image' | 'gradient' | 'transparent';
+  background_type?: BackgroundType;
   background_color?: string;
   background_image_url?: string;
   background_gradient?: string;
@@ -58,13 +61,13 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({
     defaultValues: element ? {
       title: element.title || '',
       subtitle: element.subtitle || '',
-      element_type: element.element_type,
+      element_type: element.element_type as ElementType,
       image_url: element.image_url || '',
       link_url: element.link_url || '',
       link_text: element.link_text || '',
       display_order: element.display_order || 0,
       is_active: element.is_active ?? true,
-      background_type: (element.background_type || 'transparent') as 'color' | 'image' | 'gradient' | 'transparent',
+      background_type: (element.background_type || 'transparent') as BackgroundType,
       background_color: element.background_color || '#FFFFFF',
       background_image_url: element.background_image_url || '',
       background_gradient: element.background_gradient || '',
@@ -87,13 +90,13 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({
     } : {
       title: '',
       subtitle: '',
-      element_type: 'banner_full',
+      element_type: 'banner_full' as ElementType,
       image_url: '',
       link_url: '',
       link_text: '',
       display_order: 0,
       is_active: true,
-      background_type: 'transparent',
+      background_type: 'transparent' as BackgroundType,
       background_color: '#FFFFFF',
       background_image_url: '',
       background_gradient: '',
@@ -124,13 +127,13 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({
       reset({
         title: element.title || '',
         subtitle: element.subtitle || '',
-        element_type: element.element_type,
+        element_type: element.element_type as ElementType,
         image_url: element.image_url || '',
         link_url: element.link_url || '',
         link_text: element.link_text || '',
         display_order: element.display_order || 0,
         is_active: element.is_active ?? true,
-        background_type: (element.background_type || 'transparent') as 'color' | 'image' | 'gradient' | 'transparent',
+        background_type: (element.background_type || 'transparent') as BackgroundType,
         background_color: element.background_color || '#FFFFFF',
         background_image_url: element.background_image_url || '',
         background_gradient: element.background_gradient || '',
@@ -154,8 +157,12 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({
     }
   }, [element, reset]);
 
+  const handleFormSubmit = (data: ElementFormData) => {
+    onSubmit(data);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>{element ? 'Editar' : 'Criar'} Elemento da Seção</CardTitle>
@@ -176,7 +183,7 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({
               <Label htmlFor="element_type">Tipo de Elemento</Label>
               <Select 
                 value={selectedElementType} 
-                onValueChange={(value) => setValue('element_type', value as any)}
+                onValueChange={(value) => setValue('element_type', value as ElementType)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />

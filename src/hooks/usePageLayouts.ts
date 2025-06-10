@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PageLayoutItem } from '@/hooks/usePages/types';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 // Hook específico para gerenciar layouts de página com invalidação automática
 export const usePageLayouts = () => {
@@ -55,14 +55,14 @@ export const usePageLayouts = () => {
         title: item.title,
         display_order: item.display_order,
         is_visible: item.is_visible,
-        section_type: item.section_type,
+        section_type: item.section_type as 'products' | 'banner' | 'featured' | 'custom' | 'special',
         sectionConfig: item.section_config,
         // Helper properties for backwards compatibility
         pageId: item.page_id,
         sectionKey: item.section_key,
         displayOrder: item.display_order,
         isVisible: item.is_visible,
-        sectionType: item.section_type,
+        sectionType: item.section_type as 'products' | 'banner' | 'featured' | 'custom' | 'special',
       }));
 
       setLayouts(prev => ({
@@ -173,16 +173,6 @@ export const usePageLayouts = () => {
       supabase.removeChannel(channel);
     };
   }, [fetchLayout, invalidateCache]);
-
-  // Periodically refresh para garantir sincronia
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('[usePageLayouts] Periodic cache invalidation');
-      invalidateCache();
-    }, 10000); // A cada 10 segundos
-
-    return () => clearInterval(interval);
-  }, [invalidateCache]);
 
   return {
     layouts,

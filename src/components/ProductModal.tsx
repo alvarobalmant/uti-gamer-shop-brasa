@@ -51,7 +51,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
             isTransitioning={false}
             scrollContainerRef={null}
             onRelatedProductClick={onRelatedProductClick}
-            onAddToCart={() => {}}
             onClose={onClose}
             onShareProduct={() => {}}
             onToggleFavorite={() => {}}
