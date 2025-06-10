@@ -54,6 +54,11 @@ const Index = () => {
     }
   };
 
+  const handleCloseProductModal = () => {
+    setShowProductModal(false);
+    setSelectedProduct(null);
+  };
+
   return (
     <div className="min-h-screen bg-background w-full overflow-x-hidden flex flex-col">
       <ProfessionalHeader
@@ -119,7 +124,8 @@ const Index = () => {
       {/* Product Modal */}
       <ProductModal 
         isOpen={showProductModal} 
-        onOpenChange={setShowProductModal} 
+        onOpenChange={setShowProductModal}
+        onClose={handleCloseProductModal}
         product={selectedProduct} 
         loading={productsLoading}
         relatedProducts={products.filter(p => p.id !== selectedProduct?.id).slice(0, 4)}
@@ -130,3 +136,5 @@ const Index = () => {
 };
 
 export default Index;
+
+</initial_code>
