@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { GripVertical, Eye, EyeOff, Plus, Settings } from 'lucide-react';
+import { GripVertical, Eye, EyeOff, Plus, Settings, RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
@@ -14,12 +14,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { usePages, Page, PageLayoutItem } from '@/hooks/usePages';
+import { usePageLayouts } from '@/hooks/usePageLayouts'; // Usar novo hook
 
 // Tipos de seção disponíveis
 const SECTION_TYPES = [
   { id: 'banner', label: 'Banner' },
   { id: 'products', label: 'Produtos' },
   { id: 'featured', label: 'Destaques' },
+  { id: 'special', label: 'Seção Especial' },
   { id: 'custom', label: 'Conteúdo Personalizado' }
 ] as const;
 
@@ -42,7 +44,7 @@ const SortableItem: React.FC<SortableItemProps> = ({ item, onVisibilityToggle, o
 
   // Use both is_visible and isVisible for compatibility
   const isVisible = item.is_visible ?? item.isVisible ?? true;
-  const sectionType = (item.section_type || item.sectionType || 'products') as 'banner' | 'products' | 'featured' | 'custom';
+  const sectionType = (item.section_type || item.sectionType || 'products') as 'banner' | 'products' | 'featured' | 'custom' | 'special';
   const sectionKey = item.section_key || item.sectionKey || '';
 
   return (
@@ -246,20 +248,14 @@ interface PageLayoutManagerProps {
 
 const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
   const { toast } = useToast();
-  const { 
-    pageLayouts, 
-    fetchPageLayout, 
-    updatePageLayout, 
-    addPageSection, 
-    removePageSection,
-    loading, 
-    error 
-  } = usePages();
+  const { addPageSection, removePageSection } = usePages();
+  const { layouts, fetchLayout, updateLayout, loading, error, invalidateCache } = usePageLayouts(); // Novo hook
   
   const [layoutItems, setLayoutItems] = useState<PageLayoutItem[]>([]);
   const [isAddingSectionOpen, setIsAddingSectionOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<PageLayoutItem | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -268,14 +264,12 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     })
   );
 
-  // Carregar layout da página
+  // Carregar layout da página usando novo hook
   useEffect(() => {
     const loadPageLayout = async () => {
       try {
         console.log("Loading page layout for page:", page.id);
-        const layout = await fetchPageLayout(page.id);
-        console.log("Loaded layout:", layout);
-        setLayoutItems(layout);
+        await fetchLayout(page.id, true); // Sempre force reload
       } catch (err) {
         console.error('Erro ao carregar layout:', err);
         toast({
@@ -287,15 +281,19 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     };
     
     loadPageLayout();
-  }, [page.id, fetchPageLayout, toast]);
+  }, [page.id, fetchLayout, toast]);
 
   // Atualizar layout local quando o layout da página mudar
   useEffect(() => {
-    if (pageLayouts[page.id]) {
-      console.log("Updating local layout items from pageLayouts:", pageLayouts[page.id]);
-      setLayoutItems(pageLayouts[page.id]);
+    if (layouts[page.id]) {
+      console.log("Updating local layout items from layouts:", layouts[page.id]);
+      const sortedItems = [...layouts[page.id]].sort((a, b) => 
+        (a.display_order || a.displayOrder || 0) - (b.display_order || b.displayOrder || 0)
+      );
+      setLayoutItems(sortedItems);
+      setHasChanges(false); // Reset changes quando dados frescos chegam
     }
-  }, [pageLayouts, page.id]);
+  }, [layouts, page.id]);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
@@ -332,20 +330,38 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     try {
       console.log("Saving changes for items:", layoutItems);
       
-      await updatePageLayout(page.id, layoutItems);
+      await updateLayout(page.id, layoutItems);
       setHasChanges(false);
+      
+      // Forçar refresh da página para garantir que as mudanças sejam visíveis
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
+    } catch (err) {
+      console.error("Error saving changes:", err);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      invalidateCache();
+      await fetchLayout(page.id, true);
       
       toast({
         title: "Layout atualizado",
-        description: "As alterações no layout da página foram salvas com sucesso."
+        description: "Os dados foram recarregados com sucesso."
       });
     } catch (err) {
-      console.error("Error saving changes:", err);
+      console.error("Error refreshing:", err);
       toast({
-        title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar as alterações no layout.",
+        title: "Erro ao atualizar",
+        description: "Não foi possível recarregar os dados.",
         variant: "destructive"
       });
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -402,7 +418,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
       );
       
       setLayoutItems(updatedItems);
-      await updatePageLayout(page.id, [{ ...editingSection, ...sectionData }]);
+      await updateLayout(page.id, [{ ...editingSection, ...sectionData }]);
       
       setEditingSection(null);
       
@@ -428,7 +444,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
   const handleCancelChanges = async () => {
     try {
       // Recarregar layout original
-      const originalLayout = await fetchPageLayout(page.id);
+      const originalLayout = await fetchLayout(page.id);
       setLayoutItems(originalLayout);
       setHasChanges(false);
       
@@ -451,7 +467,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
       <Card>
         <CardContent className="p-6">
           <p className="text-red-500">{error}</p>
-          <Button onClick={() => fetchPageLayout(page.id)} className="mt-4">
+          <Button onClick={() => fetchLayout(page.id, true)} className="mt-4">
             Tentar Novamente
           </Button>
         </CardContent>
@@ -464,10 +480,21 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Layout da Página: {page.title}</CardTitle>
-          <Button onClick={() => setIsAddingSectionOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Adicionar Seção
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleRefresh} 
+              disabled={isRefreshing}
+              size="sm"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+            <Button onClick={() => setIsAddingSectionOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Seção
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>

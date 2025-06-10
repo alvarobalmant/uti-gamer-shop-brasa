@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { usePages, Page, PageLayoutItem } from '@/hooks/usePages';
+import { usePageLayouts } from '@/hooks/usePageLayouts'; // Novo hook específico
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { Product } from '@/hooks/useProducts';
@@ -9,27 +10,27 @@ import PlatformPageLoading from './PlatformPage/PlatformPageLoading';
 import PlatformPageNotFound from './PlatformPage/PlatformPageNotFound';
 import PlatformPageContent from './PlatformPage/PlatformPageContent';
 
-// Base component for platform pages with enhanced data refresh
+// Base component for platform pages with enhanced real-time data sync
 const PlatformPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   
   const { products } = useProducts();
   const { addToCart } = useCart();
-  const { getPageBySlug, fetchPageLayout, pageLayouts, loading: pageLoading, forceRefresh } = usePages();
+  const { getPageBySlug, loading: pageLoading } = usePages();
+  const { layouts, fetchLayout, cacheTimestamp } = usePageLayouts(); // Novo hook
   
   const [page, setPage] = useState<Page | null>(null);
   const [layout, setLayout] = useState<PageLayoutItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [lastRefresh, setLastRefresh] = useState<number>(Date.now());
 
   // Memoize page to avoid unnecessary re-renders
   const currentPage = useMemo(() => {
     return slug ? getPageBySlug(slug) : null;
-  }, [slug, getPageBySlug]);
+  }, [slug, getPageBySlug, cacheTimestamp]); // Incluir cacheTimestamp para forçar re-render
 
-  // Enhanced page data loading with periodic refresh
+  // Enhanced page data loading with real-time sync
   useEffect(() => {
     const loadPageData = async () => {
       console.log(`[PlatformPage] Loading data for slug: ${slug}`);
@@ -43,10 +44,10 @@ const PlatformPage: React.FC = () => {
       setPage(currentPage);
       
       try {
-        // Always fetch fresh layout to ensure we have the latest data
+        // Sempre buscar layout fresh para garantir dados atualizados
         if (currentPage.id) {
           console.log(`[PlatformPage] Fetching layout for page ${currentPage.id}`);
-          await fetchPageLayout(currentPage.id, true); // Force reload
+          await fetchLayout(currentPage.id, true); // Sempre force reload
         }
       } catch (error) {
         console.error('Erro ao carregar layout:', error);
@@ -56,28 +57,18 @@ const PlatformPage: React.FC = () => {
     };
     
     loadPageData();
-  }, [currentPage, fetchPageLayout, slug, lastRefresh]);
+  }, [currentPage, fetchLayout, slug, cacheTimestamp]); // Incluir cacheTimestamp
 
-  // Update layout when data is available
+  // Update layout when data is available - com dependency no cacheTimestamp
   useEffect(() => {
-    if (page && pageLayouts[page.id]) {
-      const sortedLayout = [...pageLayouts[page.id]].sort(
+    if (page && layouts[page.id]) {
+      const sortedLayout = [...layouts[page.id]].sort(
         (a, b) => (a.display_order || a.displayOrder || 0) - (b.display_order || b.displayOrder || 0)
       );
       console.log(`[PlatformPage] Updated layout for page ${page.id}:`, sortedLayout);
       setLayout(sortedLayout);
     }
-  }, [page, pageLayouts]);
-
-  // Periodic refresh to check for database changes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('[PlatformPage] Periodic refresh triggered');
-      setLastRefresh(Date.now());
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+  }, [page, layouts, cacheTimestamp]); // Incluir cacheTimestamp
 
   // Open product modal
   const handleProductCardClick = (productId: string) => {

@@ -24,7 +24,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
   productId,
   product,
   loading = false,
-  relatedProducts,
+  relatedProducts = [],
   onRelatedProductClick
 }) => {
   if (!isOpen) return null;
@@ -44,7 +44,19 @@ const ProductModal: React.FC<ProductModalProps> = ({
         {loading ? (
           <ProductModalSkeleton />
         ) : product ? (
-          <ProductModalContent product={product} />
+          <ProductModalContent 
+            product={product}
+            relatedProducts={relatedProducts}
+            currentProductId={product.id}
+            isTransitioning={false}
+            scrollContainerRef={null}
+            onRelatedProductClick={onRelatedProductClick}
+            onAddToCart={() => {}}
+            onClose={onClose}
+            onShareProduct={() => {}}
+            onToggleFavorite={() => {}}
+            isFavorite={false}
+          />
         ) : (
           <ProductModalNotFound />
         )}
