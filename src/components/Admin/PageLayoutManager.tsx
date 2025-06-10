@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -300,7 +301,9 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         display_order: nextOrder,
         is_visible: sectionData.is_visible ?? true,
         section_type: sectionData.section_type || 'products',
-      } as Omit<PageLayoutItem, 'id' | 'created_at' | 'updated_at'>);
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as PageLayoutItem);
       
       setIsAddingSectionOpen(false);
       

@@ -5,8 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 import { PageFormData } from './types';
 
 interface UsePageOperationsProps {
-  createPage: (pageData: Omit<Page, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Page>;
-  updatePage: (id: string, pageData: Partial<Omit<Page, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<Page | undefined>;
+  createPage: (pageData: Omit<Page, 'id' | 'created_at' | 'updated_at'>) => Promise<Page>;
+  updatePage: (id: string, pageData: Partial<Omit<Page, 'id' | 'created_at' | 'updated_at'>>) => Promise<Page | undefined>;
   deletePage: (id: string) => Promise<boolean>;
   formData: Partial<PageFormData>;
   selectedPage: Page | null;
@@ -47,7 +47,7 @@ export const usePageOperations = ({
         title: formData.title,
         slug: normalizedSlug,
         description: formData.description,
-        isActive: formData.isActive ?? true,
+        is_active: formData.isActive ?? true,
         theme: formData.theme as Page['theme'],
         filters: {
           tagIds: formData.filters?.tagIds || [],
@@ -92,7 +92,7 @@ export const usePageOperations = ({
         title: formData.title,
         slug: normalizedSlug,
         description: formData.description,
-        isActive: formData.isActive,
+        is_active: formData.isActive,
         theme: formData.theme,
         filters: {
           tagIds: formData.filters?.tagIds || [],
