@@ -4,8 +4,6 @@ import { PageLayoutItem, Page } from '@/hooks/usePages';
 import { Product } from '@/hooks/useProducts';
 import HeroBanner from '@/components/HeroBanner';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
-import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
-import { useSpecialSections } from '@/hooks/useSpecialSections';
 
 interface PlatformSectionRendererProps {
   section: PageLayoutItem;
@@ -23,8 +21,6 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
   onAddToCart,
   onProductCardClick
 }) => {
-  const { specialSections } = useSpecialSections();
-
   // Filter products based on section configuration
   const getFilteredProducts = (sectionConfig: any) => {
     if (!sectionConfig || !sectionConfig.filter) return products;
@@ -52,19 +48,10 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
 
   // Use both naming conventions for compatibility
   const isVisible = section.is_visible ?? section.isVisible ?? true;
-  const sectionType = (section.section_type || section.sectionType || 'products') as 'products' | 'banner' | 'featured' | 'custom' | 'special';
+  const sectionType = section.section_type || section.sectionType || 'products';
   const sectionConfig = section.sectionConfig || {};
 
-  console.log(`[PlatformSectionRenderer] Rendering section ${section.id} (${section.title}):`, {
-    isVisible,
-    sectionType,
-    sectionConfig
-  });
-
-  if (!isVisible) {
-    console.log(`[PlatformSectionRenderer] Section ${section.id} is not visible, skipping render`);
-    return null;
-  }
+  if (!isVisible) return null;
   
   switch (sectionType) {
     case 'banner':
@@ -94,22 +81,6 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
         />
       );
     
-    case 'special':
-      // Renderizar seção especial se configurada
-      if (sectionConfig?.specialSectionId) {
-        const specialSection = specialSections.find(s => s.id === sectionConfig.specialSectionId);
-        if (specialSection) {
-          return (
-            <SpecialSectionRenderer
-              key={section.id}
-              section={specialSection}
-              onProductCardClick={onProductCardClick}
-            />
-          );
-        }
-      }
-      return null;
-    
     case 'custom':
       return (
         <div key={section.id} className="py-8 container mx-auto">
@@ -119,7 +90,6 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
       );
     
     default:
-      console.warn(`[PlatformSectionRenderer] Unknown section type: ${sectionType}`);
       return null;
   }
 };

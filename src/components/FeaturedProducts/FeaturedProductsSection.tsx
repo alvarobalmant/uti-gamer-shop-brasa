@@ -82,11 +82,6 @@ const FeaturedProductsSection = ({
     }
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedProductId(null);
-  };
-
   useEffect(() => {
     setAnimateProducts(false);
     const timer = setTimeout(() => setAnimateProducts(true), 50);
@@ -198,7 +193,6 @@ const FeaturedProductsSection = ({
           product={products.find(p => p.id === selectedProductId) || null}
           isOpen={isModalOpen}
           onOpenChange={setIsModalOpen}
-          onClose={handleCloseModal}
         />
       )}
     </section>

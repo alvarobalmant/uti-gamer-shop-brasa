@@ -21,15 +21,15 @@ interface ProductModalContentProps {
   currentProductId: string | null;
   isTransitioning: boolean;
   scrollContainerRef: React.RefObject<HTMLDivElement>;
-  selectedCondition?: 'new' | 'pre-owned' | 'digital';
-  selectedSize?: string;
-  selectedColor?: string;
-  quantity?: number;
-  onConditionChange?: (condition: 'new' | 'pre-owned' | 'digital') => void;
-  onSizeChange?: (size: string) => void;
-  onColorChange?: (color: string) => void;
-  onQuantityChange?: (quantity: number) => void;
-  onRelatedProductClick?: (productId: string) => void;
+  selectedCondition: 'new' | 'pre-owned' | 'digital';
+  selectedSize: string;
+  selectedColor: string;
+  quantity: number;
+  onConditionChange: (condition: 'new' | 'pre-owned' | 'digital') => void;
+  onSizeChange: (size: string) => void;
+  onColorChange: (color: string) => void;
+  onQuantityChange: (quantity: number) => void;
+  onRelatedProductClick: (productId: string) => void;
 }
 
 const ProductModalContent: React.FC<ProductModalContentProps> = ({
@@ -38,15 +38,15 @@ const ProductModalContent: React.FC<ProductModalContentProps> = ({
   currentProductId,
   isTransitioning,
   scrollContainerRef,
-  selectedCondition = 'new',
-  selectedSize = '',
-  selectedColor = '',
-  quantity = 1,
-  onConditionChange = () => {},
-  onSizeChange = () => {},
-  onColorChange = () => {},
-  onQuantityChange = () => {},
-  onRelatedProductClick = () => {}
+  selectedCondition,
+  selectedSize,
+  selectedColor,
+  quantity,
+  onConditionChange,
+  onSizeChange,
+  onColorChange,
+  onQuantityChange,
+  onRelatedProductClick
 }) => {
   const isMobile = useIsMobile();
   const { addToCart, loading: cartLoading } = useCart();

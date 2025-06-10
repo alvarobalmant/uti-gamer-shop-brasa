@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -7,22 +6,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { GripVertical, Eye, EyeOff, Plus, Settings, RefreshCw } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { GripVertical, Eye, EyeOff, Plus, Settings } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { usePages, Page, PageLayoutItem } from '@/hooks/usePages';
-import { usePageLayouts } from '@/hooks/usePageLayouts';
 
 // Tipos de seção disponíveis
 const SECTION_TYPES = [
   { id: 'banner', label: 'Banner' },
   { id: 'products', label: 'Produtos' },
   { id: 'featured', label: 'Destaques' },
-  { id: 'special', label: 'Seção Especial' },
   { id: 'custom', label: 'Conteúdo Personalizado' }
 ] as const;
 
@@ -43,8 +40,9 @@ const SortableItem: React.FC<SortableItemProps> = ({ item, onVisibilityToggle, o
     zIndex: isDragging ? 10 : 'auto',
   };
 
+  // Use both is_visible and isVisible for compatibility
   const isVisible = item.is_visible ?? item.isVisible ?? true;
-  const sectionType = (item.section_type || item.sectionType || 'products') as 'banner' | 'products' | 'featured' | 'custom' | 'special';
+  const sectionType = (item.section_type || item.sectionType || 'products') as 'banner' | 'products' | 'featured' | 'custom';
   const sectionKey = item.section_key || item.sectionKey || '';
 
   return (
@@ -107,6 +105,7 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
     if (section) {
       setFormData({
         ...section,
+        // Ensure both naming conventions are set
         page_id: section.page_id || section.pageId || pageId,
         pageId: section.page_id || section.pageId || pageId,
         section_key: section.section_key || section.sectionKey || '',
@@ -126,6 +125,7 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
     setFormData(prev => {
       const updated = { ...prev, [name]: value };
       
+      // Keep both naming conventions in sync
       if (name === 'section_key') {
         updated.sectionKey = value;
       } else if (name === 'sectionKey') {
@@ -140,6 +140,7 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
     setFormData(prev => {
       const updated = { ...prev, [name]: value as 'banner' | 'products' | 'featured' | 'custom' };
       
+      // Keep both naming conventions in sync
       if (name === 'section_type') {
         updated.sectionType = value as 'banner' | 'products' | 'featured' | 'custom';
       } else if (name === 'sectionType') {
@@ -153,6 +154,7 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Generate section_key if not provided
     const sectionKey = formData.section_key || formData.sectionKey || `section-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
     
     const finalData = {
@@ -244,14 +246,20 @@ interface PageLayoutManagerProps {
 
 const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
   const { toast } = useToast();
-  const { addPageSection } = usePages();
-  const { layouts, fetchLayout, updateLayout, loading, error, invalidateCache } = usePageLayouts();
+  const { 
+    pageLayouts, 
+    fetchPageLayout, 
+    updatePageLayout, 
+    addPageSection, 
+    removePageSection,
+    loading, 
+    error 
+  } = usePages();
   
   const [layoutItems, setLayoutItems] = useState<PageLayoutItem[]>([]);
   const [isAddingSectionOpen, setIsAddingSectionOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<PageLayoutItem | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -265,7 +273,9 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     const loadPageLayout = async () => {
       try {
         console.log("Loading page layout for page:", page.id);
-        await fetchLayout(page.id, true);
+        const layout = await fetchPageLayout(page.id);
+        console.log("Loaded layout:", layout);
+        setLayoutItems(layout);
       } catch (err) {
         console.error('Erro ao carregar layout:', err);
         toast({
@@ -277,19 +287,15 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     };
     
     loadPageLayout();
-  }, [page.id, fetchLayout, toast]);
+  }, [page.id, fetchPageLayout, toast]);
 
-  // Atualizar layout local
+  // Atualizar layout local quando o layout da página mudar
   useEffect(() => {
-    if (layouts[page.id]) {
-      console.log("Updating local layout items from layouts:", layouts[page.id]);
-      const sortedItems = [...layouts[page.id]].sort((a, b) => 
-        (a.display_order || a.displayOrder || 0) - (b.display_order || b.displayOrder || 0)
-      );
-      setLayoutItems(sortedItems);
-      setHasChanges(false);
+    if (pageLayouts[page.id]) {
+      console.log("Updating local layout items from pageLayouts:", pageLayouts[page.id]);
+      setLayoutItems(pageLayouts[page.id]);
     }
-  }, [layouts, page.id]);
+  }, [pageLayouts, page.id]);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
@@ -300,6 +306,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         const newIndex = items.findIndex((item) => item.id === over.id);
         const newItems = arrayMove(items, oldIndex, newIndex);
         
+        // Update both naming conventions for display_order
         return newItems.map((item, index) => ({ 
           ...item, 
           display_order: index + 1,
@@ -324,32 +331,21 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
   const handleSaveChanges = async () => {
     try {
       console.log("Saving changes for items:", layoutItems);
-      await updateLayout(page.id, layoutItems);
+      
+      await updatePageLayout(page.id, layoutItems);
       setHasChanges(false);
-    } catch (err) {
-      console.error("Error saving changes:", err);
-    }
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      invalidateCache();
-      await fetchLayout(page.id, true);
       
       toast({
         title: "Layout atualizado",
-        description: "Os dados foram recarregados com sucesso."
+        description: "As alterações no layout da página foram salvas com sucesso."
       });
     } catch (err) {
-      console.error("Error refreshing:", err);
+      console.error("Error saving changes:", err);
       toast({
-        title: "Erro ao atualizar",
-        description: "Não foi possível recarregar os dados.",
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro ao salvar as alterações no layout.",
         variant: "destructive"
       });
-    } finally {
-      setIsRefreshing(false);
     }
   };
 
@@ -357,6 +353,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     try {
       console.log("Adding new section:", sectionData);
       
+      // Calculate the next display order
       const nextOrder = layoutItems.length > 0 
         ? Math.max(...layoutItems.map(item => item.display_order || item.displayOrder || 0)) + 1 
         : 1;
@@ -405,7 +402,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
       );
       
       setLayoutItems(updatedItems);
-      await updateLayout(page.id, [{ ...editingSection, ...sectionData }]);
+      await updatePageLayout(page.id, [{ ...editingSection, ...sectionData }]);
       
       setEditingSection(null);
       
@@ -430,7 +427,8 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
 
   const handleCancelChanges = async () => {
     try {
-      const originalLayout = await fetchLayout(page.id);
+      // Recarregar layout original
+      const originalLayout = await fetchPageLayout(page.id);
       setLayoutItems(originalLayout);
       setHasChanges(false);
       
@@ -453,7 +451,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
       <Card>
         <CardContent className="p-6">
           <p className="text-red-500">{error}</p>
-          <Button onClick={() => fetchLayout(page.id, true)} className="mt-4">
+          <Button onClick={() => fetchPageLayout(page.id)} className="mt-4">
             Tentar Novamente
           </Button>
         </CardContent>
@@ -466,21 +464,10 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Layout da Página: {page.title}</CardTitle>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={handleRefresh} 
-              disabled={isRefreshing}
-              size="sm"
-            >
-              <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
-            <Button onClick={() => setIsAddingSectionOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Seção
-            </Button>
-          </div>
+          <Button onClick={() => setIsAddingSectionOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar Seção
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
