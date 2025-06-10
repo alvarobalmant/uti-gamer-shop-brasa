@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -119,9 +118,10 @@ const SpecialSectionCarouselPage: React.FC = () => {
       {/* Product Modal */}
       {selectedProductId && (
         <ProductModal
-          product={products.find(p => p.id === selectedProductId) || null}
           isOpen={isModalOpen}
-          onOpenChange={setIsModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          productId={selectedProductId}
+          products={products}
         />
       )}
     </div>

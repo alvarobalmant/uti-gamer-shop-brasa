@@ -134,9 +134,10 @@ const TestPlatformPage: React.FC = () => {
       
       {/* Modal de produto */}
       <ProductModal
-        product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        productId={selectedProductId}
+        products={products}
       />
     </>
   );

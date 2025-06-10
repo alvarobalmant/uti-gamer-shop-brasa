@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -190,9 +189,10 @@ const FeaturedProductsSection = ({
       {/* Render the Product Modal only if no external onCardClick handler is provided */}
       {!onCardClick && selectedProductId && (
         <ProductModal
-          product={products.find(p => p.id === selectedProductId) || null}
           isOpen={isModalOpen}
-          onOpenChange={setIsModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          productId={selectedProductId}
+          products={products}
         />
       )}
     </section>

@@ -69,7 +69,7 @@ const PageList: React.FC<PageListProps> = ({
             <TableCell className="font-medium">{page.title}</TableCell>
             <TableCell>/{page.slug}</TableCell>
             <TableCell>
-              {page.isActive ? (
+              {page.is_active ? (
                 <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                   <Eye className="mr-1 h-3 w-3" />
                   Ativo
