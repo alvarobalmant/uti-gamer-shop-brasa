@@ -9,29 +9,44 @@ import ProductModalNotFound from './ProductModal/ProductModalNotFound';
 interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  productId: string | null;
-  product?: Product;
+  onOpenChange?: (open: boolean) => void;
+  productId?: string | null;
+  product?: Product | null;
   loading?: boolean;
+  relatedProducts?: Product[];
+  onRelatedProductClick?: (productId: string) => void;
 }
 
 const ProductModal: React.FC<ProductModalProps> = ({
   isOpen,
   onClose,
+  onOpenChange,
   productId,
   product,
-  loading = false
+  loading = false,
+  relatedProducts,
+  onRelatedProductClick
 }) => {
   if (!isOpen) return null;
 
+  const handleOpenChange = (open: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(open);
+    }
+    if (!open) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
         {loading ? (
           <ProductModalSkeleton />
         ) : product ? (
-          <ProductModalContent product={product} onClose={onClose} />
+          <ProductModalContent product={product} />
         ) : (
-          <ProductModalNotFound onClose={onClose} />
+          <ProductModalNotFound />
         )}
       </DialogContent>
     </Dialog>

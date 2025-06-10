@@ -72,7 +72,7 @@ export const useSpecialSectionElements = (specialSectionId?: string) => {
     }
   };
 
-  const createElement = async (elementData: Omit<SpecialSectionElement, 'id' | 'created_at' | 'updated_at'>) => {
+  const addElement = async (elementData: Omit<SpecialSectionElement, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const { data, error: createError } = await supabase
         .from('special_section_elements')
@@ -199,7 +199,7 @@ export const useSpecialSectionElements = (specialSectionId?: string) => {
     loading,
     error,
     fetchElements,
-    createElement,
+    addElement,
     updateElement,
     deleteElement
   };
