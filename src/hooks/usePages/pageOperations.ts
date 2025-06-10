@@ -34,7 +34,9 @@ export const createPageOperations = (
         slug: page.slug,
         description: page.description || '',
         isActive: page.is_active,
-        theme: page.theme || { primaryColor: '#107C10', secondaryColor: '#3A3A3A' },
+        theme: typeof page.theme === 'object' && page.theme !== null ? 
+          page.theme as Page['theme'] : 
+          { primaryColor: '#107C10', secondaryColor: '#3A3A3A' },
         filters: { tagIds: [], categoryIds: [] },
         createdAt: page.created_at,
         updatedAt: page.updated_at
@@ -58,7 +60,7 @@ export const createPageOperations = (
           slug: pageData.slug,
           description: pageData.description,
           is_active: pageData.isActive,
-          theme: pageData.theme
+          theme: pageData.theme as any
         }])
         .select()
         .single();
@@ -71,7 +73,9 @@ export const createPageOperations = (
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-        theme: data.theme || { primaryColor: '#107C10', secondaryColor: '#3A3A3A' },
+        theme: typeof data.theme === 'object' && data.theme !== null ? 
+          data.theme as Page['theme'] : 
+          { primaryColor: '#107C10', secondaryColor: '#3A3A3A' },
         filters: { tagIds: [], categoryIds: [] },
         createdAt: data.created_at,
         updatedAt: data.updated_at
@@ -96,7 +100,7 @@ export const createPageOperations = (
           slug: pageData.slug,
           description: pageData.description,
           is_active: pageData.isActive,
-          theme: pageData.theme
+          theme: pageData.theme as any
         })
         .eq('id', id)
         .select()
@@ -110,7 +114,9 @@ export const createPageOperations = (
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-        theme: data.theme || { primaryColor: '#107C10', secondaryColor: '#3A3A3A' },
+        theme: typeof data.theme === 'object' && data.theme !== null ? 
+          data.theme as Page['theme'] : 
+          { primaryColor: '#107C10', secondaryColor: '#3A3A3A' },
         filters: { tagIds: [], categoryIds: [] },
         createdAt: data.created_at,
         updatedAt: data.updated_at

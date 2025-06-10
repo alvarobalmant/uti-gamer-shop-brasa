@@ -27,7 +27,7 @@ export interface Page {
 }
 
 export interface PageLayoutItem {
-  id: number;
+  id: string;
   pageId: string;
   sectionKey: string;
   title?: string;

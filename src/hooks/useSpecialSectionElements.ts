@@ -7,7 +7,6 @@ import { SpecialSectionElement, SpecialSectionElementCreateInput, SpecialSection
 export const useSpecialSectionElements = (specialSectionId?: string) => {
   const [elements, setElements] = useState<SpecialSectionElement[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchElements = useCallback(async () => {
@@ -18,7 +17,6 @@ export const useSpecialSectionElements = (specialSectionId?: string) => {
     }
 
     setLoading(true);
-    setError(null);
     try {
       const { data, error: fetchError } = await supabase
         .from('special_section_elements')
@@ -40,7 +38,6 @@ export const useSpecialSectionElements = (specialSectionId?: string) => {
       setElements(transformedData);
     } catch (err: any) {
       console.error('Error fetching special section elements:', err);
-      setError('Falha ao carregar os elementos da seção especial.');
       toast({ title: 'Erro', description: 'Não foi possível carregar os elementos da seção especial.', variant: 'destructive' });
     } finally {
       setLoading(false);

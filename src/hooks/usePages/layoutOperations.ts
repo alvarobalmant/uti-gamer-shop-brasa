@@ -12,7 +12,7 @@ export const createLayoutOperations = (
   const fetchPageLayout = async (pageId: string) => {
     try {
       const { data, error } = await supabase
-        .from('page_sections')
+        .from('page_layout_items')
         .select('*')
         .eq('page_id', pageId)
         .eq('is_visible', true)
@@ -21,14 +21,14 @@ export const createLayoutOperations = (
       if (error) throw error;
 
       const layout: PageLayoutItem[] = (data || []).map(section => ({
-        id: parseInt(section.id), // Convert UUID to number for compatibility
+        id: section.id,
         pageId: section.page_id,
-        sectionKey: `section_${section.id}`,
+        sectionKey: section.section_key,
         title: section.title || '',
         displayOrder: section.display_order,
         isVisible: section.is_visible,
-        sectionType: section.type as 'banner' | 'products' | 'featured' | 'custom',
-        sectionConfig: section.config || {}
+        sectionType: section.section_type as 'banner' | 'products' | 'featured' | 'custom',
+        sectionConfig: section.section_config || {}
       }));
 
       setPageLayouts(prev => ({ ...prev, [pageId]: layout }));
@@ -44,28 +44,20 @@ export const createLayoutOperations = (
   // Atualizar layout de uma página
   const updatePageLayout = async (pageId: string, layoutItems: Partial<PageLayoutItem>[]) => {
     try {
-      // First, get existing sections
-      const { data: existingSections, error: fetchError } = await supabase
-        .from('page_sections')
-        .select('*')
-        .eq('page_id', pageId);
-
-      if (fetchError) throw fetchError;
-
       // Update each section
       const updatePromises = layoutItems.map(async (item) => {
         if (!item.id) return null;
 
         const { data, error } = await supabase
-          .from('page_sections')
+          .from('page_layout_items')
           .update({
             title: item.title,
             display_order: item.displayOrder,
             is_visible: item.isVisible,
-            type: item.sectionType,
-            config: item.sectionConfig
+            section_type: item.sectionType,
+            section_config: item.sectionConfig
           })
-          .eq('id', item.id.toString())
+          .eq('id', item.id)
           .eq('page_id', pageId)
           .select()
           .single();
@@ -90,14 +82,15 @@ export const createLayoutOperations = (
   const addPageSection = async (pageId: string, section: Omit<PageLayoutItem, 'id'>) => {
     try {
       const { data, error } = await supabase
-        .from('page_sections')
+        .from('page_layout_items')
         .insert([{
           page_id: pageId,
-          type: section.sectionType,
+          section_type: section.sectionType,
+          section_key: section.sectionKey,
           title: section.title,
           display_order: section.displayOrder,
           is_visible: section.isVisible,
-          config: section.sectionConfig
+          section_config: section.sectionConfig
         }])
         .select()
         .single();
@@ -105,14 +98,14 @@ export const createLayoutOperations = (
       if (error) throw error;
 
       const newSection: PageLayoutItem = {
-        id: parseInt(data.id),
+        id: data.id,
         pageId: data.page_id,
-        sectionKey: `section_${data.id}`,
+        sectionKey: data.section_key,
         title: data.title || '',
         displayOrder: data.display_order,
         isVisible: data.is_visible,
-        sectionType: data.type as 'banner' | 'products' | 'featured' | 'custom',
-        sectionConfig: data.config || {}
+        sectionType: data.section_type as 'banner' | 'products' | 'featured' | 'custom',
+        sectionConfig: data.section_config || {}
       };
       
       const currentLayout = pageLayouts[pageId] || [];
@@ -128,12 +121,12 @@ export const createLayoutOperations = (
   };
 
   // Remover uma seção do layout
-  const removePageSection = async (pageId: string, sectionId: number) => {
+  const removePageSection = async (pageId: string, sectionId: string) => {
     try {
       const { error } = await supabase
-        .from('page_sections')
+        .from('page_layout_items')
         .delete()
-        .eq('id', sectionId.toString())
+        .eq('id', sectionId)
         .eq('page_id', pageId);
 
       if (error) throw error;
