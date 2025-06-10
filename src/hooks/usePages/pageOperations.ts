@@ -1,6 +1,6 @@
 
 import { Page } from './types';
-import { initialPages } from './mockData';
+import { mockPages } from './mockData';
 
 // Utility functions for page operations
 export const createPageOperations = (
@@ -22,7 +22,7 @@ export const createPageOperations = (
     try {
       // Simulação de chamada API
       await new Promise(resolve => setTimeout(resolve, 500));
-      setPages(initialPages);
+      setPages(mockPages);
       setError(null);
     } catch (err) {
       setError('Erro ao carregar páginas');
