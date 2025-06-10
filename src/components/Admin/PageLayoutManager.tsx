@@ -40,13 +40,18 @@ const SortableItem: React.FC<SortableItemProps> = ({ item, onVisibilityToggle, o
     zIndex: isDragging ? 10 : 'auto',
   };
 
+  // Use both is_visible and isVisible for compatibility
+  const isVisible = item.is_visible ?? item.isVisible ?? true;
+  const sectionType = item.section_type || item.sectionType || 'products';
+  const sectionKey = item.section_key || item.sectionKey || '';
+
   return (
     <TableRow ref={setNodeRef} style={style} {...attributes} className="bg-background hover:bg-muted/50">
       <TableCell className="w-10 cursor-grab touch-none">
         <GripVertical {...listeners} className="h-5 w-5 text-muted-foreground" />
       </TableCell>
-      <TableCell className="font-medium">{item.title || item.sectionKey}</TableCell>
-      <TableCell>{SECTION_TYPES.find(t => t.id === item.sectionType)?.label || item.sectionType}</TableCell>
+      <TableCell className="font-medium">{item.title || sectionKey}</TableCell>
+      <TableCell>{SECTION_TYPES.find(t => t.id === sectionType)?.label || sectionType}</TableCell>
       <TableCell className="text-right w-24 flex items-center justify-end gap-2">
         <Button 
           variant="ghost" 
@@ -59,11 +64,11 @@ const SortableItem: React.FC<SortableItemProps> = ({ item, onVisibilityToggle, o
         </Button>
         <Switch
           id={`visibility-${item.id}`}
-          checked={item.isVisible}
+          checked={isVisible}
           onCheckedChange={(checked) => onVisibilityToggle(item.id, checked)}
-          aria-label={item.isVisible ? 'Ocultar seção' : 'Mostrar seção'}
+          aria-label={isVisible ? 'Ocultar seção' : 'Mostrar seção'}
         />
-        {item.isVisible ? 
+        {isVisible ? 
           <Eye className="h-4 w-4 text-green-500 ml-1" /> : 
           <EyeOff className="h-4 w-4 text-red-500 ml-1" />
         }
@@ -82,36 +87,86 @@ interface SectionFormProps {
 
 const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCancel }) => {
   const [formData, setFormData] = useState<Partial<PageLayoutItem>>({
-    pageId,
+    page_id: pageId,
+    pageId: pageId,
+    section_key: '',
     sectionKey: '',
     title: '',
+    display_order: 999,
     displayOrder: 999,
+    is_visible: true,
     isVisible: true,
+    section_type: 'products',
     sectionType: 'products',
     sectionConfig: {}
   });
 
-  // Preencher formulário se estiver editando
   useEffect(() => {
     if (section) {
       setFormData({
-        ...section
+        ...section,
+        // Ensure both naming conventions are set
+        page_id: section.page_id || section.pageId || pageId,
+        pageId: section.page_id || section.pageId || pageId,
+        section_key: section.section_key || section.sectionKey || '',
+        sectionKey: section.section_key || section.sectionKey || '',
+        display_order: section.display_order ?? section.displayOrder ?? 999,
+        displayOrder: section.display_order ?? section.displayOrder ?? 999,
+        is_visible: section.is_visible ?? section.isVisible ?? true,
+        isVisible: section.is_visible ?? section.isVisible ?? true,
+        section_type: section.section_type || section.sectionType || 'products',
+        sectionType: section.section_type || section.sectionType || 'products',
       });
     }
-  }, [section]);
+  }, [section, pageId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      
+      // Keep both naming conventions in sync
+      if (name === 'section_key') {
+        updated.sectionKey = value;
+      } else if (name === 'sectionKey') {
+        updated.section_key = value;
+      }
+      
+      return updated;
+    });
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      
+      // Keep both naming conventions in sync
+      if (name === 'section_type') {
+        updated.sectionType = value;
+      } else if (name === 'sectionType') {
+        updated.section_type = value;
+      }
+      
+      return updated;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    
+    // Generate section_key if not provided
+    const sectionKey = formData.section_key || formData.sectionKey || `section-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+    
+    const finalData = {
+      ...formData,
+      section_key: sectionKey,
+      sectionKey: sectionKey,
+      page_id: pageId,
+      pageId: pageId,
+    };
+    
+    console.log("Submitting section form with data:", finalData);
+    onSave(finalData);
   };
 
   return (
@@ -125,25 +180,26 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
             value={formData.title || ''}
             onChange={handleInputChange}
             placeholder="Ex: Produtos em Destaque"
+            required
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="sectionKey">Chave da Seção</Label>
+          <Label htmlFor="section_key">Chave da Seção</Label>
           <Input
-            id="sectionKey"
-            name="sectionKey"
-            value={formData.sectionKey || ''}
+            id="section_key"
+            name="section_key"
+            value={formData.section_key || formData.sectionKey || ''}
             onChange={handleInputChange}
-            placeholder="Ex: featured_products"
+            placeholder="Ex: featured_products (deixe vazio para gerar automaticamente)"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="sectionType">Tipo de Seção</Label>
+        <Label htmlFor="section_type">Tipo de Seção</Label>
         <Select
-          value={formData.sectionType}
-          onValueChange={(value) => handleSelectChange('sectionType', value)}
+          value={formData.section_type || formData.sectionType || 'products'}
+          onValueChange={(value) => handleSelectChange('section_type', value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Selecione o tipo de seção" />
@@ -160,11 +216,15 @@ const SectionForm: React.FC<SectionFormProps> = ({ pageId, section, onSave, onCa
 
       <div className="flex items-center space-x-2">
         <Switch
-          id="isVisible"
-          checked={formData.isVisible}
-          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isVisible: checked }))}
+          id="is_visible"
+          checked={formData.is_visible ?? formData.isVisible ?? true}
+          onCheckedChange={(checked) => setFormData(prev => ({ 
+            ...prev, 
+            is_visible: checked, 
+            isVisible: checked 
+          }))}
         />
-        <Label htmlFor="isVisible">Seção Visível</Label>
+        <Label htmlFor="is_visible">Seção Visível</Label>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
@@ -211,8 +271,19 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
   // Carregar layout da página
   useEffect(() => {
     const loadPageLayout = async () => {
-      const layout = await fetchPageLayout(page.id);
-      setLayoutItems(layout);
+      try {
+        console.log("Loading page layout for page:", page.id);
+        const layout = await fetchPageLayout(page.id);
+        console.log("Loaded layout:", layout);
+        setLayoutItems(layout);
+      } catch (err) {
+        console.error('Erro ao carregar layout:', err);
+        toast({
+          title: "Erro ao carregar layout",
+          description: "Não foi possível carregar o layout da página.",
+          variant: "destructive"
+        });
+      }
     };
     
     loadPageLayout();
@@ -221,6 +292,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
   // Atualizar layout local quando o layout da página mudar
   useEffect(() => {
     if (pageLayouts[page.id]) {
+      console.log("Updating local layout items from pageLayouts:", pageLayouts[page.id]);
       setLayoutItems(pageLayouts[page.id]);
     }
   }, [pageLayouts, page.id]);
@@ -233,8 +305,13 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
         const newItems = arrayMove(items, oldIndex, newIndex);
-        // Atualizar displayOrder com base no novo índice
-        return newItems.map((item, index) => ({ ...item, displayOrder: index + 1 }));
+        
+        // Update both naming conventions for display_order
+        return newItems.map((item, index) => ({ 
+          ...item, 
+          display_order: index + 1,
+          displayOrder: index + 1
+        }));
       });
       setHasChanges(true);
     }
@@ -242,22 +319,20 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
 
   const handleVisibilityToggle = useCallback((id: string, isVisible: boolean) => {
     setLayoutItems((items) =>
-      items.map((item) => (item.id === id ? { ...item, isVisible } : item))
+      items.map((item) => (item.id === id ? { 
+        ...item, 
+        is_visible: isVisible,
+        isVisible: isVisible
+      } : item))
     );
     setHasChanges(true);
   }, []);
 
   const handleSaveChanges = async () => {
     try {
-      const updates = layoutItems.map(item => ({
-        id: item.id,
-        pageId: item.pageId,
-        sectionKey: item.sectionKey,
-        displayOrder: item.displayOrder,
-        isVisible: item.isVisible,
-      }));
+      console.log("Saving changes for items:", layoutItems);
       
-      await updatePageLayout(page.id, updates);
+      await updatePageLayout(page.id, layoutItems);
       setHasChanges(false);
       
       toast({
@@ -265,6 +340,7 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
         description: "As alterações no layout da página foram salvas com sucesso."
       });
     } catch (err) {
+      console.error("Error saving changes:", err);
       toast({
         title: "Erro ao salvar",
         description: "Ocorreu um erro ao salvar as alterações no layout.",
@@ -275,31 +351,41 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
 
   const handleAddSection = async (sectionData: Partial<PageLayoutItem>) => {
     try {
-      // Calcular a próxima ordem de exibição
+      console.log("Adding new section:", sectionData);
+      
+      // Calculate the next display order
       const nextOrder = layoutItems.length > 0 
-        ? Math.max(...layoutItems.map(item => item.displayOrder)) + 1 
+        ? Math.max(...layoutItems.map(item => item.display_order || item.displayOrder || 0)) + 1 
         : 1;
       
-      console.log("Page ID being used for addPageSection:", page.id);
-      const newSection = await addPageSection(page.id, {
+      const sectionToAdd = {
         ...sectionData,
+        page_id: page.id,
         pageId: page.id,
+        display_order: nextOrder,
         displayOrder: nextOrder,
-        isVisible: sectionData.isVisible ?? true,
-        sectionType: sectionData.sectionType || 'products',
-      } as PageLayoutItem);
+        is_visible: sectionData.is_visible ?? sectionData.isVisible ?? true,
+        isVisible: sectionData.is_visible ?? sectionData.isVisible ?? true,
+        section_type: sectionData.section_type || sectionData.sectionType || 'products',
+        sectionType: sectionData.section_type || sectionData.sectionType || 'products',
+      };
       
-      setLayoutItems(prev => [...prev, newSection]); // Adiciona a nova seção ao estado local
+      console.log("Section to add with calculated order:", sectionToAdd);
+      
+      const newSection = await addPageSection(page.id, sectionToAdd as Omit<PageLayoutItem, 'id'>);
+      console.log("Successfully added section:", newSection);
+      
       setIsAddingSectionOpen(false);
       
       toast({
         title: "Seção adicionada",
-        description: `A seção "${sectionData.title || sectionData.sectionKey}" foi adicionada com sucesso.`
+        description: `A seção "${sectionData.title || sectionData.section_key || sectionData.sectionKey}" foi adicionada com sucesso.`
       });
     } catch (err) {
+      console.error("Error adding section:", err);
       toast({
         title: "Erro ao adicionar seção",
-        description: "Ocorreu um erro ao adicionar a nova seção.",
+        description: `Ocorreu um erro ao adicionar a nova seção: ${err.message}`,
         variant: "destructive"
       });
     }
@@ -309,20 +395,23 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
     if (!editingSection) return;
     
     try {
+      console.log("Updating section:", editingSection.id, "with data:", sectionData);
+      
       const updatedItems = layoutItems.map(item => 
         item.id === editingSection.id ? { ...item, ...sectionData } : item
       );
       
       setLayoutItems(updatedItems);
-      await updatePageLayout(page.id, [sectionData]);
+      await updatePageLayout(page.id, [{ ...editingSection, ...sectionData }]);
       
       setEditingSection(null);
       
       toast({
         title: "Seção atualizada",
-        description: `A seção "${sectionData.title || sectionData.sectionKey}" foi atualizada com sucesso.`
+        description: `A seção "${sectionData.title || sectionData.section_key || sectionData.sectionKey}" foi atualizada com sucesso.`
       });
     } catch (err) {
+      console.error("Error updating section:", err);
       toast({
         title: "Erro ao atualizar seção",
         description: "Ocorreu um erro ao atualizar a seção.",
@@ -332,14 +421,43 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
   };
 
   const handleEditSection = (section: PageLayoutItem) => {
+    console.log("Editing section:", section);
     setEditingSection(section);
   };
 
   const handleCancelChanges = async () => {
-    // Recarregar layout original
-    await fetchPageLayout(page.id);
-    setHasChanges(false);
+    try {
+      // Recarregar layout original
+      const originalLayout = await fetchPageLayout(page.id);
+      setLayoutItems(originalLayout);
+      setHasChanges(false);
+      
+      toast({
+        title: "Alterações canceladas",
+        description: "O layout foi restaurado para o estado original."
+      });
+    } catch (err) {
+      console.error("Error canceling changes:", err);
+      toast({
+        title: "Erro ao cancelar",
+        description: "Ocorreu um erro ao restaurar o layout original.",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-red-500">{error}</p>
+          <Button onClick={() => fetchPageLayout(page.id)} className="mt-4">
+            Tentar Novamente
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -360,14 +478,13 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
             <Skeleton className="h-12 w-full" />
           </div>
         )}
-        {error && <p className="text-red-500">{error}</p>}
-        {!loading && !error && (
+        {!loading && (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={layoutItems.map(item => item.id)} strategy={verticalListSortingStrategy}>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-10"></TableHead> {/* Handle */}
+                    <TableHead className="w-10"></TableHead>
                     <TableHead>Seção</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
@@ -442,3 +559,5 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
 };
 
 export default PageLayoutManager;
+
+}

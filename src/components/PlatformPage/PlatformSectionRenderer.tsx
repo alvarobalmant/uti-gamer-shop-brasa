@@ -21,7 +21,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
   onAddToCart,
   onProductCardClick
 }) => {
-  // Filter products with base on section configuration
+  // Filter products based on section configuration
   const getFilteredProducts = (sectionConfig: any) => {
     if (!sectionConfig || !sectionConfig.filter) return products;
     
@@ -46,30 +46,35 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     return filtered;
   };
 
-  if (!section.isVisible) return null;
+  // Use both naming conventions for compatibility
+  const isVisible = section.is_visible ?? section.isVisible ?? true;
+  const sectionType = section.section_type || section.sectionType || 'products';
+  const sectionConfig = section.sectionConfig || {};
+
+  if (!isVisible) return null;
   
-  switch (section.sectionType) {
+  switch (sectionType) {
     case 'banner':
       return (
         <HeroBanner
           key={section.id}
-          title={section.sectionConfig?.title || section.title || ''}
-          subtitle={section.sectionConfig?.subtitle || ''}
-          imageUrl={section.sectionConfig?.imageUrl || '/banners/default-banner.jpg'}
-          ctaText={section.sectionConfig?.ctaText}
-          ctaLink={section.sectionConfig?.ctaLink}
+          title={sectionConfig?.title || section.title || ''}
+          subtitle={sectionConfig?.subtitle || ''}
+          imageUrl={sectionConfig?.imageUrl || '/banners/default-banner.jpg'}
+          ctaText={sectionConfig?.ctaText}
+          ctaLink={sectionConfig?.ctaLink}
           theme={page?.theme}
         />
       );
     
     case 'products':
     case 'featured':
-      const sectionProducts = getFilteredProducts(section.sectionConfig);
+      const sectionProducts = getFilteredProducts(sectionConfig);
       return (
         <FeaturedProductsSection
           key={section.id}
           products={sectionProducts}
-          loading={false} // Not showing loading here to avoid flickering
+          loading={false}
           onAddToCart={onAddToCart}
           title={section.title || ''}
           onCardClick={onProductCardClick}
@@ -80,7 +85,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
       return (
         <div key={section.id} className="py-8 container mx-auto">
           <h2 className="text-2xl font-bold mb-4">{section.title}</h2>
-          <div dangerouslySetInnerHTML={{ __html: section.sectionConfig?.content || '' }} />
+          <div dangerouslySetInnerHTML={{ __html: sectionConfig?.content || '' }} />
         </div>
       );
     
