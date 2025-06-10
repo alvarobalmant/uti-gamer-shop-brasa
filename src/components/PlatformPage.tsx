@@ -10,9 +10,8 @@ import PlatformPageNotFound from './PlatformPage/PlatformPageNotFound';
 import PlatformPageContent from './PlatformPage/PlatformPageContent';
 
 // Base component for platform pages
-const PlatformPage: React.FC<{ slug?: string }> = ({ slug: propSlug }) => {
-  const { slug: paramSlug } = useParams<{ slug: string }>();
-  const slug = propSlug || paramSlug || '';
+const PlatformPage: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
   
   const { products } = useProducts();
   const { addToCart } = useCart();
@@ -26,7 +25,7 @@ const PlatformPage: React.FC<{ slug?: string }> = ({ slug: propSlug }) => {
 
   // Memoize page to avoid unnecessary re-renders
   const currentPage = useMemo(() => {
-    return getPageBySlug(slug);
+    return slug ? getPageBySlug(slug) : null;
   }, [slug, getPageBySlug]);
 
   // Load page data once

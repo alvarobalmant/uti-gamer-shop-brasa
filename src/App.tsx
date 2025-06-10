@@ -92,7 +92,7 @@ const App = () => (
                 {/* Dynamic Page Route - This will catch any slug that matches a dynamic page */}
                 <Route 
                   path="/:slug" 
-                  element={<PlatformPage slug={window.location.pathname.substring(1)} />} 
+                  element={<PlatformPage />} 
                 />
 
                 {/* Catch-all Not Found Route */}
