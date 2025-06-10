@@ -1,6 +1,6 @@
 
 import { PageLayoutItem } from './types';
-import { initialPageLayouts } from './mockData';
+import { supabase } from '@/integrations/supabase/client';
 
 // Utility functions for page layout operations
 export const createLayoutOperations = (
@@ -11,9 +11,26 @@ export const createLayoutOperations = (
   // Carregar layout de uma página específica
   const fetchPageLayout = async (pageId: string) => {
     try {
-      // Simulação de chamada API
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const layout = initialPageLayouts[pageId] || [];
+      const { data, error } = await supabase
+        .from('page_sections')
+        .select('*')
+        .eq('page_id', pageId)
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+
+      const layout: PageLayoutItem[] = (data || []).map(section => ({
+        id: parseInt(section.id), // Convert UUID to number for compatibility
+        pageId: section.page_id,
+        sectionKey: `section_${section.id}`,
+        title: section.title || '',
+        displayOrder: section.display_order,
+        isVisible: section.is_visible,
+        sectionType: section.type as 'banner' | 'products' | 'featured' | 'custom',
+        sectionConfig: section.config || {}
+      }));
+
       setPageLayouts(prev => ({ ...prev, [pageId]: layout }));
       setError(null);
       return layout;
@@ -27,20 +44,40 @@ export const createLayoutOperations = (
   // Atualizar layout de uma página
   const updatePageLayout = async (pageId: string, layoutItems: Partial<PageLayoutItem>[]) => {
     try {
-      // Simulação de chamada API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const currentLayout = pageLayouts[pageId] || [];
-      
-      const updatedLayout = layoutItems.map(item => {
-        const existingItem = currentLayout.find(i => i.id === item.id);
-        if (existingItem) {
-          return { ...existingItem, ...item };
-        }
-        return item as PageLayoutItem;
+      // First, get existing sections
+      const { data: existingSections, error: fetchError } = await supabase
+        .from('page_sections')
+        .select('*')
+        .eq('page_id', pageId);
+
+      if (fetchError) throw fetchError;
+
+      // Update each section
+      const updatePromises = layoutItems.map(async (item) => {
+        if (!item.id) return null;
+
+        const { data, error } = await supabase
+          .from('page_sections')
+          .update({
+            title: item.title,
+            display_order: item.displayOrder,
+            is_visible: item.isVisible,
+            type: item.sectionType,
+            config: item.sectionConfig
+          })
+          .eq('id', item.id.toString())
+          .eq('page_id', pageId)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
       });
+
+      await Promise.all(updatePromises);
       
-      setPageLayouts(prev => ({ ...prev, [pageId]: updatedLayout as PageLayoutItem[] }));
+      // Refresh the layout
+      const updatedLayout = await fetchPageLayout(pageId);
       return updatedLayout;
     } catch (err) {
       setError(`Erro ao atualizar layout da página ${pageId}`);
@@ -52,18 +89,33 @@ export const createLayoutOperations = (
   // Adicionar uma nova seção ao layout
   const addPageSection = async (pageId: string, section: Omit<PageLayoutItem, 'id'>) => {
     try {
-      // Simulação de chamada API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const currentLayout = pageLayouts[pageId] || [];
-      const newId = Math.max(0, ...currentLayout.map(item => item.id)) + 1;
-      
+      const { data, error } = await supabase
+        .from('page_sections')
+        .insert([{
+          page_id: pageId,
+          type: section.sectionType,
+          title: section.title,
+          display_order: section.displayOrder,
+          is_visible: section.isVisible,
+          config: section.sectionConfig
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
       const newSection: PageLayoutItem = {
-        ...section,
-        id: newId,
-        pageId
+        id: parseInt(data.id),
+        pageId: data.page_id,
+        sectionKey: `section_${data.id}`,
+        title: data.title || '',
+        displayOrder: data.display_order,
+        isVisible: data.is_visible,
+        sectionType: data.type as 'banner' | 'products' | 'featured' | 'custom',
+        sectionConfig: data.config || {}
       };
       
+      const currentLayout = pageLayouts[pageId] || [];
       const updatedLayout = [...currentLayout, newSection];
       setPageLayouts(prev => ({ ...prev, [pageId]: updatedLayout }));
       
@@ -78,13 +130,18 @@ export const createLayoutOperations = (
   // Remover uma seção do layout
   const removePageSection = async (pageId: string, sectionId: number) => {
     try {
-      // Simulação de chamada API
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const { error } = await supabase
+        .from('page_sections')
+        .delete()
+        .eq('id', sectionId.toString())
+        .eq('page_id', pageId);
+
+      if (error) throw error;
       
       const currentLayout = pageLayouts[pageId] || [];
       const updatedLayout = currentLayout.filter(item => item.id !== sectionId);
-      
       setPageLayouts(prev => ({ ...prev, [pageId]: updatedLayout }));
+      
       return true;
     } catch (err) {
       setError(`Erro ao remover seção ${sectionId} da página ${pageId}`);

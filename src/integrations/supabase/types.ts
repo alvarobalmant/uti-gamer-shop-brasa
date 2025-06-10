@@ -135,6 +135,155 @@ export type Database = {
         }
         Relationships: []
       }
+      news_articles: {
+        Row: {
+          category: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          image_url: string | null
+          link: string
+          publish_date: string
+          read_time: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          image_url?: string | null
+          link: string
+          publish_date?: string
+          read_time?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          image_url?: string | null
+          link?: string
+          publish_date?: string
+          read_time?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      page_sections: {
+        Row: {
+          background_color: string | null
+          config: Json | null
+          created_at: string
+          display_order: number
+          full_width: boolean | null
+          id: string
+          is_visible: boolean
+          margin: string | null
+          padding: string | null
+          page_id: string
+          title: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          background_color?: string | null
+          config?: Json | null
+          created_at?: string
+          display_order?: number
+          full_width?: boolean | null
+          id?: string
+          is_visible?: boolean
+          margin?: string | null
+          padding?: string | null
+          page_id: string
+          title?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          background_color?: string | null
+          config?: Json | null
+          created_at?: string
+          display_order?: number
+          full_width?: boolean | null
+          id?: string
+          is_visible?: boolean
+          margin?: string | null
+          padding?: string | null
+          page_id?: string
+          title?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_sections_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pages: {
+        Row: {
+          created_at: string
+          description: string | null
+          footer_style: string | null
+          header_style: string | null
+          id: string
+          is_active: boolean
+          keywords: string[] | null
+          layout: string | null
+          meta_description: string | null
+          meta_title: string | null
+          slug: string
+          theme: Json | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          footer_style?: string | null
+          header_style?: string | null
+          id?: string
+          is_active?: boolean
+          keywords?: string[] | null
+          layout?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          slug: string
+          theme?: Json | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          footer_style?: string | null
+          header_style?: string | null
+          id?: string
+          is_active?: boolean
+          keywords?: string[] | null
+          layout?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          slug?: string
+          theme?: Json | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pro_codes: {
         Row: {
           code: string
