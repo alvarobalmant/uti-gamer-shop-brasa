@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { SpecialSectionElement } from '@/types/specialSectionElements';
+import { SpecialSectionElement } from '@/types/specialSections';
 
 export const useSpecialSectionElements = (sectionId?: string) => {
   const [elements, setElements] = useState<SpecialSectionElement[]>([]);
@@ -24,15 +25,19 @@ export const useSpecialSectionElements = (sectionId?: string) => {
 
       if (error) throw error;
 
-      // Transform the data to match our interface
+      // Transform the data to match our interface with proper type handling
       const transformedData = (data || []).map(item => ({
         ...item,
         content_ids: Array.isArray(item.content_ids) 
           ? item.content_ids.map(id => String(id))
           : [],
-        background_type: item.background_type as SpecialSectionElement['background_type'],
-        content_type: item.content_type as SpecialSectionElement['content_type'],
-      }));
+        background_type: (['transparent', 'color', 'gradient', 'image'].includes(item.background_type)) 
+          ? item.background_type as SpecialSectionElement['background_type']
+          : 'transparent',
+        content_type: (['products', 'tags', 'manual'].includes(item.content_type))
+          ? item.content_type as SpecialSectionElement['content_type']
+          : undefined,
+      })) as SpecialSectionElement[];
 
       setElements(transformedData);
     } catch (err: any) {
@@ -47,7 +52,7 @@ export const useSpecialSectionElements = (sectionId?: string) => {
     fetchElements();
   }, [sectionId]);
 
-  const createElement = async (elementData: Omit<SpecialSectionElement, 'id' | 'created_at' | 'updated_at'>) => {
+  const addElement = async (elementData: Omit<SpecialSectionElement, 'id' | 'created_at' | 'updated_at'>) => {
     setLoading(true);
     setError(null);
 
@@ -60,7 +65,21 @@ export const useSpecialSectionElements = (sectionId?: string) => {
 
       if (error) throw error;
 
-      setElements(prev => [...prev, data]);
+      // Transform the response data with proper typing
+      const transformedElement = {
+        ...data,
+        content_ids: Array.isArray(data.content_ids) 
+          ? data.content_ids.map(id => String(id))
+          : [],
+        background_type: (['transparent', 'color', 'gradient', 'image'].includes(data.background_type)) 
+          ? data.background_type as SpecialSectionElement['background_type']
+          : 'transparent',
+        content_type: (['products', 'tags', 'manual'].includes(data.content_type))
+          ? data.content_type as SpecialSectionElement['content_type']
+          : undefined,
+      } as SpecialSectionElement;
+
+      setElements(prev => [...prev, transformedElement]);
       toast({
         title: "Elemento criado",
         description: "O elemento foi criado com sucesso."
@@ -92,8 +111,22 @@ export const useSpecialSectionElements = (sectionId?: string) => {
 
       if (error) throw error;
 
+      // Transform the response data with proper typing
+      const transformedElement = {
+        ...data,
+        content_ids: Array.isArray(data.content_ids) 
+          ? data.content_ids.map(id => String(id))
+          : [],
+        background_type: (['transparent', 'color', 'gradient', 'image'].includes(data.background_type)) 
+          ? data.background_type as SpecialSectionElement['background_type']
+          : 'transparent',
+        content_type: (['products', 'tags', 'manual'].includes(data.content_type))
+          ? data.content_type as SpecialSectionElement['content_type']
+          : undefined,
+      } as SpecialSectionElement;
+
       setElements(prev =>
-        prev.map(element => (element.id === id ? { ...element, ...data } : element))
+        prev.map(element => (element.id === id ? { ...element, ...transformedElement } : element))
       );
       toast({
         title: "Elemento atualizado",
@@ -147,7 +180,7 @@ export const useSpecialSectionElements = (sectionId?: string) => {
     loading,
     error,
     fetchElements,
-    createElement,
+    addElement, // Changed from createElement to addElement for consistency
     updateElement,
     deleteElement
   };
