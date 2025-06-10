@@ -30,10 +30,9 @@ export interface PageLayoutItem {
   id: string;
   page_id: string;
   section_key: string;
-
   title?: string;
   display_order: number;
   is_visible: boolean;
   section_type: 'banner' | 'products' | 'featured' | 'custom';
-  sectionConfig?: any;
+  section_config?: any;
 }
