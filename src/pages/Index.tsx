@@ -119,9 +119,11 @@ const Index = () => {
       {/* Product Modal */}
       <ProductModal 
         isOpen={showProductModal} 
-        onClose={() => setShowProductModal(false)}
-        productId={selectedProduct?.id || null}
-        products={products}
+        onOpenChange={setShowProductModal} 
+        product={selectedProduct} 
+        loading={productsLoading}
+        relatedProducts={products.filter(p => p.id !== selectedProduct?.id).slice(0, 4)}
+        onRelatedProductClick={handleProductCardClick}
       />
     </div>
   );

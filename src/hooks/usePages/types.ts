@@ -19,22 +19,21 @@ export interface Page {
   title: string;
   slug: string;
   description?: string;
-  is_active: boolean;
+  isActive: boolean;
   theme: PageTheme;
   filters: PageFilter;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PageLayoutItem {
   id: string;
   page_id: string;
   section_key: string;
+
   title?: string;
   display_order: number;
   is_visible: boolean;
-  section_type: string;
-  section_config?: any;
-  created_at: string;
-  updated_at: string;
+  section_type: 'banner' | 'products' | 'featured' | 'custom';
+  sectionConfig?: any;
 }

@@ -46,25 +46,25 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     return filtered;
   };
 
-  if (!section.is_visible) return null;
+  if (!section.isVisible) return null;
   
-  switch (section.section_type) {
+  switch (section.sectionType) {
     case 'banner':
       return (
         <HeroBanner
           key={section.id}
-          title={section.section_config?.title || section.title || ''}
-          subtitle={section.section_config?.subtitle || ''}
-          imageUrl={section.section_config?.imageUrl || '/banners/default-banner.jpg'}
-          ctaText={section.section_config?.ctaText}
-          ctaLink={section.section_config?.ctaLink}
+          title={section.sectionConfig?.title || section.title || ''}
+          subtitle={section.sectionConfig?.subtitle || ''}
+          imageUrl={section.sectionConfig?.imageUrl || '/banners/default-banner.jpg'}
+          ctaText={section.sectionConfig?.ctaText}
+          ctaLink={section.sectionConfig?.ctaLink}
           theme={page?.theme}
         />
       );
     
     case 'products':
     case 'featured':
-      const sectionProducts = getFilteredProducts(section.section_config);
+      const sectionProducts = getFilteredProducts(section.sectionConfig);
       return (
         <FeaturedProductsSection
           key={section.id}
@@ -80,7 +80,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
       return (
         <div key={section.id} className="py-8 container mx-auto">
           <h2 className="text-2xl font-bold mb-4">{section.title}</h2>
-          <div dangerouslySetInnerHTML={{ __html: section.section_config?.content || '' }} />
+          <div dangerouslySetInnerHTML={{ __html: section.sectionConfig?.content || '' }} />
         </div>
       );
     

@@ -54,7 +54,7 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
   useEffect(() => {
     if (page && pageLayouts[page.id]) {
       const sortedLayout = [...pageLayouts[page.id]].sort(
-        (a, b) => a.display_order - b.display_order
+        (a, b) => a.displayOrder - b.displayOrder
       );
       setLayout(sortedLayout);
     }

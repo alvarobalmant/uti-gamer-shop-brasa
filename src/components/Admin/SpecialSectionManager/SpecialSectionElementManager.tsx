@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
@@ -30,6 +29,7 @@ const SpecialSectionElementManager: React.FC<SpecialSectionElementManagerProps> 
   const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir este elemento?')) {
       await deleteElement(id);
+      // TODO: Add toast notification
     }
   };
 
@@ -41,6 +41,7 @@ const SpecialSectionElementManager: React.FC<SpecialSectionElementManagerProps> 
     }
     setIsFormOpen(false);
     setEditingElement(null);
+    // TODO: Add toast notification
   };
 
   const handleCancelForm = () => {
@@ -65,6 +66,7 @@ const SpecialSectionElementManager: React.FC<SpecialSectionElementManagerProps> 
           elements={elements}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          // TODO: Add onReorder prop if implementing drag-and-drop
         />
       )}
 
@@ -82,3 +84,5 @@ const SpecialSectionElementManager: React.FC<SpecialSectionElementManagerProps> 
 };
 
 export default SpecialSectionElementManager;
+
+

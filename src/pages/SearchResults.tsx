@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -107,10 +108,9 @@ const SearchResults = () => {
 
       {/* Product Modal */}
       <ProductModal
+        product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        productId={selectedProductId}
-        products={products}
+        onOpenChange={setIsModalOpen}
       />
     </div>
   );

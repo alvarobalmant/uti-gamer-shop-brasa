@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ProductShowcase, PlatformTheme } from '@/types/platformPages';
 import { Product } from '@/hooks/useProducts';
@@ -94,20 +93,6 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
     }).format(price);
   };
 
-  // Helper functions to check product properties
-  const isProductNew = (product: Product) => {
-    // Logic to determine if product is new - could be based on created date or a flag
-    return product.is_featured; // Using is_featured as proxy for now
-  };
-
-  const isProductOnSale = (product: Product) => {
-    return product.discount_price && product.discount_price < product.price;
-  };
-
-  const getOriginalPrice = (product: Product) => {
-    return product.list_price || product.price;
-  };
-
   const renderProductCard = (product: Product) => (
     <Card 
       key={product.id}
@@ -119,14 +104,14 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
         {/* Imagem do Produto */}
         <div className="relative aspect-square overflow-hidden">
           <img
-            src={product.image}
+            src={product.imageUrl}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {isProductNew(product) && (
+            {product.isNew && (
               <Badge 
                 className="text-xs font-semibold"
                 style={{
@@ -137,7 +122,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
                 NOVO
               </Badge>
             )}
-            {isProductOnSale(product) && (
+            {product.isOnSale && (
               <Badge 
                 className="text-xs font-semibold"
                 style={{
@@ -148,7 +133,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
                 OFERTA
               </Badge>
             )}
-            {product.is_featured && (
+            {product.isFeatured && (
               <Badge 
                 className="text-xs font-semibold"
                 style={{
@@ -188,7 +173,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
           </div>
 
           {/* Overlay de desconto */}
-          {isProductOnSale(product) && getOriginalPrice(product) && (
+          {product.isOnSale && product.originalPrice && (
             <div 
               className="absolute bottom-2 left-2 px-2 py-1 rounded text-xs font-bold"
               style={{
@@ -196,7 +181,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
                 color: '#FFFFFF',
               }}
             >
-              -{Math.round(((getOriginalPrice(product) - product.price) / getOriginalPrice(product)) * 100)}%
+              -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
             </div>
           )}
         </div>
@@ -249,18 +234,18 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
                 >
                   {formatPrice(product.price)}
                 </span>
-                {getOriginalPrice(product) && getOriginalPrice(product) > product.price && (
+                {product.originalPrice && product.originalPrice > product.price && (
                   <span 
                     className="text-sm line-through"
                     style={{ color: theme.textColor, opacity: 0.5 }}
                   >
-                    {formatPrice(getOriginalPrice(product))}
+                    {formatPrice(product.originalPrice)}
                   </span>
                 )}
               </div>
             )}
             
-            {product.pro_price && (
+            {product.proPrice && (
               <div className="flex items-center gap-1 mt-1">
                 <Badge 
                   variant="outline" 
@@ -276,7 +261,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
                   className="text-sm font-semibold"
                   style={{ color: theme.accentColor }}
                 >
-                  {formatPrice(product.pro_price)}
+                  {formatPrice(product.proPrice)}
                 </span>
               </div>
             )}
@@ -329,7 +314,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2">
                 <div className="aspect-square">
                   <img
-                    src={products[0].image}
+                    src={products[0].imageUrl}
                     alt={products[0].name}
                     className="w-full h-full object-cover"
                   />
@@ -430,3 +415,4 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
 };
 
 export default PlatformProductSection;
+

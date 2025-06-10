@@ -37,12 +37,10 @@ export const usePages = () => {
   // Função otimizada para buscar layout
   const fetchPageLayout = useCallback(async (pageId: string) => {
     // Evita recarregar layout já existente
-    if (pageLayouts[pageId] && pageLayouts[pageId].length > 0) {
-      console.log("Layout already exists for page:", pageId, pageLayouts[pageId]);
+    if (pageLayouts[pageId]) {
       return pageLayouts[pageId];
     }
 
-    console.log("Fetching new layout for page:", pageId);
     try {
       return await layoutOps.fetchPageLayout(pageId);
     } catch (err) {
@@ -75,15 +73,15 @@ export const usePages = () => {
 
   const updatePageLayout = useCallback(async (pageId: string, layoutItems: Partial<PageLayoutItem>[]) => {
     return layoutOps.updatePageLayout(pageId, layoutItems);
-  }, []);
+  }, [pageLayouts]);
 
   const addPageSection = useCallback(async (pageId: string, section: Omit<PageLayoutItem, 'id'>) => {
     return layoutOps.addPageSection(pageId, section);
-  }, []);
+  }, [pageLayouts]);
 
-  const removePageSection = useCallback(async (pageId: string, sectionId: string) => {
+  const removePageSection = useCallback(async (pageId: string, sectionId: number) => {
     return layoutOps.removePageSection(pageId, sectionId);
-  }, []);
+  }, [pageLayouts]);
 
   // Carregar páginas ao inicializar (apenas uma vez)
   useEffect(() => {

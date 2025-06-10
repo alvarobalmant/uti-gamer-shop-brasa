@@ -45,27 +45,26 @@ const CustomPlatformPage: React.FC<CustomPlatformPageProps> = ({
             );
           }
 
-          // Filtrar por categorias (usando category em vez de categoryId)
+          // Filtrar por categorias
           if (config.filter.categoryIds && config.filter.categoryIds.length > 0) {
             sectionProducts = sectionProducts.filter(product =>
-              config.filter.categoryIds!.includes(product.category || '')
+              config.filter.categoryIds!.includes(product.categoryId)
             );
           }
 
-          // Filtrar produtos em destaque (usando is_featured)
+          // Filtrar produtos em destaque
           if (config.filter.featured) {
-            sectionProducts = sectionProducts.filter(product => product.is_featured);
+            sectionProducts = sectionProducts.filter(product => product.isFeatured);
           }
 
-          // Filtrar novos lançamentos (verificando se o produto é novo baseado na data ou campo específico)
+          // Filtrar novos lançamentos
           if (config.filter.newReleases) {
-            // Como não temos um campo isNew, usamos is_featured como proxy ou criamos nossa própria lógica
-            sectionProducts = sectionProducts.filter(product => product.is_featured);
+            sectionProducts = sectionProducts.filter(product => product.isNew);
           }
 
-          // Filtrar produtos em oferta (usando discount_price)
+          // Filtrar produtos em oferta
           if (config.filter.onSale) {
-            sectionProducts = sectionProducts.filter(product => product.discount_price && product.discount_price < product.price);
+            sectionProducts = sectionProducts.filter(product => product.isOnSale);
           }
 
           // Limitar quantidade
@@ -246,3 +245,4 @@ const CustomPlatformPage: React.FC<CustomPlatformPageProps> = ({
 };
 
 export default CustomPlatformPage;
+

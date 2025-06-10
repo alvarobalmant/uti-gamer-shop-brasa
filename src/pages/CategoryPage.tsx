@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -132,10 +133,9 @@ const CategoryPage = () => {
 
       {/* Product Modal */}
       <ProductModal
+        product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        productId={selectedProductId}
-        products={products}
+        onOpenChange={setIsModalOpen}
       />
     </div>
   );
