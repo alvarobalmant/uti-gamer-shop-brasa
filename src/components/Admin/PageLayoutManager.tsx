@@ -559,5 +559,3 @@ const PageLayoutManager: React.FC<PageLayoutManagerProps> = ({ page }) => {
 };
 
 export default PageLayoutManager;
-
-}
