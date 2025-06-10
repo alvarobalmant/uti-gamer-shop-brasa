@@ -1,3 +1,4 @@
+
 export interface Product {
   id: string;
   name: string;
@@ -8,21 +9,23 @@ export interface Product {
   pro_discount_percent?: number;
   new_price?: number;
   digital_price?: number;
+  discount_price?: number;
   image: string;
-  images?: string[]; // Add this for compatibility
+  images?: string[];
   additional_images?: string[];
   sizes?: string[];
   colors?: string[];
   stock?: number;
-  category_id?: string;
+  category?: string;
   tags?: { id: string; name: string; }[];
-  sku?: string; // Add the missing sku property
+  sku?: string;
   badge_text?: string;
   badge_color?: string;
   badge_visible?: boolean;
+  is_featured?: boolean;
+  rating?: number;
   specifications?: Array<{
     label: string;
     value: string;
   }>;
 }
-

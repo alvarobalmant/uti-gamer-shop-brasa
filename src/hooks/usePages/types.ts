@@ -33,7 +33,7 @@ export interface PageLayoutItem {
   title?: string;
   display_order: number;
   is_visible: boolean;
-  section_type: string; // Changed from union type to string to match database
+  section_type: string;
   section_config?: any;
   created_at: string;
   updated_at: string;

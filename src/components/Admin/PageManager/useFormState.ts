@@ -50,7 +50,7 @@ export const useFormState = (selectedPage: Page | null, isEditing: boolean, acti
         title: selectedPage.title,
         slug: selectedPage.slug,
         description: selectedPage.description || '',
-        isActive: selectedPage.isActive,
+        isActive: selectedPage.is_active,
         theme: selectedPage.theme ? { ...selectedPage.theme } : {
           primaryColor: '#107C10',
           secondaryColor: '#3A3A3A',

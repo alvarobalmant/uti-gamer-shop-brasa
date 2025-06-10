@@ -94,8 +94,8 @@ export const createLayoutOperations = (
     }
   };
 
-  // Adicionar uma nova seção ao layout
-  const addPageSection = async (pageId: string, section: Omit<PageLayoutItem, 'id' | 'created_at' | 'updated_at'>) => {
+  // Adicionar uma nova seção ao layout - Fix the function signature
+  const addPageSection = async (pageId: string, section: Omit<PageLayoutItem, 'id'>) => {
     try {
       const newId = `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const newSection = {

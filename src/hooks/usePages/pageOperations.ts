@@ -31,7 +31,7 @@ export const createPageOperations = (
   };
 
   // Criar uma nova página
-  const createPage = async (pageData: Omit<Page, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createPage = async (pageData: Omit<Page, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       // Simulação de chamada API
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -39,8 +39,8 @@ export const createPageOperations = (
       const newPage: Page = {
         ...pageData,
         id: `${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       
       setPages(prev => [...prev, newPage]);
@@ -53,7 +53,7 @@ export const createPageOperations = (
   };
 
   // Atualizar uma página existente
-  const updatePage = async (id: string, pageData: Partial<Omit<Page, 'id' | 'createdAt' | 'updatedAt'>>) => {
+  const updatePage = async (id: string, pageData: Partial<Omit<Page, 'id' | 'created_at' | 'updated_at'>>) => {
     try {
       // Simulação de chamada API
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -65,7 +65,7 @@ export const createPageOperations = (
             updatedPage = { 
               ...page, 
               ...pageData, 
-              updatedAt: new Date().toISOString() 
+              updated_at: new Date().toISOString() 
             };
             return updatedPage;
           }
