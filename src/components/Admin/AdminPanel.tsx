@@ -10,8 +10,7 @@ import ProductSectionManager from './ProductSectionManager';
 import PageManager from './PageManager';
 import { QuickLinkManager } from './QuickLinkManager';
 import SpecialSectionManager from './SpecialSectionManager'; // Import SpecialSectionManager
-import { Xbox4Manager } from './Xbox4Manager'; // Import Xbox4Manager
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2 } from 'lucide-react'; // Added Gamepad2 icon
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star } from 'lucide-react'; // Added Star icon
 
 export const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('layout'); // Default to layout management
@@ -29,8 +28,8 @@ export const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Updated grid-cols-11 to accommodate the new Xbox4 tab */}
-          <TabsList className="grid w-full grid-cols-11 bg-gray-800 border-gray-700">
+          {/* Updated grid-cols-10 to accommodate the new tab */}
+          <TabsList className="grid w-full grid-cols-10 bg-gray-800 border-gray-700">
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutList className="w-4 h-4" />
               Layout Home
@@ -38,10 +37,6 @@ export const AdminPanel = () => {
             <TabsTrigger value="pages" className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
               Páginas
-            </TabsTrigger>
-            <TabsTrigger value="xbox4" className="flex items-center gap-2">
-              <Gamepad2 className="w-4 h-4" />
-              Xbox 4
             </TabsTrigger>
             <TabsTrigger value="product_sections" className="flex items-center gap-2">
               <ListChecks className="w-4 h-4" />
@@ -86,11 +81,6 @@ export const AdminPanel = () => {
           {/* Content for Pages Management */}
           <TabsContent value="pages">
             <PageManager />
-          </TabsContent>
-
-          {/* Content for Xbox4 Management */}
-          <TabsContent value="xbox4">
-            <Xbox4Manager />
           </TabsContent>
 
           {/* Content for Product Section Management */}

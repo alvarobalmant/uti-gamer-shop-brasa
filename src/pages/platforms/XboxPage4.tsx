@@ -3,15 +3,14 @@ import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client'; // Importar o cliente Supabase
-import {
-  Loader2,
-  ShoppingCart,
-  Star,
-  Gamepad2,
-  Zap,
-  Trophy,
-  Play,
+import { 
+  Loader2, 
+  ShoppingCart, 
+  Star, 
+  Gamepad2, 
+  Zap, 
+  Trophy, 
+  Play, 
   Tag,
   Clock,
   ChevronRight,
@@ -22,46 +21,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { cn } from '@/lib/utils';
-
-// Tipagem para a configuração da página Xbox4
-interface Xbox4Config {
-  hero_banner: {
-    title: string;
-    subtitle: string;
-    background_image: string;
-    primary_button_text: string;
-    secondary_button_text: string;
-  };
-  featured_products: {
-    title: string;
-    subtitle: string;
-    product_tags: string[];
-    max_products: number;
-  };
-  games_section: {
-    title: string;
-    subtitle: string;
-    product_tags: string[];
-    max_products: number;
-  };
-  accessories_section: {
-    title: string;
-    subtitle: string;
-    product_tags: string[];
-    max_products: number;
-  };
-  news_section: {
-    title: string;
-    subtitle: string;
-    news_items: Array<{
-      title: string;
-      description: string;
-      image: string;
-      type: 'trailer' | 'news' | 'event';
-      url?: string;
-    }>;
-  };
-}
 
 // Componente de partículas hexagonais para o hero banner
 const HexagonParticles = () => {
@@ -74,7 +33,7 @@ const HexagonParticles = () => {
           style={{
             top: `${Math.random() * 100}%`,
             left: `${Math.random() * 100}%`,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width=\'30\' height=\'30\' viewBox=\'0 0 30 30\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M15 0c-0.89 0-1.78.05-2.67.16L0.94 8.78c-1.21.61-1.94 1.85-1.94 3.2v17.24c0 1.35.73 2.59 1.94 3.2l11.39 6.62c1.21.61 2.67.61 3.88 0l11.39-6.62c1.21-.61 1.94-1.85 1.94-3.2V11.98c0-1.35-.73-2.59-1.94-3.2L17.67.16C16.78.05 15.89 0 15 0z\' fill=\'%23FFFFFF\' fill-opacity=\'1\'%3E%3C/path%3E%3C/svg%3E")`,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 0c-0.89 0-1.78.05-2.67.16L0.94 8.78c-1.21.61-1.94 1.85-1.94 3.2v17.24c0 1.35.73 2.59 1.94 3.2l11.39 6.62c1.21.61 2.67.61 3.88 0l11.39-6.62c1.21-.61 1.94-1.85 1.94-3.2V11.98c0-1.35-.73-2.59-1.94-3.2L17.67.16C16.78.05 15.89 0 15 0z' fill='%23FFFFFF' fill-opacity='1'/%3E%3C/svg%3E")`,
             backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
           }}
@@ -316,7 +275,7 @@ const NewsCard = ({ item, index }) => {
     >
       <div className="relative aspect-video overflow-hidden">
         <motion.img 
-          src={item.image} // Alterado de item.imageUrl para item.image para corresponder à config do banco
+          src={item.imageUrl} 
           alt={item.title}
           className="w-full h-full object-cover"
           whileHover={{ 
@@ -383,8 +342,7 @@ const NewsCard = ({ item, index }) => {
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-500 flex items-center">
             <Clock className="w-3 h-3 mr-1" />
-            {/* A data pode ser adicionada ao section_config se necessário */}
-            {/* {item.date} */}
+            {item.date}
           </div>
           
           <motion.div
@@ -396,7 +354,6 @@ const NewsCard = ({ item, index }) => {
               variant="ghost" 
               size="sm"
               className="text-[#107C10] hover:text-white hover:bg-[#107C10] transition-colors duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)]"
-              onClick={() => item.url && window.open(item.url, '_blank')}
             >
               {item.type === 'trailer' ? 'Assistir' : 'Ler mais'}
             </Button>
@@ -411,9 +368,6 @@ const XboxPage4 = () => {
   const { products, loading } = useProducts();
   const { addToCart } = useCart();
   const navigate = useNavigate();
-  const [pageConfig, setPageConfig] = useState<Xbox4Config | null>(null); // Estado para a configuração da página
-  const [pageLoading, setPageLoading] = useState(true); // Estado de carregamento da página
-
   const [filteredProducts, setFilteredProducts] = useState({
     consoles: [],
     games: [],
@@ -435,381 +389,516 @@ const XboxPage4 = () => {
   
   // IDs das tags do banco de dados - usando useMemo para evitar recriação a cada renderização
   const tagIds = React.useMemo(() => ({
-    xbox: 'xbox',
-    accessories: 'acessorio',
-    console: 'console',
-    games: 'jogo' // Ajustado para corresponder às tags usadas no painel admin
+    xbox: '28047409-2ad5-4cea-bde3-803d42e49fc6',
+    accessories: '43f59a81-8dd1-460b-be1e-a0187e743075',
+    console: '9e5a8e5c-7932-4c18-9c39-93c3a73f9cd0',
+    games: 'b7c9b5a8-4c87-4c1f-8e8a-3d12b7e42e9a'
   }), []);
   
-  // Dados de notícias e trailers - serão substituídos pelos dados do banco
-  const defaultNewsAndTrailers = [
+  // Dados de notícias e trailers
+  const newsAndTrailers = [
     {
       id: 1,
       type: 'trailer',
       title: 'Halo Infinite: Nova Temporada',
       description: 'Confira o trailer da nova temporada de Halo Infinite com novos mapas, armas e modos de jogo.',
-      image: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&h=400&fit=crop&crop=center',
-      // date: '3 dias atrás'
+      imageUrl: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&h=400&fit=crop&crop=center',
+      date: '3 dias atrás'
     },
     {
       id: 2,
       type: 'news',
       title: 'Xbox Game Pass: Novos Jogos de Junho',
       description: 'Microsoft anuncia a nova leva de jogos que chegam ao Xbox Game Pass em junho, incluindo títulos AAA e indies premiados.',
-      image: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=600&h=400&fit=crop&crop=center',
-      // date: '1 semana atrás'
+      imageUrl: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=600&h=400&fit=crop&crop=center',
+      date: '1 semana atrás'
     },
     {
       id: 3,
       type: 'event',
       title: 'Xbox Showcase 2025: O que esperar',
       description: 'Confira nossa análise sobre o que esperar do próximo Xbox Showcase, com rumores de novos jogos e possíveis surpresas.',
-      image: 'https://images.unsplash.com/photo-1614294149010-950b698f72c0?w=600&h=400&fit=crop&crop=center',
-      // date: '2 dias atrás'
+      imageUrl: 'https://images.unsplash.com/photo-1614294149010-950b698f72c0?w=600&h=400&fit=crop&crop=center',
+      date: '2 dias atrás'
     }
   ];
 
   useEffect(() => {
     document.title = 'Xbox | UTI dos Games - Consoles, Jogos e Acessórios';
     
-    const fetchPageConfig = async () => {
-      setPageLoading(true);
-      try {
-        // Primeiro, obter o page_id (UUID) da página 'xbox4' da tabela 'pages'
-        const { data: pageData, error: pageError } = await supabase
-          .from('pages')
-          .select('id')
-          .eq('slug', 'xbox4')
-          .single();
+    if (products.length > 0) {
+      // Filtrar produtos Xbox
+      const xboxProducts = products.filter(product => 
+        product.tags?.some(tag => tag.id === tagIds.xbox)
+      );
 
-        if (pageError) throw pageError;
+      // Separar por categorias
+      const consoles = xboxProducts.filter(product => 
+        product.tags?.some(tag => tag.id === tagIds.console) ||
+        product.name.toLowerCase().includes('xbox series') ||
+        product.name.toLowerCase().includes('console')
+      ).slice(0, 4);
 
-        if (pageData) {
-          const xbox4PageId = pageData.id;
+      const games = xboxProducts.filter(product => 
+        product.tags?.some(tag => tag.id === tagIds.games) ||
+        (!product.tags?.some(tag => tag.id === tagIds.accessories) && 
+         !product.name.toLowerCase().includes('console'))
+      ).slice(0, 10);
 
-          // Em seguida, buscar todas as seções para este page_id na tabela 'page_layout_items'
-          const { data: sectionsData, error: sectionsError } = await supabase
-            .from('page_layout_items')
-            .select('*')
-            .eq('page_id', xbox4PageId)
-            .order('display_order');
+      const accessories = xboxProducts.filter(product => 
+        product.tags?.some(tag => tag.id === tagIds.accessories)
+      ).slice(0, 3);
 
-          if (sectionsError) throw sectionsError;
+      const deals = xboxProducts.filter(product => 
+        product.isOnSale || product.isFeatured
+      ).map(product => ({
+        ...product,
+        discount: Math.floor(Math.random() * 30) + 10, // Simulando descontos entre 10% e 40%
+        originalPrice: product.price * (1 + (Math.floor(Math.random() * 30) + 10) / 100)
+      })).slice(0, 4);
 
-          if (sectionsData && sectionsData.length > 0) {
-            const newConfig: Partial<Xbox4Config> = {}; // Usar Partial para construir gradualmente
+      setFilteredProducts({
+        consoles,
+        games,
+        accessories,
+        deals
+      });
+    }
+  }, [products, tagIds]);
 
-            sectionsData.forEach(section => {
-              if (section.is_visible) { // Considerar apenas seções visíveis
-                switch (section.section_key) {
-                  case 'xbox4_hero_banner':
-                    newConfig.hero_banner = section.section_config;
-                    break;
-                  case 'xbox4_featured_products':
-                    newConfig.featured_products = section.section_config;
-                    break;
-                  case 'xbox4_games_section':
-                    newConfig.games_section = section.section_config;
-                    break;
-                  case 'xbox4_accessories_section':
-                    newConfig.accessories_section = section.section_config;
-                    break;
-                  case 'xbox4_news_section':
-                    newConfig.news_section = section.section_config;
-                    break;
-                  default:
-                    break;
-                }
-              }
-            });
-            setPageConfig(newConfig as Xbox4Config); // Converter para Xbox4Config após construção
-          } else {
-            // Se não houver dados no banco, usar a configuração padrão (hardcoded)
-            setPageConfig({
-              hero_banner: {
-                title: 'POWER YOUR DREAMS',
-                subtitle: 'Entre na próxima geração de jogos com Xbox Series X|S',
-                background_image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=1920&h=1080&fit=crop&crop=center',
-                primary_button_text: 'EXPLORAR CONSOLES',
-                secondary_button_text: 'VER JOGOS'
-              },
-              featured_products: {
-                title: 'CONSOLES XBOX',
-                subtitle: 'Desempenho inigualável para a nova geração de jogos. Escolha o console Xbox perfeito para sua experiência.',
-                product_tags: ['xbox', 'console'],
-                max_products: 2
-              },
-              games_section: {
-                title: 'JOGOS EM ALTA',
-                subtitle: 'Os títulos mais populares para Xbox. De aventuras épicas a competições intensas, encontre seu próximo jogo favorito.',
-                product_tags: ['xbox', 'jogo'],
-                max_products: 3
-              },
-              accessories_section: {
-                title: 'ACESSÓRIOS XBOX',
-                subtitle: 'Eleve sua experiência de jogo com acessórios oficiais Xbox. Controles, headsets e muito mais para o seu setup.',
-                product_tags: ['xbox', 'acessorio'],
-                max_products: 1
-              },
-              news_section: {
-                title: 'NOTÍCIAS & TRAILERS',
-                subtitle: 'Fique por dentro das últimas novidades, lançamentos e atualizações do universo Xbox.',
-                news_items: defaultNewsAndTrailers // Usar defaultNewsAndTrailers como fallback
-              }
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Erro ao carregar configurações da página Xbox4:', error);
-        // Em caso de erro, usar a configuração padrão (hardcoded)
-        setPageConfig({
-          hero_banner: {
-            title: 'POWER YOUR DREAMS',
-            subtitle: 'Entre na próxima geração de jogos com Xbox Series X|S',
-            background_image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=1920&h=1080&fit=crop&crop=center',
-            primary_button_text: 'EXPLORAR CONSOLES',
-            secondary_button_text: 'VER JOGOS'
-          },
-          featured_products: {
-            title: 'CONSOLES XBOX',
-            subtitle: 'Desempenho inigualável para a nova geração de jogos. Escolha o console Xbox perfeito para sua experiência.',
-            product_tags: ['xbox', 'console'],
-            max_products: 2
-          },
-          games_section: {
-            title: 'JOGOS EM ALTA',
-            subtitle: 'Os títulos mais populares para Xbox. De aventuras épicas a competições intensas, encontre seu próximo jogo favorito.',
-            product_tags: ['xbox', 'jogo'],
-            max_products: 3
-          },
-          accessories_section: {
-            title: 'ACESSÓRIOS XBOX',
-            subtitle: 'Eleve sua experiência de jogo com acessórios oficiais Xbox. Controles, headsets e muito mais para o seu setup.',
-            product_tags: ['xbox', 'acessorio'],
-            max_products: 1
-          },
-          news_section: {
-            title: 'NOTÍCIAS & TRAILERS',
-            subtitle: 'Fique por dentro das últimas novidades, lançamentos e atualizações do universo Xbox.',
-            news_items: defaultNewsAndTrailers // Usar defaultNewsAndTrailers como fallback
-          }
-        });
-      } finally {
-        setPageLoading(false);
+  // Dados de exemplo para fallback caso não haja produtos
+  const fallbackProducts = {
+    consoles: [
+      {
+        id: 'fallback-1',
+        name: 'Xbox Series X',
+        price: 3999.90,
+        imageUrl: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&h=400&fit=crop&crop=center',
+        isFeatured: true
+      },
+      {
+        id: 'fallback-2',
+        name: 'Xbox Series X - 1TB Digital Edition',
+        price: 4599.90,
+        originalPrice: 4899.90,
+        imageUrl: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&h=400&fit=crop&crop=center',
+        isNew: true
       }
-    };
+    ],
+    games: [
+      {
+        id: 'fallback-3',
+        name: 'Halo Infinite',
+        price: 299.90,
+        imageUrl: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&h=400&fit=crop&crop=center'
+      },
+      {
+        id: 'fallback-4',
+        name: 'Forza Horizon 5',
+        price: 249.90,
+        imageUrl: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&h=400&fit=crop&crop=center'
+      }
+    ],
+    accessories: [
+      {
+        id: 'fallback-5',
+        name: 'Controle Xbox Series X Wireless',
+        price: 499.90,
+        imageUrl: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=600&h=400&fit=crop&crop=center'
+      }
+    ],
+    deals: [
+      {
+        id: 'fallback-6',
+        name: 'Xbox Game Pass Ultimate (3 meses)',
+        price: 119.90,
+        originalPrice: 149.90,
+        discount: 20,
+        imageUrl: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=600&h=400&fit=crop&crop=center',
+        isFeatured: true
+      }
+    ]
+  };
+  
+  // Usar produtos do banco ou fallback
+  const displayProducts = {
+    consoles: filteredProducts.consoles.length > 0 ? filteredProducts.consoles : fallbackProducts.consoles,
+    games: filteredProducts.games.length > 0 ? filteredProducts.games : fallbackProducts.games,
+    accessories: filteredProducts.accessories.length > 0 ? filteredProducts.accessories : fallbackProducts.accessories,
+    deals: filteredProducts.deals.length > 0 ? filteredProducts.deals : fallbackProducts.deals
+  };
 
-    fetchPageConfig();
-  }, []);
+  const handleAddToCart = (product) => {
+    addToCart(product);
+  };
 
-  // Se a página ainda estiver carregando a configuração, exiba um loader
-  if (pageLoading || loading) {
+  const handleProductClick = (productId) => {
+    navigate(`/produto/${productId}`);
+  };
+  
+  // Mostrar loader apenas por um curto período inicial
+  if (loading && products.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-[#107C10]" />
       </div>
     );
   }
 
-  // Usar pageConfig para renderizar o conteúdo
-  const heroBanner = pageConfig?.hero_banner;
-  const featuredProductsSection = pageConfig?.featured_products;
-  const gamesSection = pageConfig?.games_section;
-  const accessoriesSection = pageConfig?.accessories_section;
-  const newsSection = pageConfig?.news_section;
-
-  // Filtrar produtos com base nas tags e limites definidos na configuração
-  useEffect(() => {
-    if (products.length > 0 && pageConfig) {
-      const filterAndSliceProducts = (productTags: string[], maxProducts: number) => {
-        if (!productTags || productTags.length === 0) return [];
-        return products.filter(product => 
-          product.tags?.some(tag => productTags.includes(tag.name.toLowerCase()))
-        ).slice(0, maxProducts);
-      };
-
-      setFilteredProducts({
-        consoles: filterAndSliceProducts(featuredProductsSection?.product_tags || [], featuredProductsSection?.max_products || 0),
-        games: filterAndSliceProducts(gamesSection?.product_tags || [], gamesSection?.max_products || 0),
-        accessories: filterAndSliceProducts(accessoriesSection?.product_tags || [], accessoriesSection?.max_products || 0),
-        deals: products.filter(product => product.isOnSale || product.isFeatured).map(product => ({ ...product, discount: Math.floor(Math.random() * 20) + 10 })).slice(0, 4) // Manter deals como antes
-      });
-    }
-  }, [products, pageConfig]);
-
-  const handleProductClick = (productId) => {
-    navigate(`/product/${productId}`);
-  };
-
-  const handleAddToCart = (product) => {
-    addToCart(product);
-    // Adicionar toast ou feedback visual
-  };
-
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
+    <div className="min-h-screen bg-black text-white">
       <ProfessionalHeader />
-
-      {/* Hero Banner Section */}
-      {heroBanner && (
-        <section 
-          ref={heroRef} 
-          className="relative h-[70vh] flex items-center justify-center text-center overflow-hidden"
-          style={{
-            backgroundImage: `url(${heroBanner.background_image || 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=1920&h=1080&fit=crop&crop=center'})`,
+      
+      {/* Hero Banner */}
+      <section 
+        ref={heroRef}
+        className="relative h-screen max-h-[800px] bg-black overflow-hidden flex items-center justify-center"
+      >
+        {/* Background com padrão de hexágonos e partículas */}
+        <motion.div 
+          className="absolute inset-0 z-0"
+          style={{ 
+            backgroundImage: `url('https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=1920&h=1080&fit=crop&crop=center')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
+            scale: heroScale,
+            y: heroY
           }}
-        >
-          <HexagonParticles />
-          <motion.div 
-            className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"
-            style={{ opacity: heroOpacity }}
-          ></motion.div>
-          <motion.div 
-            className="relative z-20 p-4"
-            style={{ scale: heroScale, y: heroY }}
+        />
+        
+        {/* Overlay com gradiente e padrão hexagonal */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent z-10"></div>
+        
+        {/* Partículas hexagonais animadas */}
+        <HexagonParticles />
+        
+        {/* Conteúdo do hero */}
+        <div className="container mx-auto px-4 relative z-20">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl"
           >
-            <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-4 drop-shadow-lg leading-tight">
-              {heroBanner.title}
-            </h1>
-            <h2 className="text-2xl md:text-3xl font-semibold text-[#107C10] mb-8 drop-shadow-md">
-              {heroBanner.subtitle}
-            </h2>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mb-6"
+            >
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Xbox_one_logo.svg" 
+                alt="Xbox Logo" 
+                className="h-24 mb-4"
+              />
+            </motion.div>
+            
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="text-7xl font-black mb-6 leading-tight"
+            >
+              POWER YOUR <br />
+              <span className="text-[#107C10] drop-shadow-[0_0_10px_rgba(16,124,16,0.5)]">DREAMS</span>
+            </motion.h1>
+            
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="text-xl text-gray-300 mb-8 max-w-xl"
+            >
+              Entre na próxima geração de jogos com Xbox Series X|S
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="flex flex-wrap gap-4"
+            >
               <Button 
                 size="lg" 
                 className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-8 py-6 text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
               >
                 <Zap className="w-5 h-5 mr-2" />
-                {heroBanner.primary_button_text}
+                EXPLORAR CONSOLES
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-white/50 bg-black/30 text-white hover:bg-[#107C10] hover:text-white hover:border-[#107C10] font-bold px-8 py-6 text-lg transition-all duration-300 backdrop-blur-sm"
+                className="border-white/50 text-white hover:bg-white hover:text-black font-bold px-8 py-6 text-lg transition-all duration-300"
               >
                 <Play className="w-5 h-5 mr-2" />
-                {heroBanner.secondary_button_text}
+                VER JOGOS
               </Button>
-            </div>
+            </motion.div>
           </motion.div>
-          
-          {/* Indicador de scroll */}
-          <motion.div 
-            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20"
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            <div className="w-10 h-10 rounded-full border-2 border-white/50 flex items-center justify-center">
-              <ChevronRight className="w-6 h-6 text-white/50 rotate-90" />
-            </div>
-          </motion.div>
-        </section>
-      )}
+        </div>
+        
+        {/* Indicador de scroll */}
+        <motion.div 
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          <div className="w-10 h-10 rounded-full border-2 border-white/50 flex items-center justify-center">
+            <ChevronRight className="w-6 h-6 text-white/50 rotate-90" />
+          </div>
+        </motion.div>
+      </section>
 
-      {/* Featured Products Section (Consoles) */}
-      {featuredProductsSection && filteredProducts.consoles.length > 0 && (
-        <section className="py-16 px-4 md:px-8 bg-black">
-          <h2 className="text-4xl font-bold text-center text-white mb-4">
-            {featuredProductsSection.title}
-          </h2>
-          <p className="text-xl text-center text-gray-400 mb-12 max-w-3xl mx-auto">
-            {featuredProductsSection.subtitle}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {filteredProducts.consoles.map((product, index) => (
+      {/* Seção de Consoles */}
+      <section className="py-20 bg-black relative overflow-hidden">
+        {/* Fundo com textura sutil ou gradiente */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQ9Ik0zMCAwTDYwIDMwIDMwIDYwIDAgMzB6IiBmaWxsPSIjMTA3QzEwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-30"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-6xl font-black mb-4">
+              CONSOLES <span className="text-[#107C10]">XBOX</span>
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Desempenho inigualável para a nova geração de jogos. 
+              Escolha o console Xbox perfeito para sua experiência.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {displayProducts.consoles.map((product, index) => (
               <ProductCard 
-                key={product.id} 
-                product={product} 
-                onAddToCart={handleAddToCart} 
-                onProductClick={handleProductClick}
+                key={product.id}
+                product={product}
                 index={index}
+                onAddToCart={handleAddToCart}
+                onProductClick={handleProductClick}
               />
             ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* Games Section */}
-      {gamesSection && filteredProducts.games.length > 0 && (
-        <section className="py-16 px-4 md:px-8 bg-gray-950">
-          <h2 className="text-4xl font-bold text-center text-white mb-4">
-            {gamesSection.title}
-          </h2>
-          <p className="text-xl text-center text-gray-400 mb-12 max-w-3xl mx-auto">
-            {gamesSection.subtitle}
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-            {filteredProducts.games.map((product, index) => (
+      {/* Xbox Games Section */}
+      <section className="py-20 bg-gray-950 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQ9Ik0zMCAwTDYwIDMwIDMwIDYwIDAgMzB6IiBmaWxsPSIjMTA3QzEwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-6xl font-black mb-4">
+              JOGOS <span className="text-[#107C10]">EM ALTA</span>
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Os títulos mais populares para Xbox. De aventuras épicas a competições intensas, 
+              encontre seu próximo jogo favorito.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {displayProducts.games.slice(0, 10).map((product, index) => (
               <ProductCard 
-                key={product.id} 
-                product={product} 
-                onAddToCart={handleAddToCart} 
+                key={product.id}
+                product={product}
+                index={index}
+                onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="game"
-                index={index}
               />
             ))}
           </div>
-        </section>
-      )}
+          
+          <div className="mt-12 text-center">
+            <Button 
+              size="lg" 
+              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-8 py-6 text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
+            >
+              VER TODOS OS JOGOS <ChevronRight className="ml-2 w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+      </section>
 
-      {/* Accessories Section */}
-      {accessoriesSection && filteredProducts.accessories.length > 0 && (
-        <section className="py-16 px-4 md:px-8 bg-black">
-          <h2 className="text-4xl font-bold text-center text-white mb-4">
-            {accessoriesSection.title}
-          </h2>
-          <p className="text-xl text-center text-gray-400 mb-12 max-w-3xl mx-auto">
-            {accessoriesSection.subtitle}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProducts.accessories.map((product, index) => (
+      {/* Acessórios Section */}
+      <section className="py-20 bg-black relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQ9Ik0zMCAwTDYwIDMwIDMwIDYwIDAgMzB6IiBmaWxsPSIjMTA3QzEwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-30"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-6xl font-black mb-4">
+              <span className="text-[#107C10]">ACESSÓRIOS</span> XBOX
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Eleve sua experiência de jogo com acessórios oficiais Xbox. Controles, headsets e 
+              muito mais para o seu setup.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {displayProducts.accessories.map((product, index) => (
               <ProductCard 
-                key={product.id} 
-                product={product} 
-                onAddToCart={handleAddToCart} 
+                key={product.id}
+                product={product}
+                index={index}
+                onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="accessory"
+              />
+            ))}
+          </div>
+          
+          <div className="mt-12 text-center">
+            <Button 
+              size="lg" 
+              className="bg-transparent hover:bg-[#107C10] text-[#107C10] hover:text-white font-bold border-2 border-[#107C10] px-8 py-6 text-lg transition-all duration-300"
+            >
+              VER TODOS OS ACESSÓRIOS <ChevronRight className="ml-2 w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Notícias e Trailers Section */}
+      <section className="py-20 bg-gray-950 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQ9Ik0zMCAwTDYwIDMwIDMwIDYwIDAgMzB6IiBmaWxsPSIjMTA3QzEwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-6xl font-black mb-4">
+              <span className="text-[#107C10]">NOTÍCIAS</span> & TRAILERS
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Fique por dentro das últimas novidades, lançamentos e atualizações do universo 
+              Xbox.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {newsAndTrailers.map((item, index) => (
+              <NewsCard 
+                key={item.id}
+                item={item}
                 index={index}
               />
             ))}
           </div>
-        </section>
-      )}
+          
+          <div className="mt-12 text-center">
+            <Button 
+              size="lg" 
+              className="bg-transparent hover:bg-white text-white hover:text-black font-bold border-2 border-white px-8 py-6 text-lg transition-all duration-300"
+            >
+              VER TODAS AS NOTÍCIAS <ChevronRight className="ml-2 w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+      </section>
 
-      {/* News & Trailers Section */}
-      {newsSection && newsSection.news_items && newsSection.news_items.length > 0 && (
-        <section className="py-16 px-4 md:px-8 bg-gray-950">
-          <h2 className="text-4xl font-bold text-center text-white mb-4">
-            {newsSection.title}
-          </h2>
-          <p className="text-xl text-center text-gray-400 mb-12 max-w-3xl mx-auto">
-            {newsSection.subtitle}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {newsSection.news_items.map((item, index) => (
-              <NewsCard key={index} item={item} index={index} />
+      {/* Ofertas Especiais Section */}
+      <section className="py-20 bg-black relative overflow-hidden">
+        {/* Fundo com textura sutil ou gradiente */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#107C10]/20 via-black to-black"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-6xl font-black mb-4">
+              <span className="text-[#107C10]">OFERTAS</span> IMPERDÍVEIS
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Tempo limitado para aproveitar. Descontos especiais em produtos selecionados.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {displayProducts.deals.map((product, index) => (
+              <ProductCard 
+                key={product.id}
+                product={product}
+                index={index}
+                onAddToCart={handleAddToCart}
+                onProductClick={handleProductClick}
+                variant="deal"
+              />
             ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>   
 
-      <footer className="bg-gray-900 text-gray-400 py-8 text-center">
-        <p>© 2025 UTI dos Games. Todos os direitos reservados. Xbox é uma marca registrada da Microsoft Corporation.</p>
-      </footer>
+      {/* Footer CTA */}
+      <section className="py-20 bg-black text-center">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="max-w-3xl mx-auto"
+          >
+            <h2 className="text-5xl font-black mb-6">
+              PRONTO PARA <span className="text-[#107C10]">JOGAR</span>?
+            </h2>
+            <p className="text-xl text-gray-300 mb-8">
+              Explore nossa coleção completa de jogos, consoles e acessórios Xbox.
+              Eleve sua experiência de jogo ao próximo nível.
+            </p>
+            
+            <Button 
+              size="lg" 
+              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-8 py-6 text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
+            >
+              EXPLORAR MAIS
+            </Button>
+            
+            <div className="mt-16 pt-16 border-t border-white/10 flex items-center justify-center">
+              <div className="flex items-center">
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Xbox_one_logo.svg" 
+                  alt="Xbox Logo" 
+                  className="h-10 mr-4" 
+                />
+                <span className="text-2xl font-bold">×</span>
+                <span className="text-2xl font-bold ml-4">UTI DOS GAMES</span>
+              </div>
+              
+              <p className="text-sm text-gray-400">
+                © 2025 UTI dos Games. Todos os direitos reservados.
+                Xbox é uma marca registrada da Microsoft Corporation.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 };
 
 export default XboxPage4;
-Microsoft Corporation.</p>
-      </footer>
-    </div>
-  );
-};
-
-export default XboxPage4;
-
-
