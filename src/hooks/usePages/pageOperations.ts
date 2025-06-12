@@ -41,7 +41,7 @@ export const createPageOperations = (
         slug: pageData.slug,
         description: pageData.description || '',
         isActive: pageData.is_active,
-        theme: (pageData.theme && typeof pageData.theme === 'object') ? pageData.theme as any : {
+        theme: (pageData.theme && typeof pageData.theme === 'object') ? pageData.theme as Page['theme'] : {
           primaryColor: '#107C10',
           secondaryColor: '#3A3A3A'
         },
@@ -94,7 +94,7 @@ export const createPageOperations = (
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-        theme: (data.theme && typeof data.theme === 'object') ? data.theme as any : {
+        theme: (data.theme && typeof data.theme === 'object') ? data.theme as Page['theme'] : {
           primaryColor: '#107C10',
           secondaryColor: '#3A3A3A'
         },
@@ -143,7 +143,7 @@ export const createPageOperations = (
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-        theme: (data.theme && typeof data.theme === 'object') ? data.theme as any : {
+        theme: (data.theme && typeof data.theme === 'object') ? data.theme as Page['theme'] : {
           primaryColor: '#107C10',
           secondaryColor: '#3A3A3A'
         },

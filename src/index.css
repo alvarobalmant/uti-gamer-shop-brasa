@@ -464,13 +464,14 @@
 
   /* Premium Focus States */
   .focus-premium:focus {
-    @apply outline-none;
-    box-shadow: 0 0 0 4px rgba(255, 7, 58, 0.1);
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   .focus-premium:focus-visible {
-    @apply outline-none;
-    box-shadow: 0 0 0 4px rgba(255, 7, 58, 0.1);
+    outline: none !important;
+    box-shadow: none !important;
+    caret-color: transparent !important;
   }
 
   /* Glassmorphism Effects */

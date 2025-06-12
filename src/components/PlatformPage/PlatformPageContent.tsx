@@ -36,8 +36,6 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
     '--accent-color': page.theme.accentColor || page.theme.primaryColor,
   } as React.CSSProperties;
 
-  const selectedProduct = products.find(p => p.id === selectedProductId) || null;
-
   return (
     <div style={pageStyle} className="platform-page min-h-screen flex flex-col">
       <Header />
@@ -66,9 +64,8 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
 
       {/* Product Modal */}
       <ProductModal
-        product={selectedProduct}
+        product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
         onOpenChange={setIsModalOpen}
       />
     </div>
