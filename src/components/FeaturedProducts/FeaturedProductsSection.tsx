@@ -13,6 +13,7 @@ interface FeaturedProductsSectionProps {
   title?: string;
   subtitle?: string;
   onCardClick?: (productId: string) => void;
+  viewAllLink?: string;
 }
 
 const FeaturedProductsSection: React.FC<FeaturedProductsSectionProps> = ({
@@ -21,7 +22,8 @@ const FeaturedProductsSection: React.FC<FeaturedProductsSectionProps> = ({
   onAddToCart,
   title = "Produtos em Destaque",
   subtitle = "Os melhores produtos selecionados para você",
-  onCardClick
+  onCardClick,
+  viewAllLink
 }) => {
   const { addToCart } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);

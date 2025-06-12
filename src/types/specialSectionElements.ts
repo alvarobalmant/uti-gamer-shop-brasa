@@ -37,3 +37,35 @@ export interface ElementFormData {
   animation_type: string;
   custom_css: string;
 }
+
+// Helper function to convert database element to form data
+export const convertElementToFormData = (element: any): Partial<ElementFormData> => {
+  return {
+    title: element.title || '',
+    subtitle: element.subtitle || '',
+    element_type: element.element_type as ElementType,
+    image_url: element.image_url || '',
+    link_url: element.link_url || '',
+    link_text: element.link_text || '',
+    display_order: element.display_order || 0,
+    is_active: element.is_active !== false,
+    background_type: (element.background_type as BackgroundType) || 'color',
+    background_value: element.background_value || '',
+    text_color: element.text_color || '#000000',
+    font_size: element.font_size || 16,
+    font_weight: element.font_weight || 400,
+    text_align: element.text_align || 'left',
+    padding_top: element.padding_top || 0,
+    padding_bottom: element.padding_bottom || 0,
+    padding_left: element.padding_left || 0,
+    padding_right: element.padding_right || 0,
+    margin_top: element.margin_top || 0,
+    margin_bottom: element.margin_bottom || 0,
+    border_width: element.border_width || 0,
+    border_color: element.border_color || '#000000',
+    border_radius: element.border_radius || 0,
+    shadow_type: element.shadow_type || 'none',
+    animation_type: element.animation_type || 'none',
+    custom_css: element.custom_css || ''
+  };
+};

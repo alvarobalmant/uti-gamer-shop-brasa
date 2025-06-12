@@ -40,22 +40,17 @@ const ProductModalContent: React.FC<ProductModalContentProps> = ({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
       <ProductModalGallery 
         product={product}
-        onFullscreenToggle={onFullscreenToggle}
       />
       
       <div className="space-y-6">
         <ProductModalHeader 
           product={product}
-          onClose={onClose}
-          onWishlistToggle={onWishlistToggle}
-          onShareClick={onShareClick}
         />
         
         <ProductModalInfo product={product} />
         
         <ProductModalActions 
           product={product}
-          onAddToCart={onAddToCart}
         />
         
         <ProductModalDescription product={product} />
@@ -66,7 +61,7 @@ const ProductModalContent: React.FC<ProductModalContentProps> = ({
       {relatedProducts.length > 0 && (
         <div className="col-span-full">
           <RelatedProducts 
-            products={relatedProducts}
+            relatedProducts={relatedProducts}
             currentProductId={currentProductId}
             onProductClick={onRelatedProductClick}
           />
