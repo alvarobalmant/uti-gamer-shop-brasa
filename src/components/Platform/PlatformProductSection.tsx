@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { ProductShowcase, PlatformTheme } from '@/types/platformPages';
 import { Product } from '@/hooks/useProducts';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { ShoppingCart, Star, Heart, Eye } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
 
 interface PlatformProductSectionProps {
   config: ProductShowcase;
@@ -23,19 +24,6 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
   onProductClick,
   className = ''
 }) => {
-  const getGridClasses = () => {
-    const columns = config.columns || 4;
-    const gridMap = {
-      1: 'grid-cols-1',
-      2: 'grid-cols-1 md:grid-cols-2',
-      3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-      4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
-      5: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5',
-      6: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6',
-    };
-    return gridMap[columns] || 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4';
-  };
-
   const getCardStyles = () => {
     const baseStyles = {
       backgroundColor: theme.backgroundColor === '#FFFFFF' ? '#FAFAFA' : 'rgba(255, 255, 255, 0.05)',
@@ -67,23 +55,17 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
     }
   };
 
-  const getButtonStyles = () => {
-    const baseStyles = {
-      backgroundColor: theme.primaryColor,
-      color: theme.textColor,
-      borderRadius: theme.borderRadius,
+  const getGridColumns = () => {
+    const columns = config.columns || 4;
+    const columnMap = {
+      1: 'grid-cols-1',
+      2: 'grid-cols-1 md:grid-cols-2',
+      3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+      4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+      5: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5',
+      6: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6',
     };
-
-    switch (theme.brandElements?.buttonStyle) {
-      case 'rounded':
-        return { ...baseStyles, borderRadius: '8px' };
-      case 'sharp':
-        return { ...baseStyles, borderRadius: '4px' };
-      case 'pill':
-        return { ...baseStyles, borderRadius: '9999px' };
-      default:
-        return baseStyles;
-    }
+    return columnMap[columns as keyof typeof columnMap] || 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4';
   };
 
   const formatPrice = (price: number) => {
@@ -93,272 +75,278 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
     }).format(price);
   };
 
+  const renderProductBadges = (product: Product) => {
+    const badges = [];
+    
+    // Check for new product based on tags
+    const isNew = product.tags?.some(tag => tag.name.toLowerCase().includes('novo'));
+    if (isNew && config.showBadges) {
+      badges.push(
+        <Badge 
+          key="new"
+          className="absolute top-2 left-2 text-xs font-semibold"
+          style={{
+            backgroundColor: theme.primaryColor,
+            color: theme.textColor,
+          }}
+        >
+          NOVO
+        </Badge>
+      );
+    }
+
+    // Check for sale product based on tags
+    const isOnSale = product.tags?.some(tag => tag.name.toLowerCase().includes('oferta'));
+    if (isOnSale && config.showBadges) {
+      badges.push(
+        <Badge 
+          key="sale"
+          className="absolute top-2 right-2 text-xs font-semibold"
+          style={{
+            backgroundColor: '#EF4444',
+            color: '#FFFFFF',
+          }}
+        >
+          OFERTA
+        </Badge>
+      );
+    }
+
+    // Check for featured product based on tags
+    const isFeatured = product.tags?.some(tag => tag.name.toLowerCase().includes('destaque'));
+    if (isFeatured && config.showBadges) {
+      badges.push(
+        <Badge 
+          key="featured"
+          className="absolute top-2 left-2 text-xs font-semibold"
+          style={{
+            backgroundColor: theme.accentColor,
+            color: theme.textColor,
+          }}
+        >
+          DESTAQUE
+        </Badge>
+      );
+    }
+
+    return badges;
+  };
+
   const renderProductCard = (product: Product) => (
     <Card 
       key={product.id}
-      className="group cursor-pointer transition-all duration-300 hover:scale-105"
+      className="group cursor-pointer transition-all duration-300 hover:scale-105 overflow-hidden"
       style={getCardStyles()}
       onClick={() => onProductClick(product.id)}
     >
       <CardContent className="p-0">
-        {/* Imagem do Produto */}
+        {/* Imagem do produto */}
         <div className="relative aspect-square overflow-hidden">
           <img
-            src={product.imageUrl}
+            src={product.image || '/placeholder-product.jpg'}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           
           {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.isNew && (
-              <Badge 
-                className="text-xs font-semibold"
-                style={{
-                  backgroundColor: theme.accentColor,
-                  color: theme.backgroundColor,
+          {renderProductBadges(product)}
+
+          {/* Overlay com ações */}
+          <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onProductClick(product.id);
                 }}
               >
-                NOVO
-              </Badge>
-            )}
-            {product.isOnSale && (
-              <Badge 
-                className="text-xs font-semibold"
-                style={{
-                  backgroundColor: '#E60012',
-                  color: '#FFFFFF',
-                }}
-              >
-                OFERTA
-              </Badge>
-            )}
-            {product.isFeatured && (
-              <Badge 
-                className="text-xs font-semibold"
+                <Eye className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
                 style={{
                   backgroundColor: theme.primaryColor,
                   color: theme.textColor,
                 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToCart(product);
+                }}
               >
-                DESTAQUE
-              </Badge>
-            )}
-          </div>
-
-          {/* Ações rápidas */}
-          <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-8 h-8 p-0"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                borderColor: theme.accentColor,
-              }}
-            >
-              <Heart className="h-4 w-4" style={{ color: theme.accentColor }} />
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-8 h-8 p-0"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                borderColor: theme.accentColor,
-              }}
-            >
-              <Eye className="h-4 w-4" style={{ color: theme.accentColor }} />
-            </Button>
-          </div>
-
-          {/* Overlay de desconto */}
-          {product.isOnSale && product.originalPrice && (
-            <div 
-              className="absolute bottom-2 left-2 px-2 py-1 rounded text-xs font-bold"
-              style={{
-                backgroundColor: '#E60012',
-                color: '#FFFFFF',
-              }}
-            >
-              -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                <ShoppingCart className="h-4 w-4" />
+              </Button>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Informações do Produto */}
+        {/* Informações do produto */}
         <div className="p-4">
           <h3 
-            className="font-semibold text-sm mb-2 line-clamp-2 min-h-[2.5rem]"
+            className="font-semibold text-lg mb-2 line-clamp-2"
             style={{ color: theme.textColor }}
           >
             {product.name}
           </h3>
 
-          {/* Avaliação */}
-          {product.rating && (
-            <div className="flex items-center gap-1 mb-2">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-3 w-3 ${
-                      i < Math.floor(product.rating!) 
-                        ? 'fill-current' 
-                        : 'fill-gray-300'
-                    }`}
-                    style={{ 
-                      color: i < Math.floor(product.rating!) 
-                        ? theme.accentColor 
-                        : '#D1D5DB' 
-                    }}
-                  />
-                ))}
-              </div>
-              <span 
-                className="text-xs"
-                style={{ color: theme.textColor, opacity: 0.7 }}
-              >
-                ({product.rating})
-              </span>
-            </div>
+          {config.cardStyle === 'detailed' && (
+            <p 
+              className="text-sm mb-3 line-clamp-2 opacity-70"
+              style={{ color: theme.textColor }}
+            >
+              {product.description}
+            </p>
           )}
 
-          {/* Preços */}
-          <div className="mb-3">
-            {config.showPrices && (
+          {/* Preço */}
+          {config.showPrices && (
+            <div className="mb-3">
               <div className="flex items-center gap-2">
                 <span 
-                  className="font-bold text-lg"
+                  className="text-lg font-bold"
                   style={{ color: theme.primaryColor }}
                 >
                   {formatPrice(product.price)}
                 </span>
-                {product.originalPrice && product.originalPrice > product.price && (
-                  <span 
-                    className="text-sm line-through"
-                    style={{ color: theme.textColor, opacity: 0.5 }}
-                  >
-                    {formatPrice(product.originalPrice)}
-                  </span>
-                )}
               </div>
-            )}
-            
-            {product.proPrice && (
-              <div className="flex items-center gap-1 mt-1">
-                <Badge 
-                  variant="outline" 
-                  className="text-xs"
-                  style={{
-                    borderColor: theme.accentColor,
-                    color: theme.accentColor,
-                  }}
-                >
-                  PRO
-                </Badge>
-                <span 
-                  className="text-sm font-semibold"
-                  style={{ color: theme.accentColor }}
-                >
-                  {formatPrice(product.proPrice)}
-                </span>
-              </div>
-            )}
-          </div>
 
-          {/* Botão de Adicionar ao Carrinho */}
+              {/* Preço UTI Pro */}
+              {product.pro_price && (
+                <div className="mt-1">
+                  <span className="text-xs opacity-70" style={{ color: theme.textColor }}>
+                    UTI Pro: 
+                  </span>
+                  <span 
+                    className="text-sm font-semibold ml-1"
+                    style={{ color: theme.accentColor }}
+                  >
+                    {formatPrice(product.pro_price)}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Botão de adicionar ao carrinho */}
           <Button
-            className="w-full text-sm font-semibold transition-all duration-300 hover:scale-105"
-            style={getButtonStyles()}
+            className="w-full transition-all duration-300"
+            style={{
+              backgroundColor: theme.primaryColor,
+              color: theme.textColor,
+              borderRadius: theme.borderRadius,
+            }}
             onClick={(e) => {
               e.stopPropagation();
               onAddToCart(product);
             }}
           >
             <ShoppingCart className="mr-2 h-4 w-4" />
-            Adicionar
+            Adicionar ao Carrinho
           </Button>
         </div>
       </CardContent>
     </Card>
   );
 
-  const renderGridLayout = () => (
-    <div className={`grid ${getGridClasses()} gap-6`}>
-      {products.map(renderProductCard)}
-    </div>
-  );
-
-  const renderCarouselLayout = () => (
+  const renderCarousel = () => (
     <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
       {products.map((product) => (
-        <div key={product.id} className="flex-none w-64">
+        <div key={product.id} className="flex-none w-80">
           {renderProductCard(product)}
         </div>
       ))}
     </div>
   );
 
-  const renderFeaturedLayout = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Produto principal */}
-      {products[0] && (
+  const renderGrid = () => (
+    <div className={`grid ${getGridColumns()} gap-6`}>
+      {products.map(renderProductCard)}
+    </div>
+  );
+
+  const renderFeatured = () => {
+    const featuredProduct = products[0];
+    const otherProducts = products.slice(1);
+
+    if (!featuredProduct) return renderGrid();
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Produto em destaque */}
         <div className="lg:col-span-2">
           <Card 
-            className="group cursor-pointer overflow-hidden"
+            className="group cursor-pointer transition-all duration-300 hover:scale-[1.02] overflow-hidden h-full"
             style={getCardStyles()}
-            onClick={() => onProductClick(products[0].id)}
+            onClick={() => onProductClick(featuredProduct.id)}
           >
-            <CardContent className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-2">
-                <div className="aspect-square">
+            <CardContent className="p-0 h-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 h-full">
+                {/* Imagem grande */}
+                <div className="relative aspect-square md:aspect-auto overflow-hidden">
                   <img
-                    src={products[0].imageUrl}
-                    alt={products[0].name}
-                    className="w-full h-full object-cover"
+                    src={featuredProduct.image || '/placeholder-product.jpg'}
+                    alt={featuredProduct.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
+                  {renderProductBadges(featuredProduct)}
                 </div>
-                <div className="p-8 flex flex-col justify-center">
-                  <Badge 
-                    className="mb-4 w-fit"
-                    style={{
-                      backgroundColor: theme.accentColor,
-                      color: theme.backgroundColor,
-                    }}
-                  >
-                    PRODUTO EM DESTAQUE
-                  </Badge>
-                  <h3 
-                    className="text-2xl font-bold mb-4"
-                    style={{ color: theme.textColor }}
-                  >
-                    {products[0].name}
-                  </h3>
-                  <p 
-                    className="text-lg mb-6 opacity-80"
-                    style={{ color: theme.textColor }}
-                  >
-                    {products[0].description}
-                  </p>
-                  <div className="mb-6">
-                    <span 
-                      className="text-3xl font-bold"
-                      style={{ color: theme.primaryColor }}
+
+                {/* Informações detalhadas */}
+                <div className="p-8 flex flex-col justify-between">
+                  <div>
+                    <h3 
+                      className="text-2xl font-bold mb-4"
+                      style={{ color: theme.textColor }}
                     >
-                      {formatPrice(products[0].price)}
-                    </span>
+                      {featuredProduct.name}
+                    </h3>
+                    <p 
+                      className="text-base mb-6 opacity-80"
+                      style={{ color: theme.textColor }}
+                    >
+                      {featuredProduct.description}
+                    </p>
                   </div>
+
+                  {config.showPrices && (
+                    <div className="mb-6">
+                      <span 
+                        className="text-3xl font-bold"
+                        style={{ color: theme.primaryColor }}
+                      >
+                        {formatPrice(featuredProduct.price)}
+                      </span>
+                      {featuredProduct.pro_price && (
+                        <div className="mt-2">
+                          <span className="text-sm opacity-70" style={{ color: theme.textColor }}>
+                            UTI Pro: 
+                          </span>
+                          <span 
+                            className="text-lg font-semibold ml-2"
+                            style={{ color: theme.accentColor }}
+                          >
+                            {formatPrice(featuredProduct.pro_price)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <Button
                     size="lg"
-                    className="w-fit"
-                    style={getButtonStyles()}
+                    className="text-lg px-8 py-4"
+                    style={{
+                      backgroundColor: theme.primaryColor,
+                      color: theme.textColor,
+                      borderRadius: theme.borderRadius,
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAddToCart(products[0]);
+                      onAddToCart(featuredProduct);
                     }}
                   >
-                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    <ShoppingCart className="mr-3 h-5 w-5" />
                     Adicionar ao Carrinho
                   </Button>
                 </div>
@@ -366,14 +354,14 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
             </CardContent>
           </Card>
         </div>
-      )}
-      
-      {/* Produtos secundários */}
-      <div className="space-y-6">
-        {products.slice(1, 4).map(renderProductCard)}
+
+        {/* Produtos menores */}
+        <div className="space-y-6">
+          {otherProducts.slice(0, 3).map(renderProductCard)}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <section 
@@ -405,14 +393,14 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
           )}
         </div>
 
-        {/* Renderizar layout baseado no tipo */}
-        {config.type === 'carousel' && renderCarouselLayout()}
-        {config.type === 'featured' && renderFeaturedLayout()}
-        {(config.type === 'grid' || !config.type) && renderGridLayout()}
+        {/* Renderizar produtos baseado no tipo */}
+        {config.type === 'carousel' && renderCarousel()}
+        {config.type === 'grid' && renderGrid()}
+        {config.type === 'featured' && renderFeatured()}
+        {config.type === 'comparison' && renderGrid()}
       </div>
     </section>
   );
 };
 
 export default PlatformProductSection;
-

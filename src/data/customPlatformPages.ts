@@ -52,7 +52,7 @@ export const customPlatformPages: PlatformPage[] = [
           title: 'Destaques Xbox',
           subtitle: 'Os melhores produtos Xbox em oferta especial',
           filter: {
-            tagIds: ['28047409-2ad5-4cea-bde3-803d42e49fc6'], // UUID da tag "Xbox"
+            tagIds: ['xbox', 'microsoft'],
             featured: true,
             limit: 8
           },
@@ -121,7 +121,7 @@ export const customPlatformPages: PlatformPage[] = [
           title: 'Acessórios Oficiais',
           subtitle: 'Controles, headsets e mais para sua experiência Xbox',
           filter: {
-            tagIds: ['28047409-2ad5-4cea-bde3-803d42e49fc6', '43f59a81-8dd1-460b-be1e-a0187e743075'], // UUIDs das tags "Xbox" e "Acessórios"
+            tagIds: ['xbox', 'acessorio'],
             limit: 6
           },
           columns: 3,

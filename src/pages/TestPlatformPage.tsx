@@ -42,6 +42,11 @@ const TestPlatformPage: React.FC = () => {
     setSelectedProductId(productId);
     setIsModalOpen(true);
   };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedProductId(null);
+  };
   
   // Renderizar estado de carregamento
   if (productsLoading) {
@@ -137,6 +142,7 @@ const TestPlatformPage: React.FC = () => {
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
+        onClose={handleCloseModal}
       />
     </>
   );
