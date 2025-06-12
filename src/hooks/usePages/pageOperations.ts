@@ -41,11 +41,7 @@ export const createPageOperations = (
         slug: pageData.slug,
         description: pageData.description || '',
         isActive: pageData.is_active,
-<<<<<<< HEAD
         theme: (pageData.theme && typeof pageData.theme === 'object') ? pageData.theme as Page['theme'] : {
-=======
-        theme: (pageData.theme && typeof pageData.theme === 'object') ? pageData.theme as any : {
->>>>>>> 9c7e4654651ff7d7c107d8331a3addc477ed799b
           primaryColor: '#107C10',
           secondaryColor: '#3A3A3A'
         },
@@ -98,11 +94,7 @@ export const createPageOperations = (
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-<<<<<<< HEAD
         theme: (data.theme && typeof data.theme === 'object') ? data.theme as Page['theme'] : {
-=======
-        theme: (data.theme && typeof data.theme === 'object') ? data.theme as any : {
->>>>>>> 9c7e4654651ff7d7c107d8331a3addc477ed799b
           primaryColor: '#107C10',
           secondaryColor: '#3A3A3A'
         },
@@ -151,11 +143,7 @@ export const createPageOperations = (
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-<<<<<<< HEAD
         theme: (data.theme && typeof data.theme === 'object') ? data.theme as Page['theme'] : {
-=======
-        theme: (data.theme && typeof data.theme === 'object') ? data.theme as any : {
->>>>>>> 9c7e4654651ff7d7c107d8331a3addc477ed799b
           primaryColor: '#107C10',
           secondaryColor: '#3A3A3A'
         },

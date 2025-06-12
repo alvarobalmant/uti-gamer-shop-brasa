@@ -61,27 +61,41 @@ const HexagonParticles = () => {
 };
 
 // Componente de card de produto com microinterações avançadas
-const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default" }) => {
+const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default", index = 0 }) => {
   const isGame = variant === "game";
   const isAccessory = variant === "accessory";
   const isDeal = variant === "deal";
   
   return (
     <motion.div
-      whileHover={{ 
-        scale: 1.05,
-        boxShadow: "0 10px 30px -10px rgba(16, 124, 16, 0.3)",
-        borderColor: "#107C10"
-      }}
+      initial={{ opacity: 0, x: -20, scale: 0.98 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
       transition={{ 
-        duration: 0.3,
-        ease: "easeOut"
+        duration: 0.4, 
+        delay: index * 0.03, 
+        ease: "easeOut" 
+      }}
+      whileHover={{ 
+        scale: 1.03,
+        rotateY: 2,
+        rotateX: 1,
+        boxShadow: "0 0 30px -5px rgba(16, 124, 16, 0.8), 0 0 15px -8px rgba(16, 124, 16, 0.6)",
+        borderColor: "#107C10",
+        transition: { 
+          duration: 0.15, 
+          ease: "easeOut" 
+        }
       }}
       className={cn(
-        "group relative bg-gray-900 rounded-xl overflow-hidden transition-all duration-300 border border-transparent",
+        "group relative bg-gray-900 rounded-xl overflow-hidden border border-transparent cursor-pointer",
+        "transform-gpu will-change-transform", // GPU optimization
         isGame ? "aspect-[2/3]" : "aspect-square",
         isDeal ? "bg-gradient-to-br from-[#107C10]/20 via-black to-black" : ""
       )}
+      style={{
+        transformStyle: "preserve-3d",
+        perspective: "1000px"
+      }}
     >
       <div className={cn(
         "overflow-hidden",
@@ -91,29 +105,42 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
           src={product.imageUrl || 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&h=600&fit=crop&crop=center'} 
           alt={product.name}
           className="w-full h-full object-cover"
-          whileHover={{ scale: 1.1 }}
-          transition={{ duration: 0.5 }}
+          whileHover={{ 
+            scale: 1.08,
+            transition: { duration: 0.2, ease: "easeOut" }
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
       </div>
       
       {/* Badges */}
-      <div className="absolute top-3 left-3 flex flex-col gap-2">
+      <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
         {product.isFeatured && (
-          <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg">
-            DESTAQUE
-          </Badge>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.15 }}
+          >
+            <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg">
+              DESTAQUE
+            </Badge>
+          </motion.div>
         )}
         {product.isNew && (
-          <Badge className="bg-red-500 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">
-            NOVO
-          </Badge>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.15 }}
+          >
+            <Badge className="bg-red-500 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">
+              NOVO
+            </Badge>
+          </motion.div>
         )}
         {isDeal && product.discount && (
           <motion.div
             initial={{ scale: 1 }}
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            whileHover={{ scale: 1.1 }}
             className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1"
           >
             <Tag size={12} />
@@ -126,20 +153,33 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
         "absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent",
         isGame ? "pb-3 pt-16" : "p-6"
       )}>
-        <h3 className={cn(
-          "font-bold mb-2 text-white group-hover:text-[#107C10] transition-colors line-clamp-2",
-          isGame ? "text-sm" : "text-lg"
-        )}>
+        <motion.h3 
+          className={cn(
+            "font-bold mb-2 text-white line-clamp-2 transition-colors duration-150",
+            isGame ? "text-sm" : "text-lg"
+          )}
+          whileHover={{ 
+            color: "#107C10",
+            transition: { duration: 0.15 }
+          }}
+        >
           {product.name}
-        </h3>
+        </motion.h3>
         
         <div className={cn(
           "flex items-center justify-between mb-3",
           isGame ? "mb-2" : "mb-4"
         )}>
-          <div className="text-xl font-black text-[#107C10]">
+          <motion.div 
+            className="text-xl font-black text-[#107C10]"
+            whileHover={{ 
+              scale: 1.05,
+              textShadow: "0 0 8px rgba(16, 124, 16, 0.8)",
+              transition: { duration: 0.15 }
+            }}
+          >
             R$ {product.price?.toFixed(2)}
-          </div>
+          </motion.div>
           {product.originalPrice && product.originalPrice > product.price && (
             <div className="text-sm text-gray-400 line-through">
               R$ {product.originalPrice.toFixed(2)}
@@ -152,31 +192,51 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
           isGame ? "justify-center" : "justify-between"
         )}>
           {isGame ? (
-            <Button 
-              size="sm"
-              className="w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
-              onClick={() => onAddToCart(product)}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.15 }}
+              className="w-full"
             >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              ADICIONAR
-            </Button>
-          ) : (
-            <>
               <Button 
-                className="flex-1 bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
+                size="sm"
+                className="w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-150 shadow-lg hover:shadow-[0_0_20px_rgba(16,124,16,0.6)]"
                 onClick={() => onAddToCart(product)}
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
-                COMPRAR
+                ADICIONAR
               </Button>
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white transition-all duration-300 transform hover:scale-110"
-                onClick={() => onProductClick(product.id)}
+            </motion.div>
+          ) : (
+            <>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.15 }}
+                className="flex-1"
               >
-                <Heart className="w-4 h-4" />
-              </Button>
+                <Button 
+                  className="w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-150 shadow-lg hover:shadow-[0_0_20px_rgba(16,124,16,0.6)]"
+                  onClick={() => onAddToCart(product)}
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  COMPRAR
+                </Button>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+              >
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white transition-all duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)]"
+                  onClick={() => onProductClick(product.id)}
+                >
+                  <Heart className="w-4 h-4" />
+                </Button>
+              </motion.div>
             </>
           )}
         </div>
@@ -189,52 +249,91 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
 const NewsCard = ({ item, index }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      whileHover={{ 
-        scale: 1.03,
-        boxShadow: "0 10px 30px -10px rgba(16, 124, 16, 0.3)",
-        borderColor: "#107C10"
+      initial={{ opacity: 0, x: -15, scale: 0.98 }}
+      whileInView={{ opacity: 1, x: 0, scale: 1 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ 
+        duration: 0.4, 
+        delay: index * 0.05, 
+        ease: "easeOut" 
       }}
-      className="group relative bg-black rounded-xl overflow-hidden transition-all duration-300 border border-transparent hover:border-[#107C10]"
+      whileHover={{ 
+        scale: 1.02,
+        rotateY: 1,
+        boxShadow: "0 0 25px -5px rgba(16, 124, 16, 0.7), 0 0 12px -8px rgba(16, 124, 16, 0.5)",
+        borderColor: "#107C10",
+        transition: { 
+          duration: 0.15, 
+          ease: "easeOut" 
+        }
+      }}
+      className="group relative bg-black rounded-xl overflow-hidden border border-transparent cursor-pointer transform-gpu will-change-transform"
+      style={{
+        transformStyle: "preserve-3d",
+        perspective: "800px"
+      }}
     >
       <div className="relative aspect-video overflow-hidden">
-        <img 
+        <motion.img 
           src={item.imageUrl} 
           alt={item.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-full object-cover"
+          whileHover={{ 
+            scale: 1.06,
+            transition: { duration: 0.2, ease: "easeOut" }
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
         
         {item.type === 'trailer' && (
           <motion.div 
             className="absolute inset-0 flex items-center justify-center"
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ 
+              scale: 1.15,
+              transition: { duration: 0.15, ease: "easeOut" }
+            }}
           >
-            <div className="w-16 h-16 rounded-full bg-[#107C10]/80 flex items-center justify-center">
+            <motion.div 
+              className="w-16 h-16 rounded-full bg-[#107C10]/80 flex items-center justify-center"
+              whileHover={{
+                backgroundColor: "rgba(16, 124, 16, 1)",
+                boxShadow: "0 0 20px rgba(16, 124, 16, 0.8)",
+                transition: { duration: 0.15 }
+              }}
+            >
               <Play className="w-8 h-8 text-white ml-1" />
-            </div>
+            </motion.div>
           </motion.div>
         )}
         
-        <div className="absolute top-3 left-3">
-          <Badge className={cn(
-            "text-xs font-bold px-3 py-1 rounded-full",
-            item.type === 'trailer' ? "bg-[#107C10] text-white" : 
-            item.type === 'news' ? "bg-yellow-500 text-black" : 
-            "bg-blue-500 text-white"
-          )}>
-            {item.type === 'trailer' ? 'TRAILER' : 
-             item.type === 'news' ? 'NOVIDADE' : 'EVENTO'}
-          </Badge>
+        <div className="absolute top-3 left-3 z-10">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.15 }}
+          >
+            <Badge className={cn(
+              "text-xs font-bold px-3 py-1 rounded-full shadow-md",
+              item.type === 'trailer' ? "bg-[#107C10] text-white" : 
+              item.type === 'news' ? "bg-yellow-500 text-black" : 
+              "bg-blue-500 text-white"
+            )}>
+              {item.type === 'trailer' ? 'TRAILER' : 
+               item.type === 'news' ? 'NOVIDADE' : 'EVENTO'}
+            </Badge>
+          </motion.div>
         </div>
       </div>
       
       <div className="p-5">
-        <h3 className="font-bold text-lg mb-2 group-hover:text-[#107C10] transition-colors">
+        <motion.h3 
+          className="font-bold text-lg mb-2 transition-colors duration-150"
+          whileHover={{ 
+            color: "#107C10",
+            transition: { duration: 0.15 }
+          }}
+        >
           {item.title}
-        </h3>
+        </motion.h3>
         
         <p className="text-sm text-gray-400 mb-4 line-clamp-2">
           {item.description}
@@ -246,13 +345,19 @@ const NewsCard = ({ item, index }) => {
             {item.date}
           </div>
           
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="text-[#107C10] hover:text-white hover:bg-[#107C10] transition-colors"
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.15 }}
           >
-            {item.type === 'trailer' ? 'Assistir' : 'Ler mais'}
-          </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-[#107C10] hover:text-white hover:bg-[#107C10] transition-colors duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)]"
+            >
+              {item.type === 'trailer' ? 'Assistir' : 'Ler mais'}
+            </Button>
+          </motion.div>
         </div>
       </div>
     </motion.div>

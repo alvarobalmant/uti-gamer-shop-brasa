@@ -75,11 +75,6 @@ const SpecialSectionCarouselPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedProductId(null);
-  };
-
   if (loadingConfig) {
     return <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[50vh]"><Loader2 className="h-12 w-12 animate-spin text-gray-500" /></div>;
   }
@@ -127,7 +122,6 @@ const SpecialSectionCarouselPage: React.FC = () => {
           product={products.find(p => p.id === selectedProductId) || null}
           isOpen={isModalOpen}
           onOpenChange={setIsModalOpen}
-          onClose={handleCloseModal}
         />
       )}
     </div>
