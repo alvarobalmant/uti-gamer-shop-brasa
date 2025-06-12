@@ -30,17 +30,16 @@ export interface PageLayoutItem {
   id: string;
   page_id: string;
   section_key: string;
-<<<<<<< HEAD
-
-=======
->>>>>>> 2a7be71a14c09c0620955a61b86c872ec27417c8
   title?: string;
   display_order: number;
   is_visible: boolean;
   section_type: 'banner' | 'products' | 'featured' | 'custom';
-<<<<<<< HEAD
   sectionConfig?: any;
-=======
-  section_config?: any;
->>>>>>> 2a7be71a14c09c0620955a61b86c872ec27417c8
+  
+  // Helper properties for frontend (mapped from snake_case)
+  pageId?: string;
+  sectionKey?: string;
+  displayOrder?: number;
+  isVisible?: boolean;
+  sectionType?: 'banner' | 'products' | 'featured' | 'custom';
 }

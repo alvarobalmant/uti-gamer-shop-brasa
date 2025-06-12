@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { usePages, Page, PageLayoutItem } from '@/hooks/usePages';
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
@@ -9,7 +10,10 @@ import PlatformPageNotFound from './PlatformPage/PlatformPageNotFound';
 import PlatformPageContent from './PlatformPage/PlatformPageContent';
 
 // Base component for platform pages
-const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
+const PlatformPage: React.FC<{ slug?: string }> = ({ slug: propSlug }) => {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = propSlug || paramSlug || '';
+  
   const { products } = useProducts();
   const { addToCart } = useCart();
   const { getPageBySlug, fetchPageLayout, pageLayouts, loading: pageLoading } = usePages();
@@ -54,7 +58,7 @@ const PlatformPage: React.FC<{ slug: string }> = ({ slug }) => {
   useEffect(() => {
     if (page && pageLayouts[page.id]) {
       const sortedLayout = [...pageLayouts[page.id]].sort(
-        (a, b) => a.displayOrder - b.displayOrder
+        (a, b) => (a.display_order || a.displayOrder || 0) - (b.display_order || b.displayOrder || 0)
       );
       setLayout(sortedLayout);
     }

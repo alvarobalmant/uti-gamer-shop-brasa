@@ -11,7 +11,6 @@ export type SpecialSection = Database["public"]["Tables"]["special_sections"]["R
 // Base type for Special Section Element from the database
 export type SpecialSectionElement = Database["public"]["Tables"]["special_section_elements"]["Row"] & {
   content_ids?: string[];
-  background_type?: 'color' | 'image' | 'gradient' | 'transparent';
 };
 
 // Base type for Special Section Grid Layout from the database
@@ -30,10 +29,7 @@ export type SpecialSectionUpdateInput = Partial<SpecialSectionCreateInput>;
 export type SpecialSectionElementCreateInput = Omit<
   SpecialSectionElement,
   "id" | "created_at" | "updated_at"
-> & {
-  background_type?: 'color' | 'image' | 'gradient' | 'transparent';
-  content_ids?: string[];
-};
+>;
 
 // Input type for updating an existing Special Section Element
 export type SpecialSectionElementUpdateInput = Partial<SpecialSectionElementCreateInput>;

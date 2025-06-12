@@ -34,18 +34,14 @@ const CustomPlatformPage: React.FC<CustomPlatformPageProps> = ({
           const config = section.productConfig;
           let sectionProducts = [...products];
 
-          // Filtrar por tags
+            // Filtrar por tags
           if (config.filter.tagIds && config.filter.tagIds.length > 0) {
             sectionProducts = sectionProducts.filter(product =>
               product.tags?.some(tag => 
-                config.filter.tagIds!.some(filterTag => 
-                  tag.name.toLowerCase().includes(filterTag.toLowerCase())
-                )
+                config.filter.tagIds!.includes(tag.id)
               )
             );
-          }
-
-          // Filtrar por categorias
+          }          // Filtrar por categorias
           if (config.filter.categoryIds && config.filter.categoryIds.length > 0) {
             sectionProducts = sectionProducts.filter(product =>
               config.filter.categoryIds!.includes(product.categoryId)

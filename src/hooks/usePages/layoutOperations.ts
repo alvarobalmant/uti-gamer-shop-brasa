@@ -2,6 +2,37 @@
 import { PageLayoutItem } from './types';
 import { supabase } from '@/integrations/supabase/client';
 
+// Helper function to map database format to frontend format
+const mapDbToFrontend = (dbItem: any): PageLayoutItem => ({
+  id: dbItem.id,
+  page_id: dbItem.page_id,
+  section_key: dbItem.section_key,
+  title: dbItem.title,
+  display_order: dbItem.display_order,
+  is_visible: dbItem.is_visible,
+  section_type: dbItem.section_type,
+  sectionConfig: dbItem.section_config,
+  
+  // Helper properties for backwards compatibility
+  pageId: dbItem.page_id,
+  sectionKey: dbItem.section_key,
+  displayOrder: dbItem.display_order,
+  isVisible: dbItem.is_visible,
+  sectionType: dbItem.section_type,
+});
+
+// Helper function to map frontend format to database format
+const mapFrontendToDb = (frontendItem: Partial<PageLayoutItem>) => ({
+  id: frontendItem.id,
+  page_id: frontendItem.page_id || frontendItem.pageId,
+  section_key: frontendItem.section_key || frontendItem.sectionKey,
+  title: frontendItem.title,
+  display_order: frontendItem.display_order ?? frontendItem.displayOrder,
+  is_visible: frontendItem.is_visible ?? frontendItem.isVisible,
+  section_type: frontendItem.section_type || frontendItem.sectionType,
+  section_config: frontendItem.sectionConfig,
+});
+
 // Utility functions for page layout operations
 export const createLayoutOperations = (
   pageLayouts: Record<string, PageLayoutItem[]>,
@@ -11,46 +42,38 @@ export const createLayoutOperations = (
   // Carregar layout de uma página específica
   const fetchPageLayout = async (pageId: string) => {
     try {
-<<<<<<< HEAD
       console.log("Fetching layout for pageId:", pageId);
+      
+      // Validar se pageId é um UUID válido
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(pageId)) {
+        console.error("Invalid UUID format for pageId:", pageId);
+        setError(`ID da página inválido: ${pageId}`);
+        return [];
+      }
+
       const { data, error } = await supabase
         .from("page_layout_items")
         .select("*")
         .eq("page_id", pageId)
         .order("display_order", { ascending: true });
 
-      if (error) throw error;
-      console.log("Fetched data:", data);
+      if (error) {
+        console.error("Database error:", error);
+        throw error;
+      }
+      
+      console.log("Fetched raw data:", data);
 
-      setPageLayouts((prev) => ({ ...prev, [pageId]: data || [] }));
-=======
-      const { data, error } = await supabase
-        .from('page_layout_items')
-        .select('*')
-        .eq('page_id', pageId)
-        .eq('is_visible', true)
-        .order('display_order', { ascending: true });
+      const mappedData = (data || []).map(mapDbToFrontend);
+      console.log("Mapped data:", mappedData);
 
-      if (error) throw error;
-
-      const layout: PageLayoutItem[] = (data || []).map(section => ({
-        id: section.id,
-        page_id: section.page_id,
-        section_key: section.section_key,
-        title: section.title || '',
-        display_order: section.display_order,
-        is_visible: section.is_visible,
-        section_type: section.section_type as 'banner' | 'products' | 'featured' | 'custom',
-        section_config: section.section_config || {}
-      }));
-
-      setPageLayouts(prev => ({ ...prev, [pageId]: layout }));
->>>>>>> 2a7be71a14c09c0620955a61b86c872ec27417c8
+      setPageLayouts((prev) => ({ ...prev, [pageId]: mappedData }));
       setError(null);
-      return data || [];
-    } catch (err) {
-      setError(`Erro ao carregar layout da página ${pageId}`);
-      console.error(err);
+      return mappedData;
+    } catch (err: any) {
+      console.error("Error in fetchPageLayout:", err);
+      setError(`Erro ao carregar layout da página ${pageId}: ${err.message}`);
       return [];
     }
   };
@@ -58,61 +81,35 @@ export const createLayoutOperations = (
   // Atualizar layout de uma página
   const updatePageLayout = async (pageId: string, layoutItems: Partial<PageLayoutItem>[]) => {
     try {
-<<<<<<< HEAD
-      // Atualiza os itens existentes e insere novos
-      const updates = layoutItems.map(item => {
-        const { id, pageId, sectionKey, displayOrder, isVisible, sectionType, sectionConfig } = item;
-        return {
-          id,
-          page_id: pageId,
-          section_key: sectionKey,
-          display_order: displayOrder,
-          is_visible: isVisible,
-          section_type: sectionType,
-          section_config: sectionConfig,
-        };
-      });
+      console.log("Updating page layout for pageId:", pageId, "with items:", layoutItems);
+      
+      // Validar se pageId é um UUID válido
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(pageId)) {
+        console.error("Invalid UUID format for pageId:", pageId);
+        throw new Error(`ID da página inválido: ${pageId}`);
+      }
+      
+      const updates = layoutItems.map(item => mapFrontendToDb(item));
+      console.log("Mapped updates for database:", updates);
 
       const { error } = await supabase
         .from("page_layout_items")
         .upsert(updates, { onConflict: "id" });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Database error:", error);
+        throw error;
+      }
 
-      setPageLayouts(prev => ({ ...prev, [pageId]: layoutItems as PageLayoutItem[] }));
-      return layoutItems;
-=======
-      // Update each section
-      const updatePromises = layoutItems.map(async (item) => {
-        if (!item.id) return null;
-
-        const { data, error } = await supabase
-          .from('page_layout_items')
-          .update({
-            title: item.title,
-            display_order: item.display_order,
-            is_visible: item.is_visible,
-            section_type: item.section_type,
-            section_config: item.section_config
-          })
-          .eq('id', item.id)
-          .eq('page_id', pageId)
-          .select()
-          .single();
-
-        if (error) throw error;
-        return data;
-      });
-
-      await Promise.all(updatePromises);
-      
-      // Refresh the layout
-      const updatedLayout = await fetchPageLayout(pageId);
-      return updatedLayout;
->>>>>>> 2a7be71a14c09c0620955a61b86c872ec27417c8
-    } catch (err) {
-      setError(`Erro ao atualizar layout da página ${pageId}`);
-      console.error(err);
+      // Update local state with properly mapped items
+      const mappedItems = layoutItems.map(item => mapDbToFrontend(mapFrontendToDb(item)));
+      setPageLayouts(prev => ({ ...prev, [pageId]: mappedItems as PageLayoutItem[] }));
+      console.log("Successfully updated page layout");
+      return mappedItems;
+    } catch (err: any) {
+      console.error("Error in updatePageLayout:", err);
+      setError(`Erro ao atualizar layout da página ${pageId}: ${err.message}`);
       throw err;
     }
   };
@@ -120,76 +117,55 @@ export const createLayoutOperations = (
   // Adicionar uma nova seção ao layout
   const addPageSection = async (pageId: string, section: Omit<PageLayoutItem, 'id'>) => {
     try {
-<<<<<<< HEAD
-      const newId = `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const newSection: PageLayoutItem = {
-        ...section,
-        id: newId,
+      console.log("Adding new section to pageId:", pageId, "section:", section);
+      
+      // Validar se pageId é um UUID válido
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(pageId)) {
+        console.error("Invalid UUID format for pageId:", pageId);
+        throw new Error(`ID da página inválido: ${pageId}`);
+      }
+      
+      // Convert frontend format to database format
+      const dbSection = {
         page_id: pageId,
-        section_key: section.sectionKey,
-        display_order: section.displayOrder,
-        is_visible: section.isVisible,
-        section_type: section.sectionType,
-        section_config: section.sectionConfig,
+        section_key: section.section_key || section.sectionKey || `section-${Date.now()}`,
+        title: section.title,
+        display_order: section.display_order ?? section.displayOrder ?? 0,
+        is_visible: section.is_visible ?? section.isVisible ?? true,
+        section_type: section.section_type || section.sectionType || 'products',
+        section_config: section.sectionConfig || {},
       };
 
-      console.log("Attempting to add new section:", newSection);
+      console.log("Mapped section for database insert:", dbSection);
+
       const { data, error } = await supabase
         .from("page_layout_items")
-        .insert(newSection)
-        .select();
-
-      console.log("Supabase insert data:", data);
-      console.log("Supabase insert error:", error);
-
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        setPageLayouts((prev) => ({
-          ...prev,
-          [pageId]: [...(prev[pageId] || []), data[0]],
-        }));
-        return data[0];
-      } else {
-        throw new Error("Erro ao adicionar seção: Nenhum dado retornado após a inserção.");
-      }
-=======
-      const { data, error } = await supabase
-        .from('page_layout_items')
-        .insert([{
-          page_id: pageId,
-          section_type: section.section_type,
-          section_key: section.section_key,
-          title: section.title,
-          display_order: section.display_order,
-          is_visible: section.is_visible,
-          section_config: section.section_config
-        }])
+        .insert(dbSection)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Database insert error:", error);
+        throw error;
+      }
 
-      const newSection: PageLayoutItem = {
-        id: data.id,
-        page_id: data.page_id,
-        section_key: data.section_key,
-        title: data.title || '',
-        display_order: data.display_order,
-        is_visible: data.is_visible,
-        section_type: data.section_type as 'banner' | 'products' | 'featured' | 'custom',
-        section_config: data.section_config || {}
-      };
+      if (!data) {
+        throw new Error("Nenhum dado retornado após inserção");
+      }
+
+      console.log("Successfully inserted section:", data);
       
-      const currentLayout = pageLayouts[pageId] || [];
-      const updatedLayout = [...currentLayout, newSection];
-      setPageLayouts(prev => ({ ...prev, [pageId]: updatedLayout }));
+      const mappedSection = mapDbToFrontend(data);
+      setPageLayouts((prev) => ({
+        ...prev,
+        [pageId]: [...(prev[pageId] || []), mappedSection],
+      }));
       
-      return newSection;
->>>>>>> 2a7be71a14c09c0620955a61b86c872ec27417c8
-    } catch (err) {
-      setError(`Erro ao adicionar seção à página ${pageId}`);
-      console.error(err);
+      return mappedSection;
+    } catch (err: any) {
+      console.error("Error in addPageSection:", err);
+      setError(`Erro ao adicionar seção à página ${pageId}: ${err.message}`);
       throw err;
     }
   };
@@ -197,36 +173,40 @@ export const createLayoutOperations = (
   // Remover uma seção do layout
   const removePageSection = async (pageId: string, sectionId: string) => {
     try {
+      console.log("Removing section:", sectionId, "from pageId:", pageId);
+      
+      // Validar se ambos IDs são UUIDs válidos
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(pageId)) {
+        console.error("Invalid UUID format for pageId:", pageId);
+        throw new Error(`ID da página inválido: ${pageId}`);
+      }
+      if (!uuidRegex.test(sectionId)) {
+        console.error("Invalid UUID format for sectionId:", sectionId);
+        throw new Error(`ID da seção inválido: ${sectionId}`);
+      }
+      
       const { error } = await supabase
-<<<<<<< HEAD
         .from("page_layout_items")
         .delete()
         .eq("id", sectionId)
         .eq("page_id", pageId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Database delete error:", error);
+        throw error;
+      }
 
       setPageLayouts((prev) => ({
         ...prev,
         [pageId]: prev[pageId]?.filter((item) => item.id !== sectionId) || [],
       }));
-=======
-        .from('page_layout_items')
-        .delete()
-        .eq('id', sectionId)
-        .eq('page_id', pageId);
-
-      if (error) throw error;
       
-      const currentLayout = pageLayouts[pageId] || [];
-      const updatedLayout = currentLayout.filter(item => item.id !== sectionId);
-      setPageLayouts(prev => ({ ...prev, [pageId]: updatedLayout }));
-      
->>>>>>> 2a7be71a14c09c0620955a61b86c872ec27417c8
+      console.log("Successfully removed section");
       return true;
-    } catch (err) {
-      setError(`Erro ao remover seção ${sectionId} da página ${pageId}`);
-      console.error(err);
+    } catch (err: any) {
+      console.error("Error in removePageSection:", err);
+      setError(`Erro ao remover seção ${sectionId} da página ${pageId}: ${err.message}`);
       throw err;
     }
   };

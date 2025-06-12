@@ -1,3 +1,5 @@
+
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,11 +22,20 @@ import PCGamingPage from "./pages/platforms/PCGamingPage";
 import RetroGamingPage from "./pages/platforms/RetroGamingPage";
 import AreaGeekPage from "./pages/platforms/AreaGeekPage";
 
+// Importações para as versões incrementais da página Xbox
+import XboxPage3 from "./pages/platforms/XboxPage3";
+import XboxPage4 from "./pages/platforms/XboxPage4";
+import XboxPage5 from "./pages/platforms/XboxPage5";
+import XboxPage6 from "./pages/platforms/XboxPage6";
+
 // Import the main Admin Panel component which now includes all tabs
 import { AdminPanel } from "@/components/Admin/AdminPanel"; 
 
 // Import the new dynamic carousel page
 import SpecialSectionCarouselPage from "./pages/SpecialSectionCarouselPage";
+
+// Import the dynamic platform page component
+import PlatformPage from "./components/PlatformPage";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +72,10 @@ const App = () => (
                 
                 {/* Novas rotas para páginas de plataforma específicas */}
                 <Route path="/xbox" element={<XboxPage />} />
+                <Route path="/xbox3" element={<XboxPage3 />} />
+                <Route path="/xbox4" element={<XboxPage4 />} />
+                <Route path="/xbox5" element={<XboxPage5 />} />
+                <Route path="/xbox6" element={<XboxPage6 />} />
                 <Route path="/playstation" element={<PlayStationPage />} />
                 <Route path="/nintendo" element={<NintendoPage />} />
                 <Route path="/pc-gaming" element={<PCGamingPage />} />
@@ -85,6 +100,12 @@ const App = () => (
                   }
                 />
 
+                {/* Dynamic Page Route - This will catch any slug that matches a dynamic page */}
+                <Route 
+                  path="/:slug" 
+                  element={<PlatformPage slug={window.location.pathname.substring(1)} />} 
+                />
+
                 {/* Catch-all Not Found Route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -97,5 +118,3 @@ const App = () => (
 );
 
 export default App;
-
-
