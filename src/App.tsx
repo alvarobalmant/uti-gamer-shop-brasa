@@ -51,68 +51,72 @@ const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/" replace />;
   }
 
-  // Render the children (AdminPanel in this case) if authenticated and admin
   return <>{children}</>; 
 };
+
+// App Content that uses CartProvider - this ensures AuthProvider is available
+const AppContent = () => (
+  <CartProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <ScrollRestorationProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/busca" element={<SearchResults />} />
+            <Route path="/categoria/:category" element={<CategoryPage />} />
+            
+            {/* Novas rotas para páginas de plataforma específicas */}
+            <Route path="/xbox" element={<XboxPage />} />
+            <Route path="/xbox3" element={<XboxPage3 />} />
+            <Route path="/xbox4" element={<XboxPage4 />} />
+            <Route path="/xbox5" element={<XboxPage5 />} />
+            <Route path="/xbox6" element={<XboxPage6 />} />
+            <Route path="/playstation" element={<PlayStationPage />} />
+            <Route path="/nintendo" element={<NintendoPage />} />
+            <Route path="/pc-gaming" element={<PCGamingPage />} />
+            <Route path="/retro-gaming" element={<RetroGamingPage />} />
+            <Route path="/area-geek" element={<AreaGeekPage />} />
+            
+            <Route path="/uti-pro" element={<UTIPro />} />
+
+            {/* Dynamic Carousel Page Route */}
+            <Route 
+              path="/secao-especial/:sectionId/carrossel/:carouselIndex" 
+              element={<SpecialSectionCarouselPage />} 
+            />
+
+            {/* Admin Route - Protected */}
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedAdminRoute>
+                  <AdminPanel /> 
+                </ProtectedAdminRoute>
+              }
+            />
+
+            {/* Dynamic Page Route - This will catch any slug that matches a dynamic page */}
+            <Route 
+              path="/:slug" 
+              element={<PlatformPage />} 
+            />
+
+            {/* Catch-all Not Found Route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ScrollRestorationProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </CartProvider>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollRestorationProvider>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Index />} />
-                <Route path="/busca" element={<SearchResults />} />
-                <Route path="/categoria/:category" element={<CategoryPage />} />
-                
-                {/* Novas rotas para páginas de plataforma específicas */}
-                <Route path="/xbox" element={<XboxPage />} />
-                <Route path="/xbox3" element={<XboxPage3 />} />
-                <Route path="/xbox4" element={<XboxPage4 />} />
-                <Route path="/xbox5" element={<XboxPage5 />} />
-                <Route path="/xbox6" element={<XboxPage6 />} />
-                <Route path="/playstation" element={<PlayStationPage />} />
-                <Route path="/nintendo" element={<NintendoPage />} />
-                <Route path="/pc-gaming" element={<PCGamingPage />} />
-                <Route path="/retro-gaming" element={<RetroGamingPage />} />
-                <Route path="/area-geek" element={<AreaGeekPage />} />
-                
-                <Route path="/uti-pro" element={<UTIPro />} />
-
-                {/* Dynamic Carousel Page Route */}
-                <Route 
-                  path="/secao-especial/:sectionId/carrossel/:carouselIndex" 
-                  element={<SpecialSectionCarouselPage />} 
-                />
-
-                {/* Admin Route - Protected */}
-                <Route 
-                  path="/admin" 
-                  element={
-                    <ProtectedAdminRoute>
-                      <AdminPanel /> 
-                    </ProtectedAdminRoute>
-                  }
-                />
-
-                {/* Dynamic Page Route - This will catch any slug that matches a dynamic page */}
-                <Route 
-                  path="/:slug" 
-                  element={<PlatformPage slug={window.location.pathname.substring(1)} />} 
-                />
-
-                {/* Catch-all Not Found Route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </ScrollRestorationProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </CartProvider>
+      <AppContent />
     </AuthProvider>
   </QueryClientProvider>
 );
