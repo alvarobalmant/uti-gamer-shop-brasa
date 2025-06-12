@@ -24,6 +24,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
   onAddToCart,
   onProductCardClick
 }) => {
+<<<<<<< HEAD
   // Convert Supabase data to PlatformTheme format
   const convertToPlatformTheme = (pageTheme: any): PlatformTheme => {
     return {
@@ -104,6 +105,8 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     return [];
   };
 
+=======
+>>>>>>> 9c7e4654651ff7d7c107d8331a3addc477ed799b
   // Filter products based on section configuration
   const getFilteredProducts = (sectionConfig: any) => {
     if (!sectionConfig || !sectionConfig.filter) return products;
@@ -129,6 +132,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     return filtered;
   };
 
+<<<<<<< HEAD
   // Apply page theme to CSS variables
   useEffect(() => {
     const theme = convertToPlatformTheme(page?.theme);
@@ -154,15 +158,22 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     };
   }, [page?.theme]);
 
+=======
+>>>>>>> 9c7e4654651ff7d7c107d8331a3addc477ed799b
   // Use both naming conventions for compatibility
   const isVisible = section.is_visible ?? section.isVisible ?? true;
   const sectionType = section.section_type || section.sectionType || 'products';
   const sectionConfig = section.sectionConfig || {};
+<<<<<<< HEAD
   const sectionTitle = section.title || '';
 
   if (!isVisible) return null;
 
   const theme = convertToPlatformTheme(page?.theme);
+=======
+
+  if (!isVisible) return null;
+>>>>>>> 9c7e4654651ff7d7c107d8331a3addc477ed799b
   
   switch (sectionType) {
     case 'banner':
@@ -170,22 +181,39 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
       return (
         <PlatformBanner
           key={section.id}
+<<<<<<< HEAD
           config={bannerConfig}
           theme={theme}
+=======
+          title={sectionConfig?.title || section.title || ''}
+          subtitle={sectionConfig?.subtitle || ''}
+          imageUrl={sectionConfig?.imageUrl || '/banners/default-banner.jpg'}
+          ctaText={sectionConfig?.ctaText}
+          ctaLink={sectionConfig?.ctaLink}
+          theme={page?.theme}
+>>>>>>> 9c7e4654651ff7d7c107d8331a3addc477ed799b
         />
       );
     
     case 'products':
     case 'featured':
+<<<<<<< HEAD
       const productConfig = convertToProductConfig(sectionConfig, sectionTitle);
       const sectionProducts = getFilteredProducts(sectionConfig);
       
+=======
+      const sectionProducts = getFilteredProducts(sectionConfig);
+>>>>>>> 9c7e4654651ff7d7c107d8331a3addc477ed799b
       return (
         <PlatformProductSection
           key={section.id}
           config={productConfig}
           theme={theme}
           products={sectionProducts}
+<<<<<<< HEAD
+=======
+          loading={false}
+>>>>>>> 9c7e4654651ff7d7c107d8331a3addc477ed799b
           onAddToCart={onAddToCart}
           onProductClick={onProductCardClick}
         />
@@ -231,6 +259,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     
     case 'custom':
       return (
+<<<<<<< HEAD
         <div 
           key={section.id} 
           className="py-8 container mx-auto"
@@ -240,6 +269,10 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
           }}
         >
           <h2 className="text-2xl font-bold mb-4">{sectionTitle}</h2>
+=======
+        <div key={section.id} className="py-8 container mx-auto">
+          <h2 className="text-2xl font-bold mb-4">{section.title}</h2>
+>>>>>>> 9c7e4654651ff7d7c107d8331a3addc477ed799b
           <div dangerouslySetInnerHTML={{ __html: sectionConfig?.content || '' }} />
         </div>
       );
