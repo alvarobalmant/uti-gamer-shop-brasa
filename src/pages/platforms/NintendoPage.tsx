@@ -1,8 +1,36 @@
 import React from 'react';
-import PlatformPage from '@/components/PlatformPage';
+import { useProducts } from '@/hooks/useProducts';
+import { useCart } from '@/contexts/CartContext';
+import CustomPlatformPage from '@/components/Platform/CustomPlatformPage';
+import { customPlatformPages } from '@/data/customPlatformPages';
+import PlatformPageNotFound from '@/components/PlatformPage/PlatformPageNotFound';
 
 const NintendoPage: React.FC = () => {
-  return <PlatformPage slug="nintendo" />;
+  const { products } = useProducts();
+  const { addToCart } = useCart();
+
+  const pageData = customPlatformPages.find(page => page.slug === 'nintendo');
+
+  if (!pageData) {
+    return <PlatformPageNotFound />;
+  }
+
+  const handleAddToCart = (product: any) => {
+    addToCart(product);
+  };
+
+  const handleProductCardClick = (productId: string) => {
+    console.log(`Product ${productId} clicked`);
+  };
+
+  return (
+    <CustomPlatformPage
+      pageData={pageData}
+      products={products}
+      onAddToCart={handleAddToCart}
+      onProductClick={handleProductCardClick}
+    />
+  );
 };
 
 export default NintendoPage;

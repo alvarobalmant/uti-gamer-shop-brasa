@@ -34,6 +34,11 @@ const SearchResults = () => {
     setIsModalOpen(true);
   };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedProductId(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header fixo */}
@@ -111,6 +116,7 @@ const SearchResults = () => {
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
+        onClose={handleCloseModal}
       />
     </div>
   );

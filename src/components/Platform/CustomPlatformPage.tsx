@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { PlatformPage, PlatformSection } from '@/types/platformPages';
 import { Product } from '@/hooks/useProducts';
@@ -34,33 +35,43 @@ const CustomPlatformPage: React.FC<CustomPlatformPageProps> = ({
           const config = section.productConfig;
           let sectionProducts = [...products];
 
-            // Filtrar por tags
+          // Filtrar por tags
           if (config.filter.tagIds && config.filter.tagIds.length > 0) {
             sectionProducts = sectionProducts.filter(product =>
               product.tags?.some(tag => 
-                config.filter.tagIds!.includes(tag.id)
+                config.filter.tagIds!.some(filterTag => 
+                  tag.name.toLowerCase().includes(filterTag.toLowerCase())
+                )
               )
             );
-          }          // Filtrar por categorias
+          }
+
+          // Filtrar por categorias - use category_id from Product type
           if (config.filter.categoryIds && config.filter.categoryIds.length > 0) {
             sectionProducts = sectionProducts.filter(product =>
-              config.filter.categoryIds!.includes(product.categoryId)
+              config.filter.categoryIds!.includes(product.category_id)
             );
           }
 
-          // Filtrar produtos em destaque
+          // Filtrar produtos em destaque - check if product has featured tag
           if (config.filter.featured) {
-            sectionProducts = sectionProducts.filter(product => product.isFeatured);
+            sectionProducts = sectionProducts.filter(product => 
+              product.tags?.some(tag => tag.name.toLowerCase().includes('destaque'))
+            );
           }
 
-          // Filtrar novos lançamentos
+          // Filtrar novos lançamentos - check if product has new tag
           if (config.filter.newReleases) {
-            sectionProducts = sectionProducts.filter(product => product.isNew);
+            sectionProducts = sectionProducts.filter(product => 
+              product.tags?.some(tag => tag.name.toLowerCase().includes('novo'))
+            );
           }
 
-          // Filtrar produtos em oferta
+          // Filtrar produtos em oferta - check if product has sale tag
           if (config.filter.onSale) {
-            sectionProducts = sectionProducts.filter(product => product.isOnSale);
+            sectionProducts = sectionProducts.filter(product => 
+              product.tags?.some(tag => tag.name.toLowerCase().includes('oferta'))
+            );
           }
 
           // Limitar quantidade
@@ -241,4 +252,3 @@ const CustomPlatformPage: React.FC<CustomPlatformPageProps> = ({
 };
 
 export default CustomPlatformPage;
-

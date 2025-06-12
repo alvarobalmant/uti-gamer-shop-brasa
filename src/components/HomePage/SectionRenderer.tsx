@@ -1,117 +1,113 @@
 
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
-import { ProductSection } from '@/hooks/useProductSections';
-import HeroBannerCarousel from '@/components/HeroBannerCarousel';
-import HeroQuickLinks from '@/components/HeroQuickLinks';
-import PromotionalBanner from '@/components/PromotionalBanner';
-import SpecializedServices from '@/components/ServiceCards/SpecializedServices';
-import WhyChooseUs from '@/components/ServiceCards/WhyChooseUs';
-import ContactHelp from '@/components/ServiceCards/ContactHelp';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
+import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
+import { SpecialSection } from '@/types/specialSections';
 
 interface SectionRendererProps {
   sectionKey: string;
-  bannerData: {
-    imageUrl: string;
-    title: string;
-    description: string;
-    buttonText: string;
-    buttonLink: string;
-    targetBlank: boolean;
-  };
-  products: Product[];
-  sections: ProductSection[];
-  productsLoading: boolean;
-  sectionsLoading: boolean;
-  onAddToCart: (product: any, size?: string, color?: string) => void;
+  products?: Product[];
+  specialSection?: SpecialSection;
+  loading?: boolean;
+  onAddToCart: (product: Product) => void;
+  onProductCardClick: (productId: string) => void;
+  sectionConfig?: any;
 }
 
 const SectionRenderer: React.FC<SectionRendererProps> = ({
   sectionKey,
-  bannerData,
-  products,
-  sections,
-  productsLoading,
-  sectionsLoading,
-  onAddToCart
+  products = [],
+  specialSection,
+  loading = false,
+  onAddToCart,
+  onProductCardClick,
+  sectionConfig
 }) => {
-  const renderSection = () => {
-    switch (sectionKey) {
-      case 'hero_banner':
-        return <HeroBannerCarousel key="hero_banner" />;
-      
-      case 'hero_quick_links':
-        return <HeroQuickLinks key="hero_quick_links" />;
+  console.log(`[SectionRenderer] Rendering section: ${sectionKey}`, {
+    productsCount: products.length,
+    hasSpecialSection: !!specialSection,
+    loading,
+    sectionConfig
+  });
 
-      case 'promo_banner':
-        return (
-          <div key="promo_banner" className="container mx-auto px-4 sm:px-6 lg:px-8 my-8 md:my-12">
-            <PromotionalBanner {...bannerData} />
-          </div>
-        );
-      
-      case 'specialized_services':
-        return <SpecializedServices key="specialized_services" />;
-      case 'why_choose_us':
-        return <WhyChooseUs key="why_choose_us" />;
-      case 'contact_help':
-        return <ContactHelp key="contact_help" />;
-      
-      default:
-        // Handle product sections
-        if (sectionKey.startsWith('product_section_')) {
-          const sectionId = sectionKey.replace('product_section_', '');
-          const section = sections.find(s => s.id === sectionId);
-          
-          if (!section) return null;
-          
-          // --- BUG FIX: Deduplicate products --- 
-          const productMap = new Map<string, Product>(); // Use a Map to store unique products by ID
-          
-          if (section.items) {
-            for (const item of section.items) {
-              if (item.item_type === 'product') {
-                // Find specific product by ID
-                const product = products.find(p => p.id === item.item_id);
-                if (product && !productMap.has(product.id)) { // Check if not already added
-                  productMap.set(product.id, product);
-                }
-              } else if (item.item_type === 'tag') {
-                // Find products with this tag
-                const tagProducts = products.filter(p => 
-                  p.tags?.some(tag => tag.name.toLowerCase() === item.item_id.toLowerCase() || tag.id === item.item_id)
-                );
-                // Add tag products to the map, overwriting duplicates (which is fine)
-                tagProducts.forEach(product => {
-                  if (!productMap.has(product.id)) { // Check if not already added
-                     productMap.set(product.id, product);
-                  }
-                });
-              }
-            }
-          }
-          
-          const uniqueSectionProducts = Array.from(productMap.values()); // Get unique products from the map
-          // --- END BUG FIX ---
-          
-          return (
-            <FeaturedProductsSection
-              key={sectionKey}
-              products={uniqueSectionProducts} // Pass unique products
-              loading={productsLoading || sectionsLoading}
-              onAddToCart={onAddToCart}
-              title={section.title}
-              viewAllLink={section.view_all_link || undefined}
-            />
-          );
-        }
-        
-        return null;
-    }
-  };
+  // Handle special sections
+  if (specialSection) {
+    return (
+      <SpecialSectionRenderer 
+        section={specialSection} 
+        onProductCardClick={onProductCardClick}
+      />
+    );
+  }
 
-  return renderSection();
+  // Handle product sections based on section key
+  switch (sectionKey) {
+    case 'featured_products':
+      return (
+        <FeaturedProductsSection
+          key={sectionKey}
+          products={products}
+          loading={loading}
+          onAddToCart={onAddToCart}
+          title="Produtos em Destaque"
+          onCardClick={onProductCardClick}
+        />
+      );
+
+    case 'console_deals':
+      return (
+        <FeaturedProductsSection
+          key={sectionKey}
+          products={products}
+          loading={loading}
+          onAddToCart={onAddToCart}
+          title="Ofertas em Consoles"
+          onCardClick={onProductCardClick}
+        />
+      );
+
+    case 'game_deals':
+      return (
+        <FeaturedProductsSection
+          key={sectionKey}
+          products={products}
+          loading={loading}
+          onAddToCart={onAddToCart}
+          title="Jogos em Promoção"
+          onCardClick={onProductCardClick}
+        />
+      );
+
+    case 'accessories':
+      return (
+        <FeaturedProductsSection
+          key={sectionKey}
+          products={products}
+          loading={loading}
+          onAddToCart={onAddToCart}
+          title="Acessórios"
+          onCardClick={onProductCardClick}
+        />
+      );
+
+    default:
+      // Use config-based rendering for custom sections
+      const title = sectionConfig?.title || 'Produtos';
+      const subtitle = sectionConfig?.subtitle;
+      
+      return (
+        <FeaturedProductsSection
+          key={sectionKey}
+          products={products}
+          loading={loading}
+          onAddToCart={onAddToCart}
+          title={title}
+          subtitle={subtitle}
+          onCardClick={onProductCardClick}
+        />
+      );
+  }
 };
 
 export default SectionRenderer;

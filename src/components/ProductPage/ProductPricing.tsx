@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useSubscriptions } from '@/hooks/useSubscriptions'; // Assuming hook for Pro status
@@ -21,16 +22,17 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
   const { hasActiveSubscription } = useSubscriptions();
   const isProMember = hasActiveSubscription();
 
-  // --- Price Calculation --- 
-  // Use actual prices if available, otherwise calculate based on base price
-  // Example: Assume product.price is pre-owned, product.new_price, product.digital_price exist
+  // --- Price Calculation with proper null/undefined handling --- 
+  const basePrice = product.price || 0;
+  
   const prices = {
-    'pre-owned': product.price,
-    'new': product.new_price || product.price * 1.1, // Example fallback
-    'digital': product.digital_price || product.price * 1.05, // Example fallback
+    'pre-owned': basePrice,
+    'new': product.new_price || basePrice * 1.1,
+    'digital': product.digital_price || basePrice * 1.05,
   };
-  const currentPrice = prices[selectedCondition];
-  const listPrice = product.list_price; // Use if available
+  
+  const currentPrice = prices[selectedCondition] || basePrice;
+  const listPrice = product.list_price || null;
 
   // Calculate Pro price (example: 10% discount on current condition price)
   const proDiscount = 0.10;
@@ -41,15 +43,27 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
   const availableConditions = [
     { key: 'pre-owned', label: 'Usado', price: prices['pre-owned'] },
     // Only show 'new' if new_price exists or product tag indicates 'novo'
-    (prices['new'] && product.tags?.some(t => t.name.toLowerCase() === 'novo')) && 
+    (product.new_price && product.tags?.some(t => t.name.toLowerCase() === 'novo')) && 
       { key: 'new', label: 'Novo', price: prices['new'] },
     // Only show 'digital' if digital_price exists or product tag indicates 'digital'
-    (prices['digital'] && product.tags?.some(t => t.name.toLowerCase() === 'digital')) && 
+    (product.digital_price && product.tags?.some(t => t.name.toLowerCase() === 'digital')) && 
       { key: 'digital', label: 'Digital', price: prices['digital'] },
   ].filter(Boolean) as { key: 'new' | 'pre-owned' | 'digital'; label: string; price: number }[];
 
   // Sort conditions by price (optional, but logical)
   availableConditions.sort((a, b) => a.price - b.price);
+
+  // Safety check to ensure we have valid prices
+  if (!currentPrice || isNaN(currentPrice)) {
+    console.warn('Invalid price detected in ProductPricing:', { product, currentPrice, selectedCondition });
+    return (
+      <div className="space-y-4">
+        <div className="text-muted-foreground">
+          Preço não disponível
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -106,4 +120,3 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
 };
 
 export default ProductPricing;
-
