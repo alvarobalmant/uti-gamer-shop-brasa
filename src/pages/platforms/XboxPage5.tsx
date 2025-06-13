@@ -53,7 +53,7 @@ const XboxPage5 = () => {
       ).slice(0, 6);
 
       const deals = xboxProducts.filter(product => 
-        product.isOnSale || product.isFeatured
+        product.is_featured
       ).slice(0, 6);
 
       setFilteredProducts({
@@ -183,7 +183,7 @@ const XboxPage5 = () => {
                   />
                 </div>
                 
-                {product.isFeatured && (
+                {product.is_featured && (
                   <Badge className="absolute top-4 left-4 bg-yellow-400 text-black font-bold text-sm px-3 py-1 rounded-full shadow-md">
                     DESTAQUE
                   </Badge>
@@ -397,7 +397,7 @@ const XboxPage5 = () => {
                   />
                 </div>
                 
-                {product.isFeatured && (
+                {product.is_featured && (
                   <Badge className="absolute top-4 left-4 bg-yellow-400 text-black font-bold text-sm px-3 py-1 rounded-full shadow-md">
                     OFERTA
                   </Badge>
@@ -625,5 +625,3 @@ const XboxPage5 = () => {
 };
 
 export default XboxPage5;
-
-

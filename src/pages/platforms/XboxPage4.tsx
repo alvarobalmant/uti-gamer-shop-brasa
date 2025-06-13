@@ -485,7 +485,17 @@ const XboxPage4 = () => {
   const handleProductClick = (productId) => {
     navigate(`/produto/${productId}`);
   };
-  
+
+  const handleCartOpen = () => {
+    // Handle cart open logic
+    console.log('Cart opened');
+  };
+
+  const handleAuthOpen = () => {
+    // Handle auth open logic
+    console.log('Auth opened');
+  };
+
   // Mostrar loader apenas por um curto período inicial
   if (loading) {
     return (
@@ -502,7 +512,7 @@ const XboxPage4 = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <ProfessionalHeader />
+      <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
       
       {/* Hero Banner */}
       <section 
