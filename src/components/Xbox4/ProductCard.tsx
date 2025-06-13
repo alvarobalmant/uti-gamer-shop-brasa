@@ -1,11 +1,13 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Heart, Tag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Product } from '@/hooks/useProducts';
+import ProductCardImage from './ProductCardImage';
+import ProductCardBadges from './ProductCardBadges';
+import ProductCardInfo from './ProductCardInfo';
+import ProductCardPrice from './ProductCardPrice';
+import ProductCardActions from './ProductCardActions';
 
 interface ProductCardProps {
   product: Product;
@@ -17,12 +19,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default", index = 0 }: ProductCardProps) => {
   const isGame = variant === "game";
-  const isAccessory = variant === "accessory";
   const isDeal = variant === "deal";
-  
-  // Calculate discount if there's a list_price
-  const hasDiscount = product.list_price && product.list_price > product.price;
-  const discountPercent = hasDiscount ? Math.round(((product.list_price! - product.price) / product.list_price!) * 100) : 0;
   
   return (
     <motion.div
@@ -55,149 +52,21 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
         perspective: "1000px"
       }}
     >
-      <div className={cn(
-        "overflow-hidden",
-        isGame ? "h-full" : "aspect-square"
-      )}>
-        <motion.img 
-          src={product.image || 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&h=600&fit=crop&crop=center'} 
-          alt={product.name}
-          className="w-full h-full object-cover"
-          whileHover={{ 
-            scale: 1.08,
-            transition: { duration: 0.2, ease: "easeOut" }
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-      </div>
-      
-      {/* Badges */}
-      <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
-        {product.is_featured && (
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.15 }}
-          >
-            <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg">
-              DESTAQUE
-            </Badge>
-          </motion.div>
-        )}
-        {product.badge_visible && product.badge_text && (
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.15 }}
-          >
-            <Badge className="bg-red-500 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">
-              {product.badge_text}
-            </Badge>
-          </motion.div>
-        )}
-        {isDeal && hasDiscount && (
-          <motion.div
-            initial={{ scale: 1 }}
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            whileHover={{ scale: 1.1 }}
-            className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1"
-          >
-            <Tag size={12} />
-            {discountPercent}% OFF
-          </motion.div>
-        )}
-      </div>
+      <ProductCardImage product={product} variant={variant} />
+      <ProductCardBadges product={product} variant={variant} />
       
       <div className={cn(
         "absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent",
         isGame ? "pb-3 pt-16" : "p-6"
       )}>
-        <motion.h3 
-          className={cn(
-            "font-bold mb-2 text-white line-clamp-2 transition-colors duration-150",
-            isGame ? "text-sm" : "text-lg"
-          )}
-          whileHover={{ 
-            color: "#107C10",
-            transition: { duration: 0.15 }
-          }}
-        >
-          {product.name}
-        </motion.h3>
-        
-        <div className={cn(
-          "flex items-center justify-between mb-3",
-          isGame ? "mb-2" : "mb-4"
-        )}>
-          <motion.div 
-            className="text-xl font-black text-[#107C10]"
-            whileHover={{ 
-              scale: 1.05,
-              textShadow: "0 0 8px rgba(16, 124, 16, 0.8)",
-              transition: { duration: 0.15 }
-            }}
-          >
-            R$ {product.price?.toFixed(2)}
-          </motion.div>
-          {product.list_price && product.list_price > product.price && (
-            <div className="text-sm text-gray-400 line-through">
-              R$ {product.list_price.toFixed(2)}
-            </div>
-          )}
-        </div>
-        
-        <div className={cn(
-          "flex gap-2",
-          isGame ? "justify-center" : "justify-between"
-        )}>
-          {isGame ? (
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.15 }}
-              className="w-full"
-            >
-              <Button 
-                size="sm"
-                className="w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-150 shadow-lg hover:shadow-[0_0_20px_rgba(16,124,16,0.6)]"
-                onClick={() => onAddToCart(product)}
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                ADICIONAR
-              </Button>
-            </motion.div>
-          ) : (
-            <>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.15 }}
-                className="flex-1"
-              >
-                <Button 
-                  className="w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-150 shadow-lg hover:shadow-[0_0_20px_rgba(16,124,16,0.6)]"
-                  onClick={() => onAddToCart(product)}
-                >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  COMPRAR
-                </Button>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-              >
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white transition-all duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)]"
-                  onClick={() => onProductClick(product.id)}
-                >
-                  <Heart className="w-4 h-4" />
-                </Button>
-              </motion.div>
-            </>
-          )}
-        </div>
+        <ProductCardInfo product={product} variant={variant} />
+        <ProductCardPrice product={product} variant={variant} />
+        <ProductCardActions 
+          product={product} 
+          onAddToCart={onAddToCart}
+          onProductClick={onProductClick}
+          variant={variant}
+        />
       </div>
     </motion.div>
   );
