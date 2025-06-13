@@ -20,7 +20,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import Footer from '@/components/Footer';
 import { cn } from '@/lib/utils';
 
 // Componente de partículas hexagonais para o hero banner
@@ -61,39 +60,34 @@ const HexagonParticles = () => {
   );
 };
 
-// Componente de card de produto otimizado para mobile
-const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default", index = 0 }) => {
+// Componente de card de produto com microinterações avançadas
+const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default" }) => {
   const isGame = variant === "game";
   const isAccessory = variant === "accessory";
   const isDeal = variant === "deal";
   
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20, scale: 0.98 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      transition={{ 
-        duration: 0.4, 
-        delay: index * 0.05, 
-        ease: "easeOut" 
-      }}
       whileHover={{ 
-        scale: 1.02,
-        boxShadow: "0 8px 25px -8px rgba(16, 124, 16, 0.3)",
+        scale: 1.05,
+        boxShadow: "0 10px 30px -10px rgba(16, 124, 16, 0.3)",
         borderColor: "#107C10"
       }}
       whileTap={{ 
-        scale: 0.98,
+        scale: 0.97,
         transition: { duration: 0.1 }
       }}
+      transition={{ 
+        duration: 0.3,
+        ease: "easeOut"
+      }}
       className={cn(
-        "group relative bg-gray-900 rounded-lg overflow-hidden transition-all duration-200 border border-transparent flex-shrink-0",
-        "snap-start mr-3", // Para scroll horizontal
-        // Mobile: tamanhos otimizados para carrossel
-        "w-40 md:w-auto", // Mobile: largura fixa pequena, Desktop: auto
-        isGame ? "aspect-[2/3] md:aspect-[2/3]" : "aspect-square",
+        "group relative bg-gray-900 rounded-xl overflow-hidden transition-all duration-300 border border-transparent",
+        isGame ? "aspect-[2/3]" : "aspect-square",
         isDeal ? "bg-gradient-to-br from-[#107C10]/20 via-black to-black" : "",
-        // Mobile: área de toque adequada
-        "active:scale-95 md:active:scale-100"
+        // Mobile optimizations
+        "active:scale-95 md:active:scale-100", // Touch feedback
+        "min-h-[200px] md:min-h-0" // Minimum touch area
       )}
     >
       <div className={cn(
@@ -104,21 +98,21 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
           src={product.imageUrl || 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&h=600&fit=crop&crop=center'} 
           alt={product.name}
           className="w-full h-full object-cover"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.3 }}
+          whileHover={{ scale: 1.1 }}
+          transition={{ duration: 0.5 }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
       </div>
       
-      {/* Badges - Mobile otimizado */}
-      <div className="absolute top-1 left-1 md:top-2 md:left-2 flex flex-col gap-1">
+      {/* Badges */}
+      <div className="absolute top-2 md:top-3 left-2 md:left-3 flex flex-col gap-1 md:gap-2">
         {product.is_featured && (
-          <Badge className="bg-yellow-500 text-black font-bold text-xs px-1.5 py-0.5 md:px-2 md:py-1 rounded-full shadow-lg">
+          <Badge className="bg-yellow-500 text-black font-bold text-xs px-2 md:px-3 py-1 rounded-full shadow-lg">
             DESTAQUE
           </Badge>
         )}
         {product.isNew && (
-          <Badge className="bg-red-500 text-white font-bold text-xs px-1.5 py-0.5 md:px-2 md:py-1 rounded-full shadow-lg">
+          <Badge className="bg-red-500 text-white font-bold text-xs px-2 md:px-3 py-1 rounded-full shadow-lg">
             NOVO
           </Badge>
         )}
@@ -127,9 +121,9 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
             initial={{ scale: 1 }}
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="bg-yellow-500 text-black font-bold text-xs px-1.5 py-0.5 md:px-2 md:py-1 rounded-full shadow-lg flex items-center gap-1"
+            className="bg-yellow-500 text-black font-bold text-xs px-2 md:px-3 py-1 rounded-full shadow-lg flex items-center gap-1"
           >
-            <Tag size={8} className="md:w-3 md:h-3" />
+            <Tag size={10} className="md:w-3 md:h-3" />
             {product.discount}% OFF
           </motion.div>
         )}
@@ -137,30 +131,32 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       
       <div className={cn(
         "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent",
-        // Mobile: padding reduzido e otimizado
-        "p-2 md:p-3 pt-8 md:pt-12"
+        // Mobile: padding adaptativo
+        isGame ? "p-2 md:p-3 pt-12 md:pt-16" : "p-3 md:p-6"
       )}>
         <h3 className={cn(
-          "font-bold text-white group-hover:text-[#107C10] transition-colors line-clamp-2 leading-tight",
-          // Mobile: texto muito menor e legível
-          "text-xs md:text-sm mb-1"
+          "font-bold mb-1 md:mb-2 text-white group-hover:text-[#107C10] transition-colors line-clamp-2",
+          // Mobile: texto legível
+          isGame ? "text-xs md:text-sm" : "text-sm md:text-lg"
         )}>
           {product.name}
         </h3>
         
         <div className={cn(
-          "flex items-center justify-between mb-1 md:mb-2"
+          "flex items-center justify-between mb-2 md:mb-3",
+          isGame ? "mb-1 md:mb-2" : "mb-2 md:mb-4"
         )}>
           <div className={cn(
             "font-black text-[#107C10]",
-            // Mobile: preço compacto mas legível
-            "text-sm md:text-lg"
+            // Mobile: preço legível
+            isGame ? "text-sm md:text-xl" : "text-base md:text-xl"
           )}>
             R$ {product.price?.toFixed(2)}
           </div>
           {product.originalPrice && product.originalPrice > product.price && (
             <div className={cn(
-              "text-gray-400 line-through text-xs md:text-sm"
+              "text-gray-400 line-through",
+              isGame ? "text-xs md:text-sm" : "text-sm md:text-base"
             )}>
               R$ {product.originalPrice.toFixed(2)}
             </div>
@@ -168,61 +164,52 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
         </div>
         
         <div className={cn(
-          "flex gap-1",
+          "flex gap-1 md:gap-2",
           isGame ? "justify-center" : "justify-between"
         )}>
           {isGame ? (
             <Button 
               size="sm"
               className={cn(
-                "w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-200",
+                "w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300",
                 "transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30",
-                // Mobile: botão muito compacto
-                "h-8 md:h-9 text-xs px-2 md:px-4 rounded-md",
-                "active:scale-95"
+                // Mobile: área de toque adequada
+                "min-h-[44px] md:min-h-0 text-xs md:text-sm px-2 md:px-4",
+                "active:scale-95 md:active:scale-100"
               )}
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToCart(product);
-              }}
+              onClick={() => onAddToCart(product)}
             >
-              <ShoppingCart className="w-3 h-3 mr-1" />
-              ADD
+              <ShoppingCart className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+              ADICIONAR
             </Button>
           ) : (
             <>
               <Button 
                 className={cn(
-                  "flex-1 bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-200",
+                  "flex-1 bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300",
                   "transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30",
-                  // Mobile: botão compacto
-                  "h-8 md:h-9 text-xs px-2 md:px-4 rounded-md",
-                  "active:scale-95"
+                  // Mobile: área de toque adequada
+                  "min-h-[44px] md:min-h-0 text-xs md:text-sm px-2 md:px-4",
+                  "active:scale-95 md:active:scale-100"
                 )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToCart(product);
-                }}
+                onClick={() => onAddToCart(product)}
               >
-                <ShoppingCart className="w-3 h-3 mr-1" />
+                <ShoppingCart className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                 COMPRAR
               </Button>
               <Button 
                 variant="outline" 
                 size="icon"
                 className={cn(
-                  "border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white transition-all duration-200",
+                  "border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white transition-all duration-300",
                   "transform hover:scale-110",
-                  // Mobile: ícone compacto
-                  "w-8 h-8 md:w-9 md:h-9 rounded-md",
-                  "active:scale-95"
+                  // Mobile: área de toque mínima
+                  "min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0",
+                  "active:scale-95 md:active:scale-100"
                 )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onProductClick(product.id);
-                }}
+                onClick={() => onProductClick(product.id)}
               >
-                <Heart className="w-3 h-3" />
+                <Heart className="w-3 h-3 md:w-4 md:h-4" />
               </Button>
             </>
           )}
@@ -232,28 +219,26 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
   );
 };
 
-// Componente de card de notícia otimizado para mobile
+// Componente de card de notícia/trailer
 const NewsCard = ({ item, index }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
       whileHover={{ 
-        scale: 1.02,
-        boxShadow: "0 8px 25px -8px rgba(16, 124, 16, 0.3)",
+        scale: 1.03,
+        boxShadow: "0 10px 30px -10px rgba(16, 124, 16, 0.3)",
         borderColor: "#107C10"
       }}
       whileTap={{ 
-        scale: 0.98,
+        scale: 0.97,
         transition: { duration: 0.1 }
       }}
       className={cn(
-        "group relative bg-black rounded-lg overflow-hidden transition-all duration-200",
-        "border border-transparent hover:border-[#107C10] flex-shrink-0",
-        "snap-start mr-3", // Para scroll horizontal
-        // Mobile: largura otimizada para carrossel
-        "w-64 md:w-auto", // Mobile: largura fixa, Desktop: auto
+        "group relative bg-black rounded-xl overflow-hidden transition-all duration-300",
+        "border border-transparent hover:border-[#107C10]",
+        // Mobile optimizations
         "active:scale-95 md:active:scale-100"
       )}
     >
@@ -261,30 +246,35 @@ const NewsCard = ({ item, index }) => {
         <img 
           src={item.imageUrl} 
           alt={item.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
         
         {item.type === 'trailer' && (
           <div className="absolute inset-0 flex items-center justify-center">
             <motion.div
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.2 }}
               className={cn(
                 "rounded-full bg-[#107C10]/80 flex items-center justify-center",
                 "transform group-hover:scale-110 transition-transform duration-300",
-                // Mobile: play button menor
-                "w-10 h-10 md:w-12 md:h-12"
+                // Mobile: área de toque adequada
+                "w-12 h-12 md:w-16 md:h-16"
               )}
             >
-              <Play className="w-5 h-5 md:w-6 md:h-6 text-white ml-0.5" />
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Play className="w-6 h-6 md:w-8 md:h-8 text-white ml-1" />
+              </motion.div>
             </motion.div>
           </div>
         )}
       </div>
       
-      <div className="p-3 md:p-4">
+      <div className="p-4 md:p-6">
         <Badge className={cn(
-          "mb-2 font-bold text-xs",
+          "mb-2 md:mb-3 font-bold",
           item.type === 'trailer' ? "bg-[#107C10] text-white" : 
           item.type === 'news' ? "bg-yellow-500 text-black" : 
           "bg-blue-500 text-white"
@@ -293,26 +283,27 @@ const NewsCard = ({ item, index }) => {
         </Badge>
         
         <h3 className={cn(
-          "font-bold mb-2 group-hover:text-[#107C10] transition-colors line-clamp-2 leading-tight",
-          // Mobile: título compacto
-          "text-sm md:text-lg"
+          "font-bold mb-2 group-hover:text-[#107C10] transition-colors line-clamp-2",
+          // Mobile: título legível
+          "text-lg md:text-xl"
         )}>
           {item.title}
         </h3>
         
         <p className={cn(
-          "text-gray-400 mb-3 line-clamp-2",
-          // Mobile: descrição menor
-          "text-xs md:text-sm"
+          "text-gray-400 mb-3 md:mb-4 line-clamp-2",
+          // Mobile: texto adequado
+          "text-sm md:text-base"
         )}>
           {item.description}
         </p>
         
         <div className="flex items-center justify-between">
           <span className={cn(
-            "text-gray-500 flex items-center text-xs"
+            "text-gray-500 flex items-center",
+            "text-xs md:text-sm"
           )}>
-            <Clock className="w-3 h-3 mr-1" />
+            <Clock className="w-3 h-3 md:w-4 md:h-4 mr-1" />
             {item.date}
           </span>
           
@@ -321,9 +312,9 @@ const NewsCard = ({ item, index }) => {
             size="sm"
             className={cn(
               "text-[#107C10] hover:text-white hover:bg-[#107C10] transition-colors",
-              // Mobile: botão compacto
-              "h-8 px-3 text-xs rounded-md",
-              "active:scale-95"
+              // Mobile: área de toque adequada
+              "min-h-[44px] md:min-h-0 px-3 md:px-4 text-sm",
+              "active:scale-95 md:active:scale-100"
             )}
           >
             {item.type === 'trailer' ? 'Assistir' : 'Ler mais'}
@@ -529,13 +520,13 @@ const XboxPage6 = () => {
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
       <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
       
-      {/* Hero Banner - Mobile otimizado */}
+      {/* Hero Banner - Mobile optimized */}
       <section 
         ref={heroRef}
         className={cn(
           "relative bg-black overflow-hidden flex items-center justify-center",
-          // Mobile: altura muito reduzida, Desktop: mantém original
-          "h-[50vh] md:h-screen md:max-h-[800px]"
+          // Mobile: altura adaptativa, Desktop: mantém original
+          "h-[60vh] md:h-screen md:max-h-[800px]"
         )}
       >
         {/* Background com padrão de hexágonos e partículas */}
@@ -558,11 +549,11 @@ const XboxPage6 = () => {
           <HexagonParticles />
         </div>
         
-        {/* Conteúdo do Hero - Mobile muito compacto */}
+        {/* Conteúdo do Hero - Mobile optimized */}
         <div className="relative z-20 container mx-auto px-4 h-full flex items-center justify-center text-center">
           <motion.div
             style={{ opacity: heroOpacity }}
-            className="max-w-4xl mx-auto space-y-3 md:space-y-8"
+            className="max-w-4xl mx-auto space-y-4 md:space-y-8"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -575,8 +566,8 @@ const XboxPage6 = () => {
                 alt="Xbox Logo" 
                 className={cn(
                   "filter drop-shadow-[0_0_8px_rgba(16,124,16,0.8)]",
-                  // Mobile: logo muito menor, Desktop: mantém original
-                  "h-8 md:h-24"
+                  // Mobile: logo menor, Desktop: mantém original
+                  "h-16 md:h-24"
                 )} 
               />
             </motion.div>
@@ -587,8 +578,8 @@ const XboxPage6 = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className={cn(
                 "font-extrabold tracking-tighter leading-none text-white drop-shadow-lg",
-                // Mobile: título muito compacto, Desktop: mantém original
-                "text-xl md:text-7xl lg:text-8xl"
+                // Mobile: título responsivo, Desktop: mantém original
+                "text-4xl md:text-7xl lg:text-8xl"
               )}
             >
               POWER YOUR <span className="text-[#107C10]">DREAMS</span>
@@ -600,8 +591,8 @@ const XboxPage6 = () => {
               transition={{ duration: 0.8, delay: 0.6 }}
               className={cn(
                 "text-gray-200 leading-relaxed font-light",
-                // Mobile: texto muito menor, Desktop: mantém original
-                "text-sm md:text-2xl lg:text-3xl"
+                // Mobile: texto menor mas legível, Desktop: mantém original
+                "text-lg md:text-2xl lg:text-3xl"
               )}
             >
               Entre na próxima geração de jogos com Xbox Series X|S
@@ -612,37 +603,39 @@ const XboxPage6 = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.8 }}
               className={cn(
-                "flex gap-2 md:gap-4 justify-center pt-2 md:pt-4",
+                "flex gap-4 justify-center pt-4",
                 // Mobile: stack vertical, Desktop: horizontal
                 "flex-col sm:flex-row"
               )}
             >
               <Button 
-                size="sm" 
+                size="lg" 
                 className={cn(
                   "bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300",
                   "transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30",
-                  // Mobile: botão muito compacto, Desktop: mantém original
-                  "h-10 px-4 text-sm md:px-10 md:py-6 md:text-xl md:h-auto",
+                  // Mobile: botão adaptativo, Desktop: mantém original
+                  "px-6 py-4 md:px-10 md:py-6 text-lg md:text-xl",
+                  "min-h-[44px]", // Área de toque mínima
                   "active:scale-95 md:active:scale-100"
                 )}
                 onClick={() => navigate("/categoria/consoles")}
               >
-                <Zap className="w-4 h-4 mr-2 md:w-6 md:h-6 md:mr-3" />
+                <Zap className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
                 EXPLORAR CONSOLES
               </Button>
               <Button 
-                size="sm" 
+                size="lg" 
                 variant="outline" 
                 className={cn(
                   "border-white text-white hover:bg-white hover:text-black font-bold transition-all duration-300 shadow-lg hover:shadow-xl",
-                  // Mobile: botão compacto
-                  "h-10 px-4 text-sm md:px-10 md:py-6 md:text-xl md:h-auto",
+                  // Mobile: botão adaptativo
+                  "px-6 py-4 md:px-10 md:py-6 text-lg md:text-xl",
+                  "min-h-[44px]", // Área de toque mínima
                   "active:scale-95 md:active:scale-100"
                 )}
                 onClick={() => navigate("/categoria/jogos")}
               >
-                <Play className="w-4 h-4 mr-2 md:w-6 md:h-6 md:mr-3" />
+                <Play className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
                 VER JOGOS
               </Button>
             </motion.div>
@@ -665,12 +658,18 @@ const XboxPage6 = () => {
         </motion.div>
       </section>
 
-      {/* Xbox Consoles Section - Mobile otimizado */}
+      {/* Xbox Consoles Section - Mobile optimized */}
       <section className={cn(
         "bg-black relative overflow-hidden",
-        // Mobile: padding muito reduzido, Desktop: mantém original
-        "py-8 md:py-24"
+        // Mobile: padding reduzido, Desktop: mantém original
+        "py-12 md:py-24"
       )}>
+        {/* Fundo com textura sutil */}
+        <div className="absolute inset-0 z-0 opacity-10" style={{ 
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
+          backgroundSize: '60px 60px'
+        }}></div>
+        
         <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -679,190 +678,228 @@ const XboxPage6 = () => {
             viewport={{ once: true }}
             className={cn(
               "text-center",
-              // Mobile: margem muito reduzida, Desktop: mantém original
-              "mb-4 md:mb-16"
+              // Mobile: margem reduzida, Desktop: mantém original
+              "mb-8 md:mb-16"
             )}
           >
             <h2 className={cn(
-              "font-black mb-2",
-              // Mobile: título muito menor
-              "text-lg md:text-5xl leading-tight"
+              "font-black mb-2 md:mb-4",
+              // Mobile: título responsivo
+              "text-3xl md:text-5xl"
             )}>
               CONSOLES <span className="text-[#107C10]">XBOX</span>
             </h2>
             <p className={cn(
               "text-gray-300 max-w-3xl mx-auto",
-              // Mobile: texto menor
-              "text-sm md:text-xl"
+              // Mobile: texto responsivo
+              "text-base md:text-xl"
             )}>
-              Desempenho inigualável para a nova geração de jogos
+              Desempenho inigualável para a nova geração de jogos. 
+              Escolha o console Xbox perfeito para sua experiência.
             </p>
           </motion.div>
 
-          {/* Mobile: Carrossel horizontal, Desktop: Grid */}
           <div className={cn(
-            // Mobile: scroll horizontal
-            "md:grid md:gap-8 md:grid-cols-2 lg:grid-cols-4",
-            // Mobile: carrossel configurado
-            "flex md:block overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 md:pb-0",
-            "scrollbar-hide" // Esconder scrollbar no mobile
+            "grid gap-4 md:gap-8",
+            // Mobile: 1-2 colunas, Desktop: mantém 4 colunas
+            "grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4"
           )}>
-            {displayProducts.consoles.map((product, index) => (
+            {displayProducts.consoles.map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
-                index={index}
               />
             ))}
           </div>
         </div>
       </section>
 
-      {/* Xbox Games Section - Mobile otimizado */}
+      {/* Xbox Games Section - Mobile optimized */}
       <section className={cn(
         "bg-gray-900 relative overflow-hidden",
-        "py-8 md:py-24"
+        "py-12 md:py-24"
       )}>
+        {/* Fundo com textura sutil */}
+        <div className="absolute inset-0 z-0 opacity-5" style={{ 
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23107C10' fill-opacity='0.05'/%3E%3C/svg%3E")`,
+          backgroundSize: '60px 60px'
+        }}></div>
+        
         <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-4 md:mb-16"
+            className="text-center mb-8 md:mb-16"
           >
-            <h2 className="text-lg md:text-5xl font-black mb-2 leading-tight">
+            <h2 className="text-3xl md:text-5xl font-black mb-2 md:mb-4">
               JOGOS <span className="text-[#107C10]">EM ALTA</span>
             </h2>
-            <p className="text-sm md:text-xl text-gray-300 max-w-3xl mx-auto">
-              Os títulos mais populares para Xbox
+            <p className="text-base md:text-xl text-gray-300 max-w-3xl mx-auto">
+              Os títulos mais populares para Xbox. De aventuras épicas a competições intensas, 
+              encontre seu próximo jogo favorito.
             </p>
           </motion.div>
 
-          {/* Mobile: Carrossel horizontal, Desktop: Grid */}
           <div className={cn(
-            // Mobile: scroll horizontal
-            "md:grid md:gap-6 md:grid-cols-3 lg:grid-cols-5",
-            // Mobile: carrossel configurado
-            "flex md:block overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 md:pb-0",
-            "scrollbar-hide" // Esconder scrollbar no mobile
+            "grid gap-3 md:gap-6",
+            // Mobile: 2 colunas para games, Desktop: mantém 5 colunas
+            "grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
           )}>
-            {displayProducts.games.slice(0, 10).map((product, index) => (
+            {displayProducts.games.slice(0, 10).map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="game"
-                index={index}
               />
             ))}
           </div>
           
-          <div className="mt-6 md:mt-12 text-center">
+          <div className="mt-8 md:mt-12 text-center">
             <Button 
-              size="sm" 
+              size="lg" 
               className={cn(
                 "bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300",
                 "transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30",
-                // Mobile: botão compacto
-                "h-10 px-4 text-sm md:px-8 md:py-4 md:text-lg md:h-auto",
+                // Mobile: botão responsivo
+                "px-6 py-3 md:px-8 md:py-4 text-base md:text-lg",
+                "min-h-[44px]",
                 "active:scale-95 md:active:scale-100"
               )}
               onClick={() => navigate("/categoria/jogos")}
             >
               VER TODOS OS JOGOS
-              <ChevronRight className="w-4 h-4 ml-2" />
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Xbox Accessories Section - Mobile otimizado */}
+      {/* Xbox Accessories Section - Mobile optimized */}
       <section className={cn(
         "bg-black relative overflow-hidden",
-        "py-8 md:py-24"
+        "py-12 md:py-24"
       )}>
+        {/* Fundo com textura sutil */}
+        <div className="absolute inset-0 z-0 opacity-10" style={{ 
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
+          backgroundSize: '60px 60px'
+        }}></div>
+        
         <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-4 md:mb-16"
+            className="text-center mb-8 md:mb-16"
           >
-            <h2 className="text-lg md:text-5xl font-black mb-2 leading-tight">
+            <h2 className="text-3xl md:text-5xl font-black mb-2 md:mb-4">
               <span className="text-[#107C10]">ACESSÓRIOS</span> XBOX
             </h2>
-            <p className="text-sm md:text-xl text-gray-300 max-w-3xl mx-auto">
-              Eleve sua experiência de jogo com acessórios oficiais Xbox
+            <p className="text-base md:text-xl text-gray-300 max-w-3xl mx-auto">
+              Eleve sua experiência de jogo com acessórios oficiais Xbox. 
+              Controles, headsets e muito mais para o seu setup.
             </p>
           </motion.div>
 
-          {/* Mobile: Carrossel horizontal, Desktop: Grid */}
           <div className={cn(
-            // Mobile: scroll horizontal
-            "md:grid md:gap-8 md:grid-cols-3",
-            // Mobile: carrossel configurado
-            "flex md:block overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 md:pb-0",
-            "scrollbar-hide" // Esconder scrollbar no mobile
+            "grid gap-4 md:gap-8",
+            // Mobile: 1-2 colunas, Desktop: mantém 3 colunas
+            "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
           )}>
-            {displayProducts.accessories.map((product, index) => (
+            {filteredProducts.accessories.map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="accessory"
-                index={index}
               />
             ))}
+          </div>
+          
+          <div className="mt-8 md:mt-12 text-center">
+            <Button 
+              size="lg" 
+              variant="outline"
+              className={cn(
+                "border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white font-bold transition-all duration-300 transform hover:scale-105",
+                "px-6 py-3 md:px-8 md:py-4 text-base md:text-lg min-h-[44px]",
+                "active:scale-95 md:active:scale-100"
+              )}
+              onClick={() => navigate("/categoria/acessorios")}
+            >
+              VER TODOS OS ACESSÓRIOS
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
+            </Button>
           </div>
         </div>
       </section>
       
-      {/* Notícias e Trailers Section - Mobile otimizado */}
+      {/* Notícias e Trailers Section - Mobile optimized */}
       <section className={cn(
         "bg-gray-900 relative overflow-hidden",
-        "py-8 md:py-24"
+        "py-12 md:py-24"
       )}>
+        {/* Fundo com textura sutil */}
+        <div className="absolute inset-0 z-0 opacity-10" style={{ 
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='70' height='70' viewBox='0 0 70 70' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M35 0c-1.25 0-2.5.06-3.75.19L1.31 17.59c-1.7.85-2.71 2.6-2.71 4.48v30.03c0 1.89 1.02 3.63 2.71 4.48l29.94 17.4c1.7.85 3.75.85 5.44 0l29.94-17.4c1.7-.85 2.71-2.6 2.71-4.48V22.07c0-1.89-1.02-3.63-2.71-4.48L38.75.19C37.5.06 36.25 0 35 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
+          backgroundSize: '70px 70px'
+        }}></div>
+        
         <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-4 md:mb-16"
+            className="text-center mb-8 md:mb-16"
           >
-            <h2 className="text-lg md:text-5xl font-black mb-2 leading-tight">
+            <h2 className="text-3xl md:text-5xl font-black mb-2 md:mb-4">
               <span className="text-[#107C10]">NOTÍCIAS</span> & TRAILERS
             </h2>
-            <p className="text-sm md:text-xl text-gray-300 max-w-3xl mx-auto">
-              Fique por dentro das últimas novidades do universo Xbox
+            <p className="text-base md:text-xl text-gray-300 max-w-3xl mx-auto">
+              Fique por dentro das últimas novidades, lançamentos e atualizações do universo Xbox.
             </p>
           </motion.div>
 
-          {/* Mobile: Carrossel horizontal, Desktop: Grid */}
           <div className={cn(
-            // Mobile: scroll horizontal
-            "md:grid md:gap-8 md:grid-cols-2 lg:grid-cols-3",
-            // Mobile: carrossel configurado
-            "flex md:block overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 md:pb-0",
-            "scrollbar-hide" // Esconder scrollbar no mobile
+            "grid gap-4 md:gap-8",
+            // Mobile: 1 coluna, Desktop: 3 colunas
+            "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
           )}>
             {newsAndTrailers.map((item, index) => (
               <NewsCard key={item.id} item={item} index={index} />
             ))}
           </div>
+          
+          <div className="mt-8 md:mt-12 text-center">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className={cn(
+                "border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white font-bold transition-all duration-300 transform hover:scale-105",
+                "px-6 py-3 md:px-8 md:py-4 text-base md:text-lg min-h-[44px]",
+                "active:scale-95 md:active:scale-100"
+              )}
+            >
+              VER TODAS AS NOTÍCIAS
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Ofertas Especiais Section - Mobile otimizado */}
+      {/* Ofertas Especiais Section - Mobile optimized */}
       <section className={cn(
         "bg-[#107C10] relative overflow-hidden",
-        "py-8 md:py-24"
+        "py-12 md:py-24"
       )}>
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-20" style={{ 
@@ -877,43 +914,45 @@ const XboxPage6 = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-4 md:mb-16"
+            className="text-center mb-8 md:mb-16"
           >
-            <h2 className="text-lg md:text-5xl font-black mb-2 text-white leading-tight">
+            <h2 className="text-3xl md:text-5xl font-black mb-2 md:mb-4 text-white">
               OFERTAS <span className="text-yellow-400">IMPERDÍVEIS</span>
             </h2>
-            <p className="text-sm md:text-xl text-white/90 max-w-3xl mx-auto">
+            <p className="text-base md:text-xl text-white/90 max-w-3xl mx-auto">
               Tempo limitado para aproveitar. Descontos especiais em produtos selecionados.
             </p>
           </motion.div>
 
-          {/* Mobile: Carrossel horizontal, Desktop: Grid */}
           <div className={cn(
-            // Mobile: scroll horizontal
-            "md:grid md:gap-8 md:grid-cols-2 lg:grid-cols-4",
-            // Mobile: carrossel configurado
-            "flex md:block overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 md:pb-0",
-            "scrollbar-hide" // Esconder scrollbar no mobile
+            "grid gap-4 md:gap-8",
+            // Mobile: 1-2 colunas, Desktop: 4 colunas
+            "grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4"
           )}>
-            {displayProducts.deals.map((product, index) => (
+            {displayProducts.deals.map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="deal"
-                index={index}
               />
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer CTA - Mobile otimizado */}
+      {/* Footer CTA - Mobile optimized */}
       <section className={cn(
         "bg-black relative overflow-hidden",
-        "py-8 md:py-24"
+        "py-12 md:py-24"
       )}>
+        {/* Fundo com padrão hexagonal */}
+        <div className="absolute inset-0 z-0 opacity-10" style={{ 
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
+          backgroundSize: '60px 60px'
+        }}></div>
+        
         <div className="relative z-10 container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -922,25 +961,26 @@ const XboxPage6 = () => {
             viewport={{ once: true }}
             className="max-w-4xl mx-auto"
           >
-            <h2 className="text-lg md:text-5xl font-black mb-3 md:mb-6 leading-tight">
+            <h2 className="text-3xl md:text-5xl font-black mb-4 md:mb-6">
               PRONTO PARA <span className="text-[#107C10]">JOGAR</span>?
             </h2>
             
-            <p className="text-sm md:text-xl text-gray-300 mb-4 md:mb-10">
+            <p className="text-base md:text-xl text-gray-300 mb-6 md:mb-10">
               Explore nossa coleção completa de jogos, consoles e acessórios Xbox.
+              Eleve sua experiência de jogo ao próximo nível.
             </p>
             
             <Button 
-              size="sm" 
+              size="lg" 
               className={cn(
                 "bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300",
                 "transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30",
-                "h-10 px-6 text-sm md:px-12 md:py-6 md:text-xl md:h-auto",
+                "px-8 py-4 md:px-12 md:py-6 text-lg md:text-xl min-h-[44px]",
                 "active:scale-95 md:active:scale-100"
               )}
               onClick={() => navigate("/categoria/xbox")}
             >
-              <Gamepad2 className="w-4 h-4 mr-2" />
+              <Gamepad2 className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
               EXPLORAR MAIS
             </Button>
             
@@ -963,9 +1003,6 @@ const XboxPage6 = () => {
           </motion.div>
         </div>
       </section>
-
-      {/* Footer Refinado */}
-      <Footer />
     </div>
   );
 };
