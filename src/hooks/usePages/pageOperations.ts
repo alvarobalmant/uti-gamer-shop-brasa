@@ -2,23 +2,6 @@
 import { Page } from './types';
 import { supabase } from '@/integrations/supabase/client';
 
-// Helper function to safely convert theme data
-const convertTheme = (themeData: any): Page['theme'] => {
-  if (!themeData || typeof themeData !== 'object') {
-    return {
-      primaryColor: '#107C10',
-      secondaryColor: '#3A3A3A'
-    };
-  }
-  
-  return {
-    primaryColor: themeData.primaryColor || '#107C10',
-    secondaryColor: themeData.secondaryColor || '#3A3A3A',
-    accentColor: themeData.accentColor,
-    bannerImage: themeData.bannerImage
-  };
-};
-
 // Utility functions for page operations
 export const createPageOperations = (
   setPages: React.Dispatch<React.SetStateAction<Page[]>>,
@@ -58,7 +41,10 @@ export const createPageOperations = (
         slug: pageData.slug,
         description: pageData.description || '',
         isActive: pageData.is_active,
-        theme: convertTheme(pageData.theme),
+        theme: (pageData.theme && typeof pageData.theme === 'object') ? pageData.theme as Page['theme'] : {
+          primaryColor: '#107C10',
+          secondaryColor: '#3A3A3A'
+        },
         filters: {
           tagIds: [],
           categoryIds: [],
@@ -108,7 +94,10 @@ export const createPageOperations = (
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-        theme: convertTheme(data.theme),
+        theme: (data.theme && typeof data.theme === 'object') ? data.theme as Page['theme'] : {
+          primaryColor: '#107C10',
+          secondaryColor: '#3A3A3A'
+        },
         filters: pageData.filters,
         createdAt: data.created_at,
         updatedAt: data.updated_at
@@ -154,7 +143,10 @@ export const createPageOperations = (
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-        theme: convertTheme(data.theme),
+        theme: (data.theme && typeof data.theme === 'object') ? data.theme as Page['theme'] : {
+          primaryColor: '#107C10',
+          secondaryColor: '#3A3A3A'
+        },
         filters: pageData.filters || {
           tagIds: [],
           categoryIds: [],

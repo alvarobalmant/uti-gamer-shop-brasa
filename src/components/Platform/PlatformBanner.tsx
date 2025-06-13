@@ -127,7 +127,7 @@ const PlatformBanner: React.FC<PlatformBannerProps> = ({ config, theme, classNam
                   className="text-lg px-8 py-4 font-semibold"
                   style={{
                     borderColor: theme.accentColor,
-                    color: theme.accentColor,
+                    color: theme.textColor,
                     borderRadius: theme.borderRadius,
                   }}
                 >

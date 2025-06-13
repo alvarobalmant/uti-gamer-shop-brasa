@@ -1,85 +1,63 @@
 
-export interface SpecialSectionElement {
-  id?: string;
-  special_section_id?: string;
-  element_type: 'banner_full' | 'banner_medium' | 'banner_small' | 'banner_product_highlight' | 'product_carousel' | 'text_block';
-  title?: string;
-  subtitle?: string;
-  image_url?: string;
-  link_url?: string;
-  link_text?: string;
-  background_type?: 'color' | 'image' | 'gradient' | 'transparent';
-  background_color?: string;
-  background_image_url?: string;
-  background_gradient?: string;
-  text_color?: string;
-  button_color?: string;
-  button_text_color?: string;
-  content_type?: 'products' | 'tags' | 'manual';
-  content_ids?: string[];
-  grid_position?: string;
-  grid_size?: string;
-  width_percentage?: number;
-  height_desktop?: number;
-  height_mobile?: number;
-  padding?: number;
-  margin_bottom?: number;
-  border_radius?: number;
-  visible_items_desktop?: number;
-  visible_items_tablet?: number;
-  visible_items_mobile?: number;
-  display_order?: number;
-  is_active?: boolean;
-  mobile_settings?: any;
-  created_at?: string;
-  updated_at?: string;
-}
+import { Database } from "../integrations/supabase/types";
 
-export interface SpecialSection {
-  id: string;
-  title: string;
-  description?: string;
-  background_type: 'color' | 'image' | 'gradient';
+// Base type for Special Section from the database
+export type SpecialSection = Database["public"]["Tables"]["special_sections"]["Row"] & {
+  background_type?: 'color' | 'image';
   background_value?: string;
-  background_image_url?: string;
-  background_gradient?: string;
-  background_image_position?: string;
-  background_image_crop_data?: any;
-  padding_top?: number;
-  padding_bottom?: number;
-  padding_left?: number;
-  padding_right?: number;
-  margin_top?: number;
-  margin_bottom?: number;
-  border_radius?: number;
-  display_order?: number;
-  is_active?: boolean;
-  mobile_settings?: any;
-  content_config?: any;
-  created_at?: string;
-  updated_at?: string;
-}
+  background_image_position?: 'center' | 'top' | 'bottom' | 'left' | 'right';
+};
 
-// Create and update input types
-export type SpecialSectionCreateInput = Omit<SpecialSection, 'id' | 'created_at' | 'updated_at'>;
+// Base type for Special Section Element from the database
+export type SpecialSectionElement = Database["public"]["Tables"]["special_section_elements"]["Row"] & {
+  content_ids?: string[];
+};
+
+// Base type for Special Section Grid Layout from the database
+export type SpecialSectionGridLayout = Database["public"]["Tables"]["special_section_grid_layouts"]["Row"];
+
+// Input type for creating a new Special Section (excluding auto-generated fields)
+export type SpecialSectionCreateInput = Omit<
+  SpecialSection,
+  "id" | "created_at" | "updated_at"
+>;
+
+// Input type for updating an existing Special Section (all fields optional)
 export type SpecialSectionUpdateInput = Partial<SpecialSectionCreateInput>;
 
-export type SpecialSectionElementCreateInput = Omit<SpecialSectionElement, 'id' | 'created_at' | 'updated_at'>;
+// Input type for creating a new Special Section Element
+export type SpecialSectionElementCreateInput = Omit<
+  SpecialSectionElement,
+  "id" | "created_at" | "updated_at"
+>;
+
+// Input type for updating an existing Special Section Element
 export type SpecialSectionElementUpdateInput = Partial<SpecialSectionElementCreateInput>;
 
-// Carousel configuration for products
+// Input type for creating a new Special Section Grid Layout
+export type SpecialSectionGridLayoutCreateInput = Omit<
+  SpecialSectionGridLayout,
+  "id" | "created_at" | "updated_at"
+>;
+
+// Input type for updating an existing Special Section Grid Layout
+export type SpecialSectionGridLayoutUpdateInput = Partial<SpecialSectionGridLayoutCreateInput>;
+
+// Add the missing CarouselConfig type
 export interface CarouselConfig {
-  filter?: {
-    tagIds?: string[];
-    categoryIds?: string[];
-    featured?: boolean;
-    newReleases?: boolean;
-    onSale?: boolean;
-    limit?: number;
-  };
-  display?: {
-    columns?: number;
-    showPrices?: boolean;
-    showBadges?: boolean;
-  };
+  title?: string;
+  selection_mode?: 'tags' | 'products' | 'combined';
+  tag_ids?: string[];
+  product_ids?: string[];
+}
+
+// Add the missing FixedContentFormData type
+export interface FixedContentFormData {
+  banner_principal?: { image_url?: string; link_url?: string; };
+  banner_medio_1?: { image_url?: string; title?: string; subtitle?: string; link_url?: string; };
+  banner_medio_2?: { image_url?: string; title?: string; subtitle?: string; link_url?: string; };
+  banner_pequeno?: { image_url?: string; link_url?: string; };
+  banner_destaque?: { title?: string; subtitle?: string; link_url?: string; button_text?: string; };
+  carrossel_1?: CarouselConfig;
+  carrossel_2?: CarouselConfig;
 }

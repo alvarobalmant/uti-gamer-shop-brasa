@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> 85cf9dc50d7ecd0725accf24a7cf7cd35b0a03cd
 import React, { useEffect } from 'react';
 import { PageLayoutItem, Page } from '@/hooks/usePages';
 import { Product } from '@/hooks/useProducts';
@@ -71,7 +67,6 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
 
   // Convert Supabase section_config to ProductShowcase
   const convertToProductConfig = (sectionConfig: any, sectionTitle: string): ProductShowcase => {
-<<<<<<< HEAD
     // Check if this is an Xbox4 specific section with advanced configuration
     if (section.section_key?.startsWith('xbox4_') && sectionConfig?.products) {
       const xbox4Config = sectionConfig.products as Xbox4FeaturedProductsConfig;
@@ -101,48 +96,6 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
         productOverrides: xbox4Config.products || []
       };
     }
-=======
-    return {
-      type: sectionConfig?.type || 'grid',
-      title: sectionTitle || '',
-      subtitle: sectionConfig?.subtitle || '',
-      filter: {
-        tagIds: sectionConfig?.filter?.tagIds || [],
-        categoryIds: sectionConfig?.filter?.categoryIds || [],
-        featured: sectionConfig?.filter?.featured || false,
-        newReleases: sectionConfig?.filter?.newReleases || false,
-        onSale: sectionConfig?.filter?.onSale || false,
-        limit: sectionConfig?.filter?.limit || 6
-      },
-      columns: sectionConfig?.columns || 3,
-      showPrices: sectionConfig?.showPrices !== false,
-      showBadges: sectionConfig?.showBadges !== false,
-      cardStyle: sectionConfig?.cardStyle || 'compact'
-    };
-  };
-
-  // Convert Supabase section_config to NewsSection array
-  const convertToNewsConfig = (sectionConfig: any): NewsSection[] => {
-    if (sectionConfig?.articles && Array.isArray(sectionConfig.articles)) {
-      return sectionConfig.articles.map((article: any) => ({
-        id: article.id || Math.random().toString(),
-        title: article.title || '',
-        category: article.category || 'Notícias',
-        excerpt: article.excerpt || '',
-        imageUrl: article.imageUrl || '/news/default-news.jpg',
-        publishDate: article.publishDate || new Date().toISOString(),
-        readTime: article.readTime || '3 min',
-        tags: article.tags || [],
-        link: article.link || '#'
-      }));
-    }
-    return [];
-  };
-
-  // Filter products based on section configuration
-  const getFilteredProducts = (sectionConfig: any) => {
-    if (!sectionConfig || !sectionConfig.filter) return products;
->>>>>>> 85cf9dc50d7ecd0725accf24a7cf7cd35b0a03cd
     
     // Default configuration for non-Xbox4 sections
     return {
@@ -279,11 +232,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
   // Use both naming conventions for compatibility
   const isVisible = section.is_visible ?? section.isVisible ?? true;
   const sectionType = section.section_type || section.sectionType || 'products';
-<<<<<<< HEAD
   const sectionConfig = section.section_config || section.sectionConfig || {};
-=======
-  const sectionConfig = section.sectionConfig || {};
->>>>>>> 85cf9dc50d7ecd0725accf24a7cf7cd35b0a03cd
   const sectionTitle = section.title || '';
 
   if (!isVisible) return null;

@@ -32,21 +32,16 @@ const PlatformPage: React.FC<{ slug?: string }> = ({ slug: propSlug }) => {
   // Load page data once
   useEffect(() => {
     const loadPageData = async () => {
-      console.log('Loading page data for slug:', slug);
-      
       if (!currentPage) {
-        console.log('No page found for slug:', slug);
         setIsInitialized(true);
         return;
       }
 
-      console.log('Found page:', currentPage);
       setPage(currentPage);
       
       try {
         // Load layout only if necessary
         if (currentPage.id && !pageLayouts[currentPage.id]) {
-          console.log('Fetching layout for page:', currentPage.id);
           await fetchPageLayout(currentPage.id);
         }
       } catch (error) {
@@ -65,7 +60,6 @@ const PlatformPage: React.FC<{ slug?: string }> = ({ slug: propSlug }) => {
       const sortedLayout = [...pageLayouts[page.id]].sort(
         (a, b) => (a.display_order || a.displayOrder || 0) - (b.display_order || b.displayOrder || 0)
       );
-      console.log('Setting layout for page:', page.id, sortedLayout);
       setLayout(sortedLayout);
     }
   }, [page, pageLayouts]);
