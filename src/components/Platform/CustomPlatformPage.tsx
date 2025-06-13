@@ -34,33 +34,42 @@ const CustomPlatformPage: React.FC<CustomPlatformPageProps> = ({
           const config = section.productConfig;
           let sectionProducts = [...products];
 
-            // Filtrar por tags
+          // Filtrar por tags
           if (config.filter.tagIds && config.filter.tagIds.length > 0) {
             sectionProducts = sectionProducts.filter(product =>
               product.tags?.some(tag => 
                 config.filter.tagIds!.includes(tag.id)
               )
             );
-          }          // Filtrar por categorias
+          }
+
+          // Filtrar por categorias
           if (config.filter.categoryIds && config.filter.categoryIds.length > 0) {
             sectionProducts = sectionProducts.filter(product =>
-              config.filter.categoryIds!.includes(product.categoryId)
+              config.filter.categoryIds!.includes(product.category_id || '')
             );
           }
 
           // Filtrar produtos em destaque
           if (config.filter.featured) {
-            sectionProducts = sectionProducts.filter(product => product.isFeatured);
+            sectionProducts = sectionProducts.filter(product => product.is_featured);
           }
 
-          // Filtrar novos lançamentos
+          // Filtrar novos lançamentos - usando uma lógica baseada em data de criação recente
           if (config.filter.newReleases) {
-            sectionProducts = sectionProducts.filter(product => product.isNew);
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            sectionProducts = sectionProducts.filter(product => 
+              new Date(product.created_at) > thirtyDaysAgo
+            );
           }
 
-          // Filtrar produtos em oferta
+          // Filtrar produtos em oferta - usando desconto ou preço promocional
           if (config.filter.onSale) {
-            sectionProducts = sectionProducts.filter(product => product.isOnSale);
+            sectionProducts = sectionProducts.filter(product => 
+              (product.list_price && product.price < product.list_price) ||
+              (product.discount_price && product.discount_price < product.price)
+            );
           }
 
           // Limitar quantidade
@@ -241,4 +250,3 @@ const CustomPlatformPage: React.FC<CustomPlatformPageProps> = ({
 };
 
 export default CustomPlatformPage;
-

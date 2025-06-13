@@ -28,15 +28,15 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
 
       if (fetchError) throw fetchError;
       
-      // Transform the data to handle content_ids as string array
+      // Transform the data to handle content_ids properly
       const transformedData = (data || []).map(element => ({
         ...element,
         content_ids: Array.isArray(element.content_ids) 
-          ? element.content_ids 
+          ? element.content_ids.map(id => String(id))
           : element.content_ids 
-            ? [element.content_ids as string] 
+            ? [String(element.content_ids)] 
             : []
-      }));
+      })) as SpecialSectionElement[];
       
       setElements(transformedData);
     } catch (err: any) {
@@ -49,13 +49,13 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
   }, [sectionId, toast]);
 
   const addElement = useCallback(async (elementData: SpecialSectionElementCreateInput) => {
-    if (!sectionId) return; // Should not happen if called correctly
+    if (!sectionId) return;
     setLoading(true);
     try {
       const elementWithType = {
         ...elementData,
         special_section_id: sectionId,
-        element_type: elementData.element_type || 'banner' // Ensure element_type is provided
+        element_type: elementData.element_type || 'banner'
       };
 
       const { data, error: insertError } = await supabase
@@ -65,7 +65,7 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
 
       if (insertError) throw insertError;
       if (data) {
-        await fetchElements(); // Refetch for simplicity and consistency
+        await fetchElements();
         toast({ title: 'Sucesso', description: 'Elemento adicionado à seção.' });
       }
     } catch (err: any) {
@@ -87,7 +87,7 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
 
       if (updateError) throw updateError;
 
-      await fetchElements(); // Refetch for simplicity
+      await fetchElements();
       toast({ title: 'Sucesso', description: 'Elemento atualizado.' });
     } catch (err: any) {
       console.error('Error updating special section element:', err);
@@ -108,7 +108,7 @@ export const useSpecialSectionElements = (sectionId: string | null) => {
 
       if (deleteError) throw deleteError;
 
-      await fetchElements(); // Refetch for simplicity
+      await fetchElements();
       toast({ title: 'Sucesso', description: 'Elemento excluído.' });
     } catch (err: any) {
       console.error('Error deleting special section element:', err);

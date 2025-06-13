@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,16 +9,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SpecialSectionElement, SpecialSectionElementCreateInput, SpecialSectionElementUpdateInput } from '@/types/specialSections'; // Assuming types exist
+import { SpecialSectionElement, SpecialSectionElementCreateInput, SpecialSectionElementUpdateInput } from '@/types/specialSections';
 
 // Define element types based on analysis
 const elementTypes = [
-  'banner_full', // Banner Principal (Largura Total)
-  'banner_medium', // Banners Médios (Lado a Lado) - Requires layout config
-  'banner_small', // Banner Pequeno (Largura Total)
-  'banner_product_highlight', // Banner de Destaque de Produto
-  'product_carousel', // Carrossel/Grid de Produtos com Título
-  'text_block', // Simple text block (optional, but useful)
+  'banner_full',
+  'banner_medium',
+  'banner_small',
+  'banner_product_highlight',
+  'product_carousel',
+  'text_block',
 ] as const;
 
 // Zod schema for element validation
@@ -28,63 +29,68 @@ const elementSchema = z.object({
   image_url: z.string().url('URL inválida').optional().or(z.literal('')),
   link_url: z.string().url('URL inválida').optional().or(z.literal('')),
   link_text: z.string().optional(),
-  // Background (can be specific to element)
   background_type: z.enum(['color', 'image', 'gradient', 'transparent']).default('transparent'),
   background_color: z.string().optional(),
   background_image_url: z.string().url('URL inválida').optional().or(z.literal('')),
   background_gradient: z.string().optional(),
   text_color: z.string().optional().default('#000000'),
-  // Product Carousel specific
-  content_type: z.enum(['products', 'tags', 'manual']).optional(), // How products are selected
-  content_ids: z.array(z.string()).optional(), // Array of product/tag UUIDs
-  // Layout specific (for medium banners, etc.)
-  grid_position: z.string().optional(), // e.g., '1/1', '1/2', '2/2'
-  grid_size: z.string().optional(), // e.g., '1x1', '2x1'
+  content_type: z.enum(['products', 'tags', 'manual']).optional(),
+  content_ids: z.array(z.string()).optional(),
+  grid_position: z.string().optional(),
+  grid_size: z.string().optional(),
   width_percentage: z.number().int().min(0).max(100).optional(),
   height_desktop: z.number().int().min(0).optional(),
   height_mobile: z.number().int().min(0).optional(),
-  // Common styling
   padding: z.number().int().min(0).optional().default(0),
   margin_bottom: z.number().int().min(0).optional().default(20),
   border_radius: z.number().int().min(0).optional().default(0),
-  // Carousel specific display options
   visible_items_desktop: z.number().int().min(1).optional().default(4),
   visible_items_tablet: z.number().int().min(1).optional().default(3),
   visible_items_mobile: z.number().int().min(1).optional().default(1),
   is_active: z.boolean().default(true),
   display_order: z.number().int().optional().default(0),
-  // mobile_settings: z.any().optional(), // TODO
 });
 
 type ElementFormData = z.infer<typeof elementSchema>;
 
 interface SpecialSectionElementFormProps {
-  element: Partial<SpecialSectionElement> | null; // Use partial for create
+  element: Partial<SpecialSectionElement> | null;
   onSubmit: (data: SpecialSectionElementCreateInput | SpecialSectionElementUpdateInput) => void;
   onCancel: () => void;
-  // TODO: Pass available products/tags for selection
 }
 
 const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({ element, onSubmit, onCancel }) => {
   const { register, handleSubmit, control, watch, formState: { errors } } = useForm<ElementFormData>({
     resolver: zodResolver(elementSchema),
     defaultValues: element ? {
-        ...element,
-        image_url: element.image_url ?? '',
-        link_url: element.link_url ?? '',
-        background_image_url: element.background_image_url ?? '',
-        content_ids: Array.isArray(element.content_ids) ? element.content_ids : [],
-        // Ensure numbers are numbers
-        width_percentage: element.width_percentage ?? undefined,
-        height_desktop: element.height_desktop ?? undefined,
-        height_mobile: element.height_mobile ?? undefined,
-        padding: element.padding ?? 0,
-        margin_bottom: element.margin_bottom ?? 20,
-        border_radius: element.border_radius ?? 0,
-        visible_items_desktop: element.visible_items_desktop ?? 4,
-        visible_items_tablet: element.visible_items_tablet ?? 3,
-        visible_items_mobile: element.visible_items_mobile ?? 1,
-        display_order: element.display_order ?? 0,
+        element_type: (element.element_type as any) || 'banner_full',
+        title: element.title || '',
+        subtitle: element.subtitle || '',
+        image_url: element.image_url || '',
+        link_url: element.link_url || '',
+        link_text: element.link_text || '',
+        background_type: (['color', 'image', 'gradient', 'transparent'].includes(element.background_type as any) 
+          ? element.background_type as any 
+          : 'transparent'),
+        background_color: element.background_color || '',
+        background_image_url: element.background_image_url || '',
+        background_gradient: element.background_gradient || '',
+        text_color: element.text_color || '#000000',
+        content_type: element.content_type as any,
+        content_ids: Array.isArray(element.content_ids) ? element.content_ids as string[] : [],
+        grid_position: element.grid_position || '',
+        grid_size: element.grid_size || '',
+        width_percentage: element.width_percentage || undefined,
+        height_desktop: element.height_desktop || undefined,
+        height_mobile: element.height_mobile || undefined,
+        padding: element.padding || 0,
+        margin_bottom: element.margin_bottom || 20,
+        border_radius: element.border_radius || 0,
+        visible_items_desktop: element.visible_items_desktop || 4,
+        visible_items_tablet: element.visible_items_tablet || 3,
+        visible_items_mobile: element.visible_items_mobile || 1,
+        display_order: element.display_order || 0,
+        is_active: element.is_active !== false,
     } : {
         element_type: 'banner_full',
         is_active: true,
@@ -110,7 +116,6 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({ e
       image_url: data.image_url === '' ? null : data.image_url,
       link_url: data.link_url === '' ? null : data.link_url,
       background_image_url: data.background_image_url === '' ? null : data.background_image_url,
-      // Ensure optional numbers are null if empty, or keep the number
       width_percentage: data.width_percentage === undefined ? null : data.width_percentage,
       height_desktop: data.height_desktop === undefined ? null : data.height_desktop,
       height_mobile: data.height_mobile === undefined ? null : data.height_mobile,
@@ -188,13 +193,11 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({ e
                     <SelectContent>
                       <SelectItem value="tags">Tags (Categorias)</SelectItem>
                       <SelectItem value="manual">Seleção Manual</SelectItem>
-                      {/* Add 'products' if needed for specific product IDs */}
                     </SelectContent>
                   </Select>
                 )}
               />
            </div>
-           {/* TODO: Implement Product/Tag selection based on content_type */} 
            <div className='text-yellow-400 p-4 bg-yellow-900/30 rounded border border-yellow-700'>
              <p>TODO: Implementar seleção de Produtos/Tags aqui.</p>
              <p>Por enquanto, salve o elemento e edite os IDs manualmente no Supabase se necessário.</p>
@@ -222,9 +225,6 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({ e
             <Textarea id="subtitle" {...register('subtitle')} rows={5} className="bg-gray-700 border-gray-600 text-white" />
           </div>
       )}
-
-      {/* TODO: Add fields for layout: grid_position, grid_size, width_percentage, height_desktop, height_mobile */} 
-      {/* TODO: Add fields for element-specific background/text color */} 
 
       {/* Common Settings */}
        <div className="grid grid-cols-2 gap-4">

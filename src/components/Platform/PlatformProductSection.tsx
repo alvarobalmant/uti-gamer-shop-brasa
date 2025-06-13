@@ -162,7 +162,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
           </div>
 
           {/* Overlay de desconto */}
-          {product.discount_price && product.list_price && product.discount_price < product.list_price && (
+          {product.list_price && product.price < product.list_price && (
             <div 
               className="absolute bottom-2 left-2 px-2 py-1 rounded text-xs font-bold"
               style={{
@@ -170,7 +170,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
                 color: '#FFFFFF',
               }}
             >
-              -{Math.round(((product.list_price - product.discount_price) / product.list_price) * 100)}%
+              -{Math.round(((product.list_price - product.price) / product.list_price) * 100)}%
             </div>
           )}
         </div>
