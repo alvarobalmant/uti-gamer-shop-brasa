@@ -1,26 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useXbox4Data } from '@/hooks/useXbox4Data';
+import React, { useEffect, useState } from 'react';
+import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { 
-  Loader2, 
-  ShoppingCart, 
-  Star, 
-  Gamepad2, 
-  Zap, 
-  Trophy, 
-  Play, 
-  Tag,
-  Clock,
-  ChevronRight,
-  Heart,
-  Info
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Loader2, ShoppingCart, Star, Gamepad2, Zap, Trophy, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import { cn } from '@/lib/utils';
+import { ProfessionalHeader } from '@/components/Header/ProfessionalHeader';
+import { useXbox4Data } from '@/hooks/useXbox4Data';
 
 // Componente de partículas hexagonais para o hero banner
 const HexagonParticles = () => {
