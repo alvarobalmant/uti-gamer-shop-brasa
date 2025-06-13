@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePages, PageLayoutItem } from '@/hooks/usePages';
@@ -29,6 +28,38 @@ const Xbox4AdminPage: React.FC = () => {
         const layout = await fetchPageLayout(page.id);
         setPageLayoutItems(layout);
         
+        // Ensure the offers section exists
+        const offersSection = layout.find(item => 
+          item.section_key === 'xbox4_offers' || 
+          item.section_key === 'xbox4_deals' || 
+          item.title === 'OFERTAS IMPERDÍVEIS'
+        );
+        
+        if (!offersSection) {
+          console.log('[Xbox4AdminPage] Creating missing OFERTAS IMPERDÍVEIS section');
+          try {
+            const newOffersSection: Omit<PageLayoutItem, 'id'> = {
+              page_id: page.id,
+              section_key: 'xbox4_deals',
+              title: 'OFERTAS IMPERDÍVEIS',
+              display_order: 4,
+              is_visible: true,
+              section_type: 'products',
+              sectionConfig: {
+                filter: { tagIds: ['xbox', 'offer'], limit: 4 },
+                products: []
+              } as any,
+            };
+
+            const createdSection = await addPageSection(page.id, newOffersSection);
+            if (createdSection) {
+              setPageLayoutItems(prev => [...prev, createdSection]);
+            }
+          } catch (error) {
+            console.error('[Xbox4AdminPage] Error creating offers section:', error);
+          }
+        }
+        
         // Carregar configurações existentes para cada seção
         const consolesSection = layout.find(item => item.section_key === 'xbox4_consoles');
         if (consolesSection && consolesSection.sectionConfig) {
@@ -45,9 +76,14 @@ const Xbox4AdminPage: React.FC = () => {
           setAccessoriesConfig(accessoriesSection.sectionConfig);
         }
         
-        const offersSection = layout.find(item => item.section_key === 'xbox4_offers');
-        if (offersSection && offersSection.sectionConfig) {
-          setOffersConfig(offersSection.sectionConfig);
+        const finalOffersSection = layout.find(item => 
+          item.section_key === 'xbox4_offers' || 
+          item.section_key === 'xbox4_deals' || 
+          item.title === 'OFERTAS IMPERDÍVEIS'
+        ) || offersSection;
+        
+        if (finalOffersSection && finalOffersSection.sectionConfig) {
+          setOffersConfig(finalOffersSection.sectionConfig);
         }
         
         const newsSection = layout.find(item => item.section_key === 'xbox4_news');
@@ -60,7 +96,7 @@ const Xbox4AdminPage: React.FC = () => {
       setIsLoadingPageData(false);
     };
     loadPageData();
-  }, [getPageBySlug, fetchPageLayout]);
+  }, [getPageBySlug, fetchPageLayout, addPageSection]);
 
   // CORREÇÃO CRÍTICA no salvamento de configurações
   const handleSaveSection = useCallback(async (sectionKey: string, config: PageLayoutItemConfig) => {
@@ -100,6 +136,7 @@ const Xbox4AdminPage: React.FC = () => {
           'xbox4_games': 'JOGOS EM ALTA',
           'xbox4_accessories': 'ACESSÓRIOS XBOX',
           'xbox4_offers': 'OFERTAS IMPERDÍVEIS',
+          'xbox4_deals': 'OFERTAS IMPERDÍVEIS',
           'xbox4_news': 'NOTÍCIAS & TRAILERS'
         };
         
@@ -131,6 +168,7 @@ const Xbox4AdminPage: React.FC = () => {
           setAccessoriesConfig(config);
           break;
         case 'xbox4_offers':
+        case 'xbox4_deals':
           setOffersConfig(config);
           break;
         case 'xbox4_news':
@@ -203,7 +241,7 @@ const Xbox4AdminPage: React.FC = () => {
         <TabsContent value="offers">
           <Xbox4FeaturedProductsManager
             initialConfig={offersConfig}
-            onSave={(config) => handleSaveSection('xbox4_offers', config)}
+            onSave={(config) => handleSaveSection('xbox4_deals', config)}
             sectionTitle="OFERTAS IMPERDÍVEIS"
             defaultTags={['xbox', 'offer']}
           />

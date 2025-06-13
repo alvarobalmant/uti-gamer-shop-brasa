@@ -1,24 +1,22 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Page, PageLayoutItem } from '@/hooks/usePages';
 import { Product } from '@/hooks/useProducts';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import ProductModal from '@/components/ProductModal';
 import PlatformSectionRenderer from './PlatformSectionRenderer';
+import ProductModal from '@/components/ProductModal';
+import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 
 interface PlatformPageContentProps {
   page: Page;
   layout: PageLayoutItem[];
   products: Product[];
-  onAddToCart: (product: Product, quantity?: number) => void;
+  onAddToCart: (product: Product) => void;
   isModalOpen: boolean;
   selectedProductId: string | null;
-  setIsModalOpen: (isOpen: boolean) => void;
+  setIsModalOpen: (open: boolean) => void;
   handleProductCardClick: (productId: string) => void;
 }
 
-// Main content component for platform pages
 const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
   page,
   layout,
@@ -29,45 +27,86 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
   setIsModalOpen,
   handleProductCardClick
 }) => {
-  // Apply page theme
-  const pageStyle = {
-    '--primary-color': page.theme.primaryColor,
-    '--secondary-color': page.theme.secondaryColor,
-    '--accent-color': page.theme.accentColor || page.theme.primaryColor,
-  } as React.CSSProperties;
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  const handleCartOpen = () => {
+    console.log('[PlatformPageContent] Cart opened');
+    setIsCartOpen(true);
+  };
+
+  const handleAuthOpen = () => {
+    console.log('[PlatformPageContent] Auth modal opened');
+    setIsAuthOpen(true);
+  };
+
+  const handleCartClose = () => {
+    setIsCartOpen(false);
+  };
+
+  const handleAuthClose = () => {
+    setIsAuthOpen(false);
+  };
 
   return (
-    <div style={pageStyle} className="platform-page min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1">
-        {/* Render sections in defined order */}
-        {layout.length > 0 ? (
-          layout.map(section => (
-            <PlatformSectionRenderer
-              key={section.id}
-              section={section}
-              page={page}
-              products={products}
-              onAddToCart={onAddToCart}
-              onProductCardClick={handleProductCardClick}
-            />
-          ))
-        ) : (
-          <div className="container mx-auto py-16 text-center">
-            <p className="text-muted-foreground">
-              Esta página ainda não possui seções configuradas.
-            </p>
-          </div>
-        )}
+    <div className="min-h-screen bg-black">
+      <ProfessionalHeader 
+        onCartOpen={handleCartOpen}
+        onAuthOpen={handleAuthOpen}
+      />
+
+      <main className="pt-4">
+        {layout.map((section) => (
+          <PlatformSectionRenderer
+            key={section.id}
+            section={section}
+            products={products}
+            onAddToCart={onAddToCart}
+            onProductClick={handleProductCardClick}
+          />
+        ))}
       </main>
-      <Footer />
 
       {/* Product Modal */}
-      <ProductModal
-        product={products.find(p => p.id === selectedProductId) || null}
-        isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      />
+      {isModalOpen && selectedProductId && (
+        <ProductModal
+          productId={selectedProductId}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
+
+      {/* Cart Modal - You may need to implement this component */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4">Carrinho de Compras</h2>
+            <p className="text-gray-600 mb-4">Funcionalidade do carrinho será implementada.</p>
+            <button 
+              onClick={handleCartClose}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Auth Modal - You may need to implement this component */}
+      {isAuthOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4">Login / Cadastro</h2>
+            <p className="text-gray-600 mb-4">Funcionalidade de autenticação será implementada.</p>
+            <button 
+              onClick={handleAuthClose}
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
