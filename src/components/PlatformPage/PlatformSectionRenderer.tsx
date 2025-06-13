@@ -121,39 +121,48 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     return [];
   };
 
-  // Filter and enhance products based on section configuration
+  // CORREÇÃO CRÍTICA: Filter and enhance products based on section configuration
   const getFilteredProducts = (sectionConfig: any) => {
     if (!sectionConfig) return products;
     
-    // NEW: Handle Xbox4 specific product configuration with specific products and overrides
-    if (section.section_key?.startsWith('xbox4_') && sectionConfig.products) {
-      const productOverrides = sectionConfig.products as ProductOverride[];
+    // PRIORITY 1: Handle Xbox4 specific product configuration with specific products and overrides
+    const specificProducts = sectionConfig.products || [];
+    
+    if (specificProducts && specificProducts.length > 0) {
+      console.log(`Renderizando produtos específicos para seção ${section.title}:`, specificProducts);
       
-      // Filter products based on the IDs in the specific products array
-      const productIds = productOverrides.map(override => override.productId);
-      let filteredProducts = products.filter(product => productIds.includes(product.id));
-      
-      // Apply overrides to products (title and image customizations)
-      return filteredProducts.map(product => {
-        const override = productOverrides.find(o => o.productId === product.id);
-        if (override) {
+      // Map specific products to complete product objects
+      const productsToRender = specificProducts
+        .map((specificProduct: ProductOverride) => {
+          // Find the base product by ID
+          const baseProduct = products.find(p => p.id === specificProduct.productId);
+          if (!baseProduct) {
+            console.warn(`Produto com ID ${specificProduct.productId} não encontrado`);
+            return null;
+          }
+          
+          // Apply overrides if provided
           return {
-            ...product,
+            ...baseProduct,
             // Apply title override if provided
-            name: override.title || product.name,
+            name: specificProduct.title || baseProduct.name,
             // Apply image override if provided
-            image: override.imageUrl || product.image,
+            image: specificProduct.imageUrl || baseProduct.image,
             // Apply badge override if provided
-            badge_text: override.badge?.text || product.badge_text,
-            badge_color: override.badge?.color || product.badge_color
+            badge_text: specificProduct.badge?.text || baseProduct.badge_text,
+            badge_color: specificProduct.badge?.color || baseProduct.badge_color
           };
-        }
-        return product;
-      });
+        })
+        .filter(Boolean); // Remove nulls
+      
+      console.log(`Produtos renderizados para ${section.title}:`, productsToRender.map(p => p?.name));
+      return productsToRender;
     }
     
-    // Default product filtering logic (by tags)
+    // FALLBACK: Default product filtering logic (by tags)
     const { tagIds, limit } = sectionConfig.filter || {};
+    
+    console.log(`Usando filtro de tags para seção ${section.title}:`, tagIds);
     
     let filtered = products;
     

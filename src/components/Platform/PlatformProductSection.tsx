@@ -104,36 +104,25 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
         {/* Imagem do Produto */}
         <div className="relative aspect-square overflow-hidden">
           <img
-            src={product.imageUrl}
+            src={product.image || '/placeholder.svg'}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.isNew && (
+            {product.badge_visible && product.badge_text && (
               <Badge 
                 className="text-xs font-semibold"
                 style={{
-                  backgroundColor: theme.accentColor,
+                  backgroundColor: product.badge_color || theme.accentColor,
                   color: theme.backgroundColor,
                 }}
               >
-                NOVO
+                {product.badge_text}
               </Badge>
             )}
-            {product.isOnSale && (
-              <Badge 
-                className="text-xs font-semibold"
-                style={{
-                  backgroundColor: '#E60012',
-                  color: '#FFFFFF',
-                }}
-              >
-                OFERTA
-              </Badge>
-            )}
-            {product.isFeatured && (
+            {product.is_featured && (
               <Badge 
                 className="text-xs font-semibold"
                 style={{
@@ -173,7 +162,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
           </div>
 
           {/* Overlay de desconto */}
-          {product.isOnSale && product.originalPrice && (
+          {product.discount_price && product.list_price && product.discount_price < product.list_price && (
             <div 
               className="absolute bottom-2 left-2 px-2 py-1 rounded text-xs font-bold"
               style={{
@@ -181,7 +170,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
                 color: '#FFFFFF',
               }}
             >
-              -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+              -{Math.round(((product.list_price - product.discount_price) / product.list_price) * 100)}%
             </div>
           )}
         </div>
@@ -234,18 +223,18 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
                 >
                   {formatPrice(product.price)}
                 </span>
-                {product.originalPrice && product.originalPrice > product.price && (
+                {product.list_price && product.list_price > product.price && (
                   <span 
                     className="text-sm line-through"
                     style={{ color: theme.textColor, opacity: 0.5 }}
                   >
-                    {formatPrice(product.originalPrice)}
+                    {formatPrice(product.list_price)}
                   </span>
                 )}
               </div>
             )}
             
-            {product.proPrice && (
+            {product.pro_price && (
               <div className="flex items-center gap-1 mt-1">
                 <Badge 
                   variant="outline" 
@@ -261,7 +250,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
                   className="text-sm font-semibold"
                   style={{ color: theme.accentColor }}
                 >
-                  {formatPrice(product.proPrice)}
+                  {formatPrice(product.pro_price)}
                 </span>
               </div>
             )}
@@ -314,7 +303,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2">
                 <div className="aspect-square">
                   <img
-                    src={products[0].imageUrl}
+                    src={products[0].image || '/placeholder.svg'}
                     alt={products[0].name}
                     className="w-full h-full object-cover"
                   />
@@ -415,4 +404,3 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
 };
 
 export default PlatformProductSection;
-

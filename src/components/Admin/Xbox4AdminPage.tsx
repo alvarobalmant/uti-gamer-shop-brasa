@@ -62,6 +62,7 @@ const Xbox4AdminPage: React.FC = () => {
     loadPageData();
   }, [getPageBySlug, fetchPageLayout]);
 
+  // CORREÇÃO CRÍTICA no salvamento de configurações
   const handleSaveSection = useCallback(async (sectionKey: string, config: PageLayoutItemConfig) => {
     if (!xbox4PageId) {
       console.error('xbox4PageId não disponível para salvar a configuração.');
@@ -72,16 +73,25 @@ const Xbox4AdminPage: React.FC = () => {
       const existingItem = pageLayoutItems.find(item => item.section_key === sectionKey);
 
       if (existingItem) {
+        // IMPORTANTE: Preservar a estrutura existente do section_config
+        const updatedConfig = {
+          ...existingItem.sectionConfig,
+          ...config // Mesclar nova configuração com a existente
+        };
+        
+        console.log(`Salvando configuração para ${sectionKey}:`, updatedConfig);
+        
         // Update existing section
-        console.log('Updating existing section:', sectionKey);
         const updatedLayoutItems = pageLayoutItems.map(item =>
           item.section_key === sectionKey
-            ? { ...item, sectionConfig: config as any }
+            ? { ...item, sectionConfig: updatedConfig as any }
             : item
         );
 
         await updatePageLayout(xbox4PageId, updatedLayoutItems);
         setPageLayoutItems(updatedLayoutItems);
+        
+        console.log(`Configuração salva com sucesso para ${sectionKey}:`, updatedConfig);
       } else {
         // Create new section
         console.log('Creating new section:', sectionKey);
@@ -128,7 +138,6 @@ const Xbox4AdminPage: React.FC = () => {
           break;
       }
       
-      console.log('Configuração salva com sucesso:', config);
     } catch (err) {
       console.error('Erro ao salvar configuração:', err);
     }
