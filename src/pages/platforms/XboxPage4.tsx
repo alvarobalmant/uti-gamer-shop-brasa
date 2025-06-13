@@ -2,7 +2,7 @@
 import React from 'react';
 import PlatformPage from '@/components/PlatformPage';
 
-// Xbox4 page using the dynamic platform system
+// Xbox4 page using the dynamic platform system - NO VISUAL CHANGES, ONLY DATA STRUCTURE
 const XboxPage4: React.FC = () => {
   console.log('[Xbox4] Rendering XboxPage4 with dynamic platform system');
   return <PlatformPage slug="xbox4" />;

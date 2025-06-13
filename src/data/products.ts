@@ -1,3 +1,4 @@
+
 import { Product } from '@/hooks/useProducts';
 
 export const dummyProducts: Product[] = [
@@ -10,7 +11,9 @@ export const dummyProducts: Product[] = [
     sizes: ['Físico', 'Digital'],
     colors: ['Standard'],
     stock: 3,
-    tags: [{ id: '1', name: 'PlayStation' }, { id: '8', name: 'Jogos Físicos' }]
+    tags: [{ id: '1', name: 'PlayStation' }, { id: '8', name: 'Jogos Físicos' }],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '2',
@@ -21,7 +24,9 @@ export const dummyProducts: Product[] = [
     sizes: ['Físico', 'Digital'],
     colors: ['Standard', 'Deluxe'],
     stock: 15,
-    tags: [{ id: '1', name: 'PlayStation' }, { id: '8', name: 'Jogos Físicos' }]
+    tags: [{ id: '1', name: 'PlayStation' }, { id: '8', name: 'Jogos Físicos' }],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '3',
@@ -32,7 +37,9 @@ export const dummyProducts: Product[] = [
     sizes: ['Físico', 'Digital'],
     colors: ['Standard'],
     stock: 8,
-    tags: [{ id: '3', name: 'Xbox' }, { id: '8', name: 'Jogos Físicos' }]
+    tags: [{ id: '3', name: 'Xbox' }, { id: '8', name: 'Jogos Físicos' }],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '4',
@@ -43,7 +50,9 @@ export const dummyProducts: Product[] = [
     sizes: ['Físico', 'Digital'],
     colors: ['Standard'],
     stock: 12,
-    tags: [{ id: '2', name: 'Nintendo' }, { id: '8', name: 'Jogos Físicos' }]
+    tags: [{ id: '2', name: 'Nintendo' }, { id: '8', name: 'Jogos Físicos' }],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '5',
@@ -54,7 +63,9 @@ export const dummyProducts: Product[] = [
     sizes: ['Único'],
     colors: ['Branco', 'Preto', 'Azul'],
     stock: 25,
-    tags: [{ id: '1', name: 'PlayStation' }, { id: '6', name: 'Acessórios' }]
+    tags: [{ id: '1', name: 'PlayStation' }, { id: '6', name: 'Acessórios' }],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '6',
@@ -65,7 +76,9 @@ export const dummyProducts: Product[] = [
     sizes: ['Único'],
     colors: ['Preto', 'Branco', 'Verde'],
     stock: 18,
-    tags: [{ id: '3', name: 'Xbox' }, { id: '6', name: 'Acessórios' }]
+    tags: [{ id: '3', name: 'Xbox' }, { id: '6', name: 'Acessórios' }],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '7',
@@ -76,7 +89,9 @@ export const dummyProducts: Product[] = [
     sizes: ['Único'],
     colors: ['Preto'],
     stock: 7,
-    tags: [{ id: '2', name: 'Nintendo' }, { id: '6', name: 'Acessórios' }]
+    tags: [{ id: '2', name: 'Nintendo' }, { id: '6', name: 'Acessórios' }],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '8',
@@ -87,7 +102,9 @@ export const dummyProducts: Product[] = [
     sizes: ['Digital', 'Físico'],
     colors: ['Standard', 'Deluxe'],
     stock: 0,
-    tags: [{ id: '4', name: 'PC' }, { id: '9', name: 'Jogos Digitais' }]
+    tags: [{ id: '4', name: 'PC' }, { id: '9', name: 'Jogos Digitais' }],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '9',
@@ -98,6 +115,8 @@ export const dummyProducts: Product[] = [
     sizes: ['Único'],
     colors: ['Preto', 'Vermelho', 'Azul'],
     stock: 22,
-    tags: [{ id: '6', name: 'Acessórios' }]
+    tags: [{ id: '6', name: 'Acessórios' }],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ];

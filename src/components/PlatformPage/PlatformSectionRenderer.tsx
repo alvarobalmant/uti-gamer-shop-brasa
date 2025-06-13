@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { PageLayoutItem, Page } from '@/hooks/usePages';
 import { Product } from '@/hooks/useProducts';
@@ -120,7 +119,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     return [];
   };
 
-  // Filter and enhance products based on section configuration
+  // Filter and enhance products based on section configuration - MODIFIED ONLY FOR DATA LOGIC
   const getFilteredProducts = (sectionConfig: any) => {
     if (!sectionConfig) return products;
     
@@ -140,7 +139,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
             return null;
           }
           
-          // Apply overrides if provided
+          // Apply overrides if provided - ONLY DATA CHANGES, NO VISUAL CHANGES
           return {
             ...baseProduct,
             // Apply title override if provided
