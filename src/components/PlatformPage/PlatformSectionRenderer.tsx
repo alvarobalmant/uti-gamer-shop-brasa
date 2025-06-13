@@ -132,22 +132,50 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
 
   const cardVariant = getCardVariant();
 
+  // Get section background based on variant for visual variety
+  const getSectionBackground = () => {
+    if (cardVariant === 'deal') {
+      return 'bg-gradient-to-br from-gray-900 via-black to-gray-900';
+    }
+    if (cardVariant === 'game') {
+      return 'bg-gray-900';
+    }
+    if (cardVariant === 'accessory') {
+      return 'bg-gradient-to-br from-black via-gray-900 to-black';
+    }
+    return 'bg-black';
+  };
+
   return (
-    <section className="py-8 md:py-12 lg:py-16 bg-gray-900 relative overflow-hidden">
+    <section className={cn(
+      "relative overflow-hidden",
+      getSectionBackground(),
+      // Mobile: generous vertical spacing
+      "py-12 md:py-16 lg:py-20"
+    )}>
       <div className="container mx-auto px-4">
-        <div className="text-center mb-6 md:mb-8">
+        <div className={cn(
+          "text-center",
+          // Mobile: more spacing between title and content
+          "mb-8 md:mb-12"
+        )}>
           <h2 className={cn(
-            "font-black mb-2 md:mb-4 text-white",
-            // Mobile: text-2xl, Desktop: text-4xl md:text-5xl
-            "text-2xl md:text-4xl lg:text-5xl"
+            "font-black text-white tracking-tight",
+            // Mobile: improved typography hierarchy
+            "text-2xl md:text-4xl lg:text-5xl",
+            "leading-tight md:leading-tight",
+            // Mobile: better spacing below title
+            "mb-3 md:mb-4"
           )}>
             {section.title}
           </h2>
         </div>
 
         <div className={cn(
-          "grid gap-4 md:gap-6",
-          // Mobile responsivo: sempre 2 colunas para games, 1-2 para outros
+          "grid",
+          // Mobile: improved spacing between cards
+          "gap-6 md:gap-8",
+          // Mobile: better responsive grid
           cardVariant === 'game' 
             ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-5" 
             : "grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4"

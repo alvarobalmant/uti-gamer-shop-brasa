@@ -13,25 +13,27 @@ const ProductCardPrice = ({ product, variant = "default" }: ProductCardPriceProp
   
   return (
     <div className={cn(
-      "flex items-center justify-between mb-2 md:mb-3",
-      isGame ? "mb-1 md:mb-2 flex-col items-start gap-1" : "flex-row"
+      "flex items-center justify-between",
+      // Mobile: more spacing for visual clarity
+      "mb-3 md:mb-4",
+      isGame ? "flex-col items-start gap-1" : "flex-row"
     )}>
       <div className={cn(
         "font-black text-[#107C10]",
-        // Mobile: texto legível mas compacto
+        // Mobile: better price visibility
         isGame 
-          ? "text-sm md:text-xl" // Games: menor no mobile
-          : "text-base md:text-xl" // Outros: tamanho adaptativo
+          ? "text-base md:text-xl" // Games: larger on mobile
+          : "text-lg md:text-xl" // Outros: prominent pricing
       )}>
         R$ {product.price?.toFixed(2)}
       </div>
       {product.originalPrice && product.originalPrice > product.price && (
         <div className={cn(
           "text-gray-400 line-through",
-          // Mobile: texto proporcional
+          // Mobile: proportional original price
           isGame 
-            ? "text-xs md:text-sm" 
-            : "text-sm md:text-base"
+            ? "text-sm md:text-base" 
+            : "text-base md:text-lg"
         )}>
           R$ {product.originalPrice.toFixed(2)}
         </div>

@@ -47,16 +47,18 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       }}
       className={cn(
         "group relative bg-gray-900 rounded-xl overflow-hidden border border-transparent cursor-pointer",
-        "transform-gpu will-change-transform transition-all duration-150 ease-in-out", // GPU optimization + mobile transitions
-        // Mobile responsive aspect ratios
+        "transform-gpu will-change-transform transition-all duration-150 ease-in-out",
+        // Mobile: visual breathing room with shadows
+        "shadow-lg hover:shadow-xl",
+        // Mobile responsive aspect ratios with better proportions
         isGame 
           ? "aspect-[2/3]" // Games mantém proporção vertical
-          : "aspect-square md:aspect-square", // Outros produtos
+          : "aspect-square", // Outros produtos
         isDeal ? "bg-gradient-to-br from-[#107C10]/20 via-black to-black" : "",
         // Mobile touch feedback
-        "active:scale-95 md:active:scale-100", // Touch feedback apenas no mobile
-        // Minimum touch area para mobile (44px mínimo)
-        "min-h-[200px] md:min-h-0"
+        "active:scale-95 md:active:scale-100",
+        // Better minimum size for mobile
+        "min-h-[220px] md:min-h-0"
       )}
       style={{
         transformStyle: "preserve-3d",
@@ -68,10 +70,10 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       
       <div className={cn(
         "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent",
-        // Mobile: padding reduzido mas legível
+        // Mobile: generous padding for readability
         isGame 
-          ? "p-2 md:p-3 pt-12 md:pt-16" // Games: menos padding no mobile
-          : "p-3 md:p-6" // Outros: padding adaptativo
+          ? "p-3 md:p-4 pt-16 md:pt-20" // Games: more padding
+          : "p-4 md:p-6" // Outros: even more padding
       )}>
         <ProductCardInfo product={product} variant={variant} />
         <ProductCardPrice product={product} variant={variant} />
