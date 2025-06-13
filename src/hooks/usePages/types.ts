@@ -33,20 +33,13 @@ export interface PageLayoutItem {
   title?: string;
   display_order: number;
   is_visible: boolean;
-<<<<<<< HEAD
-  section_type: 'banner' | 'products' | 'featured' | 'custom';
-=======
   section_type: 'banner' | 'products' | 'featured' | 'custom' | 'news';
-  section_config?: any;
->>>>>>> b625912f6929f41cd101c2aad275766eb7552244
   sectionConfig?: any;
-  created_at?: string; // Add missing created_at property
-  updated_at?: string; // Add missing updated_at property
   
   // Helper properties for frontend (mapped from snake_case)
   pageId?: string;
   sectionKey?: string;
   displayOrder?: number;
   isVisible?: boolean;
-  sectionType?: 'banner' | 'products' | 'featured' | 'custom';
+  sectionType?: 'banner' | 'products' | 'featured' | 'custom' | 'news';
 }

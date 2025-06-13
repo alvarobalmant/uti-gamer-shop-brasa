@@ -17,6 +17,27 @@ export const createPageOperations = (
     return pages.find(page => page.id === id) || null;
   };
 
+  // Helper function to safely convert theme data
+  const convertThemeData = (themeData: any): Page['theme'] => {
+    if (!themeData || typeof themeData !== 'object') {
+      return {
+        primaryColor: '#107C10',
+        secondaryColor: '#3A3A3A'
+      };
+    }
+
+    // Handle case where theme is an array (shouldn't happen but just in case)
+    if (Array.isArray(themeData)) {
+      return {
+        primaryColor: '#107C10',
+        secondaryColor: '#3A3A3A'
+      };
+    }
+
+    // Return the theme data as is if it's a proper object
+    return themeData as Page['theme'];
+  };
+
   // Carregar todas as páginas do Supabase
   const fetchPages = async () => {
     try {
@@ -41,14 +62,7 @@ export const createPageOperations = (
         slug: pageData.slug,
         description: pageData.description || '',
         isActive: pageData.is_active,
-<<<<<<< HEAD
-        theme: (pageData.theme && typeof pageData.theme === 'object') ? pageData.theme as Page['theme'] : {
-=======
-        theme: (pageData.theme && typeof pageData.theme === 'object') ? pageData.theme as any : {
->>>>>>> b625912f6929f41cd101c2aad275766eb7552244
-          primaryColor: '#107C10',
-          secondaryColor: '#3A3A3A'
-        },
+        theme: convertThemeData(pageData.theme),
         filters: {
           tagIds: [],
           categoryIds: [],
@@ -98,14 +112,7 @@ export const createPageOperations = (
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-<<<<<<< HEAD
-        theme: (data.theme && typeof data.theme === 'object') ? data.theme as Page['theme'] : {
-=======
-        theme: (data.theme && typeof data.theme === 'object') ? data.theme as any : {
->>>>>>> b625912f6929f41cd101c2aad275766eb7552244
-          primaryColor: '#107C10',
-          secondaryColor: '#3A3A3A'
-        },
+        theme: convertThemeData(data.theme),
         filters: pageData.filters,
         createdAt: data.created_at,
         updatedAt: data.updated_at
@@ -151,14 +158,7 @@ export const createPageOperations = (
         slug: data.slug,
         description: data.description || '',
         isActive: data.is_active,
-<<<<<<< HEAD
-        theme: (data.theme && typeof data.theme === 'object') ? data.theme as Page['theme'] : {
-=======
-        theme: (data.theme && typeof data.theme === 'object') ? data.theme as any : {
->>>>>>> b625912f6929f41cd101c2aad275766eb7552244
-          primaryColor: '#107C10',
-          secondaryColor: '#3A3A3A'
-        },
+        theme: convertThemeData(data.theme),
         filters: pageData.filters || {
           tagIds: [],
           categoryIds: [],

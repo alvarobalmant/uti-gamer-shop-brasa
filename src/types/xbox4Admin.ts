@@ -1,3 +1,4 @@
+
 export interface ProductOverride {
   productId: string;
   imageUrl?: string;
@@ -50,14 +51,15 @@ export interface Xbox4BannersConfig {
 }
 
 export interface PageLayoutItemConfig {
-  // This will be the union of all possible section configs
-  // For now, it primarily represents the Xbox4FeaturedProductsConfig
-  // As other sections are implemented, they will be added here.
-  products?: Xbox4FeaturedProductsConfig;
+  // New simple structure for xbox4_featured_products
+  filter?: {
+    tagIds?: string[];
+    limit?: number;
+  };
+  products?: ProductOverride[];
+  
+  // Legacy support for advanced configurations
   news?: Xbox4NewsConfig;
   offers?: Xbox4OffersConfig;
   banners?: Xbox4BannersConfig;
-  // Add other common properties if needed across all sections
 }
-
-

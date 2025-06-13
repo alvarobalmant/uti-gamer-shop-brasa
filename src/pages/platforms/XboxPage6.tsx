@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
@@ -99,7 +100,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       
       {/* Badges */}
       <div className="absolute top-3 left-3 flex flex-col gap-2">
-        {product.isFeatured && (
+        {product.is_featured && (
           <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg">
             DESTAQUE
           </Badge>
@@ -347,7 +348,7 @@ const XboxPage6 = () => {
       ).slice(0, 3);
 
       const deals = xboxProducts.filter(product => 
-        product.isOnSale || product.isFeatured
+        product.is_featured
       ).map(product => ({
         ...product,
         discount: Math.floor(Math.random() * 30) + 10, // Simulando descontos entre 10% e 40%
@@ -371,6 +372,16 @@ const XboxPage6 = () => {
     navigate(`/produto/${productId}`);
   };
 
+  const handleCartOpen = () => {
+    // Handle cart open logic
+    console.log('Cart opened');
+  };
+
+  const handleAuthOpen = () => {
+    // Handle auth open logic
+    console.log('Auth opened');
+  };
+
   // Dados de exemplo para fallback caso não haja produtos
   const fallbackProducts = {
     consoles: [
@@ -379,7 +390,7 @@ const XboxPage6 = () => {
         name: 'Xbox Series X',
         price: 3999.90,
         imageUrl: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&h=400&fit=crop&crop=center',
-        isFeatured: true
+        is_featured: true
       },
       {
         id: 'fallback-2',
@@ -420,7 +431,7 @@ const XboxPage6 = () => {
         originalPrice: 149.90,
         discount: 20,
         imageUrl: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=600&h=400&fit=crop&crop=center',
-        isFeatured: true
+        is_featured: true
       }
     ]
   };
@@ -444,7 +455,7 @@ const XboxPage6 = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <ProfessionalHeader />
+      <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
       
       {/* Hero Banner */}
       <section 
@@ -575,11 +586,10 @@ const XboxPage6 = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {displayProducts.consoles.map((product, index) => (
+            {displayProducts.consoles.map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
-                index={index}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
               />
@@ -614,11 +624,10 @@ const XboxPage6 = () => {
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {displayProducts.games.slice(0, 10).map((product, index) => (
+            {displayProducts.games.slice(0, 10).map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
-                index={index}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="game"
@@ -665,11 +674,10 @@ const XboxPage6 = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {filteredProducts.accessories.map((product, index) => (
+            {filteredProducts.accessories.map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
-                index={index}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="accessory"
@@ -760,11 +768,10 @@ const XboxPage6 = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {displayProducts.deals.map((product, index) => (
+            {displayProducts.deals.map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
-                index={index}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="deal"

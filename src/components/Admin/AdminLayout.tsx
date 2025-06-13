@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -9,8 +10,9 @@ const AdminLayout: React.FC = () => {
 
   // Basic sidebar navigation items
   const navItems = [
-    // { href: '/admin', label: 'Dashboard', icon: LayoutDashboard    // { href: 
-'\/admin\/sections\', label: \'Seções Produtos\', icon: Box }, // Add more admin links here (e.g., Products, Orders, Settings)
+    // { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    // { href: '/admin/sections', label: 'Seções Produtos', icon: Box },
+    // Add more admin links here (e.g., Products, Orders, Settings)
     // { href: '/admin/settings', label: 'Configurações', icon: Settings },
   ];
 
@@ -65,4 +67,3 @@ const AdminLayout: React.FC = () => {
 };
 
 export default AdminLayout;
-
