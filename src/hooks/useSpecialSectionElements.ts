@@ -1,199 +1,198 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SpecialSectionElement } from '@/types/specialSections';
-import { useToast } from '@/components/ui/use-toast';
 
-export const useSpecialSectionElements = (sectionId?: string) => {
+export const useSpecialSectionElements = (specialSectionId?: string) => {
   const [elements, setElements] = useState<SpecialSectionElement[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  // Helper function to safely convert content_ids from Json to string[]
-  const convertContentIds = (contentIds: any): string[] => {
-    if (!contentIds) return [];
-    if (Array.isArray(contentIds)) {
-      return contentIds.filter(id => typeof id === 'string');
-    }
-    if (typeof contentIds === 'string') {
-      try {
-        const parsed = JSON.parse(contentIds);
-        return Array.isArray(parsed) ? parsed.filter(id => typeof id === 'string') : [];
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  };
-
-  // Helper function to convert database element to frontend format
-  const convertElement = (dbElement: any): SpecialSectionElement => ({
-    id: dbElement.id,
-    special_section_id: dbElement.special_section_id,
-    element_type: dbElement.element_type,
-    title: dbElement.title,
-    subtitle: dbElement.subtitle,
-    image_url: dbElement.image_url,
-    link_url: dbElement.link_url,
-    link_text: dbElement.link_text,
-    background_type: (dbElement.background_type as any) || 'color',
-    background_color: dbElement.background_color,
-    background_image_url: dbElement.background_image_url,
-    background_gradient: dbElement.background_gradient,
-    text_color: dbElement.text_color,
-    button_color: dbElement.button_color,
-    button_text_color: dbElement.button_text_color,
-    content_type: dbElement.content_type,
-    content_ids: convertContentIds(dbElement.content_ids),
-    grid_position: dbElement.grid_position,
-    grid_size: dbElement.grid_size,
-    width_percentage: dbElement.width_percentage,
-    height_desktop: dbElement.height_desktop,
-    height_mobile: dbElement.height_mobile,
-    padding: dbElement.padding,
-    margin_bottom: dbElement.margin_bottom,
-    border_radius: dbElement.border_radius,
-    visible_items_desktop: dbElement.visible_items_desktop,
-    visible_items_tablet: dbElement.visible_items_tablet,
-    visible_items_mobile: dbElement.visible_items_mobile,
-    display_order: dbElement.display_order,
-    is_active: dbElement.is_active,
-    mobile_settings: dbElement.mobile_settings,
-    created_at: dbElement.created_at,
-    updated_at: dbElement.updated_at,
-  });
 
   const fetchElements = async () => {
-    if (!sectionId) return;
-    
-    setLoading(true);
-    setError(null);
-    
+    if (!specialSectionId) {
+      setElements([]);
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { data, error } = await supabase
+      setLoading(true);
+      const { data, error: fetchError } = await supabase
         .from('special_section_elements')
         .select('*')
-        .eq('special_section_id', sectionId)
+        .eq('special_section_id', specialSectionId)
         .order('display_order', { ascending: true });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
 
-      const convertedElements = (data || []).map(convertElement);
-      setElements(convertedElements);
+      // Map the database data to frontend format
+      const mappedElements: SpecialSectionElement[] = (data || []).map(item => ({
+        id: item.id,
+        special_section_id: item.special_section_id,
+        element_type: item.element_type as SpecialSectionElement['element_type'],
+        title: item.title || undefined,
+        subtitle: item.subtitle || undefined,
+        image_url: item.image_url || undefined,
+        link_url: item.link_url || undefined,
+        link_text: item.link_text || undefined,
+        display_order: item.display_order || 0,
+        is_active: item.is_active ?? true,
+        background_type: (item.background_type as SpecialSectionElement['background_type']) || 'transparent',
+        background_color: item.background_color || '#FFFFFF',
+        background_image_url: item.background_image_url || undefined,
+        background_gradient: item.background_gradient || undefined,
+        text_color: item.text_color || '#000000',
+        button_color: item.button_color || undefined,
+        button_text_color: item.button_text_color || undefined,
+        content_type: item.content_type || undefined,
+        content_ids: Array.isArray(item.content_ids) ? item.content_ids.filter(id => typeof id === 'string') as string[] : [],
+        grid_position: item.grid_position || undefined,
+        grid_size: item.grid_size || undefined,
+        width_percentage: item.width_percentage || undefined,
+        height_desktop: item.height_desktop || undefined,
+        height_mobile: item.height_mobile || undefined,
+        visible_items_desktop: item.visible_items_desktop || 4,
+        visible_items_tablet: item.visible_items_tablet || 3,
+        visible_items_mobile: item.visible_items_mobile || 1,
+        padding: item.padding || 20,
+        margin_bottom: item.margin_bottom || 30,
+        border_radius: item.border_radius || 0,
+        mobile_settings: item.mobile_settings || undefined,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      }));
+
+      setElements(mappedElements);
+      setError(null);
     } catch (err: any) {
-      console.error('Error fetching elements:', err);
-      setError(err.message);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível carregar os elementos da seção.',
-        variant: 'destructive',
-      });
+      console.error('Error fetching special section elements:', err);
+      setError(err.message || 'Erro ao carregar elementos da seção especial');
     } finally {
       setLoading(false);
     }
   };
 
-  // Function to add a new element
-  const addElement = async (element: Omit<SpecialSectionElement, 'id' | 'created_at' | 'updated_at'>) => {
-    setLoading(true);
-    setError(null);
-
+  const addElement = async (elementData: Omit<SpecialSectionElement, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const { data, error } = await supabase
+      const { data, error: createError } = await supabase
         .from('special_section_elements')
-        .insert([element])
+        .insert({
+          special_section_id: elementData.special_section_id,
+          element_type: elementData.element_type,
+          title: elementData.title,
+          subtitle: elementData.subtitle,
+          image_url: elementData.image_url,
+          link_url: elementData.link_url,
+          link_text: elementData.link_text,
+          display_order: elementData.display_order,
+          is_active: elementData.is_active,
+          background_type: elementData.background_type,
+          background_color: elementData.background_color,
+          background_image_url: elementData.background_image_url,
+          background_gradient: elementData.background_gradient,
+          text_color: elementData.text_color,
+          button_color: elementData.button_color,
+          button_text_color: elementData.button_text_color,
+          content_type: elementData.content_type,
+          content_ids: elementData.content_ids || [],
+          grid_position: elementData.grid_position,
+          grid_size: elementData.grid_size,
+          width_percentage: elementData.width_percentage,
+          height_desktop: elementData.height_desktop,
+          height_mobile: elementData.height_mobile,
+          visible_items_desktop: elementData.visible_items_desktop,
+          visible_items_tablet: elementData.visible_items_tablet,
+          visible_items_mobile: elementData.visible_items_mobile,
+          padding: elementData.padding,
+          margin_bottom: elementData.margin_bottom,
+          border_radius: elementData.border_radius,
+          mobile_settings: elementData.mobile_settings
+        })
         .select()
         .single();
 
-      if (error) throw error;
+      if (createError) throw createError;
 
-      const newElement = convertElement(data);
-      setElements(prev => [...prev, newElement]);
-      toast({
-        title: 'Sucesso',
-        description: 'Elemento adicionado com sucesso.',
-      });
+      await fetchElements();
+      return data;
     } catch (err: any) {
-      console.error('Error adding element:', err);
-      setError(err.message);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível adicionar o elemento.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
+      console.error('Error creating special section element:', err);
+      setError(err.message || 'Erro ao criar elemento da seção especial');
+      throw err;
     }
   };
 
-  // Function to update an existing element
-  const updateElement = async (id: string, updates: Partial<SpecialSectionElement>) => {
-    setLoading(true);
-    setError(null);
-
+  const updateElement = async (id: string, elementData: Partial<SpecialSectionElement>) => {
     try {
-      const { data, error } = await supabase
+      const { data, error: updateError } = await supabase
         .from('special_section_elements')
-        .update(updates)
+        .update({
+          element_type: elementData.element_type,
+          title: elementData.title,
+          subtitle: elementData.subtitle,
+          image_url: elementData.image_url,
+          link_url: elementData.link_url,
+          link_text: elementData.link_text,
+          display_order: elementData.display_order,
+          is_active: elementData.is_active,
+          background_type: elementData.background_type,
+          background_color: elementData.background_color,
+          background_image_url: elementData.background_image_url,
+          background_gradient: elementData.background_gradient,
+          text_color: elementData.text_color,
+          button_color: elementData.button_color,
+          button_text_color: elementData.button_text_color,
+          content_type: elementData.content_type,
+          content_ids: elementData.content_ids || [],
+          grid_position: elementData.grid_position,
+          grid_size: elementData.grid_size,
+          width_percentage: elementData.width_percentage,
+          height_desktop: elementData.height_desktop,
+          height_mobile: elementData.height_mobile,
+          visible_items_desktop: elementData.visible_items_desktop,
+          visible_items_tablet: elementData.visible_items_tablet,
+          visible_items_mobile: elementData.visible_items_mobile,
+          padding: elementData.padding,
+          margin_bottom: elementData.margin_bottom,
+          border_radius: elementData.border_radius,
+          mobile_settings: elementData.mobile_settings
+        })
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      const updatedElement = convertElement(data);
-      setElements(prev => prev.map(el => (el.id === id ? updatedElement : el)));
-      toast({
-        title: 'Sucesso',
-        description: 'Elemento atualizado com sucesso.',
-      });
+      await fetchElements();
+      return data;
     } catch (err: any) {
-      console.error('Error updating element:', err);
-      setError(err.message);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível atualizar o elemento.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
+      console.error('Error updating special section element:', err);
+      setError(err.message || 'Erro ao atualizar elemento da seção especial');
+      throw err;
     }
   };
 
-  // Function to delete an element
   const deleteElement = async (id: string) => {
-    setLoading(true);
-    setError(null);
-
     try {
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('special_section_elements')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
-      setElements(prev => prev.filter(el => el.id !== id));
-      toast({
-        title: 'Sucesso',
-        description: 'Elemento removido com sucesso.',
-      });
+      await fetchElements();
+      return true;
     } catch (err: any) {
-      console.error('Error deleting element:', err);
-      setError(err.message);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível remover o elemento.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
+      console.error('Error deleting special section element:', err);
+      setError(err.message || 'Erro ao excluir elemento da seção especial');
+      throw err;
     }
   };
 
   useEffect(() => {
     fetchElements();
-  }, [sectionId]);
+  }, [specialSectionId]);
 
   return {
     elements,
@@ -202,6 +201,6 @@ export const useSpecialSectionElements = (sectionId?: string) => {
     fetchElements,
     addElement,
     updateElement,
-    deleteElement,
+    deleteElement
   };
 };
