@@ -23,6 +23,7 @@ export interface Product {
   badge_color?: string;
   badge_visible?: boolean;
   is_featured?: boolean;
+  is_active?: boolean;
   rating?: number;
   created_at: string;
   updated_at: string;

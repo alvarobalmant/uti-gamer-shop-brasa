@@ -124,8 +124,8 @@ export const useXbox4Data = (): Xbox4Data => {
         let deals: Product[] = [];
         let newsArticles: any[] = [];
 
-        sections?.forEach((section: Xbox4Section) => {
-          const config = section.sectionConfig || {};
+        sections?.forEach((section: any) => {
+          const config = section.section_config || {};
           
           switch (section.section_key) {
             case 'xbox4_consoles':

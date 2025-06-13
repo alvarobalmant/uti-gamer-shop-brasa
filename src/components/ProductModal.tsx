@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -128,40 +129,44 @@ const ProductModal: React.FC<ProductModalProps> = ({
       name: 'Xbox Wireless Controller',
       price: 299.99,
       image: '/placeholder.svg',
-      badge: '',
-      badgeColor: '',
-      inStock: true,
-      stock: 10
+      badge_text: '',
+      badge_color: '',
+      stock: 10,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       id: '3',
       name: 'Xbox Game Pass Ultimate',
       price: 44.99,
       image: '/placeholder.svg',
-      badge: '',
-      badgeColor: '',
-      inStock: true,
-      stock: 10
+      badge_text: '',
+      badge_color: '',
+      stock: 10,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       id: '4',
       name: 'Halo Infinite',
       price: 199.99,
       image: '/placeholder.svg',
-      badge: '',
-      badgeColor: '',
-      inStock: true,
-      stock: 10
+      badge_text: '',
+      badge_color: '',
+      stock: 10,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       id: '5',
       name: 'Forza Horizon 5',
       price: 179.99,
       image: '/placeholder.svg',
-      badge: '',
-      badgeColor: '',
-      inStock: true,
-      stock: 10
+      badge_text: '',
+      badge_color: '',
+      stock: 10,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
   ];
 
@@ -238,9 +243,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
-                    {product.badge && (
-                      <Badge variant="secondary" className={`bg-${product.badgeColor || 'orange'}-500 text-white`}>
-                        {product.badge}
+                    {product.badge_text && (
+                      <Badge variant="secondary" className={`bg-${product.badge_color || 'orange'}-500 text-white`}>
+                        {product.badge_text}
                       </Badge>
                     )}
                   </div>
@@ -481,9 +486,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-                      {product.badge && (
-                        <Badge variant="secondary" className={`bg-${product.badgeColor || 'orange'}-500 text-white`}>
-                          {product.badge}
+                      {product.badge_text && (
+                        <Badge variant="secondary" className={`bg-${product.badge_color || 'orange'}-500 text-white`}>
+                          {product.badge_text}
                         </Badge>
                       )}
                     </div>
@@ -643,4 +648,3 @@ const ProductModal: React.FC<ProductModalProps> = ({
 };
 
 export default ProductModal;
-
