@@ -15,7 +15,7 @@ export interface SpecialSectionElement {
   text_color?: string;
   button_color?: string;
   button_text_color?: string;
-  content_type?: string;
+  content_type?: 'products' | 'tags' | 'manual';
   content_ids?: string[];
   grid_position?: string;
   grid_size?: string;
@@ -58,4 +58,28 @@ export interface SpecialSection {
   content_config?: any;
   created_at?: string;
   updated_at?: string;
+}
+
+// Create and update input types
+export type SpecialSectionCreateInput = Omit<SpecialSection, 'id' | 'created_at' | 'updated_at'>;
+export type SpecialSectionUpdateInput = Partial<SpecialSectionCreateInput>;
+
+export type SpecialSectionElementCreateInput = Omit<SpecialSectionElement, 'id' | 'created_at' | 'updated_at'>;
+export type SpecialSectionElementUpdateInput = Partial<SpecialSectionElementCreateInput>;
+
+// Carousel configuration for products
+export interface CarouselConfig {
+  filter?: {
+    tagIds?: string[];
+    categoryIds?: string[];
+    featured?: boolean;
+    newReleases?: boolean;
+    onSale?: boolean;
+    limit?: number;
+  };
+  display?: {
+    columns?: number;
+    showPrices?: boolean;
+    showBadges?: boolean;
+  };
 }

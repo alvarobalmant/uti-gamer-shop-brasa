@@ -1,19 +1,21 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductManager from './ProductManager';
 import { BannerManager } from './BannerManager';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
-import UserSubscriptionManagement from './UserSubscriptionManagement'; // Corrected import name based on file listing
+import UserSubscriptionManagement from './UserSubscriptionManagement';
 import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
 import ProductSectionManager from './ProductSectionManager';
 import PageManager from './PageManager';
 import { QuickLinkManager } from './QuickLinkManager';
-import SpecialSectionManager from './SpecialSectionManager'; // Import SpecialSectionManager
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star } from 'lucide-react'; // Added Star icon
+import SpecialSectionManager from './SpecialSectionManager';
+import Xbox4FeaturedProductsManager from './Xbox4FeaturedProductsManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2 } from 'lucide-react';
 
 export const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('layout'); // Default to layout management
+  const [activeTab, setActiveTab] = useState('layout');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
@@ -28,8 +30,7 @@ export const AdminPanel = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Updated grid-cols-10 to accommodate the new tab */}
-          <TabsList className="grid w-full grid-cols-10 bg-gray-800 border-gray-700">
+          <TabsList className="grid w-full grid-cols-11 bg-gray-800 border-gray-700">
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutList className="w-4 h-4" />
               Layout Home
@@ -38,11 +39,14 @@ export const AdminPanel = () => {
               <Globe className="w-4 h-4" />
               Páginas
             </TabsTrigger>
+            <TabsTrigger value="xbox4" className="flex items-center gap-2">
+              <Gamepad2 className="w-4 h-4" />
+              Xbox4
+            </TabsTrigger>
             <TabsTrigger value="product_sections" className="flex items-center gap-2">
               <ListChecks className="w-4 h-4" />
               Seções Produtos
             </TabsTrigger>
-            {/* Added Special Sections Tab */}
             <TabsTrigger value="special_sections" className="flex items-center gap-2">
               <Star className="w-4 h-4" />
               Seções Especiais
@@ -73,22 +77,22 @@ export const AdminPanel = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Content for Homepage Layout Management */}
           <TabsContent value="layout">
             <HomepageLayoutManager />
           </TabsContent>
 
-          {/* Content for Pages Management */}
           <TabsContent value="pages">
             <PageManager />
           </TabsContent>
 
-          {/* Content for Product Section Management */}
+          <TabsContent value="xbox4">
+            <Xbox4FeaturedProductsManager />
+          </TabsContent>
+
           <TabsContent value="product_sections">
             <ProductSectionManager />
           </TabsContent>
 
-          {/* Added Special Sections Content */}
           <TabsContent value="special_sections">
             <SpecialSectionManager />
           </TabsContent>
