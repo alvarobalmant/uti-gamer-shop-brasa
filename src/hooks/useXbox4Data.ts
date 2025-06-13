@@ -190,9 +190,8 @@ const getProductsForSection = (allProducts: Product[], config: any): Product[] =
           image: specificProduct.imageUrl || baseProduct.image,
           badge_text: specificProduct.badge?.text || baseProduct.badge_text,
           badge_color: specificProduct.badge?.color || baseProduct.badge_color,
-          // Adicionar propriedades para ofertas
-          isOnSale: specificProduct.isOnSale || false,
-          isFeatured: specificProduct.isFeatured || false,
+          // Adicionar propriedades para ofertas - use is_featured instead of isOnSale/isFeatured
+          is_featured: specificProduct.isFeatured || specificProduct.isOnSale || baseProduct.is_featured,
           originalPrice: specificProduct.originalPrice || undefined,
           discount: specificProduct.discount || undefined
         };
