@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { PageLayoutItem, Page } from '@/hooks/usePages';
 import { Product } from '@/hooks/useProducts';
@@ -16,6 +17,7 @@ interface PlatformSectionRendererProps {
   onProductCardClick: (productId: string) => void;
 }
 
+// Component responsible for rendering individual sections based on their type
 const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
   section,
   page,
@@ -119,15 +121,15 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     return [];
   };
 
-  // Filter and enhance products based on section configuration - MODIFIED ONLY FOR DATA LOGIC
+  // CORREÇÃO CRÍTICA: Filter and enhance products based on section configuration
   const getFilteredProducts = (sectionConfig: any) => {
     if (!sectionConfig) return products;
     
-    // Handle Xbox4 specific product configuration with specific products and overrides
+    // PRIORITY 1: Handle Xbox4 specific product configuration with specific products and overrides
     const specificProducts = sectionConfig.products || [];
     
     if (specificProducts && specificProducts.length > 0) {
-      console.log(`[Xbox4] Renderizando produtos específicos para seção ${section.title}:`, specificProducts);
+      console.log(`Renderizando produtos específicos para seção ${section.title}:`, specificProducts);
       
       // Map specific products to complete product objects
       const productsToRender = specificProducts
@@ -135,11 +137,11 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
           // Find the base product by ID
           const baseProduct = products.find(p => p.id === specificProduct.productId);
           if (!baseProduct) {
-            console.warn(`[Xbox4] Produto com ID ${specificProduct.productId} não encontrado`);
+            console.warn(`Produto com ID ${specificProduct.productId} não encontrado`);
             return null;
           }
           
-          // Apply overrides if provided - ONLY DATA CHANGES, NO VISUAL CHANGES
+          // Apply overrides if provided
           return {
             ...baseProduct,
             // Apply title override if provided
@@ -153,14 +155,14 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
         })
         .filter(Boolean); // Remove nulls
       
-      console.log(`[Xbox4] Produtos renderizados para ${section.title}:`, productsToRender.map(p => p?.name));
+      console.log(`Produtos renderizados para ${section.title}:`, productsToRender.map(p => p?.name));
       return productsToRender;
     }
     
-    // Fallback: Default product filtering logic (by tags)
+    // FALLBACK: Default product filtering logic (by tags)
     const { tagIds, limit } = sectionConfig.filter || {};
     
-    console.log(`[Xbox4] Usando filtro de tags para seção ${section.title}:`, tagIds);
+    console.log(`Usando filtro de tags para seção ${section.title}:`, tagIds);
     
     let filtered = products;
     
