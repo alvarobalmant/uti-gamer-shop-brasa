@@ -110,8 +110,7 @@ const Xbox4AdminPage: React.FC = () => {
         is_visible: true,
         section_type: 'products',
         section_config: config as any,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        // Remove created_at and updated_at as they're not in the interface
       };
       updatedLayoutItems = [...pageLayoutItems, newSection];
     }
@@ -134,7 +133,7 @@ const Xbox4AdminPage: React.FC = () => {
     const newProduct = {
       productId: selectedProductId,
       title: customTitle || product.name,
-      imageUrl: customImageUrl || product.imageUrl
+      imageUrl: customImageUrl || product.image || product.imageUrl
     };
     
     setSelectedProducts([...selectedProducts, newProduct]);
@@ -232,7 +231,7 @@ const Xbox4AdminPage: React.FC = () => {
                         <div className="col-span-1">
                           <div className="aspect-square bg-gray-800 rounded-md overflow-hidden">
                             <img 
-                              src={item.imageUrl || product?.imageUrl || '/placeholder.png'} 
+                              src={item.imageUrl || product?.image || product?.imageUrl || '/placeholder.png'} 
                               alt={item.title || product?.name || 'Produto'} 
                               className="w-full h-full object-cover"
                             />

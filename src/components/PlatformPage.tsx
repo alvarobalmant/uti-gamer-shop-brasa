@@ -9,30 +9,37 @@ import PlatformPageLoading from './PlatformPage/PlatformPageLoading';
 import PlatformPageNotFound from './PlatformPage/PlatformPageNotFound';
 import PlatformPageContent from './PlatformPage/PlatformPageContent';
 
-// Base component for platform pages
-const PlatformPage: React.FC<{ slug?: string }> = ({ slug: propSlug }) => {
-  const { slug: paramSlug } = useParams<{ slug: string }>();
-  const slug = propSlug || paramSlug || '';
+// Base component for platform pages with enhanced data refresh
+const PlatformPage: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
   
   const { products } = useProducts();
   const { addToCart } = useCart();
-  const { getPageBySlug, fetchPageLayout, pageLayouts, loading: pageLoading } = usePages();
+  const { getPageBySlug, fetchPageLayout, pageLayouts, loading: pageLoading, forceRefresh } = usePages();
   
   const [page, setPage] = useState<Page | null>(null);
   const [layout, setLayout] = useState<PageLayoutItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<number>(Date.now());
 
   // Memoize page to avoid unnecessary re-renders
   const currentPage = useMemo(() => {
-    return getPageBySlug(slug);
+    return slug ? getPageBySlug(slug) : null;
   }, [slug, getPageBySlug]);
 
-  // Load page data once
+  // Enhanced page data loading with periodic refresh
   useEffect(() => {
     const loadPageData = async () => {
+<<<<<<< HEAD
       if (!currentPage) {
+=======
+      console.log(`[PlatformPage] Loading data for slug: ${slug}`);
+      
+      if (!currentPage) {
+        console.log(`[PlatformPage] No page found for slug: ${slug}`);
+>>>>>>> b625912f6929f41cd101c2aad275766eb7552244
         setIsInitialized(true);
         return;
       }
@@ -40,9 +47,16 @@ const PlatformPage: React.FC<{ slug?: string }> = ({ slug: propSlug }) => {
       setPage(currentPage);
       
       try {
+<<<<<<< HEAD
         // Load layout only if necessary
         if (currentPage.id && !pageLayouts[currentPage.id]) {
           await fetchPageLayout(currentPage.id);
+=======
+        // Always fetch fresh layout to ensure we have the latest data
+        if (currentPage.id) {
+          console.log(`[PlatformPage] Fetching layout for page ${currentPage.id}`);
+          await fetchPageLayout(currentPage.id, true); // Force reload
+>>>>>>> b625912f6929f41cd101c2aad275766eb7552244
         }
       } catch (error) {
         console.error('Erro ao carregar layout:', error);
@@ -52,7 +66,7 @@ const PlatformPage: React.FC<{ slug?: string }> = ({ slug: propSlug }) => {
     };
     
     loadPageData();
-  }, [currentPage, fetchPageLayout, pageLayouts]);
+  }, [currentPage, fetchPageLayout, slug, lastRefresh]);
 
   // Update layout when data is available
   useEffect(() => {
@@ -60,9 +74,23 @@ const PlatformPage: React.FC<{ slug?: string }> = ({ slug: propSlug }) => {
       const sortedLayout = [...pageLayouts[page.id]].sort(
         (a, b) => (a.display_order || a.displayOrder || 0) - (b.display_order || b.displayOrder || 0)
       );
+<<<<<<< HEAD
+=======
+      console.log(`[PlatformPage] Updated layout for page ${page.id}:`, sortedLayout);
+>>>>>>> b625912f6929f41cd101c2aad275766eb7552244
       setLayout(sortedLayout);
     }
   }, [page, pageLayouts]);
+
+  // Periodic refresh to check for database changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('[PlatformPage] Periodic refresh triggered');
+      setLastRefresh(Date.now());
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Open product modal
   const handleProductCardClick = (productId: string) => {
@@ -72,7 +100,6 @@ const PlatformPage: React.FC<{ slug?: string }> = ({ slug: propSlug }) => {
 
   // Wrapper function to adapt addToCart signature for FeaturedProductsSection
   const handleAddToCart = (product: Product, quantity?: number) => {
-    // Call the cart's addToCart function with the expected signature
     addToCart(product);
   };
 
