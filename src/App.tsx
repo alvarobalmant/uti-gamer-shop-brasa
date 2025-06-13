@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from './hooks/useAuth';
 import { CartProvider } from './contexts/CartContext';
 import ScrollRestorationProvider from './components/ScrollRestorationProvider';
 import Header from './components/Header';
@@ -39,43 +40,45 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <Router>
-          <ScrollRestorationProvider>
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex flex-col">
-              <Header />
-              <main className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/produto/:id" element={<ProductPage />} />
-                  <Route path="/categoria/:category" element={<CategoryPage />} />
-                  <Route path="/busca" element={<SearchResults />} />
-                  <Route path="/uti-pro" element={<UTIPro />} />
-                  <Route path="/test-platform" element={<TestPlatformPage />} />
-                  <Route path="/secao/:sectionId" element={<SpecialSectionCarouselPage />} />
-                  
-                  {/* Platform Pages */}
-                  <Route path="/nintendo" element={<NintendoPage />} />
-                  <Route path="/playstation" element={<PlayStationPage />} />
-                  <Route path="/xbox" element={<XboxPage />} />
-                  <Route path="/pc-gaming" element={<PCGamingPage />} />
-                  <Route path="/retro-gaming" element={<RetroGamingPage />} />
-                  <Route path="/area-geek" element={<AreaGeekPage />} />
-                  
-                  {/* Dynamic Platform Pages */}
-                  <Route path="/xbox3" element={<CustomPlatformPage pageSlug="xbox3" />} />
-                  <Route path="/xbox4" element={<CustomPlatformPage pageSlug="xbox4" />} />
-                  
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-              <Footer />
-              <Toaster />
-            </div>
-          </ScrollRestorationProvider>
-        </Router>
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            <ScrollRestorationProvider>
+              <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex flex-col">
+                <Header />
+                <main className="flex-1">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/produto/:id" element={<ProductPage />} />
+                    <Route path="/categoria/:category" element={<CategoryPage />} />
+                    <Route path="/busca" element={<SearchResults />} />
+                    <Route path="/uti-pro" element={<UTIPro />} />
+                    <Route path="/test-platform" element={<TestPlatformPage />} />
+                    <Route path="/secao/:sectionId" element={<SpecialSectionCarouselPage />} />
+                    
+                    {/* Platform Pages */}
+                    <Route path="/nintendo" element={<NintendoPage />} />
+                    <Route path="/playstation" element={<PlayStationPage />} />
+                    <Route path="/xbox" element={<XboxPage />} />
+                    <Route path="/pc-gaming" element={<PCGamingPage />} />
+                    <Route path="/retro-gaming" element={<RetroGamingPage />} />
+                    <Route path="/area-geek" element={<AreaGeekPage />} />
+                    
+                    {/* Dynamic Platform Pages */}
+                    <Route path="/xbox3" element={<CustomPlatformPage pageSlug="xbox3" />} />
+                    <Route path="/xbox4" element={<CustomPlatformPage pageSlug="xbox4" />} />
+                    
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+                <Footer />
+                <Toaster />
+              </div>
+            </ScrollRestorationProvider>
+          </Router>
+        </CartProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
