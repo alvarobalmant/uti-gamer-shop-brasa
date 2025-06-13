@@ -5,6 +5,7 @@ import { Product } from '@/hooks/useProducts';
 import PlatformSectionRenderer from './PlatformSectionRenderer';
 import ProductModal from '@/components/ProductModal';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
+import { cn } from '@/lib/utils';
 
 interface PlatformPageContentProps {
   page: Page;
@@ -54,7 +55,7 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
     : null;
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black overflow-x-hidden">
       <ProfessionalHeader 
         onCartOpen={handleCartOpen}
         onAuthOpen={handleAuthOpen}
@@ -79,34 +80,54 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
         onOpenChange={setIsModalOpen}
       />
 
-      {/* Cart Modal - You may need to implement this component */}
+      {/* Cart Modal - Mobile optimized */}
       {isCartOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold mb-4">Carrinho de Compras</h2>
-            <p className="text-gray-600 mb-4">Funcionalidade do carrinho será implementada.</p>
-            <button 
-              onClick={handleCartClose}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Fechar
-            </button>
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className={cn(
+            "bg-white rounded-lg w-full mx-4",
+            "max-w-md md:max-w-md", // Consistent max-width
+            "max-h-[90vh] overflow-y-auto" // Mobile: prevent overflow
+          )}>
+            <div className="p-4 md:p-6">
+              <h2 className="text-lg md:text-xl font-bold mb-4">Carrinho de Compras</h2>
+              <p className="text-gray-600 mb-4 text-sm md:text-base">Funcionalidade do carrinho será implementada.</p>
+              <button 
+                onClick={handleCartClose}
+                className={cn(
+                  "bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full md:w-auto",
+                  "min-h-[44px]", // Mobile touch area
+                  "transition-all duration-150 active:scale-95"
+                )}
+              >
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Auth Modal - You may need to implement this component */}
+      {/* Auth Modal - Mobile optimized */}
       {isAuthOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold mb-4">Login / Cadastro</h2>
-            <p className="text-gray-600 mb-4">Funcionalidade de autenticação será implementada.</p>
-            <button 
-              onClick={handleAuthClose}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-            >
-              Fechar
-            </button>
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className={cn(
+            "bg-white rounded-lg w-full mx-4",
+            "max-w-md md:max-w-md", // Consistent max-width
+            "max-h-[90vh] overflow-y-auto" // Mobile: prevent overflow
+          )}>
+            <div className="p-4 md:p-6">
+              <h2 className="text-lg md:text-xl font-bold mb-4">Login / Cadastro</h2>
+              <p className="text-gray-600 mb-4 text-sm md:text-base">Funcionalidade de autenticação será implementada.</p>
+              <button 
+                onClick={handleAuthClose}
+                className={cn(
+                  "bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full md:w-auto",
+                  "min-h-[44px]", // Mobile touch area
+                  "transition-all duration-150 active:scale-95"
+                )}
+              >
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 
@@ -14,22 +13,27 @@ const ProductCardPrice = ({ product, variant = "default" }: ProductCardPriceProp
   
   return (
     <div className={cn(
-      "flex items-center justify-between mb-3",
-      isGame ? "mb-2" : "mb-4"
+      "flex items-center justify-between mb-2 md:mb-3",
+      isGame ? "mb-1 md:mb-2 flex-col items-start gap-1" : "flex-row"
     )}>
-      <motion.div 
-        className="text-xl font-black text-[#107C10]"
-        whileHover={{ 
-          scale: 1.05,
-          textShadow: "0 0 8px rgba(16, 124, 16, 0.8)",
-          transition: { duration: 0.15 }
-        }}
-      >
+      <div className={cn(
+        "font-black text-[#107C10]",
+        // Mobile: texto legível mas compacto
+        isGame 
+          ? "text-sm md:text-xl" // Games: menor no mobile
+          : "text-base md:text-xl" // Outros: tamanho adaptativo
+      )}>
         R$ {product.price?.toFixed(2)}
-      </motion.div>
-      {product.list_price && product.list_price > product.price && (
-        <div className="text-sm text-gray-400 line-through">
-          R$ {product.list_price.toFixed(2)}
+      </div>
+      {product.originalPrice && product.originalPrice > product.price && (
+        <div className={cn(
+          "text-gray-400 line-through",
+          // Mobile: texto proporcional
+          isGame 
+            ? "text-xs md:text-sm" 
+            : "text-sm md:text-base"
+        )}>
+          R$ {product.originalPrice.toFixed(2)}
         </div>
       )}
     </div>

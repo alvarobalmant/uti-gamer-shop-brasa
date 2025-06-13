@@ -133,19 +133,24 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
   const cardVariant = getCardVariant();
 
   return (
-    <section className="py-12 md:py-16 bg-gray-900 relative overflow-hidden">
+    <section className="py-8 md:py-12 lg:py-16 bg-gray-900 relative overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
-          <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">
+        <div className="text-center mb-6 md:mb-8">
+          <h2 className={cn(
+            "font-black mb-2 md:mb-4 text-white",
+            // Mobile: text-2xl, Desktop: text-4xl md:text-5xl
+            "text-2xl md:text-4xl lg:text-5xl"
+          )}>
             {section.title}
           </h2>
         </div>
 
         <div className={cn(
-          "grid gap-6",
+          "grid gap-4 md:gap-6",
+          // Mobile responsivo: sempre 2 colunas para games, 1-2 para outros
           cardVariant === 'game' 
             ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-5" 
-            : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+            : "grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4"
         )}>
           {sectionProducts.map((product, index) => (
             <ProductCard
