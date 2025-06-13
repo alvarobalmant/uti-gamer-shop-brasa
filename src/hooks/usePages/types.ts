@@ -33,7 +33,8 @@ export interface PageLayoutItem {
   title?: string;
   display_order: number;
   is_visible: boolean;
-  section_type: 'banner' | 'products' | 'featured' | 'custom';
+  section_type: 'banner' | 'products' | 'featured' | 'custom' | 'news';
+  section_config?: any; // Add the missing section_config property
   sectionConfig?: any;
   
   // Helper properties for frontend (mapped from snake_case)
@@ -41,5 +42,5 @@ export interface PageLayoutItem {
   sectionKey?: string;
   displayOrder?: number;
   isVisible?: boolean;
-  sectionType?: 'banner' | 'products' | 'featured' | 'custom';
+  sectionType?: 'banner' | 'products' | 'featured' | 'custom' | 'news';
 }

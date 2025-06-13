@@ -1,6 +1,8 @@
+
 export interface Product {
   id: string;
   name: string;
+  title?: string; // Add missing title property
   description?: string;
   price: number;
   list_price?: number;
@@ -9,6 +11,7 @@ export interface Product {
   new_price?: number;
   digital_price?: number;
   image: string;
+  imageUrl?: string; // Add missing imageUrl property for compatibility
   images?: string[]; // Add this for compatibility
   additional_images?: string[];
   sizes?: string[];
@@ -20,9 +23,12 @@ export interface Product {
   badge_text?: string;
   badge_color?: string;
   badge_visible?: boolean;
+  badge?: { // Add missing badge property
+    text: string;
+    color: string;
+  };
   specifications?: Array<{
     label: string;
     value: string;
   }>;
 }
-

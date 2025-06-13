@@ -1,18 +1,17 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { DialogClose } from "@/components/ui/dialog";
 import { AlertCircle } from 'lucide-react';
 
 const ProductModalNotFound: React.FC = () => {
   return (
-    <div className="flex flex-col items-center justify-center text-center p-6 h-full">
-      <AlertCircle className="w-16 h-16 text-destructive mb-4" />
-      <h2 className="text-2xl font-bold text-foreground mb-2">Produto Não Encontrado</h2>
-      <p className="text-muted-foreground mb-6">Não conseguimos encontrar os detalhes deste produto.</p>
-      <DialogClose asChild>
-         <Button variant="outline">Fechar</Button>
-      </DialogClose>
+    <div className="flex flex-col items-center justify-center p-8 min-h-[300px]">
+      <AlertCircle className="h-16 w-16 text-gray-400 mb-4" />
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        Produto não encontrado
+      </h3>
+      <p className="text-gray-500 text-center max-w-md">
+        O produto que você está tentando visualizar não foi encontrado ou pode ter sido removido.
+      </p>
     </div>
   );
 };

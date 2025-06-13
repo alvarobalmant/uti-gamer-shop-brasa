@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Product } from '@/hooks/useProducts';
 import ProductModalHeader from './ProductModalHeader';
 import ProductModalGallery from './ProductModalGallery';
@@ -36,21 +36,31 @@ const ProductModalContent: React.FC<ProductModalContentProps> = ({
   onFullscreenToggle,
   onRelatedProductClick
 }) => {
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const handleImageSelect = (index: number) => {
+    setSelectedImageIndex(index);
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
       <ProductModalGallery 
         product={product}
+        selectedImageIndex={selectedImageIndex}
+        onImageSelect={handleImageSelect}
       />
       
       <div className="space-y-6">
         <ProductModalHeader 
           product={product}
+          shouldShowLoading={false}
         />
         
         <ProductModalInfo product={product} />
         
         <ProductModalActions 
           product={product}
+          onClose={onClose}
         />
         
         <ProductModalDescription product={product} />

@@ -39,6 +39,12 @@ const SearchResults = () => {
     setSelectedProductId(null);
   };
 
+  // Get related products for modal
+  const selectedProduct = products.find(p => p.id === selectedProductId) || null;
+  const relatedProducts = selectedProduct 
+    ? products.filter(p => p.id !== selectedProductId).slice(0, 4)
+    : [];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header fixo */}
@@ -113,10 +119,11 @@ const SearchResults = () => {
 
       {/* Product Modal */}
       <ProductModal
-        product={products.find(p => p.id === selectedProductId) || null}
+        product={selectedProduct}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
         onClose={handleCloseModal}
+        relatedProducts={relatedProducts}
       />
     </div>
   );

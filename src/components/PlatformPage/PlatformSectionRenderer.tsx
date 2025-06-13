@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { PageLayoutItem, Page } from '@/hooks/usePages';
 import { Product } from '@/hooks/useProducts';
@@ -72,7 +73,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
       const xbox4Config = sectionConfig.products as Xbox4FeaturedProductsConfig;
       
       return {
-        type: xbox4Config.cardSettings?.cardLayout || 'grid',
+        type: (xbox4Config.cardSettings?.cardLayout as any) || 'grid',
         title: sectionTitle || '',
         subtitle: sectionConfig?.subtitle || '',
         filter: {
@@ -86,7 +87,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
         columns: xbox4Config.gridSettings?.columns || 3,
         showPrices: xbox4Config.cardSettings?.showPrices !== false,
         showBadges: xbox4Config.cardSettings?.showBadges !== false,
-        cardStyle: xbox4Config.cardSettings?.cardLayout || 'compact',
+        cardStyle: (xbox4Config.cardSettings?.cardLayout as any) || 'compact',
         // Add Xbox4 specific properties
         imageAspectRatio: xbox4Config.cardSettings?.imageAspectRatio,
         imageObjectFit: xbox4Config.cardSettings?.imageObjectFit,
@@ -99,7 +100,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     
     // Default configuration for non-Xbox4 sections
     return {
-      type: sectionConfig?.type || 'grid',
+      type: (sectionConfig?.type as any) || 'grid',
       title: sectionTitle || '',
       subtitle: sectionConfig?.subtitle || '',
       filter: {
@@ -113,7 +114,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
       columns: sectionConfig?.columns || 3,
       showPrices: sectionConfig?.showPrices !== false,
       showBadges: sectionConfig?.showBadges !== false,
-      cardStyle: sectionConfig?.cardStyle || 'compact'
+      cardStyle: (sectionConfig?.cardStyle as any) || 'compact'
     };
   };
 
@@ -170,8 +171,8 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
           return {
             ...product,
             // Apply overrides if they exist
-            title: override.title || product.title,
-            imageUrl: override.imageUrl || product.imageUrl,
+            title: override.title || product.title || product.name,
+            imageUrl: override.imageUrl || product.imageUrl || product.image,
             badge: override.badge ? {
               text: override.badge.text,
               color: override.badge.color

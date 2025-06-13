@@ -13,7 +13,7 @@ interface ProductModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onClose: () => void;
-  relatedProducts: Product[];
+  relatedProducts?: Product[];
   onRelatedProductClick?: (productId: string) => void;
 }
 
@@ -22,7 +22,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
   isOpen,
   onOpenChange,
   onClose,
-  relatedProducts,
+  relatedProducts = [],
   onRelatedProductClick
 }) => {
   const { addToCart } = useCart();
@@ -74,7 +74,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
-          <ProductModalNotFound onClose={onClose} />
+          <ProductModalNotFound />
         </DialogContent>
       </Dialog>
     );
