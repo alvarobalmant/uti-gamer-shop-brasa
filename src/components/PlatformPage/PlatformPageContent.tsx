@@ -48,6 +48,11 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
     setIsAuthOpen(false);
   };
 
+  // Find the selected product by ID
+  const selectedProduct = selectedProductId 
+    ? products.find(product => product.id === selectedProductId) || null 
+    : null;
+
   return (
     <div className="min-h-screen bg-black">
       <ProfessionalHeader 
@@ -68,13 +73,11 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
       </main>
 
       {/* Product Modal */}
-      {isModalOpen && selectedProductId && (
-        <ProductModal
-          productId={selectedProductId}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
 
       {/* Cart Modal - You may need to implement this component */}
       {isCartOpen && (
