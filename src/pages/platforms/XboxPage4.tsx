@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useProducts } from '@/hooks/useProducts';
+import { useXbox4Data } from '@/hooks/useXbox4Data';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
@@ -365,15 +365,9 @@ const NewsCard = ({ item, index }) => {
 };
 
 const XboxPage4 = () => {
-  const { products, loading } = useProducts();
+  const { consoles, games, accessories, deals, newsArticles, loading, error } = useXbox4Data();
   const { addToCart } = useCart();
   const navigate = useNavigate();
-  const [filteredProducts, setFilteredProducts] = useState({
-    consoles: [],
-    games: [],
-    accessories: [],
-    deals: []
-  });
   
   // Ref para o hero banner para efeito de parallax
   const heroRef = useRef(null);
@@ -387,16 +381,8 @@ const XboxPage4 = () => {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
   
-  // IDs das tags do banco de dados - usando useMemo para evitar recriação a cada renderização
-  const tagIds = React.useMemo(() => ({
-    xbox: '28047409-2ad5-4cea-bde3-803d42e49fc6',
-    accessories: '43f59a81-8dd1-460b-be1e-a0187e743075',
-    console: '9e5a8e5c-7932-4c18-9c39-93c3a73f9cd0',
-    games: 'b7c9b5a8-4c87-4c1f-8e8a-3d12b7e42e9a'
-  }), []);
-  
-  // Dados de notícias e trailers
-  const newsAndTrailers = [
+  // Dados de notícias e trailers (fallback)
+  const defaultNewsAndTrailers = [
     {
       id: 1,
       type: 'trailer',
@@ -422,49 +408,6 @@ const XboxPage4 = () => {
       date: '2 dias atrás'
     }
   ];
-
-  useEffect(() => {
-    document.title = 'Xbox | UTI dos Games - Consoles, Jogos e Acessórios';
-    
-    if (products.length > 0) {
-      // Filtrar produtos Xbox
-      const xboxProducts = products.filter(product => 
-        product.tags?.some(tag => tag.id === tagIds.xbox)
-      );
-
-      // Separar por categorias
-      const consoles = xboxProducts.filter(product => 
-        product.tags?.some(tag => tag.id === tagIds.console) ||
-        product.name.toLowerCase().includes('xbox series') ||
-        product.name.toLowerCase().includes('console')
-      ).slice(0, 4);
-
-      const games = xboxProducts.filter(product => 
-        product.tags?.some(tag => tag.id === tagIds.games) ||
-        (!product.tags?.some(tag => tag.id === tagIds.accessories) && 
-         !product.name.toLowerCase().includes('console'))
-      ).slice(0, 10);
-
-      const accessories = xboxProducts.filter(product => 
-        product.tags?.some(tag => tag.id === tagIds.accessories)
-      ).slice(0, 3);
-
-      const deals = xboxProducts.filter(product => 
-        product.isOnSale || product.isFeatured
-      ).map(product => ({
-        ...product,
-        discount: Math.floor(Math.random() * 30) + 10, // Simulando descontos entre 10% e 40%
-        originalPrice: product.price * (1 + (Math.floor(Math.random() * 30) + 10) / 100)
-      })).slice(0, 4);
-
-      setFilteredProducts({
-        consoles,
-        games,
-        accessories,
-        deals
-      });
-    }
-  }, [products, tagIds]);
 
   // Dados de exemplo para fallback caso não haja produtos
   const fallbackProducts = {
@@ -519,14 +462,21 @@ const XboxPage4 = () => {
       }
     ]
   };
+
+  useEffect(() => {
+    document.title = 'Xbox | UTI dos Games - Consoles, Jogos e Acessórios';
+  }, []);
   
   // Usar produtos do banco ou fallback
   const displayProducts = {
-    consoles: filteredProducts.consoles.length > 0 ? filteredProducts.consoles : fallbackProducts.consoles,
-    games: filteredProducts.games.length > 0 ? filteredProducts.games : fallbackProducts.games,
-    accessories: filteredProducts.accessories.length > 0 ? filteredProducts.accessories : fallbackProducts.accessories,
-    deals: filteredProducts.deals.length > 0 ? filteredProducts.deals : fallbackProducts.deals
+    consoles: consoles.length > 0 ? consoles : fallbackProducts.consoles,
+    games: games.length > 0 ? games : fallbackProducts.games,
+    accessories: accessories.length > 0 ? accessories : fallbackProducts.accessories,
+    deals: deals.length > 0 ? deals : fallbackProducts.deals
   };
+
+  // Usar notícias do banco ou fallback
+  const displayNews = newsArticles.length > 0 ? newsArticles : defaultNewsAndTrailers;
 
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -537,12 +487,17 @@ const XboxPage4 = () => {
   };
   
   // Mostrar loader apenas por um curto período inicial
-  if (loading && products.length === 0) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-[#107C10]" />
       </div>
     );
+  }
+
+  if (error) {
+    console.warn('Erro ao carregar dados Xbox4:', error);
+    // Continuar com dados fallback
   }
 
   return (
@@ -795,7 +750,7 @@ const XboxPage4 = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {newsAndTrailers.map((item, index) => (
+            {displayNews.map((item, index) => (
               <NewsCard 
                 key={item.id}
                 item={item}
