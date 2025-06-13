@@ -5,11 +5,13 @@ export interface Product {
   description?: string;
   price: number;
   list_price?: number;
+  originalPrice?: number; // Added for Xbox4 components
   pro_price?: number;
   pro_discount_percent?: number;
   new_price?: number;
   digital_price?: number;
   discount_price?: number;
+  discount?: number; // Added for Xbox4 components  
   image: string;
   images?: string[];
   additional_images?: string[];
@@ -23,6 +25,7 @@ export interface Product {
   badge_color?: string;
   badge_visible?: boolean;
   is_featured?: boolean;
+  isNew?: boolean; // Added for Xbox4 components
   is_active?: boolean;
   rating?: number;
   created_at: string;
