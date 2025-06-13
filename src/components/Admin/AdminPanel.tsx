@@ -10,10 +10,11 @@ import ProductSectionManager from './ProductSectionManager';
 import PageManager from './PageManager';
 import { QuickLinkManager } from './QuickLinkManager';
 import SpecialSectionManager from './SpecialSectionManager'; // Import SpecialSectionManager
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star } from 'lucide-react'; // Added Star icon
+import Xbox4AdminPage from './Xbox4AdminPage'; // Import the new Xbox4AdminPage
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2 } from 'lucide-react'; // Added Star icon
 
 export const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('layout'); // Default to layout management
+  const [activeTab, setActiveTab] = useState('xbox4_customization'); // Default to Xbox4 customization for testing
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
@@ -29,7 +30,7 @@ export const AdminPanel = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Updated grid-cols-10 to accommodate the new tab */}
-          <TabsList className="grid w-full grid-cols-10 bg-gray-800 border-gray-700">
+          <TabsList className="grid w-full grid-cols-12 bg-gray-800 border-gray-700">
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutList className="w-4 h-4" />
               Layout Home
@@ -46,6 +47,10 @@ export const AdminPanel = () => {
             <TabsTrigger value="special_sections" className="flex items-center gap-2">
               <Star className="w-4 h-4" />
               Seções Especiais
+            </TabsTrigger>
+            <TabsTrigger value="xbox4_customization" className="flex items-center gap-2">
+              <Gamepad2 className="w-4 h-4" />
+              Xbox 4 - Personalização
             </TabsTrigger>
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
@@ -91,6 +96,10 @@ export const AdminPanel = () => {
           {/* Added Special Sections Content */}
           <TabsContent value="special_sections">
             <SpecialSectionManager />
+          </TabsContent>
+
+          <TabsContent value="xbox4_customization">
+            <Xbox4AdminPage />
           </TabsContent>
 
           <TabsContent value="products">
