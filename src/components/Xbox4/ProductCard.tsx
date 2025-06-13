@@ -20,6 +20,10 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
   const isAccessory = variant === "accessory";
   const isDeal = variant === "deal";
   
+  // Calculate discount if there's a list_price
+  const hasDiscount = product.list_price && product.list_price > product.price;
+  const discountPercent = hasDiscount ? Math.round(((product.list_price! - product.price) / product.list_price!) * 100) : 0;
+  
   return (
     <motion.div
       initial={{ opacity: 0, x: -20, scale: 0.98 }}
@@ -56,7 +60,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
         isGame ? "h-full" : "aspect-square"
       )}>
         <motion.img 
-          src={product.imageUrl || 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&h=600&fit=crop&crop=center'} 
+          src={product.image || 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&h=600&fit=crop&crop=center'} 
           alt={product.name}
           className="w-full h-full object-cover"
           whileHover={{ 
@@ -69,7 +73,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       
       {/* Badges */}
       <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
-        {product.isFeatured && (
+        {product.is_featured && (
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.15 }}
@@ -79,17 +83,17 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
             </Badge>
           </motion.div>
         )}
-        {product.isNew && (
+        {product.badge_visible && product.badge_text && (
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.15 }}
           >
             <Badge className="bg-red-500 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">
-              NOVO
+              {product.badge_text}
             </Badge>
           </motion.div>
         )}
-        {isDeal && product.discount && (
+        {isDeal && hasDiscount && (
           <motion.div
             initial={{ scale: 1 }}
             animate={{ scale: [1, 1.05, 1] }}
@@ -98,7 +102,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
             className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1"
           >
             <Tag size={12} />
-            {product.discount}% OFF
+            {discountPercent}% OFF
           </motion.div>
         )}
       </div>
@@ -134,9 +138,9 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
           >
             R$ {product.price?.toFixed(2)}
           </motion.div>
-          {product.originalPrice && product.originalPrice > product.price && (
+          {product.list_price && product.list_price > product.price && (
             <div className="text-sm text-gray-400 line-through">
-              R$ {product.originalPrice.toFixed(2)}
+              R$ {product.list_price.toFixed(2)}
             </div>
           )}
         </div>
