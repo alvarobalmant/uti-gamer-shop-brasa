@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePages, PageLayoutItem } from '@/hooks/usePages';
@@ -111,8 +110,7 @@ const Xbox4AdminPage: React.FC = () => {
         is_visible: true,
         section_type: 'products',
         section_config: config as any,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        // Remove created_at and updated_at as they're not in the interface
       };
       updatedLayoutItems = [...pageLayoutItems, newSection];
     }

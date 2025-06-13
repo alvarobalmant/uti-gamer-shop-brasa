@@ -34,8 +34,10 @@ export interface PageLayoutItem {
   display_order: number;
   is_visible: boolean;
   section_type: 'banner' | 'products' | 'featured' | 'custom' | 'news';
-  section_config?: any; // Add the missing section_config property
+  section_config?: any;
   sectionConfig?: any;
+  created_at?: string; // Add missing created_at property
+  updated_at?: string; // Add missing updated_at property
   
   // Helper properties for frontend (mapped from snake_case)
   pageId?: string;
