@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
@@ -53,11 +52,6 @@ const Index = () => {
       setSelectedProduct(productToDisplay);
       setShowProductModal(true);
     }
-  };
-
-  const handleCloseProductModal = () => {
-    setShowProductModal(false);
-    setSelectedProduct(null);
   };
 
   return (
@@ -125,8 +119,7 @@ const Index = () => {
       {/* Product Modal */}
       <ProductModal 
         isOpen={showProductModal} 
-        onOpenChange={setShowProductModal}
-        onClose={handleCloseProductModal}
+        onOpenChange={setShowProductModal} 
         product={selectedProduct} 
         loading={productsLoading}
         relatedProducts={products.filter(p => p.id !== selectedProduct?.id).slice(0, 4)}
