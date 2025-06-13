@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
@@ -11,16 +10,16 @@ import SectionRenderer from '@/components/HomePage/SectionRenderer';
 import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
-import ProductModal from '@/components/ProductModal';
-import { Product } from '@/hooks/useProducts';
+import ProductModal from '@/components/ProductModal'; // Import ProductModal
+import { Product } from '@/hooks/useProducts'; // Import Product type
 
 const Index = () => {
   const { user, isAdmin, signOut } = useAuth();
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showProductModal, setShowProductModal] = useState(false); // State for product modal visibility
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // State for selected product
 
   const {
     products,
@@ -46,17 +45,13 @@ const Index = () => {
     return specialSections.find(s => s.id === id);
   };
 
+  // Function to handle product card click and open modal
   const handleProductCardClick = (productId: string) => {
     const productToDisplay = products.find(p => p.id === productId);
     if (productToDisplay) {
       setSelectedProduct(productToDisplay);
       setShowProductModal(true);
     }
-  };
-
-  const handleCloseProductModal = () => {
-    setShowProductModal(false);
-    setSelectedProduct(null);
   };
 
   return (
@@ -84,7 +79,7 @@ const Index = () => {
                     <SpecialSectionRenderer 
                       key={sectionKey} 
                       section={specialSectionData} 
-                      onProductCardClick={handleProductCardClick}
+                      onProductCardClick={handleProductCardClick} // Pass the handler
                     />
                   );
                 } else if (specialSectionsLoading) {
@@ -124,9 +119,9 @@ const Index = () => {
       {/* Product Modal */}
       <ProductModal 
         isOpen={showProductModal} 
-        onOpenChange={setShowProductModal}
-        onClose={handleCloseProductModal}
+        onOpenChange={setShowProductModal} 
         product={selectedProduct} 
+        loading={productsLoading}
         relatedProducts={products.filter(p => p.id !== selectedProduct?.id).slice(0, 4)}
         onRelatedProductClick={handleProductCardClick}
       />

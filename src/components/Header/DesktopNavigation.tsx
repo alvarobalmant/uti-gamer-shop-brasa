@@ -1,111 +1,66 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronDown } from 'lucide-react';
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from '@/components/ui/navigation-menu';
+import { useNavigate } from 'react-router-dom';
+import { Crown } from 'lucide-react';
+import { categories, Category } from './categories';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 
-const DesktopNavigation = () => {
+interface DesktopNavigationProps {
+  className?: string;
+}
+
+const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
+  const navigate = useNavigate();
+  const { scrollDirection, isScrolled } = useScrollDirection(50);
+
+  const handleCategoryClick = (category: Category) => {
+    navigate(category.path);
+  };
+
+  // Determina se a barra deve estar oculta
+  const isHidden = scrollDirection === 'down' && isScrolled;
+
   return (
-    <NavigationMenu className="hidden md:flex">
-      <NavigationMenuList className="flex space-x-6">
-        <NavigationMenuItem>
-          <NavigationMenuTrigger className="text-white hover:text-gray-300 bg-transparent data-[state=open]:bg-transparent data-[active]:bg-transparent focus:bg-transparent">
-            Consoles
-            <ChevronDown className="ml-1 h-4 w-4 transition duration-200 group-data-[state=open]:rotate-180" />
-          </NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-              <ListItem href="/playstation" title="PlayStation">
-                Consoles, jogos e acessórios PlayStation
-              </ListItem>
-              <ListItem href="/xbox" title="Xbox">
-                Consoles, jogos e acessórios Xbox
-              </ListItem>
-              <ListItem href="/xbox4" title="Xbox Universe">
-                Explore o universo Xbox completo
-              </ListItem>
-              <ListItem href="/nintendo" title="Nintendo">
-                Consoles, jogos e acessórios Nintendo
-              </ListItem>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-
-        <NavigationMenuItem>
-          <NavigationMenuTrigger className="text-white hover:text-gray-300 bg-transparent data-[state=open]:bg-transparent data-[active]:bg-transparent focus:bg-transparent">
-            Gaming
-            <ChevronDown className="ml-1 h-4 w-4 transition duration-200 group-data-[state=open]:rotate-180" />
-          </NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-              <ListItem href="/pc-gaming" title="PC Gaming">
-                Hardware e periféricos para PC
-              </ListItem>
-              <ListItem href="/retro-gaming" title="Retro Gaming">
-                Consoles e jogos clássicos
-              </ListItem>
-              <ListItem href="/area-geek" title="Área Geek">
-                Colecionáveis e produtos especiais
-              </ListItem>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-
-        <NavigationMenuItem>
-          <Link to="/categoria/jogos" className="text-white hover:text-gray-300 transition-colors duration-200">
-            Jogos
-          </Link>
-        </NavigationMenuItem>
-
-        <NavigationMenuItem>
-          <Link to="/categoria/acessorios" className="text-white hover:text-gray-300 transition-colors duration-200">
-            Acessórios
-          </Link>
-        </NavigationMenuItem>
-
-        <NavigationMenuItem>
-          <Link to="/uti-pro" className="text-white hover:text-yellow-400 transition-colors duration-200 font-semibold">
+    <nav
+      className={cn(
+        'hidden lg:block bg-background border-t border-border/60',
+        'fixed top-[72px] left-0 right-0 z-40', // Fixo ao invés de sticky, posicionado abaixo do MainHeader
+        'transition-transform duration-300 ease-in-out',
+        {
+          '-translate-y-full': isHidden, // Oculta completamente quando rola para baixo
+          'translate-y-0': !isHidden, // Mostra quando rola para cima ou está no topo
+        },
+        className
+      )}
+    >
+      <div className="container mx-auto">
+        <div className="flex h-12 items-center justify-center gap-x-6 xl:gap-x-8">
+          {categories.map(category => (
+            <Button
+              key={category.id}
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCategoryClick(category)}
+              className="text-sm font-medium text-muted-foreground hover:text-primary hover:bg-transparent px-2"
+            >
+              {category.name}
+            </Button>
+          ))}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/uti-pro')}
+            className="flex items-center gap-1.5 text-sm font-semibold text-uti-pro hover:bg-yellow-500/10 border-uti-pro/50 hover:border-uti-pro/80 transition-colors duration-150"
+          >
+            <Crown className="w-4 h-4 text-uti-pro/90" />
             UTI PRO
-          </Link>
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenu>
+          </Button>
+        </div>
+      </div>
+    </nav>
   );
 };
-
-const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a"> & { href: string; title: string }
->(({ className, title, children, href, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <Link
-          ref={ref}
-          to={href}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </Link>
-      </NavigationMenuLink>
-    </li>
-  );
-});
-ListItem.displayName = "ListItem";
 
 export default DesktopNavigation;
