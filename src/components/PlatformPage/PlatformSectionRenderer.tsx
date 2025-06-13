@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { PageLayoutItem, Page } from '@/hooks/usePages';
 import { Product } from '@/hooks/useProducts';
@@ -155,7 +156,34 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
   const getFilteredProducts = (sectionConfig: any) => {
     if (!sectionConfig) return products;
     
-    // Handle Xbox4 specific product configuration with overrides
+    // NEW: Handle Xbox4 specific product configuration with specific products and overrides
+    if (section.section_key === 'xbox4_featured_products' && sectionConfig.products) {
+      const productOverrides = sectionConfig.products as ProductOverride[];
+      
+      // Filter products based on the IDs in the specific products array
+      const productIds = productOverrides.map(override => override.productId);
+      let filteredProducts = products.filter(product => productIds.includes(product.id));
+      
+      // Apply overrides to products (title and image customizations)
+      return filteredProducts.map(product => {
+        const override = productOverrides.find(o => o.productId === product.id);
+        if (override) {
+          return {
+            ...product,
+            // Apply title override if provided
+            name: override.title || product.name,
+            // Apply image override if provided
+            image: override.imageUrl || product.image,
+            // Apply badge override if provided
+            badge_text: override.badge?.text || product.badge_text,
+            badge_color: override.badge?.color || product.badge_color
+          };
+        }
+        return product;
+      });
+    }
+    
+    // Handle Xbox4 specific product configuration with advanced settings (legacy support)
     if (section.section_key?.startsWith('xbox4_') && sectionConfig.products?.products) {
       const productOverrides = sectionConfig.products.products as ProductOverride[];
       
@@ -170,19 +198,17 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
           return {
             ...product,
             // Apply overrides if they exist
-            title: override.title || product.title,
-            imageUrl: override.imageUrl || product.imageUrl,
-            badge: override.badge ? {
-              text: override.badge.text,
-              color: override.badge.color
-            } : product.badge
+            name: override.title || product.name,
+            image: override.imageUrl || product.image,
+            badge_text: override.badge?.text || product.badge_text,
+            badge_color: override.badge?.color || product.badge_color
           };
         }
         return product;
       });
     }
     
-    // Default product filtering logic
+    // Default product filtering logic (by tags)
     const { tagIds, limit } = sectionConfig.filter || {};
     
     let filtered = products;
