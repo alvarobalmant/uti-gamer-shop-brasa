@@ -8,7 +8,7 @@ import { PageLayoutItemConfig } from '@/types/xbox4Admin';
 
 const Xbox4AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('consoles');
-  const { getPageBySlug, fetchPageLayout, updatePageLayout, loading, error } = usePages();
+  const { getPageBySlug, fetchPageLayout, updatePageLayout, addPageSection, loading, error } = usePages();
   const [xbox4PageId, setXbox4PageId] = useState<string | null>(null);
   const [pageLayoutItems, setPageLayoutItems] = useState<PageLayoutItem[]>([]);
   const [isLoadingPageData, setIsLoadingPageData] = useState(true);
@@ -70,17 +70,21 @@ const Xbox4AdminPage: React.FC = () => {
 
     try {
       const existingItem = pageLayoutItems.find(item => item.section_key === sectionKey);
-      let updatedLayoutItems: PageLayoutItem[];
 
       if (existingItem) {
-        // Atualizar item existente
-        updatedLayoutItems = pageLayoutItems.map(item =>
+        // Update existing section
+        console.log('Updating existing section:', sectionKey);
+        const updatedLayoutItems = pageLayoutItems.map(item =>
           item.section_key === sectionKey
             ? { ...item, sectionConfig: config as any }
             : item
         );
+
+        await updatePageLayout(xbox4PageId, updatedLayoutItems);
+        setPageLayoutItems(updatedLayoutItems);
       } else {
-        // Adicionar novo item
+        // Create new section
+        console.log('Creating new section:', sectionKey);
         const sectionTitles: Record<string, string> = {
           'xbox4_consoles': 'CONSOLES XBOX',
           'xbox4_games': 'JOGOS EM ALTA',
@@ -89,8 +93,7 @@ const Xbox4AdminPage: React.FC = () => {
           'xbox4_news': 'NOTÍCIAS & TRAILERS'
         };
         
-        const newSection: PageLayoutItem = {
-          id: `temp-${Date.now()}`,
+        const newSectionData: Omit<PageLayoutItem, 'id'> = {
           page_id: xbox4PageId,
           section_key: sectionKey,
           title: sectionTitles[sectionKey] || 'Nova Seção',
@@ -99,13 +102,14 @@ const Xbox4AdminPage: React.FC = () => {
           section_type: sectionKey === 'xbox4_news' ? 'news' : 'products',
           sectionConfig: config as any,
         };
-        updatedLayoutItems = [...pageLayoutItems, newSection];
-      }
 
-      await updatePageLayout(xbox4PageId, updatedLayoutItems);
-      setPageLayoutItems(updatedLayoutItems);
+        const newSection = await addPageSection(xbox4PageId, newSectionData);
+        if (newSection) {
+          setPageLayoutItems(prev => [...prev, newSection]);
+        }
+      }
       
-      // Atualizar estado local da seção específica
+      // Update local state for the specific section
       switch (sectionKey) {
         case 'xbox4_consoles':
           setConsolesConfig(config);
@@ -128,7 +132,7 @@ const Xbox4AdminPage: React.FC = () => {
     } catch (err) {
       console.error('Erro ao salvar configuração:', err);
     }
-  }, [xbox4PageId, pageLayoutItems, updatePageLayout]);
+  }, [xbox4PageId, pageLayoutItems, updatePageLayout, addPageSection]);
 
   if (isLoadingPageData) {
     return (
