@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 import React, { useEffect, useRef, useState } from 'react';
+=======
+
+import React, { useEffect, useRef } from 'react';
+>>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -9,15 +14,21 @@ import { useXbox4Data } from '@/hooks/useXbox4Data';
 import HexagonParticles from '@/components/Xbox4/HexagonParticles';
 import ProductCard from '@/components/Xbox4/ProductCard';
 import NewsCard from '@/components/Xbox4/NewsCard';
+<<<<<<< HEAD
 import Cart from '@/components/Cart';
 import { AuthModal } from '@/components/Auth/AuthModal';
+=======
+>>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
 
 const XboxPage4 = () => {
   const { consoles, games, accessories, deals, newsArticles, loading, error } = useXbox4Data();
   const { addToCart } = useCart();
   const navigate = useNavigate();
+<<<<<<< HEAD
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+=======
+>>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
   
   // Ref para o hero banner para efeito de parallax
   const heroRef = useRef(null);
@@ -137,11 +148,21 @@ const XboxPage4 = () => {
   };
 
   const handleCartOpen = () => {
+<<<<<<< HEAD
     setShowCart(true);
   };
 
   const handleAuthOpen = () => {
     setShowAuthModal(true);
+=======
+    // Handle cart open logic
+    console.log('Cart opened');
+  };
+
+  const handleAuthOpen = () => {
+    // Handle auth open logic
+    console.log('Auth opened');
+>>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
   };
 
   // Mostrar loader apenas por um curto período inicial
@@ -159,7 +180,11 @@ const XboxPage4 = () => {
   }
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-black text-white px-4 max-w-screen-sm mx-auto md:px-0 md:max-w-none">
+=======
+    <div className="min-h-screen bg-black text-white">
+>>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
       <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
       
       {/* Hero Banner */}
@@ -238,9 +263,15 @@ const XboxPage4 = () => {
               </Button>
               <Button 
                 size="lg" 
+<<<<<<< HEAD
                 className="bg-black/50 text-white border border-white hover:bg-[#107C10]/50 hover:text-white font-bold px-4 py-2 h-10 text-sm rounded-md transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 <Play className="w-4 h-4 mr-2" />
+=======
+                className="bg-black/50 text-white border border-white hover:bg-[#107C10]/50 hover:text-white font-bold px-10 py-5 text-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <Play className="w-5 h-5 mr-2" />
+>>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
                 VER JOGOS
               </Button>
             </motion.div>
@@ -409,8 +440,13 @@ const XboxPage4 = () => {
             </p>
           </motion.div>
 
+<<<<<<< HEAD
           <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible">
             {displayNews.map((news, index) => (
+=======
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {displayNews.map((item, index) => (
+>>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
               <NewsCard 
                 key={news.id}
                 news={news}
