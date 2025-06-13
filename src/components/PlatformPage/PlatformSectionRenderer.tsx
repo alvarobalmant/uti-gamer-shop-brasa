@@ -17,7 +17,6 @@ interface PlatformSectionRendererProps {
   onProductCardClick: (productId: string) => void;
 }
 
-// Component responsible for rendering individual sections based on their type
 const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
   section,
   page,
@@ -121,15 +120,15 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     return [];
   };
 
-  // CORREÇÃO CRÍTICA: Filter and enhance products based on section configuration
+  // Filter and enhance products based on section configuration
   const getFilteredProducts = (sectionConfig: any) => {
     if (!sectionConfig) return products;
     
-    // PRIORITY 1: Handle Xbox4 specific product configuration with specific products and overrides
+    // Handle Xbox4 specific product configuration with specific products and overrides
     const specificProducts = sectionConfig.products || [];
     
     if (specificProducts && specificProducts.length > 0) {
-      console.log(`Renderizando produtos específicos para seção ${section.title}:`, specificProducts);
+      console.log(`[Xbox4] Renderizando produtos específicos para seção ${section.title}:`, specificProducts);
       
       // Map specific products to complete product objects
       const productsToRender = specificProducts
@@ -137,7 +136,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
           // Find the base product by ID
           const baseProduct = products.find(p => p.id === specificProduct.productId);
           if (!baseProduct) {
-            console.warn(`Produto com ID ${specificProduct.productId} não encontrado`);
+            console.warn(`[Xbox4] Produto com ID ${specificProduct.productId} não encontrado`);
             return null;
           }
           
@@ -155,14 +154,14 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
         })
         .filter(Boolean); // Remove nulls
       
-      console.log(`Produtos renderizados para ${section.title}:`, productsToRender.map(p => p?.name));
+      console.log(`[Xbox4] Produtos renderizados para ${section.title}:`, productsToRender.map(p => p?.name));
       return productsToRender;
     }
     
-    // FALLBACK: Default product filtering logic (by tags)
+    // Fallback: Default product filtering logic (by tags)
     const { tagIds, limit } = sectionConfig.filter || {};
     
-    console.log(`Usando filtro de tags para seção ${section.title}:`, tagIds);
+    console.log(`[Xbox4] Usando filtro de tags para seção ${section.title}:`, tagIds);
     
     let filtered = products;
     

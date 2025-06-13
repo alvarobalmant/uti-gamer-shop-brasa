@@ -33,6 +33,8 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
           badge_visible: row.badge_visible || false,
           specifications: row.product_specifications || [],
           images: row.product_images || [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
           tags: []
         });
       }
@@ -99,6 +101,8 @@ export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<P
           badge_visible: row.badge_visible || false,
           specifications: row.product_specifications || [],
           images: row.product_images || [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
           tags: []
         });
       }
