@@ -7,12 +7,18 @@ import Xbox4FeaturedProductsManager from '@/components/Admin/Xbox4Admin/Xbox4Fea
 import { PageLayoutItemConfig } from '@/types/xbox4Admin';
 
 const Xbox4AdminPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('products');
+  const [activeTab, setActiveTab] = useState('consoles');
   const { getPageBySlug, fetchPageLayout, updatePageLayout, loading, error } = usePages();
   const [xbox4PageId, setXbox4PageId] = useState<string | null>(null);
   const [pageLayoutItems, setPageLayoutItems] = useState<PageLayoutItem[]>([]);
   const [isLoadingPageData, setIsLoadingPageData] = useState(true);
-  const [featuredProductsConfig, setFeaturedProductsConfig] = useState<PageLayoutItemConfig | null>(null);
+  
+  // Configurações para cada seção
+  const [consolesConfig, setConsolesConfig] = useState<PageLayoutItemConfig | null>(null);
+  const [gamesConfig, setGamesConfig] = useState<PageLayoutItemConfig | null>(null);
+  const [accessoriesConfig, setAccessoriesConfig] = useState<PageLayoutItemConfig | null>(null);
+  const [offersConfig, setOffersConfig] = useState<PageLayoutItemConfig | null>(null);
+  const [newsConfig, setNewsConfig] = useState<PageLayoutItemConfig | null>(null);
 
   useEffect(() => {
     const loadPageData = async () => {
@@ -23,10 +29,30 @@ const Xbox4AdminPage: React.FC = () => {
         const layout = await fetchPageLayout(page.id);
         setPageLayoutItems(layout);
         
-        // Carregar configurações existentes para produtos em destaque
-        const featuredProductsSection = layout.find(item => item.section_key === 'xbox4_featured_products');
-        if (featuredProductsSection && featuredProductsSection.section_config) {
-          setFeaturedProductsConfig(featuredProductsSection.section_config);
+        // Carregar configurações existentes para cada seção
+        const consolesSection = layout.find(item => item.section_key === 'xbox4_consoles');
+        if (consolesSection && consolesSection.sectionConfig) {
+          setConsolesConfig(consolesSection.sectionConfig);
+        }
+        
+        const gamesSection = layout.find(item => item.section_key === 'xbox4_games');
+        if (gamesSection && gamesSection.sectionConfig) {
+          setGamesConfig(gamesSection.sectionConfig);
+        }
+        
+        const accessoriesSection = layout.find(item => item.section_key === 'xbox4_accessories');
+        if (accessoriesSection && accessoriesSection.sectionConfig) {
+          setAccessoriesConfig(accessoriesSection.sectionConfig);
+        }
+        
+        const offersSection = layout.find(item => item.section_key === 'xbox4_offers');
+        if (offersSection && offersSection.sectionConfig) {
+          setOffersConfig(offersSection.sectionConfig);
+        }
+        
+        const newsSection = layout.find(item => item.section_key === 'xbox4_news');
+        if (newsSection && newsSection.sectionConfig) {
+          setNewsConfig(newsSection.sectionConfig);
         }
       } else {
         console.error('Página /xbox4 não encontrada no Supabase.');
@@ -36,41 +62,67 @@ const Xbox4AdminPage: React.FC = () => {
     loadPageData();
   }, [getPageBySlug, fetchPageLayout]);
 
-  const handleSaveFeaturedProducts = useCallback(async (config: PageLayoutItemConfig) => {
+  const handleSaveSection = useCallback(async (sectionKey: string, config: PageLayoutItemConfig) => {
     if (!xbox4PageId) {
       console.error('xbox4PageId não disponível para salvar a configuração.');
       return;
     }
 
     try {
-      const existingItem = pageLayoutItems.find(item => item.section_key === 'xbox4_featured_products');
+      const existingItem = pageLayoutItems.find(item => item.section_key === sectionKey);
       let updatedLayoutItems: PageLayoutItem[];
 
       if (existingItem) {
         // Atualizar item existente
         updatedLayoutItems = pageLayoutItems.map(item =>
-          item.section_key === 'xbox4_featured_products'
-            ? { ...item, section_config: config as any }
+          item.section_key === sectionKey
+            ? { ...item, sectionConfig: config as any }
             : item
         );
       } else {
         // Adicionar novo item
+        const sectionTitles: Record<string, string> = {
+          'xbox4_consoles': 'CONSOLES XBOX',
+          'xbox4_games': 'JOGOS EM ALTA',
+          'xbox4_accessories': 'ACESSÓRIOS XBOX',
+          'xbox4_offers': 'OFERTAS IMPERDÍVEIS',
+          'xbox4_news': 'NOTÍCIAS & TRAILERS'
+        };
+        
         const newSection: PageLayoutItem = {
           id: `temp-${Date.now()}`,
           page_id: xbox4PageId,
-          section_key: 'xbox4_featured_products',
-          title: 'Produtos em Destaque',
+          section_key: sectionKey,
+          title: sectionTitles[sectionKey] || 'Nova Seção',
           display_order: pageLayoutItems.length + 1,
           is_visible: true,
-          section_type: 'products',
-          section_config: config as any,
+          section_type: sectionKey === 'xbox4_news' ? 'news' : 'products',
+          sectionConfig: config as any,
         };
         updatedLayoutItems = [...pageLayoutItems, newSection];
       }
 
       await updatePageLayout(xbox4PageId, updatedLayoutItems);
       setPageLayoutItems(updatedLayoutItems);
-      setFeaturedProductsConfig(config);
+      
+      // Atualizar estado local da seção específica
+      switch (sectionKey) {
+        case 'xbox4_consoles':
+          setConsolesConfig(config);
+          break;
+        case 'xbox4_games':
+          setGamesConfig(config);
+          break;
+        case 'xbox4_accessories':
+          setAccessoriesConfig(config);
+          break;
+        case 'xbox4_offers':
+          setOffersConfig(config);
+          break;
+        case 'xbox4_news':
+          setNewsConfig(config);
+          break;
+      }
       
       console.log('Configuração salva com sucesso:', config);
     } catch (err) {
@@ -100,17 +152,47 @@ const Xbox4AdminPage: React.FC = () => {
       <p className="text-lg text-gray-300 mb-8">Gerencie o conteúdo exclusivo da página /xbox4.</p>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 bg-gray-800 border-gray-700">
-          <TabsTrigger value="products">Produtos em Destaque</TabsTrigger>
-          <TabsTrigger value="news">Notícias e Trailers</TabsTrigger>
-          <TabsTrigger value="offers">Ofertas Especiais</TabsTrigger>
-          <TabsTrigger value="banners">Banners Secundários</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 bg-gray-800 border-gray-700">
+          <TabsTrigger value="consoles">CONSOLES XBOX</TabsTrigger>
+          <TabsTrigger value="games">JOGOS EM ALTA</TabsTrigger>
+          <TabsTrigger value="accessories">ACESSÓRIOS XBOX</TabsTrigger>
+          <TabsTrigger value="offers">OFERTAS IMPERDÍVEIS</TabsTrigger>
+          <TabsTrigger value="news">NOTÍCIAS & TRAILERS</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="products">
+        <TabsContent value="consoles">
           <Xbox4FeaturedProductsManager
-            initialConfig={featuredProductsConfig}
-            onSave={handleSaveFeaturedProducts}
+            initialConfig={consolesConfig}
+            onSave={(config) => handleSaveSection('xbox4_consoles', config)}
+            sectionTitle="CONSOLES XBOX"
+            defaultTags={['xbox', 'console']}
+          />
+        </TabsContent>
+
+        <TabsContent value="games">
+          <Xbox4FeaturedProductsManager
+            initialConfig={gamesConfig}
+            onSave={(config) => handleSaveSection('xbox4_games', config)}
+            sectionTitle="JOGOS EM ALTA"
+            defaultTags={['xbox', 'game']}
+          />
+        </TabsContent>
+
+        <TabsContent value="accessories">
+          <Xbox4FeaturedProductsManager
+            initialConfig={accessoriesConfig}
+            onSave={(config) => handleSaveSection('xbox4_accessories', config)}
+            sectionTitle="ACESSÓRIOS XBOX"
+            defaultTags={['xbox', 'accessory']}
+          />
+        </TabsContent>
+
+        <TabsContent value="offers">
+          <Xbox4FeaturedProductsManager
+            initialConfig={offersConfig}
+            onSave={(config) => handleSaveSection('xbox4_offers', config)}
+            sectionTitle="OFERTAS IMPERDÍVEIS"
+            defaultTags={['xbox', 'offer']}
           />
         </TabsContent>
 
@@ -121,30 +203,6 @@ const Xbox4AdminPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <p>Aqui você poderá escolher ou cadastrar as notícias e trailers que aparecem na seção de notícias da página /xbox4.</p>
-              <p className="text-gray-400 mt-4">Esta funcionalidade será implementada em breve.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="offers">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gerenciar Ofertas Especiais</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Configure as ofertas especiais que aparecem na página /xbox4.</p>
-              <p className="text-gray-400 mt-4">Esta funcionalidade será implementada em breve.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="banners">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gerenciar Banners Secundários</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Configure os banners secundários que aparecem na página /xbox4.</p>
               <p className="text-gray-400 mt-4">Esta funcionalidade será implementada em breve.</p>
             </CardContent>
           </Card>

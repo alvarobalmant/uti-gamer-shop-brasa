@@ -7,7 +7,7 @@ import PlatformBanner from '@/components/Platform/PlatformBanner';
 import PlatformProductSection from '@/components/Platform/PlatformProductSection';
 import PlatformNewsSection from '@/components/Platform/PlatformNewsSection';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
-import { Xbox4FeaturedProductsConfig, ProductOverride } from '@/types/xbox4Admin';
+import { ProductOverride } from '@/types/xbox4Admin';
 
 interface PlatformSectionRendererProps {
   section: PageLayoutItem;
@@ -68,39 +68,8 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
 
   // Convert Supabase section_config to ProductShowcase
   const convertToProductConfig = (sectionConfig: any, sectionTitle: string): ProductShowcase => {
-    // Check if this is an Xbox4 specific section with advanced configuration
-    if (section.section_key?.startsWith('xbox4_') && sectionConfig?.products) {
-      const xbox4Config = sectionConfig.products as Xbox4FeaturedProductsConfig;
-      
-      return {
-        type: xbox4Config.cardSettings?.cardLayout || 'grid',
-        title: sectionTitle || '',
-        subtitle: sectionConfig?.subtitle || '',
-        filter: {
-          tagIds: sectionConfig?.filter?.tagIds || [],
-          categoryIds: sectionConfig?.filter?.categoryIds || [],
-          featured: sectionConfig?.filter?.featured || false,
-          newReleases: sectionConfig?.filter?.newReleases || false,
-          onSale: sectionConfig?.filter?.onSale || false,
-          limit: sectionConfig?.filter?.limit || 6
-        },
-        columns: xbox4Config.gridSettings?.columns || 3,
-        showPrices: xbox4Config.cardSettings?.showPrices !== false,
-        showBadges: xbox4Config.cardSettings?.showBadges !== false,
-        cardStyle: xbox4Config.cardSettings?.cardLayout || 'compact',
-        // Add Xbox4 specific properties
-        imageAspectRatio: xbox4Config.cardSettings?.imageAspectRatio,
-        imageObjectFit: xbox4Config.cardSettings?.imageObjectFit,
-        hoverEffects: xbox4Config.cardSettings?.hoverEffects,
-        gridGap: xbox4Config.gridSettings?.gap,
-        responsiveBreakpoints: xbox4Config.gridSettings?.responsiveBreakpoints,
-        productOverrides: xbox4Config.products || []
-      };
-    }
-    
-    // Default configuration for non-Xbox4 sections
     return {
-      type: sectionConfig?.type || 'grid',
+      type: 'grid' as const,
       title: sectionTitle || '',
       subtitle: sectionConfig?.subtitle || '',
       filter: {
@@ -114,15 +83,15 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
       columns: sectionConfig?.columns || 3,
       showPrices: sectionConfig?.showPrices !== false,
       showBadges: sectionConfig?.showBadges !== false,
-      cardStyle: sectionConfig?.cardStyle || 'compact'
+      cardStyle: 'compact' as const
     };
   };
 
   // Convert Supabase section_config to NewsSection array
   const convertToNewsConfig = (sectionConfig: any): NewsSection[] => {
     // Check if this is an Xbox4 specific news section
-    if (section.section_key === 'xbox4_news_section' && sectionConfig?.news?.newsItems) {
-      return sectionConfig.news.newsItems.map((item: any) => ({
+    if (section.section_key === 'xbox4_news' && sectionConfig?.articles) {
+      return sectionConfig.articles.map((item: any) => ({
         id: item.id || Math.random().toString(),
         title: item.title || '',
         category: item.category || 'Notícias',
@@ -157,7 +126,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
     if (!sectionConfig) return products;
     
     // NEW: Handle Xbox4 specific product configuration with specific products and overrides
-    if (section.section_key === 'xbox4_featured_products' && sectionConfig.products) {
+    if (section.section_key?.startsWith('xbox4_') && sectionConfig.products) {
       const productOverrides = sectionConfig.products as ProductOverride[];
       
       // Filter products based on the IDs in the specific products array
@@ -175,31 +144,6 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
             // Apply image override if provided
             image: override.imageUrl || product.image,
             // Apply badge override if provided
-            badge_text: override.badge?.text || product.badge_text,
-            badge_color: override.badge?.color || product.badge_color
-          };
-        }
-        return product;
-      });
-    }
-    
-    // Handle Xbox4 specific product configuration with advanced settings (legacy support)
-    if (section.section_key?.startsWith('xbox4_') && sectionConfig.products?.products) {
-      const productOverrides = sectionConfig.products.products as ProductOverride[];
-      
-      // Filter products based on the IDs in the overrides
-      const productIds = productOverrides.map(override => override.productId);
-      let filteredProducts = products.filter(product => productIds.includes(product.id));
-      
-      // Apply overrides to products
-      return filteredProducts.map(product => {
-        const override = productOverrides.find(o => o.productId === product.id);
-        if (override) {
-          return {
-            ...product,
-            // Apply overrides if they exist
-            name: override.title || product.name,
-            image: override.imageUrl || product.image,
             badge_text: override.badge?.text || product.badge_text,
             badge_color: override.badge?.color || product.badge_color
           };
@@ -258,7 +202,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
   // Use both naming conventions for compatibility
   const isVisible = section.is_visible ?? section.isVisible ?? true;
   const sectionType = section.section_type || section.sectionType || 'products';
-  const sectionConfig = section.section_config || section.sectionConfig || {};
+  const sectionConfig = section.sectionConfig || {};
   const sectionTitle = section.title || '';
 
   if (!isVisible) return null;
@@ -292,7 +236,7 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
         />
       );
     
-    case 'news':
+    case 'news' as any:
       const newsArticles = convertToNewsConfig(sectionConfig);
       const newsLayout = sectionConfig?.layout || 'grid';
       

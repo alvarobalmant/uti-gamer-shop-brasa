@@ -12,14 +12,21 @@ import { useProducts } from '@/hooks/useProducts';
 interface Xbox4FeaturedProductsManagerProps {
   initialConfig: PageLayoutItemConfig | null;
   onSave: (config: PageLayoutItemConfig) => void;
+  sectionTitle?: string;
+  defaultTags?: string[];
 }
 
-const Xbox4FeaturedProductsManager: React.FC<Xbox4FeaturedProductsManagerProps> = ({ initialConfig, onSave }) => {
+const Xbox4FeaturedProductsManager: React.FC<Xbox4FeaturedProductsManagerProps> = ({ 
+  initialConfig, 
+  onSave, 
+  sectionTitle = "Produtos em Destaque",
+  defaultTags = ['xbox', 'console'] 
+}) => {
   const { products } = useProducts();
   
   // Simple state for the new structure
   const [selectedProducts, setSelectedProducts] = useState<ProductOverride[]>([]);
-  const [tagIds, setTagIds] = useState<string[]>(['xbox', 'console']);
+  const [tagIds, setTagIds] = useState<string[]>(defaultTags);
   const [limit, setLimit] = useState(4);
   
   // Form state for adding new products
@@ -99,10 +106,10 @@ const Xbox4FeaturedProductsManager: React.FC<Xbox4FeaturedProductsManagerProps> 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Gerenciar Produtos em Destaque</CardTitle>
+        <CardTitle>Gerenciar {sectionTitle}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="mb-4">Configure quais produtos aparecem nos cards principais da página /xbox4, incluindo títulos e imagens personalizadas.</p>
+        <p className="mb-4">Configure quais produtos aparecem na seção {sectionTitle} da página /xbox4, incluindo títulos e imagens personalizadas.</p>
 
         <h3 className="text-xl font-semibold mb-4">Configurações Gerais</h3>
         <div className="grid gap-4 py-4 mb-6">
