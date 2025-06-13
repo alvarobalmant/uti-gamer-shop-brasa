@@ -62,13 +62,20 @@ const HexagonParticles = () => {
 };
 
 // Componente de card de produto otimizado para mobile
-const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default" }) => {
+const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default", index = 0 }) => {
   const isGame = variant === "game";
   const isAccessory = variant === "accessory";
   const isDeal = variant === "deal";
   
   return (
     <motion.div
+      initial={{ opacity: 0, x: -20, scale: 0.98 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      transition={{ 
+        duration: 0.4, 
+        delay: index * 0.05, 
+        ease: "easeOut" 
+      }}
       whileHover={{ 
         scale: 1.02,
         boxShadow: "0 8px 25px -8px rgba(16, 124, 16, 0.3)",
@@ -77,10 +84,6 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       whileTap={{ 
         scale: 0.98,
         transition: { duration: 0.1 }
-      }}
-      transition={{ 
-        duration: 0.2,
-        ease: "easeOut"
       }}
       className={cn(
         "group relative bg-gray-900 rounded-lg overflow-hidden transition-all duration-200 border border-transparent flex-shrink-0",
@@ -806,7 +809,7 @@ const XboxPage6 = () => {
             "flex md:block overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 md:pb-0",
             "scrollbar-hide" // Esconder scrollbar no mobile
           )}>
-            {filteredProducts.accessories.map((product, index) => (
+            {displayProducts.accessories.map((product, index) => (
               <ProductCard 
                 key={product.id}
                 product={product}
