@@ -49,12 +49,16 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
       className={cn(
         "group relative bg-black rounded-xl overflow-hidden border border-transparent cursor-pointer transform-gpu will-change-transform",
         "active:scale-95 md:active:scale-100",
-        "w-full max-w-[300px] md:max-w-none",
+        "w-full max-w-[280px] md:max-w-none",
+        // Adicionando margin para evitar clipping das animações
+        "mx-auto my-4 md:my-0",
         className
       )}
       style={{
         transformStyle: "preserve-3d",
-        perspective: "800px"
+        perspective: "800px",
+        // Garantindo espaço para a animação
+        margin: "16px auto",
       }}
     >
       <div className="relative aspect-video overflow-hidden">

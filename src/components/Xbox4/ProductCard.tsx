@@ -49,37 +49,37 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       className={cn(
         "group relative bg-gray-900 rounded-xl overflow-hidden border border-transparent cursor-pointer",
         "p-2 md:p-6",
-        // Reduzindo altura em 30% no mobile
-        "h-[210px] md:min-h-[400px]",
+        // Mantendo altura proporcional para todos os tamanhos
+        isGame ? "aspect-[3/4]" : "aspect-[4/5]",
         "transition-all duration-300 ease-out",
         "hover:bg-gray-800 hover:border-[#107C10]/50",
         "active:scale-95 md:active:scale-100",
-        // Reduzindo largura máxima em 30% no mobile (de 280px para 196px)
-        "w-full max-w-[196px] md:max-w-none",
-        // Adicionando margin-top no mobile para evitar clipping da animação
-        "mt-2 md:mt-0",
+        // Mantendo largura responsiva mas proporcional
+        "w-full max-w-[140px] sm:max-w-[160px] md:max-w-none",
+        // Centralizando no mobile e adicionando margin para animações
+        "mx-auto my-4 md:my-0",
         className
       )}
       onClick={() => onProductClick(product.id)}
-      // Garantindo que o container pai tenha espaço para a animação
       style={{ 
         transformOrigin: "center center",
-        marginTop: "8px",
-        marginBottom: "8px"
+        // Garantindo espaço para animações
+        margin: "16px auto",
       }}
     >
       {/* Badges */}
       <ProductCardBadges product={product} variant={variant} />
       
       {/* Imagem do produto */}
-      <ProductCardImage 
-        product={product} 
-        variant={variant}
-        className="mb-2 md:mb-4"
-      />
+      <div className="mb-2 md:mb-4 flex-1">
+        <ProductCardImage 
+          product={product} 
+          variant={variant}
+        />
+      </div>
       
       {/* Informações do produto */}
-      <div className="space-y-1 md:space-y-3">
+      <div className="space-y-1 md:space-y-3 flex-shrink-0">
         <ProductCardInfo 
           product={product} 
           variant={variant}

@@ -15,8 +15,9 @@ const ProductCardImage = ({ product, variant = "default", className }: ProductCa
   
   return (
     <div className={cn(
-      "overflow-hidden",
-      isGame ? "h-full" : "aspect-square",
+      "relative overflow-hidden rounded-lg",
+      // Mantendo aspect ratio consistente
+      isGame ? "aspect-[3/4]" : "aspect-square",
       className
     )}>
       <motion.img 
