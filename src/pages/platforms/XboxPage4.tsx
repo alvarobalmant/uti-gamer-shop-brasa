@@ -183,7 +183,9 @@ const XboxPage4 = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent z-10"></div>
         
         {/* Partículas hexagonais animadas */}
-        <HexagonParticles className="hidden md:block" />
+        <div className="hidden md:block">
+          <HexagonParticles />
+        </div>
         
         {/* Conteúdo do hero */}
         <div className="container mx-auto px-4 relative z-20">
@@ -541,4 +543,3 @@ const XboxPage4 = () => {
 };
 
 export default XboxPage4;
-

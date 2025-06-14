@@ -7,16 +7,18 @@ import { cn } from '@/lib/utils';
 interface ProductCardInfoProps {
   product: Product;
   variant?: "default" | "game" | "accessory" | "deal";
+  className?: string;
 }
 
-const ProductCardInfo = ({ product, variant = "default" }: ProductCardInfoProps) => {
+const ProductCardInfo = ({ product, variant = "default", className }: ProductCardInfoProps) => {
   const isGame = variant === "game";
   
   return (
     <motion.h3 
       className={cn(
         "font-bold mb-2 text-white line-clamp-2 transition-colors duration-150",
-        isGame ? "text-sm" : "text-lg"
+        isGame ? "text-sm" : "text-lg",
+        className
       )}
       whileHover={{ 
         color: "#107C10",

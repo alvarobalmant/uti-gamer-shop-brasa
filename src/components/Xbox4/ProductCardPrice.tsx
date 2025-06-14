@@ -7,15 +7,17 @@ import { cn } from '@/lib/utils';
 interface ProductCardPriceProps {
   product: Product;
   variant?: "default" | "game" | "accessory" | "deal";
+  className?: string;
 }
 
-const ProductCardPrice = ({ product, variant = "default" }: ProductCardPriceProps) => {
+const ProductCardPrice = ({ product, variant = "default", className }: ProductCardPriceProps) => {
   const isGame = variant === "game";
   
   return (
     <div className={cn(
       "flex items-center justify-between mb-3",
-      isGame ? "mb-2" : "mb-4"
+      isGame ? "mb-2" : "mb-4",
+      className
     )}>
       <motion.div 
         className="text-xl font-black text-[#107C10]"

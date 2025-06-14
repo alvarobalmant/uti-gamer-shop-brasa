@@ -11,15 +11,17 @@ interface ProductCardActionsProps {
   onAddToCart: (product: Product) => void;
   onProductClick: (productId: string) => void;
   variant?: "default" | "game" | "accessory" | "deal";
+  className?: string;
 }
 
-const ProductCardActions = ({ product, onAddToCart, onProductClick, variant = "default" }: ProductCardActionsProps) => {
+const ProductCardActions = ({ product, onAddToCart, onProductClick, variant = "default", className }: ProductCardActionsProps) => {
   const isGame = variant === "game";
   
   return (
     <div className={cn(
       "flex gap-2",
-      isGame ? "justify-center" : "justify-between"
+      isGame ? "justify-center" : "justify-between",
+      className
     )}>
       {isGame ? (
         <motion.div

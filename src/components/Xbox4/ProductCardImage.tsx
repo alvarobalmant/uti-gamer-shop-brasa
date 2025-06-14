@@ -7,15 +7,17 @@ import { cn } from '@/lib/utils';
 interface ProductCardImageProps {
   product: Product;
   variant?: "default" | "game" | "accessory" | "deal";
+  className?: string;
 }
 
-const ProductCardImage = ({ product, variant = "default" }: ProductCardImageProps) => {
+const ProductCardImage = ({ product, variant = "default", className }: ProductCardImageProps) => {
   const isGame = variant === "game";
   
   return (
     <div className={cn(
       "overflow-hidden",
-      isGame ? "h-full" : "aspect-square"
+      isGame ? "h-full" : "aspect-square",
+      className
     )}>
       <motion.img 
         src={product.image || 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&h=600&fit=crop&crop=center'} 
