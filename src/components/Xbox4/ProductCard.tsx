@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -83,6 +84,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
         <ProductCardActions 
           product={product} 
           onAddToCart={onAddToCart}
+          onProductClick={onProductClick}
           variant={variant}
           className="text-sm md:text-base"
         />
@@ -92,4 +94,3 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
 };
 
 export default ProductCard;
-
