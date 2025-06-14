@@ -24,13 +24,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Configurar listener de mudança de auth
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        
         if (session?.user) {
-          // Verificar se é admin
+          // Check admin role using setTimeout to avoid infinite recursion
           setTimeout(async () => {
             try {
               const { data: profile } = await supabase
@@ -41,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               
               setIsAdmin(profile?.role === 'admin');
             } catch (error) {
-              console.log('Erro ao verificar perfil:', error);
+              console.log('Error checking admin role:', error);
               setIsAdmin(false);
             }
           }, 0);
@@ -53,7 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Verificar sessão existente
+    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -95,6 +96,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           data: {
             name,
           },
+          emailRedirectTo: `${window.location.origin}/`
         },
       });
       
@@ -153,4 +155,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
