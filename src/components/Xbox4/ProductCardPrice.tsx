@@ -15,14 +15,14 @@ const ProductCardPrice = ({ product, variant = "default", className }: ProductCa
   
   return (
     <div className={cn(
-      "flex items-center justify-between px-1 md:px-0",
-      isGame ? "mb-1 md:mb-2" : "mb-2 md:mb-4",
+      "flex items-center justify-between mb-3",
+      isGame ? "mb-2" : "mb-3 md:mb-4",
       className
     )}>
       <motion.div 
-        className="text-sm font-black text-[#107C10] md:text-xl leading-normal"
+        className="text-lg font-black text-[#107C10] md:text-xl"
         whileHover={{ 
-          scale: 1.03,
+          scale: 1.05,
           textShadow: "0 0 8px rgba(16, 124, 16, 0.8)",
           transition: { duration: 0.15 }
         }}

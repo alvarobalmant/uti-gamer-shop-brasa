@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
@@ -20,7 +21,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import ProductCard from '@/components/Xbox4/ProductCard';
 import { cn } from '@/lib/utils';
 
 // Componente de partículas hexagonais para o hero banner
@@ -58,6 +58,131 @@ const HexagonParticles = () => {
         />
       ))}
     </div>
+  );
+};
+
+// Componente de card de produto com microinterações avançadas
+const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default" }) => {
+  const isGame = variant === "game";
+  const isAccessory = variant === "accessory";
+  const isDeal = variant === "deal";
+  
+  return (
+    <motion.div
+      whileHover={{ 
+        scale: 1.05,
+        boxShadow: "0 10px 30px -10px rgba(16, 124, 16, 0.3)",
+        borderColor: "#107C10"
+      }}
+      transition={{ 
+        duration: 0.3,
+        ease: "easeOut"
+      }}
+      className={cn(
+        "group relative bg-gray-900 rounded-xl overflow-hidden transition-all duration-300 border border-transparent",
+        isGame ? "aspect-[2/3]" : "aspect-square",
+        isDeal ? "bg-gradient-to-br from-[#107C10]/20 via-black to-black" : ""
+      )}
+    >
+      <div className={cn(
+        "overflow-hidden",
+        isGame ? "h-full" : "aspect-square"
+      )}>
+        <motion.img 
+          src={product.imageUrl || 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&h=600&fit=crop&crop=center'} 
+          alt={product.name}
+          className="w-full h-full object-cover"
+          whileHover={{ scale: 1.1 }}
+          transition={{ duration: 0.5 }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+      </div>
+      
+      {/* Badges */}
+      <div className="absolute top-3 left-3 flex flex-col gap-2">
+        {product.is_featured && (
+          <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg">
+            DESTAQUE
+          </Badge>
+        )}
+        {product.isNew && (
+          <Badge className="bg-red-500 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">
+            NOVO
+          </Badge>
+        )}
+        {isDeal && product.discount && (
+          <motion.div
+            initial={{ scale: 1 }}
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1"
+          >
+            <Tag size={12} />
+            {product.discount}% OFF
+          </motion.div>
+        )}
+      </div>
+      
+      <div className={cn(
+        "absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent",
+        isGame ? "pb-3 pt-16" : "p-6"
+      )}>
+        <h3 className={cn(
+          "font-bold mb-2 text-white group-hover:text-[#107C10] transition-colors line-clamp-2",
+          isGame ? "text-sm" : "text-lg"
+        )}>
+          {product.name}
+        </h3>
+        
+        <div className={cn(
+          "flex items-center justify-between mb-3",
+          isGame ? "mb-2" : "mb-4"
+        )}>
+          <div className="text-xl font-black text-[#107C10]">
+            R$ {product.price?.toFixed(2)}
+          </div>
+          {product.originalPrice && product.originalPrice > product.price && (
+            <div className="text-sm text-gray-400 line-through">
+              R$ {product.originalPrice.toFixed(2)}
+            </div>
+          )}
+        </div>
+        
+        <div className={cn(
+          "flex gap-2",
+          isGame ? "justify-center" : "justify-between"
+        )}>
+          {isGame ? (
+            <Button 
+              size="sm"
+              className="w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
+              onClick={() => onAddToCart(product)}
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              ADICIONAR
+            </Button>
+          ) : (
+            <>
+              <Button 
+                className="flex-1 bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
+                onClick={() => onAddToCart(product)}
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                COMPRAR
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white transition-all duration-300 transform hover:scale-110"
+                onClick={() => onProductClick(product.id)}
+              >
+                <Heart className="w-4 h-4" />
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
@@ -362,9 +487,9 @@ const XboxPage6 = () => {
             className="max-w-4xl mx-auto space-y-8"
           >
             <motion.div
-              initial={{ opacity: 0, y: -50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.2 }}
               className="flex justify-center"
             >
               <img 
@@ -436,61 +561,37 @@ const XboxPage6 = () => {
       </section>
 
       {/* Xbox Consoles Section */}
-      <section className="py-16 md:py-24 bg-black relative overflow-hidden">
+      <section className="py-24 bg-black relative overflow-hidden">
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-10" style={{ 
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
           backgroundSize: '60px 60px'
         }}></div>
         
-        <div className="relative z-10 container mx-auto">
+        <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-12 md:mb-16 px-4"
+            className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-black mb-4">
+            <h2 className="text-5xl font-black mb-4">
               CONSOLES <span className="text-[#107C10]">XBOX</span>
             </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Desempenho inigualável para a nova geração de jogos. 
               Escolha o console Xbox perfeito para sua experiência.
             </p>
           </motion.div>
 
-          {/* Mobile: Scroll horizontal, Desktop: Grid */}
-          <div className="md:hidden">
-            <div 
-              className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4"
-              style={{
-                scrollSnapType: 'x mandatory',
-                scrollBehavior: 'smooth',
-                overflowY: 'visible'
-              }}
-            >
-              {displayProducts.consoles.map((product, index) => (
-                <ProductCard 
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                  onProductClick={handleProductClick}
-                  index={index}
-                />
-              ))}
-            </div>
-          </div>
-          
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
-            {displayProducts.consoles.map((product, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {displayProducts.consoles.map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
-                index={index}
               />
             ))}
           </div>
@@ -498,218 +599,151 @@ const XboxPage6 = () => {
       </section>
 
       {/* Xbox Games Section */}
-      <section className="py-16 md:py-24 bg-gray-900 relative overflow-hidden">
+      <section className="py-24 bg-gray-900 relative overflow-hidden">
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-5" style={{ 
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23107C10' fill-opacity='0.05'/%3E%3C/svg%3E")`,
           backgroundSize: '60px 60px'
         }}></div>
         
-        <div className="relative z-10 container mx-auto">
+        <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-12 md:mb-16 px-4"
+            className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-black mb-4">
+            <h2 className="text-5xl font-black mb-4">
               JOGOS <span className="text-[#107C10]">EM ALTA</span>
             </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Os títulos mais populares para Xbox. De aventuras épicas a competições intensas, 
               encontre seu próximo jogo favorito.
             </p>
           </motion.div>
 
-          {/* Mobile: Scroll horizontal, Desktop: Grid */}
-          <div className="md:hidden">
-            <div 
-              className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4"
-              style={{
-                scrollSnapType: 'x mandatory',
-                scrollBehavior: 'smooth',
-                overflowY: 'visible'
-              }}
-            >
-              {displayProducts.games.slice(0, 10).map((product, index) => (
-                <ProductCard 
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                  onProductClick={handleProductClick}
-                  variant="game"
-                  index={index}
-                />
-              ))}
-            </div>
-          </div>
-          
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-4">
-            {displayProducts.games.slice(0, 10).map((product, index) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {displayProducts.games.slice(0, 10).map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="game"
-                index={index}
               />
             ))}
           </div>
           
-          <div className="mt-8 md:mt-12 text-center px-4">
+          <div className="mt-12 text-center">
             <Button 
               size="lg" 
-              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 md:px-8 py-3 md:py-4 text-base md:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
+              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-8 py-4 text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
               onClick={() => navigate("/categoria/jogos")}
             >
               VER TODOS OS JOGOS
-              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
+              <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Xbox Accessories Section */}
-      <section className="py-16 md:py-24 bg-black relative overflow-hidden">
+      <section className="py-24 bg-black relative overflow-hidden">
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-10" style={{ 
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
           backgroundSize: '60px 60px'
         }}></div>
         
-        <div className="relative z-10 container mx-auto">
+        <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-12 md:mb-16 px-4"
+            className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-black mb-4">
+            <h2 className="text-5xl font-black mb-4">
               <span className="text-[#107C10]">ACESSÓRIOS</span> XBOX
             </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Eleve sua experiência de jogo com acessórios oficiais Xbox. 
               Controles, headsets e muito mais para o seu setup.
             </p>
           </motion.div>
 
-          {/* Mobile: Scroll horizontal, Desktop: Grid */}
-          <div className="md:hidden">
-            <div 
-              className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4"
-              style={{
-                scrollSnapType: 'x mandatory',
-                scrollBehavior: 'smooth',
-                overflowY: 'visible'
-              }}
-            >
-              {filteredProducts.accessories.map((product, index) => (
-                <ProductCard 
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                  onProductClick={handleProductClick}
-                  variant="accessory"
-                  index={index}
-                />
-              ))}
-            </div>
-          </div>
-          
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
-            {filteredProducts.accessories.map((product, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {filteredProducts.accessories.map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="accessory"
-                index={index}
               />
             ))}
           </div>
           
-          <div className="mt-8 md:mt-12 text-center px-4">
+          <div className="mt-12 text-center">
             <Button 
               size="lg" 
               variant="outline"
-              className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white font-bold px-6 md:px-8 py-3 md:py-4 text-base md:text-lg transition-all duration-300 transform hover:scale-105"
+              className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white font-bold px-8 py-4 text-lg transition-all duration-300 transform hover:scale-105"
               onClick={() => navigate("/categoria/acessorios")}
             >
               VER TODOS OS ACESSÓRIOS
-              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
+              <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
         </div>
       </section>
       
       {/* Notícias e Trailers Section */}
-      <section className="py-16 md:py-24 bg-gray-900 relative overflow-hidden">
+      <section className="py-24 bg-gray-900 relative overflow-hidden">
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-10" style={{ 
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='70' height='70' viewBox='0 0 70 70' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M35 0c-1.25 0-2.5.06-3.75.19L1.31 17.59c-1.7.85-2.71 2.6-2.71 4.48v30.03c0 1.89 1.02 3.63 2.71 4.48l29.94 17.4c1.7.85 3.75.85 5.44 0l29.94-17.4c1.7-.85 2.71-2.6 2.71-4.48V18.91c0-1.89-1.02-3.63-2.71-4.48L38.75.19C37.5.06 36.25 0 35 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='70' height='70' viewBox='0 0 70 70' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M35 0c-1.25 0-2.5.06-3.75.19L1.31 17.59c-1.7.85-2.71 2.6-2.71 4.48v30.03c0 1.89 1.02 3.63 2.71 4.48l29.94 17.4c1.7.85 3.75.85 5.44 0l29.94-17.4c1.7-.85 2.71-2.6 2.71-4.48V22.07c0-1.89-1.02-3.63-2.71-4.48L38.75.19C37.5.06 36.25 0 35 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
           backgroundSize: '70px 70px'
         }}></div>
         
-        <div className="relative z-10 container mx-auto">
+        <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-12 md:mb-16 px-4"
+            className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-black mb-4">
+            <h2 className="text-5xl font-black mb-4">
               <span className="text-[#107C10]">NOTÍCIAS</span> & TRAILERS
             </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Fique por dentro das últimas novidades, lançamentos e atualizações do universo Xbox.
             </p>
           </motion.div>
 
-          {/* Mobile: Scroll horizontal, Desktop: Grid */}
-          <div className="md:hidden">
-            <div 
-              className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4"
-              style={{
-                scrollSnapType: 'x mandatory',
-                scrollBehavior: 'smooth',
-                overflowY: 'visible'
-              }}
-            >
-              {newsAndTrailers.map((item, index) => (
-                <NewsCard key={item.id} item={item} index={index} />
-              ))}
-            </div>
-          </div>
-          
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {newsAndTrailers.map((item, index) => (
               <NewsCard key={item.id} item={item} index={index} />
             ))}
           </div>
           
-          <div className="mt-8 md:mt-12 text-center px-4">
+          <div className="mt-12 text-center">
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white font-bold px-6 md:px-8 py-3 md:py-4 text-base md:text-lg transition-all duration-300 transform hover:scale-105"
+              className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white font-bold px-8 py-4 text-lg transition-all duration-300 transform hover:scale-105"
             >
               VER TODAS AS NOTÍCIAS
-              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
+              <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Ofertas Especiais Section */}
-      <section className="py-16 md:py-24 bg-[#107C10] relative overflow-hidden">
+      <section className="py-24 bg-[#107C10] relative overflow-hidden">
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-20" style={{ 
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23FFFFFF' fill-opacity='0.1'/%3E%3C/svg%3E")`,
@@ -717,55 +751,30 @@ const XboxPage6 = () => {
         }}></div>
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#107C10]/80 via-[#0D5A0D]/60 to-[#107C10]/90"></div>
         
-        <div className="relative z-10 container mx-auto">
+        <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-12 md:mb-16 px-4"
+            className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">
+            <h2 className="text-5xl font-black mb-4 text-white">
               OFERTAS <span className="text-yellow-400">IMPERDÍVEIS</span>
             </h2>
-            <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
+            <p className="text-xl text-white/90 max-w-3xl mx-auto">
               Tempo limitado para aproveitar. Descontos especiais em produtos selecionados.
             </p>
           </motion.div>
 
-          {/* Mobile: Scroll horizontal, Desktop: Grid */}
-          <div className="md:hidden">
-            <div 
-              className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4"
-              style={{
-                scrollSnapType: 'x mandatory',
-                scrollBehavior: 'smooth',
-                overflowY: 'visible'
-              }}
-            >
-              {displayProducts.deals.map((product, index) => (
-                <ProductCard 
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                  onProductClick={handleProductClick}
-                  variant="deal"
-                  index={index}
-                />
-              ))}
-            </div>
-          </div>
-          
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
-            {displayProducts.deals.map((product, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {displayProducts.deals.map((product) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="deal"
-                index={index}
               />
             ))}
           </div>
@@ -780,7 +789,7 @@ const XboxPage6 = () => {
           backgroundSize: '60px 60px'
         }}></div>
         
-        <div className="relative z-10 container mx-auto">
+        <div className="relative z-10 container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}

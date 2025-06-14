@@ -15,8 +15,8 @@ const ProductCardImage = ({ product, variant = "default", className }: ProductCa
   
   return (
     <div className={cn(
-      "overflow-hidden rounded-lg",
-      isGame ? "h-[120px] md:h-full" : "aspect-square h-[120px] md:aspect-square md:h-auto",
+      "overflow-hidden",
+      isGame ? "h-full" : "aspect-square",
       className
     )}>
       <motion.img 
@@ -24,7 +24,7 @@ const ProductCardImage = ({ product, variant = "default", className }: ProductCa
         alt={product.name}
         className="w-full h-full object-cover"
         whileHover={{ 
-          scale: 1.05,
+          scale: 1.08,
           transition: { duration: 0.2, ease: "easeOut" }
         }}
       />
