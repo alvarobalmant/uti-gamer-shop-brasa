@@ -49,10 +49,11 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       className={cn(
         "group relative bg-gray-900 rounded-xl overflow-hidden border border-transparent cursor-pointer",
         "p-3 md:p-6",
-        "min-h-[300px] md:min-h-[400px]",
+        "h-[300px] md:min-h-[400px]",
         "transition-all duration-300 ease-out",
         "hover:bg-gray-800 hover:border-[#107C10]/50",
         "active:scale-95 md:active:scale-100",
+        "w-full max-w-[280px] md:max-w-none",
         className
       )}
       onClick={() => onProductClick(product.id)}
@@ -86,7 +87,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
           onAddToCart={onAddToCart}
           onProductClick={onProductClick}
           variant={variant}
-          className="text-sm md:text-base"
+          className="text-xs md:text-sm"
         />
       </div>
     </motion.div>

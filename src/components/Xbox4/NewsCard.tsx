@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Play, Clock } from 'lucide-react';
@@ -48,6 +49,7 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
       className={cn(
         "group relative bg-black rounded-xl overflow-hidden border border-transparent cursor-pointer transform-gpu will-change-transform",
         "active:scale-95 md:active:scale-100",
+        "w-full max-w-[300px] md:max-w-none",
         className
       )}
       style={{
@@ -76,14 +78,14 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
             }}
           >
             <motion.div 
-              className="w-12 h-12 rounded-full bg-[#107C10]/80 flex items-center justify-center md:w-16 md:h-16"
+              className="w-10 h-10 rounded-full bg-[#107C10]/80 flex items-center justify-center md:w-16 md:h-16"
               whileHover={{
                 backgroundColor: "rgba(16, 124, 16, 1)",
                 boxShadow: "0 0 20px rgba(16, 124, 16, 0.8)",
                 transition: { duration: 0.15 }
               }}
             >
-              <Play className="w-6 h-6 text-white ml-1 md:w-8 md:h-8" />
+              <Play className="w-5 h-5 text-white ml-1 md:w-8 md:h-8" />
             </motion.div>
           </motion.div>
         )}
@@ -108,7 +110,7 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
       
       <div className="p-3 md:p-5">
         <motion.h3 
-          className="font-bold text-base mb-2 transition-colors duration-150 leading-tight md:text-lg"
+          className="font-bold text-sm mb-2 transition-colors duration-150 leading-tight md:text-lg"
           whileHover={{ 
             color: "#107C10",
             transition: { duration: 0.15 }
@@ -135,7 +137,7 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-[#107C10] hover:text-white hover:bg-[#107C10] transition-colors duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)] text-xs px-3 py-1 h-8 md:text-sm md:px-4 md:py-2 md:h-9"
+              className="text-[#107C10] hover:text-white hover:bg-[#107C10] transition-colors duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)] text-xs px-2 py-1 h-8 md:text-sm md:px-4 md:py-2 md:h-9"
             >
               {news.type === 'trailer' ? 'Assistir' : 'Ler mais'}
             </Button>
@@ -147,4 +149,3 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
 };
 
 export default NewsCard;
-

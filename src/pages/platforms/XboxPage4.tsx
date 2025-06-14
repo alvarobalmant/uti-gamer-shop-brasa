@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
@@ -159,7 +160,7 @@ const XboxPage4 = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white px-4 max-w-screen-sm mx-auto md:px-0 md:max-w-none">
+    <div className="min-h-screen bg-black text-white">
       <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
       
       {/* Hero Banner */}
@@ -193,25 +194,25 @@ const XboxPage4 = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="max-w-3xl"
+            className="max-w-3xl text-center md:text-left"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-6"
+              className="mb-4 md:mb-6 flex justify-center md:justify-start"
             >
               <img 
                 src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Xbox_one_logo.svg" 
                 alt="Xbox Logo" 
-                className="h-16 mb-4 md:h-24"
+                className="h-12 md:h-24"
               />
             </motion.div>
             <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-3xl font-black mb-4 leading-tight md:text-7xl md:mb-6"
+                className="text-3xl font-black mb-4 leading-tight tracking-tight md:text-7xl md:mb-6"
               >
                 POWER YOUR <br />
                 <span className="text-[#107C10] drop-shadow-[0_0_10px_rgba(16,124,16,0.5)]">DREAMS</span>
@@ -229,18 +230,18 @@ const XboxPage4 = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.8 }}
-              className="flex flex-col gap-4 sm:flex-row"
+              className="flex flex-col gap-3 sm:flex-row sm:gap-4 max-w-sm mx-auto md:max-w-none md:mx-0"
             >
               <Button 
                 size="lg" 
-                className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-4 py-2 h-10 text-sm rounded-md transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:h-12 md:px-8 md:text-base"
+                className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 py-3 h-12 text-sm rounded-md transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:h-12 md:px-8 md:text-base"
               >
                 <Zap className="w-4 h-4 mr-2" />
                 EXPLORAR CONSOLES
               </Button>
               <Button 
                 size="lg" 
-                className="bg-black/50 text-white border border-white hover:bg-[#107C10]/50 hover:text-white font-bold px-4 py-2 h-10 text-sm rounded-md transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="bg-black/50 text-white border border-white hover:bg-[#107C10]/50 hover:text-white font-bold px-6 py-3 h-12 text-sm rounded-md transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 <Play className="w-4 h-4 mr-2" />
                 VER JOGOS
@@ -251,18 +252,18 @@ const XboxPage4 = () => {
         
         {/* Indicador de scroll */}
         <motion.div 
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20"
+          className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 md:bottom-8"
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          <div className="w-10 h-10 rounded-full border-2 border-white/50 flex items-center justify-center">
-            <ChevronRight className="w-6 h-6 text-white/50 rotate-90" />
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white/50 flex items-center justify-center">
+            <ChevronRight className="w-4 h-4 md:w-6 md:h-6 text-white/50 rotate-90" />
           </div>
         </motion.div>
       </section>
 
       {/* Seção de Consoles */}
-      <section className="py-10 bg-black relative overflow-hidden md:py-24">
+      <section className="py-8 bg-black relative overflow-hidden md:py-24">
         {/* Fundo com textura sutil ou gradiente */}
         <div className="absolute inset-0 bg-[url(\'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQ9Ik0zMCAwTDYwIDMwIDMwIDYwIDAgMzB6IiBmaWxsPSIjMTA3QzEwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+\')] opacity-30"></div>
         
@@ -272,18 +273,18 @@ const XboxPage4 = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-8 md:mb-16"
+            className="text-center mb-6 md:mb-16"
           >
-            <h2 className="text-2xl font-black mb-2 leading-tight md:text-6xl md:mb-4">
+            <h2 className="text-2xl font-black mb-2 leading-tight tracking-tight md:text-6xl md:mb-4">
               CONSOLES <span className="text-[#107C10]">XBOX</span>
             </h2>
-            <p className="text-sm text-gray-300 max-w-3xl mx-auto leading-normal md:text-xl">
+            <p className="text-sm text-gray-300 max-w-3xl mx-auto leading-normal px-4 md:text-xl md:px-0">
               Desempenho inigualável para a nova geração de jogos. 
               Escolha o console Xbox perfeito para sua experiência.
             </p>
           </motion.div>
 
-          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible">
+          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 -mx-4 px-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible md:mx-0 md:px-0">
             {displayProducts.consoles.map((product, index) => (
               <ProductCard 
                 key={product.id}
@@ -291,7 +292,7 @@ const XboxPage4 = () => {
                 index={index}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
-                className="min-w-[280px] snap-start md:min-w-0"
+                className="min-w-[280px] snap-start flex-shrink-0 md:min-w-0"
               />
             ))}
           </div>
@@ -299,7 +300,7 @@ const XboxPage4 = () => {
       </section>
 
       {/* Xbox Games Section */}
-      <section className="py-10 bg-gray-950 relative overflow-hidden md:py-24">
+      <section className="py-8 bg-gray-950 relative overflow-hidden md:py-24">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQ9Ik0zMCAwTDYwIDMwIDMwIDYwIDAgMzB6IiBmaWxsPSIjMTA3QzEwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+\')] opacity-20"></div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -308,18 +309,18 @@ const XboxPage4 = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-8 md:mb-16"
+            className="text-center mb-6 md:mb-16"
           >
-            <h2 className="text-2xl font-black mb-2 leading-tight md:text-6xl md:mb-4">
+            <h2 className="text-2xl font-black mb-2 leading-tight tracking-tight md:text-6xl md:mb-4">
               JOGOS <span className="text-[#107C10]">EM ALTA</span>
             </h2>
-            <p className="text-sm text-gray-300 max-w-3xl mx-auto leading-normal md:text-xl">
+            <p className="text-sm text-gray-300 max-w-3xl mx-auto leading-normal px-4 md:text-xl md:px-0">
               Os títulos mais populares para Xbox. De aventuras épicas a competições intensas, 
               encontre seu próximo jogo favorito.
             </p>
           </motion.div>
 
-          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible">
+          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 -mx-4 px-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible md:mx-0 md:px-0">
             {displayProducts.games.slice(0, 10).map((product, index) => (
               <ProductCard 
                 key={product.id}
@@ -328,7 +329,7 @@ const XboxPage4 = () => {
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="game"
-                className="min-w-[280px] snap-start md:min-w-0"
+                className="min-w-[200px] snap-start flex-shrink-0 md:min-w-0"
               />
             ))}
           </div>
@@ -336,16 +337,16 @@ const XboxPage4 = () => {
           <div className="mt-8 text-center md:mt-12">
             <Button 
               size="lg" 
-              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 py-3 text-base transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:px-8 md:py-6 md:text-lg"
+              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 py-3 h-12 text-sm transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:px-8 md:py-6 md:text-lg md:h-auto"
             >
-              VER TODOS OS JOGOS <ChevronRight className="ml-2 w-5 h-5" />
+              VER TODOS OS JOGOS <ChevronRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Acessórios Section */}
-      <section className="py-10 bg-zinc-900 relative overflow-hidden md:py-24">
+      <section className="py-8 bg-zinc-900 relative overflow-hidden md:py-24">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQ9Ik0zMCAwTDYwIDMwIDMwIDYwIDAgMzB6IiBmaWxsPSIjMTA3QzEwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+\')] opacity-30"></div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -354,18 +355,18 @@ const XboxPage4 = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-8 md:mb-16"
+            className="text-center mb-6 md:mb-16"
           >
-            <h2 className="text-2xl font-black mb-2 leading-tight md:text-6xl md:mb-4">
+            <h2 className="text-2xl font-black mb-2 leading-tight tracking-tight md:text-6xl md:mb-4">
               <span className="text-[#107C10]">ACESSÓRIOS</span> XBOX
             </h2>
-            <p className="text-sm text-gray-300 max-w-3xl mx-auto leading-normal md:text-xl">
+            <p className="text-sm text-gray-300 max-w-3xl mx-auto leading-normal px-4 md:text-xl md:px-0">
               Eleve sua experiência de jogo com acessórios oficiais Xbox. Controles, headsets e 
               muito mais para o seu setup.
             </p>
           </motion.div>
 
-          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible">
+          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 -mx-4 px-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible md:mx-0 md:px-0">
             {displayProducts.accessories.map((product, index) => (
               <ProductCard 
                 key={product.id}
@@ -374,7 +375,7 @@ const XboxPage4 = () => {
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="accessory"
-                className="min-w-[280px] snap-start md:min-w-0"
+                className="min-w-[280px] snap-start flex-shrink-0 md:min-w-0"
               />
             ))}
           </div>
@@ -382,16 +383,16 @@ const XboxPage4 = () => {
           <div className="mt-8 text-center md:mt-12">
             <Button 
               size="lg" 
-              className="bg-transparent hover:bg-[#107C10] text-[#107C10] hover:text-white font-bold border-2 border-[#107C10] px-6 py-3 text-base transition-all duration-300 md:px-8 md:py-6 md:text-lg"
+              className="bg-transparent hover:bg-[#107C10] text-[#107C10] hover:text-white font-bold border-2 border-[#107C10] px-6 py-3 h-12 text-sm transition-all duration-300 md:px-8 md:py-6 md:text-lg md:h-auto"
             >
-              VER TODOS OS ACESSÓRIOS <ChevronRight className="ml-2 w-5 h-5" />
+              VER TODOS OS ACESSÓRIOS <ChevronRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Notícias e Trailers Section */}
-      <section className="py-10 bg-neutral-950 relative overflow-hidden md:py-24">
+      <section className="py-8 bg-neutral-950 relative overflow-hidden md:py-24">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQ9Ik0zMCAwTDYwIDMwIDMwIDYwIDAgMzB6IiBmaWxsPSIjMTA3QzEwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+\')] opacity-20"></div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -400,24 +401,24 @@ const XboxPage4 = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-8 md:mb-16"
+            className="text-center mb-6 md:mb-16"
           >
-            <h2 className="text-2xl font-black mb-2 leading-tight md:text-6xl md:mb-4">
+            <h2 className="text-2xl font-black mb-2 leading-tight tracking-tight md:text-6xl md:mb-4">
               ÚLTIMAS <span className="text-[#107C10]">NOTÍCIAS</span>
             </h2>
-            <p className="text-sm text-gray-300 max-w-3xl mx-auto leading-normal md:text-xl">
+            <p className="text-sm text-gray-300 max-w-3xl mx-auto leading-normal px-4 md:text-xl md:px-0">
               Fique por dentro de tudo que acontece no universo Xbox. Lançamentos, eventos e 
               atualizações.
             </p>
           </motion.div>
 
-          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible">
+          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 -mx-4 px-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible md:mx-0 md:px-0">
             {displayNews.map((news, index) => (
               <NewsCard 
                 key={news.id}
                 news={news}
                 index={index}
-                className="min-w-[300px] snap-start md:min-w-0"
+                className="min-w-[300px] snap-start flex-shrink-0 md:min-w-0"
               />
             ))}
           </div>
@@ -425,16 +426,16 @@ const XboxPage4 = () => {
           <div className="mt-8 text-center md:mt-12">
             <Button 
               size="lg" 
-              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 py-3 text-base transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:px-8 md:py-6 md:text-lg"
+              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 py-3 h-12 text-sm transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:px-8 md:py-6 md:text-lg md:h-auto"
             >
-              VER TODAS AS NOTÍCIAS <ChevronRight className="ml-2 w-5 h-5" />
+              VER TODAS AS NOTÍCIAS <ChevronRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Ofertas Especiais Section */}
-      <section className="py-10 bg-gray-900 relative overflow-hidden md:py-24">
+      <section className="py-8 bg-gray-900 relative overflow-hidden md:py-24">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQ9Ik0zMCAwTDYwIDMwIDMwIDYwIDAgMzB6IiBmaWxsPSIjMTA3QzEwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+\')] opacity-30"></div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -443,18 +444,18 @@ const XboxPage4 = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-8 md:mb-16"
+            className="text-center mb-6 md:mb-16"
           >
-            <h2 className="text-2xl font-black mb-2 leading-tight md:text-6xl md:mb-4">
+            <h2 className="text-2xl font-black mb-2 leading-tight tracking-tight md:text-6xl md:mb-4">
               OFERTAS <span className="text-[#107C10]">ESPECIAIS</span>
             </h2>
-            <p className="text-sm text-gray-300 max-w-3xl mx-auto leading-normal md:text-xl">
+            <p className="text-sm text-gray-300 max-w-3xl mx-auto leading-normal px-4 md:text-xl md:px-0">
               Não perca as melhores promoções em consoles, jogos e acessórios Xbox. 
               Aproveite por tempo limitado!
             </p>
           </motion.div>
 
-          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible">
+          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 -mx-4 px-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible md:mx-0 md:px-0">
             {displayProducts.deals.map((product, index) => (
               <ProductCard 
                 key={product.id}
@@ -463,7 +464,7 @@ const XboxPage4 = () => {
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="deal"
-                className="min-w-[280px] snap-start md:min-w-0"
+                className="min-w-[280px] snap-start flex-shrink-0 md:min-w-0"
               />
             ))}
           </div>
@@ -471,9 +472,9 @@ const XboxPage4 = () => {
           <div className="mt-8 text-center md:mt-12">
             <Button 
               size="lg" 
-              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 py-3 text-base transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:px-8 md:py-6 md:text-lg"
+              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 py-3 h-12 text-sm transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:px-8 md:py-6 md:text-lg md:h-auto"
             >
-              VER TODAS AS OFERTAS <ChevronRight className="ml-2 w-5 h-5" />
+              VER TODAS AS OFERTAS <ChevronRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
             </Button>
           </div>
         </div>
@@ -493,34 +494,34 @@ const XboxPage4 = () => {
                 <img 
                   src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Xbox_one_logo.svg" 
                   alt="Xbox Logo" 
-                  className="h-8 mr-2 md:h-10" 
+                  className="h-6 mr-2 md:h-10 md:mr-2" 
                 />
-                <span className="text-xl font-bold text-white mr-2 md:text-2xl">×</span>
-                <span className="text-xl font-bold text-white md:text-2xl">UTI DOS GAMES</span>
+                <span className="text-lg font-bold text-white mr-2 md:text-2xl">×</span>
+                <span className="text-lg font-bold text-white md:text-2xl">UTI DOS GAMES</span>
               </div>
               
-              <p className="text-xs text-gray-400 mb-4 md:text-sm">
+              <p className="text-xs text-gray-400 mb-4 px-4 leading-relaxed md:text-sm md:px-0">
                 Seu destino final para tudo relacionado a Xbox. Os melhores consoles, jogos e acessórios com as melhores ofertas.
               </p>
             </div>
-            <div className="flex flex-col gap-y-4 mb-6 md:flex-row md:justify-center md:space-y-0 md:space-x-6">
-              <div className="flex flex-col gap-y-2">
-                <span className="text-xs font-bold text-gray-300 uppercase">Institucional</span>
-                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 md:text-sm">Sobre Nós</a>
-                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 md:text-sm">Carreiras</a>
+            <div className="flex flex-col gap-y-6 mb-6 md:flex-row md:justify-center md:space-y-0 md:space-x-8">
+              <div className="flex flex-col gap-y-3">
+                <span className="text-xs font-bold text-gray-300 uppercase tracking-wide">Institucional</span>
+                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 py-2 md:text-sm md:py-0">Sobre Nós</a>
+                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 py-2 md:text-sm md:py-0">Carreiras</a>
               </div>
-              <div className="flex flex-col gap-y-2">
-                <span className="text-xs font-bold text-gray-300 uppercase">Suporte</span>
-                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 md:text-sm">FAQ</a>
-                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 md:text-sm">Contato</a>
+              <div className="flex flex-col gap-y-3">
+                <span className="text-xs font-bold text-gray-300 uppercase tracking-wide">Suporte</span>
+                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 py-2 md:text-sm md:py-0">FAQ</a>
+                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 py-2 md:text-sm md:py-0">Contato</a>
               </div>
-              <div className="flex flex-col gap-y-2">
-                <span className="text-xs font-bold text-gray-300 uppercase">Legal</span>
-                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 md:text-sm">Termos de Serviço</a>
-                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 md:text-sm">Política de Privacidade</a>
+              <div className="flex flex-col gap-y-3">
+                <span className="text-xs font-bold text-gray-300 uppercase tracking-wide">Legal</span>
+                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 py-2 md:text-sm md:py-0">Termos de Serviço</a>
+                <a href="#" className="text-xs text-gray-400 hover:text-[#107C10] transition-colors duration-300 py-2 md:text-sm md:py-0">Política de Privacidade</a>
               </div>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 px-4 leading-relaxed">
               © 2025 UTI dos Games. Todos os direitos reservados.
               Xbox é uma marca registrada da Microsoft Corporation.
             </p>

@@ -16,8 +16,8 @@ const ProductCardInfo = ({ product, variant = "default", className }: ProductCar
   return (
     <motion.h3 
       className={cn(
-        "font-bold mb-2 text-white line-clamp-2 transition-colors duration-150",
-        isGame ? "text-sm" : "text-lg",
+        "font-bold mb-2 text-white line-clamp-2 transition-colors duration-150 leading-tight",
+        isGame ? "text-xs md:text-sm" : "text-sm md:text-lg",
         className
       )}
       whileHover={{ 
