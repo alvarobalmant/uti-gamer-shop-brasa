@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
@@ -487,9 +486,9 @@ const XboxPage6 = () => {
             className="max-w-4xl mx-auto space-y-8"
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.2 }}
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
               className="flex justify-center"
             >
               <img 
@@ -561,37 +560,61 @@ const XboxPage6 = () => {
       </section>
 
       {/* Xbox Consoles Section */}
-      <section className="py-24 bg-black relative overflow-hidden">
+      <section className="py-16 md:py-24 bg-black relative overflow-hidden">
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-10" style={{ 
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
           backgroundSize: '60px 60px'
         }}></div>
         
-        <div className="relative z-10 container mx-auto px-4">
+        <div className="relative z-10 container mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16 px-4"
           >
-            <h2 className="text-5xl font-black mb-4">
+            <h2 className="text-4xl md:text-5xl font-black mb-4">
               CONSOLES <span className="text-[#107C10]">XBOX</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
               Desempenho inigualável para a nova geração de jogos. 
               Escolha o console Xbox perfeito para sua experiência.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {displayProducts.consoles.map((product) => (
+          {/* Mobile: Scroll horizontal, Desktop: Grid */}
+          <div className="md:hidden">
+            <div 
+              className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4"
+              style={{
+                scrollSnapType: 'x mandatory',
+                scrollBehavior: 'smooth',
+                overflowY: 'visible'
+              }}
+            >
+              {displayProducts.consoles.map((product, index) => (
+                <ProductCard 
+                  key={product.id}
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                  onProductClick={handleProductClick}
+                  index={index}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
+            {displayProducts.consoles.map((product, index) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
+                index={index}
               />
             ))}
           </div>
@@ -599,151 +622,218 @@ const XboxPage6 = () => {
       </section>
 
       {/* Xbox Games Section */}
-      <section className="py-24 bg-gray-900 relative overflow-hidden">
+      <section className="py-16 md:py-24 bg-gray-900 relative overflow-hidden">
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-5" style={{ 
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23107C10' fill-opacity='0.05'/%3E%3C/svg%3E")`,
           backgroundSize: '60px 60px'
         }}></div>
         
-        <div className="relative z-10 container mx-auto px-4">
+        <div className="relative z-10 container mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16 px-4"
           >
-            <h2 className="text-5xl font-black mb-4">
+            <h2 className="text-4xl md:text-5xl font-black mb-4">
               JOGOS <span className="text-[#107C10]">EM ALTA</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
               Os títulos mais populares para Xbox. De aventuras épicas a competições intensas, 
               encontre seu próximo jogo favorito.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {displayProducts.games.slice(0, 10).map((product) => (
+          {/* Mobile: Scroll horizontal, Desktop: Grid */}
+          <div className="md:hidden">
+            <div 
+              className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4"
+              style={{
+                scrollSnapType: 'x mandatory',
+                scrollBehavior: 'smooth',
+                overflowY: 'visible'
+              }}
+            >
+              {displayProducts.games.slice(0, 10).map((product, index) => (
+                <ProductCard 
+                  key={product.id}
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                  onProductClick={handleProductClick}
+                  variant="game"
+                  index={index}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-4">
+            {displayProducts.games.slice(0, 10).map((product, index) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="game"
+                index={index}
               />
             ))}
           </div>
           
-          <div className="mt-12 text-center">
+          <div className="mt-8 md:mt-12 text-center px-4">
             <Button 
               size="lg" 
-              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-8 py-4 text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
+              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 md:px-8 py-3 md:py-4 text-base md:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
               onClick={() => navigate("/categoria/jogos")}
             >
               VER TODOS OS JOGOS
-              <ChevronRight className="w-5 h-5 ml-2" />
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Xbox Accessories Section */}
-      <section className="py-24 bg-black relative overflow-hidden">
+      <section className="py-16 md:py-24 bg-black relative overflow-hidden">
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-10" style={{ 
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
           backgroundSize: '60px 60px'
         }}></div>
         
-        <div className="relative z-10 container mx-auto px-4">
+        <div className="relative z-10 container mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16 px-4"
           >
-            <h2 className="text-5xl font-black mb-4">
+            <h2 className="text-4xl md:text-5xl font-black mb-4">
               <span className="text-[#107C10]">ACESSÓRIOS</span> XBOX
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
               Eleve sua experiência de jogo com acessórios oficiais Xbox. 
               Controles, headsets e muito mais para o seu setup.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {filteredProducts.accessories.map((product) => (
+          {/* Mobile: Scroll horizontal, Desktop: Grid */}
+          <div className="md:hidden">
+            <div 
+              className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4"
+              style={{
+                scrollSnapType: 'x mandatory',
+                scrollBehavior: 'smooth',
+                overflowY: 'visible'
+              }}
+            >
+              {filteredProducts.accessories.map((product, index) => (
+                <ProductCard 
+                  key={product.id}
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                  onProductClick={handleProductClick}
+                  variant="accessory"
+                  index={index}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
+            {filteredProducts.accessories.map((product, index) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="accessory"
+                index={index}
               />
             ))}
           </div>
           
-          <div className="mt-12 text-center">
+          <div className="mt-8 md:mt-12 text-center px-4">
             <Button 
               size="lg" 
               variant="outline"
-              className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white font-bold px-8 py-4 text-lg transition-all duration-300 transform hover:scale-105"
+              className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white font-bold px-6 md:px-8 py-3 md:py-4 text-base md:text-lg transition-all duration-300 transform hover:scale-105"
               onClick={() => navigate("/categoria/acessorios")}
             >
               VER TODOS OS ACESSÓRIOS
-              <ChevronRight className="w-5 h-5 ml-2" />
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
             </Button>
           </div>
         </div>
       </section>
       
       {/* Notícias e Trailers Section */}
-      <section className="py-24 bg-gray-900 relative overflow-hidden">
+      <section className="py-16 md:py-24 bg-gray-900 relative overflow-hidden">
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-10" style={{ 
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='70' height='70' viewBox='0 0 70 70' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M35 0c-1.25 0-2.5.06-3.75.19L1.31 17.59c-1.7.85-2.71 2.6-2.71 4.48v30.03c0 1.89 1.02 3.63 2.71 4.48l29.94 17.4c1.7.85 3.75.85 5.44 0l29.94-17.4c1.7-.85 2.71-2.6 2.71-4.48V22.07c0-1.89-1.02-3.63-2.71-4.48L38.75.19C37.5.06 36.25 0 35 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='70' height='70' viewBox='0 0 70 70' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M35 0c-1.25 0-2.5.06-3.75.19L1.31 17.59c-1.7.85-2.71 2.6-2.71 4.48v30.03c0 1.89 1.02 3.63 2.71 4.48l29.94 17.4c1.7.85 3.75.85 5.44 0l29.94-17.4c1.7-.85 2.71-2.6 2.71-4.48V18.91c0-1.89-1.02-3.63-2.71-4.48L38.75.19C37.5.06 36.25 0 35 0z' fill='%23107C10' fill-opacity='0.1'/%3E%3C/svg%3E")`,
           backgroundSize: '70px 70px'
         }}></div>
         
-        <div className="relative z-10 container mx-auto px-4">
+        <div className="relative z-10 container mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16 px-4"
           >
-            <h2 className="text-5xl font-black mb-4">
+            <h2 className="text-4xl md:text-5xl font-black mb-4">
               <span className="text-[#107C10]">NOTÍCIAS</span> & TRAILERS
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
               Fique por dentro das últimas novidades, lançamentos e atualizações do universo Xbox.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Mobile: Scroll horizontal, Desktop: Grid */}
+          <div className="md:hidden">
+            <div 
+              className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4"
+              style={{
+                scrollSnapType: 'x mandatory',
+                scrollBehavior: 'smooth',
+                overflowY: 'visible'
+              }}
+            >
+              {newsAndTrailers.map((item, index) => (
+                <NewsCard key={item.id} news={item} index={index} />
+              ))}
+            </div>
+          </div>
+          
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
             {newsAndTrailers.map((item, index) => (
-              <NewsCard key={item.id} item={item} index={index} />
+              <NewsCard key={item.id} news={item} index={index} />
             ))}
           </div>
           
-          <div className="mt-12 text-center">
+          <div className="mt-8 md:mt-12 text-center px-4">
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white font-bold px-8 py-4 text-lg transition-all duration-300 transform hover:scale-105"
+              className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white font-bold px-6 md:px-8 py-3 md:py-4 text-base md:text-lg transition-all duration-300 transform hover:scale-105"
             >
               VER TODAS AS NOTÍCIAS
-              <ChevronRight className="w-5 h-5 ml-2" />
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Ofertas Especiais Section */}
-      <section className="py-24 bg-[#107C10] relative overflow-hidden">
+      <section className="py-16 md:py-24 bg-[#107C10] relative overflow-hidden">
         {/* Fundo com textura sutil */}
         <div className="absolute inset-0 z-0 opacity-20" style={{ 
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c-1.07 0-2.14.05-3.2.16L1.13 15.07c-1.45.73-2.33 2.22-2.33 3.84v25.74c0 1.62.87 3.11 2.33 3.84l25.67 14.91c1.45.73 3.2.73 4.66 0l25.67-14.91c1.45-.73 2.33-2.22 2.33-3.84V18.91c0-1.62-.87-3.11-2.33-3.84L33.2.16C32.14.05 31.07 0 30 0z' fill='%23FFFFFF' fill-opacity='0.1'/%3E%3C/svg%3E")`,
@@ -751,30 +841,55 @@ const XboxPage6 = () => {
         }}></div>
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#107C10]/80 via-[#0D5A0D]/60 to-[#107C10]/90"></div>
         
-        <div className="relative z-10 container mx-auto px-4">
+        <div className="relative z-10 container mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16 px-4"
           >
-            <h2 className="text-5xl font-black mb-4 text-white">
+            <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">
               OFERTAS <span className="text-yellow-400">IMPERDÍVEIS</span>
             </h2>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
               Tempo limitado para aproveitar. Descontos especiais em produtos selecionados.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {displayProducts.deals.map((product) => (
+          {/* Mobile: Scroll horizontal, Desktop: Grid */}
+          <div className="md:hidden">
+            <div 
+              className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4"
+              style={{
+                scrollSnapType: 'x mandatory',
+                scrollBehavior: 'smooth',
+                overflowY: 'visible'
+              }}
+            >
+              {displayProducts.deals.map((product, index) => (
+                <ProductCard 
+                  key={product.id}
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                  onProductClick={handleProductClick}
+                  variant="deal"
+                  index={index}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
+            {displayProducts.deals.map((product, index) => (
               <ProductCard 
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onProductClick={handleProductClick}
                 variant="deal"
+                index={index}
               />
             ))}
           </div>
@@ -789,7 +904,7 @@ const XboxPage6 = () => {
           backgroundSize: '60px 60px'
         }}></div>
         
-        <div className="relative z-10 container mx-auto px-4 text-center">
+        <div className="relative z-10 container mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}

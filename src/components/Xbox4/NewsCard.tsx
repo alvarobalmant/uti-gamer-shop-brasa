@@ -34,8 +34,8 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
       }}
       whileHover={{ 
         scale: 1.02,
-        rotateY: 1,
-        boxShadow: "0 0 25px -5px rgba(16, 124, 16, 0.7), 0 0 12px -8px rgba(16, 124, 16, 0.5)",
+        rotateY: 0.5,
+        boxShadow: "0 0 20px -5px rgba(16, 124, 16, 0.5), 0 0 10px -8px rgba(16, 124, 16, 0.3)",
         borderColor: "#107C10",
         transition: { 
           duration: 0.15, 
@@ -47,23 +47,26 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
         transition: { duration: 0.1 }
       }}
       className={cn(
-        "group relative bg-black rounded-xl overflow-hidden border border-transparent cursor-pointer transform-gpu will-change-transform",
+        "group relative bg-black rounded-xl overflow-visible border border-transparent cursor-pointer transform-gpu will-change-transform",
         "active:scale-95 md:active:scale-100",
-        "w-full max-w-[300px] md:max-w-none",
+        "w-[220px] md:w-full max-w-[220px] md:max-w-none",
+        "flex-shrink-0 snap-start",
         className
       )}
       style={{
+        transformOrigin: "center center",
         transformStyle: "preserve-3d",
-        perspective: "800px"
+        perspective: "800px",
+        zIndex: 1
       }}
     >
-      <div className="relative aspect-video overflow-hidden">
+      <div className="relative aspect-video overflow-hidden rounded-t-xl">
         <motion.img 
           src={news.imageUrl} 
           alt={news.title}
           className="w-full h-full object-cover"
           whileHover={{ 
-            scale: 1.06,
+            scale: 1.05,
             transition: { duration: 0.2, ease: "easeOut" }
           }}
         />
@@ -73,19 +76,19 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
           <motion.div 
             className="absolute inset-0 flex items-center justify-center"
             whileHover={{ 
-              scale: 1.15,
+              scale: 1.1,
               transition: { duration: 0.15, ease: "easeOut" }
             }}
           >
             <motion.div 
-              className="w-10 h-10 rounded-full bg-[#107C10]/80 flex items-center justify-center md:w-16 md:h-16"
+              className="w-8 h-8 rounded-full bg-[#107C10]/80 flex items-center justify-center md:w-16 md:h-16"
               whileHover={{
                 backgroundColor: "rgba(16, 124, 16, 1)",
                 boxShadow: "0 0 20px rgba(16, 124, 16, 0.8)",
                 transition: { duration: 0.15 }
               }}
             >
-              <Play className="w-5 h-5 text-white ml-1 md:w-8 md:h-8" />
+              <Play className="w-4 h-4 text-white ml-0.5 md:w-8 md:h-8 md:ml-1" />
             </motion.div>
           </motion.div>
         )}
@@ -96,7 +99,7 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
             transition={{ duration: 0.15 }}
           >
             <Badge className={cn(
-              "text-xs font-bold px-2 py-1 rounded-full shadow-md md:px-3",
+              "text-xs font-bold px-2 py-0.5 rounded-full shadow-md md:px-3 md:py-1",
               news.type === 'trailer' ? "bg-[#107C10] text-white" : 
               news.type === 'news' ? "bg-yellow-500 text-black" : 
               "bg-blue-500 text-white"
@@ -108,9 +111,9 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
         </div>
       </div>
       
-      <div className="p-3 md:p-5">
+      <div className="p-2 md:p-5">
         <motion.h3 
-          className="font-bold text-sm mb-2 transition-colors duration-150 leading-tight md:text-lg"
+          className="font-bold text-xs mb-1 transition-colors duration-150 leading-tight md:text-lg md:mb-2 max-w-[90%]"
           whileHover={{ 
             color: "#107C10",
             transition: { duration: 0.15 }
@@ -119,13 +122,13 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
           {news.title}
         </motion.h3>
         
-        <p className="text-xs text-gray-400 mb-3 line-clamp-2 leading-normal md:text-sm md:mb-4">
+        <p className="text-xs text-gray-400 mb-2 line-clamp-2 leading-normal md:text-sm md:mb-4 max-w-[95%]">
           {news.description}
         </p>
         
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-500 flex items-center">
-            <Clock className="w-3 h-3 mr-1" />
+            <Clock className="w-3 h-3 mr-0.5" />
             {news.date}
           </div>
           
@@ -137,7 +140,7 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-[#107C10] hover:text-white hover:bg-[#107C10] transition-colors duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)] text-xs px-2 py-1 h-8 md:text-sm md:px-4 md:py-2 md:h-9"
+              className="text-[#107C10] hover:text-white hover:bg-[#107C10] transition-colors duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)] text-xs px-2 py-1 h-6 md:text-sm md:px-4 md:py-2 md:h-9"
             >
               {news.type === 'trailer' ? 'Assistir' : 'Ler mais'}
             </Button>
