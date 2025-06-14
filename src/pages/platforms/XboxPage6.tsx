@@ -807,7 +807,7 @@ const XboxPage6 = () => {
               }}
             >
               {newsAndTrailers.map((item, index) => (
-                <NewsCard key={item.id} news={item} index={index} />
+                <NewsCard key={item.id} item={item} index={index} />
               ))}
             </div>
           </div>
@@ -815,7 +815,7 @@ const XboxPage6 = () => {
           {/* Desktop Grid */}
           <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
             {newsAndTrailers.map((item, index) => (
-              <NewsCard key={item.id} news={item} index={index} />
+              <NewsCard key={item.id} item={item} index={index} />
             ))}
           </div>
           
