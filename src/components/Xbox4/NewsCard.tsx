@@ -16,12 +16,20 @@ interface NewsItem {
 }
 
 interface NewsCardProps {
-  news: NewsItem;
+  news?: NewsItem;
+  item?: NewsItem;
   index: number;
   className?: string;
 }
 
-const NewsCard = ({ news, index, className }: NewsCardProps) => {
+const NewsCard = ({ news, item, index, className }: NewsCardProps) => {
+  // Use news prop if provided, otherwise fall back to item prop
+  const newsData = news || item;
+  
+  if (!newsData) {
+    return null;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -15, scale: 0.98 }}
@@ -62,8 +70,8 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
     >
       <div className="relative aspect-video overflow-hidden rounded-t-xl">
         <motion.img 
-          src={news.imageUrl} 
-          alt={news.title}
+          src={newsData.imageUrl} 
+          alt={newsData.title}
           className="w-full h-full object-cover"
           whileHover={{ 
             scale: 1.05,
@@ -72,7 +80,7 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
         
-        {news.type === 'trailer' && (
+        {newsData.type === 'trailer' && (
           <motion.div 
             className="absolute inset-0 flex items-center justify-center"
             whileHover={{ 
@@ -100,12 +108,12 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
           >
             <Badge className={cn(
               "text-xs font-bold px-2 py-0.5 rounded-full shadow-md md:px-3 md:py-1",
-              news.type === 'trailer' ? "bg-[#107C10] text-white" : 
-              news.type === 'news' ? "bg-yellow-500 text-black" : 
+              newsData.type === 'trailer' ? "bg-[#107C10] text-white" : 
+              newsData.type === 'news' ? "bg-yellow-500 text-black" : 
               "bg-blue-500 text-white"
             )}>
-              {news.type === 'trailer' ? 'TRAILER' : 
-               news.type === 'news' ? 'NOVIDADE' : 'EVENTO'}
+              {newsData.type === 'trailer' ? 'TRAILER' : 
+               newsData.type === 'news' ? 'NOVIDADE' : 'EVENTO'}
             </Badge>
           </motion.div>
         </div>
@@ -119,17 +127,17 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
             transition: { duration: 0.15 }
           }}
         >
-          {news.title}
+          {newsData.title}
         </motion.h3>
         
         <p className="text-xs text-gray-400 mb-2 line-clamp-2 leading-normal md:text-sm md:mb-4 max-w-[95%]">
-          {news.description}
+          {newsData.description}
         </p>
         
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-500 flex items-center">
             <Clock className="w-3 h-3 mr-0.5" />
-            {news.date}
+            {newsData.date}
           </div>
           
           <motion.div
@@ -142,7 +150,7 @@ const NewsCard = ({ news, index, className }: NewsCardProps) => {
               size="sm"
               className="text-[#107C10] hover:text-white hover:bg-[#107C10] transition-colors duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)] text-xs px-2 py-1 h-6 md:text-sm md:px-4 md:py-2 md:h-9"
             >
-              {news.type === 'trailer' ? 'Assistir' : 'Ler mais'}
+              {newsData.type === 'trailer' ? 'Assistir' : 'Ler mais'}
             </Button>
           </motion.div>
         </div>
