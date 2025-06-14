@@ -16,15 +16,17 @@ const ProductCardPrice = ({ product, variant = "default", className }: ProductCa
   return (
     <div className={cn(
       "flex items-center justify-between",
-      // Reduzindo margin bottom para cards menores
-      isGame ? "mb-1" : "mb-2 md:mb-4",
+      // Garantindo espaço suficiente para o preço
+      "py-1 md:py-2",
       className
     )}>
       <motion.div 
         className={cn(
           "font-black text-[#107C10]",
-          // Reduzindo tamanho da fonte do preço no mobile
-          "text-sm md:text-xl"
+          // Aumentando tamanho da fonte para melhor visibilidade
+          "text-sm md:text-xl",
+          // Garantindo que o texto seja sempre visível
+          "min-h-[16px] md:min-h-[24px] flex items-center"
         )}
         whileHover={{ 
           scale: 1.05,

@@ -49,8 +49,8 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       className={cn(
         "group relative bg-gray-900 rounded-xl overflow-hidden border border-transparent cursor-pointer",
         "p-2 md:p-6",
-        // Mantendo altura proporcional para todos os tamanhos
-        isGame ? "aspect-[3/4]" : "aspect-[4/5]",
+        // Aumentando altura dos cards para acomodar melhor o conteúdo
+        isGame ? "aspect-[3/4.5]" : "aspect-[4/6]",
         "transition-all duration-300 ease-out",
         "hover:bg-gray-800 hover:border-[#107C10]/50",
         "active:scale-95 md:active:scale-100",
@@ -78,7 +78,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
         />
       </div>
       
-      {/* Informações do produto */}
+      {/* Informações do produto - reorganizando para garantir que o preço seja sempre visível */}
       <div className="space-y-1 md:space-y-3 flex-shrink-0">
         <ProductCardInfo 
           product={product} 
@@ -86,11 +86,14 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
           className="text-xs md:text-base"
         />
         
-        <ProductCardPrice 
-          product={product} 
-          variant={variant}
-          className="text-xs md:text-base"
-        />
+        {/* Garantindo que o preço sempre apareça com espaçamento adequado */}
+        <div className="min-h-[20px] md:min-h-[30px]">
+          <ProductCardPrice 
+            product={product} 
+            variant={variant}
+            className="text-xs md:text-base"
+          />
+        </div>
         
         <ProductCardActions 
           product={product} 
