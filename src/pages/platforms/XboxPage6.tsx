@@ -20,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
+import ProductCard from '@/components/Xbox4/ProductCard';
 import { cn } from '@/lib/utils';
 
 // Componente de partículas hexagonais para o hero banner
@@ -57,131 +58,6 @@ const HexagonParticles = () => {
         />
       ))}
     </div>
-  );
-};
-
-// Componente de card de produto com microinterações avançadas
-const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default" }) => {
-  const isGame = variant === "game";
-  const isAccessory = variant === "accessory";
-  const isDeal = variant === "deal";
-  
-  return (
-    <motion.div
-      whileHover={{ 
-        scale: 1.05,
-        boxShadow: "0 10px 30px -10px rgba(16, 124, 16, 0.3)",
-        borderColor: "#107C10"
-      }}
-      transition={{ 
-        duration: 0.3,
-        ease: "easeOut"
-      }}
-      className={cn(
-        "group relative bg-gray-900 rounded-xl overflow-hidden transition-all duration-300 border border-transparent",
-        isGame ? "aspect-[2/3]" : "aspect-square",
-        isDeal ? "bg-gradient-to-br from-[#107C10]/20 via-black to-black" : ""
-      )}
-    >
-      <div className={cn(
-        "overflow-hidden",
-        isGame ? "h-full" : "aspect-square"
-      )}>
-        <motion.img 
-          src={product.imageUrl || 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&h=600&fit=crop&crop=center'} 
-          alt={product.name}
-          className="w-full h-full object-cover"
-          whileHover={{ scale: 1.1 }}
-          transition={{ duration: 0.5 }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-      </div>
-      
-      {/* Badges */}
-      <div className="absolute top-3 left-3 flex flex-col gap-2">
-        {product.is_featured && (
-          <Badge className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg">
-            DESTAQUE
-          </Badge>
-        )}
-        {product.isNew && (
-          <Badge className="bg-red-500 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">
-            NOVO
-          </Badge>
-        )}
-        {isDeal && product.discount && (
-          <motion.div
-            initial={{ scale: 1 }}
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1"
-          >
-            <Tag size={12} />
-            {product.discount}% OFF
-          </motion.div>
-        )}
-      </div>
-      
-      <div className={cn(
-        "absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent",
-        isGame ? "pb-3 pt-16" : "p-6"
-      )}>
-        <h3 className={cn(
-          "font-bold mb-2 text-white group-hover:text-[#107C10] transition-colors line-clamp-2",
-          isGame ? "text-sm" : "text-lg"
-        )}>
-          {product.name}
-        </h3>
-        
-        <div className={cn(
-          "flex items-center justify-between mb-3",
-          isGame ? "mb-2" : "mb-4"
-        )}>
-          <div className="text-xl font-black text-[#107C10]">
-            R$ {product.price?.toFixed(2)}
-          </div>
-          {product.originalPrice && product.originalPrice > product.price && (
-            <div className="text-sm text-gray-400 line-through">
-              R$ {product.originalPrice.toFixed(2)}
-            </div>
-          )}
-        </div>
-        
-        <div className={cn(
-          "flex gap-2",
-          isGame ? "justify-center" : "justify-between"
-        )}>
-          {isGame ? (
-            <Button 
-              size="sm"
-              className="w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
-              onClick={() => onAddToCart(product)}
-            >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              ADICIONAR
-            </Button>
-          ) : (
-            <>
-              <Button 
-                className="flex-1 bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30"
-                onClick={() => onAddToCart(product)}
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                COMPRAR
-              </Button>
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white transition-all duration-300 transform hover:scale-110"
-                onClick={() => onProductClick(product.id)}
-              >
-                <Heart className="w-4 h-4" />
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-    </motion.div>
   );
 };
 
