@@ -48,15 +48,25 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       }}
       className={cn(
         "group relative bg-gray-900 rounded-xl overflow-hidden border border-transparent cursor-pointer",
-        "p-3 md:p-6",
-        "h-[300px] md:min-h-[400px]",
+        "p-2 md:p-6",
+        // Reduzindo altura em 30% no mobile
+        "h-[210px] md:min-h-[400px]",
         "transition-all duration-300 ease-out",
         "hover:bg-gray-800 hover:border-[#107C10]/50",
         "active:scale-95 md:active:scale-100",
-        "w-full max-w-[280px] md:max-w-none",
+        // Reduzindo largura máxima em 30% no mobile (de 280px para 196px)
+        "w-full max-w-[196px] md:max-w-none",
+        // Adicionando margin-top no mobile para evitar clipping da animação
+        "mt-2 md:mt-0",
         className
       )}
       onClick={() => onProductClick(product.id)}
+      // Garantindo que o container pai tenha espaço para a animação
+      style={{ 
+        transformOrigin: "center center",
+        marginTop: "8px",
+        marginBottom: "8px"
+      }}
     >
       {/* Badges */}
       <ProductCardBadges product={product} variant={variant} />
@@ -65,21 +75,21 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       <ProductCardImage 
         product={product} 
         variant={variant}
-        className="mb-3 md:mb-4"
+        className="mb-2 md:mb-4"
       />
       
       {/* Informações do produto */}
-      <div className="space-y-2 md:space-y-3">
+      <div className="space-y-1 md:space-y-3">
         <ProductCardInfo 
           product={product} 
           variant={variant}
-          className="text-sm md:text-base"
+          className="text-xs md:text-base"
         />
         
         <ProductCardPrice 
           product={product} 
           variant={variant}
-          className="text-sm md:text-base"
+          className="text-xs md:text-base"
         />
         
         <ProductCardActions 

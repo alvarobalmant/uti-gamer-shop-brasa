@@ -15,12 +15,17 @@ const ProductCardPrice = ({ product, variant = "default", className }: ProductCa
   
   return (
     <div className={cn(
-      "flex items-center justify-between mb-3",
-      isGame ? "mb-2" : "mb-3 md:mb-4",
+      "flex items-center justify-between",
+      // Reduzindo margin bottom para cards menores
+      isGame ? "mb-1" : "mb-2 md:mb-4",
       className
     )}>
       <motion.div 
-        className="text-lg font-black text-[#107C10] md:text-xl"
+        className={cn(
+          "font-black text-[#107C10]",
+          // Reduzindo tamanho da fonte do preço no mobile
+          "text-sm md:text-xl"
+        )}
         whileHover={{ 
           scale: 1.05,
           textShadow: "0 0 8px rgba(16, 124, 16, 0.8)",
@@ -30,7 +35,7 @@ const ProductCardPrice = ({ product, variant = "default", className }: ProductCa
         R$ {product.price?.toFixed(2)}
       </motion.div>
       {product.list_price && product.list_price > product.price && (
-        <div className="text-xs text-gray-400 line-through md:text-sm">
+        <div className="text-xs text-gray-400 line-through">
           R$ {product.list_price.toFixed(2)}
         </div>
       )}

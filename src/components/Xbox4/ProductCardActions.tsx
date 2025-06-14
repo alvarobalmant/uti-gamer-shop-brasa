@@ -19,7 +19,7 @@ const ProductCardActions = ({ product, onAddToCart, onProductClick, variant = "d
   
   return (
     <div className={cn(
-      "flex gap-2",
+      "flex gap-1 md:gap-2",
       isGame ? "justify-center" : "justify-between",
       className
     )}>
@@ -32,13 +32,17 @@ const ProductCardActions = ({ product, onAddToCart, onProductClick, variant = "d
         >
           <Button 
             size="sm"
-            className="w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-150 shadow-lg hover:shadow-[0_0_20px_rgba(16,124,16,0.6)] h-10 text-xs md:text-sm md:h-auto"
+            className={cn(
+              "w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-150 shadow-lg hover:shadow-[0_0_20px_rgba(16,124,16,0.6)]",
+              // Reduzindo altura do botão no mobile
+              "h-7 text-xs md:h-10 md:text-sm"
+            )}
             onClick={(e) => {
               e.stopPropagation();
               onAddToCart(product);
             }}
           >
-            <ShoppingCart className="w-3 h-3 mr-2 md:w-4 md:h-4" />
+            <ShoppingCart className="w-3 h-3 mr-1 md:w-4 md:h-4 md:mr-2" />
             ADICIONAR
           </Button>
         </motion.div>
@@ -51,7 +55,11 @@ const ProductCardActions = ({ product, onAddToCart, onProductClick, variant = "d
             className="flex-1"
           >
             <Button 
-              className="w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-150 shadow-lg hover:shadow-[0_0_20px_rgba(16,124,16,0.6)] h-10 text-xs md:text-sm md:h-auto"
+              className={cn(
+                "w-full bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold transition-all duration-150 shadow-lg hover:shadow-[0_0_20px_rgba(16,124,16,0.6)]",
+                // Reduzindo altura do botão no mobile
+                "h-7 text-xs md:h-10 md:text-sm"
+              )}
               onClick={(e) => {
                 e.stopPropagation();
                 onAddToCart(product);
@@ -69,7 +77,11 @@ const ProductCardActions = ({ product, onAddToCart, onProductClick, variant = "d
             <Button 
               variant="outline" 
               size="icon"
-              className="border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white transition-all duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)] w-10 h-10"
+              className={cn(
+                "border-[#107C10] text-[#107C10] hover:bg-[#107C10] hover:text-white transition-all duration-150 hover:shadow-[0_0_15px_rgba(16,124,16,0.5)]",
+                // Reduzindo tamanho do botão de favorito no mobile
+                "w-7 h-7 md:w-10 md:h-10"
+              )}
               onClick={(e) => {
                 e.stopPropagation();
                 onProductClick(product.id);

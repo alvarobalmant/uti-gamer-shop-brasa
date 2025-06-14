@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
@@ -585,7 +584,7 @@ const XboxPage6 = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="pt-4 md:pt-0 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 justify-items-center">
             {displayProducts.consoles.map((product) => (
               <ProductCard 
                 key={product.id}
@@ -623,7 +622,7 @@ const XboxPage6 = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="pt-4 md:pt-0 grid grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6 justify-items-center">
             {displayProducts.games.slice(0, 10).map((product) => (
               <ProductCard 
                 key={product.id}
@@ -673,7 +672,7 @@ const XboxPage6 = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="pt-4 md:pt-0 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 justify-items-center">
             {filteredProducts.accessories.map((product) => (
               <ProductCard 
                 key={product.id}
@@ -767,7 +766,7 @@ const XboxPage6 = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="pt-4 md:pt-0 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 justify-items-center">
             {displayProducts.deals.map((product) => (
               <ProductCard 
                 key={product.id}
