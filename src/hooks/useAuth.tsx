@@ -23,29 +23,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  const checkAdminRole = async (userId: string) => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+      
+      return profile?.role === 'admin';
+    } catch (error) {
+      console.log('Error checking admin role:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
-    // Set up auth state listener first
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
+        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check admin role using setTimeout to avoid infinite recursion
-          setTimeout(async () => {
-            try {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', session.user.id)
-                .single();
-              
-              setIsAdmin(profile?.role === 'admin');
-            } catch (error) {
-              console.log('Error checking admin role:', error);
-              setIsAdmin(false);
-            }
-          }, 0);
+          // Check admin role
+          const adminStatus = await checkAdminRole(session.user.id);
+          setIsAdmin(adminStatus);
+          console.log('Admin status for user:', session.user.email, adminStatus);
         } else {
           setIsAdmin(false);
         }
@@ -54,10 +60,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check for existing session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email);
+      
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const adminStatus = await checkAdminRole(session.user.id);
+        setIsAdmin(adminStatus);
+        console.log('Initial admin status for user:', session.user.email, adminStatus);
+      }
+      
       setLoading(false);
     });
 
@@ -78,6 +93,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Bem-vindo de volta!",
       });
     } catch (error: any) {
+      console.error('Sign in error:', error);
       toast({
         title: "Erro no login",
         description: error.message,
@@ -104,9 +120,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       toast({
         title: "Conta criada com sucesso!",
-        description: "Você já pode fazer login.",
+        description: "Verifique seu email para confirmar a conta.",
       });
     } catch (error: any) {
+      console.error('Sign up error:', error);
       toast({
         title: "Erro ao criar conta",
         description: error.message,
@@ -125,6 +142,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         title: "Logout realizado com sucesso!",
       });
     } catch (error: any) {
+      console.error('Sign out error:', error);
       toast({
         title: "Erro no logout",
         description: error.message,

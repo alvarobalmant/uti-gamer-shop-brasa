@@ -1175,6 +1175,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      has_admin_users: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1185,6 +1189,10 @@ export type Database = {
       }
       is_user_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      promote_user_to_admin: {
+        Args: { user_email: string }
         Returns: boolean
       }
       redeem_pro_code: {
