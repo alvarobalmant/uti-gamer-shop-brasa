@@ -48,18 +48,19 @@ const SecurityMonitor = () => {
 
       // Safely handle the data with proper type checking
       const typedEvents: SecurityEvent[] = Array.isArray(eventsData) 
-        ? eventsData.filter(event => 
-            event && 
+        ? eventsData.filter((event: any): event is any => 
+            event !== null && 
+            event !== undefined &&
             typeof event === 'object' && 
-            'id' in event && 
-            'event_type' in event && 
-            'created_at' in event
-          ).map(event => ({
-            id: event.id,
-            event_type: event.event_type,
-            user_id: event.user_id || undefined,
-            details: event.details || {},
-            created_at: event.created_at
+            typeof event.id === 'string' &&
+            typeof event.event_type === 'string' && 
+            typeof event.created_at === 'string'
+          ).map((event: any) => ({
+            id: event.id as string,
+            event_type: event.event_type as string,
+            user_id: event.user_id as string | undefined,
+            details: (event.details as any) || {},
+            created_at: event.created_at as string
           }))
         : [];
 
