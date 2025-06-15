@@ -25,7 +25,7 @@ const SecurityMonitor = () => {
     try {
       setLoading(true);
       
-      // Use raw query with type assertion since the table isn't in types yet
+      // Use raw query with proper error handling
       const { data: eventsData, error: eventsError } = await supabase
         .from('security_audit_log' as any)
         .select('*')
@@ -46,8 +46,23 @@ const SecurityMonitor = () => {
         return;
       }
 
-      // Type assertion for the data
-      const typedEvents = (eventsData || []) as SecurityEvent[];
+      // Safely handle the data with proper type checking
+      const typedEvents: SecurityEvent[] = Array.isArray(eventsData) 
+        ? eventsData.filter(event => 
+            event && 
+            typeof event === 'object' && 
+            'id' in event && 
+            'event_type' in event && 
+            'created_at' in event
+          ).map(event => ({
+            id: event.id,
+            event_type: event.event_type,
+            user_id: event.user_id || undefined,
+            details: event.details || {},
+            created_at: event.created_at
+          }))
+        : [];
+
       setEvents(typedEvents);
 
       // Calculate stats
