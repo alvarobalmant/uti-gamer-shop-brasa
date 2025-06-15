@@ -7,23 +7,67 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
+import { Shield, Eye, EyeOff } from 'lucide-react';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
   const { signIn, signUp } = useAuth();
+
+  // Rate limiting: Block after 5 failed attempts for 5 minutes
+  const MAX_ATTEMPTS = 5;
+  const BLOCK_DURATION = 5 * 60 * 1000; // 5 minutes
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isBlocked) {
+      return;
+    }
+
     setLoading(true);
     
     try {
       await signIn(email, password);
-    } catch (error) {
-      // Error already handled in useAuth
+      // Reset attempts on successful login
+      setLoginAttempts(0);
+      setIsBlocked(false);
+      
+      // Log successful admin access for security monitoring
+      if (email.includes('admin')) {
+        console.warn('Admin access granted:', { 
+          email, 
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent 
+        });
+      }
+    } catch (error: any) {
+      // Increment failed attempts
+      const newAttempts = loginAttempts + 1;
+      setLoginAttempts(newAttempts);
+      
+      // Log failed login attempts for security monitoring
+      console.warn('Failed login attempt:', {
+        email,
+        attempt: newAttempts,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        error: error.message
+      });
+      
+      // Block after max attempts
+      if (newAttempts >= MAX_ATTEMPTS) {
+        setIsBlocked(true);
+        setTimeout(() => {
+          setIsBlocked(false);
+          setLoginAttempts(0);
+        }, BLOCK_DURATION);
+      }
     } finally {
       setLoading(false);
     }
@@ -39,12 +83,19 @@ export const LoginPage = () => {
       setEmail('');
       setPassword('');
       setName('');
-    } catch (error) {
+    } catch (error: any) {
       // Error already handled in useAuth
+      console.warn('Failed signup attempt:', {
+        email,
+        timestamp: new Date().toISOString(),
+        error: error.message
+      });
     } finally {
       setLoading(false);
     }
   };
+
+  const remainingAttempts = MAX_ATTEMPTS - loginAttempts;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
@@ -75,6 +126,24 @@ export const LoginPage = () => {
               </TabsList>
               
               <TabsContent value="login">
+                {isBlocked && (
+                  <Alert className="bg-red-900/50 border-red-700 mb-4">
+                    <Shield className="h-4 w-4 text-red-400" />
+                    <AlertDescription className="text-red-200">
+                      Muitas tentativas de login falharam. Tente novamente em 5 minutos.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                {loginAttempts > 0 && !isBlocked && (
+                  <Alert className="bg-yellow-900/50 border-yellow-700 mb-4">
+                    <Shield className="h-4 w-4 text-yellow-400" />
+                    <AlertDescription className="text-yellow-200">
+                      {remainingAttempts} tentativa{remainingAttempts !== 1 ? 's' : ''} restante{remainingAttempts !== 1 ? 's' : ''} antes do bloqueio temporário.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-gray-300">Email</Label>
@@ -85,27 +154,45 @@ export const LoginPage = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       className="bg-gray-700 border-gray-600 text-white"
                       required
+                      disabled={isBlocked}
                     />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="password" className="text-gray-300">Senha</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="bg-gray-700 border-gray-600 text-white"
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="bg-gray-700 border-gray-600 text-white pr-10"
+                        required
+                        disabled={isBlocked}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                        disabled={isBlocked}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                   
                   <Button
                     type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                    disabled={loading || isBlocked}
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:opacity-50"
                   >
-                    {loading ? "Entrando..." : "Entrar"}
+                    {loading ? "Entrando..." : isBlocked ? "Bloqueado" : "Entrar"}
                   </Button>
                 </form>
               </TabsContent>
@@ -138,15 +225,30 @@ export const LoginPage = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className="text-gray-300">Senha</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="bg-gray-700 border-gray-600 text-white"
-                      required
-                      minLength={6}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="signup-password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="bg-gray-700 border-gray-600 text-white pr-10"
+                        required
+                        minLength={6}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                   
                   <Button
@@ -163,9 +265,9 @@ export const LoginPage = () => {
         </Card>
 
         <Alert className="bg-blue-900/50 border-blue-700">
-          <Info className="h-4 w-4 text-blue-400" />
+          <Shield className="h-4 w-4 text-blue-400" />
           <AlertDescription className="text-blue-200">
-            <strong>Acesso Admin:</strong> admin@utidosgames.com / admin123
+            <strong>Segurança:</strong> Todas as tentativas de login são monitoradas. Entre em contato com o administrador para problemas de acesso.
           </AlertDescription>
         </Alert>
       </div>

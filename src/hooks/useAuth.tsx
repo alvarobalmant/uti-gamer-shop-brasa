@@ -52,6 +52,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const adminStatus = await checkAdminRole(session.user.id);
           setIsAdmin(adminStatus);
           console.log('Admin status for user:', session.user.email, adminStatus);
+          
+          // Enhanced security logging for admin access
+          if (adminStatus) {
+            console.warn('Admin user authenticated:', {
+              userId: session.user.id,
+              email: session.user.email,
+              timestamp: new Date().toISOString(),
+              userAgent: navigator.userAgent,
+              sessionId: session.access_token.substring(0, 10) + '...'
+            });
+          }
         } else {
           setIsAdmin(false);
         }
@@ -71,6 +82,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const adminStatus = await checkAdminRole(session.user.id);
         setIsAdmin(adminStatus);
         console.log('Initial admin status for user:', session.user.email, adminStatus);
+        
+        // Enhanced security logging for existing admin sessions
+        if (adminStatus) {
+          console.warn('Existing admin session restored:', {
+            userId: session.user.id,
+            email: session.user.email,
+            timestamp: new Date().toISOString(),
+            sessionId: session.access_token.substring(0, 10) + '...'
+          });
+        }
       }
       
       setLoading(false);
@@ -81,12 +102,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Security logging for login attempts
+      console.log('Login attempt:', {
+        email,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      });
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (error) throw error;
+      if (error) {
+        // Enhanced error logging for security monitoring
+        console.error('Sign in error:', {
+          email,
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent
+        });
+        
+        // Provide generic error message to prevent user enumeration
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Email ou senha incorretos. Verifique suas credenciais e tente novamente.');
+        } else if (error.message.includes('Email not confirmed')) {
+          throw new Error('Por favor, confirme seu email antes de fazer login.');
+        } else if (error.message.includes('Too many requests')) {
+          throw new Error('Muitas tentativas de login. Tente novamente mais tarde.');
+        }
+        
+        throw error;
+      }
       
       toast({
         title: "Login realizado com sucesso!",
@@ -105,6 +152,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
+      // Security logging for signup attempts
+      console.log('Signup attempt:', {
+        email,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      });
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -116,7 +170,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         },
       });
       
-      if (error) throw error;
+      if (error) {
+        // Enhanced error logging
+        console.error('Sign up error:', {
+          email,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Provide user-friendly error messages
+        if (error.message.includes('User already registered')) {
+          throw new Error('Este email já está cadastrado. Tente fazer login ou usar outro email.');
+        } else if (error.message.includes('Password should be at least')) {
+          throw new Error('A senha deve ter pelo menos 6 caracteres.');
+        }
+        
+        throw error;
+      }
       
       toast({
         title: "Conta criada com sucesso!",
@@ -135,6 +205,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
+      // Security logging for logout
+      if (user) {
+        console.log('User logout:', {
+          userId: user.id,
+          email: user.email,
+          timestamp: new Date().toISOString(),
+          wasAdmin: isAdmin
+        });
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
