@@ -1,13 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
-interface SecurityMetrics {
-  failedAttempts: number;
-  isBlocked: boolean;
-  lastAttempt: Date | null;
-  blockExpiresAt: Date | null;
-}
+import { SecurityMetrics } from '@/types/security';
 
 export const useAuthSecurity = () => {
   const [securityMetrics, setSecurityMetrics] = useState<SecurityMetrics>({
@@ -23,17 +17,34 @@ export const useAuthSecurity = () => {
   // Log security events to the audit log
   const logSecurityEvent = async (eventType: string, details: any = {}) => {
     try {
-      await supabase.rpc('log_security_event', {
-        event_type: eventType,
-        details: {
-          ...details,
-          timestamp: new Date().toISOString(),
-          userAgent: navigator.userAgent,
-          url: window.location.href
-        }
-      });
+      // Use direct table insert since RPC function might not be available yet
+      await supabase
+        .from('security_audit_log' as any)
+        .insert({
+          event_type: eventType,
+          user_id: details.userId || null,
+          details: {
+            ...details,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            url: window.location.href
+          }
+        });
     } catch (error) {
-      console.warn('Failed to log security event:', error);
+      // Fallback: try using RPC if table insert fails
+      try {
+        await supabase.rpc('log_security_event' as any, {
+          event_type: eventType,
+          details: {
+            ...details,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            url: window.location.href
+          }
+        });
+      } catch (rpcError) {
+        console.warn('Failed to log security event:', error, rpcError);
+      }
     }
   };
 
