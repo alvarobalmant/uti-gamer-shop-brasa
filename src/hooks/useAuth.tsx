@@ -3,6 +3,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthSecurity } from './useAuthSecurity';
 
 interface AuthContextType {
   user: User | null;
@@ -12,6 +13,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
+  securityMetrics: any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +24,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const {
+    recordFailedAttempt,
+    recordSuccessfulLogin,
+    logSecurityEvent,
+    isBlocked,
+    securityMetrics
+  } = useAuthSecurity();
 
   const checkAdminRole = async (userId: string) => {
     try {
@@ -51,18 +60,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Check admin role
           const adminStatus = await checkAdminRole(session.user.id);
           setIsAdmin(adminStatus);
-          console.log('Admin status for user:', session.user.email, adminStatus);
           
-          // Enhanced security logging for admin access
-          if (adminStatus) {
-            console.warn('Admin user authenticated:', {
+          // Log session restoration for security monitoring
+          setTimeout(() => {
+            logSecurityEvent('session_restored', {
               userId: session.user.id,
               email: session.user.email,
-              timestamp: new Date().toISOString(),
-              userAgent: navigator.userAgent,
-              sessionId: session.access_token.substring(0, 10) + '...'
+              isAdmin: adminStatus
             });
-          }
+          }, 0);
         } else {
           setIsAdmin(false);
         }
@@ -81,49 +87,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (session?.user) {
         const adminStatus = await checkAdminRole(session.user.id);
         setIsAdmin(adminStatus);
-        console.log('Initial admin status for user:', session.user.email, adminStatus);
-        
-        // Enhanced security logging for existing admin sessions
-        if (adminStatus) {
-          console.warn('Existing admin session restored:', {
-            userId: session.user.id,
-            email: session.user.email,
-            timestamp: new Date().toISOString(),
-            sessionId: session.access_token.substring(0, 10) + '...'
-          });
-        }
       }
       
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [logSecurityEvent]);
 
   const signIn = async (email: string, password: string) => {
-    try {
-      // Security logging for login attempts
-      console.log('Login attempt:', {
-        email,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent
-      });
+    // Check if user is blocked
+    if (isBlocked) {
+      throw new Error('Conta temporariamente bloqueada devido a muitas tentativas de login. Tente novamente mais tarde.');
+    }
 
-      const { error } = await supabase.auth.signInWithPassword({
+    try {
+      const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) {
-        // Enhanced error logging for security monitoring
-        console.error('Sign in error:', {
-          email,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-          userAgent: navigator.userAgent
-        });
+        // Record failed attempt with security logging
+        await recordFailedAttempt(email, error.message);
         
-        // Provide generic error message to prevent user enumeration
+        // Provide user-friendly error messages
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Email ou senha incorretos. Verifique suas credenciais e tente novamente.');
         } else if (error.message.includes('Email not confirmed')) {
@@ -133,6 +121,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         
         throw error;
+      }
+
+      // Record successful login
+      if (data.user) {
+        const adminStatus = await checkAdminRole(data.user.id);
+        await recordSuccessfulLogin(email, adminStatus);
       }
       
       toast({
@@ -152,12 +146,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      // Security logging for signup attempts
-      console.log('Signup attempt:', {
-        email,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent
-      });
+      await logSecurityEvent('signup_attempt', { email });
 
       const { error } = await supabase.auth.signUp({
         email,
@@ -171,11 +160,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (error) {
-        // Enhanced error logging
-        console.error('Sign up error:', {
+        await logSecurityEvent('signup_failed', {
           email,
-          error: error.message,
-          timestamp: new Date().toISOString()
+          error: error.message
         });
         
         // Provide user-friendly error messages
@@ -187,6 +174,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         throw error;
       }
+
+      await logSecurityEvent('signup_success', { email });
       
       toast({
         title: "Conta criada com sucesso!",
@@ -205,12 +194,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Security logging for logout
+      // Log logout event
       if (user) {
-        console.log('User logout:', {
+        await logSecurityEvent('user_logout', {
           userId: user.id,
           email: user.email,
-          timestamp: new Date().toISOString(),
           wasAdmin: isAdmin
         });
       }
@@ -240,6 +228,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signIn,
       signUp,
       signOut,
+      securityMetrics,
     }}>
       {children}
     </AuthContext.Provider>

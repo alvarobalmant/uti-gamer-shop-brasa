@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Eye, EyeOff } from 'lucide-react';
+import { Shield, Eye, EyeOff, Clock } from 'lucide-react';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -15,18 +15,12 @@ export const LoginPage = () => {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [loginAttempts, setLoginAttempts] = useState(0);
-  const [isBlocked, setIsBlocked] = useState(false);
-  const { signIn, signUp } = useAuth();
-
-  // Rate limiting: Block after 5 failed attempts for 5 minutes
-  const MAX_ATTEMPTS = 5;
-  const BLOCK_DURATION = 5 * 60 * 1000; // 5 minutes
+  const { signIn, signUp, securityMetrics } = useAuth();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isBlocked) {
+    if (securityMetrics?.isBlocked) {
       return;
     }
 
@@ -34,40 +28,8 @@ export const LoginPage = () => {
     
     try {
       await signIn(email, password);
-      // Reset attempts on successful login
-      setLoginAttempts(0);
-      setIsBlocked(false);
-      
-      // Log successful admin access for security monitoring
-      if (email.includes('admin')) {
-        console.warn('Admin access granted:', { 
-          email, 
-          timestamp: new Date().toISOString(),
-          userAgent: navigator.userAgent 
-        });
-      }
     } catch (error: any) {
-      // Increment failed attempts
-      const newAttempts = loginAttempts + 1;
-      setLoginAttempts(newAttempts);
-      
-      // Log failed login attempts for security monitoring
-      console.warn('Failed login attempt:', {
-        email,
-        attempt: newAttempts,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        error: error.message
-      });
-      
-      // Block after max attempts
-      if (newAttempts >= MAX_ATTEMPTS) {
-        setIsBlocked(true);
-        setTimeout(() => {
-          setIsBlocked(false);
-          setLoginAttempts(0);
-        }, BLOCK_DURATION);
-      }
+      // Error handling is managed by useAuth with security logging
     } finally {
       setLoading(false);
     }
@@ -85,17 +47,20 @@ export const LoginPage = () => {
       setName('');
     } catch (error: any) {
       // Error already handled in useAuth
-      console.warn('Failed signup attempt:', {
-        email,
-        timestamp: new Date().toISOString(),
-        error: error.message
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  const remainingAttempts = MAX_ATTEMPTS - loginAttempts;
+  const formatTimeRemaining = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const remainingAttempts = securityMetrics?.remainingAttempts || 0;
+  const isBlocked = securityMetrics?.isBlocked || false;
+  const blockTimeRemaining = securityMetrics?.getBlockTimeRemaining ? securityMetrics.getBlockTimeRemaining() : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
@@ -129,17 +94,18 @@ export const LoginPage = () => {
                 {isBlocked && (
                   <Alert className="bg-red-900/50 border-red-700 mb-4">
                     <Shield className="h-4 w-4 text-red-400" />
-                    <AlertDescription className="text-red-200">
-                      Muitas tentativas de login falharam. Tente novamente em 5 minutos.
+                    <AlertDescription className="text-red-200 flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      Conta bloqueada por segurança. Tempo restante: {formatTimeRemaining(blockTimeRemaining)}
                     </AlertDescription>
                   </Alert>
                 )}
                 
-                {loginAttempts > 0 && !isBlocked && (
+                {!isBlocked && remainingAttempts < 5 && remainingAttempts > 0 && (
                   <Alert className="bg-yellow-900/50 border-yellow-700 mb-4">
                     <Shield className="h-4 w-4 text-yellow-400" />
                     <AlertDescription className="text-yellow-200">
-                      {remainingAttempts} tentativa{remainingAttempts !== 1 ? 's' : ''} restante{remainingAttempts !== 1 ? 's' : ''} antes do bloqueio temporário.
+                      {remainingAttempts} tentativa{remainingAttempts !== 1 ? 's' : ''} restante{remainingAttempts !== 1 ? 's' : ''} antes do bloqueio de segurança.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -249,6 +215,7 @@ export const LoginPage = () => {
                         )}
                       </Button>
                     </div>
+                    <p className="text-sm text-gray-400">Mínimo de 6 caracteres</p>
                   </div>
                   
                   <Button
@@ -267,7 +234,7 @@ export const LoginPage = () => {
         <Alert className="bg-blue-900/50 border-blue-700">
           <Shield className="h-4 w-4 text-blue-400" />
           <AlertDescription className="text-blue-200">
-            <strong>Segurança:</strong> Todas as tentativas de login são monitoradas. Entre em contato com o administrador para problemas de acesso.
+            <strong>Segurança Aprimorada:</strong> Sistema de proteção contra tentativas de login maliciosas. Todas as atividades são monitoradas.
           </AlertDescription>
         </Alert>
       </div>
