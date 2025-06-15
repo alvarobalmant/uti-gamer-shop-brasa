@@ -16,17 +16,17 @@ const ProductCardPrice = ({ product, variant = "default", className }: ProductCa
   return (
     <div className={cn(
       "flex items-center justify-between",
-      // Garantindo espaço suficiente para o preço
-      "py-1 md:py-2",
+      // Padding reduzido no mobile, normal no desktop
+      "py-0.5 md:py-2",
       className
     )}>
       <motion.div 
         className={cn(
           "font-black text-[#107C10]",
-          // Aumentando tamanho da fonte para melhor visibilidade
+          // Tamanho da fonte responsivo
           "text-sm md:text-xl",
-          // Garantindo que o texto seja sempre visível
-          "min-h-[16px] md:min-h-[24px] flex items-center"
+          // Altura mínima reduzida no mobile
+          "min-h-[14px] md:min-h-[24px] flex items-center"
         )}
         whileHover={{ 
           scale: 1.05,

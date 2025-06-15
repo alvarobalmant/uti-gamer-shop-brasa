@@ -49,8 +49,8 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       className={cn(
         "group relative bg-gray-900 rounded-xl overflow-hidden border border-transparent cursor-pointer",
         "p-2 md:p-6",
-        // Aumentando altura dos cards para acomodar melhor o conteúdo
-        isGame ? "aspect-[3/4.5]" : "aspect-[4/6]",
+        // Responsive aspect ratios - mais compacto no mobile, normal no desktop
+        isGame ? "aspect-[3/3.8] md:aspect-[3/4.5]" : "aspect-[3/3.5] md:aspect-[4/6]",
         "transition-all duration-300 ease-out",
         "hover:bg-gray-800 hover:border-[#107C10]/50",
         "active:scale-95 md:active:scale-100",
@@ -71,23 +71,23 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       <ProductCardBadges product={product} variant={variant} />
       
       {/* Imagem do produto */}
-      <div className="mb-2 md:mb-4 flex-1">
+      <div className="mb-1 md:mb-4 flex-1">
         <ProductCardImage 
           product={product} 
           variant={variant}
         />
       </div>
       
-      {/* Informações do produto - reorganizando para garantir que o preço seja sempre visível */}
-      <div className="space-y-1 md:space-y-3 flex-shrink-0">
+      {/* Informações do produto - layout mais compacto no mobile */}
+      <div className="space-y-0.5 md:space-y-3 flex-shrink-0">
         <ProductCardInfo 
           product={product} 
           variant={variant}
           className="text-xs md:text-base"
         />
         
-        {/* Garantindo que o preço sempre apareça com espaçamento adequado */}
-        <div className="min-h-[20px] md:min-h-[30px]">
+        {/* Preço com altura mínima reduzida no mobile */}
+        <div className="min-h-[16px] md:min-h-[30px]">
           <ProductCardPrice 
             product={product} 
             variant={variant}
