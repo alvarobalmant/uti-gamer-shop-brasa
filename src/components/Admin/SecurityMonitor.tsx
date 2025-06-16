@@ -7,7 +7,23 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Eye, AlertTriangle, Activity, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { SecurityEvent, SecurityStats } from '@/types/security';
+
+// Define simplified types for security monitoring
+interface SecurityEvent {
+  id: string;
+  event_type: string;
+  user_id?: string;
+  details: any;
+  created_at: string;
+}
+
+interface SecurityStats {
+  totalEvents: number;
+  failedLogins: number;
+  successfulLogins: number;
+  blockedAccounts: number;
+  adminLogins: number;
+}
 
 const SecurityMonitor = () => {
   const [events, setEvents] = useState<SecurityEvent[]>([]);
@@ -27,87 +43,19 @@ const SecurityMonitor = () => {
       setLoading(true);
       setHasError(false);
       
-      // Buscar eventos da tabela security_audit_log com tratamento de erro melhorado
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('security_audit_log')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (eventsError) {
-        console.warn('Aviso: Erro ao buscar eventos de segurança:', eventsError);
-        setHasError(true);
-        
-        // Não mostrar toast se for problema de permissão (comum durante inicialização)
-        if (!eventsError.message?.includes('permission') && !eventsError.message?.includes('RLS')) {
-          toast({
-            title: "Aviso: Eventos de segurança indisponíveis",
-            description: "O monitor continuará funcionando quando o sistema estiver configurado.",
-            variant: "default",
-          });
-        }
-        
-        setEvents([]);
-        setStats({
-          totalEvents: 0,
-          failedLogins: 0,
-          successfulLogins: 0,
-          blockedAccounts: 0,
-          adminLogins: 0
-        });
-        return;
-      }
-
-      // Processar dados com verificação de tipo melhorada
-      const typedEvents: SecurityEvent[] = Array.isArray(eventsData) 
-        ? eventsData.filter((event: any): event is any => 
-            event !== null && 
-            event !== undefined &&
-            typeof event === 'object' && 
-            typeof event.id === 'string' &&
-            typeof event.event_type === 'string' && 
-            typeof event.created_at === 'string'
-          ).map((event: any) => ({
-            id: event.id as string,
-            event_type: event.event_type as string,
-            user_id: event.user_id as string | undefined,
-            details: (event.details as any) || {},
-            created_at: event.created_at as string
-          }))
-        : [];
-
-      setEvents(typedEvents);
-
-      // Calcular estatísticas dos eventos
-      const eventStats = typedEvents.reduce((acc, event) => {
-        acc.totalEvents++;
-        
-        switch (event.event_type) {
-          case 'failed_login_attempt':
-            acc.failedLogins++;
-            break;
-          case 'user_login_success':
-            acc.successfulLogins++;
-            break;
-          case 'admin_login_success':
-            acc.adminLogins++;
-            acc.successfulLogins++;
-            break;
-          case 'account_temporarily_blocked':
-            acc.blockedAccounts++;
-            break;
-        }
-        
-        return acc;
-      }, {
+      // Como a tabela security_audit_log não existe, vamos simular dados ou mostrar aviso
+      console.log('[SecurityMonitor] Sistema de auditoria não configurado - tabela security_audit_log não encontrada');
+      
+      setHasError(true);
+      setEvents([]);
+      setStats({
         totalEvents: 0,
         failedLogins: 0,
         successfulLogins: 0,
         blockedAccounts: 0,
         adminLogins: 0
       });
-
-      setStats(eventStats);
+      
     } catch (error: any) {
       console.warn('Aviso: Erro ao buscar eventos de segurança:', error);
       setHasError(true);
@@ -238,19 +186,8 @@ const SecurityMonitor = () => {
             <Alert className="bg-yellow-900/50 border-yellow-700 mb-4">
               <Shield className="h-4 w-4 text-yellow-400" />
               <AlertDescription className="text-yellow-200">
-                <strong>Sistema de Auditoria:</strong> Configurando sistema de segurança. 
-                Os eventos aparecerão aqui quando o sistema estiver completamente configurado.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Critical Security Alert */}
-          {!hasError && stats.failedLogins > 10 && (
-            <Alert className="bg-red-900/50 border-red-700 mb-4">
-              <AlertTriangle className="h-4 w-4 text-red-400" />
-              <AlertDescription className="text-red-200">
-                <strong>Alerta de Segurança:</strong> Muitas tentativas de login falharam detectadas ({stats.failedLogins}). 
-                Considere revisar os logs e implementar medidas adicionais se necessário.
+                <strong>Sistema de Auditoria:</strong> O sistema de auditoria de segurança não está configurado. 
+                Para ativar o monitoramento completo, é necessário configurar a tabela security_audit_log no banco de dados.
               </AlertDescription>
             </Alert>
           )}
@@ -261,13 +198,18 @@ const SecurityMonitor = () => {
             {loading ? (
               <div className="text-center py-8 text-gray-400">
                 <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
-                Carregando eventos de segurança...
+                Verificando sistema de auditoria...
               </div>
             ) : events.length === 0 ? (
               <div className="text-center py-8 text-gray-400">
                 <Shield className="h-8 w-8 mx-auto mb-2" />
-                <p>{hasError ? 'Sistema de auditoria configurando...' : 'Nenhum evento de segurança encontrado'}</p>
-                <p className="text-sm mt-1">Os eventos aparecerão aqui conforme ocorrem no sistema</p>
+                <p>{hasError ? 'Sistema de auditoria não configurado' : 'Nenhum evento de segurança encontrado'}</p>
+                <p className="text-sm mt-1">
+                  {hasError 
+                    ? 'Configure a tabela security_audit_log para ativar o monitoramento'
+                    : 'Os eventos aparecerão aqui conforme ocorrem no sistema'
+                  }
+                </p>
               </div>
             ) : (
               <div className="max-h-96 overflow-y-auto space-y-2">

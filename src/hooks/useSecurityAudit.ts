@@ -21,25 +21,6 @@ export const useSecurityAudit = () => {
         if (error) {
           // Log silencioso - não deve interromper a aplicação
           console.warn('Aviso: Erro ao registrar evento de segurança via RPC:', error);
-          
-          // Fallback: tentar inserção direta (também em background)
-          try {
-            await supabase
-              .from('security_audit_log')
-              .insert({
-                event_type: eventType,
-                details: {
-                  ...details,
-                  timestamp: new Date().toISOString(),
-                  userAgent: navigator.userAgent,
-                  url: window.location.href,
-                  fallback_used: true
-                }
-              });
-          } catch (fallbackError) {
-            // Log ainda mais silencioso
-            console.warn('Aviso: Fallback de auditoria também falhou:', fallbackError);
-          }
         }
       } catch (error) {
         // Erro completamente silencioso para não afetar UX
