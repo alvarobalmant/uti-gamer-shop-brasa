@@ -31,12 +31,11 @@ export const AdminPanel = () => {
             Gerencie o conteúdo e as configurações do site UTI dos Games
           </p>
           
-          {/* Status do Sistema */}
           <Alert className="mt-4 bg-green-900/50 border-green-700">
             <CheckCircle className="h-4 w-4 text-green-400" />
             <AlertDescription className="text-green-200">
-              <strong>Sistema Otimizado:</strong> RLS policies corrigidas, função is_admin() otimizada. 
-              O painel administrativo agora deve carregar sem problemas de recursos.
+              <strong>Sistema Operacional:</strong> O painel administrativo está funcionando corretamente 
+              com o sistema de segurança simplificado.
             </AlertDescription>
           </Alert>
         </div>

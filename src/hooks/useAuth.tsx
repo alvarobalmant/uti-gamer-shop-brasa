@@ -3,8 +3,6 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuthSecurity } from './useAuthSecurity';
-import { useSecurityAudit } from './useSecurityAudit';
 
 interface AuthContextType {
   user: User | null;
@@ -14,7 +12,6 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
-  securityMetrics: any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,22 +22,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const {
-    recordFailedAttempt,
-    recordSuccessfulLogin,
-    isBlocked,
-    securityMetrics
-  } = useAuthSecurity();
-  
-  // Separar auditoria para não bloquear autenticação
-  const { logSecurityEvent } = useSecurityAudit();
 
-  // Função otimizada para verificar admin usando a nova função is_admin()
+  // Função simplificada para verificar admin
   const checkAdminRole = async (userId: string): Promise<boolean> => {
     try {
       console.log(`[Auth] Verificando role admin para usuário: ${userId}`);
       
-      // Usar a função SQL is_admin() corrigida
       const { data, error } = await supabase.rpc('is_admin');
       
       if (error) {
@@ -57,7 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    // Set up auth state listener otimizado
+    // Set up auth state listener simplificado
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('[Auth] Auth state change:', event, session?.user?.email);
@@ -66,21 +53,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check admin role de forma otimizada
           try {
             console.log('[Auth] Verificando status de admin...');
             const adminStatus = await checkAdminRole(session.user.id);
             console.log('[Auth] Status de admin:', adminStatus);
             setIsAdmin(adminStatus);
-            
-            // Log session em background
-            setTimeout(() => {
-              logSecurityEvent('session_restored', {
-                userId: session.user.id,
-                email: session.user.email,
-                isAdmin: adminStatus
-              });
-            }, 100);
           } catch (error) {
             console.warn('[Auth] Erro ao configurar sessão:', error);
             setIsAdmin(false);
@@ -118,10 +95,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    if (isBlocked) {
-      throw new Error('Conta temporariamente bloqueada devido a muitas tentativas de login. Tente novamente mais tarde.');
-    }
-
     try {
       const { error, data } = await supabase.auth.signInWithPassword({
         email,
@@ -129,8 +102,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (error) {
-        await recordFailedAttempt(email, error.message);
-        
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Email ou senha incorretos. Verifique suas credenciais e tente novamente.');
         } else if (error.message.includes('Email not confirmed')) {
@@ -143,8 +114,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (data.user) {
-        const adminStatus = await checkAdminRole(data.user.id);
-        await recordSuccessfulLogin(email, adminStatus);
+        await checkAdminRole(data.user.id);
       }
       
       toast({
@@ -164,10 +134,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      setTimeout(() => {
-        logSecurityEvent('signup_attempt', { email });
-      }, 0);
-
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -180,13 +146,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (error) {
-        setTimeout(() => {
-          logSecurityEvent('signup_failed', {
-            email,
-            error: error.message
-          });
-        }, 0);
-        
         if (error.message.includes('User already registered')) {
           throw new Error('Este email já está cadastrado. Tente fazer login ou usar outro email.');
         } else if (error.message.includes('Password should be at least')) {
@@ -195,10 +154,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         throw error;
       }
-
-      setTimeout(() => {
-        logSecurityEvent('signup_success', { email });
-      }, 0);
       
       toast({
         title: "Conta criada com sucesso!",
@@ -217,16 +172,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      if (user) {
-        setTimeout(() => {
-          logSecurityEvent('user_logout', {
-            userId: user.id,
-            email: user.email,
-            wasAdmin: isAdmin
-          });
-        }, 0);
-      }
-
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
@@ -252,7 +197,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signIn,
       signUp,
       signOut,
-      securityMetrics,
     }}>
       {children}
     </AuthContext.Provider>

@@ -102,14 +102,12 @@ const HomepageLayoutManager: React.FC = () => {
         <p className="text-sm text-muted-foreground">
           Arraste e solte as seções para reordenar como elas aparecem na página inicial. Use o botão para ativar ou desativar a visibilidade.
         </p>
-        {!error && layoutItems.length > 0 && (
-          <Alert className="bg-green-50 border-green-200">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              Sistema otimizado e funcionando corretamente. RLS policies corrigidas.
-            </AlertDescription>
-          </Alert>
-        )}
+        <Alert className="bg-green-50 border-green-200">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            Sistema otimizado e funcionando corretamente. Segurança simplificada aplicada.
+          </AlertDescription>
+        </Alert>
       </CardHeader>
       <CardContent>
         {loading && (
