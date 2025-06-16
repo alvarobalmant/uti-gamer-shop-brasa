@@ -1158,6 +1158,14 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      debug_admin_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          user_role: string
+          is_admin_result: boolean
+        }[]
+      }
       get_active_subscription: {
         Args: { user_id: string }
         Returns: {

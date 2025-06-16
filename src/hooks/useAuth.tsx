@@ -35,9 +35,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Separar auditoria para não bloquear autenticação
   const { logSecurityEvent } = useSecurityAudit();
 
-  // Função otimizada para verificar admin (sem dependência de auditoria)
+  // Função otimizada para verificar admin (com logs de debug)
   const checkAdminRole = async (userId: string): Promise<boolean> => {
     try {
+      console.log(`[Auth] Verificando role admin para usuário: ${userId}`);
+      
+      // Primeiro, vamos usar a função de debug para entender o que está acontecendo
+      const { data: debugData, error: debugError } = await supabase
+        .rpc('debug_admin_status');
+      
+      if (debugData && debugData.length > 0) {
+        const debugInfo = debugData[0];
+        console.log(`[Auth] Debug admin status:`, debugInfo);
+        console.log(`[Auth] User ID: ${debugInfo.user_id}`);
+        console.log(`[Auth] User Role: ${debugInfo.user_role}`);
+        console.log(`[Auth] Is Admin Result: ${debugInfo.is_admin_result}`);
+      }
+      
+      if (debugError) {
+        console.warn('[Auth] Erro ao executar debug_admin_status:', debugError);
+      }
+      
+      // Verificação direta na tabela profiles
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('role')
@@ -45,13 +64,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
       
       if (error) {
-        console.warn('Aviso: Erro ao verificar role admin:', error);
+        console.warn('[Auth] Erro ao verificar role admin:', error);
         return false;
       }
       
-      return profile?.role === 'admin';
+      const isAdminUser = profile?.role === 'admin';
+      console.log(`[Auth] Resultado da verificação: usuário ${userId} é admin? ${isAdminUser}`);
+      console.log(`[Auth] Profile encontrado:`, profile);
+      
+      return isAdminUser;
     } catch (error) {
-      console.warn('Aviso: Erro ao verificar admin role:', error);
+      console.warn('[Auth] Erro ao verificar admin role:', error);
       return false;
     }
   };
@@ -60,7 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener (sem auditoria para evitar circular dependency)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email);
+        console.log('[Auth] Auth state change:', event, session?.user?.email);
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -68,7 +91,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (session?.user) {
           // Check admin role de forma não-bloqueante
           try {
+            console.log('[Auth] Verificando status de admin para usuário logado...');
             const adminStatus = await checkAdminRole(session.user.id);
+            console.log('[Auth] Status de admin definido como:', adminStatus);
             setIsAdmin(adminStatus);
             
             // Log session restoration em background (depois da auth estar configurada)
@@ -80,10 +105,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               });
             }, 100);
           } catch (error) {
-            console.warn('Aviso: Erro ao configurar sessão:', error);
+            console.warn('[Auth] Erro ao configurar sessão:', error);
             setIsAdmin(false);
           }
         } else {
+          console.log('[Auth] Nenhum usuário logado, definindo isAdmin como false');
           setIsAdmin(false);
         }
         
@@ -93,17 +119,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Check for existing session (sem auditoria)
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.email);
+      console.log('[Auth] Initial session check:', session?.user?.email);
       
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
         try {
+          console.log('[Auth] Verificando status de admin na sessão inicial...');
           const adminStatus = await checkAdminRole(session.user.id);
+          console.log('[Auth] Status de admin na sessão inicial:', adminStatus);
           setIsAdmin(adminStatus);
         } catch (error) {
-          console.warn('Aviso: Erro ao verificar sessão inicial:', error);
+          console.warn('[Auth] Erro ao verificar sessão inicial:', error);
           setIsAdmin(false);
         }
       }
