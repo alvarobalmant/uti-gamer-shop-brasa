@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { GripVertical, CheckCircle } from 'lucide-react';
+import { GripVertical, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { useHomepageLayout, HomepageLayoutItem } from '@/hooks/useHomepageLayout';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useHomepageLayout, HomepageLayoutItem } from '@/hooks/useHomepageLayout'; // Import the hook and type
+import { Skeleton } from '@/components/ui/skeleton'; // For loading state
 
+// Sortable Item Component
 interface SortableItemProps {
   item: HomepageLayoutItem;
   onVisibilityToggle: (id: number, isVisible: boolean) => void;
@@ -41,12 +41,15 @@ const SortableItem: React.FC<SortableItemProps> = ({ item, onVisibilityToggle })
           onCheckedChange={(checked) => onVisibilityToggle(item.id, checked)}
           aria-label={item.is_visible ? 'Ocultar seção' : 'Mostrar seção'}
         />
+        {/* Optional: Add icons for clarity */}
+        {/* {item.is_visible ? <Eye className="h-4 w-4 inline-block ml-2 text-green-500" /> : <EyeOff className="h-4 w-4 inline-block ml-2 text-red-500" />} */}
       </TableCell>
     </TableRow>
   );
 };
 
-const HomepageLayoutManager: React.FC = () => {
+// Main AdminSections Component
+const AdminSections: React.FC = () => {
   const { toast } = useToast();
   const { layoutItems, setLayoutItems, loading, error, updateLayout, fetchLayout } = useHomepageLayout();
   const [hasChanges, setHasChanges] = useState(false);
@@ -66,6 +69,7 @@ const HomepageLayoutManager: React.FC = () => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
         const newItems = arrayMove(items, oldIndex, newIndex);
+        // Update display_order based on new array index
         return newItems.map((item, index) => ({ ...item, display_order: index + 1 }));
       });
       setHasChanges(true);
@@ -82,16 +86,16 @@ const HomepageLayoutManager: React.FC = () => {
   const handleSaveChanges = async () => {
     const updates = layoutItems.map(item => ({
       id: item.id,
-      section_key: item.section_key,
+      section_key: item.section_key, // Fixed: Include section_key as required by LayoutUpdatePayload
       display_order: item.display_order,
       is_visible: item.is_visible,
     }));
     await updateLayout(updates);
-    setHasChanges(false);
+    setHasChanges(false); // Reset changes state after saving
   };
 
   const handleCancelChanges = () => {
-    fetchLayout();
+    fetchLayout(); // Refetch original layout
     setHasChanges(false);
   };
 
@@ -102,12 +106,6 @@ const HomepageLayoutManager: React.FC = () => {
         <p className="text-sm text-muted-foreground">
           Arraste e solte as seções para reordenar como elas aparecem na página inicial. Use o botão para ativar ou desativar a visibilidade.
         </p>
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
-            Sistema otimizado e funcionando corretamente. Segurança simplificada aplicada.
-          </AlertDescription>
-        </Alert>
       </CardHeader>
       <CardContent>
         {loading && (
@@ -117,20 +115,14 @@ const HomepageLayoutManager: React.FC = () => {
             <Skeleton className="h-12 w-full" />
           </div>
         )}
-        {error && (
-          <Alert className="bg-red-50 border-red-200">
-            <AlertDescription className="text-red-800">
-              {error}
-            </AlertDescription>
-          </Alert>
-        )}
+        {error && <p className="text-red-500">{error}</p>}
         {!loading && !error && (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={layoutItems.map(item => item.id)} strategy={verticalListSortingStrategy}>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-10"></TableHead>
+                    <TableHead className="w-10"></TableHead> {/* Handle */}
                     <TableHead>Seção</TableHead>
                     <TableHead className="text-right w-24">Visível</TableHead>
                   </TableRow>
@@ -143,7 +135,8 @@ const HomepageLayoutManager: React.FC = () => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={3} className="text-center text-muted-foreground">
-                        Nenhuma seção encontrada. O sistema foi otimizado e agora deve carregar corretamente.
+                        Nenhuma seção encontrada ou layout não configurado.
+                        Verifique se executou os scripts SQL e inseriu os dados iniciais na tabela `homepage_layout`.
                       </TableCell>
                     </TableRow>
                   )}
@@ -167,4 +160,4 @@ const HomepageLayoutManager: React.FC = () => {
   );
 };
 
-export default HomepageLayoutManager;
+export default AdminSections;

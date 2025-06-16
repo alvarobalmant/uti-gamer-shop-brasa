@@ -1158,14 +1158,6 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
-      debug_admin_status: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          user_id: string
-          user_role: string
-          is_admin_result: boolean
-        }[]
-      }
       get_active_subscription: {
         Args: { user_id: string }
         Returns: {
@@ -1199,10 +1191,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      log_security_event: {
-        Args: { event_type: string; user_id?: string; details?: Json }
-        Returns: undefined
-      }
       promote_user_to_admin: {
         Args: { user_email: string }
         Returns: boolean
@@ -1214,16 +1202,6 @@ export type Database = {
       remover_meses_assinatura: {
         Args: { user_id: string; meses: number }
         Returns: boolean
-      }
-      test_admin_access: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          current_user_id: string
-          user_exists: boolean
-          user_role: string
-          is_admin_result: boolean
-          can_read_profiles: boolean
-        }[]
       }
     }
     Enums: {
