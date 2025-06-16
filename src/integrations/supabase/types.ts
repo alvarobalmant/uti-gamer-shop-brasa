@@ -628,6 +628,30 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_log: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          event_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          event_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          event_type?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       service_cards: {
         Row: {
           created_at: string
@@ -1190,6 +1214,10 @@ export type Database = {
       is_user_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      log_security_event: {
+        Args: { event_type: string; user_id?: string; details?: Json }
+        Returns: undefined
       }
       promote_user_to_admin: {
         Args: { user_email: string }

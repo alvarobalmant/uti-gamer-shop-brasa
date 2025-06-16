@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,16 +24,15 @@ const SecurityMonitor = () => {
     try {
       setLoading(true);
       
-      // Use raw query with proper error handling
+      // Buscar eventos da nova tabela security_audit_log
       const { data: eventsData, error: eventsError } = await supabase
-        .from('security_audit_log' as any)
+        .from('security_audit_log')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (eventsError) {
-        console.error('Error fetching security events:', eventsError);
-        // If table doesn't exist, show empty state
+        console.error('Erro ao buscar eventos de segurança:', eventsError);
         setEvents([]);
         setStats({
           totalEvents: 0,
@@ -46,7 +44,7 @@ const SecurityMonitor = () => {
         return;
       }
 
-      // Safely handle the data with proper type checking
+      // Processar dados com verificação de tipo melhorada
       const typedEvents: SecurityEvent[] = Array.isArray(eventsData) 
         ? eventsData.filter((event: any): event is any => 
             event !== null && 
@@ -66,7 +64,7 @@ const SecurityMonitor = () => {
 
       setEvents(typedEvents);
 
-      // Calculate stats
+      // Calcular estatísticas dos eventos
       const eventStats = typedEvents.reduce((acc, event) => {
         acc.totalEvents++;
         
@@ -97,13 +95,12 @@ const SecurityMonitor = () => {
 
       setStats(eventStats);
     } catch (error: any) {
-      console.error('Error fetching security events:', error);
+      console.error('Erro ao buscar eventos de segurança:', error);
       toast({
         title: "Erro ao carregar eventos de segurança",
-        description: "A tabela de auditoria pode não estar configurada ainda.",
+        description: "Verifique se a tabela de auditoria foi configurada corretamente.",
         variant: "destructive",
       });
-      // Set empty state on error
       setEvents([]);
       setStats({
         totalEvents: 0,

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SecurityMetrics } from '@/types/security';
@@ -14,37 +13,38 @@ export const useAuthSecurity = () => {
   const MAX_ATTEMPTS = 5;
   const BLOCK_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  // Log security events to the audit log
+  // Log security events usando a nova função do banco
   const logSecurityEvent = async (eventType: string, details: any = {}) => {
     try {
-      // Use direct table insert since RPC function might not be available yet
-      await supabase
-        .from('security_audit_log' as any)
-        .insert({
-          event_type: eventType,
-          user_id: details.userId || null,
-          details: {
-            ...details,
-            timestamp: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            url: window.location.href
-          }
-        });
-    } catch (error) {
-      // Fallback: try using RPC if table insert fails
-      try {
-        await supabase.rpc('log_security_event' as any, {
-          event_type: eventType,
-          details: {
-            ...details,
-            timestamp: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            url: window.location.href
-          }
-        });
-      } catch (rpcError) {
-        console.warn('Failed to log security event:', error, rpcError);
+      // Usar a função RPC criada na migração
+      const { error } = await supabase.rpc('log_security_event', {
+        event_type: eventType,
+        details: {
+          ...details,
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          url: window.location.href
+        }
+      });
+
+      if (error) {
+        console.warn('Erro ao registrar evento de segurança via RPC:', error);
+        
+        // Fallback: tentar inserção direta na tabela
+        await supabase
+          .from('security_audit_log')
+          .insert({
+            event_type: eventType,
+            details: {
+              ...details,
+              timestamp: new Date().toISOString(),
+              userAgent: navigator.userAgent,
+              url: window.location.href
+            }
+          });
       }
+    } catch (error) {
+      console.warn('Erro ao registrar evento de segurança:', error);
     }
   };
 
