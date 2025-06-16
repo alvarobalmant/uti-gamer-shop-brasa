@@ -2,7 +2,6 @@
 export interface Product {
   id: string;
   name: string;
-  title?: string; // Adding title property
   description?: string;
   price: number;
   list_price?: number;
@@ -18,8 +17,6 @@ export interface Product {
   colors?: string[];
   stock?: number;
   category_id?: string;
-  category?: string; // Adding category property
-  platform?: string; // Adding platform property
   tags?: { id: string; name: string; }[];
   sku?: string;
   badge_text?: string;
