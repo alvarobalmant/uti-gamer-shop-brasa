@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { SecurityMetrics } from '@/types/security';
+import { useSecurityAudit } from './useSecurityAudit';
 
 export const useAuthSecurity = () => {
   const [securityMetrics, setSecurityMetrics] = useState<SecurityMetrics>({
@@ -13,40 +14,8 @@ export const useAuthSecurity = () => {
   const MAX_ATTEMPTS = 5;
   const BLOCK_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  // Log security events usando a nova função do banco
-  const logSecurityEvent = async (eventType: string, details: any = {}) => {
-    try {
-      // Usar a função RPC criada na migração
-      const { error } = await supabase.rpc('log_security_event', {
-        event_type: eventType,
-        details: {
-          ...details,
-          timestamp: new Date().toISOString(),
-          userAgent: navigator.userAgent,
-          url: window.location.href
-        }
-      });
-
-      if (error) {
-        console.warn('Erro ao registrar evento de segurança via RPC:', error);
-        
-        // Fallback: tentar inserção direta na tabela
-        await supabase
-          .from('security_audit_log')
-          .insert({
-            event_type: eventType,
-            details: {
-              ...details,
-              timestamp: new Date().toISOString(),
-              userAgent: navigator.userAgent,
-              url: window.location.href
-            }
-          });
-      }
-    } catch (error) {
-      console.warn('Erro ao registrar evento de segurança:', error);
-    }
-  };
+  // Usar o hook de auditoria separado (não-bloqueante)
+  const { logSecurityEvent } = useSecurityAudit();
 
   // Check if user is currently blocked
   const checkBlockStatus = () => {
@@ -76,11 +45,12 @@ export const useAuthSecurity = () => {
     const now = new Date();
     const newAttempts = securityMetrics.failedAttempts + 1;
     
-    await logSecurityEvent('failed_login_attempt', {
+    // Log de forma não-bloqueante
+    logSecurityEvent('failed_login_attempt', {
       email,
       attempt_number: newAttempts,
       error_message: error,
-      ip_info: 'client_side' // Could be enhanced with actual IP detection
+      ip_info: 'client_side'
     });
 
     const newMetrics: SecurityMetrics = {
@@ -94,7 +64,7 @@ export const useAuthSecurity = () => {
     localStorage.setItem('auth_security_metrics', JSON.stringify(newMetrics));
 
     if (newAttempts >= MAX_ATTEMPTS) {
-      await logSecurityEvent('account_temporarily_blocked', {
+      logSecurityEvent('account_temporarily_blocked', {
         email,
         total_attempts: newAttempts,
         block_duration_minutes: BLOCK_DURATION / 60000
@@ -106,7 +76,8 @@ export const useAuthSecurity = () => {
 
   // Record successful login
   const recordSuccessfulLogin = async (email: string, isAdmin: boolean = false) => {
-    await logSecurityEvent(isAdmin ? 'admin_login_success' : 'user_login_success', {
+    // Log de forma não-bloqueante
+    logSecurityEvent(isAdmin ? 'admin_login_success' : 'user_login_success', {
       email,
       session_start: new Date().toISOString()
     });

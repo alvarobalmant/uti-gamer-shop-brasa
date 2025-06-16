@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,13 +19,15 @@ const SecurityMonitor = () => {
     adminLogins: 0
   });
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
 
   const fetchSecurityEvents = async () => {
     try {
       setLoading(true);
+      setHasError(false);
       
-      // Buscar eventos da nova tabela security_audit_log
+      // Buscar eventos da tabela security_audit_log com tratamento de erro melhorado
       const { data: eventsData, error: eventsError } = await supabase
         .from('security_audit_log')
         .select('*')
@@ -32,7 +35,18 @@ const SecurityMonitor = () => {
         .limit(50);
 
       if (eventsError) {
-        console.error('Erro ao buscar eventos de segurança:', eventsError);
+        console.warn('Aviso: Erro ao buscar eventos de segurança:', eventsError);
+        setHasError(true);
+        
+        // Não mostrar toast se for problema de permissão (comum durante inicialização)
+        if (!eventsError.message?.includes('permission') && !eventsError.message?.includes('RLS')) {
+          toast({
+            title: "Aviso: Eventos de segurança indisponíveis",
+            description: "O monitor continuará funcionando quando o sistema estiver configurado.",
+            variant: "default",
+          });
+        }
+        
         setEvents([]);
         setStats({
           totalEvents: 0,
@@ -95,12 +109,8 @@ const SecurityMonitor = () => {
 
       setStats(eventStats);
     } catch (error: any) {
-      console.error('Erro ao buscar eventos de segurança:', error);
-      toast({
-        title: "Erro ao carregar eventos de segurança",
-        description: "Verifique se a tabela de auditoria foi configurada corretamente.",
-        variant: "destructive",
-      });
+      console.warn('Aviso: Erro ao buscar eventos de segurança:', error);
+      setHasError(true);
       setEvents([]);
       setStats({
         totalEvents: 0,
@@ -115,7 +125,12 @@ const SecurityMonitor = () => {
   };
 
   useEffect(() => {
-    fetchSecurityEvents();
+    // Aguardar um pouco antes de buscar para evitar problemas de inicialização
+    const timer = setTimeout(() => {
+      fetchSecurityEvents();
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const getEventBadgeColor = (eventType: string): string => {
@@ -218,8 +233,19 @@ const SecurityMonitor = () => {
             </div>
           </div>
 
+          {/* System Status Alert */}
+          {hasError && (
+            <Alert className="bg-yellow-900/50 border-yellow-700 mb-4">
+              <Shield className="h-4 w-4 text-yellow-400" />
+              <AlertDescription className="text-yellow-200">
+                <strong>Sistema de Auditoria:</strong> Configurando sistema de segurança. 
+                Os eventos aparecerão aqui quando o sistema estiver completamente configurado.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Critical Security Alert */}
-          {stats.failedLogins > 10 && (
+          {!hasError && stats.failedLogins > 10 && (
             <Alert className="bg-red-900/50 border-red-700 mb-4">
               <AlertTriangle className="h-4 w-4 text-red-400" />
               <AlertDescription className="text-red-200">
@@ -240,7 +266,7 @@ const SecurityMonitor = () => {
             ) : events.length === 0 ? (
               <div className="text-center py-8 text-gray-400">
                 <Shield className="h-8 w-8 mx-auto mb-2" />
-                <p>Nenhum evento de segurança encontrado</p>
+                <p>{hasError ? 'Sistema de auditoria configurando...' : 'Nenhum evento de segurança encontrado'}</p>
                 <p className="text-sm mt-1">Os eventos aparecerão aqui conforme ocorrem no sistema</p>
               </div>
             ) : (

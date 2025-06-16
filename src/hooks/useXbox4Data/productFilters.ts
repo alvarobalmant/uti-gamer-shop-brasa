@@ -28,20 +28,6 @@ export const getProductsForSection = (products: Product[], config: any): Product
     return hasRequiredTagIds && hasRequiredTagNames;
   });
   
-  // Filtrar por plataforma Xbox se especificado
-  if (config.platform) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.platform?.toLowerCase() === config.platform.toLowerCase()
-    );
-  }
-  
-  // Filtrar por categoria se especificado
-  if (config.category) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.category?.toLowerCase() === config.category.toLowerCase()
-    );
-  }
-  
   // Aplicar limite
   return filteredProducts.slice(0, limit);
 };
@@ -63,7 +49,6 @@ export const processProductsFromRows = (rows: any[]): Product[] => {
       const product: Product = {
         id: productId,
         name: row.product_name || '',
-        title: row.product_name || '',
         description: row.product_description || '',
         price: Number(row.product_price) || 0,
         image: row.product_image || '',
@@ -72,8 +57,6 @@ export const processProductsFromRows = (rows: any[]): Product[] => {
         badge_color: row.badge_color || '',
         badge_visible: row.badge_visible || false,
         tags: [],
-        category: '', // Será preenchido se disponível
-        platform: '', // Será preenchido se disponível
         is_active: true,
         is_featured: false,
         created_at: new Date().toISOString(),
@@ -107,9 +90,8 @@ export const getXboxProducts = (products: Product[]): Product[] => {
     const hasXboxTag = product.tags?.some(tag => 
       tag.name?.toLowerCase() === 'xbox'
     );
-    const isXboxPlatform = product.platform?.toLowerCase() === 'xbox';
     
-    return hasXboxTag || isXboxPlatform;
+    return hasXboxTag;
   });
 };
 
@@ -121,8 +103,7 @@ export const getProductsByCategory = (products: Product[], category: string): Pr
     const hasCategoryTag = product.tags?.some(tag => 
       tag.name?.toLowerCase() === category.toLowerCase()
     );
-    const isCategoryMatch = product.category?.toLowerCase() === category.toLowerCase();
     
-    return hasCategoryTag || isCategoryMatch;
+    return hasCategoryTag;
   });
 };

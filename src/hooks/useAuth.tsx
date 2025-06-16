@@ -4,6 +4,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthSecurity } from './useAuthSecurity';
+import { useSecurityAudit } from './useSecurityAudit';
 
 interface AuthContextType {
   user: User | null;
@@ -27,28 +28,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const {
     recordFailedAttempt,
     recordSuccessfulLogin,
-    logSecurityEvent,
     isBlocked,
     securityMetrics
   } = useAuthSecurity();
+  
+  // Separar auditoria para não bloquear autenticação
+  const { logSecurityEvent } = useSecurityAudit();
 
-  const checkAdminRole = async (userId: string) => {
+  // Função otimizada para verificar admin (sem dependência de auditoria)
+  const checkAdminRole = async (userId: string): Promise<boolean> => {
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', userId)
         .single();
       
+      if (error) {
+        console.warn('Aviso: Erro ao verificar role admin:', error);
+        return false;
+      }
+      
       return profile?.role === 'admin';
     } catch (error) {
-      console.log('Error checking admin role:', error);
+      console.warn('Aviso: Erro ao verificar admin role:', error);
       return false;
     }
   };
 
   useEffect(() => {
-    // Set up auth state listener
+    // Set up auth state listener (sem auditoria para evitar circular dependency)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.email);
@@ -57,18 +66,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check admin role
-          const adminStatus = await checkAdminRole(session.user.id);
-          setIsAdmin(adminStatus);
-          
-          // Log session restoration for security monitoring
-          setTimeout(() => {
-            logSecurityEvent('session_restored', {
-              userId: session.user.id,
-              email: session.user.email,
-              isAdmin: adminStatus
-            });
-          }, 0);
+          // Check admin role de forma não-bloqueante
+          try {
+            const adminStatus = await checkAdminRole(session.user.id);
+            setIsAdmin(adminStatus);
+            
+            // Log session restoration em background (depois da auth estar configurada)
+            setTimeout(() => {
+              logSecurityEvent('session_restored', {
+                userId: session.user.id,
+                email: session.user.email,
+                isAdmin: adminStatus
+              });
+            }, 100);
+          } catch (error) {
+            console.warn('Aviso: Erro ao configurar sessão:', error);
+            setIsAdmin(false);
+          }
         } else {
           setIsAdmin(false);
         }
@@ -77,7 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Check for existing session
+    // Check for existing session (sem auditoria)
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log('Initial session check:', session?.user?.email);
       
@@ -85,15 +99,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const adminStatus = await checkAdminRole(session.user.id);
-        setIsAdmin(adminStatus);
+        try {
+          const adminStatus = await checkAdminRole(session.user.id);
+          setIsAdmin(adminStatus);
+        } catch (error) {
+          console.warn('Aviso: Erro ao verificar sessão inicial:', error);
+          setIsAdmin(false);
+        }
       }
       
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [logSecurityEvent]);
+  }, []); // Remover dependência de logSecurityEvent
 
   const signIn = async (email: string, password: string) => {
     // Check if user is blocked
@@ -146,7 +165,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      await logSecurityEvent('signup_attempt', { email });
+      // Log em background
+      setTimeout(() => {
+        logSecurityEvent('signup_attempt', { email });
+      }, 0);
 
       const { error } = await supabase.auth.signUp({
         email,
@@ -160,10 +182,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (error) {
-        await logSecurityEvent('signup_failed', {
-          email,
-          error: error.message
-        });
+        setTimeout(() => {
+          logSecurityEvent('signup_failed', {
+            email,
+            error: error.message
+          });
+        }, 0);
         
         // Provide user-friendly error messages
         if (error.message.includes('User already registered')) {
@@ -175,7 +199,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw error;
       }
 
-      await logSecurityEvent('signup_success', { email });
+      setTimeout(() => {
+        logSecurityEvent('signup_success', { email });
+      }, 0);
       
       toast({
         title: "Conta criada com sucesso!",
@@ -194,13 +220,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Log logout event
+      // Log logout event em background
       if (user) {
-        await logSecurityEvent('user_logout', {
-          userId: user.id,
-          email: user.email,
-          wasAdmin: isAdmin
-        });
+        setTimeout(() => {
+          logSecurityEvent('user_logout', {
+            userId: user.id,
+            email: user.email,
+            wasAdmin: isAdmin
+          });
+        }, 0);
       }
 
       const { error } = await supabase.auth.signOut();
