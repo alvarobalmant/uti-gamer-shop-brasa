@@ -35,44 +35,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Separar auditoria para não bloquear autenticação
   const { logSecurityEvent } = useSecurityAudit();
 
-  // Função otimizada para verificar admin (com logs de debug)
+  // Função otimizada para verificar admin usando a nova função is_admin()
   const checkAdminRole = async (userId: string): Promise<boolean> => {
     try {
       console.log(`[Auth] Verificando role admin para usuário: ${userId}`);
       
-      // Primeiro, vamos usar a função de debug para entender o que está acontecendo
-      const { data: debugData, error: debugError } = await supabase
-        .rpc('debug_admin_status');
-      
-      if (debugData && debugData.length > 0) {
-        const debugInfo = debugData[0];
-        console.log(`[Auth] Debug admin status:`, debugInfo);
-        console.log(`[Auth] User ID: ${debugInfo.user_id}`);
-        console.log(`[Auth] User Role: ${debugInfo.user_role}`);
-        console.log(`[Auth] Is Admin Result: ${debugInfo.is_admin_result}`);
-      }
-      
-      if (debugError) {
-        console.warn('[Auth] Erro ao executar debug_admin_status:', debugError);
-      }
-      
-      // Verificação direta na tabela profiles
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single();
+      // Usar a função SQL is_admin() corrigida
+      const { data, error } = await supabase.rpc('is_admin');
       
       if (error) {
         console.warn('[Auth] Erro ao verificar role admin:', error);
         return false;
       }
       
-      const isAdminUser = profile?.role === 'admin';
-      console.log(`[Auth] Resultado da verificação: usuário ${userId} é admin? ${isAdminUser}`);
-      console.log(`[Auth] Profile encontrado:`, profile);
-      
-      return isAdminUser;
+      console.log(`[Auth] Resultado is_admin():`, data);
+      return data === true;
     } catch (error) {
       console.warn('[Auth] Erro ao verificar admin role:', error);
       return false;
@@ -80,7 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    // Set up auth state listener (sem auditoria para evitar circular dependency)
+    // Set up auth state listener otimizado
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('[Auth] Auth state change:', event, session?.user?.email);
@@ -89,14 +66,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check admin role de forma não-bloqueante
+          // Check admin role de forma otimizada
           try {
-            console.log('[Auth] Verificando status de admin para usuário logado...');
+            console.log('[Auth] Verificando status de admin...');
             const adminStatus = await checkAdminRole(session.user.id);
-            console.log('[Auth] Status de admin definido como:', adminStatus);
+            console.log('[Auth] Status de admin:', adminStatus);
             setIsAdmin(adminStatus);
             
-            // Log session restoration em background (depois da auth estar configurada)
+            // Log session em background
             setTimeout(() => {
               logSecurityEvent('session_restored', {
                 userId: session.user.id,
@@ -109,7 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setIsAdmin(false);
           }
         } else {
-          console.log('[Auth] Nenhum usuário logado, definindo isAdmin como false');
+          console.log('[Auth] Nenhum usuário logado');
           setIsAdmin(false);
         }
         
@@ -117,7 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Check for existing session (sem auditoria)
+    // Check for existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log('[Auth] Initial session check:', session?.user?.email);
       
@@ -126,9 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (session?.user) {
         try {
-          console.log('[Auth] Verificando status de admin na sessão inicial...');
           const adminStatus = await checkAdminRole(session.user.id);
-          console.log('[Auth] Status de admin na sessão inicial:', adminStatus);
           setIsAdmin(adminStatus);
         } catch (error) {
           console.warn('[Auth] Erro ao verificar sessão inicial:', error);
@@ -140,10 +115,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []); // Remover dependência de logSecurityEvent
+  }, []);
 
   const signIn = async (email: string, password: string) => {
-    // Check if user is blocked
     if (isBlocked) {
       throw new Error('Conta temporariamente bloqueada devido a muitas tentativas de login. Tente novamente mais tarde.');
     }
@@ -155,10 +129,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (error) {
-        // Record failed attempt with security logging
         await recordFailedAttempt(email, error.message);
         
-        // Provide user-friendly error messages
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Email ou senha incorretos. Verifique suas credenciais e tente novamente.');
         } else if (error.message.includes('Email not confirmed')) {
@@ -170,7 +142,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw error;
       }
 
-      // Record successful login
       if (data.user) {
         const adminStatus = await checkAdminRole(data.user.id);
         await recordSuccessfulLogin(email, adminStatus);
@@ -193,7 +164,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      // Log em background
       setTimeout(() => {
         logSecurityEvent('signup_attempt', { email });
       }, 0);
@@ -217,7 +187,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           });
         }, 0);
         
-        // Provide user-friendly error messages
         if (error.message.includes('User already registered')) {
           throw new Error('Este email já está cadastrado. Tente fazer login ou usar outro email.');
         } else if (error.message.includes('Password should be at least')) {
@@ -248,7 +217,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Log logout event em background
       if (user) {
         setTimeout(() => {
           logSecurityEvent('user_logout', {

@@ -1215,6 +1215,16 @@ export type Database = {
         Args: { user_id: string; meses: number }
         Returns: boolean
       }
+      test_admin_access: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          current_user_id: string
+          user_exists: boolean
+          user_role: string
+          is_admin_result: boolean
+          can_read_profiles: boolean
+        }[]
+      }
     }
     Enums: {
       section_item_type: "product" | "tag"

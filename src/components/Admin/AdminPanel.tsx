@@ -1,20 +1,24 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle } from 'lucide-react';
 import ProductManager from './ProductManager';
 import { BannerManager } from './BannerManager';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
-import UserSubscriptionManagement from './UserSubscriptionManagement'; // Corrected import name based on file listing
+import UserSubscriptionManagement from './UserSubscriptionManagement';
 import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
 import ProductSectionManager from './ProductSectionManager';
 import PageManager from './PageManager';
 import { QuickLinkManager } from './QuickLinkManager';
-import SpecialSectionManager from './SpecialSectionManager'; // Import SpecialSectionManager
-import Xbox4AdminPage from './Xbox4AdminPage'; // Import the new Xbox4AdminPage
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2 } from 'lucide-react'; // Added Star icon
+import SpecialSectionManager from './SpecialSectionManager';
+import Xbox4AdminPage from './Xbox4AdminPage';
+import SecurityMonitor from './SecurityMonitor';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Shield } from 'lucide-react';
 
 export const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('xbox4_customization'); // Default to Xbox4 customization for testing
+  const [activeTab, setActiveTab] = useState('layout');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
@@ -26,10 +30,18 @@ export const AdminPanel = () => {
           <p className="text-gray-400">
             Gerencie o conteúdo e as configurações do site UTI dos Games
           </p>
+          
+          {/* Status do Sistema */}
+          <Alert className="mt-4 bg-green-900/50 border-green-700">
+            <CheckCircle className="h-4 w-4 text-green-400" />
+            <AlertDescription className="text-green-200">
+              <strong>Sistema Otimizado:</strong> RLS policies corrigidas, função is_admin() otimizada. 
+              O painel administrativo agora deve carregar sem problemas de recursos.
+            </AlertDescription>
+          </Alert>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Updated grid-cols-10 to accommodate the new tab */}
           <TabsList className="grid w-full grid-cols-12 bg-gray-800 border-gray-700">
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutList className="w-4 h-4" />
@@ -43,14 +55,13 @@ export const AdminPanel = () => {
               <ListChecks className="w-4 h-4" />
               Seções Produtos
             </TabsTrigger>
-            {/* Added Special Sections Tab */}
             <TabsTrigger value="special_sections" className="flex items-center gap-2">
               <Star className="w-4 h-4" />
               Seções Especiais
             </TabsTrigger>
             <TabsTrigger value="xbox4_customization" className="flex items-center gap-2">
               <Gamepad2 className="w-4 h-4" />
-              Xbox 4 - Personalização
+              Xbox 4
             </TabsTrigger>
             <TabsTrigger value="products" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
@@ -76,24 +87,24 @@ export const AdminPanel = () => {
               <Users className="w-4 h-4" />
               Usuários/PRO
             </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Segurança
+            </TabsTrigger>
           </TabsList>
 
-          {/* Content for Homepage Layout Management */}
           <TabsContent value="layout">
             <HomepageLayoutManager />
           </TabsContent>
 
-          {/* Content for Pages Management */}
           <TabsContent value="pages">
             <PageManager />
           </TabsContent>
 
-          {/* Content for Product Section Management */}
           <TabsContent value="product_sections">
             <ProductSectionManager />
           </TabsContent>
 
-          {/* Added Special Sections Content */}
           <TabsContent value="special_sections">
             <SpecialSectionManager />
           </TabsContent>
@@ -126,6 +137,9 @@ export const AdminPanel = () => {
             <UserSubscriptionManagement />
           </TabsContent>
 
+          <TabsContent value="security">
+            <SecurityMonitor />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
