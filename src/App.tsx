@@ -16,7 +16,7 @@ import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 
 // Importações para as novas páginas de categoria específicas
 import XboxPage from "./pages/platforms/XboxPage";
-import PlayStationPage from "./pages/platforms/PlayStationPage";
+import PlayStationPageProfessional from "./pages/platforms/PlayStationPageProfessional";
 import NintendoPage from "./pages/platforms/NintendoPage";
 import PCGamingPage from "./pages/platforms/PCGamingPage";
 import RetroGamingPage from "./pages/platforms/RetroGamingPage";
@@ -77,7 +77,7 @@ const App = () => (
                 <Route path="/xbox4" element={<XboxPage4 />} />
                 <Route path="/xbox5" element={<XboxPage5 />} />
                 <Route path="/xbox6" element={<XboxPage6 />} />
-                <Route path="/playstation" element={<PlayStationPage />} />
+                <Route path="/playstation" element={<PlayStationPageProfessional />} />
                 <Route path="/nintendo" element={<NintendoPage />} />
                 <Route path="/pc-gaming" element={<PCGamingPage />} />
                 <Route path="/retro-gaming" element={<RetroGamingPage />} />

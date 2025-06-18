@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -18,16 +14,10 @@ interface ProductCardProps {
   onProductClick: (productId: string) => void;
   variant?: "default" | "game" | "accessory" | "deal";
   index?: number;
-<<<<<<< HEAD
   className?: string;
 }
 
 const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default", index = 0, className }: ProductCardProps) => {
-=======
-}
-
-const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default", index = 0 }: ProductCardProps) => {
->>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
   const isGame = variant === "game";
   const isDeal = variant === "deal";
   
@@ -52,99 +42,74 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
         }
       }}
       whileTap={{ 
-<<<<<<< HEAD
         scale: 0.98,
-=======
-        scale: 0.97,
->>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
         transition: { duration: 0.1 }
       }}
       className={cn(
         "group relative bg-gray-900 rounded-xl overflow-hidden border border-transparent cursor-pointer",
-<<<<<<< HEAD
-        "p-3 md:p-6",
-        "min-h-[300px] md:min-h-[400px]",
+        "p-2 md:p-6",
+        // Responsive aspect ratios - mais compacto no mobile, normal no desktop
+        isGame ? "aspect-[3/3.8] md:aspect-[3/4.5]" : "aspect-[3/3.5] md:aspect-[4/6]",
         "transition-all duration-300 ease-out",
         "hover:bg-gray-800 hover:border-[#107C10]/50",
         "active:scale-95 md:active:scale-100",
+        // Mantendo largura responsiva mas proporcional
+        "w-full max-w-[140px] sm:max-w-[160px] md:max-w-none",
+        // Centralizando no mobile e adicionando margin para animações
+        "mx-auto my-4 md:my-0",
+        "flex flex-col", // Make the main card a flex column
         className
       )}
       onClick={() => onProductClick(product.id)}
+      style={{ 
+        transformOrigin: "center center",
+        // Garantindo espaço para animações
+        margin: "16px auto",
+      }}
     >
       {/* Badges */}
       <ProductCardBadges product={product} variant={variant} />
       
       {/* Imagem do produto */}
-      <ProductCardImage 
-        product={product} 
-        variant={variant}
-        className="mb-3 md:mb-4"
-      />
+      <div className="mb-1 md:mb-4 flex-1 flex items-center justify-center"> {/* flex-1 to take available space */} 
+        <ProductCardImage 
+          product={product} 
+          variant={variant}
+        />
+      </div>
       
-      {/* Informações do produto */}
-      <div className="space-y-2 md:space-y-3">
-        <ProductCardInfo 
-          product={product} 
-          variant={variant}
-          className="text-sm md:text-base"
-        />
-        
-        <ProductCardPrice 
-          product={product} 
-          variant={variant}
-          className="text-sm md:text-base"
-        />
-        
-        <ProductCardActions 
-          product={product} 
-          onAddToCart={onAddToCart}
-          variant={variant}
-          className="text-sm md:text-base"
-=======
-        "transform-gpu will-change-transform transition-all duration-150 ease-in-out",
-        // Mobile: visual breathing room with shadows
-        "shadow-lg hover:shadow-xl",
-        // Mobile responsive aspect ratios with better proportions
-        isGame 
-          ? "aspect-[2/3]" // Games mantém proporção vertical
-          : "aspect-square", // Outros produtos
-        isDeal ? "bg-gradient-to-br from-[#107C10]/20 via-black to-black" : "",
-        // Mobile touch feedback
-        "active:scale-95 md:active:scale-100",
-        // Better minimum size for mobile
-        "min-h-[220px] md:min-h-0"
-      )}
-      style={{
-        transformStyle: "preserve-3d",
-        perspective: "1000px"
-      }}
-    >
-      <ProductCardImage product={product} variant={variant} />
-      <ProductCardBadges product={product} variant={variant} />
-      
-      <div className={cn(
-        "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent",
-        // Mobile: generous padding for readability
-        isGame 
-          ? "p-3 md:p-4 pt-16 md:pt-20" // Games: more padding
-          : "p-4 md:p-6" // Outros: even more padding
-      )}>
-        <ProductCardInfo product={product} variant={variant} />
-        <ProductCardPrice product={product} variant={variant} />
-        <ProductCardActions 
-          product={product} 
-          onAddToCart={onAddToCart}
-          onProductClick={onProductClick}
-          variant={variant}
->>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
-        />
+      {/* Informações do produto, preço e ações - this block will be at the bottom */}
+      <div className="flex flex-col justify-between flex-shrink-0"> {/* This container will hold the info, price, and actions */} 
+        {/* Product Info (Title) */}
+        <div className="min-h-[48px] flex items-start"> {/* Set min-height for title block, flex items-start to align text to top */} 
+          <ProductCardInfo 
+            product={product} 
+            variant={variant}
+            className="text-xs md:text-base"
+          />
+        </div>
+
+        {/* Price and Actions - these will be pushed to the bottom of their parent flex container */}
+        <div className="mt-auto space-y-0.5 md:space-y-3"> {/* mt-auto pushes this block to the bottom */} 
+          <ProductCardPrice 
+            product={product} 
+            variant={variant}
+            className="text-xs md:text-base"
+          />
+          
+          <ProductCardActions 
+            product={product} 
+            onAddToCart={onAddToCart}
+            onProductClick={onProductClick}
+            variant={variant}
+            className="text-xs md:text-sm"
+          />
+        </div>
       </div>
     </motion.div>
   );
 };
 
 export default ProductCard;
-<<<<<<< HEAD
 
-=======
->>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
+

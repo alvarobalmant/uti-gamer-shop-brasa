@@ -5,10 +5,6 @@ import { Product } from '@/hooks/useProducts';
 import PlatformSectionRenderer from './PlatformSectionRenderer';
 import ProductModal from '@/components/ProductModal';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-<<<<<<< HEAD
-=======
-import { cn } from '@/lib/utils';
->>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
 
 interface PlatformPageContentProps {
   page: Page;
@@ -58,11 +54,7 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
     : null;
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-black">
-=======
-    <div className="min-h-screen bg-black overflow-x-hidden">
->>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
       <ProfessionalHeader 
         onCartOpen={handleCartOpen}
         onAuthOpen={handleAuthOpen}
@@ -87,7 +79,6 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
         onOpenChange={setIsModalOpen}
       />
 
-<<<<<<< HEAD
       {/* Cart Modal - You may need to implement this component */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
@@ -100,37 +91,10 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
             >
               Fechar
             </button>
-=======
-      {/* Cart Modal - Mobile optimized */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className={cn(
-            "bg-white rounded-xl w-full mx-4",
-            "max-w-md", // Consistent max-width
-            "max-h-[90vh] overflow-y-auto", // Mobile: prevent overflow
-            "shadow-2xl" // Enhanced shadow
-          )}>
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-4">Carrinho de Compras</h2>
-              <p className="text-gray-600 mb-6 text-base">Funcionalidade do carrinho será implementada.</p>
-              <button 
-                onClick={handleCartClose}
-                className={cn(
-                  "bg-blue-500 text-white rounded-lg hover:bg-blue-600 w-full",
-                  "min-h-[48px] px-6 py-3", // Better touch area
-                  "transition-all duration-150 active:scale-95",
-                  "font-medium text-base" // Better typography
-                )}
-              >
-                Fechar
-              </button>
-            </div>
->>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
           </div>
         </div>
       )}
 
-<<<<<<< HEAD
       {/* Auth Modal - You may need to implement this component */}
       {isAuthOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
@@ -143,32 +107,6 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
             >
               Fechar
             </button>
-=======
-      {/* Auth Modal - Mobile optimized */}
-      {isAuthOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className={cn(
-            "bg-white rounded-xl w-full mx-4",
-            "max-w-md", // Consistent max-width
-            "max-h-[90vh] overflow-y-auto", // Mobile: prevent overflow
-            "shadow-2xl" // Enhanced shadow
-          )}>
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-4">Login / Cadastro</h2>
-              <p className="text-gray-600 mb-6 text-base">Funcionalidade de autenticação será implementada.</p>
-              <button 
-                onClick={handleAuthClose}
-                className={cn(
-                  "bg-green-500 text-white rounded-lg hover:bg-green-600 w-full",
-                  "min-h-[48px] px-6 py-3", // Better touch area
-                  "transition-all duration-150 active:scale-95",
-                  "font-medium text-base" // Better typography
-                )}
-              >
-                Fechar
-              </button>
-            </div>
->>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
           </div>
         </div>
       )}

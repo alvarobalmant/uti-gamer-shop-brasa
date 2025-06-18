@@ -7,26 +7,19 @@ import { cn } from '@/lib/utils';
 interface ProductCardInfoProps {
   product: Product;
   variant?: "default" | "game" | "accessory" | "deal";
+  className?: string;
 }
 
-const ProductCardInfo = ({ product, variant = "default" }: ProductCardInfoProps) => {
+const ProductCardInfo = ({ product, variant = "default", className }: ProductCardInfoProps) => {
   const isGame = variant === "game";
   
   return (
     <motion.h3 
       className={cn(
-<<<<<<< HEAD
-        "font-bold mb-2 text-white line-clamp-2 transition-colors duration-150",
-        isGame ? "text-sm" : "text-lg"
-=======
-        "font-bold text-white line-clamp-2 transition-colors duration-150",
-        // Mobile: more generous spacing and better readability
-        "mb-2 md:mb-3 leading-snug",
-        // Mobile: improved font sizes for better readability
-        isGame 
-          ? "text-sm md:text-base" // Games: readable on mobile
-          : "text-base md:text-lg" // Outros: larger and more prominent
->>>>>>> ffa5ead17058abb361081e02332d31eceaad6320
+        "font-bold mb-1 text-white line-clamp-2 transition-colors duration-150 leading-tight",
+        // Reduzindo ainda mais o texto no mobile para os cards menores
+        isGame ? "text-xs md:text-sm" : "text-xs md:text-lg",
+        className
       )}
       whileHover={{ 
         color: "#107C10",

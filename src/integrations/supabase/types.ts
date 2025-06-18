@@ -1167,6 +1167,10 @@ export type Database = {
           end_date: string
         }[]
       }
+      get_user_role: {
+        Args: { user_id: string }
+        Returns: string
+      }
       has_active_subscription: {
         Args: { user_id: string }
         Returns: boolean
