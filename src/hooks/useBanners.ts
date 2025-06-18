@@ -7,10 +7,14 @@ export interface Banner {
   id: string;
   title?: string;
   subtitle?: string;
-  button_text: string;
-  button_link: string;
+  button_text?: string;
+  button_link?: string;
   image_url?: string;
+  image_url_desktop?: string;
+  image_url_mobile?: string;
   button_image_url?: string;
+  button_link_desktop?: string;
+  button_link_mobile?: string;
   gradient: string;
   background_type?: string;
   position: number;
