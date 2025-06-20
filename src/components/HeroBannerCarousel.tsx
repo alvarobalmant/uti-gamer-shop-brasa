@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useBanners } from '@/hooks/useBanners';
 import { useNavigate } from 'react-router-dom';
@@ -49,15 +50,30 @@ const HeroBannerCarousel = () => {
   }, [api])
 
   useEffect(() => {
+<<<<<<< HEAD
     deviceBanners.forEach(banner => {
       const imageUrl = isMobile ? banner.image_url_mobile || banner.image_url_desktop || banner.image_url : banner.image_url_desktop || banner.image_url_mobile || banner.image_url;
       if (imageUrl) {
+=======
+    banners.forEach(banner => {
+      // Preload all banner images
+      if (banner.image_url) {
+>>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
         const img = new Image();
         img.src = imageUrl;
+      }
+      if ((banner as any).image_url_desktop) {
+        const img = new Image();
+        img.src = (banner as any).image_url_desktop;
+      }
+      if ((banner as any).image_url_mobile) {
+        const img = new Image();
+        img.src = (banner as any).image_url_mobile;
       }
     });
   }, [deviceBanners, isMobile]);
 
+<<<<<<< HEAD
   const handleButtonClick = useCallback((banner) => {
     const buttonLink = isMobile ? banner.button_link_mobile || banner.button_link_desktop || banner.button_link : banner.button_link_desktop || banner.button_link_mobile || banner.button_link;
     if (!buttonLink) return;
@@ -67,6 +83,37 @@ const HeroBannerCarousel = () => {
       navigate(buttonLink);
     }
   }, [navigate, isMobile]);
+=======
+  const handleButtonClick = useCallback((banner: any) => {
+    // Determine which link to use based on device and available links
+    let linkToUse = banner.button_link;
+    
+    if (isMobile && banner.button_link_mobile) {
+      linkToUse = banner.button_link_mobile;
+    } else if (!isMobile && banner.button_link_desktop) {
+      linkToUse = banner.button_link_desktop;
+    }
+    
+    if (!linkToUse) return;
+    
+    if (linkToUse.startsWith('http')) {
+      window.open(linkToUse, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(linkToUse);
+    }
+  }, [navigate, isMobile]);
+
+  const getBannerImage = useCallback((banner: any) => {
+    // Priority: responsive image > general image
+    if (isMobile && banner.image_url_mobile) {
+      return banner.image_url_mobile;
+    }
+    if (!isMobile && banner.image_url_desktop) {
+      return banner.image_url_desktop;
+    }
+    return banner.image_url;
+  }, [isMobile]);
+>>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
 
   if (loading) {
     return (
@@ -128,11 +175,22 @@ const HeroBannerCarousel = () => {
             align: "start",
           }}
           className="w-full"
+<<<<<<< HEAD
         >          <CarouselContent className="-ml-0">
             {deviceBanners.map((banner, index) => {
               const imageUrl = isMobile ? banner.image_url_mobile || banner.image_url_desktop || banner.image_url : banner.image_url_desktop || banner.image_url_mobile || banner.image_url;
               const buttonLink = isMobile ? banner.button_link_mobile || banner.button_link_desktop || banner.button_link : banner.button_link_desktop || banner.button_link_mobile || banner.button_link;
               const hasImage = !!imageUrl;
+=======
+        >
+          <CarouselContent className="-ml-0">
+            {banners.map((banner, index) => {
+              const bannerImage = getBannerImage(banner);
+              const hasImage = !!bannerImage;
+              const hasText = banner.title || banner.subtitle || banner.button_text;
+              const hasButton = banner.button_text && (banner.button_link || (banner as any).button_link_desktop || (banner as any).button_link_mobile);
+              
+>>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
               return (
                 <CarouselItem key={index} className="pl-0">
                   <div 
@@ -142,6 +200,7 @@ const HeroBannerCarousel = () => {
                       "flex items-center",
                       hasImage ? "bg-cover bg-center" : "bg-gradient-to-br from-uti-red via-red-700 to-red-800"
                     )}
+<<<<<<< HEAD
                     style={hasImage ? { backgroundImage: `url(${imageUrl})` } : {}}
                   >
                     <div className="absolute inset-0 z-10 flex items-center">
@@ -177,9 +236,57 @@ const HeroBannerCarousel = () => {
                               </Button>
                             </div>
                           )}
+=======
+                    style={hasImage ? { backgroundImage: `url(${bannerImage})` } : {}}
+                  >
+                    {hasImage && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/70"></div>
+                    )}
+                    
+                    {hasText && (
+                      <div className="absolute inset-0 z-10 flex items-center">
+                        <div className="container mx-auto w-full">
+                          <div className={cn(
+                              "max-w-lg md:max-w-xl lg:max-w-2xl md:animate-fade-in-up", 
+                              "text-left" 
+                          )}>
+                            {banner.title && (
+                              <div className="inline-block bg-black/30 backdrop-blur-sm text-white font-semibold mb-3 md:mb-4 px-4 py-1.5 rounded-md text-xs sm:text-sm border border-white/20">
+                                {banner.title}
+                              </div>
+                            )}
+                            {banner.subtitle && (
+                              <h1 className={cn(
+                                  "font-bold text-white mb-4 md:mb-6 leading-tight drop-shadow-lg",
+                                  "text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
+                              )}>
+                                {banner.subtitle}
+                              </h1>
+                            )}
+                            {hasButton && (
+                              <div>
+                                <Button 
+                                  size="lg"
+                                  className={cn(
+                                    "bg-uti-red text-primary-foreground hover:bg-uti-red/90 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200",
+                                    isMobile ? "w-full sm:w-auto" : ""
+                                  )}
+                                  onClick={() => handleButtonClick(banner)}
+                                >
+                                  {banner.button_text}
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+>>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
                         </div>
                       </div>
-                    </div>
+                    )}
+                    
+                    {/* For image-only banners without text, show a subtle overlay for better readability of indicators */}
+                    {!hasText && hasImage && (
+                      <div className="absolute inset-0 bg-black/20"></div>
+                    )}
                   </div>
                 </CarouselItem>
               );

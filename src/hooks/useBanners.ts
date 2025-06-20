@@ -8,10 +8,18 @@ export interface Banner {
   subtitle?: string;
   button_text?: string;
   button_link?: string;
+<<<<<<< HEAD
   image_url?: string; // Existing field, can be deprecated or used as fallback
   image_url_desktop?: string; // New field for desktop image
   image_url_mobile?: string; // New field for mobile image
+=======
+  image_url?: string;
+  image_url_desktop?: string;
+  image_url_mobile?: string;
+>>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
   button_image_url?: string;
+  button_link_desktop?: string;
+  button_link_mobile?: string;
   gradient: string;
   background_type?: string;
   position: number;
