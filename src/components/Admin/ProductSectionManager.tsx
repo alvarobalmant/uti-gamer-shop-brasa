@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Edit, Trash2, ListFilter, Tag as TagIcon, Package as PackageIcon } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ListFilter, Tag as TagIcon, Package as PackageIcon, Layers, Link as LinkIcon } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -42,6 +42,7 @@ import { useProductSections, ProductSection, ProductSectionInput, SectionItemTyp
 import { useProducts, Product } from '@/hooks/useProducts'; // Assuming Product type is exported
 import { useTags, Tag } from '@/hooks/useTags';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Helper to get item names for display
 const getItemName = (itemId: string, type: SectionItemType, products: Product[], tags: Tag[]): string => {
@@ -150,96 +151,115 @@ const ProductSectionManager: React.FC = () => {
   const tagOptions = useMemo(() => tags.map(t => ({ value: t.id, label: t.name })), [tags]); // Assuming tags have unique IDs
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="bg-[#2C2C44] border-[#343A40]">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-[#343A40] pb-4">
         <div>
-          <CardTitle>Gerenciar Seções de Produtos</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <CardTitle className="flex items-center gap-2 text-white">
+            <Layers className="w-6 h-6 text-[#007BFF]" />
+            Gerenciar Seções de Produtos
+          </CardTitle>
+          <p className="text-sm text-gray-400 mt-2">
             Crie e edite as seções que exibem produtos na página inicial.
           </p>
+          <Alert className="mt-3 bg-[#1A1A2E] border-[#343A40] text-gray-300">
+            <Layers className="h-4 w-4 text-[#007BFF]" />
+            <AlertDescription>
+              Configure seções de produtos por produtos específicos ou por tags. As seções aparecerão na página inicial conforme configurado no Layout Home.
+            </AlertDescription>
+          </Alert>
         </div>
-        <Button size="sm" onClick={handleAddNewClick} disabled={isLoading}>
+        <Button size="sm" onClick={handleAddNewClick} disabled={isLoading} className="bg-[#007BFF] hover:bg-[#0056B3] text-white">
           <PlusCircle className="h-4 w-4 mr-2" />
           Adicionar Seção
         </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         {isLoading && (
           <div className="space-y-2">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full bg-[#343A40]" />
+            <Skeleton className="h-10 w-full bg-[#343A40]" />
           </div>
         )}
-        {sectionsError && <p className="text-red-500">Erro ao carregar seções: {sectionsError}</p>}
+        {sectionsError && <p className="text-red-500 p-4">Erro ao carregar seções: {sectionsError}</p>}
         {!isLoading && !sectionsError && (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Título</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Itens</TableHead>
-                <TableHead>Link "Ver Todos"</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sections.length > 0 ? (
-                sections.map((section) => (
-                  <TableRow key={section.id}>
-                    <TableCell className="font-medium">{section.title}</TableCell>
-                    <TableCell className="capitalize">
-                      {section.items?.[0]?.item_type === 'product' ? <PackageIcon className="h-4 w-4 inline mr-1"/> : <TagIcon className="h-4 w-4 inline mr-1"/>}
-                      {section.items?.[0]?.item_type === 'product' ? 'Produtos' : 'Tags'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1 max-w-xs">
-                        {section.items?.slice(0, 3).map(item => (
-                          <Badge key={item.id || item.item_id} variant="secondary">
-                            {getItemName(item.item_id, item.item_type, products, tags)}
+          <div className="rounded-lg border border-[#343A40] overflow-hidden">
+            <Table className="w-full text-white">
+              <TableHeader className="bg-[#343A40]">
+                <TableRow className="border-b border-[#495057]">
+                  <TableHead className="text-gray-300">Título</TableHead>
+                  <TableHead className="text-gray-300">Tipo</TableHead>
+                  <TableHead className="text-gray-300">Itens</TableHead>
+                  <TableHead className="text-gray-300">Link "Ver Todos"</TableHead>
+                  <TableHead className="text-right text-gray-300">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="bg-[#2C2C44]">
+                {sections.length > 0 ? (
+                  sections.map((section) => (
+                    <TableRow key={section.id} className="border-b border-[#343A40] hover:bg-[#3A3A50]">
+                      <TableCell className="font-medium text-white">{section.title}</TableCell>
+                      <TableCell className="capitalize text-gray-300">
+                        {section.items?.[0]?.item_type === 'product' ? 
+                          <Badge className="bg-[#007BFF] text-white hover:bg-[#0056B3]">
+                            <PackageIcon className="h-3 w-3 mr-1"/>
+                            Produtos
+                          </Badge> : 
+                          <Badge className="bg-[#6F42C1] text-white hover:bg-[#5A2D91]">
+                            <TagIcon className="h-3 w-3 mr-1"/>
+                            Tags
                           </Badge>
-                        ))}
-                        {section.items && section.items.length > 3 && (
-                          <Badge variant="outline">+{section.items.length - 3}...</Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{section.view_all_link || '-'}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEditClick(section)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(section.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                        }
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1 max-w-xs">
+                          {section.items?.slice(0, 3).map(item => (
+                            <Badge key={item.id || item.item_id} className="bg-[#495057] text-white hover:bg-[#6C757D]">
+                              {getItemName(item.item_id, item.item_type, products, tags)}
+                            </Badge>
+                          ))}
+                          {section.items && section.items.length > 3 && (
+                            <Badge className="bg-[#6C757D] text-white hover:bg-[#5A6268]">+{section.items.length - 3}...</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-300">{section.view_all_link || '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" className="mr-2 text-[#FFC107] hover:bg-[#FFC107]/20 hover:text-[#FFC107]" onClick={() => handleEditClick(section)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-[#DC3545] hover:bg-[#DC3545]/20 hover:text-[#DC3545]" onClick={() => handleDeleteClick(section.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-gray-400 h-24">
+                      Nenhuma seção de produtos cadastrada.
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    Nenhuma seção de produtos cadastrada.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
 
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{currentSection ? 'Editar Seção' : 'Adicionar Nova Seção'}</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="sm:max-w-[600px] bg-[#2C2C44] border-[#343A40] text-white">
+          <DialogHeader className="border-b border-[#343A40] pb-4 mb-4">
+            <DialogTitle className="text-white">{currentSection ? 'Editar Seção' : 'Adicionar Nova Seção'}</DialogTitle>
+            <DialogDescription className="text-gray-400">
               Defina o título, o link e selecione os produtos ou tags para esta seção.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleFormSubmit}>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-6 py-4">
               {/* Title */}
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="title" className="text-right">
+                <Label htmlFor="title" className="text-right text-gray-300">
                   Título*
                 </Label>
                 <Input 
@@ -247,13 +267,14 @@ const ProductSectionManager: React.FC = () => {
                   name="title" 
                   value={formData.title} 
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))} 
-                  className="col-span-3" 
+                  className="col-span-3 bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500" 
                   required 
                 />
               </div>
               {/* View All Link */}
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="viewAllLink" className="text-right">
+                <Label htmlFor="viewAllLink" className="text-right text-gray-300 flex items-center">
+                  <LinkIcon className="mr-1 h-4 w-4" />
                   Link "Ver Todos"
                 </Label>
                 <Input 
@@ -261,13 +282,13 @@ const ProductSectionManager: React.FC = () => {
                   name="viewAllLink" 
                   value={formData.view_all_link || ''} 
                   onChange={(e) => setFormData(prev => ({ ...prev, view_all_link: e.target.value }))} 
-                  className="col-span-3" 
+                  className="col-span-3 bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500" 
                   placeholder="Opcional (ex: /categoria/promocoes)"
                 />
               </div>
               {/* Item Type Selector */}
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="itemType" className="text-right">
+                <Label htmlFor="itemType" className="text-right text-gray-300">
                   Tipo de Item*
                 </Label>
                 <Select 
@@ -275,10 +296,10 @@ const ProductSectionManager: React.FC = () => {
                   onValueChange={handleItemTypeChange}
                   disabled={selectedItems.length > 0} // Disable changing type if items are already selected
                 >
-                  <SelectTrigger className="col-span-3">
+                  <SelectTrigger className="col-span-3 bg-[#1A1A2E] border-[#343A40] text-white">
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-[#2C2C44] border-[#343A40] text-white">
                     <SelectItem value="product">Produtos Específicos</SelectItem>
                     <SelectItem value="tag">Produtos por Tag</SelectItem>
                   </SelectContent>
@@ -286,22 +307,22 @@ const ProductSectionManager: React.FC = () => {
               </div>
               {/* Item Selector (Product or Tag) */}
               <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="itemSelector" className="text-right pt-2">
+                <Label htmlFor="itemSelector" className="text-right pt-2 text-gray-300">
                   {itemTypeToAdd === 'product' ? 'Produtos*' : 'Tags*'}
                 </Label>
                 <div className="col-span-3">
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start bg-[#1A1A2E] border-[#343A40] text-white hover:bg-[#343A40]">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Adicionar {itemTypeToAdd === 'product' ? 'Produto' : 'Tag'}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[400px] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder={`Buscar ${itemTypeToAdd === 'product' ? 'produto' : 'tag'}...`} />
+                    <PopoverContent className="w-[400px] p-0 bg-[#2C2C44] border-[#343A40]" align="start">
+                      <Command className="bg-[#2C2C44] text-white">
+                        <CommandInput placeholder={`Buscar ${itemTypeToAdd === 'product' ? 'produto' : 'tag'}...`} className="text-white" />
                         <CommandList>
-                          <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                          <CommandEmpty className="text-gray-400">Nenhum item encontrado.</CommandEmpty>
                           <CommandGroup>
                             {(itemTypeToAdd === 'product' ? productOptions : tagOptions).map((option) => (
                               <CommandItem
@@ -309,6 +330,7 @@ const ProductSectionManager: React.FC = () => {
                                 value={option.value} // Use value for CommandItem value
                                 onSelect={() => handleItemSelect(option.value)}
                                 disabled={selectedItems.some(item => item.id === option.value && item.type === itemTypeToAdd)}
+                                className="text-white hover:bg-[#343A40]"
                               >
                                 {option.label}
                               </CommandItem>
@@ -319,13 +341,13 @@ const ProductSectionManager: React.FC = () => {
                     </PopoverContent>
                   </Popover>
                   {/* Display Selected Items */}
-                  <ScrollArea className="h-32 mt-2 border rounded-md p-2">
+                  <ScrollArea className="h-32 mt-2 border border-[#343A40] rounded-md p-2 bg-[#1A1A2E]">
                     <div className="flex flex-wrap gap-2">
                       {selectedItems.length === 0 && (
-                        <p className="text-sm text-muted-foreground p-2">Nenhum item selecionado.</p>
+                        <p className="text-sm text-gray-400 p-2">Nenhum item selecionado.</p>
                       )}
                       {selectedItems.map((item) => (
-                        <Badge key={`${item.type}-${item.id}`} variant="secondary">
+                        <Badge key={`${item.type}-${item.id}`} className="bg-[#495057] text-white hover:bg-[#6C757D]">
                           {getItemName(item.id, item.type, products, tags)}
                           <button 
                             type="button" 
@@ -342,11 +364,11 @@ const ProductSectionManager: React.FC = () => {
                 </div>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="pt-4">
               <DialogClose asChild>
-                <Button type="button" variant="outline">Cancelar</Button>
+                <Button type="button" variant="outline" className="border-[#6C757D] text-[#6C757D] hover:bg-[#6C757D] hover:text-white">Cancelar</Button>
               </DialogClose>
-              <Button type="submit" disabled={isLoading || selectedItems.length === 0}>
+              <Button type="submit" disabled={isLoading || selectedItems.length === 0} className="bg-[#007BFF] hover:bg-[#0056B3] text-white">
                 {isLoading ? 'Salvando...' : (currentSection ? 'Salvar Alterações' : 'Adicionar Seção')}
               </Button>
             </DialogFooter>

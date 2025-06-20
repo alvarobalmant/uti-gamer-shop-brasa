@@ -16,7 +16,10 @@ import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 
 // Importações para as novas páginas de categoria específicas
 import XboxPage from "./pages/platforms/XboxPage";
-import PlayStationPageProfessional from "./pages/platforms/PlayStationPageProfessional";
+import PlayStationPageProfessionalV2 from "./pages/platforms/PlayStationPageProfessionalV2";
+import PlayStationPageProfessionalV3 from "./pages/platforms/PlayStationPageProfessionalV3";
+import PlayStationPageProfessionalV4 from "./pages/platforms/PlayStationPageProfessionalV4";
+import PlayStationPageProfessionalV5 from "./pages/platforms/PlayStationPageProfessionalV5";
 import NintendoPage from "./pages/platforms/NintendoPage";
 import PCGamingPage from "./pages/platforms/PCGamingPage";
 import RetroGamingPage from "./pages/platforms/RetroGamingPage";
@@ -77,7 +80,10 @@ const App = () => (
                 <Route path="/xbox4" element={<XboxPage4 />} />
                 <Route path="/xbox5" element={<XboxPage5 />} />
                 <Route path="/xbox6" element={<XboxPage6 />} />
-                <Route path="/playstation" element={<PlayStationPageProfessional />} />
+                <Route path="/playstation" element={<PlayStationPageProfessionalV5 />} />
+                <Route path="/playstation-v2" element={<PlayStationPageProfessionalV2 />} />
+                <Route path="/playstation-v3" element={<PlayStationPageProfessionalV3 />} />
+                <Route path="/playstation-v4" element={<PlayStationPageProfessionalV4 />} />
                 <Route path="/nintendo" element={<NintendoPage />} />
                 <Route path="/pc-gaming" element={<PCGamingPage />} />
                 <Route path="/retro-gaming" element={<RetroGamingPage />} />

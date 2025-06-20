@@ -51,13 +51,33 @@ export interface CarouselConfig {
   product_ids?: string[];
 }
 
-// Add the missing FixedContentFormData type
+// Define new banner types for flexibility
+export type BannerType = 'full_width' | 'half_width' | 'third_width' | 'quarter_width' | 'product_highlight';
+
+export interface BannerConfig {
+  type: BannerType;
+  image_url?: string;
+  link_url?: string;
+  title?: string;
+  subtitle?: string;
+  button_text?: string;
+  enable_hover_animation?: boolean; // New property for hover animation control
+}
+
+// Define a row of banners, allowing different layouts per row
+export interface BannerRowConfig {
+  row_id: string; // Unique ID for the row
+  layout: '1_col_full' | '2_col_half' | '3_col_third' | '4_col_quarter'; // Predefined layouts
+  banners: BannerConfig[]; // Array of banners for this row, matching the layout
+}
+
+// Update FixedContentFormData to use dynamic banner rows
 export interface FixedContentFormData {
-  banner_principal?: { image_url?: string; link_url?: string; };
-  banner_medio_1?: { image_url?: string; title?: string; subtitle?: string; link_url?: string; };
-  banner_medio_2?: { image_url?: string; title?: string; subtitle?: string; link_url?: string; };
-  banner_pequeno?: { image_url?: string; link_url?: string; };
-  banner_destaque?: { title?: string; subtitle?: string; link_url?: string; button_text?: string; };
+  banner_rows?: BannerRowConfig[]; // Array of banner rows
   carrossel_1?: CarouselConfig;
   carrossel_2?: CarouselConfig;
 }
+
+
+
+

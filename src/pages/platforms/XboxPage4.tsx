@@ -235,24 +235,16 @@ const XboxPage4 = () => {
             >
               <Button 
                 size="lg" 
-<<<<<<< HEAD
                 variant="xboxPrimary"
                 className="font-bold px-6 py-3 h-12 text-sm rounded-md transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:h-12 md:px-8 md:text-base"
-=======
-                className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 py-3 h-12 text-sm rounded-md transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:h-12 md:px-8 md:text-base"
->>>>>>> 1b5064c2294c1a0b334ecd46e8d234b6a219189b
               >
                 <Zap className="w-4 h-4 mr-2" />
                 EXPLORAR CONSOLES
               </Button>
               <Button 
                 size="lg" 
-<<<<<<< HEAD
                 variant="xboxSecondary"
                 className="font-bold px-6 py-3 h-12 text-sm rounded-md transition-all duration-300 shadow-lg hover:shadow-xl"
-=======
-                className="bg-black/50 text-white border border-white hover:bg-[#107C10]/50 hover:text-white font-bold px-6 py-3 h-12 text-sm rounded-md transition-all duration-300 shadow-lg hover:shadow-xl"
->>>>>>> 1b5064c2294c1a0b334ecd46e8d234b6a219189b
               >
                 <Play className="w-4 h-4 mr-2" />
                 VER JOGOS
@@ -331,25 +323,14 @@ const XboxPage4 = () => {
             </p>
           </motion.div>
 
-<<<<<<< HEAD
           <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-x-4 -mx-4 px-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible md:mx-0 md:px-0">
-=======
-          <div className="flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 -mx-4 px-4 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8 md:overflow-visible md:mx-0 md:px-0">
->>>>>>> 1b5064c2294c1a0b334ecd46e8d234b6a219189b
             {displayProducts.games.slice(0, 10).map((product, index) => (
               <Xbox4GameHighCard 
                 key={product.id}
                 game={product}
                 index={index}
-<<<<<<< HEAD
                 onGameClick={handleProductClick}
                 className="min-w-[160px] md:min-w-[200px] snap-start flex-shrink-0"
-=======
-                onAddToCart={handleAddToCart}
-                onProductClick={handleProductClick}
-                variant="game"
-                className="min-w-[200px] snap-start flex-shrink-0 md:min-w-0"
->>>>>>> 1b5064c2294c1a0b334ecd46e8d234b6a219189b
               />
             ))}
           </div>

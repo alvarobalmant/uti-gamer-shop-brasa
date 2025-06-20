@@ -27,7 +27,7 @@ const ProductCard = ({ product, index }) => {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       viewport={{ once: true }}
-      className="bg-white rounded-xl overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-103 hover:shadow-lg flex flex-col h-full"
+      className="bg-white rounded-xl overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-[1.01] hover:shadow-lg flex flex-col h-full" // Changed hover:shadow-xl to hover:shadow-lg and added hover:scale-[1.01]
       onClick={() => handleProductClick(product.id)}
     >
       <div className="relative overflow-hidden bg-gray-100 aspect-[3/4]">
@@ -77,7 +77,7 @@ const ProductCard = ({ product, index }) => {
   );
 };
 
-const PlayStationPageProfessional = () => {
+const PlayStationPageProfessionalV2 = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [showCart, setShowCart] = useState(false);
@@ -417,35 +417,31 @@ const PlayStationPageProfessional = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="md:w-1/2"
+              className="md:w-1/2 flex justify-center"
             >
-              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
-                <h3 className="text-2xl font-light mb-4 tracking-tight">Benefícios Exclusivos</h3>
-                <ul className="space-y-2 text-lg font-light tracking-tight">
-                  <li className="flex items-center"><ChevronRight className="w-5 h-5 mr-2 text-yellow-200" />Jogos mensais gratuitos</li>
-                  <li className="flex items-center"><ChevronRight className="w-5 h-5 mr-2 text-yellow-200" />Multijogador online</li>
-                  <li className="flex items-center"><ChevronRight className="w-5 h-5 mr-2 text-yellow-200" />Descontos exclusivos na PS Store</li>
-                  <li className="flex items-center"><ChevronRight className="w-5 h-5 mr-2 text-yellow-200" />Armazenamento em nuvem</li>
-                </ul>
-              </div>
+              <img 
+                src="https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&h=400&fit=crop&crop=center" 
+                alt="PlayStation Plus" 
+                className="rounded-lg shadow-2xl max-w-full h-auto"
+              />
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Rodapé */}
-      <footer className="bg-gray-900 text-gray-400 py-8">
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-12">
         <div className="container mx-auto px-4 text-center">
-          <p>&copy; 2025 UTI dos Games. Todos os direitos reservados.</p>
+          <p className="text-sm font-light tracking-tight">&copy; {new Date().getFullYear()} UTI dos Games. Todos os direitos reservados.</p>
         </div>
       </footer>
 
-      <Cart show={showCart} onClose={() => setShowCart(false)} />
-      <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <Cart showCart={showCart} setShowCart={setShowCart} />
+      <AuthModal showAuthModal={showAuthModal} setShowAuthModal={setShowAuthModal} />
     </div>
   );
 };
 
-export default PlayStationPageProfessional;
+export default PlayStationPageProfessionalV2;
 
 
