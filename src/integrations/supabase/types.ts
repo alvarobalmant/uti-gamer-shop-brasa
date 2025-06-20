@@ -18,6 +18,7 @@ export type Database = {
           button_link_mobile: string | null
           button_text: string | null
           created_at: string
+          device_type: string
           display_order: number | null
           gradient: string
           id: string
@@ -38,6 +39,7 @@ export type Database = {
           button_link_mobile?: string | null
           button_text?: string | null
           created_at?: string
+          device_type?: string
           display_order?: number | null
           gradient?: string
           id?: string
@@ -58,6 +60,7 @@ export type Database = {
           button_link_mobile?: string | null
           button_text?: string | null
           created_at?: string
+          device_type?: string
           display_order?: number | null
           gradient?: string
           id?: string

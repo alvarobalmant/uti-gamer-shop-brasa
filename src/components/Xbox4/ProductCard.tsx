@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 
->>>>>>> 1b5064c2294c1a0b334ecd46e8d234b6a219189b
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -61,10 +58,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
         "w-full max-w-[140px] sm:max-w-[160px] md:max-w-none",
         // Centralizando no mobile e adicionando margin para animações
         "mx-auto my-4 md:my-0",
-<<<<<<< HEAD
         "flex flex-col", // Make the main card a flex column
-=======
->>>>>>> 1b5064c2294c1a0b334ecd46e8d234b6a219189b
         className
       )}
       onClick={() => onProductClick(product.id)}
@@ -78,18 +72,13 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       <ProductCardBadges product={product} variant={variant} />
       
       {/* Imagem do produto */}
-<<<<<<< HEAD
       <div className="mb-1 md:mb-4 flex-1 flex items-center justify-center"> {/* flex-1 to take available space */} 
-=======
-      <div className="mb-1 md:mb-4 flex-1">
->>>>>>> 1b5064c2294c1a0b334ecd46e8d234b6a219189b
         <ProductCardImage 
           product={product} 
           variant={variant}
         />
       </div>
       
-<<<<<<< HEAD
       {/* Informações do produto, preço e ações - this block will be at the bottom */}
       <div className="flex flex-col justify-between flex-shrink-0"> {/* This container will hold the info, price, and actions */} 
         {/* Product Info (Title) */}
@@ -103,24 +92,11 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
 
         {/* Price and Actions - these will be pushed to the bottom of their parent flex container */}
         <div className="mt-auto space-y-0.5 md:space-y-3"> {/* mt-auto pushes this block to the bottom */} 
-=======
-      {/* Informações do produto - layout mais compacto no mobile */}
-      <div className="space-y-0.5 md:space-y-3 flex-shrink-0">
-        <ProductCardInfo 
-          product={product} 
-          variant={variant}
-          className="text-xs md:text-base"
-        />
-        
-        {/* Preço com altura mínima reduzida no mobile */}
-        <div className="min-h-[16px] md:min-h-[30px]">
->>>>>>> 1b5064c2294c1a0b334ecd46e8d234b6a219189b
           <ProductCardPrice 
             product={product} 
             variant={variant}
             className="text-xs md:text-base"
           />
-<<<<<<< HEAD
           
           <ProductCardActions 
             product={product} 
@@ -130,25 +106,9 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
             className="text-xs md:text-sm"
           />
         </div>
-=======
-        </div>
-        
-        <ProductCardActions 
-          product={product} 
-          onAddToCart={onAddToCart}
-          onProductClick={onProductClick}
-          variant={variant}
-          className="text-xs md:text-sm"
-        />
->>>>>>> 1b5064c2294c1a0b334ecd46e8d234b6a219189b
       </div>
     </motion.div>
   );
 };
 
 export default ProductCard;
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 1b5064c2294c1a0b334ecd46e8d234b6a219189b
