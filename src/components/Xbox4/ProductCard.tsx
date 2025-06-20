@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -115,8 +111,5 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
 };
 
 export default ProductCard;
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
