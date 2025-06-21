@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, Trash2 } from 'lucide-react';
 import ImageUploadInput from '@/components/Admin/ImageUploadInput';
 import { useTags } from '@/hooks/useTags';
 import { useProducts } from '@/hooks/useProducts';
@@ -25,6 +24,17 @@ const carouselConfigSchema = z.object({
   product_ids: z.array(z.string()).optional().default([]),
 });
 
+// NOVO: Schema para carrossel estilo GameStop
+const carouselRowConfigSchema = z.object({
+  row_id: z.string().min(1, 'ID é obrigatório'),
+  title: z.string().min(1, 'Título é obrigatório'),
+  showTitle: z.boolean().default(true),
+  titleAlignment: z.enum(['left', 'center', 'right']).default('left'),
+  selection_mode: z.enum(['tags', 'products', 'combined']).default('products'),
+  tag_ids: z.array(z.string()).optional().default([]),
+  product_ids: z.array(z.string()).optional().default([]),
+});
+
 // Define the structure of the fixed content configuration (matching GameStop layout)
 const fixedContentSchema = z.object({
   banner_principal: z.object({ image_url: z.string().url().or(z.literal('')).optional(), link_url: z.string().url().or(z.literal('')).optional() }).optional(),
@@ -34,6 +44,7 @@ const fixedContentSchema = z.object({
   banner_destaque: z.object({ title: z.string().optional(), subtitle: z.string().optional(), link_url: z.string().url().or(z.literal('')).optional(), button_text: z.string().optional() }).optional(),
   carrossel_1: carouselConfigSchema.optional(),
   carrossel_2: carouselConfigSchema.optional(),
+  carousel_rows: z.array(carouselRowConfigSchema).optional().default([]), // NOVO: Array de carrosseis
 });
 
 type FixedContentFormData = z.infer<typeof fixedContentSchema>;
@@ -50,7 +61,7 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
   const { products, loading: productsLoading, refetch: refetchProducts } = useProducts();
   const [searchTerm, setSearchTerm] = useState('');
   
-  const { register, handleSubmit, control, reset, setValue, formState: { errors, isDirty } } = useForm<FixedContentFormData>({
+  const { register, handleSubmit, control, reset, setValue, formState: { errors, isDirty }, watch } = useForm<FixedContentFormData>({
     resolver: zodResolver(fixedContentSchema),
     defaultValues: { 
         banner_principal: { image_url: '', link_url: '' },
@@ -60,11 +71,13 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
         banner_destaque: { title: '', subtitle: '', link_url: '', button_text: '' },
         carrossel_1: { title: '', selection_mode: 'products' as const, tag_ids: [], product_ids: [] },
         carrossel_2: { title: '', selection_mode: 'products' as const, tag_ids: [], product_ids: [] },
+        carousel_rows: [], // NOVO: Array vazio por padrão
     }
   });
 
   const carrossel1Value = useWatch({ control, name: 'carrossel_1' });
   const carrossel2Value = useWatch({ control, name: 'carrossel_2' });
+  const carouselRowsValue = useWatch({ control, name: 'carousel_rows' }); // NOVO: Watch para carousel_rows
 
   const fetchContentConfig = useCallback(async () => {
     setLoading(true);
@@ -97,6 +110,7 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
             ...fetchedConfig,
             carrossel_1: { ...defaults, title: '', ...fetchedConfig.carrossel_1 },
             carrossel_2: { ...defaults, title: '', ...fetchedConfig.carrossel_2 },
+            carousel_rows: fetchedConfig.carousel_rows || [], // NOVO: Garantir que existe
         });
       }
     } catch (error: any) {
@@ -139,6 +153,27 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
     }
   };
 
+  // NOVO: Função para adicionar carrossel
+  const addCarouselRow = () => {
+    const currentRows = carouselRowsValue || [];
+    const newRow = {
+      row_id: `carousel_${Date.now()}`,
+      title: 'Novo Carrossel',
+      showTitle: true,
+      titleAlignment: 'left' as const,
+      selection_mode: 'products' as const,
+      tag_ids: [],
+      product_ids: [],
+    };
+    setValue('carousel_rows', [...currentRows, newRow], { shouldDirty: true });
+  };
+
+  // NOVO: Função para remover carrossel
+  const removeCarouselRow = (index: number) => {
+    const currentRows = carouselRowsValue || [];
+    setValue('carousel_rows', currentRows.filter((_, i) => i !== index), { shouldDirty: true });
+  };
+
   const filteredProducts = products.filter(product => {
     const nameMatch = product.name && typeof product.name === 'string' 
                       ? product.name.toLowerCase().includes(searchTerm.toLowerCase()) 
@@ -149,6 +184,7 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
     return nameMatch || idMatch;
   });
 
+  // ... keep existing code (CarouselConfigSection component)
   const CarouselConfigSection = ({ 
     carouselKey, 
     carouselValue 
@@ -379,6 +415,150 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
             <Input id="bpq_link" {...register('banner_pequeno.link_url')} className="bg-gray-700 border-gray-600 text-white" />
              {errors.banner_pequeno?.link_url && <p className="text-red-500 text-sm">{errors.banner_pequeno.link_url.message}</p>}
           </div>
+        </div>
+      </fieldset>
+
+      {/* NOVO: Seção de Carrosseis Estilo GameStop */}
+      <fieldset className="border border-green-600 p-4 rounded-md">
+        <legend className="text-md font-medium px-2 text-green-300">🆕 Carrosseis Estilo GameStop</legend>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-gray-400">
+              Cards mais estreitos com scroll horizontal. Podem ser posicionados em qualquer lugar da seção.
+            </p>
+            <Button type="button" onClick={addCarouselRow} variant="outline" size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar Carrossel
+            </Button>
+          </div>
+          
+          {carouselRowsValue && carouselRowsValue.length > 0 && (
+            <div className="space-y-4">
+              {carouselRowsValue.map((row, index) => (
+                <div key={index} className="border border-gray-700 p-4 rounded-md">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="font-medium text-white">Carrossel {index + 1}</h4>
+                    <Button 
+                      type="button" 
+                      onClick={() => removeCarouselRow(index)} 
+                      variant="destructive" 
+                      size="sm"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>ID do Carrossel</Label>
+                      <Input 
+                        {...register(`carousel_rows.${index}.row_id`)}
+                        className="bg-gray-700 border-gray-600 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label>Título</Label>
+                      <Input 
+                        {...register(`carousel_rows.${index}.title`)}
+                        className="bg-gray-700 border-gray-600 text-white"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                    <div className="flex items-center space-x-2">
+                      <Controller
+                        name={`carousel_rows.${index}.showTitle`}
+                        control={control}
+                        render={({ field }) => (
+                          <Checkbox
+                            id={`showTitle-${index}`}
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        )}
+                      />
+                      <Label htmlFor={`showTitle-${index}`}>Mostrar Título</Label>
+                    </div>
+                    
+                    <div>
+                      <Label>Alinhamento do Título</Label>
+                      <Controller
+                        name={`carousel_rows.${index}.titleAlignment`}
+                        control={control}
+                        render={({ field }) => (
+                          <Select value={field.value} onValueChange={field.onChange}>
+                            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="left">Esquerda</SelectItem>
+                              <SelectItem value="center">Centro</SelectItem>
+                              <SelectItem value="right">Direita</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label>Modo de Seleção</Label>
+                      <Controller
+                        name={`carousel_rows.${index}.selection_mode`}
+                        control={control}
+                        render={({ field }) => (
+                          <Select value={field.value} onValueChange={field.onChange}>
+                            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="products">Produtos Específicos</SelectItem>
+                              <SelectItem value="tags">Por Tags</SelectItem>
+                              <SelectItem value="combined">Combinado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Seleção de produtos para o carrossel específico */}
+                  <div className="mt-4">
+                    <Label>Selecionar Produtos</Label>
+                    <ScrollArea className="h-40 border rounded-md p-2 bg-gray-800 mt-2">
+                      <div className="space-y-2">
+                        {filteredProducts.map(product => (
+                          <div key={product.id} className="flex items-center space-x-2">
+                            <Controller
+                              name={`carousel_rows.${index}.product_ids`}
+                              control={control}
+                              render={({ field }) => (
+                                <Checkbox
+                                  id={`carousel-product-${product.id}-${index}`}
+                                  checked={field.value?.includes(product.id)}
+                                  onCheckedChange={(checked) => {
+                                    const currentProducts = field.value || [];
+                                    if (checked) {
+                                      field.onChange([...currentProducts, product.id]);
+                                    } else {
+                                      field.onChange(currentProducts.filter(id => id !== product.id));
+                                    }
+                                  }}
+                                />
+                              )}
+                            />
+                            <Label htmlFor={`carousel-product-${product.id}-${index}`} className="text-sm">
+                              {product.name || 'Produto sem nome'} ({product.id || 'Sem ID'})
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </fieldset>
 

@@ -51,6 +51,17 @@ export interface CarouselConfig {
   product_ids?: string[];
 }
 
+// NOVO: Tipo para as linhas de carrossel no estilo GameStop
+export interface CarouselRowConfig {
+  row_id: string;
+  title: string;
+  showTitle: boolean;
+  titleAlignment: 'left' | 'center' | 'right';
+  selection_mode: 'tags' | 'products' | 'combined';
+  tag_ids?: string[];
+  product_ids?: string[];
+}
+
 // Add the missing FixedContentFormData type
 export interface FixedContentFormData {
   banner_principal?: { image_url?: string; link_url?: string; };
@@ -60,4 +71,5 @@ export interface FixedContentFormData {
   banner_destaque?: { title?: string; subtitle?: string; link_url?: string; button_text?: string; };
   carrossel_1?: CarouselConfig;
   carrossel_2?: CarouselConfig;
+  carousel_rows?: CarouselRowConfig[]; // NOVO: Array de carrosseis estilo GameStop
 }

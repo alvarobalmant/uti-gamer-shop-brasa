@@ -7,11 +7,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from "@/lib/utils";
-import ProductCard from '@/components/ProductCard'; // Import the main ProductCard
+import ProductCard from '@/components/ProductCard';
+import CarouselRowRenderer from './CarouselRowRenderer'; // NOVO: Import do componente de carrossel
 
 interface SpecialSectionRendererProps {
   section: SpecialSection;
-  onProductCardClick: (productId: string) => void; // Prop to handle product card clicks
+  onProductCardClick: (productId: string) => void;
 }
 
 const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section, onProductCardClick }) => {
@@ -39,7 +40,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
     return products.filter(product => product && ids.includes(product.id));
   };
 
-  // --- Carousel Rendering Logic ---
+  // --- Carousel Rendering Logic (MANTIDO - não alterado) ---
   const renderCarousel = (carouselConfig: any, carouselKey: string) => {
     if (!carouselConfig?.title) return null;
 
@@ -69,7 +70,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
               <ProductCard 
                 key={`${carouselKey}-${product.id}`} 
                 product={product} 
-                onCardClick={onProductCardClick} // Pass the click handler
+                onCardClick={onProductCardClick}
               />
             ))
           ) : (
@@ -85,11 +86,11 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
   const sectionStyle: React.CSSProperties = {};
   if (section.background_type === 'image' && section.background_value) {
     sectionStyle.backgroundImage = `url(${section.background_value})`;
-    sectionStyle.backgroundSize = 'cover'; // Always cover the section
+    sectionStyle.backgroundSize = 'cover';
     sectionStyle.backgroundPosition = section.background_image_position || 'center';
     sectionStyle.backgroundRepeat = 'no-repeat';
   } else {
-    sectionStyle.backgroundColor = section.background_value || '#003087'; // Default GameStop blue
+    sectionStyle.backgroundColor = section.background_value || '#003087';
   }
 
   return (
@@ -167,10 +168,19 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
           </div>
         )}
 
-        {/* Carrossel de Produtos 1 */}
+        {/* NOVO: Carrosseis Estilo GameStop */}
+        {config.carousel_rows && Array.isArray(config.carousel_rows) && config.carousel_rows.map((carouselRow: any) => (
+          <CarouselRowRenderer
+            key={carouselRow.row_id}
+            carouselRow={carouselRow}
+            onProductCardClick={onProductCardClick}
+          />
+        ))}
+
+        {/* Carrossel de Produtos 1 (MANTIDO - legacy) */}
         {renderCarousel(config.carrossel_1, 'carrossel_1')}
 
-        {/* Carrossel de Produtos 2 */}
+        {/* Carrossel de Produtos 2 (MANTIDO - legacy) */}
         {renderCarousel(config.carrossel_2, 'carrossel_2')}
 
       </div>
