@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, LayoutList, FileText, Settings } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { usePageManager } from './PageManager/usePageManager';
 import PageForm from './PageManager/PageForm';
@@ -33,45 +33,41 @@ const PageManager: React.FC = () => {
   } = usePageManager();
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-[#2C2C44] border-[#343A40]">
-        <CardHeader className="border-b border-[#343A40]">
+    <>
+      <Card>
+        <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-white text-xl">Gerenciador de Páginas</CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardTitle>Gerenciador de Páginas</CardTitle>
+              <CardDescription>
                 Crie e gerencie páginas personalizadas para categorias e plataformas específicas
               </CardDescription>
             </div>
             {activeTab === 'list' && !isEditing && (
-              <Button onClick={() => setActiveTab('create')} className="bg-[#007BFF] hover:bg-[#0056B3] text-white">
+              <Button onClick={() => setActiveTab('create')}>
                 <Plus className="mr-2 h-4 w-4" />
                 Nova Página
               </Button>
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent>
           {isEditing ? (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-white">Editar Página</h2>
+            <>
+              <h2 className="text-xl font-semibold mb-4">Editar Página</h2>
               <PageForm
                 formData={formData}
                 onInputChange={handleInputChange}
                 onSwitchChange={handleSwitchChange}
               />
-            </div>
+            </>
           ) : (
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'list' | 'create')}>
-              <TabsList className="grid w-full grid-cols-2 bg-[#343A40] border-[#6C757D]">
-                <TabsTrigger value="list" className="data-[state=active]:bg-[#007BFF] data-[state=active]:text-white text-gray-300 hover:text-white">
-                  <FileText className="mr-2 h-4 w-4" /> Lista de Páginas
-                </TabsTrigger>
-                <TabsTrigger value="create" className="data-[state=active]:bg-[#007BFF] data-[state=active]:text-white text-gray-300 hover:text-white">
-                  <Plus className="mr-2 h-4 w-4" /> Criar Página
-                </TabsTrigger>
+              <TabsList className="mb-4">
+                <TabsTrigger value="list">Lista de Páginas</TabsTrigger>
+                <TabsTrigger value="create">Criar Página</TabsTrigger>
               </TabsList>
-              <TabsContent value="list" className="mt-6">
+              <TabsContent value="list">
                 <PageList
                   pages={pages}
                   loading={loading}
@@ -82,35 +78,33 @@ const PageManager: React.FC = () => {
                   onOpenLayout={handleOpenLayout}
                 />
               </TabsContent>
-              <TabsContent value="create" className="mt-6">
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold text-white">Nova Página</h2>
-                  <PageForm
-                    formData={formData}
-                    onInputChange={handleInputChange}
-                    onSwitchChange={handleSwitchChange}
-                  />
-                </div>
+              <TabsContent value="create">
+                <h2 className="text-xl font-semibold mb-4">Nova Página</h2>
+                <PageForm
+                  formData={formData}
+                  onInputChange={handleInputChange}
+                  onSwitchChange={handleSwitchChange}
+                />
               </TabsContent>
             </Tabs>
           )}
         </CardContent>
-        <CardFooter className="flex justify-end space-x-2 border-t border-[#343A40] bg-[#2C2C44] p-6">
+        <CardFooter className="flex justify-end space-x-2">
           {isEditing ? (
             <>
-              <Button variant="outline" onClick={() => setIsEditing(false)} className="border-[#6C757D] text-[#6C757D] hover:bg-[#6C757D] hover:text-white">
+              <Button variant="outline" onClick={() => setIsEditing(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleUpdatePage} className="bg-[#28A745] hover:bg-[#218838] text-white">
+              <Button onClick={handleUpdatePage}>
                 Salvar Alterações
               </Button>
             </>
           ) : activeTab === 'create' ? (
             <>
-              <Button variant="outline" onClick={() => setActiveTab('list')} className="border-[#6C757D] text-[#6C757D] hover:bg-[#6C757D] hover:text-white">
+              <Button variant="outline" onClick={() => setActiveTab('list')}>
                 Cancelar
               </Button>
-              <Button onClick={handleCreatePage} className="bg-[#007BFF] hover:bg-[#0056B3] text-white">
+              <Button onClick={handleCreatePage}>
                 Criar Página
               </Button>
             </>
@@ -121,10 +115,10 @@ const PageManager: React.FC = () => {
       {/* Layout Manager Dialog */}
       {selectedPage && (
         <Dialog open={isLayoutOpen} onOpenChange={setIsLayoutOpen}>
-          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-[#2C2C44] border-[#343A40] text-white">
-            <DialogHeader className="border-b border-[#343A40] pb-4 mb-4">
-              <DialogTitle className="text-white text-2xl">Layout da Página: {selectedPage.title}</DialogTitle>
-              <DialogDescription className="text-gray-400">
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Layout da Página: {selectedPage.title}</DialogTitle>
+              <DialogDescription>
                 Organize as seções e configure o conteúdo da página
               </DialogDescription>
             </DialogHeader>
@@ -134,7 +128,7 @@ const PageManager: React.FC = () => {
           </DialogContent>
         </Dialog>
       )}
-    </div>
+    </>
   );
 };
 

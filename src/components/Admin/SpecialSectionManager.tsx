@@ -1,12 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useSpecialSections } from '@/hooks/useSpecialSections';
 import SpecialSectionList from './SpecialSectionManager/SpecialSectionList'; // Import the list component
 import SpecialSectionForm from './SpecialSectionManager/SpecialSectionForm'; // Import the form component
 import { SpecialSection, SpecialSectionCreateInput, SpecialSectionUpdateInput } from '@/types/specialSections';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const SpecialSectionManager = () => {
   const { specialSections, loading, addSpecialSection, updateSpecialSection, deleteSpecialSection, refetch } = useSpecialSections();
@@ -69,31 +68,22 @@ const SpecialSectionManager = () => {
   }
 
   return (
-    <Card className="bg-[#2C2C44] border-[#343A40]">
-      <CardHeader className="border-b border-[#343A40] pb-4">
+    <Card className="bg-gray-800 border-gray-700 text-white">
+      <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Sparkles className="w-6 h-6 text-[#007BFF]" />
-              Gerenciamento de Seções Especiais
-            </CardTitle>
-            <CardDescription className="text-gray-400 mt-2">
+            <CardTitle className="text-white">Gerenciamento de Seções Especiais</CardTitle>
+            <CardDescription className="text-gray-400">
               Crie e gerencie seções personalizadas com layouts complexos.
             </CardDescription>
-            <Alert className="mt-3 bg-[#1A1A2E] border-[#343A40] text-gray-300">
-              <Sparkles className="h-4 w-4 text-[#007BFF]" />
-              <AlertDescription>
-                Seções especiais permitem criar layouts únicos e personalizados para destacar conteúdo específico na página inicial.
-              </AlertDescription>
-            </Alert>
           </div>
-          <Button onClick={handleCreate} className="bg-[#007BFF] hover:bg-[#0056B3] text-white">
+          <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
             <Plus className="w-4 h-4 mr-2" />
             Nova Seção Especial
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent>
         <SpecialSectionList
           sections={specialSections}
           onEdit={handleEdit}

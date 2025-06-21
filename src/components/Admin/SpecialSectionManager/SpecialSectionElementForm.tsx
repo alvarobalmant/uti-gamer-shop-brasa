@@ -165,15 +165,6 @@ const SpecialSectionElementForm: React.FC<SpecialSectionElementFormProps> = ({ e
             <Label htmlFor="image_url">URL da Imagem Principal</Label>
             <Input id="image_url" {...register('image_url')} className="bg-gray-700 border-gray-600 text-white" />
             {errors.image_url && <p className="text-red-500 text-sm">{errors.image_url.message}</p>}
-            <div className="mt-2 p-3 bg-blue-900/30 border border-blue-700 rounded">
-              <p className="text-blue-300 text-sm font-medium">Tamanhos Recomendados:</p>
-              <p className="text-blue-200 text-xs mt-1">
-                {selectedElementType === 'banner_full' && '• Banner Completo: 1200x400px'}
-                {selectedElementType === 'banner_medium' && '• Banner Médio: 800x300px'}
-                {selectedElementType === 'banner_small' && '• Banner Pequeno: 400x200px'}
-                {selectedElementType === 'banner_product_highlight' && '• Banner Destaque de Produto: 600x300px'}
-              </p>
-            </div>
           </div>
           <div>
             <Label htmlFor="link_url">URL do Link (Opcional)</Label>

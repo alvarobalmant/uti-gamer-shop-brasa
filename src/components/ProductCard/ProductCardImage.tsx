@@ -14,8 +14,7 @@ const ProductCardImage: React.FC<ProductCardImageProps> = ({ product }) => {
         src={product.image || '/placeholder-image.webp'}
         alt={product.name}
         className={cn(
-          "h-full w-full object-contain transition-transform duration-300 ease-in-out p-2",
-          "md:group-hover:scale-105" // Only apply hover effect on medium screens and up
+          "h-full w-full object-contain transition-transform duration-300 ease-in-out p-2"
         )}
         loading="lazy"
         onError={(e) => {

@@ -39,7 +39,7 @@ const ProductCard = ({ product, onCardClick, onAddToCart }: ProductCardProps) =>
         "rounded-lg",
         "shadow-none",
         "transition-all duration-200 ease-in-out",
-        "md:hover:shadow-md md:hover:-translate-y-1",
+        "hover:shadow-md hover:-translate-y-1",
         "cursor-pointer",
         "w-[200px] h-[320px]", // GameStop card dimensions
         "p-0"

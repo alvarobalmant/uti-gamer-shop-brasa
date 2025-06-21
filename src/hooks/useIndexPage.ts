@@ -13,7 +13,7 @@ export const useIndexPage = () => {
 
   // Banner data state (Consider moving this to DB if dynamic banners are needed)
   const [bannerData] = useState({
-    imageUrl: "",
+    imageUrl: '/banners/uti-pro-banner.webp',
     title: 'Desbloqueie Vantagens com UTI PRO!',
     description: 'Tenha acesso a descontos exclusivos, frete grátis e muito mais. Torne-se membro hoje mesmo!',
     buttonText: 'Saiba Mais sobre UTI PRO',
