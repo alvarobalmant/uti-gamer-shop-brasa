@@ -110,12 +110,9 @@ const App = () => (
                   <Route path="/area-geek" element={<AreaGeekPage />} />
                   
                   <Route path="/uti-pro" element={<UTIPro />} />
-<<<<<<< HEAD
 
                   {/* Product Page Route */}
                   <Route path="/produto/:id" element={<ProductPage />} />
-=======
->>>>>>> c5c70ba72c144175d231c0e4f13775a0a65a7a4f
 
                   {/* Dynamic Carousel Page Route */}
                   <Route 
