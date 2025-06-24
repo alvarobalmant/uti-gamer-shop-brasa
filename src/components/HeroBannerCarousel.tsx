@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+=======
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
 import { useBanners } from '@/hooks/useBanners';
 import { usePromotionalRibbon } from '@/hooks/usePromotionalRibbon';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +27,7 @@ const HeroBannerCarousel = React.memo(() => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
+<<<<<<< HEAD
   // Memoizar configuração ativa da fita promocional
   const activeRibbonConfig = useMemo(() => 
     isMobile ? mobileConfig : desktopConfig, 
@@ -42,6 +47,9 @@ const HeroBannerCarousel = React.memo(() => {
   }, [banners, isMobile]);
 
   // Configuração do autoplay memoizada
+=======
+  // Configuração do autoplay para funcionar em todas as plataformas
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
   const plugin = useRef(
     Autoplay({ 
       delay: 3500, 
@@ -88,6 +96,7 @@ const HeroBannerCarousel = React.memo(() => {
     } else {
       setTimeout(preloadImages, 100);
     }
+<<<<<<< HEAD
   }, [deviceBanners, isMobile]);
 
   const handleButtonClick = useCallback((banner) => {
@@ -95,6 +104,24 @@ const HeroBannerCarousel = React.memo(() => {
       ? banner.button_link_mobile || banner.button_link_desktop || banner.button_link 
       : banner.button_link_desktop || banner.button_link_mobile || banner.button_link;
     
+=======
+    setCurrentSlide(api.selectedScrollSnap())
+    api.on("select", () => {
+      setCurrentSlide(api.selectedScrollSnap())
+    })
+  }, [api])
+
+  useEffect(() => {
+    banners.forEach(banner => {
+      if (banner.image_url) {
+        const img = new Image();
+        img.src = banner.image_url;
+      }
+    });
+  }, [banners]);
+
+  const handleButtonClick = useCallback((buttonLink: string | undefined) => {
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
     if (!buttonLink) return;
     
     if (buttonLink.startsWith('http')) {
@@ -102,6 +129,7 @@ const HeroBannerCarousel = React.memo(() => {
     } else {
       navigate(buttonLink);
     }
+<<<<<<< HEAD
   }, [navigate, isMobile]);
 
   const handleScrollPrev = useCallback(() => api?.scrollPrev(), [api]);
@@ -132,6 +160,9 @@ const HeroBannerCarousel = React.memo(() => {
     if (activeRibbonConfig && activeRibbonConfig.is_active) return null;
     return <div className="h-[38px]" />;
   }, [activeRibbonConfig]);
+=======
+  }, [navigate]);
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
 
   if (loading) {
     return (
@@ -145,7 +176,7 @@ const HeroBannerCarousel = React.memo(() => {
     );
   }
 
-  if (deviceBanners.length === 0) {
+  if (banners.length === 0) {
     return (
       <>
         {promotionalRibbonComponent}
@@ -204,6 +235,7 @@ const HeroBannerCarousel = React.memo(() => {
           className="w-full"
         >
           <CarouselContent className="-ml-0">
+<<<<<<< HEAD
             {deviceBanners.map((banner, index) => {
               const imageUrl = isMobile 
                 ? banner.image_url_mobile || banner.image_url_desktop || banner.image_url 
@@ -213,6 +245,10 @@ const HeroBannerCarousel = React.memo(() => {
                 : banner.button_link_desktop || banner.button_link_mobile || banner.button_link;
               const hasImage = !!imageUrl;
               
+=======
+            {banners.map((banner, index) => {
+              const hasImage = !!banner.image_url;
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
               return (
                 <CarouselItem key={index} className="pl-0">
                   <div 
@@ -223,6 +259,7 @@ const HeroBannerCarousel = React.memo(() => {
                       "flex items-center",
                       "overflow-hidden" // Garante que o conteúdo não vaze
                     )}
+<<<<<<< HEAD
                   >
                     {/* Imagem de fundo como elemento separado para melhor controle */}
                     {hasImage && (
@@ -236,11 +273,17 @@ const HeroBannerCarousel = React.memo(() => {
                     {/* Gradiente de fundo quando não há imagem */}
                     {!hasImage && (
                       <div className="absolute inset-0 bg-gradient-to-br from-uti-red via-red-700 to-red-800" />
+=======
+                    style={hasImage ? { backgroundImage: `url(${banner.image_url})` } : {}}
+                  >
+                    {hasImage && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/70"></div>
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
                     )}
                     <div className="absolute inset-0 z-10 flex items-center">
                       <div className="container mx-auto w-full">
                         <div className={cn(
-                            "max-w-lg md:max-xl lg:max-w-2xl md:animate-fade-in-up", 
+                            "max-w-lg md:max-w-xl lg:max-w-2xl md:animate-fade-in-up", 
                             "text-left" 
                         )}>
                           {banner.title && (
@@ -256,7 +299,7 @@ const HeroBannerCarousel = React.memo(() => {
                               {banner.subtitle}
                             </h1>
                           )}
-                          {banner.button_text && buttonLink && (
+                          {banner.button_text && banner.button_link && (
                             <div>
                               <Button 
                                 size="lg"
@@ -264,7 +307,7 @@ const HeroBannerCarousel = React.memo(() => {
                                   "bg-uti-red text-primary-foreground hover:bg-uti-red/90 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200",
                                   isMobile ? "w-full sm:w-auto" : ""
                                 )}
-                                onClick={() => handleButtonClick(banner)}
+                                onClick={() => handleButtonClick(banner.button_link)}
                               >
                                 {banner.button_text}
                               </Button>
@@ -280,23 +323,24 @@ const HeroBannerCarousel = React.memo(() => {
           </CarouselContent>
           
           {/* Custom Banner Indicators */}
-          {deviceBanners.length > 1 && (
+          {banners.length > 1 && (
             <div className="absolute bottom-4 md:bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-              {deviceBanners.map((_, index) => (
+              {banners.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => handleScrollTo(index)}
                   className={cn(
                     "w-2.5 h-2.5 rounded-full transition-all duration-300",
                     index === currentSlide 
-                      ? "bg-white scale-110 ring-1 ring-white/50 ring-offset-2 ring-offset-black/20" 
-                      : "bg-white/40 hover:bg-white/70"
+                      ? 'bg-white scale-110 ring-1 ring-white/50 ring-offset-2 ring-offset-black/20' 
+                      : 'bg-white/40 hover:bg-white/70'
                   )}
                   aria-label={`Ir para o banner ${index + 1}`}
                 />
               ))}
             </div>
           )}
+<<<<<<< HEAD
 
           {/* Navigation Arrows */}
           {deviceBanners.length > 1 && (
@@ -329,6 +373,8 @@ const HeroBannerCarousel = React.memo(() => {
               </div>
             </>
           )}
+=======
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
         </Carousel>
       </section>
     </>
@@ -336,4 +382,3 @@ const HeroBannerCarousel = React.memo(() => {
 });
 
 export default HeroBannerCarousel;
-

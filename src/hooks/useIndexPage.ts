@@ -11,9 +11,15 @@ export const useIndexPage = () => {
   const { sections, loading: sectionsLoading } = useProductSections();
   const { specialSections, loading: specialSectionsLoading } = useSpecialSections();
 
+<<<<<<< HEAD
   // Memoizar banner data (dados estáticos)
   const bannerData = useMemo(() => ({
     imageUrl: "",
+=======
+  // Banner data state (Consider moving this to DB if dynamic banners are needed)
+  const [bannerData] = useState({
+    imageUrl: '/banners/uti-pro-banner.webp',
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
     title: 'Desbloqueie Vantagens com UTI PRO!',
     description: 'Tenha acesso a descontos exclusivos, frete grátis e muito mais. Torne-se membro hoje mesmo!',
     buttonText: 'Saiba Mais sobre UTI PRO',

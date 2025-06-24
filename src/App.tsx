@@ -10,11 +10,21 @@ import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 
+<<<<<<< HEAD
 // Lazy loading para páginas menos críticas
 const SearchResults = lazy(() => import("./pages/SearchResults"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const UTIPro = lazy(() => import("./pages/UTIPro"));
+=======
+// Importações para as novas páginas de categoria específicas
+import XboxPage from "./pages/platforms/XboxPage";
+import PlayStationPage from "./pages/platforms/PlayStationPage";
+import NintendoPage from "./pages/platforms/NintendoPage";
+import PCGamingPage from "./pages/platforms/PCGamingPage";
+import RetroGamingPage from "./pages/platforms/RetroGamingPage";
+import AreaGeekPage from "./pages/platforms/AreaGeekPage";
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
 
 // Lazy loading para páginas de plataforma
 const XboxPage = lazy(() => import("./pages/platforms/XboxPage"));
@@ -82,6 +92,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollRestorationProvider>
+<<<<<<< HEAD
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
@@ -107,6 +118,27 @@ const App = () => (
                   <Route path="/area-geek" element={<AreaGeekPage />} />
                   
                   <Route path="/uti-pro" element={<UTIPro />} />
+=======
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Index />} />
+                <Route path="/busca" element={<SearchResults />} />
+                <Route path="/categoria/:category" element={<CategoryPage />} />
+                
+                {/* Novas rotas para páginas de plataforma específicas */}
+                <Route path="/xbox" element={<XboxPage />} />
+                <Route path="/xbox3" element={<XboxPage3 />} />
+                <Route path="/xbox4" element={<XboxPage4 />} />
+                <Route path="/xbox5" element={<XboxPage5 />} />
+                <Route path="/xbox6" element={<XboxPage6 />} />
+                <Route path="/playstation" element={<PlayStationPage />} />
+                <Route path="/nintendo" element={<NintendoPage />} />
+                <Route path="/pc-gaming" element={<PCGamingPage />} />
+                <Route path="/retro-gaming" element={<RetroGamingPage />} />
+                <Route path="/area-geek" element={<AreaGeekPage />} />
+                
+                <Route path="/uti-pro" element={<UTIPro />} />
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
 
                   {/* Dynamic Carousel Page Route */}
                   <Route 

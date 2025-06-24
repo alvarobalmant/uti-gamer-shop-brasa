@@ -31,11 +31,6 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Update preview when currentImageUrl changes (e.g., when form is reset or data is fetched)
-  React.useEffect(() => {
-    setPreview(currentImageUrl || null);
-  }, [currentImageUrl]);
-
   const validateDimensions = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
       if (!requiredWidth || !requiredHeight) {
@@ -127,7 +122,7 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
       toast({ title: 'Falha no upload', description: 'Não foi possível carregar a imagem.', variant: 'destructive' });
       if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl); 
     }
-  }, [uploadImage, onUploadComplete, folderName, toast, currentImageUrl, requiredWidth, requiredHeight, tolerancePercent, errorMessage]); // Removed validateDimensions from dependency array as it's a stable function
+  }, [uploadImage, onUploadComplete, folderName, toast, currentImageUrl, requiredWidth, requiredHeight, tolerancePercent, validateDimensions, errorMessage]); // Added validateDimensions and errorMessage
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -204,5 +199,4 @@ const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
 };
 
 export default ImageUploadInput;
-
 

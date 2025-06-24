@@ -4,8 +4,6 @@ import { usePages, PageLayoutItem } from '@/hooks/usePages';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Xbox4FeaturedProductsManager from '@/components/Admin/Xbox4Admin/Xbox4FeaturedProductsManager';
 import { PageLayoutItemConfig } from '@/types/xbox4Admin';
-import { Gamepad2, Package, Headphones, Percent, Newspaper, Settings, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Xbox4AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('consoles');
@@ -185,141 +183,83 @@ const Xbox4AdminPage: React.FC = () => {
 
   if (isLoadingPageData) {
     return (
-      <Card className="bg-[#2C2C44] border-[#343A40]">
-        <CardContent className="p-6 text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-[#007BFF] border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-400">Carregando configurações da página Xbox 4...</p>
-        </CardContent>
-      </Card>
+      <div className="p-6 text-center text-gray-400">
+        Carregando configurações da página Xbox 4...
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card className="bg-[#2C2C44] border-[#343A40]">
-        <CardContent className="p-6 text-center">
-          <p className="text-[#DC3545]">Erro ao carregar configurações: {error}</p>
-        </CardContent>
-      </Card>
+      <div className="p-6 text-center text-red-500">
+        Erro ao carregar configurações: {error}
+      </div>
     );
   }
 
   return (
-    <Card className="bg-[#2C2C44] border-[#343A40]">
-      <CardHeader className="border-b border-[#343A40] pb-4">
-        <CardTitle className="flex items-center gap-2 text-white">
-          <Gamepad2 className="w-6 h-6 text-[#107C10]" />
-          Xbox 4 - Personalização
-        </CardTitle>
-        
-        <Alert className="mt-3 bg-[#1A1A2E] border-[#343A40] text-gray-300">
-          <AlertCircle className="h-4 w-4 text-[#107C10]" />
-          <AlertDescription>
-            <strong>Página Xbox Personalizada:</strong> Configure seções específicas da página /xbox4 com produtos, ofertas e notícias temáticas do Xbox.
-          </AlertDescription>
-        </Alert>
-      </CardHeader>
-      
-      <CardContent className="p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-[#343A40] border-[#495057]">
-            <TabsTrigger 
-              value="consoles" 
-              className="data-[state=active]:bg-[#107C10] data-[state=active]:text-white text-gray-300"
-            >
-              <Package className="w-4 h-4 mr-2" />
-              CONSOLES
-            </TabsTrigger>
-            <TabsTrigger 
-              value="games"
-              className="data-[state=active]:bg-[#107C10] data-[state=active]:text-white text-gray-300"
-            >
-              <Gamepad2 className="w-4 h-4 mr-2" />
-              JOGOS
-            </TabsTrigger>
-            <TabsTrigger 
-              value="accessories"
-              className="data-[state=active]:bg-[#107C10] data-[state=active]:text-white text-gray-300"
-            >
-              <Headphones className="w-4 h-4 mr-2" />
-              ACESSÓRIOS
-            </TabsTrigger>
-            <TabsTrigger 
-              value="offers"
-              className="data-[state=active]:bg-[#107C10] data-[state=active]:text-white text-gray-300"
-            >
-              <Percent className="w-4 h-4 mr-2" />
-              OFERTAS
-            </TabsTrigger>
-            <TabsTrigger 
-              value="news"
-              className="data-[state=active]:bg-[#107C10] data-[state=active]:text-white text-gray-300"
-            >
-              <Newspaper className="w-4 h-4 mr-2" />
-              NOTÍCIAS
-            </TabsTrigger>
-          </TabsList>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-6">Xbox 4 - Personalização</h1>
+      <p className="text-lg text-gray-300 mb-8">Gerencie o conteúdo exclusivo da página /xbox4.</p>
 
-          <TabsContent value="consoles">
-            <Xbox4FeaturedProductsManager
-              initialConfig={consolesConfig}
-              onSave={(config) => handleSaveSection('xbox4_consoles', config)}
-              sectionTitle="CONSOLES XBOX"
-              defaultTags={['xbox', 'console']}
-            />
-          </TabsContent>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5 bg-gray-800 border-gray-700">
+          <TabsTrigger value="consoles">CONSOLES XBOX</TabsTrigger>
+          <TabsTrigger value="games">JOGOS EM ALTA</TabsTrigger>
+          <TabsTrigger value="accessories">ACESSÓRIOS XBOX</TabsTrigger>
+          <TabsTrigger value="offers">OFERTAS IMPERDÍVEIS</TabsTrigger>
+          <TabsTrigger value="news">NOTÍCIAS & TRAILERS</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="games">
-            <Xbox4FeaturedProductsManager
-              initialConfig={gamesConfig}
-              onSave={(config) => handleSaveSection('xbox4_games', config)}
-              sectionTitle="JOGOS EM ALTA"
-              defaultTags={['xbox', 'game']}
-            />
-          </TabsContent>
+        <TabsContent value="consoles">
+          <Xbox4FeaturedProductsManager
+            initialConfig={consolesConfig}
+            onSave={(config) => handleSaveSection('xbox4_consoles', config)}
+            sectionTitle="CONSOLES XBOX"
+            defaultTags={['xbox', 'console']}
+          />
+        </TabsContent>
 
-          <TabsContent value="accessories">
-            <Xbox4FeaturedProductsManager
-              initialConfig={accessoriesConfig}
-              onSave={(config) => handleSaveSection('xbox4_accessories', config)}
-              sectionTitle="ACESSÓRIOS XBOX"
-              defaultTags={['xbox', 'accessory']}
-            />
-          </TabsContent>
+        <TabsContent value="games">
+          <Xbox4FeaturedProductsManager
+            initialConfig={gamesConfig}
+            onSave={(config) => handleSaveSection('xbox4_games', config)}
+            sectionTitle="JOGOS EM ALTA"
+            defaultTags={['xbox', 'game']}
+          />
+        </TabsContent>
 
-          <TabsContent value="offers">
-            <Xbox4FeaturedProductsManager
-              initialConfig={offersConfig}
-              onSave={(config) => handleSaveSection('xbox4_deals', config)}
-              sectionTitle="OFERTAS IMPERDÍVEIS"
-              defaultTags={['xbox', 'offer']}
-            />
-          </TabsContent>
+        <TabsContent value="accessories">
+          <Xbox4FeaturedProductsManager
+            initialConfig={accessoriesConfig}
+            onSave={(config) => handleSaveSection('xbox4_accessories', config)}
+            sectionTitle="ACESSÓRIOS XBOX"
+            defaultTags={['xbox', 'accessory']}
+          />
+        </TabsContent>
 
-          <TabsContent value="news">
-            <Card className="bg-[#343A40] border-[#495057]">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Newspaper className="w-5 h-5 text-[#107C10]" />
-                  Gerenciar Notícias e Trailers
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-300 mb-4">
-                  Aqui você poderá escolher ou cadastrar as notícias e trailers que aparecem na seção de notícias da página /xbox4.
-                </p>
-                <Alert className="bg-[#1A1A2E] border-[#343A40] text-gray-300">
-                  <Settings className="h-4 w-4 text-[#FFC107]" />
-                  <AlertDescription>
-                    Esta funcionalidade será implementada em breve.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+        <TabsContent value="offers">
+          <Xbox4FeaturedProductsManager
+            initialConfig={offersConfig}
+            onSave={(config) => handleSaveSection('xbox4_deals', config)}
+            sectionTitle="OFERTAS IMPERDÍVEIS"
+            defaultTags={['xbox', 'offer']}
+          />
+        </TabsContent>
+
+        <TabsContent value="news">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerenciar Notícias e Trailers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Aqui você poderá escolher ou cadastrar as notícias e trailers que aparecem na seção de notícias da página /xbox4.</p>
+              <p className="text-gray-400 mt-4">Esta funcionalidade será implementada em breve.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

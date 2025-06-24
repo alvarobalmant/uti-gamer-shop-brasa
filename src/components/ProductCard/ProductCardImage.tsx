@@ -37,9 +37,13 @@ const ProductCardImage: React.FC<ProductCardImageProps> = React.memo(({ product,
         src={product.image || '/placeholder-image.webp'}
         alt={product.name}
         className={cn(
+<<<<<<< HEAD
           "h-full w-full object-contain p-2 transition-transform duration-300 ease-in-out",
           imageLoaded ? "opacity-100" : "opacity-0",
           isHovered ? "scale-105" : "scale-100"
+=======
+          "h-full w-full object-contain transition-transform duration-300 ease-in-out p-2"
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
         )}
         loading="lazy"
         decoding="async"

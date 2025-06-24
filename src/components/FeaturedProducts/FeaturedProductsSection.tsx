@@ -1,7 +1,7 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
@@ -31,9 +31,6 @@ const FeaturedProductsSection = ({
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const [animateProducts, setAnimateProducts] = useState(true);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // State for managing the product modal (only if onCardClick is not provided)
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,42 +50,13 @@ const FeaturedProductsSection = ({
     }
   };
 
-  // Check scroll position and update button states
-  const checkScrollButtons = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-    }
-  };
-
-  // Scroll functions
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      const containerWidth = scrollContainerRef.current.clientWidth;
-      scrollContainerRef.current.scrollBy({
-        left: -containerWidth,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      const containerWidth = scrollContainerRef.current.clientWidth;
-      scrollContainerRef.current.scrollBy({
-        left: containerWidth,
-        behavior: 'smooth'
-      });
-    }
-  };
-
   useEffect(() => {
     setAnimateProducts(false);
     const timer = setTimeout(() => setAnimateProducts(true), 50);
     return () => clearTimeout(timer);
   }, [products]);
 
+<<<<<<< HEAD
   // Check scroll buttons when products change or component mounts
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -108,6 +76,8 @@ const FeaturedProductsSection = ({
     }
   }, [products]);
 
+=======
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
   if (loading) {
     // Render loading state if needed
     return (
@@ -144,37 +114,10 @@ const FeaturedProductsSection = ({
             Nenhum produto encontrado nesta categoria.
           </div>
         ) : (
-          <div className="relative group">
-            {/* Left Navigation Button */}
-            {canScrollLeft && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
-                onClick={scrollLeft}
-                aria-label="Produtos anteriores"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-            )}
-
-            {/* Right Navigation Button */}
-            {canScrollRight && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
-                onClick={scrollRight}
-                aria-label="Próximos produtos"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            )}
-
+          <div className="relative">
             <div
-              ref={scrollContainerRef}
               className={cn(
-                "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2", // Restored overflow-x-auto for scrolling
+                "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2", // Added pt-2 for top padding
                 "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
                 "overscroll-behavior-x-contain"
               )}
@@ -185,6 +128,7 @@ const FeaturedProductsSection = ({
                 touchAction: "pan-x pan-y"
               } as React.CSSProperties}
             >
+<<<<<<< HEAD
               <div 
                 className="flex gap-3 min-w-max px-1 py-1"
                 style={{
@@ -194,19 +138,21 @@ const FeaturedProductsSection = ({
                 }}
               >
                 {products.map((product, index) => (
+=======
+              <div className="flex gap-3 min-w-max px-1 py-1"> {/* Added py-1 for vertical padding */}
+                {displayedProducts.map((product, index) => (
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
                   <div
                     key={product.id}
                     className={cn(
-                      "flex-shrink-0",
+                      "w-[200px] flex-shrink-0", // GameStop card width
                       "transition-all duration-300 ease-in-out",
                       animateProducts
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4"
                     )}
                     style={{
-                      transitionDelay: animateProducts ? `${index * 75}ms` : "0ms",
-                      width: "200px", // Fixed width for consistent card sizing
-                      flexShrink: 0 // Prevent cards from shrinking
+                      transitionDelay: animateProducts ? `${index * 75}ms` : '0ms'
                     }}
                   >
                     <ProductCard

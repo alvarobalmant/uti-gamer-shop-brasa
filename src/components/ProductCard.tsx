@@ -44,6 +44,10 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
         "rounded-lg",
         "shadow-none",
         "transition-all duration-200 ease-in-out",
+<<<<<<< HEAD
+=======
+        "hover:shadow-md hover:-translate-y-1",
+>>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
         "cursor-pointer",
         "w-[200px] h-[320px]",
         "p-0",

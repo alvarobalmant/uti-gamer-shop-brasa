@@ -407,6 +407,10 @@ export type Database = {
           created_at: string | null
           id: string
           title: string
+          title_color1: string | null
+          title_color2: string | null
+          title_part1: string | null
+          title_part2: string | null
           updated_at: string | null
           view_all_link: string | null
         }
@@ -414,6 +418,10 @@ export type Database = {
           created_at?: string | null
           id?: string
           title: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
           view_all_link?: string | null
         }
@@ -421,6 +429,10 @@ export type Database = {
           created_at?: string | null
           id?: string
           title?: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
           view_all_link?: string | null
         }
@@ -592,6 +604,48 @@ export type Database = {
           name?: string | null
           pro_expires_at?: string | null
           role?: string
+        }
+        Relationships: []
+      }
+      promotional_ribbon_config: {
+        Row: {
+          background_color: string | null
+          background_type: string | null
+          created_at: string | null
+          device_type: string
+          gradient_colors: string | null
+          id: string
+          is_active: boolean | null
+          link_url: string | null
+          text: string
+          text_color: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          background_type?: string | null
+          created_at?: string | null
+          device_type: string
+          gradient_colors?: string | null
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          text?: string
+          text_color?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          background_type?: string | null
+          created_at?: string | null
+          device_type?: string
+          gradient_colors?: string | null
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          text?: string
+          text_color?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -837,6 +891,10 @@ export type Database = {
           padding_right: number | null
           padding_top: number | null
           title: string
+          title_color1: string | null
+          title_color2: string | null
+          title_part1: string | null
+          title_part2: string | null
           updated_at: string | null
         }
         Insert: {
@@ -862,6 +920,10 @@ export type Database = {
           padding_right?: number | null
           padding_top?: number | null
           title: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -887,6 +949,10 @@ export type Database = {
           padding_right?: number | null
           padding_top?: number | null
           title?: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
         }
         Relationships: []
