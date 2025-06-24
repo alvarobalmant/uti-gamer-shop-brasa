@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -61,6 +57,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
         "w-full max-w-[140px] sm:max-w-[160px] md:max-w-none",
         // Centralizando no mobile e adicionando margin para animações
         "mx-auto my-4 md:my-0",
+        "flex flex-col", // Make the main card a flex column
         className
       )}
       onClick={() => onProductClick(product.id)}
@@ -74,45 +71,45 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       <ProductCardBadges product={product} variant={variant} />
       
       {/* Imagem do produto */}
-      <div className="mb-1 md:mb-4 flex-1">
+      <div className="mb-1 md:mb-4 flex-1 flex items-center justify-center"> {/* flex-1 to take available space */} 
         <ProductCardImage 
           product={product} 
           variant={variant}
         />
       </div>
       
-      {/* Informações do produto - layout mais compacto no mobile */}
-      <div className="space-y-0.5 md:space-y-3 flex-shrink-0">
-        <ProductCardInfo 
-          product={product} 
-          variant={variant}
-          className="text-xs md:text-base"
-        />
-        
-        {/* Preço com altura mínima reduzida no mobile */}
-        <div className="min-h-[16px] md:min-h-[30px]">
-          <ProductCardPrice 
+      {/* Informações do produto, preço e ações - this block will be at the bottom */}
+      <div className="flex flex-col justify-between flex-shrink-0"> {/* This container will hold the info, price, and actions */} 
+        {/* Product Info (Title) */}
+        <div className="min-h-[48px] flex items-start"> {/* Set min-height for title block, flex items-start to align text to top */} 
+          <ProductCardInfo 
             product={product} 
             variant={variant}
             className="text-xs md:text-base"
           />
         </div>
-        
-        <ProductCardActions 
-          product={product} 
-          onAddToCart={onAddToCart}
-          onProductClick={onProductClick}
-          variant={variant}
-          className="text-xs md:text-sm"
-        />
+
+        {/* Price and Actions - these will be pushed to the bottom of their parent flex container */}
+        <div className="mt-auto space-y-0.5 md:space-y-3"> {/* mt-auto pushes this block to the bottom */} 
+          <ProductCardPrice 
+            product={product} 
+            variant={variant}
+            className="text-xs md:text-base"
+          />
+          
+          <ProductCardActions 
+            product={product} 
+            onAddToCart={onAddToCart}
+            onProductClick={onProductClick}
+            variant={variant}
+            className="text-xs md:text-sm"
+          />
+        </div>
       </div>
     </motion.div>
   );
 };
 
 export default ProductCard;
-<<<<<<< HEAD
 
 
-=======
->>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb

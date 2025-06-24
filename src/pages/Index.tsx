@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo, Suspense, lazy } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
@@ -13,12 +12,6 @@ import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
 import ProductModal from '@/components/ProductModal';
 import { Product } from '@/hooks/useProducts';
-import HeroBannerCarousel from '@/components/HeroBannerCarousel';
-import HeroQuickLinks from '@/components/HeroQuickLinks';
-import PromotionalBanner from '@/components/PromotionalBanner';
-import SpecializedServices from '@/components/ServiceCards/SpecializedServices';
-import WhyChooseUs from '@/components/ServiceCards/WhyChooseUs';
-import ContactHelp from '@/components/ServiceCards/ContactHelp';
 
 // Lazy load AdminPanel para reduzir bundle inicial
 const AdminPanel = lazy(() => import('./Admin'));
@@ -127,84 +120,6 @@ const Index = React.memo(() => {
     return false;
   }, [isSpecialSectionWithoutBackground]);
 
-  const renderSection = useCallback((sectionKey: string, index: number) => {
-    const reduceSpacing = shouldReduceSpacing(index, visibleLayoutItems);
-
-    switch (sectionKey) {
-      case 'hero_banner':
-        return <HeroBannerCarousel key="hero_banner" />;
-      
-      case 'hero_quick_links':
-        return <HeroQuickLinks key="hero_quick_links" />;
-
-      case 'promo_banner':
-        return (
-          <div key="promo_banner" className="container mx-auto px-4 sm:px-6 lg:px-8 my-8 md:my-12">
-            <PromotionalBanner {...bannerData} />
-          </div>
-        );
-      
-      case 'specialized_services':
-        return <SpecializedServices key="specialized_services" />;
-      case 'why_choose_us':
-        return <WhyChooseUs key="why_choose_us" />;
-      case 'contact_help':
-        return <ContactHelp key="contact_help" />;
-      
-      default:
-        // Handle special sections
-        if (sectionKey.startsWith('special_section_')) {
-          const specialSectionData = findSpecialSection(sectionKey);
-          if (specialSectionData && !specialSectionsLoading) {
-            return (
-              <SpecialSectionRenderer 
-                key={sectionKey} 
-                section={specialSectionData} 
-                onProductCardClick={handleProductCardClick}
-                reduceTopSpacing={reduceSpacing}
-              />
-            );
-          } else if (specialSectionsLoading) {
-            return <div key={sectionKey} className="text-center py-10 text-gray-400">Carregando seção especial...</div>;
-          } else {
-            console.warn(`Special section data not found for key: ${sectionKey}`);
-            return null;
-          }
-        }
-
-        // Handle product sections
-        if (sectionKey.startsWith('product_section_')) {
-          const sectionId = sectionKey.replace('product_section_', '');
-          const section = sections.find(s => s.id === sectionId);
-          
-          if (!section) {
-            console.warn(`Product section not found for key: ${sectionKey}`);
-            return null;
-          }
-          
-          return (
-            <div key={sectionKey} className="container mx-auto px-4 sm:px-6 lg:px-8 my-8 md:my-12">
-              <SectionRenderer
-                section={section}
-                onProductCardClick={handleProductCardClick}
-              />
-            </div>
-          );
-        }
-        
-        return null;
-    }
-  }, [
-    visibleLayoutItems, 
-    shouldReduceSpacing, 
-    bannerData, 
-    sections, 
-    specialSections, 
-    specialSectionsLoading, 
-    findSpecialSection, 
-    handleProductCardClick
-  ]);
-
   return (
     <div className="min-h-screen bg-background w-full overflow-x-hidden flex flex-col">
       <ProfessionalHeader
@@ -219,7 +134,43 @@ const Index = React.memo(() => {
           <ErrorState onRetry={handleRetryProducts} />
         ) : (
           visibleLayoutItems
-            .map((item, index) => renderSection(item.section_key, index))
+            .map((item, index) => {
+              const sectionKey = item.section_key;
+              const reduceSpacing = shouldReduceSpacing(index, visibleLayoutItems);
+
+              if (sectionKey.startsWith('special_section_')) {
+                const specialSectionData = findSpecialSection(sectionKey);
+                if (specialSectionData && !specialSectionsLoading) {
+                  return (
+                    <SpecialSectionRenderer 
+                      key={sectionKey} 
+                      section={specialSectionData} 
+                      onProductCardClick={handleProductCardClick}
+                      reduceTopSpacing={reduceSpacing}
+                    />
+                  );
+                } else if (specialSectionsLoading) {
+                  return <div key={sectionKey} className="text-center py-10 text-gray-400">Carregando seção especial...</div>;
+                } else {
+                  console.warn(`Special section data not found for key: ${sectionKey}`);
+                  return null;
+                }
+              }
+              
+              return (
+                <SectionRenderer
+                  key={sectionKey}
+                  sectionKey={sectionKey}
+                  bannerData={bannerData}
+                  products={products}
+                  sections={sections}
+                  productsLoading={productsLoading}
+                  sectionsLoading={sectionsLoading}
+                  onAddToCart={handleAddToCart}
+                  reduceTopSpacing={reduceSpacing}
+                />
+              );
+            })
             .filter(Boolean)
         )}
       </main>

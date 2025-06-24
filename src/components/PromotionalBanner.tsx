@@ -29,8 +29,7 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
       "rounded-lg overflow-hidden shadow-lg my-6 md:my-8", // Margin top/bottom
       backgroundColor
     )}>
-      {/* Desktop layout - Text on left, Image on right */}
-      {/* Reduced vertical padding and adjusted image width/aspect for a more compact banner */}
+      {/* Desktop layout - Text on left, No Image */}
       <div className="hidden md:flex flex-row items-center">
         {/* Text Content Area */}
         <div className={cn(
@@ -63,20 +62,6 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
             </Button>
           </a>
         </div>
-        
-        {/* Image Area - Adjusted width and aspect ratio for compactness */}
-        <div className="w-1/3 flex-shrink-0 h-auto aspect-[16/9]"> {/* Changed width to 1/3 and aspect to 16/9 */}
-          <img 
-            src={imageUrl || "/placeholder-banner.webp"} 
-            alt={title} 
-            onError={e => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "/placeholder-banner-error.webp";
-            }} 
-            loading="lazy" 
-            className="w-full h-full object-cover" 
-          />
-        </div>
       </div>
       
       {/* Mobile layout - Remains unchanged */}
@@ -108,7 +93,6 @@ const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
             </Button>
           </a>
         </div>
-        {/* No image area for mobile, leaving space implicitly to the right */}
       </div>
     </div>
   );

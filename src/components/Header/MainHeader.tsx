@@ -5,6 +5,7 @@ import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActions from './HeaderActions';
 import MobileSearchBar from './MobileSearchBar';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Menu, Search } from 'lucide-react';
 
