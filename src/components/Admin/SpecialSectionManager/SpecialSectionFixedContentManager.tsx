@@ -47,6 +47,7 @@ const bannerRowSchema = z.object({
   row_id: z.string().uuid().optional(),
   layout: z.enum(['1_col_full', '2_col_half', '3_col_third', '4_col_quarter']),
   banners: z.array(bannerSchema),
+  margin_included_in_banner: z.boolean().optional().default(false),
 });
 
 // Define the structure of the fixed content configuration with dynamic banner rows
@@ -492,6 +493,34 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
                       </div>
                     </div>
                   </CardHeader>
+                  
+                  {/* Checkbox para Margem Inclusa no Banner */}
+                  <div className="px-6 pb-4">
+                    <div className="flex items-center space-x-2">
+                      <Controller
+                        name={`banner_rows.${rowIndex}.margin_included_in_banner`}
+                        control={control}
+                        render={({ field }) => (
+                          <Checkbox
+                            id={`margin-${rowIndex}`}
+                            checked={field.value || false}
+                            onCheckedChange={field.onChange}
+                            className="border-[#6C757D] data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                          />
+                        )}
+                      />
+                      <Label 
+                        htmlFor={`margin-${rowIndex}`}
+                        className="text-sm text-gray-300 cursor-pointer"
+                      >
+                        Considerar que a margem da seção já está inclusa no banner
+                      </Label>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1 ml-6">
+                      Quando marcado, o banner se estende até as bordas horizontais da seção especial
+                    </p>
+                  </div>
+                  
                   <CardContent>
                     <div className={`grid gap-4 ${
                       row.layout === '1_col_full' ? 'grid-cols-1' :

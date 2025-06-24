@@ -25,6 +25,7 @@ interface SectionRendererProps {
   productsLoading: boolean;
   sectionsLoading: boolean;
   onAddToCart: (product: any, size?: string, color?: string) => void;
+  reduceTopSpacing?: boolean;
 }
 
 const SectionRenderer: React.FC<SectionRendererProps> = ({
@@ -34,7 +35,8 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({
   sections,
   productsLoading,
   sectionsLoading,
-  onAddToCart
+  onAddToCart,
+  reduceTopSpacing = false
 }) => {
   const renderSection = () => {
     switch (sectionKey) {
@@ -103,6 +105,7 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({
               onAddToCart={onAddToCart}
               title={section.title}
               viewAllLink={section.view_all_link || undefined}
+              reduceTopSpacing={reduceTopSpacing}
             />
           );
         }

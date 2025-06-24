@@ -63,7 +63,14 @@ const ProductSectionManager: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSection, setCurrentSection] = useState<ProductSection | null>(null);
-  const [formData, setFormData] = useState<Omit<ProductSectionInput, 'items'>>({ title: '', view_all_link: '' });
+  const [formData, setFormData] = useState<Omit<ProductSectionInput, 'items'>>({ 
+    title: '', 
+    titlePart1: '',
+    titlePart2: '',
+    titleColor1: '#000000',
+    titleColor2: '#9ca3af',
+    view_all_link: '' 
+  });
   const [selectedItems, setSelectedItems] = useState<{ type: SectionItemType; id: string }[]>([]);
   const [itemTypeToAdd, setItemTypeToAdd] = useState<SectionItemType>('product'); // 'product' or 'tag'
 
@@ -71,7 +78,14 @@ const ProductSectionManager: React.FC = () => {
 
   const handleEditClick = (section: ProductSection) => {
     setCurrentSection(section);
-    setFormData({ title: section.title, view_all_link: section.view_all_link || '' });
+    setFormData({ 
+      title: section.title, 
+      titlePart1: section.titlePart1 || '',
+      titlePart2: section.titlePart2 || '',
+      titleColor1: section.titleColor1 || '#000000',
+      titleColor2: section.titleColor2 || '#9ca3af',
+      view_all_link: section.view_all_link || '' 
+    });
     setSelectedItems(section.items?.map(item => ({ type: item.item_type, id: item.item_id })) || []);
     // Determine initial item type based on first item, if any
     setItemTypeToAdd(section.items?.[0]?.item_type || 'product'); 
@@ -80,7 +94,14 @@ const ProductSectionManager: React.FC = () => {
 
   const handleAddNewClick = () => {
     setCurrentSection(null);
-    setFormData({ title: '', view_all_link: '' });
+    setFormData({ 
+      title: '', 
+      titlePart1: '',
+      titlePart2: '',
+      titleColor1: '#000000',
+      titleColor2: '#9ca3af',
+      view_all_link: '' 
+    });
     setSelectedItems([]);
     setItemTypeToAdd('product');
     setIsModalOpen(true);
@@ -96,10 +117,21 @@ const ProductSectionManager: React.FC = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title) {
-      toast({ title: 'Erro', description: 'O título da seção é obrigatório.', variant: 'destructive' });
+    
+    // Validação: deve ter título simples OU pelo menos uma parte do título bicolor
+    const hasSimpleTitle = formData.title && formData.title.trim() !== '';
+    const hasBicolorTitle = (formData.titlePart1 && formData.titlePart1.trim() !== '') || 
+                           (formData.titlePart2 && formData.titlePart2.trim() !== '');
+    
+    if (!hasSimpleTitle && !hasBicolorTitle) {
+      toast({ 
+        title: 'Erro', 
+        description: 'É obrigatório ter um título simples OU pelo menos uma parte do título bicolor.', 
+        variant: 'destructive' 
+      });
       return;
     }
+    
     if (selectedItems.length === 0) {
         toast({ title: 'Erro', description: 'Adicione pelo menos um produto ou tag à seção.', variant: 'destructive' });
         return;
@@ -107,7 +139,11 @@ const ProductSectionManager: React.FC = () => {
 
     const sectionInput: ProductSectionInput = {
       id: currentSection?.id,
-      title: formData.title,
+      title: formData.title || '', // Pode ser vazio se usar título bicolor
+      titlePart1: formData.titlePart1,
+      titlePart2: formData.titlePart2,
+      titleColor1: formData.titleColor1,
+      titleColor2: formData.titleColor2,
       view_all_link: formData.view_all_link || null,
       items: selectedItems,
     };
@@ -257,20 +293,77 @@ const ProductSectionManager: React.FC = () => {
           </DialogHeader>
           <form onSubmit={handleFormSubmit}>
             <div className="grid gap-6 py-4">
-              {/* Title */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="title" className="text-right text-gray-300">
-                  Título*
-                </Label>
-                <Input 
-                  id="title" 
-                  name="title" 
-                  value={formData.title} 
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))} 
-                  className="col-span-3 bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500" 
-                  required 
-                />
+              {/* Title Configuration */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-blue-300 flex items-center gap-2">
+                  <Layers className="h-5 w-5" />
+                  Configurações de Título
+                </h3>
+                
+                {/* Simple Title */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="title" className="text-right text-gray-300">
+                    Título Simples
+                  </Label>
+                  <Input 
+                    id="title" 
+                    name="title" 
+                    value={formData.title} 
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))} 
+                    className="col-span-3 bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500" 
+                    placeholder="Digite o título (ou deixe vazio para usar título bicolor)"
+                  />
+                </div>
+
+                {/* Bicolor Title Part 1 */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="titlePart1" className="text-right text-green-400">
+                    Título Parte 1
+                  </Label>
+                  <div className="col-span-3 flex gap-2">
+                    <Input 
+                      id="titlePart1" 
+                      name="titlePart1" 
+                      value={formData.titlePart1 || ''} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, titlePart1: e.target.value }))} 
+                      className="flex-1 bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500" 
+                      placeholder="ex: Most Popular"
+                    />
+                    <input
+                      type="color"
+                      value={formData.titleColor1 || '#000000'}
+                      onChange={(e) => setFormData(prev => ({ ...prev, titleColor1: e.target.value }))}
+                      className="w-12 h-10 rounded border border-[#343A40] bg-[#1A1A2E] cursor-pointer"
+                      title="Cor da primeira parte"
+                    />
+                  </div>
+                </div>
+
+                {/* Bicolor Title Part 2 */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="titlePart2" className="text-right text-purple-400">
+                    Título Parte 2
+                  </Label>
+                  <div className="col-span-3 flex gap-2">
+                    <Input 
+                      id="titlePart2" 
+                      name="titlePart2" 
+                      value={formData.titlePart2 || ''} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, titlePart2: e.target.value }))} 
+                      className="flex-1 bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500" 
+                      placeholder="ex: Trading Cards"
+                    />
+                    <input
+                      type="color"
+                      value={formData.titleColor2 || '#9ca3af'}
+                      onChange={(e) => setFormData(prev => ({ ...prev, titleColor2: e.target.value }))}
+                      className="w-12 h-10 rounded border border-[#343A40] bg-[#1A1A2E] cursor-pointer"
+                      title="Cor da segunda parte"
+                    />
+                  </div>
+                </div>
               </div>
+
               {/* View All Link */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="viewAllLink" className="text-right text-gray-300 flex items-center">

@@ -1,18 +1,24 @@
 import React from 'react';
-import { SpecialSection, BannerRowConfig } from '@/types/specialSections';
+import { SpecialSection, BannerRowConfig, CarouselRowConfig } from '@/types/specialSections';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import ProductCard from '@/components/ProductCard';
+import SpecialCarouselRow from './SpecialCarouselRow';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SpecialSectionRendererProps {
   section: SpecialSection;
   onProductCardClick: (productId: string) => void;
+  reduceTopSpacing?: boolean;
 }
 
-const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section, onProductCardClick }) => {
+const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo(({ 
+  section, 
+  onProductCardClick,
+  reduceTopSpacing = false 
+}) => {
   const { products, loading: productsLoading } = useProducts();
   const { addToCart } = useCart();
   const isMobile = useIsMobile();
@@ -31,6 +37,19 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
   }
 
   const config = section.content_config as any;
+  
+  // Log detalhado da ordem dos elementos (apenas em desenvolvimento)
+  if (process.env.NODE_ENV === 'development' && config.banner_rows && Array.isArray(config.banner_rows)) {
+    console.log(`[SpecialSectionRenderer] Section "${section.title}" banner_rows order:`,
+      config.banner_rows.map((row: any, index: number) => ({
+        index,
+        type: row.type,
+        layout: row.layout,
+        title: row.title,
+        row_id: row.row_id
+      }))
+    );
+  }
 
   const getProductsByIds = (ids: string[] = []): Product[] => {
     if (!ids || ids.length === 0) return [];
@@ -38,8 +57,50 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
     return products.filter(product => product && ids.includes(product.id));
   };
 
-  // --- Carousel Rendering Logic ---
-  const renderCarousel = (carouselConfig: any, carouselKey: string) => {
+  // --- New Carousel Row Rendering Logic ---
+  const renderCarouselRow = (carouselRowConfig: CarouselRowConfig, rowIndex: number) => {
+    if (!carouselRowConfig) return null;
+
+    const productIds = carouselRowConfig.product_ids || [];
+    const carouselProducts = getProductsByIds(productIds);
+
+    // Transform products to match SpecialCarouselRow expected format
+    const transformedProducts = carouselProducts.map(product => ({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.list_price,
+      image: product.image || '/placeholder-product.png',
+      platform: product.platform,
+      isOnSale: product.is_on_sale,
+      discount: product.discount_percentage
+    }));
+
+    const carouselConfig = {
+      title: carouselRowConfig.title,
+      products: transformedProducts,
+      showTitle: carouselRowConfig.showTitle !== false, // Default to true
+      titleAlignment: carouselRowConfig.titleAlignment || 'left'
+    };
+
+    return (
+      <div key={carouselRowConfig.row_id || `carousel-${rowIndex}`} className="mb-6 md:mb-8">
+        <SpecialCarouselRow
+          config={carouselConfig}
+          sectionBackgroundColor={section.background_value || '#f3f4f6'} // Passa cor de fundo da seção
+          onCardClick={onProductCardClick}
+          onAddToCart={(productId) => {
+            const product = products?.find(p => p.id === productId);
+            if (product) {
+              addToCart(product);
+            }
+          }}
+        />
+      </div>
+    );
+  };
+  // --- Legacy Carousel Rendering Logic (for backward compatibility) ---
+  const renderLegacyCarousel = (carouselConfig: any, carouselKey: string) => {
     if (!carouselConfig?.title) return null;
 
     const productIds = carouselConfig.product_ids || [];
@@ -78,7 +139,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
       </div>
     );
   };
-  // --- End Carousel Rendering Logic ---
+  // --- End Legacy Carousel Rendering Logic ---
 
   // Determine background style
   const layoutSettings = config.layout_settings || { 
@@ -124,107 +185,137 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = ({ section
     return null;
   }
 
+  // Determinar classes de espaçamento baseado no contexto da seção
+  const getSpacingClasses = () => {
+    const hasBackground = layoutSettings.show_background;
+    
+    if (reduceTopSpacing && !hasBackground) {
+      // Seção especial sem fundo com espaçamento reduzido (usado em contextos específicos)
+      return "py-2 md:py-3 my-1 md:my-2";
+    } else if (hasBackground) {
+      // Seções especiais com fundo precisam de mais espaço para destaque visual
+      return "py-6 md:py-8 my-4 md:my-6";
+    } else {
+      // Seções especiais sem fundo devem ter espaçamento reduzido para melhor integração no fluxo
+      return "py-3 md:py-4 my-2 md:my-3";
+    }
+  };
+
   return (
     <section aria-label={section.title} className="w-full">
       <div 
         style={sectionStyle} 
-        className={`container max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 ${layoutSettings.show_background ? 'rounded-lg' : ''} my-4 md:my-6 overflow-hidden`}
+        className={`container mx-auto px-4 sm:px-6 lg:px-8 ${getSpacingClasses()} ${layoutSettings.show_background ? 'rounded-lg' : ''} overflow-hidden`}
       >
-        {/* Dynamic Banner Rows */}
-        {config.banner_rows && config.banner_rows.map((row: BannerRowConfig, rowIndex: number) => {
-          let gridClass = '';
-          let customStyle: React.CSSProperties = {};
-
-          if (row.layout === 'custom' && row.custom_sizes) {
-            // Para layout customizado, usar flexbox com larguras e alturas específicas
-            // Sempre centralizar horizontalmente
-            return (
-              <div key={row.row_id || rowIndex} className="flex justify-center items-start gap-3 md:gap-4 mb-4 md:mb-6">
-                {row.banners.map((banner, bannerIndex) => (
-                  <div 
-                    key={bannerIndex} 
-                    className="relative overflow-hidden rounded-md group"
-                    style={{ 
-                      width: `${row.custom_sizes?.[bannerIndex]?.width || 'auto'}${row.custom_sizes?.[bannerIndex]?.widthUnit || ''}`,
-                      height: row.custom_sizes?.[bannerIndex]?.height || 'auto'
-                    }}
-                  >
-                    {banner.image_url && (
-                      <Link to={banner.link_url || '#'}>
-                        <img 
-                          src={banner.image_url} 
-                          alt={banner.title || `Banner ${rowIndex + 1}-${bannerIndex + 1}`} 
-                          className={`w-full h-full object-cover ${!isMobile && banner.enable_hover_animation ? 'transition-transform duration-300 group-hover:scale-105' : ''}`}
-                          onError={(e) => (e.currentTarget.src = '/placeholder-banner.png')}
-                        />
-                        {(banner.title || banner.subtitle) && (
-                          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
-                            {banner.title && <h3 className="text-md font-semibold text-white mb-0.5">{banner.title}</h3>}
-                            {banner.subtitle && <p className="text-xs text-gray-100">{banner.subtitle}</p>}
-                          </div>
-                        )}
-                      </Link>
-                    )}
-                  </div>
-                ))}
-              </div>
-            );
-          } else {
-            // Para layouts pré-definidos, usar grid
-            switch (row.layout) {
-              case '1_col_full':
-                gridClass = 'grid-cols-1';
-                break;
-              case '2_col_half':
-                gridClass = 'grid-cols-1 md:grid-cols-2';
-                break;
-              case '3_col_third':
-                gridClass = 'grid-cols-1 md:grid-cols-3';
-                break;
-              case '4_col_quarter':
-                gridClass = 'grid-cols-1 md:grid-cols-4';
-                break;
-              default:
-                gridClass = 'grid-cols-1';
-            }
-
-            return (
-              <div key={row.row_id || rowIndex} className={`grid ${gridClass} gap-3 md:gap-4 mb-4 md:mb-6`}>
-                {row.banners.map((banner, bannerIndex) => (
-                  <div key={bannerIndex} className="relative overflow-hidden rounded-md group">
-                    {banner.image_url && (
-                      <Link to={banner.link_url || '#'}>
-                        <img 
-                          src={banner.image_url} 
-                        alt={banner.title || `Banner ${rowIndex + 1}-${bannerIndex + 1}`} 
-                        className={`w-full h-auto object-cover ${!isMobile && banner.enable_hover_animation ? 'transition-transform duration-300 group-hover:scale-105' : ''}`}
-                        onError={(e) => (e.currentTarget.src = '/placeholder-banner.png')}
-                      />
-                      {(banner.title || banner.subtitle) && (
-                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
-                          {banner.title && <h3 className="text-md font-semibold text-white mb-0.5">{banner.title}</h3>}
-                          {banner.subtitle && <p className="text-xs text-gray-100">{banner.subtitle}</p>}
-                        </div>
+        {/* Dynamic Banner Rows and Carousel Rows (Unified System) */}
+        {/* Suporte para ambos os formatos: config.rows (novo) e config.banner_rows (existente) */}
+        {(config.rows || config.banner_rows || []).map((row: any, rowIndex: number) => {
+          if (row.type === 'carousel') {
+            // Render carousel row from unified system
+            return renderCarouselRow(row, rowIndex);
+          } else if (row.type === 'banner' || !row.type) {
+            // Render banner row from unified system (inclui elementos sem type definido)
+            let gridClass = '';
+            
+            if (row.layout === 'custom' && row.custom_sizes) {
+              // Determinar se deve aplicar margem negativa para estender até as bordas
+              const shouldExtendToBorders = row.margin_included_in_banner;
+              const containerClass = shouldExtendToBorders 
+                ? "flex justify-center items-start gap-3 md:gap-4 mb-4 md:mb-6 -mx-4 sm:-mx-6 lg:-mx-8" 
+                : "flex justify-center items-start gap-3 md:gap-4 mb-4 md:mb-6";
+              
+              return (
+                <div key={row.row_id || rowIndex} className={containerClass}>
+                  {row.banners.map((banner: any, bannerIndex: number) => (
+                    <div 
+                      key={bannerIndex} 
+                      className="relative overflow-hidden rounded-md group"
+                      style={{ 
+                        width: `${row.custom_sizes?.[bannerIndex]?.width || 'auto'}${row.custom_sizes?.[bannerIndex]?.widthUnit || ''}`,
+                        height: row.custom_sizes?.[bannerIndex]?.height || 'auto'
+                      }}
+                    >
+                      {banner.image_url && (
+                        <Link to={banner.link_url || '#'}>
+                          <img 
+                            src={banner.image_url} 
+                            alt={banner.title || `Banner ${rowIndex + 1}-${bannerIndex + 1}`} 
+                            className={`w-full h-full object-cover ${!isMobile && banner.enable_hover_animation ? 'transition-transform duration-300' : ''}`}
+                            onError={(e) => (e.currentTarget.src = '/placeholder-banner.png')}
+                          />
+                          {(banner.title || banner.subtitle) && (
+                            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
+                              {banner.title && <h3 className="text-md font-semibold text-white mb-0.5">{banner.title}</h3>}
+                              {banner.subtitle && <p className="text-xs text-gray-100">{banner.subtitle}</p>}
+                            </div>
+                          )}
+                        </Link>
                       )}
-                    </Link>
-                  )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            );
+              );
+            } else {
+              // Determinar se deve aplicar margem negativa para estender até as bordas
+              const shouldExtendToBorders = row.margin_included_in_banner;
+              
+              switch (row.layout) {
+                case '1_col_full':
+                  gridClass = 'grid-cols-1';
+                  break;
+                case '2_col_half':
+                  gridClass = 'grid-cols-1 md:grid-cols-2';
+                  break;
+                case '3_col_third':
+                  gridClass = 'grid-cols-1 md:grid-cols-3';
+                  break;
+                case '4_col_quarter':
+                  gridClass = 'grid-cols-1 md:grid-cols-4';
+                  break;
+                default:
+                  gridClass = 'grid-cols-1';
+              }
+
+              const containerClass = shouldExtendToBorders 
+                ? `grid ${gridClass} gap-3 md:gap-4 mb-4 md:mb-6 -mx-4 sm:-mx-6 lg:-mx-8`
+                : `grid ${gridClass} gap-3 md:gap-4 mb-4 md:mb-6`;
+
+              return (
+                <div key={row.row_id || rowIndex} className={containerClass}>
+                  {row.banners.map((banner: any, bannerIndex: number) => (
+                    <div key={bannerIndex} className="relative overflow-hidden rounded-md group">
+                      {banner.image_url && (
+                        <Link to={banner.link_url || '#'}>
+                          <img 
+                            src={banner.image_url} 
+                            alt={banner.title || `Banner ${rowIndex + 1}-${bannerIndex + 1}`} 
+                            className={`w-full h-auto object-cover ${!isMobile && banner.enable_hover_animation ? 'transition-transform duration-300' : ''}`}
+                            onError={(e) => (e.currentTarget.src = '/placeholder-banner.png')}
+                          />
+                          {(banner.title || banner.subtitle) && (
+                            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
+                              {banner.title && <h3 className="text-md font-semibold text-white mb-0.5">{banner.title}</h3>}
+                              {banner.subtitle && <p className="text-xs text-gray-100">{banner.subtitle}</p>}
+                            </div>
+                          )}
+                        </Link>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            }
           }
+          return null;
         })}
 
-        {/* Carrossel de Produtos 1 */}
-        {shouldShowCarousel1 && renderCarousel(config.carrossel_1, 'carrossel_1')}
-
-        {/* Carrossel de Produtos 2 */}
-        {shouldShowCarousel2 && renderCarousel(config.carrossel_2, 'carrossel_2')}
+        {/* Legacy Dynamic Banner Rows (for backward compatibility) */}
+        {/* REMOVIDO: Renderização separada que quebrava a ordem */}
 
       </div>
     </section>
   );
-};
+});
 
 export default SpecialSectionRenderer;
 

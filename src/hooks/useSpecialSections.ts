@@ -13,6 +13,10 @@ export const useSpecialSections = () => {
     setLoading(true);
     setError(null);
     try {
+      // Adicionar timestamp para evitar cache
+      const timestamp = new Date().getTime();
+      console.log(`[useSpecialSections] Fetching at ${timestamp}`);
+      
       const { data, error: fetchError } = await supabase
         .from('special_sections')
         .select('*')
@@ -27,6 +31,7 @@ export const useSpecialSections = () => {
         background_image_position: section.background_image_position as 'center' | 'top' | 'bottom' | 'left' | 'right' | undefined,
       }));
       
+      console.log(`[useSpecialSections] Loaded ${transformedData.length} sections:`, transformedData);
       setSpecialSections(transformedData);
     } catch (err: any) {
       console.error('Error fetching special sections:', err);
@@ -205,6 +210,12 @@ export const useSpecialSections = () => {
     }
   };
 
+  // Função para forçar refresh dos dados (útil após salvar no admin)
+  const forceRefresh = useCallback(async () => {
+    console.log('[useSpecialSections] Force refresh triggered');
+    await fetchSpecialSections();
+  }, [fetchSpecialSections]);
+
   useEffect(() => {
     fetchSpecialSections();
   }, [fetchSpecialSections]);
@@ -213,6 +224,7 @@ export const useSpecialSections = () => {
     specialSections,
     loading,
     refetch: fetchSpecialSections,
+    forceRefresh,
     addSpecialSection,
     updateSpecialSection,
     deleteSpecialSection,

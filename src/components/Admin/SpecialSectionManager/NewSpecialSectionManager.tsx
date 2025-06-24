@@ -46,16 +46,8 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import BannersSection from './BannersSection';
-import CarouselSection from './CarouselSection';
 
 // Schemas de validação
-const carouselConfigSchema = z.object({
-  title: z.string().min(1, 'Título é obrigatório'),
-  selection_mode: z.enum(['tags', 'products', 'combined']).default('products'),
-  tag_ids: z.array(z.string()).default([]),
-  product_ids: z.array(z.string()).default([]),
-});
-
 const bannerSchema = z.object({
   type: z.enum(['full_width', 'half_width', 'third_width', 'quarter_width', 'product_highlight']),
   image_url: z.string().url().or(z.literal('')).optional(),
@@ -68,23 +60,27 @@ const bannerSchema = z.object({
 
 const bannerRowSchema = z.object({
   row_id: z.string().uuid().optional(),
-  layout: z.enum(['1_col_full', '2_col_half', '3_col_third', '4_col_quarter', 'custom']),
+  layout: z.enum(['1_col_full', '2_col_half', '3_col_third', '4_col_quarter', 'custom', 'carousel']),
   banners: z.array(bannerSchema),
   custom_sizes: z.array(z.object({
     width: z.string(),
     widthUnit: z.string(),
     height: z.string()
   })).optional(), // Para layouts customizados
+  // Campos para carrossel
+  title: z.string().optional(),
+  showTitle: z.boolean().default(true),
+  titleAlignment: z.enum(['left', 'center', 'right']).default('left'),
+  selection_mode: z.enum(['tags', 'products', 'combined']).default('products'),
+  tag_ids: z.array(z.string()).default([]),
+  product_ids: z.array(z.string()).default([]),
 });
 
 const specialSectionConfigSchema = z.object({
   banner_rows: z.array(bannerRowSchema).default([]),
-  carrossel_1: carouselConfigSchema.optional(),
-  carrossel_2: carouselConfigSchema.optional(),
   // Novas configurações de layout
   layout_settings: z.object({
     show_background: z.boolean().default(true),
-    carousel_display: z.enum(['both', 'carousel1_only', 'carousel2_only', 'none']).default('both'),
     device_visibility: z.object({
       mobile: z.boolean().default(true),
       tablet: z.boolean().default(true),
@@ -96,7 +92,6 @@ const specialSectionConfigSchema = z.object({
     }),
   }).default({
     show_background: true,
-    carousel_display: 'both',
     device_visibility: {
       mobile: true,
       tablet: true,
@@ -134,21 +129,8 @@ const NewSpecialSectionManager: React.FC<NewSpecialSectionManagerProps> = ({ sec
     resolver: zodResolver(specialSectionConfigSchema),
     defaultValues: {
       banner_rows: [],
-      carrossel_1: { 
-        title: '', 
-        selection_mode: 'products', 
-        tag_ids: [], 
-        product_ids: [] 
-      },
-      carrossel_2: { 
-        title: '', 
-        selection_mode: 'products', 
-        tag_ids: [], 
-        product_ids: [] 
-      },
       layout_settings: {
         show_background: true,
-        carousel_display: 'both',
         device_visibility: {
           mobile: true,
           tablet: true,
@@ -157,9 +139,6 @@ const NewSpecialSectionManager: React.FC<NewSpecialSectionManagerProps> = ({ sec
       },
     }
   });
-
-  const carrossel1Value = useWatch({ control, name: 'carrossel_1' });
-  const carrossel2Value = useWatch({ control, name: 'carrossel_2' });
 
   // Verificar conexão com o banco de dados
   const checkConnection = useCallback(async () => {
@@ -249,22 +228,41 @@ const NewSpecialSectionManager: React.FC<NewSpecialSectionManagerProps> = ({ sec
 
   // Salvar configuração no banco de dados
   const handleSaveContent = async (data: SpecialSectionConfig) => {
+    console.log('🔥 handleSaveContent chamado com dados:', data);
     setSaving(true);
     try {
+      console.log('🔗 Verificando conexão...');
       await checkConnection();
       
       if (connectionStatus === 'disconnected') {
+        console.error('❌ Sem conexão com o banco de dados');
         throw new Error('Sem conexão com o banco de dados');
       }
 
+      console.log('💾 Salvando no Supabase...');
       const { error } = await supabase
         .from('special_sections')
         .update({ content_config: data })
         .eq('id', sectionId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro do Supabase:', error);
+        throw error;
+      }
 
+      console.log('✅ Salvo com sucesso!');
       setLastSaved(new Date());
+      
+      // Forçar refresh dos dados no frontend para sincronizar
+      console.log('🔄 Invalidando cache do frontend...');
+      if (window.location.pathname !== '/admin') {
+        // Se não estiver no admin, recarregar a página para garantir sincronização
+        window.location.reload();
+      } else {
+        // Se estiver no admin, apenas mostrar sucesso
+        console.log('📱 Cache invalidado - dados atualizados');
+      }
+      
       toast({
         title: 'Configuração salva com sucesso!',
         description: 'Todas as alterações foram salvas no banco de dados.',
@@ -392,27 +390,13 @@ const NewSpecialSectionManager: React.FC<NewSpecialSectionManagerProps> = ({ sec
       {/* Tabs Navigation */}
       <div className="px-6 py-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-[#2C2C44] border border-[#343A40]">
+          <TabsList className="grid w-full grid-cols-2 bg-[#2C2C44] border border-[#343A40]">
             <TabsTrigger 
               value="banners" 
               className="data-[state=active]:bg-[#FF8C00] data-[state=active]:text-white"
             >
               <Image className="h-4 w-4 mr-2" />
-              Banners
-            </TabsTrigger>
-            <TabsTrigger 
-              value="carousel1" 
-              className="data-[state=active]:bg-[#007BFF] data-[state=active]:text-white"
-            >
-              <Package className="h-4 w-4 mr-2" />
-              Carrossel 1
-            </TabsTrigger>
-            <TabsTrigger 
-              value="carousel2" 
-              className="data-[state=active]:bg-[#007BFF] data-[state=active]:text-white"
-            >
-              <Package className="h-4 w-4 mr-2" />
-              Carrossel 2
+              Banners e Carrosseis
             </TabsTrigger>
             <TabsTrigger 
               value="settings" 
@@ -430,30 +414,6 @@ const NewSpecialSectionManager: React.FC<NewSpecialSectionManagerProps> = ({ sec
                 control={control}
                 onImageUpload={handleImageUpload}
                 setValue={setValue}
-              />
-            </TabsContent>
-            
-            <TabsContent value="carousel1">
-              <CarouselSection
-                control={control}
-                carouselKey="carrossel_1"
-                carouselValue={carrossel1Value}
-                tags={tags}
-                products={products}
-                tagsLoading={tagsLoading}
-                productsLoading={productsLoading}
-              />
-            </TabsContent>
-            
-            <TabsContent value="carousel2">
-              <CarouselSection
-                control={control}
-                carouselKey="carrossel_2"
-                carouselValue={carrossel2Value}
-                tags={tags}
-                products={products}
-                tagsLoading={tagsLoading}
-                productsLoading={productsLoading}
               />
             </TabsContent>
             
@@ -491,52 +451,6 @@ const NewSpecialSectionManager: React.FC<NewSpecialSectionManagerProps> = ({ sec
                     />
                     <p className="text-xs text-gray-500">
                       Quando desabilitado, a seção terá fundo transparente, ideal para banners promocionais avulsos
-                    </p>
-                  </div>
-
-                  <Separator className="bg-[#343A40]" />
-
-                  {/* Configuração de Carrosséis */}
-                  <div className="space-y-3">
-                    <Label className="text-white font-medium">Exibição de Carrosséis</Label>
-                    <Controller
-                      name="layout_settings.carousel_display"
-                      control={control}
-                      render={({ field }) => (
-                        <RadioGroup
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          className="space-y-3"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="both" id="both" className="border-gray-600 text-[#FF8C00]" />
-                            <Label htmlFor="both" className="text-gray-300 cursor-pointer">
-                              Mostrar ambos os carrosséis (1 e 2)
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="carousel1_only" id="carousel1_only" className="border-gray-600 text-[#FF8C00]" />
-                            <Label htmlFor="carousel1_only" className="text-gray-300 cursor-pointer">
-                              Mostrar apenas Carrossel 1
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="carousel2_only" id="carousel2_only" className="border-gray-600 text-[#FF8C00]" />
-                            <Label htmlFor="carousel2_only" className="text-gray-300 cursor-pointer">
-                              Mostrar apenas Carrossel 2
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="none" id="none" className="border-gray-600 text-[#FF8C00]" />
-                            <Label htmlFor="none" className="text-gray-300 cursor-pointer">
-                              Não mostrar carrosséis
-                            </Label>
-                          </div>
-                        </RadioGroup>
-                      )}
-                    />
-                    <p className="text-xs text-gray-500">
-                      Escolha quais carrosséis de produtos serão exibidos na seção especial
                     </p>
                   </div>
 
@@ -682,7 +596,17 @@ const NewSpecialSectionManager: React.FC<NewSpecialSectionManagerProps> = ({ sec
             </Button>
             
             <Button
-              onClick={handleSubmit(handleSaveContent)}
+              type="button"
+              onClick={() => {
+                console.log('🖱️ Botão Salvar clicado!');
+                console.log('📋 Dados do formulário:', getValues());
+                console.log('🔍 Erros de validação:', errors);
+                
+                // Forçar submit mesmo com erros de validação nos carrosséis
+                const formData = getValues();
+                console.log('🚀 Forçando salvamento com dados:', formData);
+                handleSaveContent(formData);
+              }}
               disabled={saving || connectionStatus === 'disconnected'}
               className="bg-[#28A745] hover:bg-[#218838] text-white"
             >

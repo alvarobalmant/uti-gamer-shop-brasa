@@ -116,14 +116,15 @@ const CarouselSection: React.FC<CarouselSectionProps> = ({
             <CardHeader className="pb-4">
               <CardTitle className="text-lg text-blue-300 flex items-center gap-2">
                 <Sparkles className="h-4 w-4" />
-                Configurações Básicas
+                Configurações de Título
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Título Simples */}
               <div className="space-y-2">
                 <Label className="text-yellow-400 flex items-center gap-2 font-medium">
                   <Sparkles className="w-4 h-4" />
-                  Título do Carrossel
+                  Título Simples (ou deixe vazio para usar título bicolor)
                 </Label>
                 <Controller
                   name={`${carouselKey}.title`}
@@ -132,10 +133,76 @@ const CarouselSection: React.FC<CarouselSectionProps> = ({
                     <Input 
                       {...field}
                       className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500" 
-                      placeholder="Digite o título do carrossel"
+                      placeholder="Digite o título simples (opcional)"
                     />
                   )}
                 />
+              </div>
+
+              {/* Título Bicolor - Parte 1 */}
+              <div className="space-y-2">
+                <Label className="text-green-400 flex items-center gap-2 font-medium">
+                  <Sparkles className="w-4 h-4" />
+                  Título Parte 1 (ex: "Most Popular")
+                </Label>
+                <div className="flex gap-2">
+                  <Controller
+                    name={`${carouselKey}.titlePart1`}
+                    control={control}
+                    render={({ field }) => (
+                      <Input 
+                        {...field}
+                        className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 flex-1" 
+                        placeholder="Primeira parte do título"
+                      />
+                    )}
+                  />
+                  <Controller
+                    name={`${carouselKey}.titleColor1`}
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        type="color"
+                        {...field}
+                        className="w-12 h-10 rounded border border-[#343A40] bg-[#1A1A2E] cursor-pointer"
+                        title="Cor da primeira parte"
+                      />
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Título Bicolor - Parte 2 */}
+              <div className="space-y-2">
+                <Label className="text-purple-400 flex items-center gap-2 font-medium">
+                  <Sparkles className="w-4 h-4" />
+                  Título Parte 2 (ex: "Trading Cards")
+                </Label>
+                <div className="flex gap-2">
+                  <Controller
+                    name={`${carouselKey}.titlePart2`}
+                    control={control}
+                    render={({ field }) => (
+                      <Input 
+                        {...field}
+                        className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 flex-1" 
+                        placeholder="Segunda parte do título"
+                      />
+                    )}
+                  />
+                  <Controller
+                    name={`${carouselKey}.titleColor2`}
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        type="color"
+                        {...field}
+                        className="w-12 h-10 rounded border border-[#343A40] bg-[#1A1A2E] cursor-pointer"
+                        title="Cor da segunda parte"
+                      />
+                    )}
+                  />
+                </div>
               </div>
               
               {/* Modo de Seleção */}

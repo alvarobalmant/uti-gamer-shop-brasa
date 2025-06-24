@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, Plus, Image, Info, Monitor, Smartphone } from 'lucide-react';
+import { Trash2, Edit, Plus, Image, Info } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Dialog,
@@ -20,12 +20,6 @@ import {
   Alert,
   AlertDescription,
 } from '@/components/ui/alert';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
 
 export const BannerManager = () => {
   const { banners, loading, addBanner, updateBanner, deleteBanner } = useBanners();
@@ -38,18 +32,10 @@ export const BannerManager = () => {
     subtitle: '',
     button_text: '',
     button_link: '',
-<<<<<<< HEAD
     image_url: '', // Mantido para compatibilidade ou fallback
     image_url_desktop: '', // Novo campo
     image_url_mobile: '', // Novo campo
-=======
-    image_url: '',
-    image_url_desktop: '',
-    image_url_mobile: '',
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
     button_image_url: '',
-    button_link_desktop: '',
-    button_link_mobile: '',
     gradient: 'from-red-600 via-red-600 to-red-700',
     background_type: 'gradient',
     position: 1,
@@ -75,8 +61,6 @@ export const BannerManager = () => {
       image_url_desktop: '',
       image_url_mobile: '',
       button_image_url: '',
-      button_link_desktop: '',
-      button_link_mobile: '',
       gradient: 'from-red-600 via-red-600 to-red-700',
       background_type: 'gradient',
       position: (filteredBanners.length + 1),
@@ -96,16 +80,9 @@ export const BannerManager = () => {
       button_text: banner.button_text || '',
       button_link: banner.button_link || '',
       image_url: banner.image_url || '',
-<<<<<<< HEAD
       image_url_desktop: banner.image_url_desktop || '',
       image_url_mobile: banner.image_url_mobile || '',
-=======
-      image_url_desktop: (banner as any).image_url_desktop || '',
-      image_url_mobile: (banner as any).image_url_mobile || '',
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
       button_image_url: banner.button_image_url || '',
-      button_link_desktop: (banner as any).button_link_desktop || '',
-      button_link_mobile: (banner as any).button_link_mobile || '',
       gradient: banner.gradient,
       background_type: (banner as any).background_type || 'gradient',
       position: banner.position,
@@ -120,25 +97,10 @@ export const BannerManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-<<<<<<< HEAD
     // A validação de campos obrigatórios será removida no Supabase pela Lovable.
     // A validação de link do botão ainda é mantida se o texto do botão existir.
     if (formData.button_text && !formData.button_link && !formData.button_link_desktop && !formData.button_link_mobile) {
       alert('Se há texto do botão, o link é obrigatório para pelo menos uma versão (desktop ou mobile).');
-=======
-    // Verificar se há pelo menos uma imagem ou algum texto
-    const hasImage = formData.image_url || formData.image_url_desktop || formData.image_url_mobile;
-    const hasText = formData.title || formData.subtitle || formData.button_text;
-    
-    if (!hasImage && !hasText) {
-      alert('É necessário pelo menos uma imagem ou algum texto (título, subtítulo ou botão).');
-      return;
-    }
-
-    // Se há texto do botão, deve haver pelo menos um link
-    if (formData.button_text && !formData.button_link && !formData.button_link_desktop && !formData.button_link_mobile) {
-      alert('Se há texto do botão, pelo menos um link (geral, desktop ou mobile) é obrigatório.');
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
       return;
     }
 
@@ -211,15 +173,10 @@ export const BannerManager = () => {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-<<<<<<< HEAD
             <strong>Tamanho recomendado:</strong> {activeTab === 'desktop' ? '1920x600px (proporção 16:5)' : '750x400px (proporção 15:8)'}<br />
             <strong>Limite:</strong> Máximo 5 banners rotativos por dispositivo<br />
-=======
-            <strong>Tamanho recomendado:</strong> Desktop: 1920x600px, Mobile: 800x600px<br />
-            <strong>Limite:</strong> Máximo 5 banners rotativos<br />
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
             <strong>Formatos:</strong> JPG, PNG, WebP<br />
-            <strong>Novidade:</strong> Agora você pode criar banners apenas com imagens (sem texto) e usar imagens diferentes para desktop e mobile
+            <strong>Upload:</strong> Arraste e solte ou clique para selecionar
           </AlertDescription>
         </Alert>
       </CardHeader>
@@ -245,22 +202,25 @@ export const BannerManager = () => {
               </Button>
             </DialogTrigger>
             
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-xl text-red-600">
                   {editingBanner ? 'Editar' : 'Novo'} Banner {activeTab === 'desktop' ? 'Desktop' : 'Mobile'}
                 </DialogTitle>
               </DialogHeader>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <Tabs defaultValue="content" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="content">Conteúdo</TabsTrigger>
-                    <TabsTrigger value="images">Imagens</TabsTrigger>
-                    <TabsTrigger value="responsive">Links Responsivos</TabsTrigger>
-                  </TabsList>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Título (Opcional)</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Ex: PROMOÇÃO ESPECIAL"
+                    />
+                  </div>
                   
-<<<<<<< HEAD
                   <div className="space-y-2">
                     <Label htmlFor="position">Posição</Label>
                     <Input
@@ -333,45 +293,24 @@ export const BannerManager = () => {
                           </option>
                         ))}
                       </select>
-=======
-                  <TabsContent value="content" className="space-y-4">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="title">Título (Opcional)</Label>
-                        <Input
-                          id="title"
-                          value={formData.title}
-                          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                          placeholder="Ex: PROMOÇÃO ESPECIAL"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="position">Posição</Label>
-                        <Input
-                          id="position"
-                          type="number"
-                          min="1"
-                          max="5"
-                          value={formData.position}
-                          onChange={(e) => setFormData(prev => ({ ...prev, position: parseInt(e.target.value) }))}
-                        />
-                      </div>
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
                     </div>
+                  )}
+                </div>
 
+                <div className="border-t pt-4">
+                  <h4 className="text-lg font-semibold mb-3">Botão (Opcional)</h4>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="subtitle">Subtítulo (Opcional)</Label>
-                      <Textarea
-                        id="subtitle"
-                        value={formData.subtitle}
-                        onChange={(e) => setFormData(prev => ({ ...prev, subtitle: e.target.value }))}
-                        placeholder="Ex: Compre e Venda Seus Games na UTI DOS GAMES!"
-                        rows={2}
+                      <Label htmlFor="button_text">Texto do Botão</Label>
+                      <Input
+                        id="button_text"
+                        value={formData.button_text}
+                        onChange={(e) => setFormData(prev => ({ ...prev, button_text: e.target.value }))}
+                        placeholder="Ex: Entre em Contato"
                       />
                     </div>
 
-<<<<<<< HEAD
                     <div className="space-y-2">
                       <Label htmlFor="button_link">Link do Botão (Geral)</Label>
                       <Input
@@ -380,45 +319,9 @@ export const BannerManager = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, button_link: e.target.value }))}
                         placeholder="Ex: /categoria/ofertas ou https://wa.me/5527996882090"
                       />
-=======
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="background_type">Tipo de Fundo</Label>
-                        <select
-                          id="background_type"
-                          value={formData.background_type}
-                          onChange={(e) => setFormData(prev => ({ ...prev, background_type: e.target.value }))}
-                          className="w-full p-2 border border-gray-300 rounded-lg"
-                        >
-                          {backgroundOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {formData.background_type === 'gradient' && (
-                        <div className="space-y-2">
-                          <Label htmlFor="gradient">Cor do Fundo</Label>
-                          <select
-                            id="gradient"
-                            value={formData.gradient}
-                            onChange={(e) => setFormData(prev => ({ ...prev, gradient: e.target.value }))}
-                            className="w-full p-2 border border-gray-300 rounded-lg"
-                          >
-                            {gradientOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
                     </div>
+                  </div>
 
-<<<<<<< HEAD
                   {/* Novos campos para links de botão específicos para Desktop e Mobile */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
                     <div className="space-y-2">
@@ -450,136 +353,8 @@ export const BannerManager = () => {
                     />
                   </div>
                 </div>
-=======
-                    <div className="border-t pt-4">
-                      <h4 className="text-lg font-semibold mb-3">Botão (Opcional)</h4>
-                      
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="button_text">Texto do Botão</Label>
-                          <Input
-                            id="button_text"
-                            value={formData.button_text}
-                            onChange={(e) => setFormData(prev => ({ ...prev, button_text: e.target.value }))}
-                            placeholder="Ex: Entre em Contato"
-                          />
-                        </div>
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
 
-                        <div className="space-y-2">
-                          <Label htmlFor="button_link">Link Geral do Botão</Label>
-                          <Input
-                            id="button_link"
-                            value={formData.button_link}
-                            onChange={(e) => setFormData(prev => ({ ...prev, button_link: e.target.value }))}
-                            placeholder="Ex: /categoria/ofertas ou https://wa.me/5527996882090"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mt-4">
-                        <ImageUpload
-                          onImageUploaded={(url) => setFormData(prev => ({ ...prev, button_image_url: url }))}
-                          currentImage={formData.button_image_url}
-                          label="Imagem do Botão (Opcional)"
-                          folder="buttons"
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="images" className="space-y-4">
-                    <Alert>
-                      <Monitor className="h-4 w-4" />
-                      <AlertDescription>
-                        Use a <strong>Imagem Geral</strong> para uma imagem única em todos os dispositivos, ou configure imagens específicas para <strong>Desktop</strong> e <strong>Mobile</strong> para melhor experiência responsiva.
-                      </AlertDescription>
-                    </Alert>
-
-                    <div className="space-y-6">
-                      <div>
-                        <Label className="text-base font-semibold mb-3 block">Imagem Geral</Label>
-                        <ImageUpload
-                          onImageUploaded={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
-                          currentImage={formData.image_url}
-                          label="Imagem Única (Desktop e Mobile)"
-                          folder="banners"
-                        />
-                      </div>
-
-                      <div className="border-t pt-4">
-                        <Label className="text-base font-semibold mb-3 block">Imagens Responsivas (Opcional)</Label>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
-                            <Label className="flex items-center gap-2 mb-2">
-                              <Monitor className="w-4 h-4" />
-                              Desktop (1920x600px)
-                            </Label>
-                            <ImageUpload
-                              onImageUploaded={(url) => setFormData(prev => ({ ...prev, image_url_desktop: url }))}
-                              currentImage={formData.image_url_desktop}
-                              label="Imagem para Desktop"
-                              folder="banners/desktop"
-                            />
-                          </div>
-
-                          <div>
-                            <Label className="flex items-center gap-2 mb-2">
-                              <Smartphone className="w-4 h-4" />
-                              Mobile (800x600px)
-                            </Label>
-                            <ImageUpload
-                              onImageUploaded={(url) => setFormData(prev => ({ ...prev, image_url_mobile: url }))}
-                              currentImage={formData.image_url_mobile}
-                              label="Imagem para Mobile"
-                              folder="banners/mobile"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="responsive" className="space-y-4">
-                    <Alert>
-                      <Smartphone className="h-4 w-4" />
-                      <AlertDescription>
-                        Configure links específicos para diferentes dispositivos. Se não configurados, será usado o <strong>Link Geral</strong> do botão.
-                      </AlertDescription>
-                    </Alert>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="button_link_desktop" className="flex items-center gap-2">
-                          <Monitor className="w-4 h-4" />
-                          Link Desktop
-                        </Label>
-                        <Input
-                          id="button_link_desktop"
-                          value={formData.button_link_desktop}
-                          onChange={(e) => setFormData(prev => ({ ...prev, button_link_desktop: e.target.value }))}
-                          placeholder="Link específico para desktop"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="button_link_mobile" className="flex items-center gap-2">
-                          <Smartphone className="w-4 h-4" />
-                          Link Mobile
-                        </Label>
-                        <Input
-                          id="button_link_mobile"
-                          value={formData.button_link_mobile}
-                          onChange={(e) => setFormData(prev => ({ ...prev, button_link_mobile: e.target.value }))}
-                          placeholder="Link específico para mobile"
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-
-                <div className="flex gap-4 pt-4 border-t">
+                <div className="flex gap-4 pt-4">
                   <Button
                     type="submit"
                     className="flex-1 bg-red-600 hover:bg-red-700 text-white"
@@ -610,7 +385,6 @@ export const BannerManager = () => {
               Nenhum banner {activeTab === 'desktop' ? 'desktop' : 'mobile'} criado ainda.
             </div>
           ) : (
-<<<<<<< HEAD
             filteredBanners.map((banner) => (
               <Card key={banner.id} className="border-2 border-gray-200">
                 <CardContent className="p-4">
@@ -669,50 +443,8 @@ export const BannerManager = () => {
                           )}
                           {banner.button_text}
                         </div>
-=======
-            banners.map((banner) => {
-              const hasDesktopImage = (banner as any).image_url_desktop;
-              const hasMobileImage = (banner as any).image_url_mobile;
-              const hasResponsiveImages = hasDesktopImage || hasMobileImage;
-              
-              return (
-                <Card key={banner.id} className="border-2 border-gray-200">
-                  <CardContent className="p-4">
-                    <div className={`relative text-white p-4 rounded-lg mb-4 ${
-                      (banner as any).background_type === 'image-only' 
-                        ? 'bg-gray-800' 
-                        : `bg-gradient-to-br ${banner.gradient}`
-                    }`}>
-                      {banner.image_url && (banner as any).background_type === 'image-only' && (
-                        <div 
-                          className="absolute inset-0 bg-cover bg-center rounded-lg"
-                          style={{ backgroundImage: `url(${banner.image_url})` }}
-                        />
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
                       )}
-                      <div className="relative text-center">
-                        {banner.title && (
-                          <div className="bg-red-600 text-white font-bold mb-2 px-2 py-1 rounded text-xs inline-block">
-                            ♦ {banner.title}
-                          </div>
-                        )}
-                        {banner.subtitle && (
-                          <h3 className="font-bold mb-2 text-sm">{banner.subtitle}</h3>
-                        )}
-                        {banner.button_text && (
-                          <div className="bg-white text-gray-900 px-3 py-1 rounded text-xs inline-flex items-center gap-1">
-                            {banner.button_image_url && (
-                              <img src={banner.button_image_url} alt="" className="w-3 h-3" />
-                            )}
-                            {banner.button_text}
-                          </div>
-                        )}
-                        {!banner.title && !banner.subtitle && !banner.button_text && (
-                          <div className="text-xs opacity-75 italic">Banner apenas com imagem</div>
-                        )}
-                      </div>
                     </div>
-<<<<<<< HEAD
                   </div>
                   
                   <div className="space-y-2 text-sm">
@@ -738,52 +470,20 @@ export const BannerManager = () => {
                       <Edit className="w-4 h-4 mr-1" />
                       Editar
                     </Button>
-=======
->>>>>>> 3115b4af09afdf7170071f97b16f5f3adc77cb0f
                     
-                    <div className="space-y-2 text-sm">
-                      <div><strong>Posição:</strong> {banner.position}</div>
-                      <div><strong>Tipo:</strong> {(banner as any).background_type === 'image-only' ? 'Somente Imagem' : 'Gradiente'}</div>
-                      {banner.image_url && <div><strong>Imagem Geral:</strong> Configurada</div>}
-                      {hasResponsiveImages && (
-                        <div className="flex gap-2">
-                          <strong>Responsivo:</strong>
-                          {hasDesktopImage && <Badge variant="outline" className="text-xs">Desktop</Badge>}
-                          {hasMobileImage && <Badge variant="outline" className="text-xs">Mobile</Badge>}
-                        </div>
-                      )}
-                      {(banner.button_link || (banner as any).button_link_desktop || (banner as any).button_link_mobile) && (
-                        <div><strong>Links:</strong> Configurados</div>
-                      )}
-                      <Badge className={banner.is_active ? "bg-green-600" : "bg-gray-600"}>
-                        {banner.is_active ? 'Ativo' : 'Inativo'}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        onClick={() => handleEdit(banner)}
-                        size="sm"
-                        className="flex-1 bg-blue-600 hover:bg-blue-700"
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        Editar
-                      </Button>
-                      
-                      <Button
-                        onClick={() => handleDelete(banner.id)}
-                        size="sm"
-                        variant="destructive"
-                        className="flex-1"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Excluir
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
+                    <Button
+                      onClick={() => handleDelete(banner.id)}
+                      size="sm"
+                      variant="destructive"
+                      className="flex-1"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Excluir
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
           )}
         </div>
       </CardContent>

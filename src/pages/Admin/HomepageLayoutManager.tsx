@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { GripVertical, Eye, EyeOff, Save, X, RotateCcw } from 'lucide-react';
-import { useToast } from '@//components/ui/use-toast';
-import { useHomepageLayout, HomepageLayoutItem } from '@//hooks/useHomepageLayout';
-import { Skeleton } from '@//components/ui/skeleton';
-import { Badge } from '@//components/ui/badge';
+import { GripVertical, Eye, EyeOff, Save, X, RotateCcw, Settings } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useHomepageLayout, HomepageLayoutItem } from '@/hooks/useHomepageLayout';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { v4 as uuidv4 } from 'uuid';
+import PromotionalRibbonManager from '@/components/Admin/PromotionalRibbonManager';
 
 // Sortable Item Component
 interface SortableItemProps {
@@ -263,6 +264,11 @@ const AdminSections: React.FC = () => {
           </CardFooter>
         )}
       </Card>
+
+      {/* Seção da Fita Promocional */}
+      <div className="mt-6">
+        <PromotionalRibbonManager />
+      </div>
     </div>
   );
 };

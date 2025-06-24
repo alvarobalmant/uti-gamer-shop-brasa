@@ -96,7 +96,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
   const renderProductCard = (product: Product) => (
     <Card 
       key={product.id}
-      className="group cursor-pointer transition-all duration-300 hover:scale-105"
+      className="cursor-pointer transition-all duration-300"
       style={getCardStyles()}
       onClick={() => onProductClick(product.id)}
     >
@@ -106,7 +106,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
           <img
             src={product.image || '/placeholder.svg'}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            className="w-full h-full object-cover"
           />
           
           {/* Badges */}
@@ -136,7 +136,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
           </div>
 
           {/* Ações rápidas */}
-          <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 transition-opacity duration-300">
             <Button
               size="sm"
               variant="outline"
@@ -258,7 +258,7 @@ const PlatformProductSection: React.FC<PlatformProductSectionProps> = ({
 
           {/* Botão de Adicionar ao Carrinho */}
           <Button
-            className="w-full text-sm font-semibold transition-all duration-300 hover:scale-105"
+            className="w-full text-sm font-semibold transition-all duration-300"
             style={getButtonStyles()}
             onClick={(e) => {
               e.stopPropagation();

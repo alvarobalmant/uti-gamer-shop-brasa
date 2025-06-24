@@ -7,9 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { PlusCircle, Trash2, ArrowUp, ArrowDown, Image, Upload, ExternalLink, Loader2 } from 'lucide-react';
+import { PlusCircle, Trash2, ArrowUp, ArrowDown, Image, Upload, ExternalLink, Loader2, Package } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { supabase } from '@/integrations/supabase/client';
+import { useProducts } from '@/hooks/useProducts';
+import { useTags } from '@/hooks/useTags';
 
 interface BannerConfig {
   type: 'full_width' | 'half_width' | 'third_width' | 'quarter_width' | 'product_highlight';
@@ -23,9 +26,10 @@ interface BannerConfig {
 
 interface BannerRowConfig {
   row_id?: string;
-  layout: '1_col_full' | '2_col_half' | '3_col_third' | '4_col_quarter' | 'custom';
+  layout: '1_col_full' | '2_col_half' | '3_col_third' | '4_col_quarter' | 'custom' | 'carousel';
   banners: BannerConfig[];
   custom_sizes?: Array<{width: string, widthUnit: string, height: string}>; // Para layouts customizados
+  margin_included_in_banner?: boolean; // Campo para controle de margem horizontal
 }
 
 interface BannersSectionProps {
@@ -33,10 +37,19 @@ interface BannersSectionProps {
   onImageUpload: (file: File) => Promise<string>;
   setValue: UseFormSetValue<any>;
 }
-
 const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload, setValue }) => {
+  // Usar hooks existentes em vez de estado manual
+  const { products, loading: loadingProducts } = useProducts();
+  const { tags, loading: loadingTags } = useTags();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filtrar produtos baseado na busca
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedLayout, setSelectedLayout] = useState<'1_col_full' | '2_col_half' | '3_col_third' | '4_col_quarter' | 'custom'>('1_col_full');
+  const [selectedLayout, setSelectedLayout] = useState<'1_col_full' | '2_col_half' | '3_col_third' | '4_col_quarter' | 'custom' | 'carousel'>('1_col_full');
   const [customBannerCount, setCustomBannerCount] = useState(2);
   const [customBannerSizes, setCustomBannerSizes] = useState<Array<{width: string, widthUnit: string, height: string}>>([
     {width: '50', widthUnit: '%', height: 'auto'}, 
@@ -90,9 +103,9 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
       { label: 'Banner Pequeno', width: '300', widthUnit: 'px', height: '200px' },
       { label: 'Banner Médio', width: '500', widthUnit: 'px', height: '300px' },
       { label: 'Banner Grande', width: '800', widthUnit: 'px', height: '400px' },
+      { label: 'Banner Hero (1760x400)', width: '1760', widthUnit: 'px', height: '400px' },
       { label: 'Banner Full Width', width: '100', widthUnit: '%', height: 'auto' },
       { label: 'Banner Quadrado', width: '400', widthUnit: 'px', height: '400px' },
-      { label: 'Banner Alto', width: '300', widthUnit: 'px', height: '500px' },
     ];
   };
 
@@ -108,40 +121,58 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
   };
 
   const addBannerRow = useCallback(() => {
-    let bannersCount: number;
-    let customSizes: Array<{width: string, widthUnit: string, height: string}> | undefined;
+    if (selectedLayout === 'carousel') {
+      // Criar uma linha de carrossel
+      const newCarouselRow: any = {
+        row_id: crypto.randomUUID(),
+        layout: 'carousel',
+        type: 'carousel',
+        title: 'Novo Carrossel',
+        showTitle: true,
+        titleAlignment: 'left',
+        selection_mode: 'products',
+        product_ids: [],
+        tag_ids: [],
+      };
 
-    if (selectedLayout === 'custom') {
-      bannersCount = customBannerCount;
-      customSizes = [...customBannerSizes];
+      appendBannerRow(newCarouselRow, { shouldFocus: false });
     } else {
-      bannersCount = selectedLayout === '1_col_full' ? 1 
-                   : selectedLayout === '2_col_half' ? 2
-                   : selectedLayout === '3_col_third' ? 3
-                   : 4;
+      // Lógica existente para banners
+      let bannersCount: number;
+      let customSizes: Array<{width: string, widthUnit: string, height: string}> | undefined;
+
+      if (selectedLayout === 'custom') {
+        bannersCount = customBannerCount;
+        customSizes = [...customBannerSizes];
+      } else {
+        bannersCount = selectedLayout === '1_col_full' ? 1 
+                     : selectedLayout === '2_col_half' ? 2
+                     : selectedLayout === '3_col_third' ? 3
+                     : 4;
+      }
+      
+      const newBanners = Array.from({ length: bannersCount }, () => ({
+        type: 'full_width' as const,
+        image_url: '',
+        link_url: '',
+        title: '',
+        subtitle: '',
+        button_text: '',
+        enable_hover_animation: true,
+      }));
+
+      const newRow: any = {
+        row_id: crypto.randomUUID(),
+        layout: selectedLayout,
+        banners: newBanners,
+      };
+
+      if (selectedLayout === 'custom') {
+        newRow.custom_sizes = customSizes;
+      }
+
+      appendBannerRow(newRow, { shouldFocus: false });
     }
-    
-    const newBanners = Array.from({ length: bannersCount }, () => ({
-      type: 'full_width' as const,
-      image_url: '',
-      link_url: '',
-      title: '',
-      subtitle: '',
-      button_text: '',
-      enable_hover_animation: true,
-    }));
-
-    const newRow: any = {
-      row_id: crypto.randomUUID(),
-      layout: selectedLayout,
-      banners: newBanners,
-    };
-
-    if (selectedLayout === 'custom') {
-      newRow.custom_sizes = customSizes;
-    }
-
-    appendBannerRow(newRow, { shouldFocus: false });
     
     setIsModalOpen(false);
   }, [appendBannerRow, selectedLayout, customBannerCount, customBannerSizes]);
@@ -165,7 +196,7 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
   const getExpectedDimensions = (layout: BannerRowConfig["layout"]) => {
     switch (layout) {
       case "1_col_full":
-        return { width: 1200, height: 180 };
+        return { width: 1760, height: 400 }; // Atualizado para nova proporção
       case "2_col_half":
       case "3_col_third":
       case "4_col_quarter":
@@ -188,7 +219,7 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
           <DialogTrigger asChild>
             <Button className="bg-[#FF8C00] hover:bg-[#FF7700] text-white">
               <PlusCircle className="h-4 w-4 mr-2" />
-              Adicionar Linha de Banner
+              Adicionar Linha
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-[#2C2C44] border-[#343A40] text-white max-w-2xl max-h-[90vh] flex flex-col">
@@ -204,6 +235,7 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
                   { value: '3_col_third', label: '3 Colunas (Third Width)', icon: '█ █ █' },
                   { value: '4_col_quarter', label: '4 Colunas (Quarter Width)', icon: '█ █ █ █' },
                   { value: 'custom', label: 'Layout Personalizado', icon: '⚙️' },
+                  { value: 'carousel', label: 'Carrossel de Produtos', icon: '🎮' },
                 ].map((layout) => (
                   <div key={layout.value} className="flex items-center space-x-2">
                     <RadioGroupItem value={layout.value} id={layout.value} />
@@ -326,11 +358,11 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
                         <strong>💡 Dicas de tamanhos:</strong>
                       </p>
                       <ul className="text-xs text-gray-500 space-y-1">
+                        <li>• <strong>Banner Hero:</strong> 1760x400px (ideal para carrossel principal)</li>
                         <li>• <strong>Pixels:</strong> 500px (tamanho fixo)</li>
                         <li>• <strong>Porcentagem:</strong> 50% (relativo ao container)</li>
                         <li>• <strong>Viewport:</strong> 30vw (relativo à largura da tela)</li>
-                        <li>• <strong>Em/Rem:</strong> 20em, 15rem (relativo à fonte)</li>
-                        <li>• <strong>Altura:</strong> 300px, auto, 50vh</li>
+                        <li>• <strong>Altura máxima:</strong> 400px para banners principais</li>
                         <li>• <strong>Centralização:</strong> Banners sempre centralizados automaticamente</li>
                       </ul>
                     </div>
@@ -415,12 +447,393 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
               </CardHeader>
               
               <CardContent>
-                <div className={`grid gap-4 ${
-                  row.layout === '1_col_full' ? 'grid-cols-1' :
-                  row.layout === '2_col_half' ? 'grid-cols-1 md:grid-cols-2' :
-                  row.layout === '3_col_third' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
-                  'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
-                }`}>
+                {/* Checkbox para Margem Inclusa no Banner - para todas as linhas */}
+                <div className="mb-4 px-4 py-3 bg-[#1A1A2E] border border-[#495057] rounded">
+                  <div className="flex items-center space-x-2">
+                    <Controller
+                      name={`banner_rows.${rowIndex}.margin_included_in_banner`}
+                      control={control}
+                      render={({ field }) => (
+                        <Checkbox
+                          id={`margin-${rowIndex}`}
+                          checked={field.value || false}
+                          onCheckedChange={field.onChange}
+                          className="border-[#6C757D] data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                        />
+                      )}
+                    />
+                    <Label 
+                      htmlFor={`margin-${rowIndex}`}
+                      className="text-sm text-gray-300 cursor-pointer font-medium"
+                    >
+                      Considerar que a margem da seção já está inclusa no banner
+                    </Label>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1 ml-6">
+                    Quando marcado, o banner/carrossel se estende até as bordas horizontais da seção especial
+                  </p>
+                </div>
+
+                {row.layout === 'carousel' ? (
+                  // Renderização do carrossel
+                  <div className="space-y-4">
+                    {/* Título do Carrossel */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300">Título do Carrossel</Label>
+                      <Controller
+                        name={`banner_rows.${rowIndex}.title`}
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="Ex: PlayStation 5 Accessories. Best Sellers."
+                            className="bg-[#1A1A2E] border-[#495057] text-white"
+                          />
+                        )}
+                      />
+                    </div>
+
+                    {/* Configurações do Carrossel */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Mostrar Título */}
+                      <div className="flex items-center space-x-2">
+                        <Controller
+                          name={`banner_rows.${rowIndex}.showTitle`}
+                          control={control}
+                          render={({ field }) => (
+                            <Checkbox
+                              id={`show-title-${rowIndex}`}
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              className="border-[#495057] data-[state=checked]:bg-[#FF8C00] data-[state=checked]:text-white"
+                            />
+                          )}
+                        />
+                        <Label htmlFor={`show-title-${rowIndex}`} className="text-sm text-gray-300">
+                          Mostrar título
+                        </Label>
+                      </div>
+
+                      {/* Alinhamento do Título */}
+                      <div className="space-y-2">
+                        <Label className="text-gray-300 text-sm">Alinhamento do título</Label>
+                        <Controller
+                          name={`banner_rows.${rowIndex}.titleAlignment`}
+                          control={control}
+                          render={({ field }) => (
+                            <select
+                              {...field}
+                              className="w-full bg-[#1A1A2E] border border-[#495057] text-white rounded px-3 py-2 text-sm"
+                            >
+                              <option value="left">Esquerda</option>
+                              <option value="center">Centro</option>
+                              <option value="right">Direita</option>
+                            </select>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Seleção de Produtos */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300">Modo de Seleção</Label>
+                      <Controller
+                        name={`banner_rows.${rowIndex}.selection_mode`}
+                        control={control}
+                        render={({ field }) => (
+                          <select
+                            {...field}
+                            className="w-full bg-[#1A1A2E] border border-[#495057] text-white rounded px-3 py-2"
+                          >
+                            <option value="products">Produtos Específicos</option>
+                            <option value="tags">Por Tags</option>
+                            <option value="combined">Combinado</option>
+                          </select>
+                        )}
+                      />
+                    </div>
+
+                    {/* Debug log para verificar selection_mode */}
+                    {console.log(`[BannersSection] Row ${rowIndex} selection_mode:`, row.selection_mode)}
+
+                    {/* Seleção de Produtos Moderna */}
+                    {(row.selection_mode === 'products' || row.selection_mode === 'combined') && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-gray-300 font-medium">Selecione os Produtos</Label>
+                          <Badge className="bg-[#28A745] text-white">
+                            {Array.isArray(row.product_ids) ? row.product_ids.length : 0} selecionados
+                          </Badge>
+                        </div>
+                        
+                        {/* Busca de produtos */}
+                        <div className="relative">
+                          <Input
+                            placeholder="Buscar produtos por nome..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="bg-[#2C2C44] border-[#495057] text-gray-200 placeholder-gray-400"
+                          />
+                          <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                            <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                          </div>
+                        </div>
+
+                        {/* Lista de produtos com checkboxes */}
+                        <div className="max-h-64 overflow-y-auto border border-[#495057] rounded bg-[#1A1A2E] p-3">
+                          <div className="space-y-3">
+                            {loadingProducts ? (
+                              <div className="flex items-center justify-center py-4">
+                                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                                <span className="ml-2 text-gray-400">Carregando produtos...</span>
+                              </div>
+                            ) : filteredProducts.length > 0 ? (
+                              filteredProducts.map(product => (
+                              <div key={product.id} className="flex items-center space-x-3 p-2 rounded hover:bg-[#2C2C44] transition-colors">
+                                <Controller
+                                  name={`banner_rows.${rowIndex}.product_ids`}
+                                  control={control}
+                                  render={({ field }) => {
+                                    const currentIds = Array.isArray(field.value) ? field.value : [];
+                                    const isChecked = currentIds.includes(product.id);
+                                    
+                                    return (
+                                      <Checkbox
+                                        id={`product-${product.id}-${rowIndex}`}
+                                        checked={isChecked}
+                                        onCheckedChange={(checked) => {
+                                          if (checked) {
+                                            field.onChange([...currentIds, product.id]);
+                                          } else {
+                                            field.onChange(currentIds.filter((id: string) => id !== product.id));
+                                          }
+                                        }}
+                                        className="border-[#495057] data-[state=checked]:bg-[#28A745] data-[state=checked]:border-[#28A745]"
+                                      />
+                                    );
+                                  }}
+                                />
+                                
+                                {/* Imagem do produto */}
+                                <div className="w-10 h-10 bg-[#343A40] rounded border border-[#495057] flex items-center justify-center overflow-hidden">
+                                  {product.image_url ? (
+                                    <img 
+                                      src={product.image_url} 
+                                      alt={product.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        e.currentTarget.nextElementSibling.style.display = 'flex';
+                                      }}
+                                    />
+                                  ) : null}
+                                  <Package className="h-5 w-5 text-gray-400" style={{display: product.image_url ? 'none' : 'block'}} />
+                                </div>
+                                
+                                <div className="flex-1 min-w-0">
+                                  <Label 
+                                    htmlFor={`product-${product.id}-${rowIndex}`} 
+                                    className="text-sm text-gray-300 cursor-pointer block truncate font-medium"
+                                  >
+                                    {product.name}
+                                  </Label>
+                                  <p className="text-xs text-gray-500 truncate">
+                                    ID: {product.id.slice(0, 8)}...
+                                  </p>
+                                  <p className="text-xs text-green-400">
+                                    R$ {product.price?.toFixed(2) || '0.00'}
+                                  </p>
+                                </div>
+                                
+                                <Badge variant="outline" className="text-xs border-[#28A745] text-[#28A745]">
+                                  Produto
+                                </Badge>
+                              </div>
+                            ))
+                            ) : (
+                              <p className="text-gray-400 text-center py-4">
+                                {searchTerm ? 'Nenhum produto encontrado para a busca.' : 'Nenhum produto disponível.'}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <p className="text-xs text-gray-500">
+                          Selecione os produtos que aparecerão no carrossel. Os produtos serão exibidos na ordem selecionada.
+                        </p>
+
+                        {/* Seção de Customização de Fotos */}
+                        <Controller
+                          name={`banner_rows.${rowIndex}.product_ids`}
+                          control={control}
+                          render={({ field }) => {
+                            const selectedProductIds = Array.isArray(field.value) ? field.value : [];
+                            const selectedProducts = products.filter(p => selectedProductIds.includes(p.id));
+                            
+                            if (selectedProducts.length === 0) return null;
+                            
+                            return (
+                              <div className="mt-6 space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <Image className="h-4 w-4 text-blue-400" />
+                                  <Label className="text-gray-300 font-medium">Customizar Fotos dos Produtos Selecionados</Label>
+                                </div>
+                                
+                                <div className="space-y-3">
+                                  {selectedProducts.map((product, productIndex) => (
+                                    <div key={product.id} className="bg-[#1A1A2E] border border-[#343A40] rounded-lg p-4">
+                                      <div className="flex items-center gap-4">
+                                        {/* Preview da imagem atual */}
+                                        <div className="w-16 h-16 bg-[#343A40] rounded border border-[#495057] flex items-center justify-center overflow-hidden">
+                                          {product.image_url ? (
+                                            <img 
+                                              src={product.image_url} 
+                                              alt={product.name}
+                                              className="w-full h-full object-cover"
+                                            />
+                                          ) : (
+                                            <Package className="h-6 w-6 text-gray-400" />
+                                          )}
+                                        </div>
+                                        
+                                        <div className="flex-1">
+                                          <h4 className="text-sm font-medium text-gray-200">{product.name}</h4>
+                                          <p className="text-xs text-gray-500">R$ {product.price?.toFixed(2) || '0.00'}</p>
+                                          
+                                          <div className="mt-2 space-y-2">
+                                            <Label className="text-xs text-gray-400">URL da Foto Customizada (opcional)</Label>
+                                            <Controller
+                                              name={`banner_rows.${rowIndex}.custom_images.${product.id}`}
+                                              control={control}
+                                              render={({ field: customImageField }) => (
+                                                <div className="flex gap-2">
+                                                  <Input
+                                                    placeholder="https://exemplo.com/foto-customizada.jpg"
+                                                    value={customImageField.value || ''}
+                                                    onChange={customImageField.onChange}
+                                                    className="bg-[#2C2C44] border-[#495057] text-gray-200 text-xs"
+                                                  />
+                                                  <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="border-[#495057] text-gray-300 hover:bg-[#2C2C44]"
+                                                    onClick={async () => {
+                                                      const input = document.createElement('input');
+                                                      input.type = 'file';
+                                                      input.accept = 'image/*';
+                                                      input.onchange = async (e) => {
+                                                        const file = (e.target as HTMLInputElement).files?.[0];
+                                                        if (file) {
+                                                          try {
+                                                            const url = await onImageUpload(file);
+                                                            customImageField.onChange(url);
+                                                          } catch (error) {
+                                                            console.error('Erro ao fazer upload:', error);
+                                                          }
+                                                        }
+                                                      };
+                                                      input.click();
+                                                    }}
+                                                  >
+                                                    <Upload className="h-3 w-3" />
+                                                  </Button>
+                                                </div>
+                                              )}
+                                            />
+                                            <p className="text-xs text-gray-500">
+                                              Deixe vazio para usar a foto original do produto
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Seleção por Tags */}
+                    {(row.selection_mode === 'tags' || row.selection_mode === 'combined') && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-gray-300 font-medium">Selecione as Tags</Label>
+                          <Badge className="bg-[#9370DB] text-white">
+                            {Array.isArray(row.tag_ids) ? row.tag_ids.length : 0} selecionadas
+                          </Badge>
+                        </div>
+                        
+                        {/* Lista de tags com checkboxes */}
+                        <div className="max-h-64 overflow-y-auto border border-[#495057] rounded bg-[#1A1A2E] p-3">
+                          <div className="space-y-3">
+                            {loadingTags ? (
+                              <div className="flex items-center justify-center py-4">
+                                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                                <span className="ml-2 text-gray-400">Carregando tags...</span>
+                              </div>
+                            ) : tags.length > 0 ? (
+                              tags.map(tag => (
+                              <div key={tag.id} className="flex items-center space-x-3">
+                                <Controller
+                                  name={`banner_rows.${rowIndex}.tag_ids`}
+                                  control={control}
+                                  render={({ field }) => {
+                                    const currentIds = Array.isArray(field.value) ? field.value : [];
+                                    const isChecked = currentIds.includes(tag.id);
+                                    
+                                    return (
+                                      <Checkbox
+                                        id={`tag-${tag.id}-${rowIndex}`}
+                                        checked={isChecked}
+                                        onCheckedChange={(checked) => {
+                                          if (checked) {
+                                            field.onChange([...currentIds, tag.id]);
+                                          } else {
+                                            field.onChange(currentIds.filter((id: string) => id !== tag.id));
+                                          }
+                                        }}
+                                        className="border-[#495057] data-[state=checked]:bg-[#9370DB] data-[state=checked]:border-[#9370DB]"
+                                      />
+                                    );
+                                  }}
+                                />
+                                <Label 
+                                  htmlFor={`tag-${tag.id}-${rowIndex}`} 
+                                  className="text-sm text-gray-300 cursor-pointer flex-1"
+                                >
+                                  {tag.name}
+                                </Label>
+                                <Badge variant="outline" className="text-xs border-[#9370DB] text-[#9370DB]">
+                                  Tag
+                                </Badge>
+                              </div>
+                            ))
+                            ) : (
+                              <p className="text-gray-400 text-center py-4">Nenhuma tag disponível.</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <p className="text-xs text-gray-500">
+                          Selecione as tags para filtrar produtos automaticamente no carrossel.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // Renderização dos banners (código existente)
+                  <div className={`grid gap-4 ${
+                    row.layout === '1_col_full' ? 'grid-cols-1' :
+                    row.layout === '2_col_half' ? 'grid-cols-1 md:grid-cols-2' :
+                    row.layout === '3_col_third' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
+                    'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+                  }`}>
                   {row.banners.map((banner, bannerIndex) => {
                     const uploadKey = `${rowIndex}-${bannerIndex}`;
                     const isUploading = uploadingImages[uploadKey];
@@ -456,7 +869,7 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
                         <CardContent className="space-y-3">
                           {/* Upload de Imagem */}
                           <div className="space-y-2">
-                            <Label className="text-xs text-gray-400">Imagem {row.layout === '1_col_full' ? '(Proporção: 20:3, Tamanho Recomendado: 1200x180px)' : '(Proporção: 2:1, Tamanho Recomendado: 600x300px)'}</Label>
+                            <Label className="text-xs text-gray-400">Imagem {row.layout === '1_col_full' ? '(Proporção: 4.4:1, Tamanho Recomendado: 1760x400px - Máximo 400px altura)' : '(Proporção: 2:1, Tamanho Recomendado: 600x300px)'}</Label>
                             <Controller
                               name={`banner_rows.${rowIndex}.banners.${bannerIndex}.image_url`}
                               control={control}
@@ -607,7 +1020,8 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
                       </Card>
                     );
                   })}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

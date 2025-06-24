@@ -49,6 +49,20 @@ export interface CarouselConfig {
   selection_mode?: 'tags' | 'products' | 'combined';
   tag_ids?: string[];
   product_ids?: string[];
+  showTitle?: boolean;
+  titleAlignment?: 'left' | 'center' | 'right';
+}
+
+// New type for Carousel Row (similar to BannerRowConfig)
+export interface CarouselRowConfig {
+  row_id: string; // Unique ID for the row
+  title?: string;
+  showTitle?: boolean;
+  titleAlignment?: 'left' | 'center' | 'right';
+  selection_mode?: 'tags' | 'products' | 'combined';
+  tag_ids?: string[];
+  product_ids?: string[];
+  margin_included_in_banner?: boolean; // New field for horizontal margin control
 }
 
 // Define new banner types for flexibility
@@ -69,13 +83,15 @@ export interface BannerRowConfig {
   row_id: string; // Unique ID for the row
   layout: '1_col_full' | '2_col_half' | '3_col_third' | '4_col_quarter'; // Predefined layouts
   banners: BannerConfig[]; // Array of banners for this row, matching the layout
+  margin_included_in_banner?: boolean; // New field for horizontal margin control
 }
 
-// Update FixedContentFormData to use dynamic banner rows
+// Update FixedContentFormData to use dynamic banner rows and carousel rows
 export interface FixedContentFormData {
   banner_rows?: BannerRowConfig[]; // Array of banner rows
-  carrossel_1?: CarouselConfig;
-  carrossel_2?: CarouselConfig;
+  carousel_rows?: CarouselRowConfig[]; // Array of carousel rows
+  carrossel_1?: CarouselConfig; // Legacy support
+  carrossel_2?: CarouselConfig; // Legacy support
 }
 
 
