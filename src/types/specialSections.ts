@@ -6,6 +6,10 @@ export type SpecialSection = Database["public"]["Tables"]["special_sections"]["R
   background_type?: 'color' | 'image';
   background_value?: string;
   background_image_position?: 'center' | 'top' | 'bottom' | 'left' | 'right';
+  title_part1?: string;
+  title_part2?: string;
+  title_color1?: string;
+  title_color2?: string;
 };
 
 // Base type for Special Section Element from the database

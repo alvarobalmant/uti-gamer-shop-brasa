@@ -62,7 +62,14 @@ const ProductSectionManager: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSection, setCurrentSection] = useState<ProductSection | null>(null);
-  const [formData, setFormData] = useState<Omit<ProductSectionInput, 'items'>>({ title: '', view_all_link: '' });
+  const [formData, setFormData] = useState<Omit<ProductSectionInput, 'items'>>({ 
+    title: '', 
+    title_part1: '', 
+    title_part2: '', 
+    title_color1: '#000000', 
+    title_color2: '#9ca3af', 
+    view_all_link: '' 
+  });
   const [selectedItems, setSelectedItems] = useState<{ type: SectionItemType; id: string }[]>([]);
   const [itemTypeToAdd, setItemTypeToAdd] = useState<SectionItemType>('product'); // 'product' or 'tag'
 
@@ -70,7 +77,14 @@ const ProductSectionManager: React.FC = () => {
 
   const handleEditClick = (section: ProductSection) => {
     setCurrentSection(section);
-    setFormData({ title: section.title, view_all_link: section.view_all_link || '' });
+    setFormData({ 
+      title: section.title, 
+      title_part1: section.title_part1 || '',
+      title_part2: section.title_part2 || '',
+      title_color1: section.title_color1 || '#000000',
+      title_color2: section.title_color2 || '#9ca3af',
+      view_all_link: section.view_all_link || '' 
+    });
     setSelectedItems(section.items?.map(item => ({ type: item.item_type, id: item.item_id })) || []);
     // Determine initial item type based on first item, if any
     setItemTypeToAdd(section.items?.[0]?.item_type || 'product'); 
@@ -79,7 +93,14 @@ const ProductSectionManager: React.FC = () => {
 
   const handleAddNewClick = () => {
     setCurrentSection(null);
-    setFormData({ title: '', view_all_link: '' });
+    setFormData({ 
+      title: '', 
+      title_part1: '', 
+      title_part2: '', 
+      title_color1: '#000000', 
+      title_color2: '#9ca3af', 
+      view_all_link: '' 
+    });
     setSelectedItems([]);
     setItemTypeToAdd('product');
     setIsModalOpen(true);
@@ -107,6 +128,10 @@ const ProductSectionManager: React.FC = () => {
     const sectionInput: ProductSectionInput = {
       id: currentSection?.id,
       title: formData.title,
+      title_part1: formData.title_part1,
+      title_part2: formData.title_part2,
+      title_color1: formData.title_color1,
+      title_color2: formData.title_color2,
       view_all_link: formData.view_all_link || null,
       items: selectedItems,
     };
@@ -186,7 +211,17 @@ const ProductSectionManager: React.FC = () => {
               {sections.length > 0 ? (
                 sections.map((section) => (
                   <TableRow key={section.id}>
-                    <TableCell className="font-medium">{section.title}</TableCell>
+                    <TableCell className="font-medium">
+                      {section.title_part1 && section.title_part2 ? (
+                        <span>
+                          <span style={{ color: section.title_color1 }}>{section.title_part1}</span>
+                          {' '}
+                          <span style={{ color: section.title_color2 }}>{section.title_part2}</span>
+                        </span>
+                      ) : (
+                        section.title
+                      )}
+                    </TableCell>
                     <TableCell className="capitalize">
                       {section.items?.[0]?.item_type === 'product' ? <PackageIcon className="h-4 w-4 inline mr-1"/> : <TagIcon className="h-4 w-4 inline mr-1"/>}
                       {section.items?.[0]?.item_type === 'product' ? 'Produtos' : 'Tags'}
@@ -232,7 +267,7 @@ const ProductSectionManager: React.FC = () => {
           <DialogHeader>
             <DialogTitle>{currentSection ? 'Editar Seção' : 'Adicionar Nova Seção'}</DialogTitle>
             <DialogDescription>
-              Defina o título, o link e selecione os produtos ou tags para esta seção.
+              Defina o título, o link e selecione os produtos ou tags para esta seção. Use títulos bicolores para um visual mais atrativo.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleFormSubmit}>
@@ -240,7 +275,7 @@ const ProductSectionManager: React.FC = () => {
               {/* Title */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="title" className="text-right">
-                  Título*
+                  Título Simples
                 </Label>
                 <Input 
                   id="title" 
@@ -248,9 +283,67 @@ const ProductSectionManager: React.FC = () => {
                   value={formData.title} 
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))} 
                   className="col-span-3" 
-                  required 
+                  placeholder="Usado se não houver título bicolor"
                 />
               </div>
+              
+              {/* Bicolor Title Fields */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="title_part1" className="text-right">
+                  Título Parte 1
+                </Label>
+                <div className="col-span-3 flex gap-2">
+                  <Input 
+                    id="title_part1" 
+                    name="title_part1" 
+                    value={formData.title_part1} 
+                    onChange={(e) => setFormData(prev => ({ ...prev, title_part1: e.target.value }))} 
+                    className="flex-1"
+                    placeholder="Ex: PlayStation 5 Accessories."
+                  />
+                  <input
+                    type="color"
+                    value={formData.title_color1}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title_color1: e.target.value }))}
+                    className="w-12 h-10 rounded border"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="title_part2" className="text-right">
+                  Título Parte 2
+                </Label>
+                <div className="col-span-3 flex gap-2">
+                  <Input 
+                    id="title_part2" 
+                    name="title_part2" 
+                    value={formData.title_part2} 
+                    onChange={(e) => setFormData(prev => ({ ...prev, title_part2: e.target.value }))} 
+                    className="flex-1"
+                    placeholder="Ex: Best Sellers."
+                  />
+                  <input
+                    type="color"
+                    value={formData.title_color2}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title_color2: e.target.value }))}
+                    className="w-12 h-10 rounded border"
+                  />
+                </div>
+              </div>
+              
+              {/* Preview */}
+              {(formData.title_part1 || formData.title_part2) && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Preview:</Label>
+                  <div className="col-span-3 p-2 border rounded bg-gray-50">
+                    <span style={{ color: formData.title_color1 }}>{formData.title_part1}</span>
+                    {formData.title_part1 && formData.title_part2 && ' '}
+                    <span style={{ color: formData.title_color2 }}>{formData.title_part2}</span>
+                  </div>
+                </div>
+              )}
+              
               {/* View All Link */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="viewAllLink" className="text-right">
@@ -265,6 +358,7 @@ const ProductSectionManager: React.FC = () => {
                   placeholder="Opcional (ex: /categoria/promocoes)"
                 />
               </div>
+              
               {/* Item Type Selector */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="itemType" className="text-right">
@@ -358,4 +452,3 @@ const ProductSectionManager: React.FC = () => {
 };
 
 export default ProductSectionManager;
-

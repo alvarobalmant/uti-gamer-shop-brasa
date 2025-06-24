@@ -422,6 +422,10 @@ export type Database = {
           created_at: string | null
           id: string
           title: string
+          title_color1: string | null
+          title_color2: string | null
+          title_part1: string | null
+          title_part2: string | null
           updated_at: string | null
           view_all_link: string | null
         }
@@ -429,6 +433,10 @@ export type Database = {
           created_at?: string | null
           id?: string
           title: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
           view_all_link?: string | null
         }
@@ -436,6 +444,10 @@ export type Database = {
           created_at?: string | null
           id?: string
           title?: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
           view_all_link?: string | null
         }
@@ -894,6 +906,10 @@ export type Database = {
           padding_right: number | null
           padding_top: number | null
           title: string
+          title_color1: string | null
+          title_color2: string | null
+          title_part1: string | null
+          title_part2: string | null
           updated_at: string | null
         }
         Insert: {
@@ -919,6 +935,10 @@ export type Database = {
           padding_right?: number | null
           padding_top?: number | null
           title: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -944,6 +964,10 @@ export type Database = {
           padding_right?: number | null
           padding_top?: number | null
           title?: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
         }
         Relationships: []
