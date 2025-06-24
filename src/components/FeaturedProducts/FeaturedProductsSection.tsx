@@ -31,6 +31,13 @@ const FeaturedProductsSection = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+<<<<<<< HEAD
+=======
+
+  // State for managing the product modal (only if onCardClick is not provided)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+>>>>>>> c5c70ba72c144175d231c0e4f13775a0a65a7a4f
 
   const handleViewAllClick = () => {
     navigate(viewAllLink);
@@ -39,6 +46,36 @@ const FeaturedProductsSection = ({
   // Function to handle product click - always navigate to product page
   const handleProductCardClick = (productId: string) => {
     navigate(`/produto/${productId}`);
+  };
+
+  // Check scroll position and update button states
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  // Scroll functions
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollBy({
+        left: -containerWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollBy({
+        left: containerWidth,
+        behavior: 'smooth'
+      });
+    }
   };
 
   // Check scroll position and update button states
