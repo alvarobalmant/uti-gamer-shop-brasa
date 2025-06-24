@@ -1,132 +1,180 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProductManager from './ProductManager';
-import { BannerManager } from './BannerManager';
+import ProductManager from './ProductManagerNew';
+import { BannerManagerNew } from './BannerManagerNew';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
-import UserSubscriptionManagement from './UserSubscriptionManagement'; // Corrected import name based on file listing
+import UserSubscriptionManagement from './UserSubscriptionManagement';
 import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
 import ProductSectionManager from './ProductSectionManager';
 import PageManager from './PageManager';
 import { QuickLinkManager } from './QuickLinkManager';
-import SpecialSectionManager from './SpecialSectionManager'; // Import SpecialSectionManager
-import Xbox4AdminPage from './Xbox4AdminPage'; // Import the new Xbox4AdminPage
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2 } from 'lucide-react'; // Added Star icon
+import SpecialSectionManager from './SpecialSectionManager';
+import Xbox4AdminPage from './Xbox4AdminPage';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('xbox4_customization'); // Default to Xbox4 customization for testing
+  const [activeTab, setActiveTab] = useState('layout');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const menuItems = [
+    { id: 'layout', label: 'Layout Home', icon: LayoutList },
+    { id: 'pages', label: 'Páginas', icon: Globe },
+    { id: 'product_sections', label: 'Seções Produtos', icon: ListChecks },
+    { id: 'special_sections', label: 'Seções Especiais', icon: Star },
+    { id: 'xbox4_customization', label: 'Xbox 4 - Personalização', icon: Gamepad2 },
+    { id: 'products', label: 'Produtos', icon: Package },
+    { id: 'banners', label: 'Banners', icon: Image },
+    { id: 'quick_links', label: 'Links Rápidos', icon: Link },
+    { id: 'services', label: 'Serviços', icon: Briefcase },
+    { id: 'tags', label: 'Tags', icon: Tag },
+    { id: 'users', label: 'Usuários/PRO', icon: Users },
+  ];
+
+  const handleBackToHome = () => {
+    window.location.href = '/';
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Painel Administrativo
-          </h1>
-          <p className="text-gray-400">
-            Gerencie o conteúdo e as configurações do site UTI dos Games
-          </p>
+    <div className="min-h-screen bg-[#1A1A2E] flex">
+      {/* Sidebar */}
+      <div className={`${sidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-[#2C2C44] border-r border-[#343A40] flex flex-col`}>
+        {/* Sidebar Header */}
+        <div className="p-4 border-b border-[#343A40]">
+          <div className="flex items-center justify-between">
+            {sidebarOpen && (
+              <h2 className="text-lg font-semibold text-white">
+                Painel Admin
+              </h2>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="text-gray-400 hover:text-white hover:bg-[#343A40]"
+            >
+              {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Updated grid-cols-10 to accommodate the new tab */}
-          <TabsList className="grid w-full grid-cols-12 bg-gray-800 border-gray-700">
-            <TabsTrigger value="layout" className="flex items-center gap-2">
-              <LayoutList className="w-4 h-4" />
-              Layout Home
-            </TabsTrigger>
-            <TabsTrigger value="pages" className="flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              Páginas
-            </TabsTrigger>
-            <TabsTrigger value="product_sections" className="flex items-center gap-2">
-              <ListChecks className="w-4 h-4" />
-              Seções Produtos
-            </TabsTrigger>
-            {/* Added Special Sections Tab */}
-            <TabsTrigger value="special_sections" className="flex items-center gap-2">
-              <Star className="w-4 h-4" />
-              Seções Especiais
-            </TabsTrigger>
-            <TabsTrigger value="xbox4_customization" className="flex items-center gap-2">
-              <Gamepad2 className="w-4 h-4" />
-              Xbox 4 - Personalização
-            </TabsTrigger>
-            <TabsTrigger value="products" className="flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              Produtos
-            </TabsTrigger>
-            <TabsTrigger value="banners" className="flex items-center gap-2">
-              <Image className="w-4 h-4" />
-              Banners
-            </TabsTrigger>
-            <TabsTrigger value="quick_links" className="flex items-center gap-2">
-              <Link className="w-4 h-4" />
-              Links Rápidos
-            </TabsTrigger>
-            <TabsTrigger value="services" className="flex items-center gap-2">
-              <Briefcase className="w-4 h-4" />
-              Serviços
-            </TabsTrigger>
-            <TabsTrigger value="tags" className="flex items-center gap-2">
-              <Tag className="w-4 h-4" />
-              Tags
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Usuários/PRO
-            </TabsTrigger>
-          </TabsList>
+        {/* Navigation Menu */}
+        <nav className="flex-1 p-2">
+          <ul className="space-y-1">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.id}>
+                  <button
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 ${
+                      activeTab === item.id
+                        ? 'bg-[#007BFF] text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white hover:bg-[#343A40]'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    {sidebarOpen && (
+                      <span className="font-medium">{item.label}</span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-          {/* Content for Homepage Layout Management */}
-          <TabsContent value="layout">
-            <HomepageLayoutManager />
-          </TabsContent>
+        {/* Back to Home Button */}
+        <div className="p-2 border-t border-[#343A40]">
+          <Button
+            onClick={handleBackToHome}
+            className="w-full flex items-center gap-3 px-3 py-2.5 bg-[#28A745] hover:bg-[#218838] text-white rounded-lg transition-all duration-200"
+          >
+            <ArrowLeft className="w-5 h-5 flex-shrink-0" />
+            {sidebarOpen && (
+              <span className="font-medium">Voltar ao Site</span>
+            )}
+          </Button>
+        </div>
+      </div>
 
-          {/* Content for Pages Management */}
-          <TabsContent value="pages">
-            <PageManager />
-          </TabsContent>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="bg-[#2C2C44] border-b border-[#343A40] px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                {menuItems.find(item => item.id === activeTab)?.label || 'Painel Administrativo'}
+              </h1>
+              <p className="text-gray-400 text-sm mt-1">
+                Gerencie o conteúdo e as configurações do site UTI dos Games
+              </p>
+            </div>
+            
+            {/* Header Back Button */}
+            <Button
+              onClick={handleBackToHome}
+              variant="outline"
+              className="flex items-center gap-2 border-[#28A745] text-[#28A745] hover:bg-[#28A745] hover:text-white"
+            >
+              <Home className="w-4 h-4" />
+              Voltar ao Site
+            </Button>
+          </div>
+        </header>
 
-          {/* Content for Product Section Management */}
-          <TabsContent value="product_sections">
-            <ProductSectionManager />
-          </TabsContent>
+        {/* Content Area */}
+        <main className="flex-1 p-6 bg-[#1A1A2E] overflow-auto">
+          <div className="max-w-7xl mx-auto">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+              <TabsContent value="layout" className="mt-0">
+                <HomepageLayoutManager />
+              </TabsContent>
 
-          {/* Added Special Sections Content */}
-          <TabsContent value="special_sections">
-            <SpecialSectionManager />
-          </TabsContent>
+              <TabsContent value="pages" className="mt-0">
+                <PageManager />
+              </TabsContent>
 
-          <TabsContent value="xbox4_customization">
-            <Xbox4AdminPage />
-          </TabsContent>
+              <TabsContent value="product_sections" className="mt-0">
+                <ProductSectionManager />
+              </TabsContent>
 
-          <TabsContent value="products">
-            <ProductManager />
-          </TabsContent>
+              <TabsContent value="special_sections" className="mt-0">
+                <SpecialSectionManager />
+              </TabsContent>
 
-          <TabsContent value="banners">
-            <BannerManager />
-          </TabsContent>
+              <TabsContent value="xbox4_customization" className="mt-0">
+                <Xbox4AdminPage />
+              </TabsContent>
 
-          <TabsContent value="quick_links">
-            <QuickLinkManager />
-          </TabsContent>
+              <TabsContent value="products" className="mt-0">
+                <ProductManager />
+              </TabsContent>
 
-          <TabsContent value="services">
-            <ServiceCardManager />
-          </TabsContent>
+              <TabsContent value="banners" className="mt-0">
+                <BannerManagerNew />
+              </TabsContent>
 
-          <TabsContent value="tags">
-            <TagManager />
-          </TabsContent>
+              <TabsContent value="quick_links" className="mt-0">
+                <QuickLinkManager />
+              </TabsContent>
 
-          <TabsContent value="users">
-            <UserSubscriptionManagement />
-          </TabsContent>
+              <TabsContent value="services" className="mt-0">
+                <ServiceCardManager />
+              </TabsContent>
 
-        </Tabs>
+              <TabsContent value="tags" className="mt-0">
+                <TagManager />
+              </TabsContent>
+
+              <TabsContent value="users" className="mt-0">
+                <UserSubscriptionManagement />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </main>
       </div>
     </div>
   );

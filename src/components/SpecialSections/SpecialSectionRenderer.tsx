@@ -1,23 +1,12 @@
-
 import React from 'react';
-<<<<<<< HEAD
 import { SpecialSection, BannerRowConfig, CarouselRowConfig } from '@/types/specialSections';
-=======
-import { SpecialSection } from '@/types/specialSections';
->>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
-import { cn } from "@/lib/utils";
 import ProductCard from '@/components/ProductCard';
-<<<<<<< HEAD
 import SpecialCarouselRow from './SpecialCarouselRow';
 import { useIsMobile } from '@/hooks/use-mobile';
-=======
-import CarouselRowRenderer from './CarouselRowRenderer'; // NOVO: Import do componente de carrossel
->>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
 
 interface SpecialSectionRendererProps {
   section: SpecialSection;
@@ -32,6 +21,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
 }) => {
   const { products, loading: productsLoading } = useProducts();
   const { addToCart } = useCart();
+  const isMobile = useIsMobile();
 
   if (!section || !section.is_active) {
     return null;
@@ -67,7 +57,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
     return products.filter(product => product && ids.includes(product.id));
   };
 
-<<<<<<< HEAD
   // --- New Carousel Row Rendering Logic ---
   const renderCarouselRow = (carouselRowConfig: CarouselRowConfig, rowIndex: number) => {
     if (!carouselRowConfig) return null;
@@ -112,10 +101,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
   };
   // --- Legacy Carousel Rendering Logic (for backward compatibility) ---
   const renderLegacyCarousel = (carouselConfig: any, carouselKey: string) => {
-=======
-  // --- Carousel Rendering Logic (MANTIDO - não alterado) ---
-  const renderCarousel = (carouselConfig: any, carouselKey: string) => {
->>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
     if (!carouselConfig?.title) return null;
 
     const productIds = carouselConfig.product_ids || [];
@@ -157,14 +142,47 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
   // --- End Legacy Carousel Rendering Logic ---
 
   // Determine background style
+  const layoutSettings = config.layout_settings || { 
+    show_background: true, 
+    carousel_display: 'both', 
+    device_visibility: { mobile: true, tablet: true, desktop: true } 
+  };
   const sectionStyle: React.CSSProperties = {};
-  if (section.background_type === 'image' && section.background_value) {
-    sectionStyle.backgroundImage = `url(${section.background_value})`;
-    sectionStyle.backgroundSize = 'cover';
-    sectionStyle.backgroundPosition = section.background_image_position || 'center';
-    sectionStyle.backgroundRepeat = 'no-repeat';
-  } else {
-    sectionStyle.backgroundColor = section.background_value || '#003087';
+  
+  if (layoutSettings.show_background) {
+    if (section.background_type === 'image' && section.background_value) {
+      sectionStyle.backgroundImage = `url(${section.background_value})`;
+      sectionStyle.backgroundSize = 'cover';
+      sectionStyle.backgroundPosition = section.background_image_position || 'center';
+      sectionStyle.backgroundRepeat = 'no-repeat';
+    } else {
+      sectionStyle.backgroundColor = section.background_value || '#003087';
+    }
+  }
+
+  // Determine which carousels to show
+  const shouldShowCarousel1 = layoutSettings.carousel_display === 'both' || layoutSettings.carousel_display === 'carousel1_only';
+  const shouldShowCarousel2 = layoutSettings.carousel_display === 'both' || layoutSettings.carousel_display === 'carousel2_only';
+
+  // Determine device visibility
+  const deviceVisibility = layoutSettings.device_visibility || { mobile: true, tablet: true, desktop: true };
+  
+  // Check if section should be visible on current device
+  const shouldShowOnCurrentDevice = () => {
+    // Para mobile (até 768px)
+    if (isMobile) {
+      return deviceVisibility.mobile;
+    }
+    // Para tablet (768px - 1024px) e desktop (1024px+)
+    // Consideramos tablet e desktop juntos por simplicidade
+    else {
+      return deviceVisibility.tablet || deviceVisibility.desktop;
+    }
+  };
+
+  // Don't render if not visible on current device
+  if (!shouldShowOnCurrentDevice()) {
+    return null;
   }
 
   // Determinar classes de espaçamento baseado no contexto da seção
@@ -187,7 +205,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
     <section aria-label={section.title} className="w-full">
       <div 
         style={sectionStyle} 
-<<<<<<< HEAD
         className={`container mx-auto px-4 sm:px-6 lg:px-8 ${getSpacingClasses()} ${layoutSettings.show_background ? 'rounded-lg' : ''} overflow-hidden`}
       >
         {/* Dynamic Banner Rows and Carousel Rows (Unified System) */}
@@ -294,93 +311,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
 
         {/* Legacy Dynamic Banner Rows (for backward compatibility) */}
         {/* REMOVIDO: Renderização separada que quebrava a ordem */}
-=======
-        className="container max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 rounded-lg my-4 md:my-6 overflow-hidden"
-      >
-        
-        {/* Banner Principal */}
-        {config.banner_principal?.image_url && (
-          <div className="w-full mb-4 md:mb-6">
-            <Link to={config.banner_principal.link_url || '#'}>
-              <img 
-                src={config.banner_principal.image_url} 
-                alt="Banner Principal" 
-                className="w-full h-auto rounded-md object-cover" 
-                onError={(e) => (e.currentTarget.src = '/placeholder-banner.png')}
-              />
-            </Link>
-          </div>
-        )}
-
-        {/* Banners Médios */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-6">
-          {config.banner_medio_1?.image_url && (
-            <div className="relative overflow-hidden rounded-md group">
-              <Link to={config.banner_medio_1.link_url || '#'}>
-                <img 
-                  src={config.banner_medio_1.image_url} 
-                  alt={config.banner_medio_1.title || "Banner Médio 1"} 
-                  className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
-                  onError={(e) => (e.currentTarget.src = '/placeholder-banner.png')}
-                />
-                {(config.banner_medio_1.title || config.banner_medio_1.subtitle) && (
-                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
-                    {config.banner_medio_1.title && <h3 className="text-md font-semibold text-white mb-0.5">{config.banner_medio_1.title}</h3>}
-                    {config.banner_medio_1.subtitle && <p className="text-xs text-gray-100">{config.banner_medio_1.subtitle}</p>}
-                  </div>
-                )}
-              </Link>
-            </div>
-          )}
-          {config.banner_medio_2?.image_url && (
-             <div className="relative overflow-hidden rounded-md group">
-              <Link to={config.banner_medio_2.link_url || '#'}>
-                <img 
-                  src={config.banner_medio_2.image_url} 
-                  alt={config.banner_medio_2.title || "Banner Médio 2"} 
-                  className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
-                  onError={(e) => (e.currentTarget.src = '/placeholder-banner.png')}
-                />
-                {(config.banner_medio_2.title || config.banner_medio_2.subtitle) && (
-                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
-                    {config.banner_medio_2.title && <h3 className="text-md font-semibold text-white mb-0.5">{config.banner_medio_2.title}</h3>}
-                    {config.banner_medio_2.subtitle && <p className="text-xs text-gray-100">{config.banner_medio_2.subtitle}</p>}
-                  </div>
-                )}
-              </Link>
-            </div>
-          )}
-        </div>
-
-        {/* Banner Pequeno */}
-        {config.banner_pequeno?.image_url && (
-          <div className="w-full mb-6 md:mb-8">
-            <Link to={config.banner_pequeno.link_url || '#'}>
-              <img 
-                src={config.banner_pequeno.image_url} 
-                alt="Banner Promocional" 
-                className="w-full h-auto rounded-md object-cover"
-                onError={(e) => (e.currentTarget.src = '/placeholder-banner.png')}
-              />
-            </Link>
-          </div>
-        )}
-
-        {/* NOVO: Carrosseis Estilo GameStop */}
-        {config.carousel_rows && Array.isArray(config.carousel_rows) && config.carousel_rows.map((carouselRow: any) => (
-          <CarouselRowRenderer
-            key={carouselRow.row_id}
-            carouselRow={carouselRow}
-            onProductCardClick={onProductCardClick}
-          />
-        ))}
-
-        {/* Carrossel de Produtos 1 (MANTIDO - legacy) */}
-        {renderCarousel(config.carrossel_1, 'carrossel_1')}
-
-        {/* Carrossel de Produtos 2 (MANTIDO - legacy) */}
-        {renderCarousel(config.carrossel_2, 'carrossel_2')}
->>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
 
       </div>
     </section>
@@ -388,3 +318,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
 });
 
 export default SpecialSectionRenderer;
+
+
+

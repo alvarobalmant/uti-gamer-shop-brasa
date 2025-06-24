@@ -18,16 +18,16 @@ import {
   Share2,
   ChevronLeft,
   ChevronRight,
+  Plus,
+  Minus,
   Check,
-  AlertCircle,
-  Home
+  AlertCircle
 } from 'lucide-react';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
+import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import { useMetaTags } from '@/hooks/useMetaTags';
-import { cn } from '@/lib/utils';
 
-const ProductPage = () => {
+const ProductPageProfessional = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { products, loading: productsLoading } = useProducts();
@@ -38,8 +38,6 @@ const ProductPage = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('new');
   const [selectedEdition, setSelectedEdition] = useState('standard');
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -53,14 +51,6 @@ const ProductPage = () => {
         // Set default condition based on product tags
         const isNew = foundProduct.tags?.some(t => t.name.toLowerCase().includes('novo'));
         setSelectedCondition(isNew ? 'new' : 'pre-owned');
-        
-        // Set default size and color if available
-        if (foundProduct.sizes && foundProduct.sizes.length > 0) {
-          setSelectedSize(foundProduct.sizes[0]);
-        }
-        if (foundProduct.colors && foundProduct.colors.length > 0) {
-          setSelectedColor(foundProduct.colors[0]);
-        }
       }
     }
   }, [products, id]);
@@ -71,22 +61,11 @@ const ProductPage = () => {
     }
   }, [product]);
 
-  // SEO Meta Tags dinâmicas
-  useMetaTags({
-    title: product ? `${product.name} | UTI dos Games` : 'Produto | UTI dos Games',
-    description: product 
-      ? `${product.description || `Compre ${product.name} na UTI dos Games.`} Melhor preço, entrega rápida e garantia. Confira!`
-      : 'Confira os melhores produtos de games na UTI dos Games.',
-    image: product ? (product.image || product.imageUrl) : undefined,
-    url: `${window.location.origin}/produto/${id}`,
-    type: 'product'
-  });
-
   const handleAddToCart = async () => {
     if (!product) return;
     
     try {
-      await addToCart(product, selectedSize || undefined, selectedColor || undefined);
+      await addToCart(product);
       toast({
         title: "Produto adicionado ao carrinho!",
         description: `${product.name} foi adicionado com sucesso.`,
@@ -105,17 +84,15 @@ const ProductPage = () => {
   };
 
   const handleImageNavigation = (direction: 'prev' | 'next') => {
-    if (!product?.images && !product?.additional_images) return;
-    
-    const images = product.images || product.additional_images || [product.image || product.imageUrl];
+    if (!product?.images) return;
     
     if (direction === 'prev') {
       setSelectedImageIndex(prev => 
-        prev === 0 ? images.length - 1 : prev - 1
+        prev === 0 ? product.images.length - 1 : prev - 1
       );
     } else {
       setSelectedImageIndex(prev => 
-        prev === images.length - 1 ? 0 : prev + 1
+        prev === product.images.length - 1 ? 0 : prev + 1
       );
     }
   };
@@ -125,11 +102,11 @@ const ProductPage = () => {
     
     switch (selectedCondition) {
       case 'new':
-        return product.new_price || product.price;
+        return product.price;
       case 'pre-owned':
         return product.price * 0.85; // 15% discount for pre-owned
       case 'digital':
-        return product.digital_price || product.price * 0.9; // 10% discount for digital
+        return product.price * 0.9; // 10% discount for digital
       default:
         return product.price;
     }
@@ -176,16 +153,10 @@ const ProductPage = () => {
             <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Produto não encontrado</h1>
             <p className="text-gray-600 mb-6">O produto que você está procurando não existe ou foi removido.</p>
-            <div className="flex gap-4 justify-center">
-              <Button onClick={handleBack} variant="outline">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-              <Button onClick={() => navigate('/')}>
-                <Home className="w-4 h-4 mr-2" />
-                Ir para Home
-              </Button>
-            </div>
+            <Button onClick={handleBack} variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar
+            </Button>
           </div>
         </div>
       </div>
@@ -193,11 +164,8 @@ const ProductPage = () => {
   }
 
   const currentPrice = getEditionPrice();
-  const originalPrice = product.list_price || product.price;
+  const originalPrice = product.originalPrice || product.price;
   const discount = originalPrice > currentPrice ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
-  
-  const images = product.images || product.additional_images || [product.image || product.imageUrl];
-  const currentImage = images[selectedImageIndex] || product.image || product.imageUrl;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -211,9 +179,7 @@ const ProductPage = () => {
               <ArrowLeft className="w-4 h-4" />
             </button>
             <span>/</span>
-            <button onClick={() => navigate('/')} className="hover:text-gray-900 transition-colors">
-              Video Games
-            </button>
+            <span>Video Games</span>
             <span>/</span>
             <span>PlayStation 5</span>
             <span>/</span>
@@ -230,13 +196,13 @@ const ProductPage = () => {
             <div className="relative bg-white rounded-lg overflow-hidden shadow-sm border">
               <div className="aspect-square relative">
                 <img
-                  src={currentImage}
+                  src={product.images?.[selectedImageIndex] || product.imageUrl}
                   alt={product.name}
                   className="w-full h-full object-contain p-4"
                 />
                 
                 {/* Navigation Arrows */}
-                {images.length > 1 && (
+                {product.images && product.images.length > 1 && (
                   <>
                     <button
                       onClick={() => handleImageNavigation('prev')}
@@ -256,16 +222,15 @@ const ProductPage = () => {
             </div>
 
             {/* Thumbnail Images */}
-            {images.length > 1 && (
+            {product.images && product.images.length > 1 && (
               <div className="flex space-x-2 overflow-x-auto">
-                {images.map((image, index) => (
+                {product.images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={cn(
-                      "flex-shrink-0 w-16 h-16 bg-white rounded border-2 overflow-hidden transition-all",
+                    className={`flex-shrink-0 w-16 h-16 bg-white rounded border-2 overflow-hidden transition-all ${
                       selectedImageIndex === index ? 'border-red-500' : 'border-gray-200 hover:border-gray-300'
-                    )}
+                    }`}
                   >
                     <img
                       src={image}
@@ -283,7 +248,7 @@ const ProductPage = () => {
             {/* Publisher/Brand */}
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-600">Por</span>
-              <span className="text-sm font-medium text-red-600">UTI dos Games</span>
+              <span className="text-sm font-medium text-blue-600">UTI dos Games</span>
             </div>
 
             {/* Title */}
@@ -294,23 +259,14 @@ const ProductPage = () => {
               
               {/* Badges */}
               <div className="flex flex-wrap gap-2">
-                {product.is_featured && (
+                {product.isFeatured && (
                   <Badge variant="destructive" className="bg-red-500">
                     Bestseller
                   </Badge>
                 )}
-                {product.badge_visible && product.badge_text && (
-                  <Badge 
-                    variant="secondary" 
-                    className={cn(
-                      "text-white",
-                      product.badge_color === 'green' && "bg-green-500",
-                      product.badge_color === 'blue' && "bg-blue-500",
-                      product.badge_color === 'red' && "bg-red-500",
-                      !product.badge_color && "bg-gray-500"
-                    )}
-                  >
-                    {product.badge_text}
+                {product.isNew && (
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    Novo
                   </Badge>
                 )}
                 {discount > 0 && (
@@ -327,14 +283,11 @@ const ProductPage = () => {
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={cn(
-                      "w-4 h-4",
-                      i < (product.rating || 4) ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                    )}
+                    className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
                   />
                 ))}
               </div>
-              <span className="text-sm text-gray-600">({product.rating || 4.0} - 127 avaliações)</span>
+              <span className="text-sm text-gray-600">(127 avaliações)</span>
             </div>
 
             {/* Price */}
@@ -349,7 +302,7 @@ const ProductPage = () => {
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-600">Data de Lançamento: Disponível agora</p>
+              <p className="text-sm text-gray-600">Data de Lançamento: 31/10/2025</p>
             </div>
 
             {/* Platform Selection */}
@@ -359,7 +312,7 @@ const ProductPage = () => {
               </label>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" className="border-red-500 text-red-500">
-                  {product.platform || 'PlayStation 5'}
+                  PlayStation 5
                   <span className="ml-2 text-xs">+2 mais</span>
                 </Button>
               </div>
@@ -375,12 +328,11 @@ const ProductPage = () => {
                   <button
                     key={condition}
                     onClick={() => setSelectedCondition(condition as any)}
-                    className={cn(
-                      "p-3 text-center border rounded-lg transition-all",
+                    className={`p-3 text-center border rounded-lg transition-all ${
                       selectedCondition === condition
                         ? 'border-red-500 bg-red-50 text-red-700'
                         : 'border-gray-200 hover:border-gray-300'
-                    )}
+                    }`}
                   >
                     <div className="font-medium capitalize">
                       {condition === 'new' ? 'Novo' : condition === 'pre-owned' ? 'Usado' : 'Digital'}
@@ -393,55 +345,29 @@ const ProductPage = () => {
               </div>
             </div>
 
-            {/* Size Selection */}
-            {product.sizes && product.sizes.length > 0 && (
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-900">
-                  Tamanho
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={cn(
-                        "px-4 py-2 border rounded-lg transition-all",
-                        selectedSize === size
-                          ? 'border-red-500 bg-red-50 text-red-700'
-                          : 'border-gray-200 hover:border-gray-300'
-                      )}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
+            {/* Edition Selection */}
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-900">
+                Edição
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {['standard', 'deluxe', 'collector'].map((edition) => (
+                  <button
+                    key={edition}
+                    onClick={() => setSelectedEdition(edition)}
+                    className={`p-3 text-center border rounded-lg transition-all ${
+                      selectedEdition === edition
+                        ? 'border-red-500 bg-red-50 text-red-700'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="font-medium capitalize">
+                      {edition === 'standard' ? 'Padrão' : edition === 'deluxe' ? 'Deluxe' : 'Colecionador'}
+                    </div>
+                  </button>
+                ))}
               </div>
-            )}
-
-            {/* Color Selection */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-900">
-                  Cor
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={cn(
-                        "px-4 py-2 border rounded-lg transition-all",
-                        selectedColor === color
-                          ? 'border-red-500 bg-red-50 text-red-700'
-                          : 'border-gray-200 hover:border-gray-300'
-                      )}
-                    >
-                      {color}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            </div>
 
             {/* Delivery Options */}
             <div className="space-y-3">
@@ -466,7 +392,7 @@ const ProductPage = () => {
                 </div>
               </div>
               <p className="text-xs text-gray-600">
-                Frete GRÁTIS em pedidos acima de R$ 150
+                Frete GRÁTIS em pré-pedidos acima de R$ 150
               </p>
             </div>
 
@@ -537,18 +463,6 @@ const ProductPage = () => {
               <li>Sistema de progressão e customização profundo</li>
               <li>Compatível com controles DualSense (PlayStation 5)</li>
             </ul>
-
-            {/* Specifications */}
-            {product.specifications && (
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Especificações:</h3>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <pre className="text-sm text-gray-700 whitespace-pre-wrap">
-                    {JSON.stringify(product.specifications, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -556,5 +470,5 @@ const ProductPage = () => {
   );
 };
 
-export default ProductPage;
+export default ProductPageProfessional;
 

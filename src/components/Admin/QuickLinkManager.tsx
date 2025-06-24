@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, Plus, Settings, GripVertical, Info, Link as LinkIcon } from 'lucide-react';
+import { Trash2, Edit, Plus, Settings, GripVertical, Info, Link as LinkIcon, Image as ImageIcon, Text, ToggleRight } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Dialog,
@@ -50,29 +50,30 @@ const SortableQuickLinkRow: React.FC<SortableQuickLinkRowProps> = ({ link, onEdi
   };
 
   return (
-    <TableRow ref={setNodeRef} style={style} {...attributes} className="bg-background hover:bg-muted/50">
+    <TableRow ref={setNodeRef} style={style} {...attributes} className="bg-[#2C2C44] hover:bg-[#3A3A50] border-b border-[#343A40]">
       <TableCell className="w-10 cursor-grab touch-none">
-        <GripVertical {...listeners} className="h-5 w-5 text-muted-foreground" />
+        <GripVertical {...listeners} className="h-5 w-5 text-gray-400" />
       </TableCell>
       <TableCell className="w-16">
-        <img src={link.icon_url} alt={link.label} className="w-8 h-8 object-contain rounded border border-border" onError={(e) => e.currentTarget.src = '/placeholder-icon.svg'} />
+        <img src={link.icon_url} alt={link.label} className="w-10 h-10 object-contain rounded-md border border-[#343A40] p-1" onError={(e) => e.currentTarget.src = '/placeholder-icon.svg'} />
       </TableCell>
-      <TableCell className="font-medium">{link.label}</TableCell>
-      <TableCell className="text-sm text-muted-foreground">{link.path}</TableCell>
-      <TableCell className="text-center">{link.position}</TableCell>
+      <TableCell className="font-medium text-white">{link.label}</TableCell>
+      <TableCell className="text-sm text-gray-400">{link.path}</TableCell>
+      <TableCell className="text-center text-gray-300">{link.position}</TableCell>
       <TableCell className="text-right w-24">
         <Switch
           id={`visibility-${link.id}`}
           checked={link.is_active}
           onCheckedChange={(checked) => onVisibilityToggle(link.id, checked)}
           aria-label={link.is_active ? 'Desativar link' : 'Ativar link'}
+          className="data-[state=checked]:bg-[#28A745]"
         />
       </TableCell>
       <TableCell className="text-right w-32">
-        <Button variant="ghost" size="icon" onClick={() => onEdit(link)} className="mr-1 h-8 w-8">
+        <Button variant="ghost" size="sm" onClick={() => onEdit(link)} className="mr-1 h-8 w-8 text-[#FFC107] hover:bg-[#FFC107]/20 hover:text-[#FFC107]">
           <Edit className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={() => onDelete(link.id)} className="text-destructive hover:text-destructive h-8 w-8">
+        <Button variant="ghost" size="sm" onClick={() => onDelete(link.id)} className="text-[#DC3545] hover:bg-[#DC3545]/20 hover:text-[#DC3545]">
           <Trash2 className="h-4 w-4" />
         </Button>
       </TableCell>
@@ -208,69 +209,65 @@ export const QuickLinkManager = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <LinkIcon className="w-5 h-5" />
+    <Card className="bg-[#2C2C44] border-[#343A40]">
+      <CardHeader className="border-b border-[#343A40] pb-4">
+        <CardTitle className="flex items-center gap-2 text-white">
+          <LinkIcon className="w-6 h-6 text-[#007BFF]" />
           Gerenciar Links Rápidos
         </CardTitle>
-        <Alert variant="default" className="mt-2">
-          <Info className="h-4 w-4" />
+        <Alert variant="default" className="mt-2 bg-[#1A1A2E] border-[#343A40] text-gray-300">
+          <Info className="h-4 w-4 text-[#007BFF]" />
           <AlertDescription>
             Configure os links rápidos exibidos na página inicial. Arraste para reordenar. Use ícones SVG ou PNG (recomendado: 64x64px).
           </AlertDescription>
         </Alert>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="p-6">
         <div className="flex justify-end mb-4">
           <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) resetForm(); setIsDialogOpen(open); }}>
             <DialogTrigger asChild>
-              <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+              <Button onClick={() => { resetForm(); setIsDialogOpen(true); }} className="bg-[#007BFF] hover:bg-[#0056B3] text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Adicionar Link Rápido
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>{editingLink ? 'Editar Link Rápido' : 'Novo Link Rápido'}</DialogTitle>
+            <DialogContent className="sm:max-w-[600px] bg-[#2C2C44] border-[#343A40] text-white">
+              <DialogHeader className="border-b border-[#343A40] pb-4 mb-4">
+                <DialogTitle className="text-white">{editingLink ? 'Editar Link Rápido' : 'Novo Link Rápido'}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <Label htmlFor="label">Label *</Label>
-                    <Input id="label" value={formData.label} onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))} required />
+                    <Label htmlFor="label" className="text-gray-300 flex items-center"><Text className="mr-2 h-4 w-4" /> Label *</Label>
+                    <Input id="label" value={formData.label} onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))} required className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500" />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="path">Path *</Label>
-                    <Input id="path" value={formData.path} onChange={(e) => setFormData(prev => ({ ...prev, path: e.target.value }))} placeholder="/categoria/exemplo" required />
+                    <Label htmlFor="path" className="text-gray-300 flex items-center"><LinkIcon className="mr-2 h-4 w-4" /> Path *</Label>
+                    <Input id="path" value={formData.path} onChange={(e) => setFormData(prev => ({ ...prev, path: e.target.value }))} placeholder="/categoria/exemplo" required className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500" />
                   </div>
                 </div>
                 <div className="space-y-1">
+                  <Label htmlFor="icon_url" className="text-gray-300 flex items-center"><ImageIcon className="mr-2 h-4 w-4" /> Ícone (SVG/PNG) *</Label>
                   <ImageUpload
                     onImageUploaded={(url) => setFormData(prev => ({ ...prev, icon_url: url }))}
                     currentImage={formData.icon_url}
-                    label="Ícone (SVG/PNG) *"
+                    label="Upload Ícone"
                     folder="quick-link-icons" // Use the dedicated bucket
                   />
                   {!formData.icon_url && editingLink?.icon_url && (
-                     <p className="text-xs text-muted-foreground">Ícone atual: {editingLink.icon_url}</p>
+                     <p className="text-xs text-gray-500">Ícone atual: {editingLink.icon_url}</p>
                   )}
                 </div>
-                {/* Position is handled by drag-and-drop, but could be an input */}
-                {/* <div className="space-y-1">
-                  <Label htmlFor="position">Posição</Label>
-                  <Input id="position" type="number" min="1" value={formData.position} onChange={(e) => setFormData(prev => ({ ...prev, position: parseInt(e.target.value) || 1 }))} />
-                </div> */}
                 <div className="flex items-center space-x-2">
-                  <Switch id="is_active" checked={formData.is_active} onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))} />
-                  <Label htmlFor="is_active">Ativo</Label>
+                  <Switch id="is_active" checked={formData.is_active} onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))} className="data-[state=checked]:bg-[#007BFF]" />
+                  <Label htmlFor="is_active" className="text-gray-300 flex items-center"><ToggleRight className="mr-2 h-4 w-4" /> Ativo</Label>
                 </div>
-                <DialogFooter>
+                <DialogFooter className="pt-4">
                   <DialogClose asChild>
-                     <Button type="button" variant="outline">Cancelar</Button>
+                     <Button type="button" variant="outline" className="border-[#6C757D] text-[#6C757D] hover:bg-[#6C757D] hover:text-white">Cancelar</Button>
                   </DialogClose>
-                  <Button type="submit">{editingLink ? 'Salvar Alterações' : 'Adicionar Link'}</Button>
+                  <Button type="submit" className="bg-[#007BFF] hover:bg-[#0056B3] text-white">{editingLink ? 'Salvar Alterações' : 'Adicionar Link'}</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -279,54 +276,56 @@ export const QuickLinkManager = () => {
 
         {loading && (
           <div className="space-y-2">
-            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full bg-[#343A40]" />)}
           </div>
         )}
         {!loading && (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={localLinks.map(link => link.id)} strategy={verticalListSortingStrategy}>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10"></TableHead> {/* Handle */}
-                    <TableHead className="w-16">Ícone</TableHead>
-                    <TableHead>Label</TableHead>
-                    <TableHead>Path</TableHead>
-                    <TableHead className="text-center">Posição</TableHead>
-                    <TableHead className="text-right w-24">Ativo</TableHead>
-                    <TableHead className="text-right w-32">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {localLinks.length > 0 ? (
-                    localLinks.map((link) => (
-                      <SortableQuickLinkRow
-                        key={link.id}
-                        link={link}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onVisibilityToggle={handleVisibilityToggle}
-                      />
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground h-24">
-                        Nenhum link rápido encontrado.
-                      </TableCell>
+              <div className="rounded-lg border border-[#343A40] overflow-hidden">
+                <Table className="w-full text-white">
+                  <TableHeader className="bg-[#343A40]">
+                    <TableRow className="border-b border-[#495057]">
+                      <TableHead className="w-10 text-gray-300"></TableHead> {/* Handle */}
+                      <TableHead className="w-16 text-gray-300">Ícone</TableHead>
+                      <TableHead className="text-gray-300">Label</TableHead>
+                      <TableHead className="text-gray-300">Path</TableHead>
+                      <TableHead className="text-center text-gray-300">Posição</TableHead>
+                      <TableHead className="text-right w-24 text-gray-300">Ativo</TableHead>
+                      <TableHead className="text-right w-32 text-gray-300">Ações</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {localLinks.length > 0 ? (
+                      localLinks.map((link) => (
+                        <SortableQuickLinkRow
+                          key={link.id}
+                          link={link}
+                          onEdit={handleEdit}
+                          onDelete={handleDelete}
+                          onVisibilityToggle={handleVisibilityToggle}
+                        />
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center text-gray-400 h-24">
+                          Nenhum link rápido encontrado.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </SortableContext>
           </DndContext>
         )}
       </CardContent>
       {hasChanges && (
-        <CardFooter className="flex justify-end gap-2 border-t pt-4">
-          <Button variant="outline" onClick={handleCancelChangesOrder} disabled={loading}>
+        <CardFooter className="flex justify-end gap-2 border-t border-[#343A40] bg-[#2C2C44] p-6">
+          <Button variant="outline" onClick={handleCancelChangesOrder} disabled={loading} className="border-[#6C757D] text-[#6C757D] hover:bg-[#6C757D] hover:text-white">
             Cancelar Ordem
           </Button>
-          <Button onClick={handleSaveChangesOrder} disabled={loading}>
+          <Button onClick={handleSaveChangesOrder} disabled={loading} className="bg-[#28A745] hover:bg-[#218838] text-white">
             Salvar Ordem
           </Button>
         </CardFooter>
@@ -334,4 +333,5 @@ export const QuickLinkManager = () => {
     </Card>
   );
 };
+
 

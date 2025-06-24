@@ -6,14 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus, Tag } from 'lucide-react';
+import { Trash2, Plus, Tag, Type, Info } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogClose
 } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const TagManager = () => {
   const { tags, loading, addTag, deleteTag } = useTags();
@@ -41,96 +44,105 @@ export const TagManager = () => {
   };
 
   return (
-    <Card className="bg-white border-2 border-red-200">
-      <CardHeader>
+    <Card className="bg-[#2C2C44] border-[#343A40]">
+      <CardHeader className="border-b border-[#343A40] pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-bold text-red-600 flex items-center gap-2">
-            <Tag className="w-5 h-5" />
-            Gerenciar Tags
-          </CardTitle>
+          <div>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Tag className="w-6 h-6 text-[#007BFF]" />
+              Gerenciar Tags
+            </CardTitle>
+            <Alert className="mt-3 bg-[#1A1A2E] border-[#343A40] text-gray-300">
+              <Info className="h-4 w-4 text-[#007BFF]" />
+              <AlertDescription>
+                Tags são usadas para categorizar produtos e criar seções dinâmicas. Exemplos: Ação, RPG, Aventura, Promoção.
+              </AlertDescription>
+            </Alert>
+          </div>
           
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button
                 onClick={() => setIsDialogOpen(true)}
                 size="sm"
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-[#007BFF] hover:bg-[#0056B3] text-white"
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Nova Tag
               </Button>
             </DialogTrigger>
             
-            <DialogContent className="bg-white border-2 border-red-200 text-gray-800">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold text-red-600">
+            <DialogContent className="bg-[#2C2C44] border-[#343A40] text-white">
+              <DialogHeader className="border-b border-[#343A40] pb-4 mb-4">
+                <DialogTitle className="text-white">
                   Adicionar Nova Tag
                 </DialogTitle>
               </DialogHeader>
               
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="tagName" className="font-medium text-gray-700">
-                    Nome da Tag
+                  <Label htmlFor="tagName" className="text-gray-300 flex items-center">
+                    <Type className="mr-2 h-4 w-4" />
+                    Nome da Tag *
                   </Label>
                   <Input
                     id="tagName"
                     value={newTagName}
                     onChange={(e) => setNewTagName(e.target.value)}
-                    className="border-2 border-gray-200 focus:border-red-500 rounded-lg"
-                    placeholder="Ex: Ação, RPG, etc."
+                    className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500"
+                    placeholder="Ex: Ação, RPG, Aventura"
                     required
                   />
                 </div>
 
-                <div className="flex gap-4 pt-4">
+                <DialogFooter className="pt-4">
+                  <DialogClose asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-[#6C757D] text-[#6C757D] hover:bg-[#6C757D] hover:text-white"
+                    >
+                      Cancelar
+                    </Button>
+                  </DialogClose>
                   <Button
                     type="submit"
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg"
+                    className="bg-[#007BFF] hover:bg-[#0056B3] text-white"
                   >
-                    Adicionar
+                    Adicionar Tag
                   </Button>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                    className="border-2 border-gray-300 text-gray-700 hover:bg-gray-100 font-bold py-3 rounded-lg"
-                  >
-                    Cancelar
-                  </Button>
-                </div>
+                </DialogFooter>
               </form>
             </DialogContent>
           </Dialog>
         </div>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="p-6">
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Carregando tags...</p>
+            <div className="animate-spin w-8 h-8 border-4 border-[#007BFF] border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-400">Carregando tags...</p>
           </div>
         ) : tags.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-600">Nenhuma tag encontrada.</p>
+            <p className="text-gray-400">Nenhuma tag encontrada.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {tags.map((tag) => (
-              <div key={tag.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <Badge variant="secondary" className="bg-red-100 text-red-700 font-medium">
+              <div key={tag.id} className="flex items-center justify-between p-3 bg-[#343A40] rounded-lg border border-[#495057] hover:bg-[#3A3A50] transition-colors">
+                <Badge className="bg-[#6F42C1] text-white hover:bg-[#5A2D91] font-medium">
+                  <Tag className="w-3 h-3 mr-1" />
                   {tag.name}
                 </Badge>
                 
                 <Button
                   onClick={() => handleDelete(tag.id, tag.name)}
                   size="sm"
-                  variant="destructive"
-                  className="bg-red-600 hover:bg-red-700"
+                  className="bg-[#DC3545] hover:bg-[#C82333] text-white h-6 w-6 p-0"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
             ))}

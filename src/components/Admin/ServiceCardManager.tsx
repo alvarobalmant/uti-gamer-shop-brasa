@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, Plus, Settings, Info } from 'lucide-react';
+import { Trash2, Edit, Plus, Settings, Info, Link as LinkIcon, Image as ImageIcon, Type, Hash } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Dialog,
@@ -15,6 +15,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogClose
 } from '@/components/ui/dialog';
 import {
   Alert,
@@ -89,15 +91,15 @@ export const ServiceCardManager = () => {
   };
 
   return (
-    <Card className="bg-white border-2 border-red-200">
-      <CardHeader>
-        <CardTitle className="text-xl text-red-600 flex items-center gap-2">
-          <Settings className="w-5 h-5" />
+    <Card className="bg-[#2C2C44] border-[#343A40]">
+      <CardHeader className="border-b border-[#343A40] pb-4">
+        <CardTitle className="flex items-center gap-2 text-white">
+          <Settings className="w-6 h-6 text-[#007BFF]" />
           Gerenciar Cards de Serviços
         </CardTitle>
         
-        <Alert>
-          <Info className="h-4 w-4" />
+        <Alert className="mt-3 bg-[#1A1A2E] border-[#343A40] text-gray-300">
+          <Info className="h-4 w-4 text-[#007BFF]" />
           <AlertDescription>
             <strong>Tamanho recomendado:</strong> 400x300px (proporção 4:3)<br />
             <strong>Formatos:</strong> JPG, PNG, WebP<br />
@@ -107,9 +109,9 @@ export const ServiceCardManager = () => {
         </Alert>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-400">
             {serviceCards.length} cards de serviços
           </div>
           
@@ -120,47 +122,58 @@ export const ServiceCardManager = () => {
                   resetForm();
                   setIsDialogOpen(true);
                 }}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-[#007BFF] hover:bg-[#0056B3] text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Adicionar Card
               </Button>
             </DialogTrigger>
             
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle className="text-xl text-red-600">
+            <DialogContent className="max-w-2xl bg-[#2C2C44] border-[#343A40] text-white">
+              <DialogHeader className="border-b border-[#343A40] pb-4 mb-4">
+                <DialogTitle className="text-white">
                   {editingCard ? 'Editar Card de Serviço' : 'Novo Card de Serviço'}
                 </DialogTitle>
               </DialogHeader>
               
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Título *</Label>
+                    <Label htmlFor="title" className="text-gray-300 flex items-center">
+                      <Type className="mr-2 h-4 w-4" />
+                      Título *
+                    </Label>
                     <Input
                       id="title"
                       value={formData.title}
                       onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="Ex: Consoles"
                       required
+                      className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500"
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="position">Posição</Label>
+                    <Label htmlFor="position" className="text-gray-300 flex items-center">
+                      <Hash className="mr-2 h-4 w-4" />
+                      Posição
+                    </Label>
                     <Input
                       id="position"
                       type="number"
                       min="1"
                       value={formData.position}
                       onChange={(e) => setFormData(prev => ({ ...prev, position: parseInt(e.target.value) }))}
+                      className="bg-[#1A1A2E] border-[#343A40] text-white"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Descrição *</Label>
+                  <Label htmlFor="description" className="text-gray-300 flex items-center">
+                    <Type className="mr-2 h-4 w-4" />
+                    Descrição *
+                  </Label>
                   <Textarea
                     id="description"
                     value={formData.description}
@@ -168,81 +181,93 @@ export const ServiceCardManager = () => {
                     placeholder="Ex: PlayStation, Xbox, Nintendo e mais"
                     rows={2}
                     required
+                    className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500"
                   />
                 </div>
 
-                <ImageUpload
-                  onImageUploaded={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
-                  currentImage={formData.image_url}
-                  label="Imagem do Card *"
-                  folder="service-cards"
-                />
+                <div className="space-y-2">
+                  <Label className="text-gray-300 flex items-center">
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    Imagem do Card *
+                  </Label>
+                  <ImageUpload
+                    onImageUploaded={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
+                    currentImage={formData.image_url}
+                    label="Upload Imagem"
+                    folder="service-cards"
+                  />
+                </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="link_url">Link de Destino *</Label>
+                  <Label htmlFor="link_url" className="text-gray-300 flex items-center">
+                    <LinkIcon className="mr-2 h-4 w-4" />
+                    Link de Destino *
+                  </Label>
                   <Input
                     id="link_url"
                     value={formData.link_url}
                     onChange={(e) => setFormData(prev => ({ ...prev, link_url: e.target.value }))}
                     placeholder="Ex: /categoria/consoles"
                     required
+                    className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500"
                   />
                 </div>
 
-                <div className="flex gap-4 pt-4">
+                <DialogFooter className="pt-4">
+                  <DialogClose asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-[#6C757D] text-[#6C757D] hover:bg-[#6C757D] hover:text-white"
+                    >
+                      Cancelar
+                    </Button>
+                  </DialogClose>
                   <Button
                     type="submit"
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                    className="bg-[#007BFF] hover:bg-[#0056B3] text-white"
                   >
                     {editingCard ? 'Atualizar' : 'Criar'} Card
                   </Button>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                  >
-                    Cancelar
-                  </Button>
-                </div>
+                </DialogFooter>
               </form>
             </DialogContent>
           </Dialog>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
-            <div className="col-span-full text-center py-8 text-gray-500">
+            <div className="col-span-full text-center py-8 text-gray-400">
               Carregando cards de serviços...
             </div>
           ) : serviceCards.length === 0 ? (
-            <div className="col-span-full text-center py-8 text-gray-500">
+            <div className="col-span-full text-center py-8 text-gray-400">
               Nenhum card de serviço criado ainda.
             </div>
           ) : (
             serviceCards.map((card) => (
-              <Card key={card.id} className="border-2 border-gray-200">
+              <Card key={card.id} className="bg-[#343A40] border-[#495057] hover:bg-[#3A3A50] transition-colors">
                 <CardContent className="p-4">
                   <div className="relative mb-4">
                     <img
                       src={card.image_url}
                       alt={card.title}
-                      className="w-full h-32 object-cover rounded-lg"
+                      className="w-full h-32 object-cover rounded-lg border border-[#495057]"
                       onError={(e) => {
                         e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop';
                       }}
                     />
                     <Badge 
-                      className={`absolute top-2 right-2 ${card.is_active ? "bg-green-600" : "bg-gray-600"}`}
+                      className={`absolute top-2 right-2 ${card.is_active ? "bg-[#28A745] text-white" : "bg-[#6C757D] text-white"}`}
                     >
                       {card.is_active ? 'Ativo' : 'Inativo'}
                     </Badge>
                   </div>
                   
-                  <h3 className="font-bold text-gray-800 mb-2">{card.title}</h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{card.description}</p>
+                  <h3 className="font-bold text-white mb-2">{card.title}</h3>
+                  <p className="text-gray-300 text-sm mb-3 line-clamp-2">{card.description}</p>
                   
-                  <div className="space-y-1 text-xs text-gray-500 mb-4">
+                  <div className="space-y-1 text-xs text-gray-400 mb-4">
                     <div><strong>Posição:</strong> {card.position}</div>
                     <div><strong>Link:</strong> {card.link_url}</div>
                   </div>
@@ -251,7 +276,7 @@ export const ServiceCardManager = () => {
                     <Button
                       onClick={() => handleEdit(card)}
                       size="sm"
-                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      className="flex-1 bg-[#FFC107] hover:bg-[#E0A800] text-black"
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       Editar
@@ -260,8 +285,7 @@ export const ServiceCardManager = () => {
                     <Button
                       onClick={() => handleDelete(card.id)}
                       size="sm"
-                      variant="destructive"
-                      className="flex-1"
+                      className="flex-1 bg-[#DC3545] hover:bg-[#C82333] text-white"
                     >
                       <Trash2 className="w-4 h-4 mr-1" />
                       Excluir

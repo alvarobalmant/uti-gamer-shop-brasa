@@ -7,6 +7,7 @@ import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { Category, categories } from './categories'; // Add categories import
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Sheet,
   SheetContent,
@@ -27,6 +28,7 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
   const { user, isAdmin } = useAuth();
   const { hasActiveSubscription } = useSubscriptions();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleAuthClick = () => {
     if (user) {
@@ -77,7 +79,6 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
               size="icon" 
               className={cn(
                 "text-gray-500 rounded-full w-8 h-8",
-                // Only apply hover effects on desktop (md and above)
                 "md:hover:text-red-600 md:hover:bg-red-50"
               )}
             >
@@ -106,7 +107,6 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                       variant="ghost"
                       className={cn(
                         "w-full justify-start h-11 text-base px-3 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md",
-                        // Only apply hover effects on desktop (md and above) - REMOVED hover effects for mobile
                         "md:hover:bg-yellow-200 md:hover:text-yellow-900"
                       )}
                     >
@@ -119,7 +119,6 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                     variant="outline"
                     className={cn(
                       "w-full h-11 text-base border-gray-300",
-                      // Only apply hover effects on desktop (md and above) - REMOVED hover effects for mobile
                       "md:hover:bg-accent md:hover:text-accent-foreground"
                     )}
                   >
@@ -131,7 +130,6 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
                   onClick={handleAuthClick}
                   className={cn(
                     "w-full bg-red-600 h-12 text-base flex items-center justify-center gap-2 text-white rounded-md font-semibold",
-                    // Only apply hover effects on desktop (md and above) - REMOVED hover effects for mobile
                     "md:hover:bg-red-700"
                   )}
                 >

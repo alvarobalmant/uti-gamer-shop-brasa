@@ -102,10 +102,7 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
               size="icon" // Make it icon size for consistency
               className={cn(
                 "ml-2 text-gray-600 p-2 h-10 w-10", // Consistent size
-                // Aplicar efeitos de hover apenas em desktop
-                !isMobile 
-                  ? "hover:text-uti-red hover:bg-secondary" 
-                  : ""
+                !isMobile && "hover:text-uti-red hover:bg-secondary"
               )}
               aria-label="Fechar busca"
             >

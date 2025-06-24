@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, Suspense, lazy } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
@@ -10,19 +11,16 @@ import SectionRenderer from '@/components/HomePage/SectionRenderer';
 import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
-import ProductModal from '@/components/ProductModal';
-import { Product } from '@/hooks/useProducts';
 
 // Lazy load AdminPanel para reduzir bundle inicial
 const AdminPanel = lazy(() => import('./Admin'));
 
 const Index = React.memo(() => {
+  const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const {
     products,
@@ -49,28 +47,17 @@ const Index = React.memo(() => {
   }, [specialSections]);
 
   const handleProductCardClick = useCallback((productId: string) => {
-    const productToDisplay = products.find(p => p.id === productId);
-    if (productToDisplay) {
-      setSelectedProduct(productToDisplay);
-      setShowProductModal(true);
-    }
-  }, [products]);
+    navigate(`/produto/${productId}`);
+  }, [navigate]);
 
   const handleCartOpen = useCallback(() => setShowCart(true), []);
   const handleAuthOpen = useCallback(() => setShowAuthModal(true), []);
   const handleAuthClose = useCallback(() => setShowAuthModal(false), []);
-  const handleProductModalClose = useCallback(() => setShowProductModal(false), []);
 
   // Memoizar filtro de layout items visíveis
   const visibleLayoutItems = useMemo(() => 
     layoutItems.filter(item => item.is_visible), 
     [layoutItems]
-  );
-
-  // Memoizar produtos relacionados
-  const relatedProducts = useMemo(() => 
-    products.filter(p => p.id !== selectedProduct?.id).slice(0, 4),
-    [products, selectedProduct?.id]
   );
 
   // Função para verificar se uma seção especial tem fundo desabilitado
@@ -183,15 +170,6 @@ const Index = React.memo(() => {
       />
 
       <AuthModal isOpen={showAuthModal} onClose={handleAuthClose} />
-
-      <ProductModal 
-        isOpen={showProductModal} 
-        onOpenChange={handleProductModalClose} 
-        product={selectedProduct} 
-        loading={productsLoading}
-        relatedProducts={relatedProducts}
-        onRelatedProductClick={handleProductCardClick}
-      />
     </div>
   );
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useForm, Controller, useWatch } from 'react-hook-form';
+import { useForm, Controller, useWatch, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -8,13 +8,20 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, Plus, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, ArrowUp, ArrowDown, Settings, Package, Image, Sparkles, Save, XCircle, Upload } from 'lucide-react';
 import ImageUploadInput from '@/components/Admin/ImageUploadInput';
 import { useTags } from '@/hooks/useTags';
 import { useProducts } from '@/hooks/useProducts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { BannerType, BannerRowConfig, CarouselConfig } from '@/types/specialSections';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 // Define the structure for carousel configuration
 const carouselConfigSchema = z.object({
@@ -24,18 +31,17 @@ const carouselConfigSchema = z.object({
   product_ids: z.array(z.string()).optional().default([]),
 });
 
-// NOVO: Schema para carrossel estilo GameStop
-const carouselRowConfigSchema = z.object({
-  row_id: z.string().min(1, 'ID é obrigatório'),
-  title: z.string().min(1, 'Título é obrigatório'),
-  showTitle: z.boolean().default(true),
-  titleAlignment: z.enum(['left', 'center', 'right']).default('left'),
-  selection_mode: z.enum(['tags', 'products', 'combined']).default('products'),
-  tag_ids: z.array(z.string()).optional().default([]),
-  product_ids: z.array(z.string()).optional().default([]),
+// Define the schema for a single banner
+const bannerSchema = z.object({
+  type: z.enum(['full_width', 'half_width', 'third_width', 'quarter_width', 'product_highlight']),
+  image_url: z.string().url().or(z.literal('')).optional(),
+  link_url: z.string().url().or(z.literal('')).optional(),
+  title: z.string().optional(),
+  subtitle: z.string().optional(),
+  button_text: z.string().optional(),
+  enable_hover_animation: z.boolean().optional().default(true),
 });
 
-<<<<<<< HEAD
 // Define the schema for a banner row
 const bannerRowSchema = z.object({
   row_id: z.string().uuid().optional(),
@@ -45,18 +51,10 @@ const bannerRowSchema = z.object({
 });
 
 // Define the structure of the fixed content configuration with dynamic banner rows
-=======
-// Define the structure of the fixed content configuration (matching GameStop layout)
->>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
 const fixedContentSchema = z.object({
-  banner_principal: z.object({ image_url: z.string().url().or(z.literal('')).optional(), link_url: z.string().url().or(z.literal('')).optional() }).optional(),
-  banner_medio_1: z.object({ image_url: z.string().url().or(z.literal('')).optional(), title: z.string().optional(), subtitle: z.string().optional(), link_url: z.string().url().or(z.literal('')).optional() }).optional(),
-  banner_medio_2: z.object({ image_url: z.string().url().or(z.literal('')).optional(), title: z.string().optional(), subtitle: z.string().optional(), link_url: z.string().url().or(z.literal('')).optional() }).optional(),
-  banner_pequeno: z.object({ image_url: z.string().url().or(z.literal('')).optional(), link_url: z.string().url().or(z.literal('')).optional() }).optional(),
-  banner_destaque: z.object({ title: z.string().optional(), subtitle: z.string().optional(), link_url: z.string().url().or(z.literal('')).optional(), button_text: z.string().optional() }).optional(),
+  banner_rows: z.array(bannerRowSchema).optional().default([]),
   carrossel_1: carouselConfigSchema.optional(),
   carrossel_2: carouselConfigSchema.optional(),
-  carousel_rows: z.array(carouselRowConfigSchema).optional().default([]), // NOVO: Array de carrosseis
 });
 
 type FixedContentFormData = z.infer<typeof fixedContentSchema>;
@@ -72,24 +70,25 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
   const { tags, loading: tagsLoading } = useTags();
   const { products, loading: productsLoading, refetch: refetchProducts } = useProducts();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLayout, setSelectedLayout] = useState<BannerRowConfig['layout']>('1_col_full');
   
-  const { register, handleSubmit, control, reset, setValue, formState: { errors, isDirty }, watch } = useForm<FixedContentFormData>({
+  const { handleSubmit, control, reset, formState: { errors, isDirty }, getValues, setValue } = useForm<FixedContentFormData>({
     resolver: zodResolver(fixedContentSchema),
-    defaultValues: { 
-        banner_principal: { image_url: '', link_url: '' },
-        banner_medio_1: { image_url: '', title: '', subtitle: '', link_url: '' },
-        banner_medio_2: { image_url: '', title: '', subtitle: '', link_url: '' },
-        banner_pequeno: { image_url: '', link_url: '' },
-        banner_destaque: { title: '', subtitle: '', link_url: '', button_text: '' },
-        carrossel_1: { title: '', selection_mode: 'products' as const, tag_ids: [], product_ids: [] },
-        carrossel_2: { title: '', selection_mode: 'products' as const, tag_ids: [], product_ids: [] },
-        carousel_rows: [], // NOVO: Array vazio por padrão
+    defaultValues: {
+      banner_rows: [],
+      carrossel_1: { title: "", selection_mode: "products" as const, tag_ids: [], product_ids: [] },
+      carrossel_2: { title: "", selection_mode: "products" as const, tag_ids: [], product_ids: [] },
     }
+  });
+
+  const { fields: bannerRows, append: appendBannerRow, remove: removeBannerRow, move: moveBannerRow } = useFieldArray({
+    control,
+    name: 'banner_rows',
   });
 
   const carrossel1Value = useWatch({ control, name: 'carrossel_1' });
   const carrossel2Value = useWatch({ control, name: 'carrossel_2' });
-  const carouselRowsValue = useWatch({ control, name: 'carousel_rows' }); // NOVO: Watch para carousel_rows
 
   const fetchContentConfig = useCallback(async () => {
     setLoading(true);
@@ -118,13 +117,12 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
             tag_ids: [],
             product_ids: [],
         };
+        
         reset({
             ...fetchedConfig,
-            carrossel_1: { ...defaults, title: '', ...fetchedConfig.carrossel_1 },
-            carrossel_2: { ...defaults, title: '', ...fetchedConfig.carrossel_2 },
-            carousel_rows: fetchedConfig.carousel_rows || [], // NOVO: Garantir que existe
-        });
-      }
+            carrossel_1: { ...defaults, ...fetchedConfig.carrossel_1 },
+            carrossel_2: { ...defaults, ...fetchedConfig.carrossel_2 },
+        });     }
     } catch (error: any) {
       toast({
         title: 'Erro ao carregar configuração de conteúdo',
@@ -145,45 +143,26 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
     setSaving(true);
     try {
       const { error } = await supabase
-        .from('special_sections')
+        .from("special_sections")
         .update({ content_config: data })
-        .eq('id', sectionId);
+        .eq("id", sectionId);
 
       if (error) throw error;
+
       toast({
-        title: 'Conteúdo da seção especial salvo com sucesso!',
+        title: 'Configuração salva com sucesso!',
+        description: 'O conteúdo da seção especial foi atualizado.',
+        variant: 'default',
       });
-      reset(data);
     } catch (error: any) {
       toast({
-        title: 'Erro ao salvar conteúdo da seção especial',
+        title: 'Erro ao salvar configuração',
         description: error.message,
         variant: 'destructive',
       });
     } finally {
       setSaving(false);
     }
-  };
-
-  // NOVO: Função para adicionar carrossel
-  const addCarouselRow = () => {
-    const currentRows = carouselRowsValue || [];
-    const newRow = {
-      row_id: `carousel_${Date.now()}`,
-      title: 'Novo Carrossel',
-      showTitle: true,
-      titleAlignment: 'left' as const,
-      selection_mode: 'products' as const,
-      tag_ids: [],
-      product_ids: [],
-    };
-    setValue('carousel_rows', [...currentRows, newRow], { shouldDirty: true });
-  };
-
-  // NOVO: Função para remover carrossel
-  const removeCarouselRow = (index: number) => {
-    const currentRows = carouselRowsValue || [];
-    setValue('carousel_rows', currentRows.filter((_, i) => i !== index), { shouldDirty: true });
   };
 
   const filteredProducts = products.filter(product => {
@@ -196,376 +175,322 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
     return nameMatch || idMatch;
   });
 
-  // ... keep existing code (CarouselConfigSection component)
   const CarouselConfigSection = ({ 
     carouselKey, 
-    carouselValue 
+    carouselValue
   }: { 
-    carouselKey: 'carrossel_1' | 'carrossel_2', 
-    carouselValue: any 
+    carouselKey: 'carrossel_1' | 'carrossel_2',
+    carouselValue: any
   }) => {
     return (
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor={`${carouselKey}-title`}>Título do Carrossel</Label>
-          <Input 
-            id={`${carouselKey}-title`} 
-            {...register(`${carouselKey}.title`)} 
-            className="bg-gray-700 border-gray-600 text-white" 
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor={`${carouselKey}-mode`}>Modo de Seleção de Produtos</Label>
+      <Card className="bg-[#2C2C44] border-[#343A40] text-white">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold text-blue-300 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-yellow-400" />
+            Carrossel de Produtos {carouselKey === 'carrossel_1' ? '1' : '2'}
+          </CardTitle>
+          <CardDescription className="text-gray-400">
+            Configure o {carouselKey === 'carrossel_1' ? 'primeiro' : 'segundo'} carrossel de produtos da sua seção especial.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Título do Carrossel */}
+          <div className="space-y-2">
+            <Label className="text-yellow-400 flex items-center gap-2 font-medium">
+              <Sparkles className="w-4 h-4" />
+              Título do Carrossel
+            </Label>
           <Controller
-            name={`${carouselKey}.selection_mode`}
-            control={control}
-            render={({ field }) => (
-              <Select 
-                value={field.value} 
-                onValueChange={(value: 'tags' | 'products' | 'combined') => field.onChange(value)}
-              >
-                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                  <SelectValue placeholder="Selecione o modo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="tags">Por Tags</SelectItem>
-                  <SelectItem value="products">Produtos Específicos</SelectItem>
-                  <SelectItem value="combined">Combinado (Tags + Produtos)</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-        
-        {(carouselValue?.selection_mode === 'tags' || carouselValue?.selection_mode === 'combined') && (
-          <div className="space-y-2">
-            <Label>Selecione as Tags</Label>
-            {tagsLoading ? (
-              <div className="flex items-center justify-center p-4">
-                <Loader2 className="h-4 w-4 animate-spin" />
-              </div>
-            ) : (
-              <ScrollArea className="h-40 border rounded-md p-2 bg-gray-800">
-                <div className="space-y-2">
-                  {tags.map(tag => (
-                    <div key={tag.id} className="flex items-center space-x-2">
-                      <Controller
-                        name={`${carouselKey}.tag_ids`}
-                        control={control}
-                        render={({ field }) => (
-                          <Checkbox
-                            id={`tag-${tag.id}-${carouselKey}`}
-                            checked={field.value?.includes(tag.id)}
-                            onCheckedChange={(checked) => {
-                              const currentTags = field.value || [];
-                              if (checked) {
-                                field.onChange([...currentTags, tag.id]);
-                              } else {
-                                field.onChange(currentTags.filter(id => id !== tag.id));
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                      <Label htmlFor={`tag-${tag.id}-${carouselKey}`} className="text-sm">{tag.name}</Label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            )}
-          </div>
-        )}
-        
-        {(carouselValue?.selection_mode === 'products' || carouselValue?.selection_mode === 'combined') && (
-          <div className="space-y-2">
-            <Label>Selecione os Produtos</Label>
-            <Input
-              placeholder="Buscar produtos por nome ou ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-gray-700 border-gray-600 text-white mb-2"
+              name={`${carouselKey}.title`}
+              control={control}
+              render={({ field }) => (
+                <Input 
+                  {...field}
+                  className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500" 
+                  placeholder="Digite o título do carrossel"
+                />
+              )}
             />
-            {productsLoading ? (
-              <div className="flex items-center justify-center p-4">
-                <Loader2 className="h-4 w-4 animate-spin" />
-              </div>
-            ) : (
-              <ScrollArea className="h-40 border rounded-md p-2 bg-gray-800">
-                <div className="space-y-2">
-                  {filteredProducts.map(product => (
-                    <div key={product.id} className="flex items-center space-x-2">
-                      <Controller
-                        name={`${carouselKey}.product_ids`}
-                        control={control}
-                        render={({ field }) => (
-                          <Checkbox
-                            id={`product-${product.id}-${carouselKey}`}
-                            checked={field.value?.includes(product.id)}
-                            onCheckedChange={(checked) => {
-                              const currentProducts = field.value || [];
-                              if (checked) {
-                                field.onChange([...currentProducts, product.id]);
-                              } else {
-                                field.onChange(currentProducts.filter(id => id !== product.id));
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                      <Label htmlFor={`product-${product.id}-${carouselKey}`} className="text-sm">
-                        {product.name || 'Produto sem nome'} ({product.id || 'Sem ID'})
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            )}
           </div>
-        )}
-      </div>
+          
+          {/* Modo de Seleção */}
+          <div className="space-y-2">
+            <Label className="text-orange-400 flex items-center gap-2 font-medium">
+              <Settings className="w-4 h-4" />
+              Modo de Seleção de Produtos
+            </Label>
+            <Controller
+              name={`${carouselKey}.selection_mode`}
+              control={control}
+              render={({ field }) => (
+                <Select 
+                  value={field.value} 
+                  onValueChange={(value: 'tags' | 'products' | 'combined') => field.onChange(value)}
+                >
+                  <SelectTrigger className="bg-[#1A1A2E] border-[#343A40] text-white focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue placeholder="Selecione o modo" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#2C2C44] border-[#343A40]">
+                    <SelectItem value="tags" className="text-white hover:bg-[#343A40]">Por Tags</SelectItem>
+                    <SelectItem value="products" className="text-white hover:bg-[#343A40]">Produtos Específicos</SelectItem>
+                    <SelectItem value="combined" className="text-white hover:bg-[#343A40]">Combinado (Tags + Produtos)</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+          
+          {/* Seleção por Tags */}
+          {(carouselValue?.selection_mode === 'tags' || carouselValue?.selection_mode === 'combined') && (
+            <Card className="bg-[#343A40] border-[#495057]">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-white text-sm">
+                  <Badge className="bg-[#007BFF] text-white">Tags</Badge>
+                  Selecione as Tags
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {tagsLoading ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="h-4 w-4 animate-spin text-[#007BFF]" />
+                  </div>
+                ) : (
+                  <ScrollArea className="h-40 border rounded-md p-2 bg-[#1A1A2E] border-[#343A40]">
+                    <div className="space-y-2">
+                      {tags.map(tag => (
+                        <div key={tag.id} className="flex items-center space-x-2">
+                          <Controller
+                            name={`${carouselKey}.tag_ids`}
+                            control={control}
+                            render={({ field }) => (
+                              <Checkbox
+                                id={`tag-${tag.id}-${carouselKey}`}
+                                checked={field.value?.includes(tag.id)}
+                                onCheckedChange={(checked) => {
+                                  const currentTags = field.value || [];
+                                  if (checked) {
+                                    field.onChange([...currentTags, tag.id]);
+                                  } else {
+                                    field.onChange(currentTags.filter(id => id !== tag.id));
+                                  }
+                                }}
+                              />
+                            )}
+                          />
+                          <Label htmlFor={`tag-${tag.id}-${carouselKey}`} className="text-sm text-gray-300">{tag.name}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Seleção por Produtos */}
+          {(carouselValue?.selection_mode === 'products' || carouselValue?.selection_mode === 'combined') && (
+            <Card className="bg-[#343A40] border-[#495057]">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-white text-sm">
+                  <Badge className="bg-[#28A745] text-white">Produtos</Badge>
+                  Selecione os Produtos
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Input
+                  placeholder="Buscar produtos por nome ou ID..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                />
+                {productsLoading ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="h-4 w-4 animate-spin text-[#28A745]" />
+                  </div>
+                ) : (
+                  <ScrollArea className="h-40 border rounded-md p-2 bg-[#1A1A2E] border-[#343A40]">
+                    <div className="space-y-2">
+                      {filteredProducts.map(product => (
+                        <div key={product.id} className="flex items-center space-x-2">
+                          <Controller
+                            name={`${carouselKey}.product_ids`}
+                            control={control}
+                            render={({ field }) => (
+                              <Checkbox
+                                id={`product-${product.id}-${carouselKey}`}
+                                checked={field.value?.includes(product.id)}
+                                onCheckedChange={(checked) => {
+                                  const currentProducts = field.value || [];
+                                  if (checked) {
+                                    field.onChange([...currentProducts, product.id]);
+                                  } else {
+                                    field.onChange(currentProducts.filter(id => id !== product.id));
+                                  }
+                                }}
+                              />
+                            )}
+                          />
+                          <Label htmlFor={`product-${product.id}-${carouselKey}`} className="text-sm text-gray-300">
+                            {product.name || 'Produto sem nome'} ({product.id?.slice(0, 8) || 'Sem ID'}...)
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </CardContent>
+      </Card>
     );
   };
 
+  const getDimensionsForLayout = (layout: BannerRowConfig['layout']) => {
+    switch (layout) {
+      case '1_col_full': return { width: 1200, height: 180 };
+      case '2_col_half': return { width: 600, height: 300 };
+      case '3_col_third': return { width: 400, height: 200 };
+      case '4_col_quarter': return { width: 300, height: 150 };
+      default: return { width: 0, height: 0 };
+    }
+  };
+
+  const getLayoutDisplayName = (layout: BannerRowConfig['layout']) => {
+    switch (layout) {
+      case '1_col_full': return 'Layout: 1 coluna full';
+      case '2_col_half': return 'Layout: 2 colunas half';
+      case '3_col_third': return 'Layout: 3 colunas third';
+      case '4_col_quarter': return 'Layout: 4 colunas quarter';
+      default: return 'Layout desconhecido';
+    }
+  };
+
+  const handleAddBannerRow = () => {
+    let numBanners = 0;
+    let bannerType: BannerType = 'full_width';
+
+    switch (selectedLayout) {
+      case '1_col_full': 
+        numBanners = 1; 
+        bannerType = 'full_width';
+        break;
+      case '2_col_half': 
+        numBanners = 2; 
+        bannerType = 'half_width';
+        break;
+      case '3_col_third': 
+        numBanners = 3; 
+        bannerType = 'third_width';
+        break;
+      case '4_col_quarter': 
+        numBanners = 4; 
+        bannerType = 'quarter_width';
+        break;
+    }
+    const newBanners = Array.from({ length: numBanners }, () => ({ 
+      type: bannerType, 
+      image_url: '', 
+      link_url: '', 
+      title: '',
+      subtitle: '',
+      button_text: '',
+      enable_hover_animation: true 
+    }));
+    appendBannerRow({ row_id: crypto.randomUUID(), layout: selectedLayout, banners: newBanners });
+    setIsModalOpen(false);
+  };
+
   if (loading) {
-    return <div className="flex justify-center items-center p-10"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>;
+    return (
+      <div className="flex justify-center items-center p-10">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
   }
 
   return (
-    <form onSubmit={handleSubmit(handleSaveContent)} className="space-y-6 mt-4">
+    <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <form onSubmit={handleSubmit(handleSaveContent)} className="space-y-8">
 
-      {/* --- Banner Principal --- */}
-      <fieldset className="border border-gray-600 p-4 rounded-md">
-        <legend className="text-md font-medium px-2 text-gray-300">Banner Principal (Topo)</legend>
-        <div className="space-y-3">
-          <Controller
-            name="banner_principal.image_url"
-            control={control}
-            render={({ field }) => (
-              <ImageUploadInput
-                label="Imagem do Banner"
-                currentImageUrl={field.value}
-                onUploadComplete={(url) => setValue('banner_principal.image_url', url, { shouldDirty: true })}
-                requiredWidth={1200} // Corrected Dimension
-                requiredHeight={180} // Corrected Dimension
-              />
-            )}
-          />
+        {/* Header com botão de salvar */}
+        <div className="flex justify-between items-center">
           <div>
-            <Label htmlFor="bp_link">URL do Link (Opcional)</Label>
-            <Input id="bp_link" {...register('banner_principal.link_url')} className="bg-gray-700 border-gray-600 text-white" />
-             {errors.banner_principal?.link_url && <p className="text-red-500 text-sm">{errors.banner_principal.link_url.message}</p>}
+            <h2 className="text-2xl font-bold text-white">Editar Seção Especial</h2>
+            <p className="text-gray-400">Configure banners e carrosseis de produtos para sua seção especial.</p>
           </div>
-        </div>
-      </fieldset>
-
-      {/* --- Banners Médios --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <fieldset className="border border-gray-600 p-4 rounded-md">
-            <legend className="text-md font-medium px-2 text-gray-300">Banner Médio 1 (Esquerda)</legend>
-             <div className="space-y-3">
-                <Controller
-                  name="banner_medio_1.image_url"
-                  control={control}
-                  render={({ field }) => (
-                    <ImageUploadInput
-                      label="Imagem"
-                      currentImageUrl={field.value}
-                      onUploadComplete={(url) => setValue('banner_medio_1.image_url', url, { shouldDirty: true })}
-                      requiredWidth={600} // Corrected Dimension
-                      requiredHeight={300} // Corrected Dimension
-                    />
-                  )}
-                />
-                <div><Label>Título (Opcional)</Label><Input {...register('banner_medio_1.title')} className="bg-gray-700 border-gray-600 text-white" /></div>
-                <div><Label>Subtítulo (Opcional)</Label><Textarea {...register('banner_medio_1.subtitle')} className="bg-gray-700 border-gray-600 text-white" /></div>
-                <div><Label>URL Link (Opcional)</Label><Input {...register('banner_medio_1.link_url')} className="bg-gray-700 border-gray-600 text-white" /></div>
-             </div>
-          </fieldset>
-           <fieldset className="border border-gray-600 p-4 rounded-md">
-            <legend className="text-md font-medium px-2 text-gray-300">Banner Médio 2 (Direita)</legend>
-             <div className="space-y-3">
-                 <Controller
-                  name="banner_medio_2.image_url"
-                  control={control}
-                  render={({ field }) => (
-                    <ImageUploadInput
-                      label="Imagem"
-                      currentImageUrl={field.value}
-                      onUploadComplete={(url) => setValue('banner_medio_2.image_url', url, { shouldDirty: true })}
-                      requiredWidth={600} // Corrected Dimension
-                      requiredHeight={300} // Corrected Dimension
-                    />
-                  )}
-                />
-                <div><Label>Título (Opcional)</Label><Input {...register('banner_medio_2.title')} className="bg-gray-700 border-gray-600 text-white" /></div>
-                <div><Label>Subtítulo (Opcional)</Label><Textarea {...register('banner_medio_2.subtitle')} className="bg-gray-700 border-gray-600 text-white" /></div>
-                <div><Label>URL Link (Opcional)</Label><Input {...register('banner_medio_2.link_url')} className="bg-gray-700 border-gray-600 text-white" /></div>
-             </div>
-          </fieldset>
-      </div>
-
-      {/* --- Banner Pequeno --- */}
-      <fieldset className="border border-gray-600 p-4 rounded-md">
-        <legend className="text-md font-medium px-2 text-gray-300">Banner Pequeno (Abaixo dos Médios)</legend>
-        <div className="space-y-3">
-          <Controller
-            name="banner_pequeno.image_url"
-            control={control}
-            render={({ field }) => (
-              <ImageUploadInput
-                label="Imagem do Banner"
-                currentImageUrl={field.value}
-                onUploadComplete={(url) => setValue('banner_pequeno.image_url', url, { shouldDirty: true })}
-                requiredWidth={1200} // Corrected Dimension
-                requiredHeight={180} // Corrected Dimension
-              />
+          <Button 
+            type="submit" 
+            disabled={saving}
+            className="bg-[#28A745] hover:bg-[#218838] text-white px-6 py-2"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Salvar Alterações
+              </>
             )}
-          />
-          <div>
-            <Label htmlFor="bpq_link">URL do Link (Opcional)</Label>
-            <Input id="bpq_link" {...register('banner_pequeno.link_url')} className="bg-gray-700 border-gray-600 text-white" />
-             {errors.banner_pequeno?.link_url && <p className="text-red-500 text-sm">{errors.banner_pequeno.link_url.message}</p>}
-          </div>
+          </Button>
         </div>
-      </fieldset>
 
-      {/* NOVO: Seção de Carrosseis Estilo GameStop */}
-      <fieldset className="border border-green-600 p-4 rounded-md">
-        <legend className="text-md font-medium px-2 text-green-300">🆕 Carrosseis Estilo GameStop</legend>
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-400">
-              Cards mais estreitos com scroll horizontal. Podem ser posicionados em qualquer lugar da seção.
-            </p>
-            <Button type="button" onClick={addCarouselRow} variant="outline" size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Adicionar Carrossel
-            </Button>
-          </div>
-          
-          {carouselRowsValue && carouselRowsValue.length > 0 && (
-            <div className="space-y-4">
-              {carouselRowsValue.map((row, index) => (
-                <div key={index} className="border border-gray-700 p-4 rounded-md">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-medium text-white">Carrossel {index + 1}</h4>
-                    <Button 
-                      type="button" 
-                      onClick={() => removeCarouselRow(index)} 
-                      variant="destructive" 
-                      size="sm"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>ID do Carrossel</Label>
-                      <Input 
-                        {...register(`carousel_rows.${index}.row_id`)}
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label>Título</Label>
-                      <Input 
-                        {...register(`carousel_rows.${index}.title`)}
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                    <div className="flex items-center space-x-2">
-                      <Controller
-                        name={`carousel_rows.${index}.showTitle`}
-                        control={control}
-                        render={({ field }) => (
-                          <Checkbox
-                            id={`showTitle-${index}`}
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        )}
-                      />
-                      <Label htmlFor={`showTitle-${index}`}>Mostrar Título</Label>
-                    </div>
-                    
-                    <div>
-                      <Label>Alinhamento do Título</Label>
-                      <Controller
-                        name={`carousel_rows.${index}.titleAlignment`}
-                        control={control}
-                        render={({ field }) => (
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="left">Esquerda</SelectItem>
-                              <SelectItem value="center">Centro</SelectItem>
-                              <SelectItem value="right">Direita</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label>Modo de Seleção</Label>
-                      <Controller
-                        name={`carousel_rows.${index}.selection_mode`}
-                        control={control}
-                        render={({ field }) => (
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="products">Produtos Específicos</SelectItem>
-                              <SelectItem value="tags">Por Tags</SelectItem>
-                              <SelectItem value="combined">Combinado</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Seleção de produtos para o carrossel específico */}
-                  <div className="mt-4">
-                    <Label>Selecionar Produtos</Label>
-                    <ScrollArea className="h-40 border rounded-md p-2 bg-gray-800 mt-2">
-                      <div className="space-y-2">
-                        {filteredProducts.map(product => (
-                          <div key={product.id} className="flex items-center space-x-2">
-                            <Controller
-                              name={`carousel_rows.${index}.product_ids`}
-                              control={control}
-                              render={({ field }) => (
-                                <Checkbox
-                                  id={`carousel-product-${product.id}-${index}`}
-                                  checked={field.value?.includes(product.id)}
-                                  onCheckedChange={(checked) => {
-                                    const currentProducts = field.value || [];
-                                    if (checked) {
-                                      field.onChange([...currentProducts, product.id]);
-                                    } else {
-                                      field.onChange(currentProducts.filter(id => id !== product.id));
-                                    }
-                                  }}
-                                />
-                              )}
-                            />
-                            <Label htmlFor={`carousel-product-${product.id}-${index}`} className="text-sm">
-                              {product.name || 'Produto sem nome'} ({product.id || 'Sem ID'})
-                            </Label>
-                          </div>
-                        ))}
+        {/* Seção de Banners */}
+        <Card className="bg-[#2C2C44] border-[#343A40] text-white">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-semibold text-blue-300 flex items-center gap-2">
+              <Image className="w-6 h-6 text-purple-400" />
+              Linhas de Banners
+            </CardTitle>
+            <CardDescription className="text-gray-400">
+              Adicione e configure linhas de banners com diferentes layouts para sua seção especial.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {bannerRows.map((row, rowIndex) => {
+              const dimensions = getDimensionsForLayout(row.layout);
+              return (
+                <Card key={row.id} className="bg-[#343A40] border-[#495057]">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-white text-lg">
+                        <Image className="w-5 h-5 text-blue-400" />
+                        Linha de Banners {rowIndex + 1} - {getLayoutDisplayName(row.layout)}
+                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => moveBannerRow(rowIndex, Math.max(0, rowIndex - 1))}
+                          disabled={rowIndex === 0}
+                          className="bg-[#495057] border-[#6C757D] text-white hover:bg-[#5A6268]"
+                        >
+                          <ArrowUp className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => moveBannerRow(rowIndex, Math.min(bannerRows.length - 1, rowIndex + 1))}
+                          disabled={rowIndex === bannerRows.length - 1}
+                          className="bg-[#495057] border-[#6C757D] text-white hover:bg-[#5A6268]"
+                        >
+                          <ArrowDown className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => removeBannerRow(rowIndex)}
+                          className="bg-[#DC3545] hover:bg-[#C82333]"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
-<<<<<<< HEAD
                     </div>
                   </CardHeader>
                   
@@ -759,38 +684,58 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
                       <Label htmlFor="4_col_quarter" className="text-gray-300">4 colunas quarter (300×150px cada)</Label>
                     </div>
                   </RadioGroup>
-=======
-                    </ScrollArea>
-                  </div>
->>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
                 </div>
-              ))}
-            </div>
-          )}
+                <DialogFooter>
+                  <Button 
+                    type="button" 
+                    onClick={handleAddBannerRow}
+                    className="bg-[#28A745] hover:bg-[#218838] text-white"
+                  >
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                    Adicionar Linha
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+
+        {/* Carrosseis de Produtos */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <CarouselConfigSection 
+            carouselKey="carrossel_1" 
+            carouselValue={carrossel1Value}
+          />
+          <CarouselConfigSection 
+            carouselKey="carrossel_2" 
+            carouselValue={carrossel2Value}
+          />
         </div>
-      </fieldset>
 
-      {/* --- Carrossel 1 --- */}
-      <fieldset className="border border-gray-600 p-4 rounded-md">
-        <legend className="text-md font-medium px-2 text-gray-300">Carrossel de Produtos 1</legend>
-        <CarouselConfigSection carouselKey="carrossel_1" carouselValue={carrossel1Value} />
-      </fieldset>
-
-      {/* --- Carrossel 2 --- */}
-      <fieldset className="border border-gray-600 p-4 rounded-md">
-        <legend className="text-md font-medium px-2 text-gray-300">Carrossel de Produtos 2</legend>
-        <CarouselConfigSection carouselKey="carrossel_2" carouselValue={carrossel2Value} />
-      </fieldset>
-
-      {/* Save Button */}
-      <div className="flex justify-end pt-4">
-        <Button type="submit" disabled={saving || !isDirty} className="bg-green-600 hover:bg-green-700">
-          {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {saving ? 'Salvando...' : 'Salvar Conteúdo da Seção'}
-        </Button>
-      </div>
-    </form>
+        {/* Botão de salvar fixo no final */}
+        <div className="flex justify-end pt-6 border-t border-[#343A40]">
+          <Button 
+            type="submit" 
+            disabled={saving}
+            className="bg-[#28A745] hover:bg-[#218838] text-white px-8 py-3"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <Save className="w-5 h-5 mr-2" />
+                Salvar Todas as Alterações
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 
 export default SpecialSectionFixedContentManager;
+

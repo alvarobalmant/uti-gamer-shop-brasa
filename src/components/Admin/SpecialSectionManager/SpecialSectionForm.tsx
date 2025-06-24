@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,14 +9,16 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { SpecialSection, SpecialSectionCreateInput, SpecialSectionUpdateInput } from '@/types/specialSections';
-import SpecialSectionFixedContentManager from './SpecialSectionFixedContentManager';
+import NewSpecialSectionManager from './NewSpecialSectionManager';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 
 // Zod schema with background fields
 const sectionSchema = z.object({
-  title: z.string().min(1, 'Título é obrigatório (para identificação no painel)'),
-  description: z.string().optional(),
+  title: z.string().min(1, 'Título é obrigatório (para identificação no painel)').max(100, 'Título muito longo'),
+  description: z.string().max(500, 'Descrição muito longa').optional(),
   is_active: z.boolean().default(true),
   background_type: z.enum(['color', 'image']).default('color'),
   background_value: z.string().optional(),
@@ -32,7 +34,7 @@ interface SpecialSectionFormProps {
 }
 
 const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubmit, onCancel }) => {
-  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<SectionFormData>({
+  const { register, handleSubmit, control, watch, formState: { errors, isSubmitting } } = useForm<SectionFormData>({
     resolver: zodResolver(sectionSchema),
     defaultValues: section ? {
       title: section.title ?? '',
@@ -53,47 +55,60 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
 
   const backgroundType = watch('background_type');
 
-  const handleFormSubmit = (data: SectionFormData) => {
-    onSubmit(data as SpecialSectionCreateInput | SpecialSectionUpdateInput);
+  const handleFormSubmit = async (data: SectionFormData) => {
+    try {
+      await onSubmit(data as SpecialSectionCreateInput | SpecialSectionUpdateInput);
+      toast.success('Seção especial salva com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao salvar seção especial.');
+      console.error('Erro ao salvar seção especial:', error);
+    }
   };
 
   // Dummy function to provide image recommendations based on section size
-  const getImageRecommendation = (sectionType: string | undefined) => {
-    switch (sectionType) {
-      case 'carousel':
-        return 'Recomendado: 1920x400px (largura x altura) para banners de carrossel.';
-      case 'product_grid':
-        return 'Recomendado: 1200x600px (largura x altura) para fundos de grade de produtos.';
+  const getImageRecommendation = (sectionKey: string | undefined) => {
+    switch (sectionKey) {
+      case 'hero_banner':
+        return 'Recomendado: 1920x600px (Desktop) e 750x400px (Mobile).';
+      case 'promo_banner':
+        return 'Recomendado: 1200x300px.';
+      case 'product_section_4ca34da8-6213-4fb1-b948-bf09426dd422': // Exemplo de ID de seção de produto
+        return 'Recomendado: 1200x600px (para fundo de grade de produtos).';
+      case 'special_section_cd8c7b18-d911-473e-93d6-ba658f427717': // Exemplo de ID de seção especial
+        return 'Recomendado: 800x400px (para banners dentro de seções especiais).';
       default:
         return 'Recomendado: Imagem de alta resolução, proporção 16:9 ou 21:9.';
     }
   };
 
   return (
-    <Card className="bg-gray-800 border-gray-700 text-white w-full max-w-4xl mx-auto">
+    <Card className="bg-gray-800 border-gray-700 text-white w-full max-w-6xl mx-auto my-8">
       <form onSubmit={handleSubmit(handleFormSubmit)} id="section-details-form">
-        <CardHeader>
-          <CardTitle>{section ? 'Editar Seção Especial' : 'Criar Nova Seção Especial'}</CardTitle>
+        <CardHeader className="border-b border-gray-700 pb-4">
+          <CardTitle className="text-2xl font-bold text-blue-400">{section ? 'Editar Seção Especial' : 'Criar Nova Seção Especial'}</CardTitle>
           <CardDescription className="text-gray-400">
             {section
               ? 'Configure o título, status e o conteúdo dos elementos pré-definidos abaixo.'
               : 'Defina um título e status. Após salvar, você poderá configurar o conteúdo.'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8 pt-6">
           {/* Basic Info */}
-          <div>
-            <Label htmlFor="title">Título (Identificação Interna)</Label>
-            <Input id="title" {...register('title')} className="bg-gray-700 border-gray-600 text-white" />
-            {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
-          </div>
-          <div>
-            <Label htmlFor="description">Descrição (Opcional, para referência)</Label>
-            <Textarea id="description" {...register('description')} className="bg-gray-700 border-gray-600 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label htmlFor="title" className="text-gray-300">Título (Identificação Interna)</Label>
+              <Input id="title" {...register('title')} className="bg-gray-700 border-gray-600 text-white mt-1 focus:border-blue-500 focus:ring-blue-500" />
+              {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="description" className="text-gray-300">Descrição (Opcional, para referência)</Label>
+              <Textarea id="description" {...register('description')} className="bg-gray-700 border-gray-600 text-white mt-1 focus:border-blue-500 focus:ring-blue-500" rows={3} />
+              {errors.description && <p className="text-red-400 text-sm mt-1">{errors.description.message}</p>}
+            </div>
           </div>
 
           {/* Activation Status */}
-          <div className="flex items-center space-x-2 pt-2">
+          <div className="flex items-center space-x-3 pt-2">
             <Controller
               name="is_active"
               control={control}
@@ -102,18 +117,21 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
                   id="is_active"
                   checked={field.value}
                   onCheckedChange={field.onChange}
+                  className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-600"
                 />
               )}
             />
-            <Label htmlFor="is_active">Seção Ativa (Visível no site)</Label>
+            <Label htmlFor="is_active" className="text-gray-300">Seção Ativa (Visível no site)</Label>
           </div>
 
+          <Separator className="bg-gray-700" />
+
           {/* Background Configuration */}
-          <fieldset className="border border-gray-600 p-4 rounded-md">
-            <legend className="text-lg font-medium px-2">Configuração de Fundo</legend>
-            <div className="space-y-4">
+          <fieldset className="border border-gray-700 p-6 rounded-lg shadow-inner bg-gray-900">
+            <legend className="text-xl font-semibold px-2 text-blue-300">Configuração de Fundo</legend>
+            <div className="space-y-6 mt-4">
               <div>
-                <Label>Tipo de Fundo</Label>
+                <Label className="text-gray-300">Tipo de Fundo</Label>
                 <Controller
                   name="background_type"
                   control={control}
@@ -121,15 +139,15 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
                     <RadioGroup
                       onValueChange={field.onChange}
                       value={field.value}
-                      className="flex space-x-4 mt-2"
+                      className="flex space-x-6 mt-2"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="color" id="bg-type-color" />
-                        <Label htmlFor="bg-type-color">Cor Sólida</Label>
+                        <RadioGroupItem value="color" id="bg-type-color" className="text-blue-500 border-gray-500 data-[state=checked]:bg-blue-500 data-[state=checked]:text-white" />
+                        <Label htmlFor="bg-type-color" className="text-gray-300">Cor Sólida</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="image" id="bg-type-image" />
-                        <Label htmlFor="bg-type-image">Imagem</Label>
+                        <RadioGroupItem value="image" id="bg-type-image" className="text-blue-500 border-gray-500 data-[state=checked]:bg-blue-500 data-[state=checked]:text-white" />
+                        <Label htmlFor="bg-type-image" className="text-gray-300">Imagem</Label>
                       </div>
                     </RadioGroup>
                   )}
@@ -138,35 +156,37 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
 
               {backgroundType === 'color' && (
                 <div>
-                  <Label htmlFor="background_value_color">Cor do Fundo (Hex ou Nome)</Label>
+                  <Label htmlFor="background_value_color" className="text-gray-300">Cor do Fundo (Hex ou Nome)</Label>
                   <Input
                     id="background_value_color"
                     {...register('background_value')}
-                    className="bg-gray-700 border-gray-600 text-white"
+                    className="bg-gray-700 border-gray-600 text-white mt-1 focus:border-blue-500 focus:ring-blue-500"
                     placeholder="#RRGGBB ou nome da cor (ex: red)"
                   />
+                  {errors.background_value && <p className="text-red-400 text-sm mt-1">{errors.background_value.message}</p>}
                 </div>
               )}
 
               {backgroundType === 'image' && (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div>
-                    <Label htmlFor="background_value_image">URL da Imagem de Fundo</Label>
+                    <Label htmlFor="background_value_image" className="text-gray-300">URL da Imagem de Fundo</Label>
                     <Input
                       id="background_value_image"
                       {...register('background_value')}
-                      className="bg-gray-700 border-gray-600 text-white"
+                      className="bg-gray-700 border-gray-600 text-white mt-1 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="https://exemplo.com/sua-imagem.jpg"
                     />
+                    {errors.background_value && <p className="text-red-400 text-sm mt-1">{errors.background_value.message}</p>}
                   </div>
                   <div>
-                    <Label htmlFor="background_image_position">Posição da Imagem</Label>
+                    <Label htmlFor="background_image_position" className="text-gray-300">Posição da Imagem</Label>
                     <Controller
                       name="background_image_position"
                       control={control}
                       render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger className="w-[180px] bg-gray-700 border-gray-600 text-white">
+                          <SelectTrigger className="w-full bg-gray-700 border-gray-600 text-white mt-1 focus:border-blue-500 focus:ring-blue-500">
                             <SelectValue placeholder="Selecionar Posição" />
                           </SelectTrigger>
                           <SelectContent className="bg-gray-800 text-white border-gray-700">
@@ -179,14 +199,16 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
                         </Select>
                       )}
                     />
+                    {errors.background_image_position && <p className="text-red-400 text-sm mt-1">{errors.background_image_position.message}</p>}
                   </div>
                   <div>
-                    <Label htmlFor="image_recommendation">Recomendação de Tamanho da Imagem</Label>
+                    <Label htmlFor="image_recommendation" className="text-gray-300">Recomendação de Tamanho da Imagem</Label>
                     <Textarea
                       id="image_recommendation"
-                      value={getImageRecommendation('default')} // Remove section.type reference
+                      value={getImageRecommendation(section?.section_key)} // Passa section.section_key
                       readOnly
-                      className="bg-gray-700 border-gray-600 text-white resize-none"
+                      className="bg-gray-700 border-gray-600 text-white resize-none mt-1"
+                      rows={2}
                     />
                     <p className="text-sm text-gray-400 mt-1">A imagem será redimensionada para preencher a seção. Imagens muito pequenas podem ficar pixelizadas.</p>
                   </div>
@@ -195,17 +217,21 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
             </div>
           </fieldset>
         </CardContent>
-        <CardFooter className="flex justify-end space-x-4 pt-4 border-t border-gray-700 mt-6">
-          <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
-          <Button type="submit" form="section-details-form" className="bg-blue-600 hover:bg-blue-700">{section ? 'Salvar Detalhes da Seção' : 'Criar Seção'}</Button>
+        <CardFooter className="flex justify-end space-x-4 pt-6 border-t border-gray-700 mt-8">
+          <Button type="button" variant="outline" onClick={onCancel} className="px-6 py-2 text-gray-300 border-gray-600 hover:bg-gray-700 hover:text-white transition-colors duration-200">
+            Cancelar
+          </Button>
+          <Button type="submit" form="section-details-form" className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors duration-200" disabled={isSubmitting}>
+            {isSubmitting ? 'Salvando...' : (section ? 'Salvar Detalhes da Seção' : 'Criar Seção')}
+          </Button>
         </CardFooter>
       </form>
 
       {section && section.id && (
-        <CardContent className="mt-6 border-t border-gray-700 pt-6">
-          <fieldset className="border border-gray-600 p-4 rounded-md">
-            <legend className="text-lg font-medium px-2">Configuração do Conteúdo (Estrutura Fixa)</legend>
-            <SpecialSectionFixedContentManager sectionId={section.id} />
+        <CardContent className="mt-8 border-t border-gray-700 pt-6">
+          <fieldset className="border border-gray-700 p-6 rounded-lg shadow-inner bg-gray-900">
+            <legend className="text-xl font-semibold px-2 text-blue-300">Configuração do Conteúdo (Estrutura Fixa)</legend>
+            <NewSpecialSectionManager sectionId={section.id} />
           </fieldset>
         </CardContent>
       )}
@@ -215,3 +241,5 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
 };
 
 export default SpecialSectionForm;
+
+

@@ -6,10 +6,6 @@ export type SpecialSection = Database["public"]["Tables"]["special_sections"]["R
   background_type?: 'color' | 'image';
   background_value?: string;
   background_image_position?: 'center' | 'top' | 'bottom' | 'left' | 'right';
-  title_part1?: string;
-  title_part2?: string;
-  title_color1?: string;
-  title_color2?: string;
 };
 
 // Base type for Special Section Element from the database
@@ -69,18 +65,19 @@ export interface CarouselRowConfig {
   margin_included_in_banner?: boolean; // New field for horizontal margin control
 }
 
-// NOVO: Tipo para as linhas de carrossel no estilo GameStop
-export interface CarouselRowConfig {
-  row_id: string;
-  title: string;
-  showTitle: boolean;
-  titleAlignment: 'left' | 'center' | 'right';
-  selection_mode: 'tags' | 'products' | 'combined';
-  tag_ids?: string[];
-  product_ids?: string[];
+// Define new banner types for flexibility
+export type BannerType = 'full_width' | 'half_width' | 'third_width' | 'quarter_width' | 'product_highlight';
+
+export interface BannerConfig {
+  type: BannerType;
+  image_url?: string;
+  link_url?: string;
+  title?: string;
+  subtitle?: string;
+  button_text?: string;
+  enable_hover_animation?: boolean; // New property for hover animation control
 }
 
-<<<<<<< HEAD
 // Define a row of banners, allowing different layouts per row
 export interface BannerRowConfig {
   row_id: string; // Unique ID for the row
@@ -95,16 +92,8 @@ export interface FixedContentFormData {
   carousel_rows?: CarouselRowConfig[]; // Array of carousel rows
   carrossel_1?: CarouselConfig; // Legacy support
   carrossel_2?: CarouselConfig; // Legacy support
-=======
-// Add the missing FixedContentFormData type
-export interface FixedContentFormData {
-  banner_principal?: { image_url?: string; link_url?: string; };
-  banner_medio_1?: { image_url?: string; title?: string; subtitle?: string; link_url?: string; };
-  banner_medio_2?: { image_url?: string; title?: string; subtitle?: string; link_url?: string; };
-  banner_pequeno?: { image_url?: string; link_url?: string; };
-  banner_destaque?: { title?: string; subtitle?: string; link_url?: string; button_text?: string; };
-  carrossel_1?: CarouselConfig;
-  carrossel_2?: CarouselConfig;
-  carousel_rows?: CarouselRowConfig[]; // NOVO: Array de carrosseis estilo GameStop
->>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
 }
+
+
+
+

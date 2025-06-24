@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -7,17 +6,11 @@ export interface Banner {
   id: string;
   title?: string;
   subtitle?: string;
-<<<<<<< HEAD
   button_text?: string;
   button_link?: string;
   image_url?: string; // Existing field, can be deprecated or used as fallback
   image_url_desktop?: string; // New field for desktop image
   image_url_mobile?: string; // New field for mobile image
-=======
-  button_text: string;
-  button_link: string;
-  image_url?: string;
->>>>>>> b1aecab4c65a0281d07579c8840a9247db6e56bb
   button_image_url?: string;
   gradient: string;
   background_type?: string;
@@ -25,6 +18,9 @@ export interface Banner {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  button_link_desktop?: string; // New field for desktop button link
+  button_link_mobile?: string; // New field for mobile button link
+  device_type?: 'desktop' | 'mobile'; // New field for device type
 }
 
 export const useBanners = () => {
@@ -119,7 +115,7 @@ export const useBanners = () => {
       setBanners(prev => prev.filter(banner => banner.id !== id));
       toast({
         title: "Banner excluído com sucesso!",
-        description: "O banner foi removido permanentemente.",
+        description: "O banner foi removido.",
       });
     } catch (error: any) {
       console.error('Erro ao excluir banner:', error);
@@ -145,3 +141,5 @@ export const useBanners = () => {
     refetch: fetchBanners
   };
 };
+
+
