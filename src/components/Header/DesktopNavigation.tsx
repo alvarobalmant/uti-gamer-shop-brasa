@@ -2,10 +2,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown } from 'lucide-react';
-import { categories, Category } from './categories';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
+import { cn } from '@/lib/utils';
+import NavigationMenu from './NavigationMenu';
 
 interface DesktopNavigationProps {
   className?: string;
@@ -15,10 +15,6 @@ const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
   const navigate = useNavigate();
   const { scrollDirection, isScrolled } = useScrollDirection(50);
 
-  const handleCategoryClick = (category: Category) => {
-    navigate(category.path);
-  };
-
   // Determina se a barra deve estar oculta
   const isHidden = scrollDirection === 'down' && isScrolled;
 
@@ -26,28 +22,21 @@ const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
     <nav
       className={cn(
         'hidden lg:block bg-background border-t border-border/60',
-        'fixed top-[72px] left-0 right-0 z-40', // Fixo ao invés de sticky, posicionado abaixo do MainHeader
+        'fixed top-[72px] left-0 right-0 z-40',
         'transition-transform duration-300 ease-in-out',
         {
-          '-translate-y-full': isHidden, // Oculta completamente quando rola para baixo
-          'translate-y-0': !isHidden, // Mostra quando rola para cima ou está no topo
+          '-translate-y-full': isHidden,
+          'translate-y-0': !isHidden,
         },
         className
       )}
     >
       <div className="container mx-auto">
-        <div className="flex h-12 items-center justify-center gap-x-6 xl:gap-x-8">
-          {categories.map(category => (
-            <Button
-              key={category.id}
-              variant="ghost"
-              size="sm"
-              onClick={() => handleCategoryClick(category)}
-              className="text-sm font-medium text-muted-foreground hover:text-primary hover:bg-transparent px-2"
-            >
-              {category.name}
-            </Button>
-          ))}
+        <div className="flex h-12 items-center justify-between">
+          {/* Navigation Menu */}
+          <NavigationMenu />
+          
+          {/* UTI PRO Button */}
           <Button
             variant="outline"
             size="sm"

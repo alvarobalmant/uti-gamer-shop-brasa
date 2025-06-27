@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductManager from './ProductManagerNew';
@@ -11,7 +12,8 @@ import PageManager from './PageManager';
 import { QuickLinkManager } from './QuickLinkManager';
 import SpecialSectionManager from './SpecialSectionManager';
 import Xbox4AdminPage from './Xbox4AdminPage';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft } from 'lucide-react';
+import NavigationManager from './NavigationManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -20,6 +22,7 @@ export const AdminPanel = () => {
 
   const menuItems = [
     { id: 'layout', label: 'Layout Home', icon: LayoutList },
+    { id: 'navigation', label: 'Navegação', icon: Navigation },
     { id: 'pages', label: 'Páginas', icon: Globe },
     { id: 'product_sections', label: 'Seções Produtos', icon: ListChecks },
     { id: 'special_sections', label: 'Seções Especiais', icon: Star },
@@ -131,6 +134,10 @@ export const AdminPanel = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <TabsContent value="layout" className="mt-0">
                 <HomepageLayoutManager />
+              </TabsContent>
+
+              <TabsContent value="navigation" className="mt-0">
+                <NavigationManager />
               </TabsContent>
 
               <TabsContent value="pages" className="mt-0">
