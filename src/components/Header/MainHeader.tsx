@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import scrollManager from '@/lib/scrollRestorationManager';
 import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActions from './HeaderActions';
 import MobileSearchBar from './MobileSearchBar';
@@ -23,10 +24,27 @@ const MainHeader = ({
   className
 }: MainHeaderProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const toggleMobileSearch = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);
+  };
+
+  const handleLogoClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // Se já estamos na homepage, tentar restaurar posição salva
+    if (location.pathname === '/') {
+      const restored = await scrollManager.restorePosition('/', 'logo click', true);
+      if (!restored) {
+        // Se não há posição salva ou falhou, scroll suave para o topo
+        window.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
+      }
+    } else {
+      // Se estamos em outra página, navegação normal
+      navigate('/');
+    }
   };
 
   return (
@@ -52,7 +70,18 @@ const MainHeader = ({
               <Menu className="h-6 w-6" />
             </Button>
 
-            <a href="/" className="flex items-center min-w-0" aria-label="Página Inicial UTI DOS GAMES">
+            <div 
+              onClick={handleLogoClick}
+              className="flex items-center min-w-0 cursor-pointer" 
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleLogoClick(e as any);
+                }
+              }}
+              aria-label="Página Inicial UTI DOS GAMES"
+            >
               <img
                 src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png"
                 alt="UTI DOS GAMES Logo"
@@ -64,7 +93,7 @@ const MainHeader = ({
                   Compre online com a segurança de uma loja física.
                 </p>
               </div>
-            </a>
+            </div>
           </div>
 
           {/* Center: Desktop Search Bar */}

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductManager from './ProductManagerNew';
@@ -12,7 +11,7 @@ import PageManager from './PageManager';
 import { QuickLinkManager } from './QuickLinkManager';
 import SpecialSectionManager from './SpecialSectionManager';
 import Xbox4AdminPage from './Xbox4AdminPage';
-import NavigationManager from './NavigationManager';
+import { NavigationManager } from './NavigationManager';
 import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 

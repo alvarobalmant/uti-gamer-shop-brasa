@@ -98,15 +98,17 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({
           // --- END BUG FIX ---
           
           return (
-            <FeaturedProductsSection
-              key={sectionKey}
-              products={uniqueSectionProducts} // Pass unique products
-              loading={productsLoading || sectionsLoading}
-              onAddToCart={onAddToCart}
-              title={section.title}
-              viewAllLink={section.view_all_link || undefined}
-              reduceTopSpacing={reduceTopSpacing}
-            />
+            <div data-section={sectionKey} data-testid="section-renderer">
+              <FeaturedProductsSection
+                key={sectionKey}
+                products={uniqueSectionProducts} // Pass unique products
+                loading={productsLoading || sectionsLoading}
+                onAddToCart={onAddToCart}
+                title={section.title}
+                viewAllLink={section.view_all_link || undefined}
+                reduceTopSpacing={reduceTopSpacing}
+              />
+            </div>
           );
         }
         

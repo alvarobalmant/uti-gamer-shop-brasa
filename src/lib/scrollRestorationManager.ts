@@ -37,7 +37,7 @@ class ScrollRestorationManager {
     }
   }
 
-  async restorePosition(path: string, context: string = 'unknown'): Promise<boolean> {
+  async restorePosition(path: string, context: string = 'unknown', waitForContent: boolean = false): Promise<boolean> {
     const savedPosition = this.positions.get(path);
     
     if (!savedPosition) {
@@ -61,13 +61,12 @@ class ScrollRestorationManager {
       return false;
     }
 
-    console.log(`[ScrollManager] Restoring position for ${path} (${context}): y=${savedPosition.y}`);
+    console.log(`[ScrollManager] Restoring position for ${path} (${context}): y=${savedPosition.y}, waitForContent=${waitForContent}`);
     
     this.isRestoring = true;
 
     return new Promise((resolve) => {
-      // Aguarda o DOM estar pronto
-      setTimeout(() => {
+      const attemptRestore = () => {
         window.scrollTo({
           left: savedPosition.x,
           top: savedPosition.y,
@@ -84,7 +83,68 @@ class ScrollRestorationManager {
           this.isRestoring = false;
           resolve(success);
         }, 200);
-      }, 150);
+      };
+
+      if (waitForContent) {
+        // Aguardar carregamento de conteúdo para homepage
+        this.waitForContentLoaded().then(() => {
+          console.log(`[ScrollManager] Content loaded, attempting restore`);
+          attemptRestore();
+        }).catch(() => {
+          console.log(`[ScrollManager] Content loading timeout, attempting restore anyway`);
+          attemptRestore();
+        });
+      } else {
+        // Comportamento original para outras páginas
+        setTimeout(attemptRestore, 150);
+      }
+    });
+  }
+
+  private waitForContentLoaded(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const timeout = 8000; // 8 segundos timeout
+      const checkInterval = 100; // Verificar a cada 100ms
+      let elapsed = 0;
+
+      const checkContent = () => {
+        // Verificar se elementos críticos existem e têm altura
+        const criticalSelectors = [
+          '[data-section="products"]',
+          '[data-section="jogos-da-galera"]',
+          '.product-card',
+          '[data-testid="section-renderer"]'
+        ];
+
+        const hasContent = criticalSelectors.some(selector => {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length === 0) return false;
+          
+          // Verificar se pelo menos um elemento tem altura significativa
+          return Array.from(elements).some(el => {
+            const rect = el.getBoundingClientRect();
+            return rect.height > 50;
+          });
+        });
+
+        if (hasContent) {
+          console.log(`[ScrollManager] Critical content detected after ${elapsed}ms`);
+          resolve();
+          return;
+        }
+
+        elapsed += checkInterval;
+        if (elapsed >= timeout) {
+          console.log(`[ScrollManager] Content loading timeout after ${elapsed}ms`);
+          reject(new Error('Content loading timeout'));
+          return;
+        }
+
+        setTimeout(checkContent, checkInterval);
+      };
+
+      // Verificar imediatamente
+      checkContent();
     });
   }
 

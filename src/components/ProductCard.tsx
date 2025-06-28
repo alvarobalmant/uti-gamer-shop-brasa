@@ -47,11 +47,13 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
         "cursor-pointer",
         "w-[200px] h-[320px]",
         "p-0",
+        "product-card",
         isHovered && "md:shadow-md md:-translate-y-1"
       )}
       onClick={handleCardClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      data-testid="product-card"
     >
       <ProductCardBadge 
         text={product.badge_text || ''} 

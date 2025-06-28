@@ -34,14 +34,22 @@ export const useScrollRestoration = () => {
     if (navigationType === NavigationType.Pop) {
       // Tentativa de restaurar a posição salva para esta página
       console.log(`[ScrollRestoration] POP detected. Attempting restore for: ${currentPathKey}`);
+      
+      // Verificar se é homepage para aguardar carregamento
+      const isHomepage = currentPathKey === '/' || currentPathKey === '';
+      
       // Adiciona um pequeno delay para garantir que o DOM esteja pronto
       const restoreTimer = setTimeout(async () => {
-        const restored = await scrollManager.restorePosition(currentPathKey, 'POP navigation');
+        const restored = await scrollManager.restorePosition(
+          currentPathKey, 
+          'POP navigation',
+          isHomepage // Aguardar carregamento apenas na homepage
+        );
         if (!restored) {
           console.log(`[ScrollRestoration] Restore failed or no position saved for ${currentPathKey}. Scrolling top.`);
           window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
         }
-      }, 100); // Delay pode precisar de ajuste
+      }, isHomepage ? 50 : 100); // Delay menor para homepage pois já aguarda internamente
       return () => clearTimeout(restoreTimer);
 
     } else {
