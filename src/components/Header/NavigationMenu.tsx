@@ -45,9 +45,16 @@ const NavigationMenu = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Icon */}
+          {/* Icon with rotation animation */}
           {item.icon_url && (
-            <span className="text-lg">
+            <motion.span 
+              className="text-lg"
+              whileHover={{ rotate: 360 }}
+              transition={{ 
+                duration: 0.6, 
+                ease: "easeInOut" 
+              }}
+            >
               {item.icon_type === 'emoji' ? (
                 item.icon_url
               ) : item.icon_type === 'image' ? (
@@ -55,7 +62,7 @@ const NavigationMenu = () => {
               ) : (
                 <i className={item.icon_url} />
               )}
-            </span>
+            </motion.span>
           )}
           
           {/* Title */}
