@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -10,106 +11,39 @@ interface NavigationItemProps {
 
 export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className = '' }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [wasHovered, setWasHovered] = useState(false); // Estado para rastrear se já esteve em hover
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Cleanup timeouts on unmount
+  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
       }
-      if (checkIntervalRef.current) {
-        clearInterval(checkIntervalRef.current);
-      }
     };
   }, []);
 
-  // Sistema híbrido: detecção contínua + animação de saída garantida
-  useEffect(() => {
-    if (isHovered) {
-      setWasHovered(true); // Marca que entrou em hover
-      
-      // Verifica a cada 20ms se o mouse está realmente sobre o elemento
-      checkIntervalRef.current = setInterval(() => {
-        if (!containerRef.current) return;
-
-        const rect = containerRef.current.getBoundingClientRect();
-        
-        // Pega a posição atual do mouse
-        const handleMouseCheck = (e: MouseEvent) => {
-          const isInside = (
-            e.clientX >= rect.left && 
-            e.clientX <= rect.right && 
-            e.clientY >= rect.top && 
-            e.clientY <= rect.bottom
-          );
-
-          if (!isInside && wasHovered) {
-            // 🎯 SISTEMA HÍBRIDO: Mouse saiu + estava em hover = dispara animação de saída
-            console.log('🎯 Sistema híbrido detectou saída do mouse - disparando animação');
-            setIsHovered(false);
-            setWasHovered(false); // Reset do estado
-            if (checkIntervalRef.current) {
-              clearInterval(checkIntervalRef.current);
-            }
-          }
-        };
-
-        // Adiciona listener temporário para capturar posição do mouse
-        const tempListener = (e: MouseEvent) => {
-          handleMouseCheck(e);
-          document.removeEventListener('mousemove', tempListener);
-        };
-        
-        document.addEventListener('mousemove', tempListener);
-        
-        // Remove o listener após um tempo se não houver movimento
-        setTimeout(() => {
-          document.removeEventListener('mousemove', tempListener);
-        }, 10);
-        
-      }, 20); // Check a cada 20ms - mais responsivo
-
-      return () => {
-        if (checkIntervalRef.current) {
-          clearInterval(checkIntervalRef.current);
-        }
-      };
-    } else {
-      // Quando sai do hover, garante que o estado wasHovered seja resetado
-      setWasHovered(false);
-    }
-  }, [isHovered, wasHovered]);
-
-  // Hover handlers otimizados para sistema híbrido
+  // Simplified hover handlers
   const handleMouseEnter = useCallback(() => {
+    console.log('🎯 Mouse entered - activating hover');
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
     }
-    console.log('🎯 Mouse entrou - ativando hover');
     setIsHovered(true);
   }, []);
 
   const handleMouseLeave = useCallback(() => {
+    console.log('🎯 Mouse left - deactivating hover');
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
     }
     
-    // 🎯 SISTEMA HÍBRIDO: onMouseLeave como backup + delay mínimo para permitir detecção contínua
-    console.log('🎯 onMouseLeave detectado - aguardando confirmação do sistema contínuo');
-    
-    // Pequeno delay para permitir que o sistema de detecção contínua confirme a saída
+    // Small delay to ensure smooth transition
     hoverTimeoutRef.current = setTimeout(() => {
-      if (wasHovered) {
-        console.log('🎯 Backup onMouseLeave confirmou saída - disparando animação');
-        setIsHovered(false);
-        setWasHovered(false);
-      }
-    }, 30); // Delay mínimo para coordenação entre sistemas
-  }, [wasHovered]);
+      setIsHovered(false);
+    }, 10);
+  }, []);
 
   const handleClick = (e: React.MouseEvent) => {
     if (item.link_type === 'external') {
@@ -128,7 +62,6 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
   const renderIcon = () => {
     if (!item.icon_url) return null;
 
-    // SOLUÇÃO DEFINITIVA: Framer Motion (sem conflitos CSS)
     return (
       <motion.span 
         className="text-lg absolute left-2 top-1/2 pointer-events-none select-none"
@@ -136,36 +69,22 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
           transformOrigin: 'center center',
         }}
         initial={{
-          rotate: -45,                        // Começa inclinado (torto)
+          rotate: -45,
           scale: 0,
           opacity: 0,
           y: '-50%',
           x: '-8px'
         }}
         animate={{
-          rotate: isHovered ? 0 : -45,        // Termina em pé (0°) quando hover
-          scale: isHovered ? 1.0 : 0,         // Crescimento até tamanho normal
-          opacity: isHovered ? 1 : 0,         // Aparição suave
-          y: '-50%',                          // Centralização vertical
-          x: isHovered ? '0px' : '-8px'       // Movimento horizontal
+          rotate: isHovered ? 0 : -45,
+          scale: isHovered ? 1.0 : 0,
+          opacity: isHovered ? 1 : 0,
+          y: '-50%',
+          x: isHovered ? '0px' : '-8px'
         }}
         transition={{
-          rotate: {
-            duration: isHovered ? 0.4 : 0.3,    // Entrada 0.4s, saída 0.3s (mais rápida)
-            ease: isHovered ? "easeOut" : "easeIn" // Entrada suave, saída mais direta
-          },
-          scale: {
-            duration: isHovered ? 0.4 : 0.3,     // Sincronizado com rotação
-            ease: isHovered ? "easeOut" : "easeIn"
-          },
-          opacity: {
-            duration: isHovered ? 0.3 : 0.2,     // Saída mais rápida
-            ease: "easeOut"
-          },
-          x: {
-            duration: isHovered ? 0.3 : 0.2,
-            ease: "easeOut"
-          }
+          duration: 0.3,
+          ease: "easeOut"
         }}
       >
         {item.icon_type === 'emoji' ? (
@@ -191,35 +110,26 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
         relative inline-block
         cursor-pointer select-none
         text-sm font-medium
+        transition-all duration-300 ease-out
         ${isHovered ? 'pl-8 pr-4 py-3' : 'px-3 py-3'}
         ${className}
       `}
       style={{
-        color: normalText, // Sempre cor normal, sem mudança
+        color: normalText,
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
-      // MELHORIAS DE UI/UX com animação de saída
       animate={{
-        y: isHovered ? -2 : 0,              // Elevação sutil
-        scale: isHovered ? 1.02 : 1,        // Crescimento micro
+        y: isHovered ? -2 : 0,
+        scale: isHovered ? 1.02 : 1,
       }}
       transition={{
-        y: { 
-          duration: isHovered ? 0.2 : 0.15,  // Saída mais rápida
-          ease: isHovered ? "easeOut" : "easeIn" 
-        },
-        scale: { 
-          duration: isHovered ? 0.2 : 0.15,  // Saída mais rápida
-          ease: isHovered ? "easeOut" : "easeIn" 
-        }
-      }}
-      whileHover={{
-        transition: { duration: 0.2 }
+        duration: 0.3,
+        ease: "easeOut"
       }}
     >
-      {/* SOMBRA SUTIL EM VOLTA (substituindo background colorido) */}
+      {/* SOMBRA SUTIL EM VOLTA */}
       <motion.div
         className="absolute inset-0 rounded-lg pointer-events-none"
         initial={{ opacity: 0 }}
@@ -227,8 +137,8 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
           opacity: isHovered ? 1 : 0,
         }}
         transition={{ 
-          duration: isHovered ? 0.3 : 0.2,   // Saída mais rápida
-          ease: isHovered ? "easeOut" : "easeIn" 
+          duration: 0.3,
+          ease: "easeOut"
         }}
         style={{
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06)',
@@ -236,7 +146,7 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
         }}
       />
 
-      {/* LINHA ANIMADA EMBAIXO (estilo Petz) */}
+      {/* LINHA ANIMADA EMBAIXO */}
       <motion.div
         className="absolute bottom-0 left-1/2 h-0.5 rounded-full"
         initial={{ 
@@ -249,18 +159,15 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
           opacity: isHovered ? 1 : 0,
         }}
         transition={{ 
-          duration: isHovered ? 0.4 : 0.25,  // Saída mais rápida
-          ease: isHovered ? "easeOut" : "easeIn",
-          width: { 
-            duration: isHovered ? 0.3 : 0.2  // Linha recolhe mais rápido
-          }
+          duration: 0.3,
+          ease: "easeOut"
         }}
         style={{
           backgroundColor: item.background_color || '#3b82f6',
         }}
       />
 
-      {/* Ícone animado - só aparece no hover com rotação */}
+      {/* Ícone animado */}
       {renderIcon()}
       
       {/* TEXTO COM MICRO-ANIMAÇÃO */}
@@ -271,8 +178,8 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
           letterSpacing: isHovered ? '0.025em' : '0em',
         }}
         transition={{ 
-          duration: isHovered ? 0.2 : 0.15,  // Saída mais rápida
-          ease: isHovered ? "easeOut" : "easeIn" 
+          duration: 0.3,
+          ease: "easeOut"
         }}
       >
         {item.title}
@@ -297,4 +204,3 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
   // Se for link externo, usar div com onClick
   return <ItemContent />;
 };
-
