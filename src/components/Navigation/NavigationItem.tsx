@@ -75,12 +75,12 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
           y: '-50%',
           x: '-8px'
         }}
-        animate={{
-          rotate: isHovered ? 0 : -45,
-          scale: isHovered ? 1.0 : 0,
-          opacity: isHovered ? 1 : 0,
+        whileHover={{
+          rotate: 0,
+          scale: 1.0,
+          opacity: 1,
           y: '-50%',
-          x: isHovered ? '0px' : '-8px'
+          x: '0px'
         }}
         transition={{
           duration: 0.3,
@@ -111,7 +111,7 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
         cursor-pointer select-none
         text-sm font-medium
         transition-all duration-300 ease-out
-        ${isHovered ? 'pl-8 pr-4 py-3' : 'px-3 py-3'}
+        px-3 py-3
         ${className}
       `}
       style={{
@@ -120,9 +120,11 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
-      animate={{
-        y: isHovered ? -2 : 0,
-        scale: isHovered ? 1.02 : 1,
+      whileHover={{
+        y: -2,
+        scale: 1.02,
+        paddingLeft: '32px',
+        paddingRight: '16px'
       }}
       transition={{
         duration: 0.3,
@@ -133,9 +135,7 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
       <motion.div
         className="absolute inset-0 rounded-lg pointer-events-none"
         initial={{ opacity: 0 }}
-        animate={{
-          opacity: isHovered ? 1 : 0,
-        }}
+        whileHover={{ opacity: 1 }}
         transition={{ 
           duration: 0.3,
           ease: "easeOut"
@@ -154,9 +154,9 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
           x: '-50%',
           opacity: 0 
         }}
-        animate={{
-          width: isHovered ? '80%' : 0,
-          opacity: isHovered ? 1 : 0,
+        whileHover={{
+          width: '80%',
+          opacity: 1,
         }}
         transition={{ 
           duration: 0.3,
@@ -173,9 +173,9 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
       {/* TEXTO COM MICRO-ANIMAÇÃO */}
       <motion.span 
         className="whitespace-nowrap relative z-10 pointer-events-none select-none"
-        animate={{
-          fontWeight: isHovered ? 600 : 500,
-          letterSpacing: isHovered ? '0.025em' : '0em',
+        whileHover={{
+          fontWeight: 600,
+          letterSpacing: '0.025em',
         }}
         transition={{ 
           duration: 0.3,
