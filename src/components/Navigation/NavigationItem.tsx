@@ -148,26 +148,30 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
         }}
       />
 
-      {/* LINHA ANIMADA EMBAIXO */}
-      <motion.div
-        className="absolute bottom-0 left-1/2 h-0.5 rounded-full"
-        initial={{ 
-          width: 0, 
-          x: '-50%',
-          opacity: 0 
-        }}
-        animate={{
-          width: isHovered ? '80%' : 0,
-          opacity: isHovered ? 1 : 0,
-        }}
-        transition={{ 
-          duration: 0.3,
-          ease: "easeOut"
-        }}
-        style={{
-          backgroundColor: item.background_color || '#3b82f6',
-        }}
-      />
+      {/* LINHA ANIMADA EMBAIXO - Configurável */}
+      {item.show_line !== false && (
+        <motion.div
+          className="absolute bottom-0 left-1/2 rounded-full"
+          style={{
+            height: `${item.line_height || 2}px`,
+            backgroundColor: item.line_color || '#3b82f6',
+            zIndex: 1,
+          }}
+          initial={{ 
+            width: 0, 
+            x: '-50%',
+            opacity: 0 
+          }}
+          animate={{
+            width: isHovered ? '80%' : 0,
+            opacity: isHovered ? 1 : 0,
+          }}
+          transition={{ 
+            duration: item.line_animation_duration || 0.3,
+            ease: "easeOut"
+          }}
+        />
+      )}
 
       {/* Ícone animado */}
       {renderIcon()}

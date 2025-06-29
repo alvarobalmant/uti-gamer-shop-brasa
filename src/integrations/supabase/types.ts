@@ -162,8 +162,12 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_visible: boolean | null
+          line_animation_duration: number | null
+          line_color: string | null
+          line_height: number | null
           link_type: string | null
           link_url: string
+          show_line: boolean | null
           slug: string
           text_color: string | null
           title: string
@@ -180,8 +184,12 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_visible?: boolean | null
+          line_animation_duration?: number | null
+          line_color?: string | null
+          line_height?: number | null
           link_type?: string | null
           link_url: string
+          show_line?: boolean | null
           slug: string
           text_color?: string | null
           title: string
@@ -198,8 +206,12 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_visible?: boolean | null
+          line_animation_duration?: number | null
+          line_color?: string | null
+          line_height?: number | null
           link_type?: string | null
           link_url?: string
+          show_line?: boolean | null
           slug?: string
           text_color?: string | null
           title?: string
