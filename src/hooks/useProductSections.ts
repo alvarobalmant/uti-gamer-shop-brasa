@@ -1,15 +1,43 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ProductSection, ProductSectionInput } from '@/types/productSections';
 
-interface ProductSectionItem {
+export interface ProductSection {
+  id: string;
+  title: string;
+  title_part1?: string;
+  title_part2?: string;
+  title_color1?: string;
+  title_color2?: string;
+  view_all_link?: string;
+  created_at: string;
+  updated_at: string;
+  items?: ProductSectionItem[];
+}
+
+export interface ProductSectionInput {
+  title: string;
+  title_part1?: string;
+  title_part2?: string;
+  title_color1?: string;
+  title_color2?: string;
+  view_all_link?: string;
+  items: Array<{
+    item_type: 'product' | 'banner';
+    item_id: string;
+    display_order: number;
+  }>;
+}
+
+export interface ProductSectionItem {
   id: string;
   section_id: string;
   item_type: 'product' | 'banner';
   item_id: string;
   display_order: number;
 }
+
+export type SectionItemType = 'product' | 'banner';
 
 const fetchSectionsFromDatabase = async (): Promise<ProductSection[]> => {
   try {
@@ -53,17 +81,21 @@ const fetchSectionItemsFromDatabase = async (sectionId: string): Promise<Product
 export const useProductSections = () => {
   const [sections, setSections] = useState<ProductSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchSections = async () => {
     try {
       setLoading(true);
+      setError(null);
       const sectionsData = await fetchSectionsFromDatabase();
       setSections(sectionsData);
     } catch (error: any) {
+      const errorMessage = error.message || 'Erro ao carregar seções';
+      setError(errorMessage);
       toast({
         title: "Erro ao carregar seções",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -199,6 +231,7 @@ export const useProductSections = () => {
   return {
     sections,
     loading,
+    error,
     createSection,
     updateSection,
     deleteSection,
