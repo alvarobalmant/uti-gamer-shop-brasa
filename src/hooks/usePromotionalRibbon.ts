@@ -1,66 +1,124 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
-interface PromotionalRibbonConfig {
-  id?: string;
-  device_type: 'mobile' | 'desktop';
-  is_active: boolean;
-  text: string;
-  background_color: string;
-  text_color: string;
-  link_url?: string;
-  background_type?: 'solid' | 'gradient';
-  gradient_colors?: string;
-}
+import { useToast } from '@/hooks/use-toast';
+import { PromotionalRibbonConfig } from '@/types/promotionalRibbon';
 
 export const usePromotionalRibbon = () => {
-  const [mobileConfig, setMobileConfig] = useState<PromotionalRibbonConfig | null>(null);
   const [desktopConfig, setDesktopConfig] = useState<PromotionalRibbonConfig | null>(null);
+  const [mobileConfig, setMobileConfig] = useState<PromotionalRibbonConfig | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const loadConfigs = useCallback(async () => {
+  const fetchConfigs = async () => {
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from('promotional_ribbon_config')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Erro ao carregar configurações da fita:', error);
-        return;
+      if (error) throw error;
+
+      if (data) {
+        const desktop = data.find(config => config.device_type === 'desktop');
+        const mobile = data.find(config => config.device_type === 'mobile');
+        
+        setDesktopConfig(desktop as PromotionalRibbonConfig || null);
+        setMobileConfig(mobile as PromotionalRibbonConfig || null);
       }
-
-      if (data && data.length > 0) {
-        // Otimizar processamento dos dados
-        const configs = data.reduce((acc, config) => {
-          if (config.device_type === 'mobile') {
-            acc.mobile = config;
-          } else if (config.device_type === 'desktop') {
-            acc.desktop = config;
-          }
-          return acc;
-        }, { mobile: null, desktop: null });
-
-        setMobileConfig(configs.mobile);
-        setDesktopConfig(configs.desktop);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar configurações da fita:', error);
+    } catch (error: any) {
+      console.error('Error fetching promotional ribbon configs:', error);
+      toast({
+        title: "Erro ao carregar configurações",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
+
+  const createConfig = async (config: Omit<PromotionalRibbonConfig, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      const { error } = await supabase
+        .from('promotional_ribbon_config')
+        .insert([config]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Configuração criada com sucesso!",
+      });
+
+      await fetchConfigs();
+    } catch (error: any) {
+      console.error('Error creating promotional ribbon config:', error);
+      toast({
+        title: "Erro ao criar configuração",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateConfig = async (id: string, updates: Partial<PromotionalRibbonConfig>) => {
+    try {
+      const { error } = await supabase
+        .from('promotional_ribbon_config')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Configuração atualizada com sucesso!",
+      });
+
+      await fetchConfigs();
+    } catch (error: any) {
+      console.error('Error updating promotional ribbon config:', error);
+      toast({
+        title: "Erro ao atualizar configuração",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteConfig = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('promotional_ribbon_config')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Configuração removida com sucesso!",
+      });
+
+      await fetchConfigs();
+    } catch (error: any) {
+      console.error('Error deleting promotional ribbon config:', error);
+      toast({
+        title: "Erro ao remover configuração",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
-    loadConfigs();
-  }, [loadConfigs]);
+    fetchConfigs();
+  }, []);
 
-  // Memoizar retorno do hook
-  return useMemo(() => ({
-    mobileConfig,
+  return {
     desktopConfig,
+    mobileConfig,
     loading,
-    refetch: loadConfigs
-  }), [mobileConfig, desktopConfig, loading, loadConfigs]);
+    createConfig,
+    updateConfig,
+    deleteConfig,
+    refetch: fetchConfigs,
+  };
 };
-

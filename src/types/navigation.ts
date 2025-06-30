@@ -1,3 +1,4 @@
+
 export interface NavigationItem {
   id: string;
   title: string;
@@ -11,17 +12,14 @@ export interface NavigationItem {
   link_url: string;
   link_type: 'internal' | 'external';
   display_order: number;
+  line_color: string;
+  line_height: number;
+  line_animation_duration: number;
+  show_line: boolean;
   is_visible: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
-}
-
-export interface NavigationConfig {
-  items: NavigationItem[];
-  animation_duration: number; // em ms
-  show_icons: boolean;
-  responsive_breakpoint: number; // px
 }
 
 export interface CreateNavigationItemData {
@@ -36,21 +34,14 @@ export interface CreateNavigationItemData {
   link_url: string;
   link_type: 'internal' | 'external';
   display_order: number;
-  is_visible?: boolean;
-  is_active?: boolean;
+  line_color: string;
+  line_height: number;
+  line_animation_duration: number;
+  show_line: boolean;
+  is_visible: boolean;
+  is_active: boolean;
 }
 
-export interface UpdateNavigationItemData extends Partial<CreateNavigationItemData> {
+export interface UpdateNavigationItemData extends CreateNavigationItemData {
   id: string;
 }
-
-export interface NavigationItemsResponse {
-  data: NavigationItem[] | null;
-  error: any;
-}
-
-export interface NavigationItemResponse {
-  data: NavigationItem | null;
-  error: any;
-}
-
