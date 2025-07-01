@@ -21,6 +21,9 @@ const ProductPagePremium = () => {
   const { toast } = useToast();
   const [viewingCount, setViewingCount] = useState(0);
 
+  // Debug log para verificar se a página está carregando
+  console.log('ProductPagePremium carregada - ID:', id, 'Product:', product?.name);
+
   useEffect(() => {
     // Simular contador de pessoas visualizando (em produção viria do backend)
     setViewingCount(Math.floor(Math.random() * 15) + 3);

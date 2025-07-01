@@ -42,13 +42,14 @@ const PlatformPage = lazy(() => import("./components/PlatformPage"));
 // Lazy loading para páginas de produto
 const ProductPage = lazy(() => import("./pages/ProductPage"));
 const ProductPagePremium = lazy(() => import("./pages/ProductPagePremium"));
+const TestProduct = lazy(() => import("./pages/TestProduct"));
 
 // Otimizar QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutos
-      cacheTime: 10 * 60 * 1000, // 10 minutos
+      gcTime: 10 * 60 * 1000, // 10 minutos (antes era cacheTime)
       refetchOnWindowFocus: false,
       retry: 1,
     },
@@ -114,6 +115,7 @@ const App = () => (
                   {/* Product Page Routes */}
                   <Route path="/produto/:id" element={<ProductPagePremium />} />
                   <Route path="/produto-simples/:id" element={<ProductPage />} />
+                  <Route path="/teste-produto/:id" element={<TestProduct />} />
 
                   {/* Dynamic Carousel Page Route */}
                   <Route 
@@ -155,6 +157,7 @@ const App = () => (
       </ProductProvider>
     </CartProvider>
   </AuthProvider>
+</QueryClientProvider>
 );
 
 export default App;
