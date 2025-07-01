@@ -1,558 +1,508 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProducts, Product } from '@/hooks/useProducts';
-import { useCart } from '@/contexts/CartContext';
+import { useProductPage, useProductsEnhanced } from '@/hooks/useProductsEnhanced';
+import { useProductSyncEvents } from '@/utils/productSyncEvents';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  ArrowLeft, 
-  Star, 
-  ShoppingCart, 
-  Truck, 
-  Store, 
-  Clock, 
-  Shield, 
-  Heart,
-  Share2,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  AlertCircle,
-  Home
-} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Star, ShoppingCart, Heart, Share2, Truck, Shield, RotateCcw, Users, Eye, Clock } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
+import { toast } from 'sonner';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import { useToast } from '@/hooks/use-toast';
-import { useMetaTags } from '@/hooks/useMetaTags';
-import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { AuthModal } from '@/components/Auth/AuthModal';
+import Cart from '@/components/Cart';
 
-const ProductPage = () => {
+const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, loading: productsLoading } = useProducts();
-  const { addToCart, loading: cartLoading } = useCart();
-  const { toast } = useToast();
-  
-  const [product, setProduct] = useState<Product | null>(null);
+  const { products, loading: productsLoading, refreshProducts } = useProductsEnhanced();
+  const { on } = useProductSyncEvents();
+  const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
+  const { user } = useAuth();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('new');
-  const [selectedEdition, setSelectedEdition] = useState('standard');
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [onlineUsers] = useState(Math.floor(Math.random() * 15) + 5);
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
+  const product = products.find(p => p.id === id);
+  const relatedProducts = products.filter(p => 
+    p.id !== id && 
+    (p.category === product?.category || p.platform === product?.platform)
+  ).slice(0, 4);
+
   useEffect(() => {
-    if (products.length > 0 && id) {
-      const foundProduct = products.find(p => p.id === id);
-      setProduct(foundProduct || null);
-      
-      if (foundProduct) {
-        // Set default condition based on product tags
-        const isNew = foundProduct.tags?.some(t => t.name.toLowerCase().includes('novo'));
-        setSelectedCondition(isNew ? 'new' : 'pre-owned');
-        
-        // Set default size and color if available
-        if (foundProduct.sizes && foundProduct.sizes.length > 0) {
-          setSelectedSize(foundProduct.sizes[0]);
-        }
-        if (foundProduct.colors && foundProduct.colors.length > 0) {
-          setSelectedColor(foundProduct.colors[0]);
-        }
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  // Sistema de sincronização em tempo real
+  useEffect(() => {
+    console.log('[ProductPage] Configurando listeners de sincronização para produto:', id);
+    
+    // Listener para atualizações específicas do produto atual
+    const unsubscribeProductUpdated = on('product_updated', (event) => {
+      if (event.productId === id) {
+        console.log('[ProductPage] Produto atual foi atualizado no admin, atualizando página');
+        toast.info('Produto atualizado! Recarregando dados...');
+        refreshProducts();
       }
-    }
-  }, [products, id]);
+    });
 
-  useEffect(() => {
+    // Listener para quando o produto atual é deletado
+    const unsubscribeProductDeleted = on('product_deleted', (event) => {
+      if (event.productId === id) {
+        console.log('[ProductPage] Produto atual foi deletado no admin');
+        toast.error('Este produto foi removido!');
+        navigate('/');
+      }
+    });
+
+    // Listener para ações administrativas completadas
+    const unsubscribeAdminActions = on('admin_action_completed', (event) => {
+      if (event.productId === id) {
+        console.log('[ProductPage] Ação administrativa completada para produto atual');
+        // Pequeno delay para garantir que os dados estão atualizados
+        setTimeout(() => {
+          refreshProducts();
+        }, 200);
+      }
+    });
+
+    // Listener para refresh geral de produtos
+    const unsubscribeProductsRefreshed = on('products_refreshed', (event) => {
+      if (event.source === 'admin') {
+        console.log('[ProductPage] Produtos atualizados pelo admin, sincronizando');
+        refreshProducts();
+      }
+    });
+
+    // Cleanup dos listeners
+    return () => {
+      unsubscribeProductUpdated();
+      unsubscribeProductDeleted();
+      unsubscribeAdminActions();
+      unsubscribeProductsRefreshed();
+      console.log('[ProductPage] Listeners de sincronização removidos');
+    };
+  }, [id, on, refreshProducts, navigate]);
+
+  const handleAddToCart = () => {
     if (product) {
-      document.title = `${product.name} | UTI dos Games`;
-    }
-  }, [product]);
-
-  // SEO Meta Tags dinâmicas
-  useMetaTags({
-    title: product ? `${product.name} | UTI dos Games` : 'Produto | UTI dos Games',
-    description: product 
-      ? `${product.description || `Compre ${product.name} na UTI dos Games.`} Melhor preço, entrega rápida e garantia. Confira!`
-      : 'Confira os melhores produtos de games na UTI dos Games.',
-    image: product ? (product.image || product.imageUrl) : undefined,
-    url: `${window.location.origin}/produto/${id}`,
-    type: 'product'
-  });
-
-  const handleAddToCart = async () => {
-    if (!product) return;
-    
-    try {
-      await addToCart(product, selectedSize || undefined, selectedColor || undefined);
-      toast({
-        title: "Produto adicionado ao carrinho!",
-        description: `${product.name} foi adicionado com sucesso.`,
-      });
-    } catch (error) {
-      toast({
-        title: "Erro ao adicionar produto",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive",
-      });
+      addToCart(product, quantity);
+      toast.success(`${product.name} adicionado ao carrinho!`);
     }
   };
 
-  const handleBack = () => {
-    navigate(-1);
-  };
-
-  const handleImageNavigation = (direction: 'prev' | 'next') => {
-    if (!product?.images && !product?.additional_images) return;
-    
-    const images = product.images || product.additional_images || [product.image || product.imageUrl];
-    
-    if (direction === 'prev') {
-      setSelectedImageIndex(prev => 
-        prev === 0 ? images.length - 1 : prev - 1
-      );
-    } else {
-      setSelectedImageIndex(prev => 
-        prev === images.length - 1 ? 0 : prev + 1
-      );
+  const handleBuyNow = () => {
+    if (product) {
+      addToCart(product, quantity);
+      navigate('/checkout');
     }
   };
 
-  const getConditionPrice = () => {
-    if (!product) return 0;
-    
-    switch (selectedCondition) {
-      case 'new':
-        return product.new_price || product.price;
-      case 'pre-owned':
-        return product.price * 0.85; // 15% discount for pre-owned
-      case 'digital':
-        return product.digital_price || product.price * 0.9; // 10% discount for digital
-      default:
-        return product.price;
-    }
-  };
-
-  const getEditionPrice = () => {
-    const basePrice = getConditionPrice();
-    
-    switch (selectedEdition) {
-      case 'deluxe':
-        return basePrice * 1.3; // 30% more for deluxe
-      case 'collector':
-        return basePrice * 1.5; // 50% more for collector
-      default:
-        return basePrice;
-    }
-  };
+  const handleCartOpen = () => setShowCart(true);
+  const handleAuthOpen = () => setShowAuthModal(true);
 
   if (productsLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <ProfessionalHeader onCartOpen={() => setShowCart(true)} onAuthOpen={() => setShowAuthModal(true)} />
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Skeleton className="h-96 w-full" />
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-32 w-full" />
+      <>
+        <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
+        <div className="min-h-screen bg-white">
+          <div className="container mx-auto px-4 py-8">
+            <div className="animate-pulse">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div className="aspect-square bg-gray-200 rounded-lg"></div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="aspect-square bg-gray-200 rounded"></div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-10 bg-gray-200 rounded w-1/3"></div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <ProfessionalHeader onCartOpen={() => setShowCart(true)} onAuthOpen={() => setShowAuthModal(true)} />
-        <div className="container mx-auto px-4 py-8">
+      <>
+        <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
+        <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
-            <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Produto não encontrado</h1>
-            <p className="text-gray-600 mb-6">O produto que você está procurando não existe ou foi removido.</p>
-            <div className="flex gap-4 justify-center">
-              <Button onClick={handleBack} variant="outline">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-              <Button onClick={() => navigate('/')}>
-                <Home className="w-4 h-4 mr-2" />
-                Ir para Home
-              </Button>
-            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Produto não encontrado</h1>
+            <Button onClick={() => navigate('/')} variant="outline">
+              Voltar à página inicial
+            </Button>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
-  const currentPrice = getEditionPrice();
-  const originalPrice = product.list_price || product.price;
-  const discount = originalPrice > currentPrice ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
-  
-  const images = product.images || product.additional_images || [product.image || product.imageUrl];
-  const currentImage = images[selectedImageIndex] || product.image || product.imageUrl;
+  const discountPercentage = product.originalPrice 
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
+
+  const pixPrice = product.price * 0.95; // 5% desconto no PIX
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <ProfessionalHeader onCartOpen={() => setShowCart(true)} onAuthOpen={() => setShowAuthModal(true)} />
-      
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-3">
-          <nav className="flex items-center space-x-2 text-sm text-gray-600">
-            <button onClick={handleBack} className="hover:text-gray-900 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <span>/</span>
-            <button onClick={() => navigate('/')} className="hover:text-gray-900 transition-colors">
-              Video Games
-            </button>
-            <span>/</span>
-            <span>PlayStation 5</span>
-            <span>/</span>
-            <span className="text-gray-900 font-medium truncate">{product.name}</span>
-          </nav>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Images */}
-          <div className="space-y-4">
-            {/* Main Image */}
-            <div className="relative bg-white rounded-lg overflow-hidden shadow-sm border">
-              <div className="aspect-square relative">
-                <img
-                  src={currentImage}
-                  alt={product.name}
-                  className="w-full h-full object-contain p-4"
-                />
-                
-                {/* Navigation Arrows */}
-                {images.length > 1 && (
-                  <>
-                    <button
-                      onClick={() => handleImageNavigation('prev')}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md transition-all"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleImageNavigation('next')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md transition-all"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Thumbnail Images */}
-            {images.length > 1 && (
-              <div className="flex space-x-2 overflow-x-auto">
-                {images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={cn(
-                      "flex-shrink-0 w-16 h-16 bg-white rounded border-2 overflow-hidden transition-all",
-                      selectedImageIndex === index ? 'border-red-500' : 'border-gray-200 hover:border-gray-300'
-                    )}
-                  >
-                    <img
-                      src={image}
-                      alt={`${product.name} ${index + 1}`}
-                      className="w-full h-full object-contain p-1"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
+    <>
+      <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
+      <div className="min-h-screen bg-white">
+        {/* Breadcrumb */}
+        <div className="bg-gray-50 border-b">
+          <div className="container mx-auto px-4 py-3">
+            <nav className="text-sm text-gray-600">
+              <span className="hover:text-red-600 cursor-pointer" onClick={() => navigate('/')}>
+                Início
+              </span>
+              <span className="mx-2">/</span>
+              <span className="hover:text-red-600 cursor-pointer">
+                {product.platform}
+              </span>
+              <span className="mx-2">/</span>
+              <span className="text-gray-900 font-medium">{product.name}</span>
+            </nav>
           </div>
+        </div>
 
-          {/* Product Info */}
-          <div className="space-y-6">
-            {/* Publisher/Brand */}
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Por</span>
-              <span className="text-sm font-medium text-red-600">UTI dos Games</span>
-            </div>
-
-            {/* Title */}
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 leading-tight mb-2">
-                {product.name}
-              </h1>
-              
-              {/* Badges */}
-              <div className="flex flex-wrap gap-2">
-                {product.is_featured && (
-                  <Badge variant="destructive" className="bg-red-500">
-                    Bestseller
-                  </Badge>
-                )}
-                {product.badge_visible && product.badge_text && (
-                  <Badge 
-                    variant="secondary" 
-                    className={cn(
-                      "text-white",
-                      product.badge_color === 'green' && "bg-green-500",
-                      product.badge_color === 'blue' && "bg-blue-500",
-                      product.badge_color === 'red' && "bg-red-500",
-                      !product.badge_color && "bg-gray-500"
-                    )}
-                  >
-                    {product.badge_text}
-                  </Badge>
-                )}
-                {discount > 0 && (
-                  <Badge variant="destructive">
-                    -{discount}%
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            {/* Rating */}
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={cn(
-                      "w-4 h-4",
-                      i < (product.rating || 4) ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                    )}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-gray-600">({product.rating || 4.0} - 127 avaliações)</span>
-            </div>
-
-            {/* Price */}
-            <div className="space-y-2">
-              <div className="flex items-baseline space-x-3">
-                <span className="text-3xl font-bold text-gray-900">
-                  R$ {currentPrice.toFixed(2).replace('.', ',')}
-                </span>
-                {discount > 0 && (
-                  <span className="text-lg text-gray-500 line-through">
-                    R$ {originalPrice.toFixed(2).replace('.', ',')}
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-gray-600">Data de Lançamento: Disponível agora</p>
-            </div>
-
-            {/* Platform Selection */}
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-900">
-                Plataforma
-              </label>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" className="border-red-500 text-red-500">
-                  {product.platform || 'PlayStation 5'}
-                  <span className="ml-2 text-xs">+2 mais</span>
-                </Button>
-              </div>
-            </div>
-
-            {/* Condition Selection */}
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-900">
-                Condição
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {['new', 'pre-owned', 'digital'].map((condition) => (
-                  <button
-                    key={condition}
-                    onClick={() => setSelectedCondition(condition as any)}
-                    className={cn(
-                      "p-3 text-center border rounded-lg transition-all",
-                      selectedCondition === condition
-                        ? 'border-red-500 bg-red-50 text-red-700'
-                        : 'border-gray-200 hover:border-gray-300'
-                    )}
-                  >
-                    <div className="font-medium capitalize">
-                      {condition === 'new' ? 'Novo' : condition === 'pre-owned' ? 'Usado' : 'Digital'}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      R$ {getConditionPrice().toFixed(2).replace('.', ',')}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Size Selection */}
-            {product.sizes && product.sizes.length > 0 && (
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-900">
-                  Tamanho
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={cn(
-                        "px-4 py-2 border rounded-lg transition-all",
-                        selectedSize === size
-                          ? 'border-red-500 bg-red-50 text-red-700'
-                          : 'border-gray-200 hover:border-gray-300'
-                      )}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Color Selection */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-900">
-                  Cor
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={cn(
-                        "px-4 py-2 border rounded-lg transition-all",
-                        selectedColor === color
-                          ? 'border-red-500 bg-red-50 text-red-700'
-                          : 'border-gray-200 hover:border-gray-300'
-                      )}
-                    >
-                      {color}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Delivery Options */}
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-900">
-                Entrega
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="p-3 border border-gray-200 rounded-lg text-center">
-                  <Store className="w-5 h-5 mx-auto mb-1 text-gray-400" />
-                  <div className="text-xs font-medium">Retirar na loja</div>
-                  <div className="text-xs text-gray-500">Não disponível</div>
-                </div>
-                <div className="p-3 border border-gray-200 rounded-lg text-center">
-                  <Clock className="w-5 h-5 mx-auto mb-1 text-gray-400" />
-                  <div className="text-xs font-medium">Entrega no mesmo dia</div>
-                  <div className="text-xs text-gray-500">Não disponível</div>
-                </div>
-                <div className="p-3 border border-red-500 bg-red-50 rounded-lg text-center">
-                  <Truck className="w-5 h-5 mx-auto mb-1 text-red-500" />
-                  <div className="text-xs font-medium text-red-700">Envio para casa</div>
-                  <div className="text-xs text-red-600">1-3 dias úteis</div>
-                </div>
-              </div>
-              <p className="text-xs text-gray-600">
-                Frete GRÁTIS em pedidos acima de R$ 150
-              </p>
-            </div>
-
-            {/* Add to Cart */}
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Imagens do Produto */}
             <div className="space-y-4">
-              <Button
-                onClick={handleAddToCart}
-                disabled={cartLoading}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 text-lg"
-              >
-                {cartLoading ? (
+              <div className="relative aspect-square bg-white border rounded-lg overflow-hidden group">
+                <img
+                  src={product.images?.[selectedImageIndex] || product.image}
+                  alt={product.name}
+                  className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                />
+                {discountPercentage > 0 && (
+                  <Badge className="absolute top-4 left-4 bg-red-600 text-white">
+                    -{discountPercentage}%
+                  </Badge>
+                )}
+                <div className="absolute top-4 right-4 flex gap-2">
+                  <Button size="sm" variant="outline" className="bg-white/90 backdrop-blur-sm">
+                    <Heart className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="outline" className="bg-white/90 backdrop-blur-sm">
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Thumbnails */}
+              {product.images && product.images.length > 1 && (
+                <div className="grid grid-cols-4 gap-2">
+                  {product.images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`aspect-square border rounded-lg overflow-hidden ${
+                        selectedImageIndex === index ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-200'
+                      }`}
+                    >
+                      <img
+                        src={image}
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Informações do Produto */}
+            <div className="space-y-6">
+              {/* Status e Social Proof */}
+              <div className="flex items-center gap-4 text-sm">
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  Em estoque
+                </Badge>
+                <div className="flex items-center text-gray-600">
+                  <Eye className="w-4 h-4 mr-1" />
+                  {onlineUsers} pessoas visualizando
+                </div>
+              </div>
+
+              {/* Título */}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+                <div className="flex items-center gap-2">
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Adicionando...
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
                   </div>
-                ) : (
-                  <>
+                  <span className="text-sm text-gray-600">4.5 (233 avaliações)</span>
+                </div>
+              </div>
+
+              {/* Preços */}
+              <div className="space-y-3">
+                <div className="flex items-baseline gap-3">
+                  {product.originalPrice && (
+                    <span className="text-lg text-gray-500 line-through">
+                      R$ {product.originalPrice.toFixed(2)}
+                    </span>
+                  )}
+                  <span className="text-3xl font-bold text-gray-900">
+                    R$ {product.price.toFixed(2)}
+                  </span>
+                </div>
+                
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-green-700 font-medium">💳 Preço no PIX</p>
+                      <p className="text-2xl font-bold text-green-800">
+                        R$ {pixPrice.toFixed(2)}
+                      </p>
+                      <p className="text-sm text-green-600">
+                        Economia de R$ {(product.price - pixPrice).toFixed(2)} • 5% OFF
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quantidade e Ações */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <label className="text-sm font-medium text-gray-700">Quantidade:</label>
+                  <div className="flex items-center border rounded-lg">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="px-3"
+                    >
+                      -
+                    </Button>
+                    <span className="px-4 py-2 text-center min-w-[3rem]">{quantity}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="px-3"
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleAddToCart}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                    size="lg"
+                  >
                     <ShoppingCart className="w-5 h-5 mr-2" />
                     Adicionar ao Carrinho
-                  </>
-                )}
-              </Button>
-
-              {/* Additional Actions */}
-              <div className="flex space-x-2">
-                <Button variant="outline" className="flex-1">
-                  <Heart className="w-4 h-4 mr-2" />
-                  Favoritar
-                </Button>
-                <Button variant="outline" className="flex-1">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Compartilhar
-                </Button>
-              </div>
-            </div>
-
-            {/* Additional Info */}
-            <div className="space-y-4 pt-6 border-t">
-              <div className="flex items-center space-x-3 text-sm">
-                <Shield className="w-5 h-5 text-green-500" />
-                <span>Garantia de 30 dias</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm">
-                <Check className="w-5 h-5 text-green-500" />
-                <span>Produto original e lacrado</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm">
-                <Truck className="w-5 h-5 text-blue-500" />
-                <span>Frete grátis acima de R$ 150</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Product Description */}
-        <div className="mt-12 bg-white rounded-lg p-8 shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Descrição do Produto</h2>
-          <div className="prose max-w-none">
-            <p className="text-gray-700 leading-relaxed mb-4">
-              {product.description || `Descubra ${product.name}, uma experiência única de gaming que vai revolucionar sua forma de jogar. Com gráficos impressionantes e jogabilidade envolvente, este título promete horas de diversão.`}
-            </p>
-            
-            <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Características principais:</h3>
-            <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>Gráficos de última geração com tecnologia avançada</li>
-              <li>Modo multiplayer online para até 8 jogadores</li>
-              <li>Campanha single-player com mais de 40 horas de conteúdo</li>
-              <li>Sistema de progressão e customização profundo</li>
-              <li>Compatível com controles DualSense (PlayStation 5)</li>
-            </ul>
-
-            {/* Specifications */}
-            {product.specifications && (
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Especificações:</h3>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <pre className="text-sm text-gray-700 whitespace-pre-wrap">
-                    {JSON.stringify(product.specifications, null, 2)}
-                  </pre>
+                  </Button>
+                  <Button 
+                    onClick={handleBuyNow}
+                    variant="outline" 
+                    size="lg"
+                    className="flex-1"
+                  >
+                    Comprar Agora
+                  </Button>
                 </div>
               </div>
-            )}
+
+              {/* Trust Indicators */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Truck className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Entrega Rápida</p>
+                    <p className="text-sm text-gray-600">2-5 dias úteis</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Produto Original</p>
+                    <p className="text-sm text-gray-600">Lacrado e garantido</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                    <RotateCcw className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Garantia</p>
+                    <p className="text-sm text-gray-600">UTI dos Games</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+
+          {/* Abas de Informações */}
+          <div className="mt-16">
+            <Tabs defaultValue="description" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="description">Descrição</TabsTrigger>
+                <TabsTrigger value="specifications">Especificações</TabsTrigger>
+                <TabsTrigger value="reviews">Avaliações</TabsTrigger>
+              </TabsList>
+              <TabsContent value="description" className="mt-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      {product.description || "Experience the best value in gaming with Xbox Series X – 1TB Digital Edition. Enjoy thousands of games across four generations of Xbox, with faster loading, improved frame rates, and richer, more dynamic worlds. **Principais Características:** - **Velocidade:** Carregamento ultrarrápido com SSD NVMe personalizado. - **Gráficos:** Ray tracing acelerado por hardware para visuais incríveis. - **Compatibilidade:** Jogue milhares de títulos de quatro gerações de Xbox. - **Som:** Áudio espacial 3D imersivo. - **Design:** Compacto e elegante, ideal para qualquer setup de jogos."}
+                    </p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="specifications" className="mt-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Informações Gerais</h4>
+                        <ul className="space-y-2 text-sm text-gray-600">
+                          <li><strong>Plataforma:</strong> {product.platform}</li>
+                          <li><strong>Categoria:</strong> {product.category}</li>
+                          <li><strong>Condição:</strong> Novo</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Detalhes do Produto</h4>
+                        <ul className="space-y-2 text-sm text-gray-600">
+                          <li><strong>Código:</strong> {product.id}</li>
+                          <li><strong>Disponibilidade:</strong> Em estoque</li>
+                          <li><strong>Garantia:</strong> 90 dias</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="reviews" className="mt-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-gray-900">4.5</div>
+                          <div className="flex items-center justify-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <div className="text-sm text-gray-600">233 avaliações</div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="space-y-2">
+                            {[5, 4, 3, 2, 1].map((stars) => (
+                              <div key={stars} className="flex items-center gap-2">
+                                <span className="text-sm w-3">{stars}</span>
+                                <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className="bg-yellow-400 h-2 rounded-full" 
+                                    style={{ width: `${stars === 5 ? 60 : stars === 4 ? 30 : 10}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-sm text-gray-600 w-8">
+                                  {stars === 5 ? '60%' : stars === 4 ? '30%' : '10%'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Produtos Relacionados */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-16">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8">Produtos Relacionados</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {relatedProducts.map((relatedProduct) => (
+                  <Card 
+                    key={relatedProduct.id} 
+                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => navigate(`/produto/${relatedProduct.id}`)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
+                        <img
+                          src={relatedProduct.image}
+                          alt={relatedProduct.name}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">
+                        {relatedProduct.name}
+                      </h3>
+                      <p className="text-lg font-bold text-red-600">
+                        R$ {relatedProduct.price.toFixed(2)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+      
+      {/* Cart Modal */}
+      <Cart 
+        isOpen={showCart} 
+        onClose={() => setShowCart(false)}
+        items={items}
+        updateQuantity={updateQuantity}
+        getCartTotal={getCartTotal}
+        getCartItemsCount={getCartItemsCount}
+      />
+      
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
+    </>
   );
 };
 

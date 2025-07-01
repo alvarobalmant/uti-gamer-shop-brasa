@@ -13,6 +13,11 @@ export interface NavigationItem {
   display_order: number;
   is_visible: boolean;
   is_active: boolean;
+  // Configurações da linha de hover
+  line_color?: string;
+  line_height?: number;
+  line_animation_duration?: number;
+  show_line?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -38,6 +43,11 @@ export interface CreateNavigationItemData {
   display_order: number;
   is_visible?: boolean;
   is_active?: boolean;
+  // Configurações da linha de hover
+  line_color?: string;
+  line_height?: number;
+  line_animation_duration?: number;
+  show_line?: boolean;
 }
 
 export interface UpdateNavigationItemData extends Partial<CreateNavigationItemData> {

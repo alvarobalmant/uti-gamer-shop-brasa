@@ -61,8 +61,9 @@ const MainHeader = ({
               variant="ghost"
               size="icon"
               className={cn(
-                "mr-2 md:hidden p-2 h-10 w-10 flex-shrink-0",
-                "md:hover:bg-accent md:hover:text-accent-foreground"
+                "mr-2 lg:hidden p-2 h-10 w-10 flex-shrink-0",
+                // 🎯 TABLET: Botão de menu visível em tablets também
+                "hover:bg-accent hover:text-accent-foreground"
               )}
               onClick={onMobileMenuToggle}
               aria-label="Abrir menu"
@@ -88,27 +89,36 @@ const MainHeader = ({
                 className="h-10 w-auto flex-shrink-0"
               />
               <div className="ml-2 sm:ml-3 overflow-hidden">
-                <h1 className="font-bold text-sm sm:text-lg leading-tight text-uti-red">UTI DOS GAMES</h1>
-                <p className="text-[10px] sm:text-xs text-gray-600 leading-tight whitespace-normal">
+                <h1 className={cn(
+                  "font-bold leading-tight text-uti-red",
+                  // 🎯 TABLET: Tamanho de fonte otimizado para tablets
+                  "text-sm md:text-base lg:text-lg"
+                )}>UTI DOS GAMES</h1>
+                <p className={cn(
+                  "text-gray-600 leading-tight whitespace-normal",
+                  // 🎯 TABLET: Texto otimizado para tablets
+                  "text-[10px] md:text-xs lg:text-sm"
+                )}>
                   Compre online com a segurança de uma loja física.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Center: Desktop Search Bar */}
-          <div className="flex-1 justify-center px-4 hidden md:flex">
+          {/* Center: Desktop Search Bar - Só aparece em desktop */}
+          <div className="flex-1 justify-center px-4 hidden lg:flex">
              <DesktopSearchBar />
           </div>
 
-          {/* Right side: Header Actions + Mobile Search Toggle */}
+          {/* Right side: Header Actions + Mobile/Tablet Search Toggle */}
           <div className="flex items-center justify-end flex-shrink-0 gap-1"> 
             <Button
               variant="ghost"
               size="icon"
               className={cn(
-                "md:hidden p-2 h-10 w-10",
-                "md:hover:bg-accent md:hover:text-accent-foreground"
+                "lg:hidden p-2 h-10 w-10",
+                // 🎯 TABLET: Botão de busca visível em tablets também
+                "hover:bg-accent hover:text-accent-foreground"
               )}
               onClick={toggleMobileSearch}
               aria-label="Abrir busca"

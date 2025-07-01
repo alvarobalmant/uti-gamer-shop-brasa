@@ -30,7 +30,9 @@ export default defineConfig(({ mode }) => ({
         "8081-i9829epe1wpmf8p669i9g-562a3ce6.manusvm.computer", // Add the current host for port 8081
         "8080-ixfu08jaiagax330pgyuu-b7c8c40.manusvm.computer", // Add the current host
         "5174-icrrzsl3qsjvgaklev24k-bd48da46.manusvm.computer", // Add the current host for port 5174
-        "8080-iu1260eu4lk2hj766aoay-7c6889af.manusvm.computer" // Add current host
+        "8080-iu1260eu4lk2hj766aoay-7c6889af.manusvm.computer", // Add current host
+        "8080-i1tl1b5v4wrwe1ep7gvf6-99c482a8.manusvm.computer", // Add current host
+        "8080-iww3sxm8wrpuzm5fktumn-99c482a8.manusvm.computer" // Add new current host
     ],
   },
   preview: {

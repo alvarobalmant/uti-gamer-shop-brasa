@@ -3,15 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, Filter, Package, TrendingUp, AlertCircle, Eye } from 'lucide-react';
-import { useProducts } from '@/hooks/useProducts';
+import { useProductsAdmin } from '@/hooks/useProductsEnhanced';
 import { useTags } from '@/hooks/useTags';
 import ProductList from './ProductManager/ProductListNew';
-import ProductForm from './ProductManager/ProductFormNew';
+import ProductForm from './ProductManager/ProductForm';
 import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
 
 const ProductManager = () => {
-  const { products, loading, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, loading, addProduct, updateProduct, deleteProduct } = useProductsAdmin();
   const { tags } = useTags();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');

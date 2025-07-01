@@ -35,9 +35,9 @@ const DesktopSearchBar = () => {
   };
 
   return (
-    // Changed lg:block to md:flex as per MainHeader.tsx
-    // Removed max-w-2xl and mx-8 to allow full flex expansion
-    <div className="hidden md:flex flex-1 relative">
+    // Corrigido: lg:flex para aparecer apenas em desktop (1024px+)
+    // Tablets devem usar o layout mobile
+    <div className="hidden lg:flex flex-1 relative">
       <div className="relative w-full"> {/* Ensure relative positioning spans full width */}
         {/* Make the Search icon clickable */}
         <Search

@@ -60,7 +60,8 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
       <SheetContent
         side="left"
         className={cn(
-          "w-4/5 max-w-xs h-screen flex flex-col p-0 z-[100] md:hidden",
+          "w-4/5 max-w-xs h-screen flex flex-col p-0 z-[100] lg:hidden",
+          // 🎯 TABLET: Agora funciona em tablets também (removido md:hidden)
           "bg-white"
         )}
         aria-describedby="mobile-menu-title"

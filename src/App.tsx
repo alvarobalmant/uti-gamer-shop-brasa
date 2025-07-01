@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
+import { ProductProvider } from "@/contexts/ProductContext";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 
@@ -80,12 +81,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollRestorationProvider>
-              <Suspense fallback={<PageLoader />}>
+        <ProductProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollRestorationProvider>
+                <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
                   <Route path="/" element={<Index />} />
@@ -109,8 +111,6 @@ const App = () => (
                   <Route path="/retro-gaming" element={<RetroGamingPage />} />
                   <Route path="/area-geek" element={<AreaGeekPage />} />
                   
-                  <Route path="/uti-pro" element={<UTIPro />} />
-
                   {/* Product Page Route */}
                   <Route path="/produto/:id" element={<ProductPage />} />
 
@@ -151,9 +151,10 @@ const App = () => (
             </ScrollRestorationProvider>
           </BrowserRouter>
         </TooltipProvider>
-      </CartProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+      </ProductProvider>
+    </CartProvider>
+  </AuthProvider>
+</QueryClientProvider>
 );
 
 export default App;

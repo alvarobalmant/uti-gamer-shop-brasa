@@ -55,7 +55,6 @@ export const ConfigurableNavigation: React.FC<ConfigurableNavigationProps> = ({
         <NavigationItem 
           key={item.id} 
           item={item}
-          className="transition-all duration-200"
         />
       ))}
     </nav>
