@@ -1,3 +1,4 @@
+
 export interface NavigationItem {
   id: string;
   title: string;
@@ -11,6 +12,10 @@ export interface NavigationItem {
   link_url: string;
   link_type: 'internal' | 'external';
   display_order: number;
+  line_color: string;
+  line_height: number;
+  line_animation_duration: number;
+  show_line: boolean;
   is_visible: boolean;
   is_active: boolean;
   // Configurações da linha de hover
@@ -20,13 +25,6 @@ export interface NavigationItem {
   show_line?: boolean;
   created_at: string;
   updated_at: string;
-}
-
-export interface NavigationConfig {
-  items: NavigationItem[];
-  animation_duration: number; // em ms
-  show_icons: boolean;
-  responsive_breakpoint: number; // px
 }
 
 export interface CreateNavigationItemData {
@@ -41,6 +39,7 @@ export interface CreateNavigationItemData {
   link_url: string;
   link_type: 'internal' | 'external';
   display_order: number;
+<<<<<<< HEAD
   is_visible?: boolean;
   is_active?: boolean;
   // Configurações da linha de hover
@@ -48,19 +47,16 @@ export interface CreateNavigationItemData {
   line_height?: number;
   line_animation_duration?: number;
   show_line?: boolean;
+=======
+  line_color: string;
+  line_height: number;
+  line_animation_duration: number;
+  show_line: boolean;
+  is_visible: boolean;
+  is_active: boolean;
+>>>>>>> 26ecb2a9b6c09826417241be6011cb7921889d8b
 }
 
-export interface UpdateNavigationItemData extends Partial<CreateNavigationItemData> {
+export interface UpdateNavigationItemData extends CreateNavigationItemData {
   id: string;
 }
-
-export interface NavigationItemsResponse {
-  data: NavigationItem[] | null;
-  error: any;
-}
-
-export interface NavigationItemResponse {
-  data: NavigationItem | null;
-  error: any;
-}
-

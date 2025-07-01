@@ -1,60 +1,42 @@
 
-import React, { Suspense, lazy } from 'react';
+import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
+<<<<<<< HEAD
 import { ProductProvider } from "@/contexts/ProductContext";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
+=======
+import ScrollRestorationProvider from "@/components/ScrollRestorationProvider";
+import HomePage from "@/pages/HomePage";
+import ProductPage from "@/components/ProductPage/ProductPage";
+import CategoryPage from "@/pages/CategoryPage";
+import CartPage from "@/pages/CartPage";
+import CheckoutPage from "@/pages/CheckoutPage";
+import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
+import ProfilePage from "@/pages/ProfilePage";
+import OrderConfirmationPage from "@/pages/OrderConfirmationPage";
+import AdminDashboard from "@/pages/AdminDashboard";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
+>>>>>>> 26ecb2a9b6c09826417241be6011cb7921889d8b
 
-// Lazy loading para páginas menos críticas
-const SearchResults = lazy(() => import("./pages/SearchResults"));
-const CategoryPage = lazy(() => import("./pages/CategoryPage"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const UTIPro = lazy(() => import("./pages/UTIPro"));
-
-// Lazy loading para páginas de plataforma
-const XboxPage = lazy(() => import("./pages/platforms/XboxPage"));
-const PlayStationPageProfessionalV2 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV2"));
-const PlayStationPageProfessionalV3 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV3"));
-const PlayStationPageProfessionalV4 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV4"));
-const PlayStationPageProfessionalV5 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV5"));
-const NintendoPage = lazy(() => import("./pages/platforms/NintendoPage"));
-const PCGamingPage = lazy(() => import("./pages/platforms/PCGamingPage"));
-const RetroGamingPage = lazy(() => import("./pages/platforms/RetroGamingPage"));
-const AreaGeekPage = lazy(() => import("./pages/platforms/AreaGeekPage"));
-
-// Lazy loading para versões Xbox
-const XboxPage3 = lazy(() => import("./pages/platforms/XboxPage3"));
-const XboxPage4 = lazy(() => import("./pages/platforms/XboxPage4"));
-const XboxPage5 = lazy(() => import("./pages/platforms/XboxPage5"));
-const XboxPage6 = lazy(() => import("./pages/platforms/XboxPage6"));
-
-// Lazy loading para admin
-const AdminPanel = lazy(() => import("@/components/Admin/AdminPanel").then(module => ({ default: module.AdminPanel })));
-const Xbox4AdminPage = lazy(() => import("./components/Admin/Xbox4AdminPage"));
-const SpecialSectionCarouselPage = lazy(() => import("./pages/SpecialSectionCarouselPage"));
-const PlatformPage = lazy(() => import("./components/PlatformPage"));
-
-// Lazy loading para páginas de produto
-const ProductPage = lazy(() => import("./pages/ProductPage"));
-
-// Otimizar QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutos
-      cacheTime: 10 * 60 * 1000, // 10 minutos
-      refetchOnWindowFocus: false,
-      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
     },
   },
 });
 
+<<<<<<< HEAD
 // Loading component otimizado
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -123,32 +105,65 @@ const App = () => (
                   {/* Admin Routes - Protected */}
                   <Route 
                     path="/admin" 
+=======
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <CartProvider>
+            <ScrollRestorationProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/product/:id" element={<ProductPage />} />
+                  <Route path="/category/:categoryId" element={<CategoryPage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+
+                  {/* Rotas Protegidas (Requer Autenticação) */}
+                  <Route
+                    path="/profile"
+>>>>>>> 26ecb2a9b6c09826417241be6011cb7921889d8b
                     element={
-                      <ProtectedAdminRoute>
-                        <AdminPanel /> 
-                      </ProtectedAdminRoute>
+                      <ProtectedRoute>
+                        <ProfilePage />
+                      </ProtectedRoute>
                     }
                   />
-                  <Route 
-                    path="/admin/xbox4" 
+                  <Route
+                    path="/checkout"
                     element={
-                      <ProtectedAdminRoute>
-                        <Xbox4AdminPage /> 
-                      </ProtectedAdminRoute>
+                      <ProtectedRoute>
+                        <CheckoutPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/order-confirmation/:orderId"
+                    element={
+                      <ProtectedRoute>
+                        <OrderConfirmationPage />
+                      </ProtectedRoute>
                     }
                   />
 
-                  {/* Dynamic Page Route */}
-                  <Route 
-                    path="/:slug" 
-                    element={<PlatformPage slug={window.location.pathname.substring(1)} />} 
+                  {/* Rotas de Admin (Requer Autenticação e Role de Admin) */}
+                  <Route
+                    path="/admin/*"
+                    element={
+                      <AdminRoute>
+                        <AdminDashboard />
+                      </AdminRoute>
+                    }
                   />
-
-                  {/* Catch-all Not Found Route */}
-                  <Route path="*" element={<NotFound />} />
                 </Routes>
-              </Suspense>
+              </BrowserRouter>
+              <Toaster />
+              <Sonner />
             </ScrollRestorationProvider>
+<<<<<<< HEAD
           </BrowserRouter>
         </TooltipProvider>
       </ProductProvider>
@@ -156,5 +171,13 @@ const App = () => (
   </AuthProvider>
 </QueryClientProvider>
 );
+=======
+          </CartProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
+>>>>>>> 26ecb2a9b6c09826417241be6011cb7921889d8b
 
 export default App;

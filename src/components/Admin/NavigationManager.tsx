@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigationItems } from '@/hooks/useNavigationItems';
 import { NavigationItem, CreateNavigationItemData, UpdateNavigationItemData } from '@/types/navigation';
@@ -12,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical, Save, X } from 'lucide-react';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { toast } from '@/hooks/use-toast';
 
 export const NavigationManager = () => {
@@ -30,6 +32,10 @@ export const NavigationManager = () => {
     link_url: '',
     link_type: 'internal',
     display_order: 0,
+    line_color: '#ffffff',
+    line_height: 2,
+    line_animation_duration: 0.3,
+    show_line: true,
     is_visible: true,
     is_active: true,
     // Configurações padrão da linha de hover
@@ -145,6 +151,10 @@ export const NavigationManager = () => {
       link_url: '',
       link_type: 'internal',
       display_order: 0,
+      line_color: '#ffffff',
+      line_height: 2,
+      line_animation_duration: 0.3,
+      show_line: true,
       is_visible: true,
       is_active: true,
       // Configurações padrão da linha de hover
@@ -169,6 +179,10 @@ export const NavigationManager = () => {
       link_url: item.link_url,
       link_type: item.link_type,
       display_order: item.display_order,
+      line_color: item.line_color || '#ffffff',
+      line_height: item.line_height || 2,
+      line_animation_duration: item.line_animation_duration || 0.3,
+      show_line: item.show_line !== false,
       is_visible: item.is_visible,
       is_active: item.is_active,
       // Configurações da linha de hover com fallbacks
@@ -216,7 +230,7 @@ export const NavigationManager = () => {
               Novo Item
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-[#2C2C44] border-[#343A40] text-white max-w-2xl">
+          <DialogContent className="bg-[#2C2C44] border-[#343A40] text-white max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Criar Novo Item de Navegação</DialogTitle>
               <DialogDescription className="text-gray-400">
@@ -224,7 +238,7 @@ export const NavigationManager = () => {
               </DialogDescription>
             </DialogHeader>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="title">Título *</Label>
@@ -249,6 +263,7 @@ export const NavigationManager = () => {
                 </div>
               </div>
 
+<<<<<<< HEAD
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="icon_type">Tipo de Ícone</Label>
@@ -309,61 +324,176 @@ export const NavigationManager = () => {
                       )}
                     </div>
                   )}
+=======
+              {/* Icon Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white">Configuração do Ícone</h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="icon_type">Tipo de Ícone</Label>
+                    <Select 
+                      value={formData.icon_type} 
+                      onValueChange={(value: 'image' | 'emoji' | 'icon') => 
+                        setFormData(prev => ({ ...prev, icon_type: value }))
+                      }
+                    >
+                      <SelectTrigger className="bg-[#1A1A2E] border-[#343A40] text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#2C2C44] border-[#343A40]">
+                        <SelectItem value="emoji">Emoji</SelectItem>
+                        <SelectItem value="image">Imagem (Upload)</SelectItem>
+                        <SelectItem value="icon">Ícone CSS</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {formData.icon_type === 'image' ? (
+                  <div>
+                    <ImageUpload
+                      onImageUploaded={(url) => setFormData(prev => ({ ...prev, icon_url: url }))}
+                      currentImage={formData.icon_url}
+                      label="Upload do Ícone"
+                      folder="navigation-icons"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <Label htmlFor="icon_url">
+                      {formData.icon_type === 'emoji' ? 'Emoji *' : 'Classe do Ícone *'}
+                    </Label>
+                    <Input
+                      id="icon_url"
+                      value={formData.icon_url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, icon_url: e.target.value }))}
+                      placeholder={formData.icon_type === 'emoji' ? '🎮' : 'fas fa-gamepad'}
+                      className="bg-[#1A1A2E] border-[#343A40] text-white"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Colors Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white">Configuração de Cores</h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="background_color">Cor de Fundo</Label>
+                    <Input
+                      id="background_color"
+                      type="color"
+                      value={formData.background_color}
+                      onChange={(e) => setFormData(prev => ({ ...prev, background_color: e.target.value }))}
+                      className="bg-[#1A1A2E] border-[#343A40] h-10"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="hover_background_color">Cor de Fundo (Hover)</Label>
+                    <Input
+                      id="hover_background_color"
+                      type="color"
+                      value={formData.hover_background_color}
+                      onChange={(e) => setFormData(prev => ({ ...prev, hover_background_color: e.target.value }))}
+                      className="bg-[#1A1A2E] border-[#343A40] h-10"
+                    />
+                  </div>
+>>>>>>> 26ecb2a9b6c09826417241be6011cb7921889d8b
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="background_color">Cor de Fundo</Label>
-                  <Input
-                    id="background_color"
-                    type="color"
-                    value={formData.background_color}
-                    onChange={(e) => setFormData(prev => ({ ...prev, background_color: e.target.value }))}
-                    className="bg-[#1A1A2E] border-[#343A40] h-10"
-                  />
-                </div>
+              {/* Hover Line Configuration */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white">Configuração da Linha de Hover</h3>
                 
-                <div>
-                  <Label htmlFor="hover_background_color">Cor de Fundo (Hover)</Label>
-                  <Input
-                    id="hover_background_color"
-                    type="color"
-                    value={formData.hover_background_color}
-                    onChange={(e) => setFormData(prev => ({ ...prev, hover_background_color: e.target.value }))}
-                    className="bg-[#1A1A2E] border-[#343A40] h-10"
+                <div className="flex items-center space-x-2 mb-4">
+                  <Switch
+                    id="show_line"
+                    checked={formData.show_line}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, show_line: checked }))}
                   />
+                  <Label htmlFor="show_line">Mostrar linha no hover</Label>
                 </div>
+
+                {formData.show_line && (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="line_color">Cor da Linha</Label>
+                      <Input
+                        id="line_color"
+                        type="color"
+                        value={formData.line_color}
+                        onChange={(e) => setFormData(prev => ({ ...prev, line_color: e.target.value }))}
+                        className="bg-[#1A1A2E] border-[#343A40] h-10"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="line_height">Altura da Linha (px)</Label>
+                      <Input
+                        id="line_height"
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={formData.line_height}
+                        onChange={(e) => setFormData(prev => ({ ...prev, line_height: parseInt(e.target.value) }))}
+                        className="bg-[#1A1A2E] border-[#343A40] text-white"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="line_animation_duration">Duração Animação (s)</Label>
+                      <Input
+                        id="line_animation_duration"
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        max="2.0"
+                        value={formData.line_animation_duration}
+                        onChange={(e) => setFormData(prev => ({ ...prev, line_animation_duration: parseFloat(e.target.value) }))}
+                        className="bg-[#1A1A2E] border-[#343A40] text-white"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="link_url">URL de Destino *</Label>
-                  <Input
-                    id="link_url"
-                    value={formData.link_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, link_url: e.target.value }))}
-                    placeholder="/playstation ou https://..."
-                    className="bg-[#1A1A2E] border-[#343A40] text-white"
-                  />
-                </div>
+              {/* Link Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white">Configuração do Link</h3>
                 
-                <div>
-                  <Label htmlFor="link_type">Tipo de Link</Label>
-                  <Select 
-                    value={formData.link_type} 
-                    onValueChange={(value: 'internal' | 'external') => 
-                      setFormData(prev => ({ ...prev, link_type: value }))
-                    }
-                  >
-                    <SelectTrigger className="bg-[#1A1A2E] border-[#343A40] text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#2C2C44] border-[#343A40]">
-                      <SelectItem value="internal">Interno</SelectItem>
-                      <SelectItem value="external">Externo</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="link_url">URL de Destino *</Label>
+                    <Input
+                      id="link_url"
+                      value={formData.link_url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, link_url: e.target.value }))}
+                      placeholder="/playstation ou https://..."
+                      className="bg-[#1A1A2E] border-[#343A40] text-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="link_type">Tipo de Link</Label>
+                    <Select 
+                      value={formData.link_type} 
+                      onValueChange={(value: 'internal' | 'external') => 
+                        setFormData(prev => ({ ...prev, link_type: value }))
+                      }
+                    >
+                      <SelectTrigger className="bg-[#1A1A2E] border-[#343A40] text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#2C2C44] border-[#343A40]">
+                        <SelectItem value="internal">Interno</SelectItem>
+                        <SelectItem value="external">Externo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
@@ -751,6 +881,12 @@ export const NavigationManager = () => {
                           Externo
                         </Badge>
                       )}
+
+                      {item.show_line !== false && (
+                        <Badge variant="outline" className="border-purple-500 text-purple-400">
+                          Linha Hover
+                        </Badge>
+                      )}
                     </div>
                   </div>
                   
@@ -800,4 +936,3 @@ export const NavigationManager = () => {
     </div>
   );
 };
-
