@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -42,6 +41,7 @@ const PlatformPage = lazy(() => import("./components/PlatformPage"));
 
 // Lazy loading para páginas de produto
 const ProductPage = lazy(() => import("./pages/ProductPage"));
+const ProductPagePremium = lazy(() => import("./pages/ProductPagePremium"));
 
 // Otimizar QueryClient
 const queryClient = new QueryClient({
@@ -111,8 +111,9 @@ const App = () => (
                   <Route path="/retro-gaming" element={<RetroGamingPage />} />
                   <Route path="/area-geek" element={<AreaGeekPage />} />
                   
-                  {/* Product Page Route */}
-                  <Route path="/produto/:id" element={<ProductPage />} />
+                  {/* Product Page Routes */}
+                  <Route path="/produto/:id" element={<ProductPagePremium />} />
+                  <Route path="/produto-simples/:id" element={<ProductPage />} />
 
                   {/* Dynamic Carousel Page Route */}
                   <Route 
@@ -154,7 +155,6 @@ const App = () => (
       </ProductProvider>
     </CartProvider>
   </AuthProvider>
-</QueryClientProvider>
 );
 
 export default App;

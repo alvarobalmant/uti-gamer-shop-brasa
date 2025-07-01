@@ -13,13 +13,18 @@ export type Database = {
         Row: {
           background_type: string | null
           button_image_url: string | null
-          button_link: string
-          button_text: string
+          button_link: string | null
+          button_link_desktop: string | null
+          button_link_mobile: string | null
+          button_text: string | null
           created_at: string
+          device_type: string
           display_order: number | null
           gradient: string
           id: string
           image_url: string | null
+          image_url_desktop: string | null
+          image_url_mobile: string | null
           is_active: boolean
           position: number
           subtitle: string | null
@@ -29,13 +34,18 @@ export type Database = {
         Insert: {
           background_type?: string | null
           button_image_url?: string | null
-          button_link: string
-          button_text: string
+          button_link?: string | null
+          button_link_desktop?: string | null
+          button_link_mobile?: string | null
+          button_text?: string | null
           created_at?: string
+          device_type?: string
           display_order?: number | null
           gradient?: string
           id?: string
           image_url?: string | null
+          image_url_desktop?: string | null
+          image_url_mobile?: string | null
           is_active?: boolean
           position?: number
           subtitle?: string | null
@@ -45,13 +55,18 @@ export type Database = {
         Update: {
           background_type?: string | null
           button_image_url?: string | null
-          button_link?: string
-          button_text?: string
+          button_link?: string | null
+          button_link_desktop?: string | null
+          button_link_mobile?: string | null
+          button_text?: string | null
           created_at?: string
+          device_type?: string
           display_order?: number | null
           gradient?: string
           id?: string
           image_url?: string | null
+          image_url_desktop?: string | null
+          image_url_mobile?: string | null
           is_active?: boolean
           position?: number
           subtitle?: string | null
@@ -135,6 +150,75 @@ export type Database = {
         }
         Relationships: []
       }
+      navigation_items: {
+        Row: {
+          background_color: string | null
+          created_at: string | null
+          display_order: number
+          hover_background_color: string | null
+          hover_text_color: string | null
+          icon_type: string | null
+          icon_url: string | null
+          id: string
+          is_active: boolean | null
+          is_visible: boolean | null
+          line_animation_duration: number | null
+          line_color: string | null
+          line_height: number | null
+          link_type: string | null
+          link_url: string
+          show_line: boolean | null
+          slug: string
+          text_color: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          created_at?: string | null
+          display_order?: number
+          hover_background_color?: string | null
+          hover_text_color?: string | null
+          icon_type?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_visible?: boolean | null
+          line_animation_duration?: number | null
+          line_color?: string | null
+          line_height?: number | null
+          link_type?: string | null
+          link_url: string
+          show_line?: boolean | null
+          slug: string
+          text_color?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          created_at?: string | null
+          display_order?: number
+          hover_background_color?: string | null
+          hover_text_color?: string | null
+          icon_type?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_visible?: boolean | null
+          line_animation_duration?: number | null
+          line_color?: string | null
+          line_height?: number | null
+          link_type?: string | null
+          link_url?: string
+          show_line?: boolean | null
+          slug?: string
+          text_color?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       news_articles: {
         Row: {
           category: string | null
@@ -172,48 +256,6 @@ export type Database = {
           publish_date?: string
           read_time?: string | null
           tags?: string[] | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      navigation_items: {
-        Row: {
-          background_color: string | null
-          created_at: string
-          display_order: number
-          icon_type: string | null
-          icon_url: string | null
-          id: string
-          is_active: boolean
-          link_type: string
-          link_url: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          background_color?: string | null
-          created_at?: string
-          display_order?: number
-          icon_type?: string | null
-          icon_url?: string | null
-          id?: string
-          is_active?: boolean
-          link_type?: string
-          link_url?: string
-          title?: string
-          updated_at?: string
-        }
-        Update: {
-          background_color?: string | null
-          created_at?: string
-          display_order?: number
-          icon_type?: string | null
-          icon_url?: string | null
-          id?: string
-          is_active?: boolean
-          link_type?: string
-          link_url?: string
           title?: string
           updated_at?: string
         }
@@ -449,6 +491,10 @@ export type Database = {
           created_at: string | null
           id: string
           title: string
+          title_color1: string | null
+          title_color2: string | null
+          title_part1: string | null
+          title_part2: string | null
           updated_at: string | null
           view_all_link: string | null
         }
@@ -456,6 +502,10 @@ export type Database = {
           created_at?: string | null
           id?: string
           title: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
           view_all_link?: string | null
         }
@@ -463,6 +513,10 @@ export type Database = {
           created_at?: string | null
           id?: string
           title?: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
           view_all_link?: string | null
         }
@@ -523,25 +577,48 @@ export type Database = {
           created_at: string
           description: string | null
           digital_price: number | null
+          discount_percentage: number | null
           discount_price: number | null
+          free_shipping: boolean | null
           id: string
           image: string | null
           images: string[] | null
+          installment_options: number | null
           is_active: boolean | null
           is_featured: boolean | null
           list_price: number | null
+          meta_description: string | null
+          meta_title: string | null
           name: string
           new_price: number | null
+          pix_discount_percentage: number | null
           platform: string | null
           price: number
           pro_discount_percent: number | null
           pro_price: number | null
+          product_features: Json | null
+          promotional_price: number | null
           rating: number | null
+          rating_average: number | null
+          rating_count: number | null
+          related_products: Json | null
+          related_products_auto: boolean | null
+          reviews_enabled: boolean | null
+          shipping_dimensions: Json | null
+          shipping_time_max: number | null
+          shipping_time_min: number | null
+          shipping_weight: number | null
+          show_rating: boolean | null
+          show_stock: boolean | null
           sizes: string[] | null
+          slug: string | null
           specifications: Json | null
           stock: number | null
+          store_pickup_available: boolean | null
+          technical_specs: Json | null
           title: string | null
           updated_at: string
+          uti_pro_price: number | null
         }
         Insert: {
           additional_images?: string[] | null
@@ -554,25 +631,48 @@ export type Database = {
           created_at?: string
           description?: string | null
           digital_price?: number | null
+          discount_percentage?: number | null
           discount_price?: number | null
+          free_shipping?: boolean | null
           id?: string
           image?: string | null
           images?: string[] | null
+          installment_options?: number | null
           is_active?: boolean | null
           is_featured?: boolean | null
           list_price?: number | null
+          meta_description?: string | null
+          meta_title?: string | null
           name: string
           new_price?: number | null
+          pix_discount_percentage?: number | null
           platform?: string | null
           price: number
           pro_discount_percent?: number | null
           pro_price?: number | null
+          product_features?: Json | null
+          promotional_price?: number | null
           rating?: number | null
+          rating_average?: number | null
+          rating_count?: number | null
+          related_products?: Json | null
+          related_products_auto?: boolean | null
+          reviews_enabled?: boolean | null
+          shipping_dimensions?: Json | null
+          shipping_time_max?: number | null
+          shipping_time_min?: number | null
+          shipping_weight?: number | null
+          show_rating?: boolean | null
+          show_stock?: boolean | null
           sizes?: string[] | null
+          slug?: string | null
           specifications?: Json | null
           stock?: number | null
+          store_pickup_available?: boolean | null
+          technical_specs?: Json | null
           title?: string | null
           updated_at?: string
+          uti_pro_price?: number | null
         }
         Update: {
           additional_images?: string[] | null
@@ -585,25 +685,48 @@ export type Database = {
           created_at?: string
           description?: string | null
           digital_price?: number | null
+          discount_percentage?: number | null
           discount_price?: number | null
+          free_shipping?: boolean | null
           id?: string
           image?: string | null
           images?: string[] | null
+          installment_options?: number | null
           is_active?: boolean | null
           is_featured?: boolean | null
           list_price?: number | null
+          meta_description?: string | null
+          meta_title?: string | null
           name?: string
           new_price?: number | null
+          pix_discount_percentage?: number | null
           platform?: string | null
           price?: number
           pro_discount_percent?: number | null
           pro_price?: number | null
+          product_features?: Json | null
+          promotional_price?: number | null
           rating?: number | null
+          rating_average?: number | null
+          rating_count?: number | null
+          related_products?: Json | null
+          related_products_auto?: boolean | null
+          reviews_enabled?: boolean | null
+          shipping_dimensions?: Json | null
+          shipping_time_max?: number | null
+          shipping_time_min?: number | null
+          shipping_weight?: number | null
+          show_rating?: boolean | null
+          show_stock?: boolean | null
           sizes?: string[] | null
+          slug?: string | null
           specifications?: Json | null
           stock?: number | null
+          store_pickup_available?: boolean | null
+          technical_specs?: Json | null
           title?: string | null
           updated_at?: string
+          uti_pro_price?: number | null
         }
         Relationships: []
       }
@@ -634,6 +757,48 @@ export type Database = {
           name?: string | null
           pro_expires_at?: string | null
           role?: string
+        }
+        Relationships: []
+      }
+      promotional_ribbon_config: {
+        Row: {
+          background_color: string | null
+          background_type: string | null
+          created_at: string | null
+          device_type: string
+          gradient_colors: string | null
+          id: string
+          is_active: boolean | null
+          link_url: string | null
+          text: string
+          text_color: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          background_type?: string | null
+          created_at?: string | null
+          device_type: string
+          gradient_colors?: string | null
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          text?: string
+          text_color?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          background_type?: string | null
+          created_at?: string | null
+          device_type?: string
+          gradient_colors?: string | null
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          text?: string
+          text_color?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -879,6 +1044,10 @@ export type Database = {
           padding_right: number | null
           padding_top: number | null
           title: string
+          title_color1: string | null
+          title_color2: string | null
+          title_part1: string | null
+          title_part2: string | null
           updated_at: string | null
         }
         Insert: {
@@ -904,6 +1073,10 @@ export type Database = {
           padding_right?: number | null
           padding_top?: number | null
           title: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -929,6 +1102,10 @@ export type Database = {
           padding_right?: number | null
           padding_top?: number | null
           title?: string
+          title_color1?: string | null
+          title_color2?: string | null
+          title_part1?: string | null
+          title_part2?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -1217,6 +1394,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      has_admin_users: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1229,6 +1410,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      log_security_event: {
+        Args: { event_type: string; user_id?: string; details?: Json }
+        Returns: undefined
+      }
+      promote_user_to_admin: {
+        Args: { user_email: string }
+        Returns: boolean
+      }
       redeem_pro_code: {
         Args: { p_code_id: string; p_user_id: string; p_end_date: string }
         Returns: Json
@@ -1236,6 +1425,16 @@ export type Database = {
       remover_meses_assinatura: {
         Args: { user_id: string; meses: number }
         Returns: boolean
+      }
+      test_admin_access: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          current_user_id: string
+          user_exists: boolean
+          user_role: string
+          is_admin_result: boolean
+          can_read_profiles: boolean
+        }[]
       }
     }
     Enums: {
