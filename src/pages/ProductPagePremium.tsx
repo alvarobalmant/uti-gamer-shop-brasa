@@ -1,9 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { useProductDetail } from '@/hooks/useProductDetail';
+import { saveScrollPosition, restoreScrollPosition } from '@/lib/scrollRestorationManager';
 import ProductPageHeader from '@/components/ProductPage/ProductPageHeader';
 import ProductHero from '@/components/Product/ProductHero';
 import ProductTabs from '@/components/Product/ProductTabs';
@@ -16,6 +17,7 @@ import ProductSEO from '@/components/Product/ProductSEO';
 const ProductPagePremium = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { product, loading, error } = useProductDetail(id);
   const { addToCart } = useCart();
   const { toast } = useToast();
@@ -23,6 +25,16 @@ const ProductPagePremium = () => {
 
   // Debug log para verificar se a página está carregando
   console.log('ProductPagePremium carregada - ID:', id, 'Product:', product?.name);
+
+  // Implementar scroll restoration
+  useEffect(() => {
+    // Salvar posição da página anterior ao entrar na página de produto
+    return () => {
+      // Salvar posição atual antes de sair
+      const currentPath = location.pathname;
+      saveScrollPosition(currentPath, 'product-page-exit');
+    };
+  }, [location.pathname]);
 
   useEffect(() => {
     // Simular contador de pessoas visualizando (em produção viria do backend)
@@ -40,6 +52,8 @@ const ProductPagePremium = () => {
   }, []);
 
   const handleBack = () => {
+    // Salvar a posição atual antes de voltar
+    saveScrollPosition(location.pathname, 'product-back-button');
     navigate(-1);
   };
 

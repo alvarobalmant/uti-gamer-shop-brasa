@@ -10,6 +10,11 @@ export interface Product {
   new_price?: number;
   digital_price?: number;
   discount_price?: number;
+  promotional_price?: number;
+  discount_percentage?: number;
+  pix_discount_percentage?: number;
+  uti_pro_price?: number;
+  installment_options?: number;
   image: string;
   images?: string[];
   additional_images?: string[];
@@ -18,6 +23,7 @@ export interface Product {
   stock?: number;
   category_id?: string;
   tags?: { id: string; name: string; }[];
+  tagIds?: string[];
   sku?: string;
   badge_text?: string;
   badge_color?: string;
@@ -25,10 +31,28 @@ export interface Product {
   is_featured?: boolean;
   is_active?: boolean;
   rating?: number;
+  rating_average?: number;
+  rating_count?: number;
+  reviews_enabled?: boolean;
+  show_stock?: boolean;
+  show_rating?: boolean;
   created_at: string;
   updated_at: string;
   specifications?: Array<{
     label: string;
     value: string;
   }>;
+  technical_specs?: any;
+  product_features?: any;
+  shipping_weight?: number;
+  shipping_dimensions?: any;
+  free_shipping?: boolean;
+  shipping_time_min?: number;
+  shipping_time_max?: number;
+  store_pickup_available?: boolean;
+  related_products?: any;
+  related_products_auto?: boolean;
+  meta_title?: string;
+  meta_description?: string;
+  slug?: string;
 }

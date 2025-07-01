@@ -398,8 +398,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <Label>Tags</Label>
               <TagSelector
                 tags={tags}
-                selectedTagIds={formData.tagIds}
-                onTagsChange={(tagIds) => handleInputChange('tagIds', tagIds)}
+                selectedTagIds={formData.tagIds || []}
+                onTagChange={(tagId, checked) => {
+                  const currentIds = formData.tagIds || [];
+                  const newIds = checked
+                    ? [...currentIds, tagId]
+                    : currentIds.filter(id => id !== tagId);
+                  handleInputChange('tagIds', newIds);
+                }}
               />
             </div>
 

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Package } from 'lucide-react';
+import { Edit, Trash2, Package, Eye } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { ProductTagDisplay } from './ProductTagDisplay';
 
@@ -119,6 +119,15 @@ const ProductList: React.FC<ProductListProps> = ({
             </div>
             
             <div className="flex gap-2 ml-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(`/produto/${product.id}`, '_blank')}
+                className="border-blue-500 text-blue-600 hover:bg-blue-50"
+              >
+                <Eye className="w-4 h-4" />
+              </Button>
+              
               <Button
                 variant="outline"
                 size="sm"
