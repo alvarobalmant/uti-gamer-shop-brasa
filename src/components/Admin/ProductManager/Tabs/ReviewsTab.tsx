@@ -21,8 +21,14 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({ formData, onChange }) => {
   };
 
   const handleCustomRatingChange = (field: string, value: any) => {
-    const currentConfig = formData.reviews_config || {};
-    const currentCustomRating = currentConfig.custom_rating || {};
+    const currentConfig = formData.reviews_config || {
+      enabled: true,
+      show_rating: true, 
+      show_count: true,
+      allow_reviews: true,
+      custom_rating: { value: 0, count: 0, use_custom: false }
+    };
+    const currentCustomRating = currentConfig.custom_rating || { value: 0, count: 0, use_custom: false };
     onChange('reviews_config', {
       ...currentConfig,
       custom_rating: {
@@ -32,8 +38,22 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({ formData, onChange }) => {
     });
   };
 
-  const reviewsConfig = formData.reviews_config || {};
-  const customRating = reviewsConfig.custom_rating || {};
+  const reviewsConfig = formData.reviews_config || {
+    enabled: true,
+    show_rating: true,
+    show_count: true,
+    allow_reviews: true,
+    custom_rating: {
+      value: 0,
+      count: 0,
+      use_custom: false
+    }
+  };
+  const customRating = reviewsConfig.custom_rating || {
+    value: 0,
+    count: 0,
+    use_custom: false
+  };
 
   return (
     <div className="space-y-6">

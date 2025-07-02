@@ -65,10 +65,10 @@ const ProductSectionManager: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<ProductSection | null>(null);
   const [formData, setFormData] = useState<Omit<ProductSectionInput, 'items'>>({ 
     title: '', 
-    titlePart1: '',
-    titlePart2: '',
-    titleColor1: '#000000',
-    titleColor2: '#9ca3af',
+      title_part1: '',
+      title_part2: '',
+      title_color1: '#000000',
+      title_color2: '#9ca3af',
     view_all_link: '' 
   });
   const [selectedItems, setSelectedItems] = useState<{ type: SectionItemType; id: string }[]>([]);
@@ -96,10 +96,10 @@ const ProductSectionManager: React.FC = () => {
     setCurrentSection(null);
     setFormData({ 
       title: '', 
-      titlePart1: '',
-      titlePart2: '',
-      titleColor1: '#000000',
-      titleColor2: '#9ca3af',
+        title_part1: '',
+        title_part2: '',
+        title_color1: '#000000',
+        title_color2: '#9ca3af',
       view_all_link: '' 
     });
     setSelectedItems([]);
@@ -140,10 +140,10 @@ const ProductSectionManager: React.FC = () => {
     const sectionInput: ProductSectionInput = {
       id: currentSection?.id,
       title: formData.title || '', // Pode ser vazio se usar título bicolor
-      titlePart1: formData.titlePart1,
-      titlePart2: formData.titlePart2,
-      titleColor1: formData.titleColor1,
-      titleColor2: formData.titleColor2,
+        title_part1: formData.title_part1,
+        title_part2: formData.title_part2,
+        title_color1: formData.title_color1,
+        title_color2: formData.title_color2,
       view_all_link: formData.view_all_link || null,
       items: selectedItems,
     };

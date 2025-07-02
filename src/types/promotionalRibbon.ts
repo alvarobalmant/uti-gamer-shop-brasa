@@ -8,7 +8,7 @@ export interface PromotionalRibbonConfig {
   gradient_colors: string;
   link_url: string | null;
   is_active: boolean | null;
-  device_type: "desktop" | "mobile";
+  device_type: string;
   created_at: string | null;
   updated_at: string | null;
 }

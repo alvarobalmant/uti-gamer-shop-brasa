@@ -198,7 +198,9 @@ const ProductFormTabs: React.FC<ProductFormTabsProps> = ({
         badge_text: product.badge_text || '',
         badge_color: product.badge_color || '#22c55e',
         badge_visible: product.badge_visible || false,
-        specifications: product.specifications || { categories: [] },
+        specifications: Array.isArray(product.specifications) 
+          ? { categories: [{ name: 'Especificações', specs: product.specifications.map((spec: any) => ({...spec, highlight: spec.highlight || false})) }] }
+          : product.specifications || { categories: [] },
         product_features: product.product_features || [],
         meta_title: product.meta_title || '',
         meta_description: product.meta_description || '',
