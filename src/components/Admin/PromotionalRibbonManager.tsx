@@ -290,14 +290,22 @@ const PromotionalRibbonManager: React.FC = () => {
         data.forEach((config) => {
           const configWithDefaults = {
             ...config,
-            background_type: config.background_type || 'solid',
+            background_type: (config.background_type as 'solid' | 'gradient') || 'solid',
             gradient_colors: config.gradient_colors || ''
           };
           
           if (config.device_type === 'mobile') {
-            setMobileConfig(configWithDefaults);
+            setMobileConfig({
+              ...configWithDefaults,
+              device_type: 'mobile' as const,
+              background_type: (configWithDefaults.background_type as 'solid' | 'gradient') || 'solid'
+            });
           } else if (config.device_type === 'desktop') {
-            setDesktopConfig(configWithDefaults);
+            setDesktopConfig({
+              ...configWithDefaults,
+              device_type: 'desktop' as const,
+              background_type: (configWithDefaults.background_type as 'solid' | 'gradient') || 'solid'
+            });
           }
         });
       }

@@ -18,10 +18,6 @@ export interface ProductSectionInput {
   title_color1?: string;
   title_color2?: string;
   view_all_link?: string;
-  titlePart1?: string;
-  titlePart2?: string;
-  titleColor1?: string;
-  titleColor2?: string;
   items: Array<{
     item_type: 'product' | 'banner';
     item_id: string;

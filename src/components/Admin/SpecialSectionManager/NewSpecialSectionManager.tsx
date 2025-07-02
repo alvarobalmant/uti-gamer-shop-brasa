@@ -78,9 +78,21 @@ const bannerRowSchema = z.object({
 
 const specialSectionConfigSchema = z.object({
   banner_rows: z.array(bannerRowSchema).default([]),
-  // Novas configurações de layout
+  carrossel_1: z.object({
+    title: z.string().default(''),
+    selection_mode: z.enum(['tags', 'products', 'combined']).default('products'),
+    tag_ids: z.array(z.string()).default([]),
+    product_ids: z.array(z.string()).default([]),
+  }).optional(),
+  carrossel_2: z.object({
+    title: z.string().default(''),
+    selection_mode: z.enum(['tags', 'products', 'combined']).default('products'),
+    tag_ids: z.array(z.string()).default([]),
+    product_ids: z.array(z.string()).default([]),
+  }).optional(),
   layout_settings: z.object({
     show_background: z.boolean().default(true),
+    carousel_display: z.string().default('both'),
     device_visibility: z.object({
       mobile: z.boolean().default(true),
       tablet: z.boolean().default(true),
@@ -92,6 +104,7 @@ const specialSectionConfigSchema = z.object({
     }),
   }).default({
     show_background: true,
+    carousel_display: 'both',
     device_visibility: {
       mobile: true,
       tablet: true,
@@ -129,8 +142,21 @@ const NewSpecialSectionManager: React.FC<NewSpecialSectionManagerProps> = ({ sec
     resolver: zodResolver(specialSectionConfigSchema),
     defaultValues: {
       banner_rows: [],
+      carrossel_1: {
+        title: '',
+        selection_mode: 'products',
+        tag_ids: [],
+        product_ids: [],
+      },
+      carrossel_2: {
+        title: '',
+        selection_mode: 'products',
+        tag_ids: [],
+        product_ids: [],
+      },
       layout_settings: {
         show_background: true,
+        carousel_display: 'both',
         device_visibility: {
           mobile: true,
           tablet: true,

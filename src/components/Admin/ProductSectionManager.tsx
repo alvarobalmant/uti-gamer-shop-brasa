@@ -39,6 +39,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from '@/components/ui/use-toast';
 import { useProductSections, ProductSection, ProductSectionInput, SectionItemType } from '@/hooks/useProductSections';
+import { ProductSectionFormData } from '@/types/productSectionForm';
+import { asExtendedProductSection } from '@/types/admin-temp-fixes';
 import { useProducts, Product } from '@/hooks/useProducts'; // Assuming Product type is exported
 import { useTags, Tag } from '@/hooks/useTags';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -63,12 +65,12 @@ const ProductSectionManager: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSection, setCurrentSection] = useState<ProductSection | null>(null);
-  const [formData, setFormData] = useState<Omit<ProductSectionInput, 'items'>>({ 
+  const [formData, setFormData] = useState<ProductSectionFormData>({ 
     title: '', 
-      title_part1: '',
-      title_part2: '',
-      title_color1: '#000000',
-      title_color2: '#9ca3af',
+    title_part1: '',
+    title_part2: '',
+    title_color1: '#000000',
+    title_color2: '#9ca3af',
     view_all_link: '' 
   });
   const [selectedItems, setSelectedItems] = useState<{ type: SectionItemType; id: string }[]>([]);
@@ -78,13 +80,14 @@ const ProductSectionManager: React.FC = () => {
 
   const handleEditClick = (section: ProductSection) => {
     setCurrentSection(section);
+    const extendedSection = asExtendedProductSection(section);
     setFormData({ 
-      title: section.title, 
-      titlePart1: section.titlePart1 || '',
-      titlePart2: section.titlePart2 || '',
-      titleColor1: section.titleColor1 || '#000000',
-      titleColor2: section.titleColor2 || '#9ca3af',
-      view_all_link: section.view_all_link || '' 
+      title: extendedSection.title, 
+      title_part1: extendedSection.title_part1 || '',
+      title_part2: extendedSection.title_part2 || '',
+      title_color1: extendedSection.title_color1 || '#000000',
+      title_color2: extendedSection.title_color2 || '#9ca3af',
+      view_all_link: extendedSection.view_all_link || '' 
     });
     setSelectedItems(section.items?.map(item => ({ type: item.item_type, id: item.item_id })) || []);
     // Determine initial item type based on first item, if any
@@ -96,10 +99,10 @@ const ProductSectionManager: React.FC = () => {
     setCurrentSection(null);
     setFormData({ 
       title: '', 
-        title_part1: '',
-        title_part2: '',
-        title_color1: '#000000',
-        title_color2: '#9ca3af',
+      title_part1: '',
+      title_part2: '',
+      title_color1: '#000000',
+      title_color2: '#9ca3af',
       view_all_link: '' 
     });
     setSelectedItems([]);
@@ -120,8 +123,8 @@ const ProductSectionManager: React.FC = () => {
     
     // Validação: deve ter título simples OU pelo menos uma parte do título bicolor
     const hasSimpleTitle = formData.title && formData.title.trim() !== '';
-    const hasBicolorTitle = (formData.titlePart1 && formData.titlePart1.trim() !== '') || 
-                           (formData.titlePart2 && formData.titlePart2.trim() !== '');
+    const hasBicolorTitle = (formData.title_part1 && formData.title_part1.trim() !== '') || 
+                           (formData.title_part2 && formData.title_part2.trim() !== '');
     
     if (!hasSimpleTitle && !hasBicolorTitle) {
       toast({ 
@@ -137,16 +140,16 @@ const ProductSectionManager: React.FC = () => {
         return;
     }
 
-    const sectionInput: ProductSectionInput = {
+    const sectionInput = {
       id: currentSection?.id,
       title: formData.title || '', // Pode ser vazio se usar título bicolor
-        title_part1: formData.title_part1,
-        title_part2: formData.title_part2,
-        title_color1: formData.title_color1,
-        title_color2: formData.title_color2,
+      title_part1: formData.title_part1,
+      title_part2: formData.title_part2,
+      title_color1: formData.title_color1,
+      title_color2: formData.title_color2,
       view_all_link: formData.view_all_link || null,
       items: selectedItems,
-    };
+    } as ProductSectionInput;
 
     let success = false;
     if (currentSection) {
@@ -324,15 +327,15 @@ const ProductSectionManager: React.FC = () => {
                     <Input 
                       id="titlePart1" 
                       name="titlePart1" 
-                      value={formData.titlePart1 || ''} 
-                      onChange={(e) => setFormData(prev => ({ ...prev, titlePart1: e.target.value }))} 
+                       value={formData.title_part1 || ''} 
+                       onChange={(e) => setFormData(prev => ({ ...prev, title_part1: e.target.value }))}
                       className="flex-1 bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500" 
                       placeholder="ex: Most Popular"
                     />
                     <input
                       type="color"
-                      value={formData.titleColor1 || '#000000'}
-                      onChange={(e) => setFormData(prev => ({ ...prev, titleColor1: e.target.value }))}
+                      value={formData.title_color1 || '#000000'}
+                      onChange={(e) => setFormData(prev => ({ ...prev, title_color1: e.target.value }))}
                       className="w-12 h-10 rounded border border-[#343A40] bg-[#1A1A2E] cursor-pointer"
                       title="Cor da primeira parte"
                     />
@@ -348,15 +351,15 @@ const ProductSectionManager: React.FC = () => {
                     <Input 
                       id="titlePart2" 
                       name="titlePart2" 
-                      value={formData.titlePart2 || ''} 
-                      onChange={(e) => setFormData(prev => ({ ...prev, titlePart2: e.target.value }))} 
+                       value={formData.title_part2 || ''} 
+                       onChange={(e) => setFormData(prev => ({ ...prev, title_part2: e.target.value }))}
                       className="flex-1 bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500" 
                       placeholder="ex: Trading Cards"
                     />
                     <input
                       type="color"
-                      value={formData.titleColor2 || '#9ca3af'}
-                      onChange={(e) => setFormData(prev => ({ ...prev, titleColor2: e.target.value }))}
+                      value={formData.title_color2 || '#9ca3af'}
+                      onChange={(e) => setFormData(prev => ({ ...prev, title_color2: e.target.value }))}
                       className="w-12 h-10 rounded border border-[#343A40] bg-[#1A1A2E] cursor-pointer"
                       title="Cor da segunda parte"
                     />

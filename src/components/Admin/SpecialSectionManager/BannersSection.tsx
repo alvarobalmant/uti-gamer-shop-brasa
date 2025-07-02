@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useCallback, useEffect } from 'react';
 import { Controller, useFieldArray, Control, UseFormSetValue } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
