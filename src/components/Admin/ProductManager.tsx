@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,24 @@ const ProductManager = () => {
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Detectar se deve abrir diretamente na edição via URL parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editProductId = urlParams.get('edit_product');
+    
+    if (editProductId && products.length > 0) {
+      const productToEdit = products.find(p => p.id === editProductId);
+      if (productToEdit) {
+        setEditingProduct(productToEdit);
+        setShowForm(true);
+        // Limpar o parâmetro da URL
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('edit_product');
+        window.history.replaceState({}, '', newUrl.toString());
+      }
+    }
+  }, [products]);
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

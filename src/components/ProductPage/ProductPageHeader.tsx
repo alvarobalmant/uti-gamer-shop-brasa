@@ -15,7 +15,8 @@ const ProductPageHeader = ({ onBackClick, product, isLoading }: ProductPageHeade
 
   const handleEditProduct = () => {
     if (product) {
-      window.open(`/admin`, '_blank');
+      // Abrir admin e focar na edição deste produto específico
+      window.open(`/admin?edit_product=${product.id}`, '_blank');
     }
   };
   if (isLoading) {

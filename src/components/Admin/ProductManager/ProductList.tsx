@@ -124,6 +124,7 @@ const ProductList: React.FC<ProductListProps> = ({
                 size="sm"
                 onClick={() => window.open(`/produto/${product.id}`, '_blank')}
                 className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                title="Ver página premium do produto"
               >
                 <Eye className="w-4 h-4" />
               </Button>
