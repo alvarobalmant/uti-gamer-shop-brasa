@@ -563,6 +563,13 @@ export type Database = {
             referencedRelation: "tags"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_product_tags_tag_id"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["tag_id"]
+          },
         ]
       }
       products: {
@@ -1345,27 +1352,36 @@ export type Database = {
     Views: {
       view_product_with_tags: {
         Row: {
+          additional_images: string[] | null
           badge_color: string | null
           badge_text: string | null
           badge_visible: boolean | null
+          colors: string[] | null
+          created_at: string | null
+          free_shipping: boolean | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          list_price: number | null
+          meta_description: string | null
+          meta_title: string | null
+          pro_price: number | null
           product_description: string | null
+          product_features: Json | null
           product_id: string | null
           product_image: string | null
           product_name: string | null
           product_price: number | null
           product_stock: number | null
+          shipping_weight: number | null
+          sizes: string[] | null
+          slug: string | null
+          specifications: Json | null
           tag_id: string | null
           tag_name: string | null
+          technical_specs: Json | null
+          updated_at: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_product_tags_tag_id"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
