@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -30,7 +29,14 @@ export const useNavigationItems = () => {
       
       setItems((data || []).map(item => ({
         ...item,
-        icon_type: (item.icon_type as 'icon' | 'image' | 'emoji') || 'image'
+        icon_type: (item.icon_type as 'icon' | 'image' | 'emoji') || 'image',
+        link_type: (item.link_type as 'internal' | 'external') || 'internal',
+        background_color: item.background_color || '#ffffff',
+        text_color: item.text_color || '#000000',
+        is_visible: item.is_visible ?? true,
+        is_active: item.is_active ?? true,
+        created_at: item.created_at || '',
+        updated_at: item.updated_at || ''
       })));
     } catch (err: any) {
       setError(err.message);
@@ -57,7 +63,14 @@ export const useNavigationItems = () => {
       
       setItems((data || []).map(item => ({
         ...item,
-        icon_type: (item.icon_type as 'icon' | 'image' | 'emoji') || 'image'
+        icon_type: (item.icon_type as 'icon' | 'image' | 'emoji') || 'image',
+        link_type: (item.link_type as 'internal' | 'external') || 'internal',
+        background_color: item.background_color || '#ffffff',
+        text_color: item.text_color || '#000000',
+        is_visible: item.is_visible ?? true,
+        is_active: item.is_active ?? true,
+        created_at: item.created_at || '',
+        updated_at: item.updated_at || ''
       })));
     } catch (err: any) {
       setError(err.message);
@@ -81,7 +94,20 @@ export const useNavigationItems = () => {
       // Atualizar lista local
       await fetchItems();
       
-      return { data, error: null };
+      return { 
+        data: {
+          ...data,
+          icon_type: (data.icon_type as 'icon' | 'image' | 'emoji') || 'image',
+          link_type: (data.link_type as 'internal' | 'external') || 'internal',
+          background_color: data.background_color || '#ffffff',
+          text_color: data.text_color || '#000000',
+          is_visible: data.is_visible ?? true,
+          is_active: data.is_active ?? true,
+          created_at: data.created_at || '',
+          updated_at: data.updated_at || ''
+        } as NavigationItem, 
+        error: null 
+      };
     } catch (err: any) {
       console.error('Erro ao criar item:', err);
       return { data: null, error: err };
@@ -105,7 +131,20 @@ export const useNavigationItems = () => {
       // Atualizar lista local
       await fetchItems();
       
-      return { data, error: null };
+      return { 
+        data: {
+          ...data,
+          icon_type: (data.icon_type as 'icon' | 'image' | 'emoji') || 'image',
+          link_type: (data.link_type as 'internal' | 'external') || 'internal',
+          background_color: data.background_color || '#ffffff',
+          text_color: data.text_color || '#000000',
+          is_visible: data.is_visible ?? true,
+          is_active: data.is_active ?? true,
+          created_at: data.created_at || '',
+          updated_at: data.updated_at || ''
+        } as NavigationItem, 
+        error: null 
+      };
     } catch (err: any) {
       console.error('Erro ao atualizar item:', err);
       return { data: null, error: err };
@@ -170,7 +209,20 @@ export const useNavigationItems = () => {
       // Atualizar lista local
       await fetchItems();
       
-      return { data, error: null };
+      return { 
+        data: {
+          ...data,
+          icon_type: (data.icon_type as 'icon' | 'image' | 'emoji') || 'image',
+          link_type: (data.link_type as 'internal' | 'external') || 'internal',
+          background_color: data.background_color || '#ffffff',
+          text_color: data.text_color || '#000000',
+          is_visible: data.is_visible ?? true,
+          is_active: data.is_active ?? true,
+          created_at: data.created_at || '',
+          updated_at: data.updated_at || ''
+        } as NavigationItem, 
+        error: null 
+      };
     } catch (err: any) {
       console.error('Erro ao alterar visibilidade:', err);
       return { data: null, error: err };

@@ -56,6 +56,13 @@ export interface Product {
   meta_description?: string;
   slug?: string;
   
+  // Campos adicionais necessários
+  platform?: string;
+  is_on_sale?: boolean;
+  category?: string;
+  condition?: string;
+  title?: string;
+  
   // Novos campos expandidos
   product_videos?: any;
   product_faqs?: any;

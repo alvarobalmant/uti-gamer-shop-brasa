@@ -28,7 +28,7 @@ interface SectionRendererProps {
   reduceTopSpacing?: boolean;
 }
 
-const SectionRenderer: React.FC<SectionRendererProps> = ({
+export const SectionRenderer: React.FC<SectionRendererProps> = ({
   sectionKey,
   bannerData,
   products,

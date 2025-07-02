@@ -1,5 +1,4 @@
 
-// @ts-nocheck
 import React from 'react';
 import { useHomepageLayout } from '@/hooks/useHomepageLayout';
 import { SectionRenderer } from '@/components/HomePage/SectionRenderer';
@@ -7,10 +6,10 @@ import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
 
 const HomePage = () => {
-  const { layout, loading, error } = useHomepageLayout();
+  const { layoutItems: layout, loading, error } = useHomepageLayout();
 
   if (loading) return <LoadingState />;
-  if (error) return <ErrorState error={error} />;
+  if (error) return <ErrorState message={error} />;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -21,10 +20,23 @@ const HomePage = () => {
         </a>
       </div>
       
-      {layout.map((section) => (
+      {layout.map((layoutItem) => (
         <SectionRenderer 
-          key={section.section_key} 
-          section={section} 
+          key={layoutItem.section_key} 
+          sectionKey={layoutItem.section_key}
+          bannerData={{
+            imageUrl: '',
+            title: '',
+            description: '',
+            buttonText: '',
+            buttonLink: '',
+            targetBlank: false
+          }}
+          products={[]}
+          sections={[]}
+          productsLoading={false}
+          sectionsLoading={false}
+          onAddToCart={() => {}}
         />
       ))}
     </div>
