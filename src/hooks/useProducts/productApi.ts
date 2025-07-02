@@ -92,7 +92,39 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
       const productId = row.product_id;
       
       if (!productsMap.has(productId)) {
+<<<<<<< HEAD
         productsMap.set(productId, mapRowToProduct(row));
+=======
+        productsMap.set(productId, {
+          id: productId,
+          name: row.product_name || '',
+          description: row.product_description || '',
+          price: Number(row.product_price) || 0,
+          pro_price: row.pro_price ? Number(row.pro_price) : undefined,
+          list_price: row.list_price ? Number(row.list_price) : undefined,
+          image: row.product_image || '',
+          additional_images: row.additional_images || [],
+          sizes: row.sizes || [],
+          colors: row.colors || [],
+          stock: row.product_stock || 0,
+          badge_text: row.badge_text || '',
+          badge_color: row.badge_color || '#22c55e',
+          badge_visible: row.badge_visible || false,
+          specifications: row.specifications || [],
+          technical_specs: row.technical_specs || {},
+          product_features: row.product_features || {},
+          shipping_weight: row.shipping_weight ? Number(row.shipping_weight) : undefined,
+          free_shipping: row.free_shipping || false,
+          meta_title: row.meta_title || '',
+          meta_description: row.meta_description || '',
+          slug: row.slug || '',
+          is_active: row.is_active !== false,
+          is_featured: row.is_featured || false,
+          tags: [],
+          created_at: row.created_at || new Date().toISOString(),
+          updated_at: row.updated_at || new Date().toISOString()
+        });
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
       }
       
       // Adicionar tag se existir
@@ -145,7 +177,39 @@ export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<P
       const productId = row.product_id;
       
       if (!productsMap.has(productId)) {
+<<<<<<< HEAD
         productsMap.set(productId, mapRowToProduct(row));
+=======
+        productsMap.set(productId, {
+          id: productId,
+          name: row.product_name || '',
+          description: row.product_description || '',
+          price: Number(row.product_price) || 0,
+          pro_price: row.pro_price ? Number(row.pro_price) : undefined,
+          list_price: row.list_price ? Number(row.list_price) : undefined,
+          image: row.product_image || '',
+          additional_images: row.additional_images || [],
+          sizes: row.sizes || [],
+          colors: row.colors || [],
+          stock: row.product_stock || 0,
+          badge_text: row.badge_text || '',
+          badge_color: row.badge_color || '#22c55e',
+          badge_visible: row.badge_visible || false,
+          specifications: row.specifications || [],
+          technical_specs: row.technical_specs || {},
+          product_features: row.product_features || {},
+          shipping_weight: row.shipping_weight ? Number(row.shipping_weight) : undefined,
+          free_shipping: row.free_shipping || false,
+          meta_title: row.meta_title || '',
+          meta_description: row.meta_description || '',
+          slug: row.slug || '',
+          is_active: row.is_active !== false,
+          is_featured: row.is_featured || false,
+          tags: [],
+          created_at: row.created_at || new Date().toISOString(),
+          updated_at: row.updated_at || new Date().toISOString()
+        });
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
       }
       
       // Add tag if exists
@@ -417,3 +481,81 @@ export const deleteProductFromDatabase = async (id: string) => {
   }
 };
 
+<<<<<<< HEAD
+=======
+// Nova função para buscar um produto específico com debug
+export const fetchSingleProductFromDatabase = async (id: string): Promise<Product | null> => {
+  try {
+    console.log('Fetching single product with ID:', id);
+    
+    const { data, error } = await supabase
+      .from('view_product_with_tags')
+      .select('*')
+      .eq('product_id', id);
+
+    if (error) {
+      console.error('Error fetching single product:', error);
+      throw error;
+    }
+
+    console.log('Single product data from view:', data);
+
+    if (!data || data.length === 0) {
+      console.log('No data found for product ID:', id);
+      return null;
+    }
+
+    // Processar o primeiro registro para obter dados do produto
+    const firstRow = data[0];
+    const product: Product = {
+      id: firstRow.product_id,
+      name: firstRow.product_name || '',
+      description: firstRow.product_description || '',
+      price: Number(firstRow.product_price) || 0,
+      pro_price: firstRow.pro_price ? Number(firstRow.pro_price) : undefined,
+      list_price: firstRow.list_price ? Number(firstRow.list_price) : undefined,
+      image: firstRow.product_image || '',
+      additional_images: firstRow.additional_images || [],
+      sizes: firstRow.sizes || [],
+      colors: firstRow.colors || [],
+      stock: firstRow.product_stock || 0,
+      badge_text: firstRow.badge_text || '',
+      badge_color: firstRow.badge_color || '#22c55e',
+      badge_visible: firstRow.badge_visible || false,
+      specifications: firstRow.specifications || [],
+      technical_specs: firstRow.technical_specs || {},
+      product_features: firstRow.product_features || {},
+      shipping_weight: firstRow.shipping_weight ? Number(firstRow.shipping_weight) : undefined,
+      free_shipping: firstRow.free_shipping || false,
+      meta_title: firstRow.meta_title || '',
+      meta_description: firstRow.meta_description || '',
+      slug: firstRow.slug || '',
+      is_active: firstRow.is_active !== false,
+      is_featured: firstRow.is_featured || false,
+      tags: [],
+      created_at: firstRow.created_at || new Date().toISOString(),
+      updated_at: firstRow.updated_at || new Date().toISOString()
+    };
+
+    // Coletar todas as tags
+    data.forEach((row: any) => {
+      if (row.tag_id && row.tag_name) {
+        const tagExists = product.tags?.some(tag => tag.id === row.tag_id);
+        if (!tagExists) {
+          product.tags = product.tags || [];
+          product.tags.push({
+            id: row.tag_id,
+            name: row.tag_name
+          });
+        }
+      }
+    });
+
+    console.log('Processed single product:', product);
+    return product;
+  } catch (error) {
+    console.error('Error in fetchSingleProductFromDatabase:', error);
+    throw error;
+  }
+};
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897

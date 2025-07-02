@@ -1,13 +1,21 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+=======
+
+import React, { useState } from 'react';
+import { Product } from '@/hooks/useProducts';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
 
 interface ProductFAQProps {
   product: Product;
 }
 
 const ProductFAQ: React.FC<ProductFAQProps> = ({ product }) => {
+<<<<<<< HEAD
   console.log('TESTE SIMPLES - ProductFAQ carregado');
   console.log('🚀 ProductFAQ EXECUTANDO! Produto:', product?.id);
   
@@ -64,6 +72,12 @@ const ProductFAQ: React.FC<ProductFAQProps> = ({ product }) => {
 
   // FAQs mock como fallback
   const getMockFAQs = () => [
+=======
+  const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+
+  // Mock FAQs - em produção viriam do banco de dados
+  const faqs = [
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
     {
       id: 1,
       question: 'O jogo vem lacrado e original?',

@@ -21,9 +21,81 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
   const [quantity, setQuantity] = useState(1);
   const [isFavorited, setIsFavorited] = useState(false);
 
+<<<<<<< HEAD
   // Mock de avaliações
   const rating = 4.8;
   const reviewCount = 127;
+=======
+  // Usar configurações de display se disponíveis
+  const displayConfig = product.display_config || {};
+  
+  // Determinar contagem de visualizações
+  const actualViewingCount = displayConfig.custom_view_count || viewingCount;
+  
+  // Usar configuração de reviews customizada se disponível
+  const reviewsConfig = product.reviews_config || {
+    enabled: true,
+    show_rating: true,
+    show_count: true,
+    custom_rating: {
+      value: 4.8,
+      count: 127,
+      use_custom: false
+    }
+  };
+
+  const rating = reviewsConfig.custom_rating?.use_custom 
+    ? reviewsConfig.custom_rating.value 
+    : 4.8;
+  
+  const reviewCount = reviewsConfig.custom_rating?.use_custom 
+    ? reviewsConfig.custom_rating.count 
+    : 127;
+
+  // Usar trust indicators configurados ou usar padrões
+  const trustIndicators = product.trust_indicators && product.trust_indicators.length > 0
+    ? product.trust_indicators
+        .filter(indicator => indicator.is_visible)
+        .sort((a, b) => a.order - b.order)
+    : [
+        {
+          id: '1',
+          title: 'Entrega rápida',
+          description: '2-5 dias úteis',
+          icon: 'truck',
+          color: '#3B82F6',
+          order: 1,
+          is_visible: true,
+        },
+        {
+          id: '2',
+          title: 'Produto original',
+          description: 'Lacrado e garantido',
+          icon: 'shield',
+          color: '#10B981',
+          order: 2,
+          is_visible: true,
+        },
+        {
+          id: '3',
+          title: 'Troca garantida',
+          description: '7 dias para trocar',
+          icon: 'clock',
+          color: '#8B5CF6',
+          order: 3,
+          is_visible: true,
+        },
+        {
+          id: '4',
+          title: 'Atendimento UTI',
+          description: 'Suporte especializado',
+          icon: 'heart',
+          color: '#EF4444',
+          order: 4,
+          is_visible: true,
+        },
+      ];
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
 
   const handleShare = () => {
     if (navigator.share) {
@@ -42,6 +114,19 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
     window.open(whatsappUrl, '_blank');
   };
 
+<<<<<<< HEAD
+=======
+  const getIconComponent = (iconName: string) => {
+    const iconMap: { [key: string]: React.ComponentType<any> } = {
+      truck: Truck,
+      shield: Shield,
+      clock: Clock,
+      heart: Heart,
+    };
+    return iconMap[iconName] || Shield;
+  };
+
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
   return (
     <div className="bg-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -60,10 +145,19 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
                   <Shield className="w-3 h-3 mr-1" />
                   Em estoque
                 </Badge>
+<<<<<<< HEAD
                 <div className="flex items-center text-sm text-gray-600">
                   <Eye className="w-4 h-4 mr-1" />
                   {viewingCount} pessoas visualizando
                 </div>
+=======
+                {displayConfig.show_view_counter !== false && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Eye className="w-4 h-4 mr-1" />
+                    {actualViewingCount} pessoas visualizando
+                  </div>
+                )}
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -80,11 +174,33 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
               </div>
             </div>
 
+<<<<<<< HEAD
+=======
+            {/* Banner de Urgência (se configurado) */}
+            {displayConfig.show_urgency_banner && displayConfig.urgency_text && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-800 text-sm font-medium text-center">
+                  {displayConfig.urgency_text}
+                </p>
+              </div>
+            )}
+
+            {/* Social Proof (se configurado) */}
+            {displayConfig.show_social_proof && displayConfig.social_proof_text && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-blue-800 text-sm text-center">
+                  {displayConfig.social_proof_text}
+                </p>
+              </div>
+            )}
+
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
             {/* Título e Avaliações */}
             <div>
               <h1 className="text-3xl font-bold text-gray-900 leading-tight mb-3">
                 {product.name}
               </h1>
+<<<<<<< HEAD
               <div className="flex items-center gap-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
@@ -103,6 +219,30 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
                   ({reviewCount} avaliações)
                 </button>
               </div>
+=======
+              {reviewsConfig.enabled && reviewsConfig.show_rating && (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-5 h-5 ${
+                          i < Math.floor(rating) 
+                            ? 'text-yellow-400 fill-current' 
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                    <span className="ml-2 text-lg font-semibold text-gray-900">{rating}</span>
+                  </div>
+                  {reviewsConfig.show_count && (
+                    <button className="text-sm text-blue-600 hover:underline">
+                      ({reviewCount} avaliações)
+                    </button>
+                  )}
+                </div>
+              )}
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
             </div>
 
             {/* Preços e Ofertas */}
@@ -143,6 +283,7 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
               onWhatsAppContact={handleWhatsAppContact}
             />
 
+<<<<<<< HEAD
             {/* Trust Indicators */}
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="grid grid-cols-2 gap-4">
@@ -182,6 +323,33 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
                     <div className="text-sm text-gray-600">Suporte especializado</div>
                   </div>
                 </div>
+=======
+            {/* Trust Indicators Configuráveis */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="grid grid-cols-2 gap-4">
+                {trustIndicators.slice(0, 4).map((indicator) => {
+                  const IconComponent = getIconComponent(indicator.icon);
+                  return (
+                    <div key={indicator.id} className="flex items-center gap-3">
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center"
+                        style={{ 
+                          backgroundColor: `${indicator.color}20`,
+                        }}
+                      >
+                        <IconComponent 
+                          className="w-5 h-5" 
+                          style={{ color: indicator.color }}
+                        />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900">{indicator.title}</div>
+                        <div className="text-sm text-gray-600">{indicator.description}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+>>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
               </div>
             </div>
 
