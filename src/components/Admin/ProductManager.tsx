@@ -3,11 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Filter, Package } from 'lucide-react';
+import { Plus, Search, Filter, Package, Settings } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { useTags } from '@/hooks/useTags';
 import ProductList from './ProductManager/ProductList';
 import ProductForm from './ProductManager/ProductForm';
+import ProductConfigurationForm from './ProductManager/ProductConfigurationForm';
 import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
 
@@ -17,7 +18,9 @@ const ProductManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
+  const [showConfiguration, setShowConfiguration] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [configuringProduct, setConfiguringProduct] = useState<Product | null>(null);
 
   // Detectar se deve abrir diretamente na edição via URL parameter
   useEffect(() => {
@@ -28,10 +31,6 @@ const ProductManager = () => {
       const productToEdit = products.find(p => p.id === editProductId);
       console.log('ProductManager: URL param edit_product found:', editProductId);
       console.log('ProductManager: Product to edit found:', productToEdit);
-      console.log('ProductManager: Product specifications:', productToEdit?.specifications);
-      console.log('ProductManager: Product meta_title:', productToEdit?.meta_title);
-      console.log('ProductManager: Product meta_description:', productToEdit?.meta_description);
-      console.log('ProductManager: Product slug:', productToEdit?.slug);
       
       if (productToEdit) {
         setEditingProduct(productToEdit);
@@ -61,15 +60,14 @@ const ProductManager = () => {
     setShowForm(true);
   };
 
+  const handleConfigureProduct = (product: Product) => {
+    setConfiguringProduct(product);
+    setShowConfiguration(true);
+  };
+
   const handleFormSubmit = async (productData: any) => {
     try {
       console.log('ProductManager: handleFormSubmit called');
-      console.log('ProductManager: editingProduct:', editingProduct);
-      console.log('ProductManager: productData received:', productData);
-      console.log('ProductManager: productData.specifications:', productData.specifications);
-      console.log('ProductManager: productData.meta_title:', productData.meta_title);
-      console.log('ProductManager: productData.meta_description:', productData.meta_description);
-      console.log('ProductManager: productData.slug:', productData.slug);
       
       if (editingProduct) {
         console.log('ProductManager: Updating product with ID:', editingProduct.id);
@@ -79,10 +77,6 @@ const ProductManager = () => {
         console.log('ProductManager: Product updated, verifying...');
         const updatedProduct = await fetchSingleProduct(editingProduct.id);
         console.log('ProductManager: Updated product from DB:', updatedProduct);
-        console.log('ProductManager: Updated product specifications:', updatedProduct?.specifications);
-        console.log('ProductManager: Updated product meta_title:', updatedProduct?.meta_title);
-        console.log('ProductManager: Updated product meta_description:', updatedProduct?.meta_description);
-        console.log('ProductManager: Updated product slug:', updatedProduct?.slug);
       } else {
         console.log('ProductManager: Creating new product');
         await addProduct(productData);
@@ -91,6 +85,17 @@ const ProductManager = () => {
       setEditingProduct(null);
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
+    }
+  };
+
+  const handleConfigurationSave = async (productId: string, configurations: any) => {
+    try {
+      console.log('ProductManager: Saving product configurations:', configurations);
+      await updateProduct(productId, configurations);
+      setShowConfiguration(false);
+      setConfiguringProduct(null);
+    } catch (error) {
+      console.error('Erro ao salvar configurações:', error);
     }
   };
 
@@ -103,6 +108,19 @@ const ProductManager = () => {
       }
     }
   };
+
+  if (showConfiguration && configuringProduct) {
+    return (
+      <ProductConfigurationForm
+        product={configuringProduct}
+        onSave={handleConfigurationSave}
+        onCancel={() => {
+          setShowConfiguration(false);
+          setConfiguringProduct(null);
+        }}
+      />
+    );
+  }
 
   if (showForm) {
     return (
@@ -252,6 +270,7 @@ const ProductManager = () => {
             loading={loading}
             onEdit={handleEditProduct}
             onDelete={handleDeleteProduct}
+            onConfigure={handleConfigureProduct}
           />
         </CardContent>
       </Card>

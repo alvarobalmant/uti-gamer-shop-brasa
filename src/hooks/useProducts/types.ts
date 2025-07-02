@@ -55,4 +55,99 @@ export interface Product {
   meta_title?: string;
   meta_description?: string;
   slug?: string;
+  
+  // Novos campos configuráveis
+  product_videos?: Array<{
+    id: string;
+    title: string;
+    url: string;
+    thumbnail: string;
+    duration: string;
+    type: 'youtube' | 'vimeo' | 'mp4';
+    order: number;
+    is_featured: boolean;
+  }>;
+  
+  product_faqs?: Array<{
+    id: string;
+    question: string;
+    answer: string;
+    order: number;
+    is_visible: boolean;
+    category: string;
+  }>;
+  
+  product_highlights?: Array<{
+    id: string;
+    text: string;
+    icon: string;
+    order: number;
+    is_featured: boolean;
+  }>;
+  
+  reviews_config?: {
+    enabled: boolean;
+    show_rating: boolean;
+    show_count: boolean;
+    allow_reviews: boolean;
+    custom_rating?: {
+      value: number;
+      count: number;
+      use_custom: boolean;
+    };
+  };
+  
+  trust_indicators?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    icon: string;
+    color: string;
+    order: number;
+    is_visible: boolean;
+  }>;
+  
+  manual_related_products?: Array<{
+    product_id: string;
+    relationship_type: string;
+    order: number;
+    custom_title: string;
+  }>;
+  
+  breadcrumb_config?: {
+    custom_path: Array<{
+      label: string;
+      url: string;
+    }>;
+    use_custom: boolean;
+    show_breadcrumb: boolean;
+  };
+  
+  product_descriptions?: {
+    short?: string;
+    detailed?: string;
+    technical?: string;
+    marketing?: string;
+  };
+  
+  delivery_config?: {
+    custom_shipping_time?: string;
+    shipping_regions?: string[];
+    express_available?: boolean;
+    pickup_locations?: Array<{
+      name: string;
+      address: string;
+      hours: string;
+    }>;
+  };
+  
+  display_config?: {
+    show_stock_counter?: boolean;
+    show_view_counter?: boolean;
+    custom_view_count?: number;
+    show_urgency_banner?: boolean;
+    urgency_text?: string;
+    show_social_proof?: boolean;
+    social_proof_text?: string;
+  };
 }
