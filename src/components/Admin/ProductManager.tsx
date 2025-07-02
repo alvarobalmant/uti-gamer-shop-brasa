@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,12 +12,37 @@ import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
 
 const ProductManager = () => {
-  const { products, loading, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, loading, addProduct, updateProduct, deleteProduct, fetchSingleProduct } = useProducts();
   const { tags } = useTags();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Detectar se deve abrir diretamente na edição via URL parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editProductId = urlParams.get('edit_product');
+    
+    if (editProductId && products.length > 0) {
+      const productToEdit = products.find(p => p.id === editProductId);
+      console.log('ProductManager: URL param edit_product found:', editProductId);
+      console.log('ProductManager: Product to edit found:', productToEdit);
+      console.log('ProductManager: Product specifications:', productToEdit?.specifications);
+      console.log('ProductManager: Product meta_title:', productToEdit?.meta_title);
+      console.log('ProductManager: Product meta_description:', productToEdit?.meta_description);
+      console.log('ProductManager: Product slug:', productToEdit?.slug);
+      
+      if (productToEdit) {
+        setEditingProduct(productToEdit);
+        setShowForm(true);
+        // Limpar o parâmetro da URL
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('edit_product');
+        window.history.replaceState({}, '', newUrl.toString());
+      }
+    }
+  }, [products]);
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -38,9 +63,28 @@ const ProductManager = () => {
 
   const handleFormSubmit = async (productData: any) => {
     try {
+      console.log('ProductManager: handleFormSubmit called');
+      console.log('ProductManager: editingProduct:', editingProduct);
+      console.log('ProductManager: productData received:', productData);
+      console.log('ProductManager: productData.specifications:', productData.specifications);
+      console.log('ProductManager: productData.meta_title:', productData.meta_title);
+      console.log('ProductManager: productData.meta_description:', productData.meta_description);
+      console.log('ProductManager: productData.slug:', productData.slug);
+      
       if (editingProduct) {
+        console.log('ProductManager: Updating product with ID:', editingProduct.id);
         await updateProduct(editingProduct.id, productData);
+        
+        // Verificar se foi salvo corretamente
+        console.log('ProductManager: Product updated, verifying...');
+        const updatedProduct = await fetchSingleProduct(editingProduct.id);
+        console.log('ProductManager: Updated product from DB:', updatedProduct);
+        console.log('ProductManager: Updated product specifications:', updatedProduct?.specifications);
+        console.log('ProductManager: Updated product meta_title:', updatedProduct?.meta_title);
+        console.log('ProductManager: Updated product meta_description:', updatedProduct?.meta_description);
+        console.log('ProductManager: Updated product slug:', updatedProduct?.slug);
       } else {
+        console.log('ProductManager: Creating new product');
         await addProduct(productData);
       }
       setShowForm(false);

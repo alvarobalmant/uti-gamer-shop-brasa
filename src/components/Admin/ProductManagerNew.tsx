@@ -6,7 +6,7 @@ import { Plus, Search, Filter, Package, TrendingUp, AlertCircle, Eye } from 'luc
 import { useProductsAdmin } from '@/hooks/useProductsEnhanced';
 import { useTags } from '@/hooks/useTags';
 import ProductList from './ProductManager/ProductListNew';
-import ProductForm from './ProductManager/ProductForm';
+import ProductFormTabs from './ProductManager/ProductFormTabs';
 import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
 
@@ -67,7 +67,7 @@ const ProductManager = () => {
 
   if (showForm) {
     return (
-      <ProductForm
+      <ProductFormTabs
         product={editingProduct}
         tags={tags}
         onSubmit={handleFormSubmit}

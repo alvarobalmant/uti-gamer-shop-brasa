@@ -7,7 +7,8 @@ import {
   addProductToDatabase, 
   updateProductInDatabase, 
   deleteProductFromDatabase,
-  fetchProductsByCriteria // Import the new API function
+  fetchProductsByCriteria, // Import the new API function
+  fetchSingleProductFromDatabase // Import the single product function
 } from './useProducts/productApi';
 import { handleProductError } from './useProducts/productErrorHandler';
 import { CarouselConfig } from '@/types/specialSections'; // Import CarouselConfig type
@@ -116,6 +117,24 @@ export const useProducts = () => {
     }
   };
 
+  const fetchSingleProduct = async (id: string): Promise<Product | null> => {
+    try {
+      console.log('useProducts: fetchSingleProduct called with ID:', id);
+      const product = await fetchSingleProductFromDatabase(id);
+      console.log('useProducts: fetchSingleProduct result:', product);
+      return product;
+    } catch (error: any) {
+      console.error('useProducts: Error fetching single product:', error);
+      const errorMessage = handleProductError(error, 'ao carregar produto');
+      toast({
+        title: "Erro ao carregar produto",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
   useEffect(() => {
     // Initial fetch is needed for general product sections on the homepage
     fetchProducts(); 
@@ -129,6 +148,7 @@ export const useProducts = () => {
     deleteProduct,
     refetch: fetchProducts, // Keep refetch for general product list if needed elsewhere
     fetchProductsByConfig, // Expose the new function
+    fetchSingleProduct, // Expose the new single product function
   };
 };
 

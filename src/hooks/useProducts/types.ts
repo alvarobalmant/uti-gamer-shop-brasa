@@ -23,6 +23,7 @@ export interface Product {
   stock?: number;
   category_id?: string;
   tags?: { id: string; name: string; }[];
+  tagIds?: string[];
   sku?: string;
   badge_text?: string;
   badge_color?: string;
@@ -33,6 +34,14 @@ export interface Product {
   rating_average?: number;
   rating_count?: number;
   reviews_enabled?: boolean;
+  show_stock?: boolean;
+  show_rating?: boolean;
+  created_at: string;
+  updated_at: string;
+  specifications?: Array<{
+    label: string;
+    value: string;
+  }>;
   technical_specs?: any;
   product_features?: any;
   shipping_weight?: number;
@@ -46,12 +55,16 @@ export interface Product {
   meta_title?: string;
   meta_description?: string;
   slug?: string;
-  show_stock?: boolean;
-  show_rating?: boolean;
-  created_at: string;
-  updated_at: string;
-  specifications?: Array<{
-    label: string;
-    value: string;
-  }>;
+  
+  // Novos campos expandidos
+  product_videos?: any;
+  product_faqs?: any;
+  product_highlights?: any;
+  reviews_config?: any;
+  trust_indicators?: any;
+  manual_related_products?: any;
+  breadcrumb_config?: any;
+  product_descriptions?: any;
+  delivery_config?: any;
+  display_config?: any;
 }

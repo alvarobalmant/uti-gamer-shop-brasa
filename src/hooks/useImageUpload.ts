@@ -63,15 +63,11 @@ export const useImageUpload = () => {
       }
 
       const fileExt = processedFile.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      
-      // Determinar bucket baseado na pasta
-      const bucketName = folder === 'navigation-icons' ? 'navigation-icons' : 'site-images';
-      const filePath = folder === 'navigation-icons' ? fileName : `${folder}/${fileName}`;
+      const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       
       const { data, error } = await supabase.storage
-        .from(bucketName)
-        .upload(filePath, processedFile, {
+        .from('site-images')
+        .upload(fileName, processedFile, {
           cacheControl: '3600',
           upsert: false
         });
@@ -79,8 +75,8 @@ export const useImageUpload = () => {
       if (error) throw error;
 
       const { data: { publicUrl } } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(filePath);
+        .from('site-images')
+        .getPublicUrl(fileName);
 
       toast({
         title: "Upload realizado com sucesso!",
