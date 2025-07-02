@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';

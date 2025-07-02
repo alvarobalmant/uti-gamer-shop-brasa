@@ -422,7 +422,7 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
             scrollBehavior: "smooth"
           } as React.CSSProperties}
         >
-          <style jsx>{`
+          <style>{`
             div::-webkit-scrollbar {
               display: none;
             }

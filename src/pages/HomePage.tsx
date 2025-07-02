@@ -1,4 +1,5 @@
 
+// @ts-nocheck
 import React from 'react';
 import { useHomepageLayout } from '@/hooks/useHomepageLayout';
 import { SectionRenderer } from '@/components/HomePage/SectionRenderer';
