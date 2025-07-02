@@ -13,17 +13,21 @@ interface ProductTabsProps {
 const ProductTabs: React.FC<ProductTabsProps> = ({ product }) => {
   const [activeTab, setActiveTab] = useState('description');
 
-  // Mock data para demonstração
-  const specifications = [
-    { label: 'Plataforma', value: 'PlayStation 5' },
-    { label: 'Gênero', value: 'Ação/Aventura' },
-    { label: 'Classificação', value: '16 anos' },
-    { label: 'Desenvolvedor', value: 'Sony Interactive' },
-    { label: 'Data de Lançamento', value: '15/11/2024' },
-    { label: 'Idiomas', value: 'Português, Inglês, Espanhol' },
-    { label: 'Modos de Jogo', value: 'Single Player, Multiplayer' },
-    { label: 'Espaço Necessário', value: '50 GB' },
-  ];
+  // Usar especificações do produto ou dados mock como fallback
+  console.log('ProductTabs: Product specifications:', product.specifications);
+  
+  const specifications = product.specifications && product.specifications.length > 0 
+    ? product.specifications 
+    : [
+        { label: 'Plataforma', value: 'PlayStation 5' },
+        { label: 'Gênero', value: 'Ação/Aventura' },
+        { label: 'Classificação', value: '16 anos' },
+        { label: 'Desenvolvedor', value: 'Sony Interactive' },
+        { label: 'Data de Lançamento', value: '15/11/2024' },
+        { label: 'Idiomas', value: 'Português, Inglês, Espanhol' },
+        { label: 'Modos de Jogo', value: 'Single Player, Multiplayer' },
+        { label: 'Espaço Necessário', value: '50 GB' },
+      ];
 
   const reviews = [
     {

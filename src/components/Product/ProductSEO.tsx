@@ -10,15 +10,27 @@ const ProductSEO: React.FC<ProductSEOProps> = ({ product }) => {
   useEffect(() => {
     if (!product) return;
 
-    // Atualizar título da página
-    document.title = `${product.name} | UTI dos Games - A maior loja de games de Colatina`;
+    console.log('ProductSEO: Using product meta data:', {
+      meta_title: product.meta_title,
+      meta_description: product.meta_description,
+      slug: product.slug
+    });
 
-    // Atualizar meta description
+    // Atualizar título da página usando meta_title se disponível
+    const pageTitle = product.meta_title 
+      ? `${product.meta_title} | UTI dos Games`
+      : `${product.name} | UTI dos Games - A maior loja de games de Colatina`;
+    
+    document.title = pageTitle;
+
+    // Atualizar meta description usando meta_description se disponível
+    const metaDescContent = product.meta_description 
+      ? product.meta_description
+      : `Compre ${product.name} na UTI dos Games. R$ ${product.price.toFixed(2)} com entrega rápida e garantia. A loja de games mais tradicional de Colatina-ES.`;
+    
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 
-        `Compre ${product.name} na UTI dos Games. R$ ${product.price.toFixed(2)} com entrega rápida e garantia. A loja de games mais tradicional de Colatina-ES.`
-      );
+      metaDescription.setAttribute('content', metaDescContent);
     }
 
     // Open Graph tags
@@ -32,10 +44,13 @@ const ProductSEO: React.FC<ProductSEOProps> = ({ product }) => {
       meta.setAttribute('content', content);
     };
 
-    updateOrCreateMeta('og:title', `${product.name} | UTI dos Games`);
-    updateOrCreateMeta('og:description', 
-      `Compre ${product.name} por R$ ${product.price.toFixed(2)} na UTI dos Games. Entrega rápida e produto original.`
-    );
+    const ogTitle = product.meta_title ? product.meta_title : `${product.name} | UTI dos Games`;
+    const ogDescription = product.meta_description 
+      ? product.meta_description
+      : `Compre ${product.name} por R$ ${product.price.toFixed(2)} na UTI dos Games. Entrega rápida e produto original.`;
+
+    updateOrCreateMeta('og:title', ogTitle);
+    updateOrCreateMeta('og:description', ogDescription);
     updateOrCreateMeta('og:image', product.image);
     updateOrCreateMeta('og:url', window.location.href);
     updateOrCreateMeta('og:type', 'product');
