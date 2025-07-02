@@ -7,11 +7,7 @@ import { useProductDetail } from '@/hooks/useProductDetail';
 import { saveScrollPosition, restoreScrollPosition } from '@/lib/scrollRestorationManager';
 import ProductPageHeader from '@/components/ProductPage/ProductPageHeader';
 import ProductHero from '@/components/Product/ProductHero';
-<<<<<<< HEAD
 import ProductTabsEnhanced from '@/components/Product/ProductTabsEnhanced';
-=======
-import ProductTabs from '@/components/Product/ProductTabs';
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
 import RelatedProductsSection from '@/components/Product/RelatedProductsSection';
 import ProductFAQ from '@/components/Product/ProductFAQ';
 import ProductGuarantees from '@/components/Product/ProductGuarantees';
@@ -192,11 +188,7 @@ const ProductPagePremium = () => {
       />
 
       {/* Abas de Informações */}
-<<<<<<< HEAD
       <ProductTabsEnhanced product={product} />
-=======
-      <ProductTabs product={product} />
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
 
       {/* Produtos Relacionados */}
       <RelatedProductsSection product={product} />
