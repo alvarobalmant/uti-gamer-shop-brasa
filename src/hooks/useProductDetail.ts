@@ -5,15 +5,39 @@ import { Product } from '@/hooks/useProducts/types';
 import { fetchSingleProductFromDatabase } from '@/hooks/useProducts/productApi';
 
 export const useProductDetail = (productId: string | undefined) => {
+  // DIAGNÓSTICO: Log inicial do hook
+  console.log('🔍 useProductDetail: HOOK INICIALIZADO');
+  console.log('🔍 useProductDetail: productId recebido:', productId);
+  console.log('🔍 useProductDetail: tipo do productId:', typeof productId);
+  
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // DIAGNÓSTICO: Log de estado inicial
+  console.log('🔍 useProductDetail: Estados iniciais:', {
+    product,
+    loading,
+    error
+  });
 
   useEffect(() => {
+    console.log('🔍 useProductDetail: useEffect EXECUTANDO');
+    console.log('🔍 useProductDetail: productId no useEffect:', productId);
+    console.log('🔍 useProductDetail: productId é válido?', !!productId);
+    
     const fetchProduct = async () => {
-      if (!productId) return;
+      console.log('🔍 useProductDetail: fetchProduct função iniciada');
+      
+      if (!productId) {
+        console.log('🔍 useProductDetail: productId é falsy, saindo da função');
+        console.log('🔍 useProductDetail: valor do productId:', productId);
+        return;
+      }
 
+      console.log('🔍 useProductDetail: Prosseguindo com busca do produto');
+      
       try {
         setLoading(true);
         setError(null);
@@ -66,8 +90,16 @@ export const useProductDetail = (productId: string | undefined) => {
       }
     };
 
+    console.log('🔍 useProductDetail: Chamando fetchProduct...');
     fetchProduct();
   }, [productId, toast]);
+
+  // DIAGNÓSTICO: Log final antes do return
+  console.log('🔍 useProductDetail: RETORNANDO valores:', {
+    product: product?.name || 'null',
+    loading,
+    error
+  });
 
   return { product, loading, error };
 };

@@ -15,10 +15,25 @@ import ProductCTABottom from '@/components/Product/ProductCTABottom';
 import ProductSEO from '@/components/Product/ProductSEO';
 
 const ProductPagePremium = () => {
+  console.log('🔍 DIAGNÓSTICO: ProductPagePremium INICIALIZANDO');
+  
   const { id } = useParams<{ id: string }>();
+  console.log('🔍 DIAGNÓSTICO: ID capturado do useParams:', id);
+  console.log('🔍 DIAGNÓSTICO: Tipo do ID:', typeof id);
+  console.log('🔍 DIAGNÓSTICO: ID é válido?', !!id);
+  
   const navigate = useNavigate();
   const location = useLocation();
+  console.log('🔍 DIAGNÓSTICO: Location atual:', location.pathname);
+  
+  console.log('🔍 DIAGNÓSTICO: Chamando useProductDetail com ID:', id);
   const { product, loading, error } = useProductDetail(id);
+  console.log('🔍 DIAGNÓSTICO: Resultado do useProductDetail:', {
+    product: product?.name || 'null',
+    loading,
+    error
+  });
+  
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [viewingCount, setViewingCount] = useState(0);
