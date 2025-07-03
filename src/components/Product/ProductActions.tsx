@@ -10,6 +10,8 @@ interface ProductActionsProps {
   onQuantityChange: (quantity: number) => void;
   onAddToCart: () => void;
   onWhatsAppContact: () => void;
+  showLowStockWarning?: boolean;
+  showLimitedTimeOffer?: boolean;
 }
 
 const ProductActions: React.FC<ProductActionsProps> = ({
@@ -18,6 +20,8 @@ const ProductActions: React.FC<ProductActionsProps> = ({
   onQuantityChange,
   onAddToCart,
   onWhatsAppContact,
+  showLowStockWarning = false,
+  showLimitedTimeOffer = false,
 }) => {
   const isOutOfStock = product.stock === 0;
   const isLowStock = product.stock && product.stock <= 5;
@@ -47,7 +51,7 @@ const ProductActions: React.FC<ProductActionsProps> = ({
               <Plus className="w-4 h-4" />
             </button>
           </div>
-          {isLowStock && (
+          {isLowStock && showLowStockWarning && (
             <p className="text-sm text-orange-600 mt-1">
               ⚠️ Apenas {product.stock} unidades restantes!
             </p>
@@ -100,7 +104,7 @@ const ProductActions: React.FC<ProductActionsProps> = ({
       </div>
 
       {/* Indicadores de Urgência */}
-      {!isOutOfStock && (
+      {!isOutOfStock && showLimitedTimeOffer && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-red-800 font-medium">

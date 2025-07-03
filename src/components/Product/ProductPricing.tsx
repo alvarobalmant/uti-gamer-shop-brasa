@@ -2,7 +2,7 @@
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
-import { Crown, CreditCard, Smartphone } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -35,8 +35,6 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
   const basePrice = getBasePrice();
   const originalPrice = product.list_price || basePrice * 1.2;
   const proPrice = basePrice * (1 - discountPercentage / 100);
-  const pixPrice = basePrice * 0.95; // 5% desconto no PIX
-  const installmentPrice = basePrice / 12;
 
   // Condição removida conforme solicitado pelo usuário
 
@@ -85,43 +83,6 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
             </div>
           </div>
         )}
-
-        {/* Preço PIX */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <Smartphone className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <div className="font-bold text-green-800">
-                  R$ {pixPrice.toFixed(2).replace('.', ',')} no PIX
-                </div>
-                <div className="text-sm text-green-600">
-                  Economize R$ {(basePrice - pixPrice).toFixed(2).replace('.', ',')} (5% OFF)
-                </div>
-              </div>
-            </div>
-            <Badge className="bg-green-500 text-white font-bold">PIX</Badge>
-          </div>
-        </div>
-
-        {/* Parcelamento */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <div className="font-medium text-blue-800">
-                12x de R$ {installmentPrice.toFixed(2).replace('.', ',')} sem juros
-              </div>
-              <div className="text-sm text-blue-600">
-                no cartão de crédito
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Oferta UTI PRO para não membros */}
         {!isProMember && (

@@ -39,9 +39,6 @@ const ProductCTABottom: React.FC<ProductCTABottomProps> = ({ product, onAddToCar
                 <span className="text-2xl font-bold text-red-600">
                   R$ {product.price.toFixed(2).replace('.', ',')}
                 </span>
-                <span className="text-sm text-gray-500">
-                  ou R$ {(product.price * 0.95).toFixed(2).replace('.', ',')} no PIX
-                </span>
               </div>
             </div>
           </div>
@@ -75,13 +72,6 @@ const ProductCTABottom: React.FC<ProductCTABottomProps> = ({ product, onAddToCar
               {product.stock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}
             </Button>
           </div>
-        </div>
-
-        {/* Urgência */}
-        <div className="mt-3 text-center">
-          <p className="text-sm text-red-600 font-medium">
-            🔥 Oferta por tempo limitado • Apenas {Math.floor(Math.random() * 8) + 2} unidades restantes
-          </p>
         </div>
       </div>
     </div>

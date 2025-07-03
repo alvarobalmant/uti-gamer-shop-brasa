@@ -1,11 +1,13 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
+import SectionTitle from '@/components/SectionTitle';
+import { cn } from '@/lib/utils';
 
 interface RelatedProductsSectionProps {
   product: Product;
@@ -16,7 +18,10 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [animateProducts, setAnimateProducts] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
     if (allProducts.length > 0 && product) {
@@ -49,89 +54,175 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
     navigate(`/produto/${productId}`);
   };
 
-  const nextProducts = () => {
-    setCurrentIndex((prev) => 
-      prev + 4 >= relatedProducts.length ? 0 : prev + 4
-    );
+  const handleViewAllClick = () => {
+    navigate('/categoria/inicio');
   };
 
-  const prevProducts = () => {
-    setCurrentIndex((prev) => 
-      prev - 4 < 0 ? Math.max(0, relatedProducts.length - 4) : prev - 4
-    );
+  // Check scroll position and update button states
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
   };
 
-  if (loading || relatedProducts.length === 0) {
+  // Scroll functions
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollBy({
+        left: -containerWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollBy({
+        left: containerWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  useEffect(() => {
+    setAnimateProducts(false);
+    const timer = setTimeout(() => setAnimateProducts(true), 50);
+    return () => clearTimeout(timer);
+  }, [relatedProducts]);
+
+  // Check scroll buttons when products change or component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      checkScrollButtons();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [relatedProducts]);
+
+  // Add scroll event listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollButtons);
+      // Initial check
+      checkScrollButtons();
+      return () => container.removeEventListener('scroll', checkScrollButtons);
+    }
+  }, [relatedProducts]);
+
+  if (loading) {
+    return (
+      <section className="py-8 md:py-12 bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-16 text-muted-foreground">
+            Carregando produtos...
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (relatedProducts.length === 0) {
     return null;
   }
 
-  const visibleProducts = relatedProducts.slice(currentIndex, currentIndex + 4);
-
   return (
-    <div className="bg-white py-6">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">
-              Produtos Relacionados
-            </h2>
-            <p className="text-gray-600">
-              Outros produtos que você pode gostar
-            </p>
-          </div>
-          
-          {relatedProducts.length > 4 && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={prevProducts}
-                disabled={currentIndex === 0}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={nextProducts}
-                disabled={currentIndex + 4 >= relatedProducts.length}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
+    <section className="py-8 md:py-12 bg-background">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
+          <SectionTitle title="Produtos Relacionados" className="mb-0" />
+          <Button
+            onClick={handleViewAllClick}
+            variant="default"
+            size="sm"
+            className="bg-red-600 hover:bg-red-700 text-white border-0 flex-shrink-0 w-full sm:w-auto font-medium"
+          >
+            Ver Todos
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Products Grid / Scroll Container */}
+        <div className="relative group">
+          {/* Left Navigation Button */}
+          {canScrollLeft && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+              onClick={scrollLeft}
+              aria-label="Produtos anteriores"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
           )}
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {visibleProducts.map((relatedProduct) => (
-            <ProductCard
-              key={relatedProduct.id}
-              product={relatedProduct}
-              onAddToCart={handleAddToCart}
-              onCardClick={handleProductClick}
-            />
-          ))}
-        </div>
+          {/* Right Navigation Button */}
+          {canScrollRight && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+              onClick={scrollRight}
+              aria-label="Próximos produtos"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          )}
 
-        {relatedProducts.length > 4 && (
-          <div className="flex justify-center mt-6">
-            <div className="flex gap-2">
-              {Array.from({ length: Math.ceil(relatedProducts.length / 4) }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index * 4)}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    Math.floor(currentIndex / 4) === index
-                      ? 'bg-red-600'
-                      : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                />
+          <div
+            ref={scrollContainerRef}
+            className={cn(
+              "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2",
+              "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
+              "overscroll-behavior-x-contain"
+            )}
+            style={{
+              scrollbarWidth: "thin",
+              WebkitOverflowScrolling: "touch",
+              scrollBehavior: "smooth",
+              touchAction: "pan-x pan-y"
+            } as React.CSSProperties}
+          >
+            <div 
+              className="flex gap-3 min-w-max px-1 py-1"
+              style={{
+                width: 'calc(100% + 100px)',
+                paddingRight: '120px'
+              }}
+            >
+              {relatedProducts.map((relatedProduct, index) => (
+                <div
+                  key={relatedProduct.id}
+                  className={cn(
+                    "flex-shrink-0",
+                    "transition-all duration-300 ease-in-out",
+                    animateProducts
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4"
+                  )}
+                  style={{
+                    transitionDelay: animateProducts ? `${index * 75}ms` : "0ms",
+                    width: "200px",
+                    flexShrink: 0
+                  }}
+                >
+                  <ProductCard
+                    product={relatedProduct}
+                    onCardClick={handleProductClick}
+                    onAddToCart={handleAddToCart}
+                  />
+                </div>
               ))}
             </div>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

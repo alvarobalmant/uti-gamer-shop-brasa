@@ -141,6 +141,8 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
               onQuantityChange={setQuantity}
               onAddToCart={() => onAddToCart(product)}
               onWhatsAppContact={handleWhatsAppContact}
+              showLowStockWarning={false}
+              showLimitedTimeOffer={false}
             />
 
             {/* Trust Indicators */}
@@ -182,16 +184,6 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
                     <div className="text-sm text-gray-600">Suporte especializado</div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Selo de Confiança */}
-            <div className="text-center p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-lg border border-red-200">
-              <div className="text-lg font-bold text-red-800 mb-1">
-                UTI DOS GAMES
-              </div>
-              <div className="text-sm text-red-700">
-                Mais de 10 anos de tradição em games em Colatina-ES
               </div>
             </div>
           </div>

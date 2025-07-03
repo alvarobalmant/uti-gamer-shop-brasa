@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { useProductDetail } from '@/hooks/useProductDetail';
-import useSKUs from '@/hooks/useSKUs';
+
 import { saveScrollPosition, restoreScrollPosition } from '@/lib/scrollRestorationManager';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { AuthModal } from '@/components/Auth/AuthModal';
@@ -27,56 +27,16 @@ const ProductPageSKU = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { product, loading, error } = useProductDetail(id);
-  const { fetchSKUNavigation } = useSKUs();
+  console.log('[ProductPageSKU] Iniciando com ID:', id);
+  console.log('[ProductPageSKU] Location:', location.pathname);
+  
+  const { product, skuNavigation, loading, error } = useProductDetail(id);
   const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const { toast } = useToast();
   
   const [viewingCount, setViewingCount] = useState(0);
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [skuNavigation, setSKUNavigation] = useState<SKUNavigation | null>(null);
-  const [skuLoading, setSKULoading] = useState(false);
-
-  // Carregar navegação de SKUs quando o produto for carregado
-  useEffect(() => {
-    const loadSKUNavigation = async () => {
-<<<<<<< HEAD
-      if (!product?.id || !product?.product_type) {
-        return;
-      }
-      
-      // Só carregar se for um produto com SKUs
-      if (product.product_type !== 'master' && product.product_type !== 'sku') {
-=======
-      console.log('🔍 SKU Debug: loadSKUNavigation iniciado. product?.id =', product?.id);
-      if (!product?.id) {
-        console.log('❌ SKU Debug: produto não tem ID, saindo');
->>>>>>> 4ce8e691b49912ad2aef94248af14bb03f2b8f19
-        return;
-      }
-      
-      console.log('🔍 SKU Debug: Iniciando carregamento de navegação SKU');
-      setSKULoading(true);
-      try {
-        console.log('🔍 SKU Debug: Chamando fetchSKUNavigation...');
-        const navigation = await fetchSKUNavigation(product.id);
-        console.log('🔍 SKU Debug: Resultado do fetchSKUNavigation:', navigation);
-        setSKUNavigation(navigation);
-<<<<<<< HEAD
-=======
-        console.log('🔍 SKU Debug: setSKUNavigation executado');
->>>>>>> 4ce8e691b49912ad2aef94248af14bb03f2b8f19
-      } catch (error) {
-        console.error('❌ SKU Debug: Erro ao carregar navegação de SKUs:', error);
-      } finally {
-        setSKULoading(false);
-        console.log('🔍 SKU Debug: setSKULoading(false) executado');
-      }
-    };
-
-    loadSKUNavigation();
-  }, [product?.id, product?.product_type]); // Removido fetchSKUNavigation da dependência
 
   // Implementar scroll restoration
   useEffect(() => {
@@ -126,16 +86,11 @@ const ProductPageSKU = () => {
 
   // Determinar se deve mostrar componentes de SKU
   const shouldShowSKUComponents = () => {
-    if (!product) {
-      console.log('❌ SKU Debug: produto não existe');
-      return false;
-    }
-    console.log('🔍 SKU Debug: product.product_type =', product.product_type);
-    console.log('🔍 SKU Debug: shouldShow =', product.product_type === 'master' || product.product_type === 'sku');
+    if (!product) return false;
     return product.product_type === 'master' || product.product_type === 'sku';
   };
 
-  if (loading || skuLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-white">
         <ProfessionalHeader 
@@ -208,7 +163,6 @@ const ProductPageSKU = () => {
           />
 
           {/* Seletor de Plataforma (apenas para produtos com SKUs) */}
-<<<<<<< HEAD
           {shouldShowSKUComponents() && skuNavigation && (
             <div className="mb-6">
               <PlatformSelector skuNavigation={skuNavigation} />
@@ -221,54 +175,6 @@ const ProductPageSKU = () => {
               <SKUPriceComparison skuNavigation={skuNavigation} />
             </div>
           )}
-=======
-          {(() => {
-            const shouldShow = shouldShowSKUComponents();
-            const hasNavigation = !!skuNavigation;
-            console.log('🔍 SKU Debug: Renderização PlatformSelector');
-            console.log('  - shouldShow:', shouldShow);
-            console.log('  - hasNavigation:', hasNavigation);
-            console.log('  - skuNavigation:', skuNavigation);
-            
-            if (shouldShow && hasNavigation) {
-              console.log('✅ SKU Debug: Renderizando PlatformSelector');
-              return (
-                <div className="my-8">
-                  <PlatformSelector 
-                    skuNavigation={skuNavigation}
-                    currentProductId={product.id}
-                  />
-                </div>
-              );
-            } else {
-              console.log('❌ SKU Debug: NÃO renderizando PlatformSelector');
-              return null;
-            }
-          })()}
-
-          {/* Comparação de Preços (apenas para produtos com múltiplos SKUs) */}
-          {(() => {
-            const shouldShow = shouldShowSKUComponents();
-            const hasNavigation = !!skuNavigation;
-            const hasMultipleSKUs = skuNavigation && skuNavigation.availableSKUs.length > 1;
-            console.log('🔍 SKU Debug: Renderização SKUPriceComparison');
-            console.log('  - shouldShow:', shouldShow);
-            console.log('  - hasNavigation:', hasNavigation);
-            console.log('  - hasMultipleSKUs:', hasMultipleSKUs);
-            
-            if (shouldShow && hasNavigation && hasMultipleSKUs) {
-              console.log('✅ SKU Debug: Renderizando SKUPriceComparison');
-              return (
-                <div className="my-8">
-                  <SKUPriceComparison skuNavigation={skuNavigation} />
-                </div>
-              );
-            } else {
-              console.log('❌ SKU Debug: NÃO renderizando SKUPriceComparison');
-              return null;
-            }
-          })()}
->>>>>>> 4ce8e691b49912ad2aef94248af14bb03f2b8f19
 
           {/* Abas do Produto */}
           <ProductTabsEnhanced product={product} />
