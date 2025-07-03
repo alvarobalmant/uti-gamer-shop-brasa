@@ -28,6 +28,17 @@ const mapRowToProduct = (row: any): Product => ({
   is_active: row.is_active !== false,
   is_featured: row.is_featured || false,
   
+  // Campos do sistema de SKUs
+  parent_product_id: row.parent_product_id || undefined,
+  is_master_product: row.is_master_product || false,
+  product_type: row.product_type || 'simple',
+  sku_code: row.sku_code || undefined,
+  variant_attributes: row.variant_attributes || {},
+  sort_order: row.sort_order || 0,
+  available_variants: row.available_variants || {},
+  master_slug: row.master_slug || undefined,
+  inherit_from_master: row.inherit_from_master || {},
+  
   // Novos campos expandidos
   product_videos: row.product_videos || [],
   product_faqs: row.product_faqs || [],

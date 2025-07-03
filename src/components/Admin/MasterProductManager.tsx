@@ -18,7 +18,7 @@ import SKUManager from './SKUManager';
 const MasterProductManager: React.FC = () => {
   const { toast } = useToast();
   const { createMasterProduct, fetchSKUsForMaster } = useSKUs();
-  const { products, fetchProducts } = useProducts();
+  const { products } = useProducts();
   
   const [masterProducts, setMasterProducts] = useState<MasterProduct[]>([]);
   const [selectedMaster, setSelectedMaster] = useState<MasterProduct | null>(null);
@@ -41,12 +41,11 @@ const MasterProductManager: React.FC = () => {
   // Carregar produtos mestre quando o componente montar
   useEffect(() => {
     loadMasterProducts();
-  }, []);
+  }, [products]);
 
-  const loadMasterProducts = async () => {
+  const loadMasterProducts = () => {
     try {
-      await fetchProducts();
-      // Filtrar apenas produtos mestre
+      // Filtrar apenas produtos mestre dos produtos já carregados
       const masters = products.filter(p => p.product_type === 'master') as MasterProduct[];
       setMasterProducts(masters);
     } catch (error) {

@@ -1,43 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-
-// Tipos básicos para SKUs
-export interface ProductSKU {
-  id: string;
-  name: string;
-  price: number;
-  parent_product_id?: string;
-  product_type: 'sku';
-  sku_code?: string;
-  variant_attributes?: {
-    platform?: string;
-    [key: string]: any;
-  };
-  stock_quantity?: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface MasterProduct {
-  id: string;
-  name: string;
-  description?: string;
-  image?: string;
-  category_id?: string;
-  product_type: 'master';
-  is_master_product: boolean;
-  available_variants?: {
-    platforms?: string[];
-    [key: string]: any;
-  };
-  price: number;
-  is_active: boolean;
-  is_featured: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { useProducts } from '@/hooks/useProducts';
+import { Product, ProductSKU, MasterProduct, SKUNavigation, Platform } from '@/hooks/useProducts/types';
 
 // Configuração das plataformas suportadas
 export const PLATFORM_CONFIG = {
@@ -76,105 +40,317 @@ export const PLATFORM_CONFIG = {
 const useSKUs = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { products, addProduct, updateProduct, deleteProduct, fetchSingleProduct } = useProducts();
 
   // Buscar SKUs de um produto mestre
   const fetchSKUsForMaster = useCallback(async (masterProductId: string): Promise<ProductSKU[]> => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('parent_product_id', masterProductId)
-        .eq('product_type', 'sku')
-        .order('sort_order', { ascending: true });
-
-      if (error) {
-        console.error('Erro ao buscar SKUs:', error);
-        return [];
-      }
-
-      return data || [];
+      const allProducts = products.filter(p => 
+        p.parent_product_id === masterProductId && 
+        p.product_type === 'sku'
+      );
+      
+      return allProducts.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)) as ProductSKU[];
     } catch (error) {
       console.error('Erro ao buscar SKUs:', error);
       return [];
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [products]);
 
-  // Criar produto mestre
-  const createMasterProduct = useCallback(async (productData: Partial<MasterProduct>): Promise<string | null> => {
+  // Criar produto mestre usando o sistema existente
+  const createMasterProduct = useCallback(async (productData: Partial<Product>): Promise<string | null> => {
     try {
       setLoading(true);
       
       const masterData = {
-        ...productData,
-        product_type: 'master',
-        is_master_product: true,
-        slug: `${productData.name?.toLowerCase().replace(/\s+/g, '-')}-master-${Date.now()}`,
+        name: productData.name || '',
+        price: productData.price || 0,
+        image: productData.image || '/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png',
+        description: productData.description || '',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        product_type: 'master' as const,
+        is_master_product: true,
+        available_variants: productData.available_variants || {},
+        stock: 0,
+        is_active: productData.is_active !== false,
+        is_featured: productData.is_featured || false,
+        pro_price: productData.pro_price,
+        list_price: productData.list_price,
+        additional_images: productData.additional_images || [],
+        sizes: productData.sizes || [],
+        colors: productData.colors || [],
+        badge_text: productData.badge_text || '',
+        badge_color: productData.badge_color || '#22c55e',
+        badge_visible: productData.badge_visible || false,
+        specifications: productData.specifications || [],
+        technical_specs: productData.technical_specs || {},
+        product_features: productData.product_features || {},
+        shipping_weight: productData.shipping_weight,
+        free_shipping: productData.free_shipping || false,
+        meta_title: productData.meta_title || '',
+        meta_description: productData.meta_description || '',
+        slug: productData.slug || `${productData.name?.toLowerCase().replace(/\s+/g, '-')}-master-${Date.now()}`,
+        // Novos campos de SKU
+        parent_product_id: productData.parent_product_id,
+        sku_code: productData.sku_code,
+        variant_attributes: productData.variant_attributes || {},
+        sort_order: productData.sort_order || 0,
+        master_slug: productData.master_slug,
+        inherit_from_master: productData.inherit_from_master || {},
+        // Novos campos expandidos
+        product_videos: productData.product_videos || [],
+        product_faqs: productData.product_faqs || [],
+        product_highlights: productData.product_highlights || [],
+        reviews_config: productData.reviews_config || {
+          enabled: true,
+          show_rating: true,
+          show_count: true,
+          allow_reviews: true,
+          custom_rating: { value: 0, count: 0, use_custom: false }
+        },
+        trust_indicators: productData.trust_indicators || [],
+        manual_related_products: productData.manual_related_products || [],
+        breadcrumb_config: productData.breadcrumb_config || {
+          custom_path: [],
+          use_custom: false,
+          show_breadcrumb: true
+        },
+        product_descriptions: productData.product_descriptions || {
+          short: '',
+          detailed: '',
+          technical: '',
+          marketing: ''
+        },
+        delivery_config: productData.delivery_config || {
+          custom_shipping_time: '',
+          shipping_regions: [],
+          express_available: false,
+          pickup_locations: []
+        },
+        display_config: productData.display_config || {
+          show_stock_counter: true,
+          show_view_counter: false,
+          custom_view_count: 0,
+          show_urgency_banner: false,
+          urgency_text: '',
+          show_social_proof: false,
+          social_proof_text: ''
+        }
       };
 
-      const { data, error } = await supabase
-        .from('products')
-        .insert([masterData])
-        .select()
-        .single();
+      const result = await addProduct({
+        ...masterData,
+        tagIds: []
+      });
 
-      if (error) {
-        console.error('Erro ao criar produto mestre:', error);
-        return null;
-      }
-
-      return data.id;
+      return result.id;
     } catch (error) {
       console.error('Erro ao criar produto mestre:', error);
       return null;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [addProduct]);
 
-  // Criar SKU
-  const createSKU = useCallback(async (skuData: Partial<ProductSKU>): Promise<string | null> => {
+  // Criar SKU usando o sistema existente
+  const createSKU = useCallback(async (skuData: Partial<Product>): Promise<string | null> => {
     try {
       setLoading(true);
       
       const sku = {
-        ...skuData,
-        product_type: 'sku',
-        is_master_product: false,
-        slug: `${skuData.name?.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+        name: skuData.name || '',
+        price: skuData.price || 0,
+        image: skuData.image || '/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png',
+        description: skuData.description || '',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        product_type: 'sku' as const,
+        is_master_product: false,
+        stock: skuData.stock || 0,
+        is_active: skuData.is_active !== false,
+        is_featured: false,
+        pro_price: skuData.pro_price,
+        list_price: skuData.list_price,
+        additional_images: skuData.additional_images || [],
+        sizes: skuData.sizes || [],
+        colors: skuData.colors || [],
+        badge_text: skuData.badge_text || '',
+        badge_color: skuData.badge_color || '#22c55e',
+        badge_visible: skuData.badge_visible || false,
+        specifications: skuData.specifications || [],
+        technical_specs: skuData.technical_specs || {},
+        product_features: skuData.product_features || {},
+        shipping_weight: skuData.shipping_weight,
+        free_shipping: skuData.free_shipping || false,
+        meta_title: skuData.meta_title || '',
+        meta_description: skuData.meta_description || '',
+        slug: skuData.slug || `${skuData.name?.toLowerCase().replace(/\s+/g, '-')}-sku-${Date.now()}`,
+        // Campos específicos de SKU
+        parent_product_id: skuData.parent_product_id,
+        sku_code: skuData.sku_code,
+        variant_attributes: skuData.variant_attributes || {},
+        sort_order: skuData.sort_order || 0,
+        available_variants: skuData.available_variants || {},
+        master_slug: skuData.master_slug,
+        inherit_from_master: skuData.inherit_from_master || {},
+        // Novos campos expandidos
+        product_videos: skuData.product_videos || [],
+        product_faqs: skuData.product_faqs || [],
+        product_highlights: skuData.product_highlights || [],
+        reviews_config: skuData.reviews_config || {
+          enabled: true,
+          show_rating: true,
+          show_count: true,
+          allow_reviews: true,
+          custom_rating: { value: 0, count: 0, use_custom: false }
+        },
+        trust_indicators: skuData.trust_indicators || [],
+        manual_related_products: skuData.manual_related_products || [],
+        breadcrumb_config: skuData.breadcrumb_config || {
+          custom_path: [],
+          use_custom: false,
+          show_breadcrumb: true
+        },
+        product_descriptions: skuData.product_descriptions || {
+          short: '',
+          detailed: '',
+          technical: '',
+          marketing: ''
+        },
+        delivery_config: skuData.delivery_config || {
+          custom_shipping_time: '',
+          shipping_regions: [],
+          express_available: false,
+          pickup_locations: []
+        },
+        display_config: skuData.display_config || {
+          show_stock_counter: true,
+          show_view_counter: false,
+          custom_view_count: 0,
+          show_urgency_banner: false,
+          urgency_text: '',
+          show_social_proof: false,
+          social_proof_text: ''
+        }
       };
 
-      const { data, error } = await supabase
-        .from('products')
-        .insert([sku])
-        .select()
-        .single();
+      const result = await addProduct({
+        ...sku,
+        tagIds: []
+      });
 
-      if (error) {
-        console.error('Erro ao criar SKU:', error);
-        return null;
-      }
-
-      return data.id;
+      return result.id;
     } catch (error) {
       console.error('Erro ao criar SKU:', error);
       return null;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [addProduct]);
+
+  // Atualizar SKU
+  const updateSKU = useCallback(async (id: string, updates: Partial<Product>): Promise<Product | null> => {
+    try {
+      setLoading(true);
+      return await updateProduct(id, updates);
+    } catch (error) {
+      console.error('Erro ao atualizar SKU:', error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [updateProduct]);
+
+  // Deletar SKU
+  const deleteSKU = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      await deleteProduct(id);
+      return true;
+    } catch (error) {
+      console.error('Erro ao deletar SKU:', error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [deleteProduct]);
+
+  // Buscar navegação de SKUs
+  const fetchSKUNavigation = useCallback(async (productId: string): Promise<SKUNavigation | null> => {
+    try {
+      const product = await fetchSingleProduct(productId);
+      if (!product) return null;
+
+      // Se é um SKU, buscar o produto mestre
+      if (product.product_type === 'sku' && product.parent_product_id) {
+        const masterProduct = await fetchSingleProduct(product.parent_product_id);
+        if (!masterProduct) return null;
+
+        const skus = products.filter(p => 
+          p.parent_product_id === masterProduct.id && 
+          p.product_type === 'sku'
+        ) as ProductSKU[];
+
+        const platforms = Object.keys(PLATFORM_CONFIG).map(platform => {
+          const sku = skus.find(s => s.variant_attributes?.platform === platform);
+          return {
+            platform,
+            sku: sku || null,
+            available: !!sku
+          };
+        });
+
+        return {
+          masterProduct: masterProduct as MasterProduct,
+          currentSKU: product as ProductSKU,
+          availableSKUs: skus,
+          platforms
+        };
+      }
+
+      // Se é um produto mestre
+      if (product.product_type === 'master') {
+        const skus = products.filter(p => 
+          p.parent_product_id === product.id && 
+          p.product_type === 'sku'
+        ) as ProductSKU[];
+
+        const platforms = Object.keys(PLATFORM_CONFIG).map(platform => {
+          const sku = skus.find(s => s.variant_attributes?.platform === platform);
+          return {
+            platform,
+            sku: sku || null,
+            available: !!sku
+          };
+        });
+
+        return {
+          masterProduct: product as MasterProduct,
+          currentSKU: undefined,
+          availableSKUs: skus,
+          platforms
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Erro ao buscar navegação SKU:', error);
+      return null;
+    }
+  }, [fetchSingleProduct, products]);
 
   return {
     loading,
     fetchSKUsForMaster,
     createMasterProduct,
     createSKU,
+    updateSKU,
+    deleteSKU,
+    fetchSKUNavigation,
     PLATFORM_CONFIG
   };
 };

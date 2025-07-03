@@ -242,12 +242,8 @@ const ProductPagePremium = () => {
       
       {/* Cart Modal */}
       <Cart 
-        isOpen={showCart} 
-        onClose={() => setShowCart(false)}
-        items={items}
-        updateQuantity={updateQuantity}
-        getCartTotal={getCartTotal}
-        getCartItemsCount={getCartItemsCount}
+        showCart={showCart} 
+        setShowCart={setShowCart}
       />
       
       {/* Auth Modal */}

@@ -122,9 +122,8 @@ const ProductPageSKU = () => {
     return (
       <div className="min-h-screen bg-white">
         <ProfessionalHeader 
-          cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartOpen}
-          onAuthClick={handleAuthOpen}
+          onCartOpen={handleCartOpen}
+          onAuthOpen={handleAuthOpen}
         />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full"></div>
@@ -137,9 +136,8 @@ const ProductPageSKU = () => {
     return (
       <div className="min-h-screen bg-white">
         <ProfessionalHeader 
-          cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartOpen}
-          onAuthClick={handleAuthOpen}
+          onCartOpen={handleCartOpen}
+          onAuthOpen={handleAuthOpen}
         />
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Produto não encontrado</h1>
@@ -160,9 +158,8 @@ const ProductPageSKU = () => {
       <ProductSEO product={product} />
       
       <ProfessionalHeader 
-        cartItemsCount={getCartItemsCount()}
-        onCartClick={handleCartOpen}
-        onAuthClick={handleAuthOpen}
+        onCartOpen={handleCartOpen}
+        onAuthOpen={handleAuthOpen}
       />
 
       <main className="pt-4">
@@ -232,11 +229,8 @@ const ProductPageSKU = () => {
 
       {/* Modais */}
       <Cart 
-        isOpen={showCart}
-        onClose={() => setShowCart(false)}
-        items={items}
-        onUpdateQuantity={updateQuantity}
-        total={getCartTotal()}
+        showCart={showCart}
+        setShowCart={setShowCart}
       />
 
       <AuthModal 
