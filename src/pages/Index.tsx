@@ -47,8 +47,27 @@ const Index = React.memo(() => {
   }, [specialSections]);
 
   const handleProductCardClick = useCallback((productId: string) => {
-    navigate(`/produto/${productId}`);
-  }, [navigate]);
+    // Encontrar o produto clicado para verificar se é SKU
+    const clickedProduct = products.find(p => p.id === productId);
+    
+    if (clickedProduct) {
+      // Se é um produto SKU, navegar para a página de produto SKU
+      if (clickedProduct.product_type === 'sku' || clickedProduct.parent_product_id) {
+        navigate(`/produto/${productId}`);
+      }
+      // Se é um produto mestre, navegar para o primeiro SKU disponível ou para a página do mestre
+      else if (clickedProduct.product_type === 'master' || clickedProduct.is_master_product) {
+        navigate(`/produto/${productId}`);
+      }
+      // Produto simples (padrão)
+      else {
+        navigate(`/produto/${productId}`);
+      }
+    } else {
+      // Fallback para produtos não encontrados
+      navigate(`/produto/${productId}`);
+    }
+  }, [navigate, products]);
 
   const handleCartOpen = useCallback(() => setShowCart(true), []);
   const handleAuthOpen = useCallback(() => setShowAuthModal(true), []);

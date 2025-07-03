@@ -102,9 +102,19 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
         await loadSKUs();
         setShowCreateDialog(false);
         resetForm();
+        
+        toast({
+          title: "SKU criado com sucesso!",
+          description: `SKU para ${PLATFORM_CONFIG[formData.platform as Platform]?.name} foi criado.`,
+        });
       }
     } catch (error) {
       console.error('Erro ao criar SKU:', error);
+      toast({
+        title: "Erro ao criar SKU",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
     }
   };
 

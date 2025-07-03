@@ -21,8 +21,6 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
       if (!product?.id) return;
 
       try {
-        console.log('🔍 ProductTabsEnhanced: Buscando campos JSONB para produto:', product.id);
-        
         const { data, error } = await supabase
           .from('products')
           .select('product_faqs, product_videos, product_descriptions, specifications')
@@ -30,14 +28,12 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
           .single();
 
         if (error) {
-          console.error('❌ ProductTabsEnhanced: Erro ao buscar campos JSONB:', error);
+          console.error('Erro ao buscar campos JSONB:', error);
         } else {
-          console.log('✅ ProductTabsEnhanced: Dados JSONB carregados:', data);
-          console.log('🔍 ProductTabsEnhanced: product_faqs encontrado:', data?.product_faqs);
           setJsonbData(data);
         }
       } catch (err) {
-        console.error('❌ ProductTabsEnhanced: Exceção ao buscar campos JSONB:', err);
+        console.error('Exceção ao buscar campos JSONB:', err);
       } finally {
         setLoading(false);
       }
@@ -48,8 +44,6 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
 
   // Processar especificações estruturadas
   const getSpecifications = () => {
-    console.log('[ProductTabsEnhanced] product.specifications:', product.specifications);
-    
     if (product.specifications && typeof product.specifications === 'object') {
       // Se é um objeto estruturado com categorias
       if (product.specifications.categories && Array.isArray(product.specifications.categories)) {
@@ -81,8 +75,6 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
 
   // Processar vídeos do produto
   const getVideos = () => {
-    console.log('[ProductTabsEnhanced] product.product_videos:', product.product_videos);
-    
     // Retornar vídeos reais do banco de dados
     if (product.product_videos && Array.isArray(product.product_videos) && product.product_videos.length > 0) {
       return product.product_videos;
@@ -94,18 +86,13 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
 
   // Processar FAQ do produto
   const getFAQs = () => {
-    console.log('🔍 ProductTabsEnhanced getFAQs: product.product_faqs:', product.product_faqs);
-    console.log('🔍 ProductTabsEnhanced getFAQs: jsonbData?.product_faqs:', jsonbData?.product_faqs);
-    
     // Priorizar dados JSONB carregados diretamente
     const faqs = jsonbData?.product_faqs || product.product_faqs;
     
     if (faqs && Array.isArray(faqs) && faqs.length > 0) {
-      console.log('✅ ProductTabsEnhanced getFAQs: Retornando FAQs do banco:', faqs);
       return faqs;
     }
     
-    console.log('❌ ProductTabsEnhanced getFAQs: Nenhum FAQ encontrado');
     return [];
   };
 

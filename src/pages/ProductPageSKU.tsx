@@ -23,14 +23,9 @@ import { ArrowLeft } from 'lucide-react';
 import { SKUNavigation } from '@/hooks/useProducts/types';
 
 const ProductPageSKU = () => {
-  console.log('🔍 DIAGNÓSTICO: ProductPageSKU INICIALIZANDO');
-  
   const { id } = useParams<{ id: string }>();
-  console.log('🔍 DIAGNÓSTICO: ID capturado do useParams:', id);
-  
   const navigate = useNavigate();
   const location = useLocation();
-  console.log('🔍 DIAGNÓSTICO: Location atual:', location.pathname);
   
   const { product, loading, error } = useProductDetail(id);
   const { fetchSKUNavigation } = useSKUs();
@@ -43,19 +38,22 @@ const ProductPageSKU = () => {
   const [skuNavigation, setSKUNavigation] = useState<SKUNavigation | null>(null);
   const [skuLoading, setSKULoading] = useState(false);
 
-  // Debug log para verificar se a página está carregando
-  console.log('ProductPageSKU carregada - ID:', id, 'Product:', product?.name);
-
   // Carregar navegação de SKUs quando o produto for carregado
   useEffect(() => {
     const loadSKUNavigation = async () => {
-      if (!product?.id) return;
+      if (!product?.id || !product?.product_type) {
+        return;
+      }
+      
+      // Só carregar se for um produto com SKUs
+      if (product.product_type !== 'master' && product.product_type !== 'sku') {
+        return;
+      }
       
       setSKULoading(true);
       try {
         const navigation = await fetchSKUNavigation(product.id);
         setSKUNavigation(navigation);
-        console.log('🔍 SKU Navigation carregada:', navigation);
       } catch (error) {
         console.error('Erro ao carregar navegação de SKUs:', error);
       } finally {
@@ -64,7 +62,7 @@ const ProductPageSKU = () => {
     };
 
     loadSKUNavigation();
-  }, [product?.id, fetchSKUNavigation]);
+  }, [product?.id, product?.product_type]); // Removido fetchSKUNavigation da dependência
 
   // Implementar scroll restoration
   useEffect(() => {
@@ -122,9 +120,8 @@ const ProductPageSKU = () => {
     return (
       <div className="min-h-screen bg-white">
         <ProfessionalHeader 
-          cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartOpen}
-          onAuthClick={handleAuthOpen}
+          onCartOpen={handleCartOpen}
+          onAuthOpen={handleAuthOpen}
         />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full"></div>
@@ -137,9 +134,8 @@ const ProductPageSKU = () => {
     return (
       <div className="min-h-screen bg-white">
         <ProfessionalHeader 
-          cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartOpen}
-          onAuthClick={handleAuthOpen}
+          onCartOpen={handleCartOpen}
+          onAuthOpen={handleAuthOpen}
         />
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Produto não encontrado</h1>
@@ -160,9 +156,8 @@ const ProductPageSKU = () => {
       <ProductSEO product={product} />
       
       <ProfessionalHeader 
-        cartItemsCount={getCartItemsCount()}
-        onCartClick={handleCartOpen}
-        onAuthClick={handleAuthOpen}
+        onCartOpen={handleCartOpen}
+        onAuthOpen={handleAuthOpen}
       />
 
       <main className="pt-4">
@@ -195,17 +190,14 @@ const ProductPageSKU = () => {
 
           {/* Seletor de Plataforma (apenas para produtos com SKUs) */}
           {shouldShowSKUComponents() && skuNavigation && (
-            <div className="my-8">
-              <PlatformSelector 
-                skuNavigation={skuNavigation}
-                currentProductId={product.id}
-              />
+            <div className="mb-6">
+              <PlatformSelector skuNavigation={skuNavigation} />
             </div>
           )}
 
           {/* Comparação de Preços (apenas para produtos com múltiplos SKUs) */}
-          {shouldShowSKUComponents() && skuNavigation && skuNavigation.availableSKUs.length > 1 && (
-            <div className="my-8">
+          {shouldShowSKUComponents() && skuNavigation && skuNavigation.availableSKUs && skuNavigation.availableSKUs.length > 1 && (
+            <div className="mb-6">
               <SKUPriceComparison skuNavigation={skuNavigation} />
             </div>
           )}
@@ -232,11 +224,8 @@ const ProductPageSKU = () => {
 
       {/* Modais */}
       <Cart 
-        isOpen={showCart}
-        onClose={() => setShowCart(false)}
-        items={items}
-        onUpdateQuantity={updateQuantity}
-        total={getCartTotal()}
+        showCart={showCart}
+        setShowCart={setShowCart}
       />
 
       <AuthModal 

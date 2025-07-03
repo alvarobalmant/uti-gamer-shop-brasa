@@ -644,10 +644,7 @@ export type Database = {
           trust_indicators: Json | null
           updated_at: string
           uti_pro_price: number | null
-<<<<<<< HEAD
-=======
           variant_attributes: Json | null
->>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
         }
         Insert: {
           additional_images?: string[] | null
@@ -720,10 +717,7 @@ export type Database = {
           trust_indicators?: Json | null
           updated_at?: string
           uti_pro_price?: number | null
-<<<<<<< HEAD
-=======
           variant_attributes?: Json | null
->>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
         }
         Update: {
           additional_images?: string[] | null
@@ -796,10 +790,7 @@ export type Database = {
           trust_indicators?: Json | null
           updated_at?: string
           uti_pro_price?: number | null
-<<<<<<< HEAD
-=======
           variant_attributes?: Json | null
->>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
         }
         Relationships: [
           {
@@ -1450,10 +1441,7 @@ export type Database = {
           is_master_product: boolean | null
           list_price: number | null
           manual_related_products: Json | null
-<<<<<<< HEAD
-=======
           master_slug: string | null
->>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
           meta_description: string | null
           meta_title: string | null
           parent_product_id: string | null
@@ -1468,10 +1456,7 @@ export type Database = {
           product_name: string | null
           product_price: number | null
           product_stock: number | null
-<<<<<<< HEAD
-=======
           product_type: string | null
->>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
           product_videos: Json | null
           reviews_config: Json | null
           shipping_weight: number | null

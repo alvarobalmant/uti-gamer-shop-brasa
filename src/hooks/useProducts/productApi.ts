@@ -28,6 +28,17 @@ const mapRowToProduct = (row: any): Product => ({
   is_active: row.is_active !== false,
   is_featured: row.is_featured || false,
   
+  // Campos do sistema de SKUs
+  parent_product_id: row.parent_product_id || undefined,
+  is_master_product: row.is_master_product || false,
+  product_type: row.product_type || 'simple',
+  sku_code: row.sku_code || undefined,
+  variant_attributes: row.variant_attributes || {},
+  sort_order: row.sort_order || 0,
+  available_variants: row.available_variants || {},
+  master_slug: row.master_slug || undefined,
+  inherit_from_master: row.inherit_from_master || {},
+  
   // Novos campos expandidos
   product_videos: row.product_videos || [],
   product_faqs: row.product_faqs || [],
@@ -68,17 +79,6 @@ const mapRowToProduct = (row: any): Product => ({
     show_social_proof: false,
     social_proof_text: ''
   },
-  
-  // Sistema de SKUs
-  parent_product_id: row.parent_product_id || undefined,
-  is_master_product: row.is_master_product || false,
-  product_type: row.product_type || 'simple',
-  sku_code: row.sku_code || undefined,
-  variant_attributes: row.variant_attributes || {},
-  sort_order: row.sort_order || 0,
-  available_variants: row.available_variants || [],
-  master_slug: row.master_slug || undefined,
-  inherit_from_master: row.inherit_from_master || {},
   
   tags: [],
   created_at: row.created_at || new Date().toISOString(),
@@ -183,18 +183,84 @@ export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<P
 
 export const fetchSingleProductFromDatabase = async (id: string): Promise<Product | null> => {
   try {
-    const { data, error } = await supabase
+    // Primeiro tentar buscar na view (para produtos normais)
+    let { data, error } = await supabase
       .from('view_product_with_tags')
       .select('*')
       .eq('product_id', id);
 
+    // Se não encontrar na view, buscar diretamente na tabela products (para produtos SKUs)
+    if (!data || data.length === 0) {
+      const { data: directData, error: directError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (directError) {
+        console.error('Error fetching single product from products table:', directError);
+        return null;
+      }
+
+      if (!directData) {
+        return null;
+      }
+
+      // Mapear dados diretos da tabela products
+      const product = mapRowToProduct({
+        product_id: directData.id,
+        product_name: directData.name,
+        product_description: directData.description,
+        product_price: directData.price,
+        pro_price: directData.pro_price,
+        list_price: directData.list_price,
+        product_image: directData.image,
+        additional_images: directData.additional_images,
+        sizes: directData.sizes,
+        colors: directData.colors,
+        product_stock: directData.stock,
+        badge_text: directData.badge_text,
+        badge_color: directData.badge_color,
+        badge_visible: directData.badge_visible,
+        specifications: directData.specifications,
+        technical_specs: directData.technical_specs,
+        product_features: directData.product_features,
+        shipping_weight: directData.shipping_weight,
+        free_shipping: directData.free_shipping,
+        meta_title: directData.meta_title,
+        meta_description: directData.meta_description,
+        slug: directData.slug,
+        is_active: directData.is_active,
+        is_featured: directData.is_featured,
+        parent_product_id: directData.parent_product_id,
+        is_master_product: directData.is_master_product,
+        product_type: directData.product_type,
+        sku_code: directData.sku_code,
+        variant_attributes: directData.variant_attributes,
+        sort_order: directData.sort_order,
+        available_variants: directData.available_variants,
+        master_slug: directData.master_slug,
+        inherit_from_master: directData.inherit_from_master,
+        product_videos: directData.product_videos,
+        product_faqs: directData.product_faqs,
+        product_highlights: directData.product_highlights,
+        reviews_config: directData.reviews_config,
+        trust_indicators: directData.trust_indicators,
+        manual_related_products: directData.manual_related_products,
+        breadcrumb_config: directData.breadcrumb_config,
+        product_descriptions: directData.product_descriptions,
+        delivery_config: directData.delivery_config,
+        display_config: directData.display_config,
+        created_at: directData.created_at,
+        updated_at: directData.updated_at
+      });
+
+      return product;
+    }
+
     if (error) {
       console.error('Error fetching single product:', error);
       throw error;
-    }
-
-    if (!data || data.length === 0) {
-      return null;
     }
 
     // Use the first row to create the product

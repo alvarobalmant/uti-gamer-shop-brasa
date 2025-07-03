@@ -11,14 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Package, Settings, Eye, EyeOff } from 'lucide-react';
+import { Plus, Package, Settings, Eye, EyeOff, Trash2 } from 'lucide-react';
 import SKUManager from './SKUManager';
 
 const MasterProductManager: React.FC = () => {
   const { toast } = useToast();
   const { createMasterProduct, fetchSKUsForMaster } = useSKUs();
-  const { products, fetchProducts } = useProducts();
+  const { products, deleteProduct } = useProducts();
   
   const [masterProducts, setMasterProducts] = useState<MasterProduct[]>([]);
   const [selectedMaster, setSelectedMaster] = useState<MasterProduct | null>(null);
@@ -41,12 +42,11 @@ const MasterProductManager: React.FC = () => {
   // Carregar produtos mestre quando o componente montar
   useEffect(() => {
     loadMasterProducts();
-  }, []);
+  }, [products]);
 
-  const loadMasterProducts = async () => {
+  const loadMasterProducts = () => {
     try {
-      await fetchProducts();
-      // Filtrar apenas produtos mestre
+      // Filtrar apenas produtos mestre dos produtos já carregados
       const masters = products.filter(p => p.product_type === 'master') as MasterProduct[];
       setMasterProducts(masters);
     } catch (error) {
@@ -85,25 +85,67 @@ const MasterProductManager: React.FC = () => {
 
       const newMasterId = await createMasterProduct(masterData);
       if (newMasterId) {
-        await loadMasterProducts();
+        // Recarregar produtos para garantir que a lista está atualizada
+        loadMasterProducts();
+        
+        // Fechar modal e resetar form
         setShowCreateDialog(false);
         resetForm();
         
-        // Selecionar o produto criado para adicionar SKUs
-        const newMaster = masterProducts.find(m => m.id === newMasterId);
-        if (newMaster) {
-          setSelectedMaster(newMaster);
-          setActiveTab('skus');
-        }
+        // Navegar para a aba de SKUs
+        setActiveTab('skus');
+        
+        // Aguardar um breve momento para a lista atualizar e então selecionar o produto
+        setTimeout(() => {
+          const updatedMasters = products.filter(p => p.product_type === 'master') as MasterProduct[];
+          const newMaster = updatedMasters.find(m => m.id === newMasterId);
+          if (newMaster) {
+            setSelectedMaster(newMaster);
+          }
+        }, 500);
+        
+        toast({
+          title: "Produto mestre criado com sucesso!",
+          description: `${formData.name} foi criado e você pode agora adicionar SKUs.`,
+        });
       }
     } catch (error) {
       console.error('Erro ao criar produto mestre:', error);
+      toast({
+        title: "Erro ao criar produto mestre",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleSelectMaster = (master: MasterProduct) => {
     setSelectedMaster(master);
     setActiveTab('skus');
+  };
+
+  const handleDeleteMaster = async (master: MasterProduct) => {
+    try {
+      await deleteProduct(master.id);
+      
+      // Se o produto deletado estava selecionado, limpar seleção
+      if (selectedMaster?.id === master.id) {
+        setSelectedMaster(null);
+        setActiveTab('list');
+      }
+      
+      toast({
+        title: "Produto mestre removido com sucesso!",
+        description: `${master.name} foi removido do sistema.`,
+      });
+    } catch (error) {
+      console.error('Erro ao deletar produto mestre:', error);
+      toast({
+        title: "Erro ao remover produto mestre",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -282,6 +324,29 @@ const MasterProductManager: React.FC = () => {
                           <Settings className="w-4 h-4 mr-2" />
                           Gerenciar SKUs
                         </Button>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir o produto mestre "{master.name}"? 
+                                Todos os SKUs relacionados também serão removidos. Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteMaster(master)}>
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   </CardContent>

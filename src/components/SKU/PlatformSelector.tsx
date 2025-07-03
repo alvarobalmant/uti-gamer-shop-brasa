@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 interface PlatformSelectorProps {
   skuNavigation: SKUNavigation;
-  currentProductId: string;
+  currentProductId?: string;
   className?: string;
 }
 
