@@ -1,15 +1,15 @@
 
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
+import { useUTIProPricing } from '@/hooks/useUTIProPricing';
 
 interface ProductCardPriceProps {
   product: Product;
 }
 
 const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
-  // GameStop pricing structure
-  const originalPrice = product.price * 1.15;
-  const proPrice = product.price * 0.95;
+  const utiProPricing = useUTIProPricing(product);
+  const originalPrice = product.list_price || product.price * 1.15;
   const discount = Math.round(((originalPrice - product.price) / originalPrice) * 100);
 
   return (
@@ -26,13 +26,15 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
         )}
       </div>
       
-      {/* Pro Price Section */}
-      <div className="text-sm">
-        <span className="font-bold text-purple-600">
-          R${proPrice.toFixed(2)}
-        </span>
-        <span className="text-muted-foreground ml-1">com Pro</span>
-      </div>
+      {/* Pro Price Section - só mostra se UTI Pro estiver habilitado */}
+      {utiProPricing.isEnabled && utiProPricing.proPrice && (
+        <div className="text-sm">
+          <span className="font-bold text-purple-600">
+            R${utiProPricing.proPrice.toFixed(2)}
+          </span>
+          <span className="text-muted-foreground ml-1">com Pro</span>
+        </div>
+      )}
     </div>
   );
 };

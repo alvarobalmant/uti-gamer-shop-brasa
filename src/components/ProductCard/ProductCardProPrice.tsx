@@ -1,5 +1,6 @@
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
+import { useUTIProPricing } from '@/hooks/useUTIProPricing';
 import { cn } from '@/lib/utils';
 
 interface ProductCardProPriceProps {
@@ -7,14 +8,19 @@ interface ProductCardProPriceProps {
 }
 
 const ProductCardProPrice: React.FC<ProductCardProPriceProps> = ({ product }) => {
-  const proPrice = product.price * 0.95; // Assuming this is the pro price calculation
+  const utiProPricing = useUTIProPricing(product);
+
+  // Só renderiza se UTI Pro estiver habilitado para este produto
+  if (!utiProPricing.isEnabled || !utiProPricing.proPrice) {
+    return null;
+  }
 
   return (
-    <div className="mt-0 text-left"> {/* Removendo margem superior já que o espaçamento vem do título */}
-      <span className="text-base font-bold text-[#00ff41]"> {/* Cor neon verde para o preço, como na GameStop */}
-        R$ {proPrice.toFixed(2)}
+    <div className="mt-0 text-left">
+      <span className="text-base font-bold text-[#00ff41]">
+        R$ {utiProPricing.proPrice.toFixed(2)}
       </span>
-      <span className="text-sm text-gray-400 ml-1"> for Pros</span> {/* Cor fosca para 'for Pros' com espaçamento */}
+      <span className="text-sm text-gray-400 ml-1"> for Pros</span>
     </div>
   );
 };

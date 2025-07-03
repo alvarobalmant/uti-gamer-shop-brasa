@@ -1,9 +1,10 @@
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
-import { useSubscriptions } from '@/hooks/useSubscriptions'; // Assuming hook for Pro status
+import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { useUTIProPricing } from '@/hooks/useUTIProPricing';
 import { Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'; // For condition selection
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 
 interface ProductPricingProps {
@@ -20,21 +21,16 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
 }) => {
   const { hasActiveSubscription } = useSubscriptions();
   const isProMember = hasActiveSubscription();
+  const utiProPricing = useUTIProPricing(product);
 
   // --- Price Calculation --- 
-  // Use actual prices if available, otherwise calculate based on base price
-  // Example: Assume product.price is pre-owned, product.new_price, product.digital_price exist
   const prices = {
     'pre-owned': product.price,
-    'new': product.new_price || product.price * 1.1, // Example fallback
-    'digital': product.digital_price || product.price * 1.05, // Example fallback
+    'new': product.new_price || product.price * 1.1,
+    'digital': product.digital_price || product.price * 1.05,
   };
   const currentPrice = prices[selectedCondition];
-  const listPrice = product.list_price; // Use if available
-
-  // Calculate Pro price (example: 10% discount on current condition price)
-  const proDiscount = 0.10;
-  const proPrice = currentPrice * (1 - proDiscount);
+  const listPrice = product.list_price;
 
   // --- Condition Options --- 
   // Determine available conditions based on product data (e.g., tags or specific fields)
@@ -63,16 +59,16 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
             R$ {listPrice.toFixed(2)}
           </span>
         )}
-        {/* Pro Price Info */}
-        <div className="mt-1 flex items-center gap-1.5 text-uti-pro">
-          <Crown className="h-4 w-4" />
-          <span className="text-base font-semibold">
-            R$ {proPrice.toFixed(2)}
-          </span>
-          <span className="text-sm font-medium">para membros UTI PRO</span>
-          {/* Optional: Link to join Pro */}
-          {/* <a href="/pro" className="text-xs underline ml-2">Saiba mais</a> */}
-        </div>
+        {/* Pro Price Info - só mostra se habilitado */}
+        {utiProPricing.isEnabled && utiProPricing.proPrice && (
+          <div className="mt-1 flex items-center gap-1.5 text-uti-pro">
+            <Crown className="h-4 w-4" />
+            <span className="text-base font-semibold">
+              R$ {utiProPricing.proPrice.toFixed(2)}
+            </span>
+            <span className="text-sm font-medium">para membros UTI PRO</span>
+          </div>
+        )}
       </div>
 
       {/* Seção de condição removida conforme solicitado pelo usuário */}

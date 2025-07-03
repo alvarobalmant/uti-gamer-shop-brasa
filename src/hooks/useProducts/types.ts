@@ -99,6 +99,12 @@ export interface Product {
     specifications?: boolean;
     [key: string]: boolean;
   };
+
+  // Campos configuráveis do UTI Pro
+  uti_pro_enabled?: boolean;
+  uti_pro_type?: 'percentage' | 'fixed';
+  uti_pro_value?: number;
+  uti_pro_custom_price?: number;
 }
 
 // Tipos específicos para SKUs

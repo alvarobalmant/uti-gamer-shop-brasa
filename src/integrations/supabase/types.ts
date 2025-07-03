@@ -643,7 +643,11 @@ export type Database = {
           title: string | null
           trust_indicators: Json | null
           updated_at: string
+          uti_pro_custom_price: number | null
+          uti_pro_enabled: boolean | null
           uti_pro_price: number | null
+          uti_pro_type: string | null
+          uti_pro_value: number | null
           variant_attributes: Json | null
         }
         Insert: {
@@ -716,7 +720,11 @@ export type Database = {
           title?: string | null
           trust_indicators?: Json | null
           updated_at?: string
+          uti_pro_custom_price?: number | null
+          uti_pro_enabled?: boolean | null
           uti_pro_price?: number | null
+          uti_pro_type?: string | null
+          uti_pro_value?: number | null
           variant_attributes?: Json | null
         }
         Update: {
@@ -789,7 +797,11 @@ export type Database = {
           title?: string | null
           trust_indicators?: Json | null
           updated_at?: string
+          uti_pro_custom_price?: number | null
+          uti_pro_enabled?: boolean | null
           uti_pro_price?: number | null
+          uti_pro_type?: string | null
+          uti_pro_value?: number | null
           variant_attributes?: Json | null
         }
         Relationships: [
@@ -1470,6 +1482,10 @@ export type Database = {
           technical_specs: Json | null
           trust_indicators: Json | null
           updated_at: string | null
+          uti_pro_custom_price: number | null
+          uti_pro_enabled: boolean | null
+          uti_pro_type: string | null
+          uti_pro_value: number | null
           variant_attributes: Json | null
         }
         Relationships: [
