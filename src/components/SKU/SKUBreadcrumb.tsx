@@ -63,8 +63,16 @@ const SKUBreadcrumb: React.FC<SKUBreadcrumbProps> = ({
       {currentSKU && platformInfo && (
         <>
           <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-gray-900 font-medium flex items-center gap-1">
-            <span className="text-lg">{platformInfo.icon}</span>
+          <span className="text-gray-900 font-medium flex items-center gap-2">
+            {platformInfo.icon.startsWith('http') ? (
+              <img 
+                src={platformInfo.icon} 
+                alt={platformInfo.name}
+                className="w-5 h-5 object-contain"
+              />
+            ) : (
+              <span className="text-lg">{platformInfo.icon}</span>
+            )}
             {platformInfo.name}
           </span>
         </>

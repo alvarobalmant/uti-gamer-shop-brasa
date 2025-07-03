@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2, Gamepad2, Eye, EyeOff, MoveUp, MoveDown } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 const PlatformManager: React.FC = () => {
   const { toast } = useToast();
@@ -195,15 +196,13 @@ const PlatformManager: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="icon_url">URL do Ícone (opcional)</Label>
-                <Input
-                  id="icon_url"
-                  value={formData.icon_url}
-                  onChange={(e) => setFormData({...formData, icon_url: e.target.value})}
-                  placeholder="https://exemplo.com/icone.png"
-                />
-              </div>
+              <ImageUpload
+                onImageUploaded={(url) => setFormData({...formData, icon_url: url})}
+                currentImage={formData.icon_url}
+                label="Ícone da Plataforma"
+                folder="platform-icons"
+                className="col-span-2"
+              />
 
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
@@ -247,7 +246,11 @@ const PlatformManager: React.FC = () => {
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         {platform.icon_url ? (
-                          <img src={platform.icon_url} alt={platform.name} className="w-8 h-8" />
+                          <img 
+                            src={platform.icon_url} 
+                            alt={platform.name} 
+                            className="w-8 h-8 object-contain rounded"
+                          />
                         ) : (
                           <span className="text-2xl">{platform.icon_emoji}</span>
                         )}
@@ -396,14 +399,12 @@ const PlatformManager: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="edit-icon_url">URL do Ícone (opcional)</Label>
-              <Input
-                id="edit-icon_url"
-                value={formData.icon_url}
-                onChange={(e) => setFormData({...formData, icon_url: e.target.value})}
-              />
-            </div>
+            <ImageUpload
+              onImageUploaded={(url) => setFormData({...formData, icon_url: url})}
+              currentImage={formData.icon_url}
+              label="Ícone da Plataforma"
+              folder="platform-icons"
+            />
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowEditDialog(false)}>

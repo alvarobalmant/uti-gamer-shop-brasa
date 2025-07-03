@@ -67,8 +67,16 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
               disabled={!available}
             >
               {/* Ícone da plataforma */}
-              <div className="text-2xl mb-1">
-                {platformInfo.icon}
+              <div className="text-2xl mb-1 flex items-center justify-center w-8 h-8">
+                {platformInfo.icon.startsWith('http') ? (
+                  <img 
+                    src={platformInfo.icon} 
+                    alt={platformInfo.name}
+                    className="w-6 h-6 object-contain"
+                  />
+                ) : (
+                  <span className="text-2xl">{platformInfo.icon}</span>
+                )}
               </div>
               
               {/* Nome da plataforma */}

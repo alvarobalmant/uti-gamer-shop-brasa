@@ -61,7 +61,17 @@ const SKUPriceComparison: React.FC<SKUPriceComparisonProps> = ({
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="text-xl">{platformInfo.icon}</div>
+                    <div className="text-xl flex items-center justify-center w-6 h-6">
+                      {platformInfo.icon.startsWith('http') ? (
+                        <img 
+                          src={platformInfo.icon} 
+                          alt={platformInfo.name}
+                          className="w-5 h-5 object-contain"
+                        />
+                      ) : (
+                        <span className="text-xl">{platformInfo.icon}</span>
+                      )}
+                    </div>
                     <div>
                       <div className="font-medium text-gray-900">
                         {platformInfo.name}

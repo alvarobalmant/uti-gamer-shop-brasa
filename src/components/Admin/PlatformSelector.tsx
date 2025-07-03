@@ -53,7 +53,15 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
           {platforms.map((platform) => (
             <SelectItem key={platform.id} value={platform.id}>
               <div className="flex items-center gap-2">
-                <span>{platform.icon}</span>
+                {platform.icon.startsWith('http') ? (
+                  <img 
+                    src={platform.icon} 
+                    alt={platform.name}
+                    className="w-4 h-4 object-contain"
+                  />
+                ) : (
+                  <span>{platform.icon}</span>
+                )}
                 <span>{platform.name}</span>
               </div>
             </SelectItem>
