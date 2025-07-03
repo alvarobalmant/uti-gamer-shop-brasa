@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 import { SKUNavigation, Platform } from '@/hooks/useProducts/types';
-import { PLATFORM_CONFIG } from '@/hooks/useSKUs';
+import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
 import { cn } from '@/lib/utils';
 
 interface SKUBreadcrumbProps {
@@ -15,10 +15,11 @@ const SKUBreadcrumb: React.FC<SKUBreadcrumbProps> = ({
   className
 }) => {
   const { masterProduct, currentSKU } = skuNavigation;
+  const { platformConfig } = useDynamicPlatforms();
   
   const getCurrentPlatformInfo = () => {
     if (currentSKU?.variant_attributes?.platform) {
-      return PLATFORM_CONFIG[currentSKU.variant_attributes.platform as Platform];
+      return platformConfig[currentSKU.variant_attributes.platform];
     }
     return null;
   };

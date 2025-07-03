@@ -13,7 +13,8 @@ import SpecialSectionManager from './SpecialSectionManager';
 import Xbox4AdminPage from './Xbox4AdminPage';
 import { NavigationManager } from './NavigationManager';
 import MasterProductManager from './MasterProductManager';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers } from 'lucide-react';
+import PlatformManager from './PlatformManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -29,6 +30,7 @@ export const AdminPanel = () => {
     { id: 'xbox4_customization', label: 'Xbox 4 - Personalização', icon: Gamepad2 },
     { id: 'products', label: 'Produtos', icon: Package },
     { id: 'skus', label: 'Sistema de SKUs', icon: Layers },
+    { id: 'platforms', label: 'Plataformas', icon: Settings },
     { id: 'banners', label: 'Banners', icon: Image },
     { id: 'quick_links', label: 'Links Rápidos', icon: Link },
     { id: 'services', label: 'Serviços', icon: Briefcase },
@@ -163,6 +165,10 @@ export const AdminPanel = () => {
 
               <TabsContent value="skus" className="mt-0">
                 <MasterProductManager />
+              </TabsContent>
+
+              <TabsContent value="platforms" className="mt-0">
+                <PlatformManager />
               </TabsContent>
 
               <TabsContent value="banners" className="mt-0">

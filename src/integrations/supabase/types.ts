@@ -415,6 +415,45 @@ export type Database = {
         }
         Relationships: []
       }
+      platforms: {
+        Row: {
+          color: string | null
+          created_at: string
+          display_order: number | null
+          icon_emoji: string | null
+          icon_url: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          display_order?: number | null
+          icon_emoji?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          display_order?: number | null
+          icon_emoji?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pro_codes: {
         Row: {
           code: string

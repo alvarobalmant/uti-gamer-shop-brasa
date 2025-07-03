@@ -2,7 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { SKUNavigation, Platform } from '@/hooks/useProducts/types';
-import { PLATFORM_CONFIG } from '@/hooks/useSKUs';
+import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
 import { cn } from '@/lib/utils';
 
 interface SKUPriceComparisonProps {
@@ -14,6 +14,7 @@ const SKUPriceComparison: React.FC<SKUPriceComparisonProps> = ({
   skuNavigation,
   className
 }) => {
+  const { platformConfig } = useDynamicPlatforms();
   const availableSKUs = skuNavigation.availableSKUs.filter(sku => sku.stock && sku.stock > 0);
   
   if (availableSKUs.length <= 1) {
@@ -43,8 +44,8 @@ const SKUPriceComparison: React.FC<SKUPriceComparisonProps> = ({
 
           <div className="space-y-3">
             {sortedSKUs.map((sku) => {
-              const platform = sku.variant_attributes?.platform as Platform;
-              const platformInfo = PLATFORM_CONFIG[platform];
+              const platform = sku.variant_attributes?.platform;
+              const platformInfo = platformConfig[platform || ''];
               const isLowestPrice = sku.price === minPrice;
               const isHighestPrice = sku.price === maxPrice && minPrice !== maxPrice;
               

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SKUNavigation, Platform } from '@/hooks/useProducts/types';
-import { PLATFORM_CONFIG } from '@/hooks/useSKUs';
+import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
 import { cn } from '@/lib/utils';
 
 interface PlatformSelectorProps {
@@ -18,6 +18,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
   className
 }) => {
   const navigate = useNavigate();
+  const { platformConfig } = useDynamicPlatforms();
 
   const handlePlatformClick = (platform: string, sku: any) => {
     if (sku) {
@@ -47,7 +48,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {skuNavigation.platforms.map(({ platform, sku, available }) => {
-          const platformInfo = PLATFORM_CONFIG[platform as Platform];
+          const platformInfo = platformConfig[platform];
           const isCurrentPlatform = currentPlatform === platform;
           
           if (!platformInfo) return null;
