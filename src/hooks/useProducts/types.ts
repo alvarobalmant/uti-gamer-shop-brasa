@@ -74,4 +74,19 @@ export interface Product {
   product_descriptions?: any;
   delivery_config?: any;
   display_config?: any;
+  
+  // Sistema de SKUs
+  parent_product_id?: string;
+  is_master_product?: boolean;
+  product_type?: 'simple' | 'master' | 'sku';
+  sku_code?: string;
+  variant_attributes?: Record<string, any>;
+  sort_order?: number;
+  available_variants?: Array<{
+    platform?: string;
+    slug?: string;
+    [key: string]: any;
+  }>;
+  master_slug?: string;
+  inherit_from_master?: Record<string, boolean>;
 }
