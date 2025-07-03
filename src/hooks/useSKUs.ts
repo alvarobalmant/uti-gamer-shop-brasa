@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useProducts } from '@/hooks/useProducts';
 import { Product, ProductSKU, MasterProduct, SKUNavigation, Platform } from '@/hooks/useProducts/types';
+import { supabase } from '@/integrations/supabase/client';
 
 // Configuração das plataformas suportadas
 export const PLATFORM_CONFIG = {
@@ -46,19 +47,101 @@ const useSKUs = () => {
   const fetchSKUsForMaster = useCallback(async (masterProductId: string): Promise<ProductSKU[]> => {
     try {
       setLoading(true);
-      const allProducts = products.filter(p => 
-        p.parent_product_id === masterProductId && 
-        p.product_type === 'sku'
-      );
       
-      return allProducts.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)) as ProductSKU[];
+      // Buscar diretamente do banco ao invés de usar o cache local
+      const { data, error } = await supabase
+        .from('view_product_with_tags')
+        .select('*')
+        .eq('parent_product_id', masterProductId)
+        .eq('product_type', 'sku');
+
+      if (error) {
+        console.error('Erro ao buscar SKUs:', error);
+        return [];
+      }
+
+      // Mapear e agrupar por produto
+      const skusMap = new Map<string, ProductSKU>();
+      
+      data?.forEach((row: any) => {
+        const productId = row.product_id;
+        
+        if (!skusMap.has(productId)) {
+          skusMap.set(productId, {
+            id: row.product_id,
+            name: row.product_name || '',
+            description: row.product_description || '',
+            price: Number(row.product_price) || 0,
+            image: row.product_image || '',
+            stock: row.product_stock || 0,
+            parent_product_id: row.parent_product_id,
+            product_type: 'sku',
+            variant_attributes: row.variant_attributes || {},
+            sku_code: row.sku_code,
+            sort_order: row.sort_order || 0,
+            is_active: row.is_active !== false,
+            created_at: row.created_at || new Date().toISOString(),
+            updated_at: row.updated_at || new Date().toISOString(),
+            // Outros campos necessários...
+            additional_images: row.additional_images || [],
+            sizes: row.sizes || [],
+            colors: row.colors || [],
+            is_featured: false,
+            is_master_product: false,
+            available_variants: row.available_variants || {},
+            inherit_from_master: row.inherit_from_master || {},
+            product_videos: row.product_videos || [],
+            product_faqs: row.product_faqs || [],
+            product_highlights: row.product_highlights || [],
+            reviews_config: row.reviews_config || {
+              enabled: true,
+              show_rating: true,
+              show_count: true,
+              allow_reviews: true,
+              custom_rating: { value: 0, count: 0, use_custom: false }
+            },
+            trust_indicators: row.trust_indicators || [],
+            manual_related_products: row.manual_related_products || [],
+            breadcrumb_config: row.breadcrumb_config || {
+              custom_path: [],
+              use_custom: false,
+              show_breadcrumb: true
+            },
+            product_descriptions: row.product_descriptions || {
+              short: '',
+              detailed: '',
+              technical: '',
+              marketing: ''
+            },
+            delivery_config: row.delivery_config || {
+              custom_shipping_time: '',
+              shipping_regions: [],
+              express_available: false,
+              pickup_locations: []
+            },
+            display_config: row.display_config || {
+              show_stock_counter: true,
+              show_view_counter: false,
+              custom_view_count: 0,
+              show_urgency_banner: false,
+              urgency_text: '',
+              show_social_proof: false,
+              social_proof_text: ''
+            },
+            tags: []
+          });
+        }
+      });
+
+      const skus = Array.from(skusMap.values()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+      return skus;
     } catch (error) {
       console.error('Erro ao buscar SKUs:', error);
       return [];
     } finally {
       setLoading(false);
     }
-  }, [products]);
+  }, []);
 
   // Criar produto mestre usando o sistema existente
   const createMasterProduct = useCallback(async (productData: Partial<Product>): Promise<string | null> => {
