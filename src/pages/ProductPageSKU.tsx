@@ -23,14 +23,9 @@ import { ArrowLeft } from 'lucide-react';
 import { SKUNavigation } from '@/hooks/useProducts/types';
 
 const ProductPageSKU = () => {
-  console.log('🔍 DIAGNÓSTICO: ProductPageSKU INICIALIZANDO');
-  
   const { id } = useParams<{ id: string }>();
-  console.log('🔍 DIAGNÓSTICO: ID capturado do useParams:', id);
-  
   const navigate = useNavigate();
   const location = useLocation();
-  console.log('🔍 DIAGNÓSTICO: Location atual:', location.pathname);
   
   const { product, loading, error } = useProductDetail(id);
   const { fetchSKUNavigation } = useSKUs();
@@ -43,9 +38,6 @@ const ProductPageSKU = () => {
   const [skuNavigation, setSKUNavigation] = useState<SKUNavigation | null>(null);
   const [skuLoading, setSKULoading] = useState(false);
 
-  // Debug log para verificar se a página está carregando
-  console.log('ProductPageSKU carregada - ID:', id, 'Product:', product?.name);
-
   // Carregar navegação de SKUs quando o produto for carregado
   useEffect(() => {
     const loadSKUNavigation = async () => {
@@ -55,7 +47,6 @@ const ProductPageSKU = () => {
       try {
         const navigation = await fetchSKUNavigation(product.id);
         setSKUNavigation(navigation);
-        console.log('🔍 SKU Navigation carregada:', navigation);
       } catch (error) {
         console.error('Erro ao carregar navegação de SKUs:', error);
       } finally {

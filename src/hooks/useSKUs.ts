@@ -373,10 +373,89 @@ const useSKUs = () => {
         const masterProduct = await fetchSingleProduct(product.parent_product_id);
         if (!masterProduct) return null;
 
-        const skus = products.filter(p => 
-          p.parent_product_id === masterProduct.id && 
-          p.product_type === 'sku'
-        ) as ProductSKU[];
+        // Buscar todos os SKUs do produto mestre
+        const { data: skusData, error } = await supabase
+          .from('view_product_with_tags')
+          .select('*')
+          .eq('parent_product_id', masterProduct.id)
+          .eq('product_type', 'sku');
+
+        if (error) {
+          console.error('Erro ao buscar SKUs:', error);
+          return null;
+        }
+
+        // Mapear SKUs
+        const skusMap = new Map<string, ProductSKU>();
+        skusData?.forEach((row: any) => {
+          const skuId = row.product_id;
+          if (!skusMap.has(skuId)) {
+            skusMap.set(skuId, {
+              id: row.product_id,
+              name: row.product_name || '',
+              description: row.product_description || '',
+              price: Number(row.product_price) || 0,
+              image: row.product_image || '',
+              stock: row.product_stock || 0,
+              parent_product_id: row.parent_product_id,
+              product_type: 'sku',
+              variant_attributes: row.variant_attributes || {},
+              sku_code: row.sku_code,
+              sort_order: row.sort_order || 0,
+              is_active: row.is_active !== false,
+              created_at: row.created_at || new Date().toISOString(),
+              updated_at: row.updated_at || new Date().toISOString(),
+              additional_images: row.additional_images || [],
+              sizes: row.sizes || [],
+              colors: row.colors || [],
+              is_featured: false,
+              is_master_product: false,
+              available_variants: row.available_variants || {},
+              inherit_from_master: row.inherit_from_master || {},
+              product_videos: row.product_videos || [],
+              product_faqs: row.product_faqs || [],
+              product_highlights: row.product_highlights || [],
+              reviews_config: row.reviews_config || {
+                enabled: true,
+                show_rating: true,
+                show_count: true,
+                allow_reviews: true,
+                custom_rating: { value: 0, count: 0, use_custom: false }
+              },
+              trust_indicators: row.trust_indicators || [],
+              manual_related_products: row.manual_related_products || [],
+              breadcrumb_config: row.breadcrumb_config || {
+                custom_path: [],
+                use_custom: false,
+                show_breadcrumb: true
+              },
+              product_descriptions: row.product_descriptions || {
+                short: '',
+                detailed: '',
+                technical: '',
+                marketing: ''
+              },
+              delivery_config: row.delivery_config || {
+                custom_shipping_time: '',
+                shipping_regions: [],
+                express_available: false,
+                pickup_locations: []
+              },
+              display_config: row.display_config || {
+                show_stock_counter: true,
+                show_view_counter: false,
+                custom_view_count: 0,
+                show_urgency_banner: false,
+                urgency_text: '',
+                show_social_proof: false,
+                social_proof_text: ''
+              },
+              tags: []
+            });
+          }
+        });
+
+        const skus = Array.from(skusMap.values()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
         const platforms = Object.keys(PLATFORM_CONFIG).map(platform => {
           const sku = skus.find(s => s.variant_attributes?.platform === platform);
@@ -397,10 +476,89 @@ const useSKUs = () => {
 
       // Se é um produto mestre
       if (product.product_type === 'master') {
-        const skus = products.filter(p => 
-          p.parent_product_id === product.id && 
-          p.product_type === 'sku'
-        ) as ProductSKU[];
+        // Buscar todos os SKUs do produto mestre
+        const { data: skusData, error } = await supabase
+          .from('view_product_with_tags')
+          .select('*')
+          .eq('parent_product_id', product.id)
+          .eq('product_type', 'sku');
+
+        if (error) {
+          console.error('Erro ao buscar SKUs:', error);
+          return null;
+        }
+
+        // Mapear SKUs (mesmo código de cima)
+        const skusMap = new Map<string, ProductSKU>();
+        skusData?.forEach((row: any) => {
+          const skuId = row.product_id;
+          if (!skusMap.has(skuId)) {
+            skusMap.set(skuId, {
+              id: row.product_id,
+              name: row.product_name || '',
+              description: row.product_description || '',
+              price: Number(row.product_price) || 0,
+              image: row.product_image || '',
+              stock: row.product_stock || 0,
+              parent_product_id: row.parent_product_id,
+              product_type: 'sku',
+              variant_attributes: row.variant_attributes || {},
+              sku_code: row.sku_code,
+              sort_order: row.sort_order || 0,
+              is_active: row.is_active !== false,
+              created_at: row.created_at || new Date().toISOString(),
+              updated_at: row.updated_at || new Date().toISOString(),
+              additional_images: row.additional_images || [],
+              sizes: row.sizes || [],
+              colors: row.colors || [],
+              is_featured: false,
+              is_master_product: false,
+              available_variants: row.available_variants || {},
+              inherit_from_master: row.inherit_from_master || {},
+              product_videos: row.product_videos || [],
+              product_faqs: row.product_faqs || [],
+              product_highlights: row.product_highlights || [],
+              reviews_config: row.reviews_config || {
+                enabled: true,
+                show_rating: true,
+                show_count: true,
+                allow_reviews: true,
+                custom_rating: { value: 0, count: 0, use_custom: false }
+              },
+              trust_indicators: row.trust_indicators || [],
+              manual_related_products: row.manual_related_products || [],
+              breadcrumb_config: row.breadcrumb_config || {
+                custom_path: [],
+                use_custom: false,
+                show_breadcrumb: true
+              },
+              product_descriptions: row.product_descriptions || {
+                short: '',
+                detailed: '',
+                technical: '',
+                marketing: ''
+              },
+              delivery_config: row.delivery_config || {
+                custom_shipping_time: '',
+                shipping_regions: [],
+                express_available: false,
+                pickup_locations: []
+              },
+              display_config: row.display_config || {
+                show_stock_counter: true,
+                show_view_counter: false,
+                custom_view_count: 0,
+                show_urgency_banner: false,
+                urgency_text: '',
+                show_social_proof: false,
+                social_proof_text: ''
+              },
+              tags: []
+            });
+          }
+        });
+
+        const skus = Array.from(skusMap.values()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
         const platforms = Object.keys(PLATFORM_CONFIG).map(platform => {
           const sku = skus.find(s => s.variant_attributes?.platform === platform);
@@ -424,7 +582,7 @@ const useSKUs = () => {
       console.error('Erro ao buscar navegação SKU:', error);
       return null;
     }
-  }, [fetchSingleProduct, products]);
+  }, [fetchSingleProduct]);
 
   return {
     loading,
