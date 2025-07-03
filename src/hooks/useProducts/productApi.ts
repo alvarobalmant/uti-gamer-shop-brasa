@@ -69,17 +69,6 @@ const mapRowToProduct = (row: any): Product => ({
     social_proof_text: ''
   },
   
-  // Sistema de SKUs
-  parent_product_id: row.parent_product_id || undefined,
-  is_master_product: row.is_master_product || false,
-  product_type: row.product_type || 'simple',
-  sku_code: row.sku_code || undefined,
-  variant_attributes: row.variant_attributes || {},
-  sort_order: row.sort_order || 0,
-  available_variants: row.available_variants || [],
-  master_slug: row.master_slug || undefined,
-  inherit_from_master: row.inherit_from_master || {},
-  
   tags: [],
   created_at: row.created_at || new Date().toISOString(),
   updated_at: row.updated_at || new Date().toISOString()

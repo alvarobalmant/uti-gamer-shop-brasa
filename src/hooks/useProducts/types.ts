@@ -74,18 +74,12 @@ export interface Product {
   product_descriptions?: any;
   delivery_config?: any;
   display_config?: any;
-<<<<<<< HEAD
 
   // Campos do sistema de SKUs
-=======
-  
-  // Sistema de SKUs
->>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
   parent_product_id?: string;
   is_master_product?: boolean;
   product_type?: 'simple' | 'master' | 'sku';
   sku_code?: string;
-<<<<<<< HEAD
   variant_attributes?: {
     platform?: string;
     edition?: string;
@@ -148,15 +142,4 @@ export interface PlatformInfo {
   name: string;
   icon: string;
   color: string;
-=======
-  variant_attributes?: Record<string, any>;
-  sort_order?: number;
-  available_variants?: Array<{
-    platform?: string;
-    slug?: string;
-    [key: string]: any;
-  }>;
-  master_slug?: string;
-  inherit_from_master?: Record<string, boolean>;
->>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
 }

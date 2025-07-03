@@ -38,11 +38,7 @@ const ProductPagePremium = () => {
     error
   });
   
-<<<<<<< HEAD
   const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
-=======
-  const { addToCart } = useCart();
->>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
   const { toast } = useToast();
   const [viewingCount, setViewingCount] = useState(0);
   const [showCart, setShowCart] = useState(false);
@@ -253,7 +249,6 @@ const ProductPagePremium = () => {
         getCartTotal={getCartTotal}
         getCartItemsCount={getCartItemsCount}
       />
-<<<<<<< HEAD
       
       {/* Auth Modal */}
       <AuthModal 
@@ -261,24 +256,6 @@ const ProductPagePremium = () => {
         onClose={() => setShowAuthModal(false)} 
       />
     </>
-=======
-
-      {/* Abas de Informações */}
-      <ProductTabsEnhanced product={product} />
-
-      {/* Produtos Relacionados */}
-      <RelatedProductsSection product={product} />
-
-      {/* FAQ */}
-      <ProductFAQ product={product} />
-
-      {/* Garantias e Políticas */}
-      <ProductGuarantees />
-
-      {/* CTA Final */}
-      <ProductCTABottom product={product} onAddToCart={handleAddToCart} />
-    </div>
->>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
   );
 };
 

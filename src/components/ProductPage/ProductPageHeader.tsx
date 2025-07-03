@@ -58,14 +58,11 @@ const ProductPageHeader = ({ onBackClick, product, isLoading }: ProductPageHeade
             <img 
               src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
               alt="UTI DOS GAMES" 
-              className="h-8 w-8 flex-shrink-0"
+              className="h-8 w-8"
             />
-            <div className="min-w-0">
-              <h1 className="text-lg font-bold text-uti-red">UTI DOS GAMES</h1>
-              <p className="text-xs text-gray-600 leading-tight">
-                Compre online com a segurança de uma loja física.
-              </p>
-            </div>
+            <h1 className="text-lg font-bold text-gray-900">
+              {product ? product.name : 'UTI DOS GAMES'}
+            </h1>
           </div>
         </div>
         
