@@ -575,6 +575,7 @@ export type Database = {
       products: {
         Row: {
           additional_images: string[] | null
+          available_variants: Json | null
           badge_color: string | null
           badge_text: string | null
           badge_visible: boolean | null
@@ -593,15 +594,19 @@ export type Database = {
           id: string
           image: string | null
           images: string[] | null
+          inherit_from_master: Json | null
           installment_options: number | null
           is_active: boolean | null
           is_featured: boolean | null
+          is_master_product: boolean | null
           list_price: number | null
           manual_related_products: Json | null
+          master_slug: string | null
           meta_description: string | null
           meta_title: string | null
           name: string
           new_price: number | null
+          parent_product_id: string | null
           pix_discount_percentage: number | null
           platform: string | null
           price: number
@@ -611,6 +616,7 @@ export type Database = {
           product_faqs: Json | null
           product_features: Json | null
           product_highlights: Json | null
+          product_type: string | null
           product_videos: Json | null
           promotional_price: number | null
           rating: number | null
@@ -627,7 +633,9 @@ export type Database = {
           show_rating: boolean | null
           show_stock: boolean | null
           sizes: string[] | null
+          sku_code: string | null
           slug: string | null
+          sort_order: number | null
           specifications: Json | null
           stock: number | null
           store_pickup_available: boolean | null
@@ -636,9 +644,14 @@ export type Database = {
           trust_indicators: Json | null
           updated_at: string
           uti_pro_price: number | null
+<<<<<<< HEAD
+=======
+          variant_attributes: Json | null
+>>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
         }
         Insert: {
           additional_images?: string[] | null
+          available_variants?: Json | null
           badge_color?: string | null
           badge_text?: string | null
           badge_visible?: boolean | null
@@ -657,15 +670,19 @@ export type Database = {
           id?: string
           image?: string | null
           images?: string[] | null
+          inherit_from_master?: Json | null
           installment_options?: number | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_master_product?: boolean | null
           list_price?: number | null
           manual_related_products?: Json | null
+          master_slug?: string | null
           meta_description?: string | null
           meta_title?: string | null
           name: string
           new_price?: number | null
+          parent_product_id?: string | null
           pix_discount_percentage?: number | null
           platform?: string | null
           price: number
@@ -675,6 +692,7 @@ export type Database = {
           product_faqs?: Json | null
           product_features?: Json | null
           product_highlights?: Json | null
+          product_type?: string | null
           product_videos?: Json | null
           promotional_price?: number | null
           rating?: number | null
@@ -691,7 +709,9 @@ export type Database = {
           show_rating?: boolean | null
           show_stock?: boolean | null
           sizes?: string[] | null
+          sku_code?: string | null
           slug?: string | null
+          sort_order?: number | null
           specifications?: Json | null
           stock?: number | null
           store_pickup_available?: boolean | null
@@ -700,9 +720,14 @@ export type Database = {
           trust_indicators?: Json | null
           updated_at?: string
           uti_pro_price?: number | null
+<<<<<<< HEAD
+=======
+          variant_attributes?: Json | null
+>>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
         }
         Update: {
           additional_images?: string[] | null
+          available_variants?: Json | null
           badge_color?: string | null
           badge_text?: string | null
           badge_visible?: boolean | null
@@ -721,15 +746,19 @@ export type Database = {
           id?: string
           image?: string | null
           images?: string[] | null
+          inherit_from_master?: Json | null
           installment_options?: number | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_master_product?: boolean | null
           list_price?: number | null
           manual_related_products?: Json | null
+          master_slug?: string | null
           meta_description?: string | null
           meta_title?: string | null
           name?: string
           new_price?: number | null
+          parent_product_id?: string | null
           pix_discount_percentage?: number | null
           platform?: string | null
           price?: number
@@ -739,6 +768,7 @@ export type Database = {
           product_faqs?: Json | null
           product_features?: Json | null
           product_highlights?: Json | null
+          product_type?: string | null
           product_videos?: Json | null
           promotional_price?: number | null
           rating?: number | null
@@ -755,7 +785,9 @@ export type Database = {
           show_rating?: boolean | null
           show_stock?: boolean | null
           sizes?: string[] | null
+          sku_code?: string | null
           slug?: string | null
+          sort_order?: number | null
           specifications?: Json | null
           stock?: number | null
           store_pickup_available?: boolean | null
@@ -764,8 +796,27 @@ export type Database = {
           trust_indicators?: Json | null
           updated_at?: string
           uti_pro_price?: number | null
+<<<<<<< HEAD
+=======
+          variant_attributes?: Json | null
+>>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_parent_product_id_fkey"
+            columns: ["parent_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_parent_product_id_fkey"
+            columns: ["parent_product_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["product_id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1383,6 +1434,7 @@ export type Database = {
       view_product_with_tags: {
         Row: {
           additional_images: string[] | null
+          available_variants: Json | null
           badge_color: string | null
           badge_text: string | null
           badge_visible: boolean | null
@@ -1392,12 +1444,19 @@ export type Database = {
           delivery_config: Json | null
           display_config: Json | null
           free_shipping: boolean | null
+          inherit_from_master: Json | null
           is_active: boolean | null
           is_featured: boolean | null
+          is_master_product: boolean | null
           list_price: number | null
           manual_related_products: Json | null
+<<<<<<< HEAD
+=======
+          master_slug: string | null
+>>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
           meta_description: string | null
           meta_title: string | null
+          parent_product_id: string | null
           pro_price: number | null
           product_description: string | null
           product_descriptions: Json | null
@@ -1409,19 +1468,41 @@ export type Database = {
           product_name: string | null
           product_price: number | null
           product_stock: number | null
+<<<<<<< HEAD
+=======
+          product_type: string | null
+>>>>>>> 523b733996ab2f6613d5534f850d4d0091fbe388
           product_videos: Json | null
           reviews_config: Json | null
           shipping_weight: number | null
           sizes: string[] | null
+          sku_code: string | null
           slug: string | null
+          sort_order: number | null
           specifications: Json | null
           tag_id: string | null
           tag_name: string | null
           technical_specs: Json | null
           trust_indicators: Json | null
           updated_at: string | null
+          variant_attributes: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_parent_product_id_fkey"
+            columns: ["parent_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_parent_product_id_fkey"
+            columns: ["parent_product_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["product_id"]
+          },
+        ]
       }
     }
     Functions: {
