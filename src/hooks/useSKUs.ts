@@ -38,6 +38,9 @@ export const PLATFORM_CONFIG = {
   }
 };
 
+// Cache local para navegação de SKUs
+const skuNavigationCache = new Map<string, SKUNavigation>();
+
 const useSKUs = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();

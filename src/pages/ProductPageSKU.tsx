@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { useProductDetail } from '@/hooks/useProductDetail';
-import useSKUs from '@/hooks/useSKUs';
+
 import { saveScrollPosition, restoreScrollPosition } from '@/lib/scrollRestorationManager';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { AuthModal } from '@/components/Auth/AuthModal';
@@ -30,46 +30,13 @@ const ProductPageSKU = () => {
   console.log('[ProductPageSKU] Iniciando com ID:', id);
   console.log('[ProductPageSKU] Location:', location.pathname);
   
-  const { product, loading, error } = useProductDetail(id);
-  const { fetchSKUNavigation } = useSKUs();
+  const { product, skuNavigation, loading, error } = useProductDetail(id);
   const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const { toast } = useToast();
-  
-  console.log('[ProductPageSKU] Product:', product);
-  console.log('[ProductPageSKU] Loading:', loading);
-  console.log('[ProductPageSKU] Error:', error);
   
   const [viewingCount, setViewingCount] = useState(0);
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [skuNavigation, setSKUNavigation] = useState<SKUNavigation | null>(null);
-  const [skuLoading, setSKULoading] = useState(false);
-
-  // Carregar navegação de SKUs quando o produto for carregado
-  useEffect(() => {
-    const loadSKUNavigation = async () => {
-      if (!product?.id || !product?.product_type) {
-        return;
-      }
-      
-      // Só carregar se for um produto com SKUs
-      if (product.product_type !== 'master' && product.product_type !== 'sku') {
-        return;
-      }
-      
-      setSKULoading(true);
-      try {
-        const navigation = await fetchSKUNavigation(product.id);
-        setSKUNavigation(navigation);
-      } catch (error) {
-        console.error('Erro ao carregar navegação de SKUs:', error);
-      } finally {
-        setSKULoading(false);
-      }
-    };
-
-    loadSKUNavigation();
-  }, [product?.id, product?.product_type]); // Removido fetchSKUNavigation da dependência
 
   // Implementar scroll restoration
   useEffect(() => {
@@ -123,7 +90,7 @@ const ProductPageSKU = () => {
     return product.product_type === 'master' || product.product_type === 'sku';
   };
 
-  if (loading || skuLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-white">
         <ProfessionalHeader 
