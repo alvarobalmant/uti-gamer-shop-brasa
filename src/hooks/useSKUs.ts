@@ -362,7 +362,7 @@ const useSKUs = () => {
     }
   }, [deleteProduct]);
 
-  // Buscar navegação de SKUs
+  // Buscar navegação de SKUs - otimizado
   const fetchSKUNavigation = useCallback(async (productId: string): Promise<SKUNavigation | null> => {
     try {
       const product = await fetchSingleProduct(productId);
@@ -370,31 +370,26 @@ const useSKUs = () => {
 
       // Se é um SKU, buscar o produto mestre
       if (product.product_type === 'sku' && product.parent_product_id) {
-        const masterProduct = await fetchSingleProduct(product.parent_product_id);
-        if (!masterProduct) return null;
+        const [masterProduct, { data: skusData }] = await Promise.all([
+          fetchSingleProduct(product.parent_product_id),
+          supabase
+            .from('view_product_with_tags')
+            .select('product_id, product_name, product_price, variant_attributes, sku_code, sort_order')
+            .eq('parent_product_id', product.parent_product_id)
+            .eq('product_type', 'sku')
+            .eq('is_active', true)
+        ]);
 
-        // Buscar todos os SKUs do produto mestre
-        const { data: skusData, error } = await supabase
-          .from('view_product_with_tags')
-          .select('product_id, product_name, product_price, variant_attributes, sku_code, sort_order')
-          .eq('parent_product_id', masterProduct.id)
-          .eq('product_type', 'sku')
-          .eq('is_active', true);
+        if (!masterProduct || !skusData) return null;
 
-        if (error) {
-          console.error('Erro ao buscar SKUs:', error);
-          return null;
-        }
-
-        // Mapear SKUs de forma simplificada
-        const skus = skusData?.map((row: any) => ({
+        const skus = skusData.map((row: any) => ({
           id: row.product_id,
           name: row.product_name || '',
           price: Number(row.product_price) || 0,
           variant_attributes: row.variant_attributes || {},
           sku_code: row.sku_code,
           sort_order: row.sort_order || 0
-        })) || [];
+        }));
 
         return {
           masterProduct: masterProduct as any,
@@ -410,26 +405,23 @@ const useSKUs = () => {
 
       // Se é um produto mestre, buscar seus SKUs
       if (product.product_type === 'master') {
-        const { data: skusData, error } = await supabase
+        const { data: skusData } = await supabase
           .from('view_product_with_tags')
           .select('product_id, product_name, product_price, variant_attributes, sku_code, sort_order')
           .eq('parent_product_id', product.id)
           .eq('product_type', 'sku')
           .eq('is_active', true);
 
-        if (error) {
-          console.error('Erro ao buscar SKUs:', error);
-          return null;
-        }
+        if (!skusData) return null;
 
-        const skus = skusData?.map((row: any) => ({
+        const skus = skusData.map((row: any) => ({
           id: row.product_id,
           name: row.product_name || '',
           price: Number(row.product_price) || 0,
           variant_attributes: row.variant_attributes || {},
           sku_code: row.sku_code,
           sort_order: row.sort_order || 0
-        })) || [];
+        }));
 
         return {
           masterProduct: product as any,
@@ -444,8 +436,7 @@ const useSKUs = () => {
       }
 
       return null;
-    } catch (error) {
-      console.error('Erro ao buscar navegação de SKUs:', error);
+    } catch {
       return null;
     }
   }, [fetchSingleProduct]);
