@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/hooks/useProducts/types';
 import { fetchSingleProductFromDatabase } from '@/hooks/useProducts/productApi';
@@ -9,12 +10,12 @@ export const useProductDetail = (productId: string | undefined) => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Memoizar para evitar re-execuções desnecessárias
-  const memoizedProductId = useMemo(() => productId, [productId]);
-
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!memoizedProductId) {
+      console.log('[useProductDetail] fetchProduct called with productId:', productId);
+      
+      if (!productId) {
+        console.log('[useProductDetail] No productId provided');
         setLoading(false);
         return;
       }
@@ -23,16 +24,21 @@ export const useProductDetail = (productId: string | undefined) => {
         setLoading(true);
         setError(null);
         
-        const productData = await fetchSingleProductFromDatabase(memoizedProductId);
+        console.log('[useProductDetail] Starting fetchSingleProductFromDatabase');
+        const productData = await fetchSingleProductFromDatabase(productId);
+        console.log('[useProductDetail] Product data received:', productData);
 
         if (!productData) {
+          console.log('[useProductDetail] No product data found');
           setProduct(null);
           setError('Produto não encontrado');
           return;
         }
 
         setProduct(productData);
+        console.log('[useProductDetail] Product set successfully');
       } catch (err: any) {
+        console.error('[useProductDetail] Error fetching product:', err);
         setError(err.message || 'Erro ao carregar produto');
         toast({
           title: "Erro ao carregar produto",
@@ -41,11 +47,12 @@ export const useProductDetail = (productId: string | undefined) => {
         });
       } finally {
         setLoading(false);
+        console.log('[useProductDetail] Loading finished');
       }
     };
 
     fetchProduct();
-  }, [memoizedProductId, toast]);
+  }, [productId, toast]);
 
   return { product, loading, error };
 };
