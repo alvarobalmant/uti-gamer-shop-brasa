@@ -2,6 +2,7 @@
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useUTIProPricing } from '@/hooks/useUTIProPricing';
+import { formatPrice } from '@/utils/formatPrice';
 
 interface ProductCardPriceProps {
   product: Product;
@@ -17,11 +18,11 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
       {/* Main Price Section */}
       <div className="flex items-center gap-2">
         <span className="text-lg font-bold text-muted-foreground">
-          R${product.price.toFixed(2)}
+          {formatPrice(product.price)}
         </span>
         {discount > 0 && (
           <span className="text-sm text-gray-400 line-through">
-            R${originalPrice.toFixed(2)}
+            {formatPrice(originalPrice)}
           </span>
         )}
       </div>
@@ -30,7 +31,7 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
       {utiProPricing.isEnabled && utiProPricing.proPrice && (
         <div className="text-sm">
           <span className="font-bold text-purple-600">
-            R${utiProPricing.proPrice.toFixed(2)}
+            {formatPrice(utiProPricing.proPrice)}
           </span>
           <span className="text-muted-foreground ml-1">com Pro</span>
         </div>

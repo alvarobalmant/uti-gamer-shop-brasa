@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Product } from '@/hooks/useProducts';
 import { useUTIProPricing } from '@/hooks/useUTIProPricing';
+import { formatPrice } from '@/utils/formatPrice';
 import { cn } from '@/lib/utils';
 
 interface ProductCardPriceProps {
@@ -38,11 +39,11 @@ const ProductCardPrice = ({ product, variant = "default", className }: ProductCa
             transition: { duration: 0.15 }
           }}
         >
-          R$ {product.price?.toFixed(2)}
+          {formatPrice(product.price || 0)}
         </motion.div>
         {product.list_price && product.list_price > product.price && (
           <div className="text-xs text-gray-400 line-through">
-            R$ {product.list_price.toFixed(2)}
+            {formatPrice(product.list_price)}
           </div>
         )}
       </div>
@@ -50,7 +51,7 @@ const ProductCardPrice = ({ product, variant = "default", className }: ProductCa
       {/* Preço UTI Pro - só mostra se habilitado */}
       {utiProPricing.isEnabled && utiProPricing.proPrice && (
         <div className="text-xs text-yellow-400 font-semibold">
-          R$ {utiProPricing.proPrice.toFixed(2)} com Pro
+          {formatPrice(utiProPricing.proPrice)} com Pro
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useUTIProPricing } from '@/hooks/useUTIProPricing';
+import { formatPrice } from '@/utils/formatPrice';
 import { Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -52,11 +53,11 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
       {/* Price Display */}
       <div className="flex flex-col items-start">
         <span className="text-3xl font-bold text-foreground">
-          R$ {currentPrice.toFixed(2)}
+          {formatPrice(currentPrice)}
         </span>
         {listPrice && listPrice > currentPrice && (
           <span className="text-sm text-muted-foreground line-through ml-1">
-            R$ {listPrice.toFixed(2)}
+            {formatPrice(listPrice)}
           </span>
         )}
         {/* Pro Price Info - só mostra se habilitado */}
@@ -64,7 +65,7 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
           <div className="mt-1 flex items-center gap-1.5 text-uti-pro">
             <Crown className="h-4 w-4" />
             <span className="text-base font-semibold">
-              R$ {utiProPricing.proPrice.toFixed(2)}
+              {formatPrice(utiProPricing.proPrice)}
             </span>
             <span className="text-sm font-medium">para membros UTI PRO</span>
           </div>

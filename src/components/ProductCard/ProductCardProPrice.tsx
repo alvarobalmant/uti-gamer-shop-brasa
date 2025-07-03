@@ -1,6 +1,7 @@
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useUTIProPricing } from '@/hooks/useUTIProPricing';
+import { formatPrice } from '@/utils/formatPrice';
 import { cn } from '@/lib/utils';
 
 interface ProductCardProPriceProps {
@@ -18,7 +19,7 @@ const ProductCardProPrice: React.FC<ProductCardProPriceProps> = ({ product }) =>
   return (
     <div className="mt-0 text-left">
       <span className="text-base font-bold text-[#00ff41]">
-        R$ {utiProPricing.proPrice.toFixed(2)}
+        {formatPrice(utiProPricing.proPrice)}
       </span>
       <span className="text-sm text-gray-400 ml-1"> for Pros</span>
     </div>

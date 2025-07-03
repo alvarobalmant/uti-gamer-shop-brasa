@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Product } from '@/hooks/useProducts';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useUTIProPricing } from '@/hooks/useUTIProPricing';
+import { formatPrice } from '@/utils/formatPrice';
 import { useNavigate } from 'react-router-dom';
 
 interface ProductProPricingProps {
@@ -73,17 +74,17 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
             </div>
             <div className="flex items-center gap-3">
               <span className="text-3xl font-bold text-yellow-800">
-                R$ {utiProPricing.proPrice.toFixed(2)}
+                {formatPrice(utiProPricing.proPrice)}
               </span>
               <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
                 -{utiProPricing.discountPercentage}% OFF
               </span>
             </div>
             <div className="text-sm text-yellow-700 mt-2">
-              Você está economizando R$ {utiProPricing.savings?.toFixed(2)}
+              Você está economizando {formatPrice(utiProPricing.savings || 0)}
             </div>
             <div className="text-xs text-yellow-600 mt-1">
-              ou 12x de R$ {(utiProPricing.proPrice / 12).toFixed(2)} sem juros
+              ou 12x de {formatPrice((utiProPricing.proPrice || 0) / 12)} sem juros
             </div>
           </div>
         )}
@@ -92,18 +93,18 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <span className={`text-2xl font-bold ${(utiProPricing.isEnabled && isProMember) ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
-              R$ {basePrice.toFixed(2)}
+              {formatPrice(basePrice)}
             </span>
             {!(utiProPricing.isEnabled && isProMember) && (
               <span className="text-lg text-gray-500 line-through">
-                R$ {originalPrice.toFixed(2)}
+                {formatPrice(originalPrice)}
               </span>
             )}
           </div>
           
           {!(utiProPricing.isEnabled && isProMember) && (
             <div className="text-gray-600">
-              ou 12x de R$ {(basePrice / 12).toFixed(2)} sem juros
+              ou 12x de {formatPrice(basePrice / 12)} sem juros
             </div>
           )}
         </div>
@@ -118,10 +119,10 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xl font-bold text-purple-700">
-                  R$ {utiProPricing.proPrice.toFixed(2)}
+                  {formatPrice(utiProPricing.proPrice)}
                 </span>
                 <div className="text-sm text-purple-600">
-                  Economize R$ {utiProPricing.savings?.toFixed(2)} (-{utiProPricing.discountPercentage}%)
+                  Economize {formatPrice(utiProPricing.savings || 0)} (-{utiProPricing.discountPercentage}%)
                 </div>
               </div>
               <Button

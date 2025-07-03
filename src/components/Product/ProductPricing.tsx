@@ -3,6 +3,7 @@ import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useUTIProPricing } from '@/hooks/useUTIProPricing';
+import { formatPrice } from '@/utils/formatPrice';
 import { Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,14 +52,14 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
             </div>
             <div className="flex items-center gap-3">
               <span className="text-3xl font-bold text-yellow-800">
-                R$ {utiProPricing.proPrice.toFixed(2).replace('.', ',')}
+                {formatPrice(utiProPricing.proPrice)}
               </span>
               <Badge className="bg-green-500 text-white font-bold">
                 -{utiProPricing.discountPercentage}% OFF
               </Badge>
             </div>
             <div className="text-sm text-yellow-700 mt-1">
-              Você está economizando R$ {utiProPricing.savings?.toFixed(2).replace('.', ',')}
+              Você está economizando {formatPrice(utiProPricing.savings || 0)}
             </div>
           </div>
         )}
@@ -69,11 +70,11 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
             <div className="flex items-center gap-3">
               {originalPrice > basePrice && (
                 <span className="text-lg text-gray-500 line-through">
-                  R$ {originalPrice.toFixed(2).replace('.', ',')}
+                  {formatPrice(originalPrice)}
                 </span>
               )}
               <span className="text-3xl font-bold text-gray-900">
-                R$ {basePrice.toFixed(2).replace('.', ',')}
+                {formatPrice(basePrice)}
               </span>
               {originalPrice > basePrice && (
                 <Badge variant="destructive" className="font-bold">
@@ -94,10 +95,10 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
                   <span className="font-bold text-purple-800">Preço Membro UTI PRO</span>
                 </div>
                 <div className="text-xl font-bold text-purple-700">
-                  R$ {utiProPricing.proPrice.toFixed(2).replace('.', ',')}
+                  {formatPrice(utiProPricing.proPrice)}
                 </div>
                 <div className="text-sm text-purple-600">
-                  Economize R$ {utiProPricing.savings?.toFixed(2).replace('.', ',')} (-{utiProPricing.discountPercentage}%)
+                  Economize {formatPrice(utiProPricing.savings || 0)} (-{utiProPricing.discountPercentage}%)
                 </div>
               </div>
               <Button
