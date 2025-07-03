@@ -94,38 +94,13 @@ const App = () => (
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
                   <Route path="/" element={<Index />} />
                   
-                  {/* Rotas com lazy loading */}
-                  <Route path="/busca" element={<SearchResults />} />
-                  <Route path="/categoria/:category" element={<CategoryPage />} />
-                  
-                  {/* Páginas de plataforma específicas */}
-                  <Route path="/xbox" element={<XboxPage />} />
-                  <Route path="/xbox3" element={<XboxPage3 />} />
-                  <Route path="/xbox4" element={<XboxPage4 />} />
-                  <Route path="/xbox5" element={<XboxPage5 />} />
-                  <Route path="/xbox6" element={<XboxPage6 />} />
-                  <Route path="/playstation" element={<PlayStationPageProfessionalV5 />} />
-                  <Route path="/playstation-v2" element={<PlayStationPageProfessionalV2 />} />
-                  <Route path="/playstation-v3" element={<PlayStationPageProfessionalV3 />} />
-                  <Route path="/playstation-v4" element={<PlayStationPageProfessionalV4 />} />
-                  <Route path="/nintendo" element={<NintendoPage />} />
-                  <Route path="/pc-gaming" element={<PCGamingPage />} />
-                  <Route path="/retro-gaming" element={<RetroGamingPage />} />
-                  <Route path="/area-geek" element={<AreaGeekPage />} />
-                  
-                  {/* Product Page Routes */}
+                  {/* Product Page Routes - MUST come before dynamic routes */}
                   <Route path="/produto/:id" element={<ProductPageSKU />} />
                   <Route path="/produto-premium/:id" element={<ProductPagePremium />} />
                   <Route path="/produto-simples/:id" element={<ProductPage />} />
                   <Route path="/teste-produto/:id" element={<TestProduct />} />
 
-                  {/* Dynamic Carousel Page Route */}
-                  <Route 
-                    path="/secao-especial/:sectionId/carrossel/:carouselIndex" 
-                    element={<SpecialSectionCarouselPage />} 
-                  />
-
-                  {/* Admin Routes - Protected */}
+                  {/* Admin Routes - Protected - MUST come before dynamic routes */}
                   <Route 
                     path="/admin" 
                     element={
@@ -143,13 +118,38 @@ const App = () => (
                     }
                   />
 
-                  {/* Dynamic Page Route */}
+                  {/* Special routes - MUST come before dynamic routes */}
+                  <Route path="/busca" element={<SearchResults />} />
+                  <Route path="/categoria/:category" element={<CategoryPage />} />
+                  
+                  {/* Dynamic Carousel Page Route */}
+                  <Route 
+                    path="/secao-especial/:sectionId/carrossel/:carouselIndex" 
+                    element={<SpecialSectionCarouselPage />} 
+                  />
+                  
+                  {/* Páginas de plataforma específicas - MUST come before dynamic routes */}
+                  <Route path="/xbox" element={<XboxPage />} />
+                  <Route path="/xbox3" element={<XboxPage3 />} />
+                  <Route path="/xbox4" element={<XboxPage4 />} />
+                  <Route path="/xbox5" element={<XboxPage5 />} />
+                  <Route path="/xbox6" element={<XboxPage6 />} />
+                  <Route path="/playstation" element={<PlayStationPageProfessionalV5 />} />
+                  <Route path="/playstation-v2" element={<PlayStationPageProfessionalV2 />} />
+                  <Route path="/playstation-v3" element={<PlayStationPageProfessionalV3 />} />
+                  <Route path="/playstation-v4" element={<PlayStationPageProfessionalV4 />} />
+                  <Route path="/nintendo" element={<NintendoPage />} />
+                  <Route path="/pc-gaming" element={<PCGamingPage />} />
+                  <Route path="/retro-gaming" element={<RetroGamingPage />} />
+                  <Route path="/area-geek" element={<AreaGeekPage />} />
+
+                  {/* Dynamic Page Route - MUST be last before catch-all */}
                   <Route 
                     path="/:slug" 
                     element={<PlatformPage slug={window.location.pathname.substring(1)} />} 
                   />
 
-                  {/* Catch-all Not Found Route */}
+                  {/* Catch-all Not Found Route - MUST be absolute last */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
