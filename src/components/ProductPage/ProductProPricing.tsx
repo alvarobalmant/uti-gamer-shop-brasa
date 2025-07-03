@@ -29,7 +29,7 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
   };
 
   const basePrice = getBasePrice();
-  const originalPrice = basePrice * 1.15;
+  const originalPrice = product.list_price;
 
   const conditionLabels = {
     'pre-owned': 'Usado',
@@ -95,7 +95,7 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
             <span className={`text-2xl font-bold ${(utiProPricing.isEnabled && isProMember) ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
               {formatPrice(basePrice)}
             </span>
-            {!(utiProPricing.isEnabled && isProMember) && (
+            {!(utiProPricing.isEnabled && isProMember) && originalPrice && originalPrice > basePrice && (
               <span className="text-lg text-gray-500 line-through">
                 {formatPrice(originalPrice)}
               </span>

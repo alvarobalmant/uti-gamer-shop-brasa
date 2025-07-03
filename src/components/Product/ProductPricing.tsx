@@ -35,7 +35,7 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
   };
 
   const basePrice = getBasePrice();
-  const originalPrice = product.list_price || basePrice * 1.2;
+  const originalPrice = product.list_price;
 
   return (
     <div className="space-y-6">
@@ -68,7 +68,7 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
         {(!utiProPricing.isEnabled || !isProMember) && (
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              {originalPrice > basePrice && (
+              {originalPrice && originalPrice > basePrice && (
                 <span className="text-lg text-gray-500 line-through">
                   {formatPrice(originalPrice)}
                 </span>
@@ -76,7 +76,7 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
               <span className="text-3xl font-bold text-gray-900">
                 {formatPrice(basePrice)}
               </span>
-              {originalPrice > basePrice && (
+              {originalPrice && originalPrice > basePrice && (
                 <Badge variant="destructive" className="font-bold">
                   -{Math.round(((originalPrice - basePrice) / originalPrice) * 100)}% OFF
                 </Badge>

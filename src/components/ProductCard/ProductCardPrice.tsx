@@ -10,8 +10,8 @@ interface ProductCardPriceProps {
 
 const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
   const utiProPricing = useUTIProPricing(product);
-  const originalPrice = product.list_price || product.price * 1.15;
-  const discount = Math.round(((originalPrice - product.price) / originalPrice) * 100);
+  const originalPrice = product.list_price;
+  const discount = originalPrice ? Math.round(((originalPrice - product.price) / originalPrice) * 100) : 0;
 
   return (
     <div className="space-y-1">
