@@ -12,7 +12,10 @@ export const useProductDetail = (productId: string | undefined) => {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      console.log('[useProductDetail] fetchProduct called with productId:', productId);
+      
       if (!productId) {
+        console.log('[useProductDetail] No productId provided');
         setLoading(false);
         return;
       }
@@ -20,18 +23,22 @@ export const useProductDetail = (productId: string | undefined) => {
       try {
         setLoading(true);
         setError(null);
-
+        
+        console.log('[useProductDetail] Starting fetchSingleProductFromDatabase');
         const productData = await fetchSingleProductFromDatabase(productId);
+        console.log('[useProductDetail] Product data received:', productData);
 
         if (!productData) {
+          console.log('[useProductDetail] No product data found');
           setProduct(null);
           setError('Produto não encontrado');
           return;
         }
 
         setProduct(productData);
+        console.log('[useProductDetail] Product set successfully');
       } catch (err: any) {
-        console.error('Error fetching product:', err);
+        console.error('[useProductDetail] Error fetching product:', err);
         setError(err.message || 'Erro ao carregar produto');
         toast({
           title: "Erro ao carregar produto",
@@ -40,6 +47,7 @@ export const useProductDetail = (productId: string | undefined) => {
         });
       } finally {
         setLoading(false);
+        console.log('[useProductDetail] Loading finished');
       }
     };
 

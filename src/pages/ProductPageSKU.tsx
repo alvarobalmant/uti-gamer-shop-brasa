@@ -27,10 +27,17 @@ const ProductPageSKU = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
+  console.log('[ProductPageSKU] Iniciando com ID:', id);
+  console.log('[ProductPageSKU] Location:', location.pathname);
+  
   const { product, loading, error } = useProductDetail(id);
   const { fetchSKUNavigation } = useSKUs();
   const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const { toast } = useToast();
+  
+  console.log('[ProductPageSKU] Product:', product);
+  console.log('[ProductPageSKU] Loading:', loading);
+  console.log('[ProductPageSKU] Error:', error);
   
   const [viewingCount, setViewingCount] = useState(0);
   const [showCart, setShowCart] = useState(false);

@@ -397,11 +397,14 @@ const useSKUs = () => {
         })) || [];
 
         return {
-          currentProduct: product,
-          masterProduct: masterProduct,
-          allSKUs: skus,
-          currentSKU: product,
-          availablePlatforms: skus.map(sku => sku.variant_attributes?.platform).filter(Boolean)
+          masterProduct: masterProduct as any,
+          currentSKU: product as any,
+          availableSKUs: skus as any,
+          platforms: skus.map(sku => ({
+            platform: sku.variant_attributes?.platform || '',
+            sku: sku as any,
+            available: true
+          }))
         };
       }
 
@@ -429,11 +432,14 @@ const useSKUs = () => {
         })) || [];
 
         return {
-          currentProduct: product,
-          masterProduct: product,
-          allSKUs: skus,
-          currentSKU: null,
-          availablePlatforms: skus.map(sku => sku.variant_attributes?.platform).filter(Boolean)
+          masterProduct: product as any,
+          currentSKU: undefined,
+          availableSKUs: skus as any,
+          platforms: skus.map(sku => ({
+            platform: sku.variant_attributes?.platform || '',
+            sku: sku as any,
+            available: true
+          }))
         };
       }
 
@@ -449,6 +455,7 @@ const useSKUs = () => {
     fetchSKUsForMaster,
     createMasterProduct,
     createSKU,
+    updateSKU,
     deleteSKU,
     fetchSKUNavigation,
     PLATFORM_CONFIG
