@@ -68,15 +68,15 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const visibleProducts = relatedProducts.slice(currentIndex, currentIndex + 4);
 
   return (
-    <div className="bg-gray-50 py-12">
+    <div className="bg-white py-6">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">
               Produtos Relacionados
             </h2>
             <p className="text-gray-600">
-              Outros jogos que você pode gostar
+              Outros produtos que você pode gostar
             </p>
           </div>
           
@@ -102,7 +102,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {visibleProducts.map((relatedProduct) => (
             <ProductCard
               key={relatedProduct.id}
@@ -114,13 +114,13 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
         </div>
 
         {relatedProducts.length > 4 && (
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-center mt-6">
             <div className="flex gap-2">
               {Array.from({ length: Math.ceil(relatedProducts.length / 4) }).map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index * 4)}
-                  className={`w-3 h-3 rounded-full transition-colors ${
+                  className={`w-2 h-2 rounded-full transition-colors ${
                     Math.floor(currentIndex / 4) === index
                       ? 'bg-red-600'
                       : 'bg-gray-300 hover:bg-gray-400'

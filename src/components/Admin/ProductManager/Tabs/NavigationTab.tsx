@@ -20,7 +20,11 @@ const NavigationTab: React.FC<NavigationTabProps> = ({ formData, onChange }) => 
     });
   };
 
-  const breadcrumbConfig = formData.breadcrumb_config || {};
+  const breadcrumbConfig = formData.breadcrumb_config || {
+    show_breadcrumb: true,
+    use_custom: false,
+    custom_path: []
+  };
 
   return (
     <div className="space-y-6">

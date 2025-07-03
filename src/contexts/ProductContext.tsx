@@ -98,7 +98,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
   }, [fetchProducts]);
 
   // Função para adicionar produto
-  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<Product | null> => {
+  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'tags'> & { tagIds: string[] }): Promise<Product | null> => {
     try {
       console.log('[ProductContext] Adicionando novo produto...');
       

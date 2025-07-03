@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 const NavigationMenu = () => {
   const navigate = useNavigate();
-  const { data: navigationItems, isLoading } = useNavigationItems();
+  const { items: navigationItems, loading: isLoading } = useNavigationItems();
 
   const handleNavClick = (item: any) => {
     if (item.link_type === 'external') {

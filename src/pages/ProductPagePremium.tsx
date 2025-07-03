@@ -5,27 +5,44 @@ import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { useProductDetail } from '@/hooks/useProductDetail';
 import { saveScrollPosition, restoreScrollPosition } from '@/lib/scrollRestorationManager';
-import ProductPageHeader from '@/components/ProductPage/ProductPageHeader';
+import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
+import { AuthModal } from '@/components/Auth/AuthModal';
+import Cart from '@/components/Cart';
 import ProductHero from '@/components/Product/ProductHero';
-<<<<<<< HEAD
 import ProductTabsEnhanced from '@/components/Product/ProductTabsEnhanced';
-=======
-import ProductTabs from '@/components/Product/ProductTabs';
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
 import RelatedProductsSection from '@/components/Product/RelatedProductsSection';
 import ProductFAQ from '@/components/Product/ProductFAQ';
 import ProductGuarantees from '@/components/Product/ProductGuarantees';
 import ProductCTABottom from '@/components/Product/ProductCTABottom';
 import ProductSEO from '@/components/Product/ProductSEO';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const ProductPagePremium = () => {
+  console.log('🔍 DIAGNÓSTICO: ProductPagePremium INICIALIZANDO');
+  
   const { id } = useParams<{ id: string }>();
+  console.log('🔍 DIAGNÓSTICO: ID capturado do useParams:', id);
+  console.log('🔍 DIAGNÓSTICO: Tipo do ID:', typeof id);
+  console.log('🔍 DIAGNÓSTICO: ID é válido?', !!id);
+  
   const navigate = useNavigate();
   const location = useLocation();
+  console.log('🔍 DIAGNÓSTICO: Location atual:', location.pathname);
+  
+  console.log('🔍 DIAGNÓSTICO: Chamando useProductDetail com ID:', id);
   const { product, loading, error } = useProductDetail(id);
-  const { addToCart } = useCart();
+  console.log('🔍 DIAGNÓSTICO: Resultado do useProductDetail:', {
+    product: product?.name || 'null',
+    loading,
+    error
+  });
+  
+  const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const { toast } = useToast();
   const [viewingCount, setViewingCount] = useState(0);
+  const [showCart, setShowCart] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Debug log para verificar se a página está carregando
   console.log('ProductPagePremium carregada - ID:', id, 'Product:', product?.name);
@@ -61,6 +78,9 @@ const ProductPagePremium = () => {
     navigate(-1);
   };
 
+  const handleCartOpen = () => setShowCart(true);
+  const handleAuthOpen = () => setShowAuthModal(true);
+
   const handleAddToCart = async (product: any) => {
     try {
       await addToCart(product);
@@ -79,30 +99,32 @@ const ProductPagePremium = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <ProductPageHeader onBackClick={handleBack} isLoading={true} />
-        <div className="animate-pulse">
-          <div className="max-w-7xl mx-auto px-4 py-8">
-            {/* Skeleton loading */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="space-y-4">
-                <div className="aspect-square bg-gray-200 rounded-lg"></div>
-                <div className="flex gap-2">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="w-16 h-16 bg-gray-200 rounded"></div>
-                  ))}
+      <>
+        <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} showNavigation={false} />
+        <div className="min-h-screen bg-gray-50">
+          <div className="animate-pulse">
+            <div className="max-w-7xl mx-auto px-4 py-8">
+              {/* Skeleton loading */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="space-y-4">
+                  <div className="aspect-square bg-gray-200 rounded-lg"></div>
+                  <div className="flex gap-2">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="w-16 h-16 bg-gray-200 rounded"></div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-6">
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-12 bg-gray-200 rounded"></div>
-                <div className="h-32 bg-gray-200 rounded"></div>
+                <div className="space-y-6">
+                  <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-12 bg-gray-200 rounded"></div>
+                  <div className="h-32 bg-gray-200 rounded"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -134,82 +156,106 @@ const ProductPagePremium = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
       {/* SEO Component */}
       <ProductSEO product={product} />
       
-      <ProductPageHeader 
-        onBackClick={handleBack} 
-        product={product}
-      />
+      <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} showNavigation={false} />
       
-      {/* Breadcrumb */}
+      {/* Breadcrumb com botão voltar */}
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <ol className="flex items-center space-x-2 text-sm text-gray-500">
-            <li>
-              <button onClick={() => navigate('/')} className="hover:text-red-600 transition-colors">
-                Início
-              </button>
-            </li>
-            <li>
-              <svg className="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
-            </li>
-            <li>
-              <span className="text-gray-700">Games</span>
-            </li>
-            <li>
-              <svg className="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
-            </li>
-            {product.tags && product.tags.length > 0 && (
-              <>
-                <li>
-                  <span className="text-gray-700">{product.tags[0].name}</span>
-                </li>
-                <li>
-                  <svg className="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                </li>
-              </>
-            )}
-            <li>
-              <span className="text-gray-900 font-medium truncate max-w-xs">{product.name}</span>
-            </li>
-          </ol>
+          <div className="flex items-center justify-between">
+            <ol className="flex items-center space-x-2 text-sm text-gray-500">
+              <li>
+                <button onClick={() => navigate('/')} className="hover:text-red-600 transition-colors">
+                  Início
+                </button>
+              </li>
+              <li>
+                <svg className="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+              </li>
+              <li>
+                <span className="text-gray-700">Games</span>
+              </li>
+              <li>
+                <svg className="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+              </li>
+              {product.tags && product.tags.length > 0 && (
+                <>
+                  <li>
+                    <span className="text-gray-700">{product.tags[0].name}</span>
+                  </li>
+                  <li>
+                    <svg className="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </li>
+                </>
+              )}
+              <li>
+                <span className="text-gray-900 font-medium truncate max-w-xs">{product.name}</span>
+              </li>
+            </ol>
+            
+            {/* Botão Voltar */}
+            <Button
+              onClick={handleBack}
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Voltar
+            </Button>
+          </div>
         </div>
       </nav>
 
-      {/* Seção Principal do Produto */}
-      <ProductHero 
-        product={product} 
-        viewingCount={viewingCount}
-        onAddToCart={handleAddToCart}
+      <div className="min-h-screen bg-gray-50">
+        {/* Seção Principal do Produto */}
+        <ProductHero 
+          product={product} 
+          viewingCount={viewingCount}
+          onAddToCart={handleAddToCart}
+        />
+
+        {/* Abas de Informações */}
+        <ProductTabsEnhanced product={product} />
+
+        {/* Produtos Relacionados */}
+        <RelatedProductsSection product={product} />
+
+        {/* FAQ */}
+        <ProductFAQ product={product} />
+
+        {/* Garantias e Políticas */}
+        <ProductGuarantees />
+
+        {/* CTA Final */}
+        <ProductCTABottom product={product} onAddToCart={handleAddToCart} />
+      </div>
+      
+      {/* Cart Modal */}
+      <Cart 
+        isOpen={showCart} 
+        onClose={() => setShowCart(false)}
+        items={items}
+        updateQuantity={updateQuantity}
+        getCartTotal={getCartTotal}
+        getCartItemsCount={getCartItemsCount}
       />
-
-      {/* Abas de Informações */}
-<<<<<<< HEAD
-      <ProductTabsEnhanced product={product} />
-=======
-      <ProductTabs product={product} />
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
-
-      {/* Produtos Relacionados */}
-      <RelatedProductsSection product={product} />
-
-      {/* FAQ */}
-      <ProductFAQ product={product} />
-
-      {/* Garantias e Políticas */}
-      <ProductGuarantees />
-
-      {/* CTA Final */}
-      <ProductCTABottom product={product} onAddToCart={handleAddToCart} />
-    </div>
+      
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
+    </>
   );
 };
 

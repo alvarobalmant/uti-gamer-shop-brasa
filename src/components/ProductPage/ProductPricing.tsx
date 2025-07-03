@@ -75,32 +75,7 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
         </div>
       </div>
 
-      {/* Condition Selection (Radio Group - GameStop Style) */}
-      {availableConditions.length > 1 && (
-        <div>
-          <Label className="text-sm font-medium text-foreground mb-2 block">Condição:</Label>
-          <RadioGroup
-            value={selectedCondition}
-            onValueChange={(value) => onConditionChange(value as any)}
-            className="grid grid-cols-2 sm:grid-cols-3 gap-2"
-          >
-            {availableConditions.map(({ key, label, price }) => (
-              <Label
-                key={key}
-                htmlFor={`condition-${key}`}
-                className={cn(
-                  "flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer",
-                  selectedCondition === key ? "border-uti-red ring-1 ring-uti-red" : ""
-                )}
-              >
-                <RadioGroupItem value={key} id={`condition-${key}`} className="sr-only" />
-                <span className="text-sm font-semibold mb-0.5">{label}</span>
-                <span className="text-xs text-muted-foreground">R$ {price.toFixed(2)}</span>
-              </Label>
-            ))}
-          </RadioGroup>
-        </div>
-      )}
+      {/* Seção de condição removida conforme solicitado pelo usuário */}
     </div>
   );
 };

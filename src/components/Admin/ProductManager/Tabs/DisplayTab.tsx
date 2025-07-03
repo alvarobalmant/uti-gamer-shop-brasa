@@ -20,7 +20,15 @@ const DisplayTab: React.FC<DisplayTabProps> = ({ formData, onChange }) => {
     });
   };
 
-  const displayConfig = formData.display_config || {};
+  const displayConfig = formData.display_config || {
+    show_stock_counter: true,
+    show_view_counter: false,
+    custom_view_count: 0,
+    show_urgency_banner: false,
+    urgency_text: '',
+    show_social_proof: false,
+    social_proof_text: ''
+  };
 
   return (
     <div className="space-y-6">

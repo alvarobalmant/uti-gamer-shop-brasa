@@ -222,8 +222,14 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
             {specifications.length > 0 ? (
               <div className="grid gap-6">
                 {specifications.map((category, index) => (
-                  <Card key={index}>
-                    <CardContent className="p-6">
+                  <div key={index} className="card"
+                    style={{
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.5rem',
+                      padding: '1.5rem',
+                      backgroundColor: 'white'
+                    }}>
+                    <div>
                       <h3 className="text-xl font-bold text-gray-900 mb-4">{category.name}</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {category.specs && category.specs.map((spec, specIndex) => (
@@ -242,8 +248,8 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
                           </div>
                         ))}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -291,8 +297,14 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
                 {reviewsData.reviews.length > 0 && (
                   <div className="space-y-4">
                     {reviewsData.reviews.map((review) => (
-                      <Card key={review.id}>
-                        <CardContent className="p-6">
+                      <div key={review.id} className="card"
+                        style={{
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '0.5rem',
+                          padding: '1.5rem',
+                          backgroundColor: 'white'
+                        }}>
+                        <div className="p-6">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center space-x-3">
                               <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
@@ -327,8 +339,8 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
                             </div>
                           </div>
                           <p className="text-gray-700">{review.comment}</p>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -345,7 +357,12 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
             {videos.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {videos.map((video) => (
-                  <Card key={video.id} className="overflow-hidden">
+                  <div key={video.id} className="card overflow-hidden"
+                    style={{
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.5rem',
+                      backgroundColor: 'white'
+                    }}>
                     <div className="relative">
                       <img
                         src={video.thumbnail}
@@ -362,13 +379,13 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
                         {video.duration}
                       </div>
                     </div>
-                    <CardContent className="p-4">
+                    <div className="p-4">
                       <h4 className="font-medium text-gray-900">{video.title}</h4>
                       {video.is_featured && (
                         <Badge className="mt-2">Destaque</Badge>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -390,15 +407,21 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
           <TabsContent value="faq" className="space-y-4">
             {faqs.length > 0 ? (
               faqs.filter(faq => faq.is_visible !== false).map((faq) => (
-                <Card key={faq.id}>
-                  <CardContent className="p-6">
+                <div key={faq.id} className="card"
+                  style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.5rem',
+                    padding: '1.5rem',
+                    backgroundColor: 'white'
+                  }}>
+                  <div className="p-6">
                     <h4 className="font-semibold text-gray-900 mb-3">{faq.question}</h4>
                     <p className="text-gray-700">{faq.answer}</p>
                     <Badge variant="outline" className="mt-3 text-xs">
                       {faq.category}
                     </Badge>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))
             ) : (
               <div className="text-center py-12">

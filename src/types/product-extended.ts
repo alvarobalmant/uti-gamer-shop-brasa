@@ -48,6 +48,8 @@ export interface TrustIndicator {
   color: string;
   order: number;
   is_visible: boolean;
+  text: string;
+  type: string;
 }
 
 export interface ManualRelatedProduct {
@@ -58,10 +60,7 @@ export interface ManualRelatedProduct {
 }
 
 export interface BreadcrumbConfig {
-  custom_path: Array<{
-    label: string;
-    url: string;
-  }>;
+  custom_path: string[];
   use_custom: boolean;
   show_breadcrumb: boolean;
 }
@@ -153,6 +152,8 @@ export interface ExtendedProduct {
 // Tipos para formulários de edição
 export interface ProductFormData extends Omit<ExtendedProduct, 'id' | 'created_at' | 'updated_at'> {
   tagIds?: string[];
+  list_price?: number;
+  pro_price?: number;
 }
 
 // Tipos para abas do ProductManager

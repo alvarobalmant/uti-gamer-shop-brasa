@@ -1,48 +1,28 @@
 
 import React from 'react';
-<<<<<<< HEAD
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, Package, Eye } from 'lucide-react';
-=======
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
 import { Product } from '@/hooks/useProducts';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Edit, Trash2, Settings, Eye } from 'lucide-react';
+import { ProductTagDisplay } from './ProductTagDisplay';
 
 interface ProductListProps {
   products: Product[];
   loading: boolean;
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
-  onConfigure?: (product: Product) => void;
 }
 
-const ProductList: React.FC<ProductListProps> = ({ 
-  products, 
-  loading, 
-  onEdit, 
+const ProductList: React.FC<ProductListProps> = ({
+  products,
+  loading,
+  onEdit,
   onDelete,
-  onConfigure 
 }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[...Array(6)].map((_, index) => (
-          <Card key={index} className="bg-[#343A40] border-[#6C757D]">
-            <CardContent className="p-4">
-              <Skeleton className="h-32 w-full mb-4 bg-[#6C757D]" />
-              <Skeleton className="h-4 w-3/4 mb-2 bg-[#6C757D]" />
-              <Skeleton className="h-4 w-1/2 mb-4 bg-[#6C757D]" />
-              <div className="flex gap-2">
-                <Skeleton className="h-8 w-16 bg-[#6C757D]" />
-                <Skeleton className="h-8 w-16 bg-[#6C757D]" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="text-center py-8">
+        <div className="animate-spin w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p className="text-gray-400">Carregando produtos...</p>
       </div>
     );
   }
@@ -50,87 +30,95 @@ const ProductList: React.FC<ProductListProps> = ({
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="text-gray-400 text-lg mb-4">Nenhum produto encontrado</div>
-        <p className="text-gray-500">Tente ajustar os filtros ou adicionar um novo produto.</p>
+        <Package className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-white mb-2">Nenhum produto encontrado</h3>
+        <p className="text-gray-400">Comece criando seu primeiro produto</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid gap-6">
       {products.map((product) => (
-        <Card key={product.id} className="bg-[#343A40] border-[#6C757D] hover:border-[#007BFF] transition-colors">
-          <CardContent className="p-4">
-            {/* Imagem do produto */}
-            <div className="aspect-square bg-[#2C2C44] rounded-lg overflow-hidden mb-3">
-              {product.image ? (
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
-                  <Eye className="w-8 h-8" />
-                </div>
-              )}
-            </div>
-
-            {/* Informações do produto */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-white text-sm line-clamp-2">
-                {product.name}
-              </h3>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-[#28A745] font-bold">
-                  R$ {product.price.toFixed(2)}
-                </span>
-                <div className="flex gap-1">
-                  {product.is_featured && (
-                    <Badge className="bg-[#FFC107] text-black text-xs">
-                      Destaque
-                    </Badge>
+        <div
+          key={product.id}
+          className="bg-gray-700 rounded-lg p-6 border border-gray-600"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-start gap-4">
+                {product.image && (
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-20 h-20 object-cover rounded-lg border border-gray-600"
+                  />
+                )}
+                
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    {product.name}
+                  </h3>
+                  
+                  {product.description && (
+                    <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+                      {product.description}
+                    </p>
                   )}
-                  {!product.is_active && (
-                    <Badge variant="destructive" className="text-xs">
-                      Inativo
-                    </Badge>
-                  )}
+                  
+                  <div className="flex items-center gap-4 mb-3">
+                    <span className="text-red-400 font-bold text-lg">
+                      R$ {product.price.toFixed(2)}
+                    </span>
+                    
+                    <span className="text-gray-400 text-sm">
+                      Estoque: {product.stock || 0}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {product.sizes && product.sizes.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400">Tamanhos:</span>
+                        <div className="flex gap-1">
+                          {product.sizes.map((size, index) => (
+                            <span
+                              key={index}
+                              className="text-xs bg-gray-600 text-gray-300 px-2 py-1 rounded"
+                            >
+                              {size}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {product.colors && product.colors.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400">Cores:</span>
+                        <div className="flex gap-1">
+                          {product.colors.map((color, index) => (
+                            <span
+                              key={index}
+                              className="text-xs bg-gray-600 text-gray-300 px-2 py-1 rounded"
+                            >
+                              {color}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400">Categorias:</span>
+                      <ProductTagDisplay tags={product.tags || []} />
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {product.stock !== undefined && (
-                <p className="text-gray-400 text-xs">
-                  Estoque: {product.stock} unidades
-                </p>
-              )}
-
-              {product.tags && product.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {product.tags.slice(0, 2).map((tag) => (
-                    <Badge
-                      key={tag.id}
-                      variant="secondary"
-                      className="text-xs bg-[#007BFF] bg-opacity-20 text-[#007BFF] border-[#007BFF]"
-                    >
-                      {tag.name}
-                    </Badge>
-                  ))}
-                  {product.tags.length > 2 && (
-                    <Badge
-                      variant="secondary"
-                      className="text-xs bg-gray-600 text-gray-300"
-                    >
-                      +{product.tags.length - 2}
-                    </Badge>
-                  )}
-                </div>
-              )}
             </div>
-
-            {/* Ações */}
-            <div className="flex gap-2 mt-4">
+            
+            <div className="flex gap-2 ml-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -145,35 +133,22 @@ const ProductList: React.FC<ProductListProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onEdit(product)}
-                className="flex-1 border-[#6C757D] text-white hover:bg-[#007BFF] hover:border-[#007BFF]"
+                className="border-gray-600 text-gray-300 hover:bg-gray-600"
               >
-                <Edit className="w-3 h-3 mr-1" />
-                Editar
+                <Edit className="w-4 h-4" />
               </Button>
-              
-              {onConfigure && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onConfigure(product)}
-                  className="border-[#6C757D] text-white hover:bg-[#28A745] hover:border-[#28A745]"
-                  title="Configurar página do produto"
-                >
-                  <Settings className="w-3 h-3" />
-                </Button>
-              )}
               
               <Button
-                variant="outline"
+                variant="destructive"
                 size="sm"
                 onClick={() => onDelete(product.id)}
-                className="border-[#6C757D] text-white hover:bg-red-600 hover:border-red-600"
+                className="bg-red-600 hover:bg-red-700"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-4 h-4" />
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ))}
     </div>
   );

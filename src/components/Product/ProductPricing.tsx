@@ -38,38 +38,10 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
   const pixPrice = basePrice * 0.95; // 5% desconto no PIX
   const installmentPrice = basePrice / 12;
 
-  const conditionOptions = [
-    { key: 'pre-owned' as const, label: 'Usado', available: true },
-    { key: 'new' as const, label: 'Novo', available: product.new_price || false },
-    { key: 'digital' as const, label: 'Digital', available: product.digital_price || false },
-  ];
+  // Condição removida conforme solicitado pelo usuário
 
   return (
     <div className="space-y-6">
-      {/* Seleção de Condição */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">Condição</h3>
-        <div className="grid grid-cols-3 gap-2">
-          {conditionOptions.map(({ key, label, available }) => (
-            <button
-              key={key}
-              onClick={() => available && onConditionChange(key)}
-              disabled={!available}
-              className={`p-3 text-sm font-medium rounded-lg border transition-all ${
-                selectedCondition === key
-                  ? 'border-red-500 bg-red-50 text-red-700'
-                  : available
-                  ? 'border-gray-300 hover:border-gray-400 text-gray-700'
-                  : 'border-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              {label}
-              {!available && <div className="text-xs text-gray-400 mt-1">Indisponível</div>}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Preços */}
       <div className="space-y-4">
         {/* Preço UTI PRO */}

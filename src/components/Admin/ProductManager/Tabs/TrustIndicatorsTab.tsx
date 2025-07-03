@@ -32,6 +32,10 @@ const TrustIndicatorsTab: React.FC<TrustIndicatorsTabProps> = ({ formData, onCha
       const currentIndicators = formData.trust_indicators || [];
       const indicatorToAdd: TrustIndicator = {
         id: `indicator-${Date.now()}`,
+        title: newIndicator.text.trim(),
+        description: '',
+        icon: '',
+        color: '#22c55e',
         text: newIndicator.text.trim(),
         type: newIndicator.type,
         order: currentIndicators.length + 1,
@@ -123,9 +127,9 @@ const TrustIndicatorsTab: React.FC<TrustIndicatorsTabProps> = ({ formData, onCha
                 <div key={indicator.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <Shield className="w-5 h-5 text-green-600" />
-                    <span>{indicator.text}</span>
+                    <span>{indicator.text || indicator.title}</span>
                     <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      {indicatorTypes.find(t => t.value === indicator.type)?.label}
+                      {indicatorTypes.find(t => t.value === (indicator.type || 'warranty'))?.label}
                     </span>
                   </div>
                   <Button

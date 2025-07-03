@@ -42,6 +42,7 @@ const PlatformPage = lazy(() => import("./components/PlatformPage"));
 // Lazy loading para páginas de produto
 const ProductPage = lazy(() => import("./pages/ProductPage"));
 const ProductPagePremium = lazy(() => import("./pages/ProductPagePremium"));
+const ProductPageSKU = lazy(() => import("./pages/ProductPageSKU"));
 const TestProduct = lazy(() => import("./pages/TestProduct"));
 
 // Otimizar QueryClient
@@ -113,7 +114,8 @@ const App = () => (
                   <Route path="/area-geek" element={<AreaGeekPage />} />
                   
                   {/* Product Page Routes */}
-                  <Route path="/produto/:id" element={<ProductPagePremium />} />
+                  <Route path="/produto/:id" element={<ProductPageSKU />} />
+                  <Route path="/produto-premium/:id" element={<ProductPagePremium />} />
                   <Route path="/produto-simples/:id" element={<ProductPage />} />
                   <Route path="/teste-produto/:id" element={<TestProduct />} />
 

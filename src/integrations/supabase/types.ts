@@ -636,16 +636,6 @@ export type Database = {
           trust_indicators: Json | null
           updated_at: string
           uti_pro_price: number | null
-          product_videos: Json | null
-          product_faqs: Json | null
-          product_highlights: Json | null
-          reviews_config: Json | null
-          trust_indicators: Json | null
-          manual_related_products: Json | null
-          breadcrumb_config: Json | null
-          product_descriptions: Json | null
-          delivery_config: Json | null
-          display_config: Json | null
         }
         Insert: {
           additional_images?: string[] | null
@@ -710,16 +700,6 @@ export type Database = {
           trust_indicators?: Json | null
           updated_at?: string
           uti_pro_price?: number | null
-          product_videos?: Json | null
-          product_faqs?: Json | null
-          product_highlights?: Json | null
-          reviews_config?: Json | null
-          trust_indicators?: Json | null
-          manual_related_products?: Json | null
-          breadcrumb_config?: Json | null
-          product_descriptions?: Json | null
-          delivery_config?: Json | null
-          display_config?: Json | null
         }
         Update: {
           additional_images?: string[] | null
@@ -784,16 +764,6 @@ export type Database = {
           trust_indicators?: Json | null
           updated_at?: string
           uti_pro_price?: number | null
-          product_videos?: Json | null
-          product_faqs?: Json | null
-          product_highlights?: Json | null
-          reviews_config?: Json | null
-          trust_indicators?: Json | null
-          manual_related_products?: Json | null
-          breadcrumb_config?: Json | null
-          product_descriptions?: Json | null
-          delivery_config?: Json | null
-          display_config?: Json | null
         }
         Relationships: []
       }
@@ -1416,46 +1386,31 @@ export type Database = {
           badge_color: string | null
           badge_text: string | null
           badge_visible: boolean | null
-<<<<<<< HEAD
-          colors: string[] | null
-          created_at: string | null
-=======
           breadcrumb_config: Json | null
           colors: string[] | null
           created_at: string | null
           delivery_config: Json | null
           display_config: Json | null
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
           free_shipping: boolean | null
           is_active: boolean | null
           is_featured: boolean | null
           list_price: number | null
-<<<<<<< HEAD
-=======
           manual_related_products: Json | null
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
           meta_description: string | null
           meta_title: string | null
           pro_price: number | null
           product_description: string | null
-<<<<<<< HEAD
-          product_features: Json | null
-=======
           product_descriptions: Json | null
           product_faqs: Json | null
           product_features: Json | null
           product_highlights: Json | null
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
           product_id: string | null
           product_image: string | null
           product_name: string | null
           product_price: number | null
           product_stock: number | null
-<<<<<<< HEAD
-=======
           product_videos: Json | null
           reviews_config: Json | null
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
           shipping_weight: number | null
           sizes: string[] | null
           slug: string | null
@@ -1463,10 +1418,7 @@ export type Database = {
           tag_id: string | null
           tag_name: string | null
           technical_specs: Json | null
-<<<<<<< HEAD
-=======
           trust_indicators: Json | null
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
           updated_at: string | null
         }
         Relationships: []

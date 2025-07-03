@@ -56,7 +56,13 @@ export interface Product {
   meta_description?: string;
   slug?: string;
   
-<<<<<<< HEAD
+  // Campos adicionais necessários
+  platform?: string;
+  is_on_sale?: boolean;
+  category?: string;
+  condition?: string;
+  title?: string;
+  
   // Novos campos expandidos
   product_videos?: any;
   product_faqs?: any;
@@ -68,100 +74,72 @@ export interface Product {
   product_descriptions?: any;
   delivery_config?: any;
   display_config?: any;
-=======
-  // Novos campos configuráveis
-  product_videos?: Array<{
-    id: string;
-    title: string;
-    url: string;
-    thumbnail: string;
-    duration: string;
-    type: 'youtube' | 'vimeo' | 'mp4';
-    order: number;
-    is_featured: boolean;
-  }>;
-  
-  product_faqs?: Array<{
-    id: string;
-    question: string;
-    answer: string;
-    order: number;
-    is_visible: boolean;
-    category: string;
-  }>;
-  
-  product_highlights?: Array<{
-    id: string;
-    text: string;
-    icon: string;
-    order: number;
-    is_featured: boolean;
-  }>;
-  
-  reviews_config?: {
-    enabled: boolean;
-    show_rating: boolean;
-    show_count: boolean;
-    allow_reviews: boolean;
-    custom_rating?: {
-      value: number;
-      count: number;
-      use_custom: boolean;
-    };
+
+  // Campos do sistema de SKUs
+  parent_product_id?: string;
+  is_master_product?: boolean;
+  product_type?: 'simple' | 'master' | 'sku';
+  sku_code?: string;
+  variant_attributes?: {
+    platform?: string;
+    edition?: string;
+    region?: string;
+    [key: string]: any;
   };
-  
-  trust_indicators?: Array<{
-    id: string;
-    title: string;
-    description: string;
-    icon: string;
-    color: string;
-    order: number;
-    is_visible: boolean;
-  }>;
-  
-  manual_related_products?: Array<{
-    product_id: string;
-    relationship_type: string;
-    order: number;
-    custom_title: string;
-  }>;
-  
-  breadcrumb_config?: {
-    custom_path: Array<{
-      label: string;
-      url: string;
-    }>;
-    use_custom: boolean;
-    show_breadcrumb: boolean;
+  sort_order?: number;
+  available_variants?: {
+    platforms?: string[];
+    editions?: string[];
+    [key: string]: any;
   };
-  
-  product_descriptions?: {
-    short?: string;
-    detailed?: string;
-    technical?: string;
-    marketing?: string;
+  master_slug?: string;
+  inherit_from_master?: {
+    description?: boolean;
+    images?: boolean;
+    specifications?: boolean;
+    [key: string]: boolean;
   };
-  
-  delivery_config?: {
-    custom_shipping_time?: string;
-    shipping_regions?: string[];
-    express_available?: boolean;
-    pickup_locations?: Array<{
-      name: string;
-      address: string;
-      hours: string;
-    }>;
+}
+
+// Tipos específicos para SKUs
+export interface ProductSKU extends Product {
+  parent_product_id: string;
+  product_type: 'sku';
+  sku_code: string;
+  variant_attributes: {
+    platform: string;
+    [key: string]: any;
   };
-  
-  display_config?: {
-    show_stock_counter?: boolean;
-    show_view_counter?: boolean;
-    custom_view_count?: number;
-    show_urgency_banner?: boolean;
-    urgency_text?: string;
-    show_social_proof?: boolean;
-    social_proof_text?: string;
+}
+
+// Tipos específicos para produtos mestre
+export interface MasterProduct extends Product {
+  product_type: 'master';
+  is_master_product: true;
+  available_variants: {
+    platforms: string[];
+    [key: string]: any;
   };
->>>>>>> 8e6f564f9d9afa431eb06b47a1304d04673d0897
+}
+
+// Interface para navegação entre SKUs
+export interface SKUNavigation {
+  masterProduct: MasterProduct;
+  currentSKU?: ProductSKU;
+  availableSKUs: ProductSKU[];
+  platforms: {
+    platform: string;
+    sku: ProductSKU | null;
+    available: boolean;
+  }[];
+}
+
+// Tipos para plataformas suportadas
+export type Platform = 'xbox' | 'playstation' | 'pc' | 'nintendo' | 'mobile';
+
+export interface PlatformInfo {
+  id: Platform;
+  name: string;
+  icon: string;
+  color: string;
 }

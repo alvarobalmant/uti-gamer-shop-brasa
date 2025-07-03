@@ -10,9 +10,10 @@ import { cn } from '@/lib/utils';
 interface ProfessionalHeaderProps {
   onCartOpen: () => void;
   onAuthOpen: () => void;
+  showNavigation?: boolean; // Nova prop para controlar a barra de navegação
 }
 
-const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps) => {
+const ProfessionalHeader = ({ onCartOpen, onAuthOpen, showNavigation = true }: ProfessionalHeaderProps) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -49,10 +50,10 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen }: ProfessionalHeaderProps)
       />
 
       {/* DesktopNavigation agora é fixed e posicionado abaixo do MainHeader */}
-      <DesktopNavigation />
+      {showNavigation && <DesktopNavigation />}
 
-      {/* Espaçador para compensar o header fixo */}
-      <div className="h-[72px] lg:h-[84px]" />
+      {/* Espaçador para compensar o header fixo - ajustado baseado na navegação */}
+      <div className={showNavigation ? "h-[72px] lg:h-[84px]" : "h-[72px]"} />
 
       {/* MobileMenu permanece inalterado */}
       <MobileMenu
