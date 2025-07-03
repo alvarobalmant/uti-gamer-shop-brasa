@@ -364,9 +364,15 @@ const useSKUs = () => {
 
   // Buscar navegação de SKUs
   const fetchSKUNavigation = useCallback(async (productId: string): Promise<SKUNavigation | null> => {
+    console.log('🔍 useSKUs: fetchSKUNavigation iniciado com productId:', productId);
     try {
+      console.log('🔍 useSKUs: Chamando fetchSingleProduct...');
       const product = await fetchSingleProduct(productId);
-      if (!product) return null;
+      console.log('🔍 useSKUs: Produto retornado:', product?.name, 'tipo:', product?.product_type);
+      if (!product) {
+        console.log('❌ useSKUs: Produto não encontrado');
+        return null;
+      }
 
       // Se é um SKU, buscar o produto mestre
       if (product.product_type === 'sku' && product.parent_product_id) {

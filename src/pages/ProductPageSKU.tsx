@@ -41,16 +41,25 @@ const ProductPageSKU = () => {
   // Carregar navegação de SKUs quando o produto for carregado
   useEffect(() => {
     const loadSKUNavigation = async () => {
-      if (!product?.id) return;
+      console.log('🔍 SKU Debug: loadSKUNavigation iniciado. product?.id =', product?.id);
+      if (!product?.id) {
+        console.log('❌ SKU Debug: produto não tem ID, saindo');
+        return;
+      }
       
+      console.log('🔍 SKU Debug: Iniciando carregamento de navegação SKU');
       setSKULoading(true);
       try {
+        console.log('🔍 SKU Debug: Chamando fetchSKUNavigation...');
         const navigation = await fetchSKUNavigation(product.id);
+        console.log('🔍 SKU Debug: Resultado do fetchSKUNavigation:', navigation);
         setSKUNavigation(navigation);
+        console.log('🔍 SKU Debug: setSKUNavigation executado');
       } catch (error) {
-        console.error('Erro ao carregar navegação de SKUs:', error);
+        console.error('❌ SKU Debug: Erro ao carregar navegação de SKUs:', error);
       } finally {
         setSKULoading(false);
+        console.log('🔍 SKU Debug: setSKULoading(false) executado');
       }
     };
 
@@ -105,7 +114,12 @@ const ProductPageSKU = () => {
 
   // Determinar se deve mostrar componentes de SKU
   const shouldShowSKUComponents = () => {
-    if (!product) return false;
+    if (!product) {
+      console.log('❌ SKU Debug: produto não existe');
+      return false;
+    }
+    console.log('🔍 SKU Debug: product.product_type =', product.product_type);
+    console.log('🔍 SKU Debug: shouldShow =', product.product_type === 'master' || product.product_type === 'sku');
     return product.product_type === 'master' || product.product_type === 'sku';
   };
 
@@ -182,21 +196,52 @@ const ProductPageSKU = () => {
           />
 
           {/* Seletor de Plataforma (apenas para produtos com SKUs) */}
-          {shouldShowSKUComponents() && skuNavigation && (
-            <div className="my-8">
-              <PlatformSelector 
-                skuNavigation={skuNavigation}
-                currentProductId={product.id}
-              />
-            </div>
-          )}
+          {(() => {
+            const shouldShow = shouldShowSKUComponents();
+            const hasNavigation = !!skuNavigation;
+            console.log('🔍 SKU Debug: Renderização PlatformSelector');
+            console.log('  - shouldShow:', shouldShow);
+            console.log('  - hasNavigation:', hasNavigation);
+            console.log('  - skuNavigation:', skuNavigation);
+            
+            if (shouldShow && hasNavigation) {
+              console.log('✅ SKU Debug: Renderizando PlatformSelector');
+              return (
+                <div className="my-8">
+                  <PlatformSelector 
+                    skuNavigation={skuNavigation}
+                    currentProductId={product.id}
+                  />
+                </div>
+              );
+            } else {
+              console.log('❌ SKU Debug: NÃO renderizando PlatformSelector');
+              return null;
+            }
+          })()}
 
           {/* Comparação de Preços (apenas para produtos com múltiplos SKUs) */}
-          {shouldShowSKUComponents() && skuNavigation && skuNavigation.availableSKUs.length > 1 && (
-            <div className="my-8">
-              <SKUPriceComparison skuNavigation={skuNavigation} />
-            </div>
-          )}
+          {(() => {
+            const shouldShow = shouldShowSKUComponents();
+            const hasNavigation = !!skuNavigation;
+            const hasMultipleSKUs = skuNavigation && skuNavigation.availableSKUs.length > 1;
+            console.log('🔍 SKU Debug: Renderização SKUPriceComparison');
+            console.log('  - shouldShow:', shouldShow);
+            console.log('  - hasNavigation:', hasNavigation);
+            console.log('  - hasMultipleSKUs:', hasMultipleSKUs);
+            
+            if (shouldShow && hasNavigation && hasMultipleSKUs) {
+              console.log('✅ SKU Debug: Renderizando SKUPriceComparison');
+              return (
+                <div className="my-8">
+                  <SKUPriceComparison skuNavigation={skuNavigation} />
+                </div>
+              );
+            } else {
+              console.log('❌ SKU Debug: NÃO renderizando SKUPriceComparison');
+              return null;
+            }
+          })()}
 
           {/* Abas do Produto */}
           <ProductTabsEnhanced product={product} />
