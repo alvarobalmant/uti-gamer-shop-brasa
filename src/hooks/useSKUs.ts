@@ -389,15 +389,22 @@ const useSKUs = () => {
           return null;
         }
 
-        // Mapear SKUs de forma simplificada
-        const skus = skusData?.map((row: any) => ({
-          id: row.product_id,
-          name: row.product_name || '',
-          price: Number(row.product_price) || 0,
-          variant_attributes: row.variant_attributes || {},
-          sku_code: row.sku_code,
-          sort_order: row.sort_order || 0
-        })) || [];
+        // Agrupar por product_id para evitar duplicatas devido às tags
+        const skusMap = new Map<string, any>();
+        skusData?.forEach((row: any) => {
+          if (!skusMap.has(row.product_id)) {
+            skusMap.set(row.product_id, {
+              id: row.product_id,
+              name: row.product_name || '',
+              price: Number(row.product_price) || 0,
+              variant_attributes: row.variant_attributes || {},
+              sku_code: row.sku_code,
+              sort_order: row.sort_order || 0
+            });
+          }
+        });
+
+        const skus = Array.from(skusMap.values());
 
         // Agrupar SKUs por plataforma para evitar duplicatas
         const platformsMap = new Map<string, any>();
@@ -434,14 +441,22 @@ const useSKUs = () => {
           return null;
         }
 
-        const skus = skusData?.map((row: any) => ({
-          id: row.product_id,
-          name: row.product_name || '',
-          price: Number(row.product_price) || 0,
-          variant_attributes: row.variant_attributes || {},
-          sku_code: row.sku_code,
-          sort_order: row.sort_order || 0
-        })) || [];
+        // Agrupar por product_id para evitar duplicatas devido às tags
+        const skusMap = new Map<string, any>();
+        skusData?.forEach((row: any) => {
+          if (!skusMap.has(row.product_id)) {
+            skusMap.set(row.product_id, {
+              id: row.product_id,
+              name: row.product_name || '',
+              price: Number(row.product_price) || 0,
+              variant_attributes: row.variant_attributes || {},
+              sku_code: row.sku_code,
+              sort_order: row.sort_order || 0
+            });
+          }
+        });
+
+        const skus = Array.from(skusMap.values());
 
         // Agrupar SKUs por plataforma para evitar duplicatas
         const platformsMap = new Map<string, any>();

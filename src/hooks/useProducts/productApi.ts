@@ -106,7 +106,7 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
         productsMap.set(productId, mapRowToProduct(row));
       }
       
-      // Adicionar tag se existir
+      // Adicionar tag se existir e não for duplicata
       if (row.tag_id && row.tag_name) {
         const product = productsMap.get(productId)!;
         const tagExists = product.tags?.some(tag => tag.id === row.tag_id);
@@ -121,6 +121,7 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
       }
     });
 
+    console.log(`[fetchProductsFromDatabase] Carregados ${productsMap.size} produtos únicos`);
     return Array.from(productsMap.values());
   } catch (error) {
     console.error('Error in fetchProductsFromDatabase:', error);
@@ -159,7 +160,7 @@ export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<P
         productsMap.set(productId, mapRowToProduct(row));
       }
       
-      // Add tag if exists
+      // Add tag if exists and not duplicate
       if (row.tag_id && row.tag_name) {
         const product = productsMap.get(productId)!;
         const tagExists = product.tags?.some(tag => tag.id === row.tag_id);
@@ -174,6 +175,7 @@ export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<P
       }
     });
 
+    console.log(`[fetchProductsByCriteria] Carregados ${productsMap.size} produtos únicos por critério`);
     return Array.from(productsMap.values());
   } catch (error) {
     console.error('Error in fetchProductsByCriteria:', error);

@@ -553,18 +553,27 @@ export function validateProductData(products: ImportedProduct[]): ValidationErro
       });
     }
     
-    // Validação SKU
+    // Validação SKU - MELHORADA
     if (product.sku_code) {
-      if (skuCodes.has(product.sku_code.toString())) {
+      const skuCode = product.sku_code.toString().trim();
+      if (skuCodes.has(skuCode)) {
         errors.push({
           row,
           field: 'sku_code',
-          message: `Código SKU "${product.sku_code}" duplicado`,
+          message: `Código SKU "${skuCode}" duplicado na planilha`,
           severity: 'error'
         });
       } else {
-        skuCodes.add(product.sku_code.toString());
+        skuCodes.add(skuCode);
       }
+    } else if (isMasterProduct || product.parent_product_id) {
+      // SKU code é obrigatório para produtos mestre e variações
+      errors.push({
+        row,
+        field: 'sku_code',
+        message: 'Código SKU é obrigatório para produtos mestre e variações',
+        severity: 'error'
+      });
     }
     
     // Validação Slug
@@ -598,6 +607,19 @@ export function validateProductData(products: ImportedProduct[]): ValidationErro
         message: 'Variações precisam ter código SKU',
         severity: 'error'
       });
+    }
+    
+    // Validação de variações - garantir que existe plataforma
+    if (!isMasterProduct && product.parent_product_id) {
+      const variantAttrs = parseJsonField(product.variant_attributes);
+      if (!variantAttrs || !variantAttrs.platform) {
+        errors.push({
+          row,
+          field: 'variant_attributes',
+          message: 'Variações devem ter plataforma definida em variant_attributes',
+          severity: 'error'
+        });
+      }
     }
     
     // Validação JSON
@@ -778,6 +800,27 @@ export async function processProductImport(
   let updated = 0;
   
   try {
+    // Validar se não há SKUs duplicados no banco
+    const allSkuCodes = products
+      .filter(p => p.sku_code)
+      .map(p => p.sku_code!.toString().trim());
+    
+    if (allSkuCodes.length > 0) {
+      const { data: existingSKUs, error } = await supabase
+        .from('products')
+        .select('sku_code')
+        .in('sku_code', allSkuCodes);
+        
+      if (error) {
+        throw new Error(`Erro ao verificar SKUs existentes: ${error.message}`);
+      }
+      
+      if (existingSKUs && existingSKUs.length > 0) {
+        const duplicatedSKUs = existingSKUs.map(s => s.sku_code).join(', ');
+        throw new Error(`SKUs já existem no banco: ${duplicatedSKUs}`);
+      }
+    }
+    
     // Primeiro passo: processar produtos mestres
     const masterProducts = products.filter(p => p.is_master_product);
     const variations = products.filter(p => !p.is_master_product && p.parent_product_id);
