@@ -361,10 +361,12 @@ export function generateProductTemplate(): ProductTemplate {
       'Observações': 'Nome e preço são sempre obrigatórios'
     },
     {
-      'Seção': 'SISTEMA SKU',
-      'Descrição': 'Para produtos com variações (cor, tamanho, etc)',
-      'Campos Obrigatórios': 'sku_code (se usando SKU)',
-      'Observações': 'is_master_product=TRUE para produto principal, parent_product_id para variações'
+      'Seção': 'SISTEMA SKU - PRODUTOS COM VARIAÇÕES',
+      'Descrição': 'Sistema para criar produtos com múltiplas versões (PC, Xbox, PlayStation, etc)',
+      'Exemplo': 'Resident Evil Village: 1 produto mestre + 3 SKUs (PC, Xbox, PS5)',
+      'Como usar': '1) Criar linha com is_master_product=TRUE e sku_code único. 2) Criar linhas filhas com parent_product_id=sku_code do mestre',
+      'Campos Obrigatórios': 'sku_code sempre, parent_product_id para variações',
+      'Observações': 'Produto mestre: price=0, stock=0. Variações: price e stock reais'
     },
     {
       'Seção': 'PREÇOS',
@@ -416,48 +418,82 @@ export function generateProductTemplate(): ProductTemplate {
     }
   ];
   
-  // Exemplos práticos
+  // Exemplos práticos - RESIDENT EVIL VILLAGE COMPLETO
   const examples = [
     {
-      'Tipo': 'Produto Simples',
-      'name': 'God of War Ragnarök',
-      'description': 'Jogo de ação e aventura exclusivo PlayStation',
-      'price': 299.99,
-      'stock': 50,
-      'image': 'https://exemplo.com/god-of-war.jpg',
-      'is_master_product': false,
-      'sku_code': 'GOW-RAGNAROK',
-      'tags': 'jogo,playstation,ação,aventura',
+      'Tipo': 'PRODUTO MESTRE - Resident Evil Village',
+      'name': 'Resident Evil Village',
+      'description': 'Jogo de terror e sobrevivência da Capcom',
+      'price': 0,
+      'stock': 0,
+      'image': 'https://image.api.playstation.com/vulcan/ap/rnd/202101/0812/FkzwjnJknkrFlozkTdeQBMub.png',
+      'is_master_product': true,
+      'sku_code': 'RE-VILLAGE-MASTER',
+      'master_slug': 'resident-evil-village',
+      'variant_attributes': '{"platforms":["pc","xbox","playstation"],"editions":["standard","deluxe"]}',
+      'product_descriptions': '{"short":"Terror e sobrevivência em primeira pessoa","detailed":"Anos após os trágicos eventos de Resident Evil 7 biohazard, Ethan Winters se mudou com sua esposa Mia para começar uma nova vida livre do passado, mas isso não durará muito.","technical":"Engine RE Engine, suporte 4K, Ray Tracing","marketing":"O terror retorna em alta definição!"}',
+      'specifications': '[{"name":"Gênero","value":"Terror/Sobrevivência"},{"name":"Desenvolvedor","value":"Capcom"},{"name":"Classificação","value":"18 anos"}]',
+      'product_highlights': '["Gráficos em 4K","Ray Tracing","Modo VR disponível","História imersiva"]',
+      'tags': 'resident evil,terror,capcom,sobrevivencia,ethan',
       'is_active': true,
       'is_featured': true
     },
     {
-      'Tipo': 'Produto Mestre',
-      'name': 'PlayStation 5',
-      'description': 'Console de videogame da nova geração',
-      'price': 0,
-      'stock': 0,
-      'image': 'https://exemplo.com/ps5.jpg',
-      'is_master_product': true,
-      'sku_code': 'PS5-MASTER',
-      'master_slug': 'playstation-5',
-      'tags': 'console,playstation,next-gen',
-      'is_active': true,
-      'is_featured': false
+      'Tipo': 'SKU PC - Resident Evil Village',
+      'name': 'Resident Evil Village - PC Steam',
+      'description': 'Versão para PC via Steam com gráficos otimizados',
+      'price': 199.99,
+      'stock': 25,
+      'image': 'https://cdn.akamai.steamstatic.com/steam/apps/1196590/header.jpg',
+      'additional_images': 'https://cdn.akamai.steamstatic.com/steam/apps/1196590/ss_1.jpg,https://cdn.akamai.steamstatic.com/steam/apps/1196590/ss_2.jpg',
+      'is_master_product': false,
+      'parent_product_id': 'RE-VILLAGE-MASTER',
+      'sku_code': 'RE-VILLAGE-PC',
+      'variant_attributes': '{"platform":"pc","store":"steam","dlss":true,"raytracing":true}',
+      'master_slug': 'resident-evil-village',
+      'pro_price': 179.99,
+      'list_price': 249.99,
+      'technical_specs': '{"min_requirements":"GTX 1050 Ti","recommended":"RTX 2070","dlss":"Suportado","raytracing":"Suportado"}',
+      'tags': 'resident evil,pc,steam,dlss,raytracing',
+      'is_active': true
     },
     {
-      'Tipo': 'Variação do Produto',
-      'name': 'PlayStation 5 Digital Edition',
-      'description': 'Versão digital do PlayStation 5',
-      'price': 3999.99,
-      'stock': 10,
-      'image': 'https://exemplo.com/ps5-digital.jpg',
+      'Tipo': 'SKU Xbox - Resident Evil Village',
+      'name': 'Resident Evil Village - Xbox Series X|S',
+      'description': 'Versão otimizada para Xbox Series X|S',
+      'price': 229.99,
+      'stock': 15,
+      'image': 'https://assets.xboxservices.com/assets/fb/d2/fbd2cb43-5c69-4d3f-9e1b-4caa5fa04e1a.jpg',
+      'additional_images': 'https://assets.xboxservices.com/assets/5e/7f/5e7f9c4f-5c69-4d3f-9e1b-4caa5fa04e1b.jpg',
       'is_master_product': false,
-      'parent_product_id': 'PS5-MASTER',
-      'sku_code': 'PS5-DIGITAL',
-      'variant_attributes': '{"type":"digital","color":"white"}',
-      'master_slug': 'playstation-5',
-      'tags': 'console,playstation,digital',
+      'parent_product_id': 'RE-VILLAGE-MASTER',
+      'sku_code': 'RE-VILLAGE-XBOX',
+      'variant_attributes': '{"platform":"xbox","generation":"series","smart_delivery":true}',
+      'master_slug': 'resident-evil-village',
+      'pro_price': 199.99,
+      'list_price': 269.99,
+      'technical_specs': '{"resolution":"4K","fps":"60 FPS","hdr":"Suportado","smart_delivery":"Sim"}',
+      'tags': 'resident evil,xbox,series x,4k,smart delivery',
+      'is_active': true
+    },
+    {
+      'Tipo': 'SKU PlayStation - Resident Evil Village',
+      'name': 'Resident Evil Village - PlayStation 5',
+      'description': 'Versão para PlayStation 5 com funcionalidades DualSense',
+      'price': 239.99,
+      'stock': 20,
+      'image': 'https://image.api.playstation.com/vulcan/ap/rnd/202101/0812/FkzwjnJknkrFlozkTdeQBMub.png',
+      'additional_images': 'https://image.api.playstation.com/vulcan/ap/rnd/202101/0812/vmKAKGTDz0RLJYJKk00Yzrmhj.jpg',
+      'is_master_product': false,
+      'parent_product_id': 'RE-VILLAGE-MASTER',
+      'sku_code': 'RE-VILLAGE-PS5',
+      'variant_attributes': '{"platform":"playstation","generation":"ps5","haptic_feedback":true,"adaptive_triggers":true}',
+      'master_slug': 'resident-evil-village',
+      'pro_price': 209.99,
+      'list_price': 279.99,
+      'technical_specs': '{"resolution":"4K","fps":"60 FPS","haptic_feedback":"Sim","adaptive_triggers":"Sim","3d_audio":"Sim"}',
+      'product_features': '{"dualsense_haptic":true,"adaptive_triggers":true,"3d_audio":true,"activity_cards":true}',
+      'tags': 'resident evil,playstation,ps5,dualsense,haptic',
       'is_active': true
     }
   ];
@@ -730,22 +766,29 @@ export async function processProductImport(
     const total = products.length;
     let processed = 0;
     
-    // Mapear parent_product_id (sku_code) para IDs reais
+  // Mapear parent_product_id (sku_code) para IDs reais
     const masterProductMap = new Map<string, string>();
+    
+    console.log(`[IMPORT] Iniciando importação: ${masterProducts.length} mestres, ${variations.length} variações, ${simpleProducts.length} simples`);
     
     // Processar produtos mestres
     for (const product of masterProducts) {
+      console.log(`[IMPORT] Criando produto mestre: ${product.name}`);
       const productData = convertImportedProductToDatabase(product);
       const newProduct = await createProductInDatabase(productData);
       
+      console.log(`[IMPORT] Produto mestre criado: ${newProduct.id} (${newProduct.name})`);
+      
       if (product.sku_code) {
         masterProductMap.set(product.sku_code, newProduct.id);
+        console.log(`[IMPORT] Mapeado SKU ${product.sku_code} -> ${newProduct.id}`);
       }
       
       // Processar tags
       if (product.tags) {
         const tagNames = parseArrayField(product.tags);
         await createProductTags(newProduct.id, tagNames);
+        console.log(`[IMPORT] Tags adicionadas: ${tagNames.join(', ')}`);
       }
       
       created++;
@@ -771,19 +814,26 @@ export async function processProductImport(
     
     // Processar variações
     for (const product of variations) {
+      console.log(`[IMPORT] Criando variação: ${product.name} (parent: ${product.parent_product_id})`);
       const productData = convertImportedProductToDatabase(product);
       
       // Mapear parent_product_id
       if (product.parent_product_id && masterProductMap.has(product.parent_product_id)) {
-        productData.parent_product_id = masterProductMap.get(product.parent_product_id);
+        const realParentId = masterProductMap.get(product.parent_product_id);
+        productData.parent_product_id = realParentId;
+        console.log(`[IMPORT] Mapeando parent ${product.parent_product_id} -> ${realParentId}`);
+      } else {
+        console.warn(`[IMPORT] Parent product não encontrado: ${product.parent_product_id}`);
       }
       
       const newProduct = await createProductInDatabase(productData);
+      console.log(`[IMPORT] Variação criada: ${newProduct.id} (${newProduct.name})`);
       
       // Processar tags
       if (product.tags) {
         const tagNames = parseArrayField(product.tags);
         await createProductTags(newProduct.id, tagNames);
+        console.log(`[IMPORT] Tags da variação adicionadas: ${tagNames.join(', ')}`);
       }
       
       created++;
@@ -807,7 +857,42 @@ export async function processProductImport(
   }
 }
 
+function getAvailableVariants(product: ImportedProduct): any {
+  // Se já tem available_variants definido, usar ele
+  const existingVariants = parseJsonField(product.variant_attributes);
+  if (existingVariants && typeof existingVariants === 'object') {
+    return existingVariants;
+  }
+  
+  // Caso contrário, criar com plataformas padrão
+  return {
+    platforms: ['pc', 'xbox', 'playstation', 'nintendo'],
+    editions: ['standard', 'deluxe', 'collector'],
+    regions: ['global', 'br', 'us', 'eu']
+  };
+}
+
+async function testImageUrl(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok && response.headers.get('content-type')?.startsWith('image/');
+  } catch {
+    return false;
+  }
+}
+
 function convertImportedProductToDatabase(product: ImportedProduct): any {
+  const isMasterProduct = parseBooleanField(product.is_master_product);
+  const hasParentProduct = Boolean(product.parent_product_id);
+  
+  // Determinar product_type corretamente
+  let productType: 'simple' | 'master' | 'sku' = 'simple';
+  if (isMasterProduct) {
+    productType = 'master';
+  } else if (hasParentProduct) {
+    productType = 'sku';
+  }
+
   return {
     name: product.name,
     description: product.description || '',
@@ -816,14 +901,16 @@ function convertImportedProductToDatabase(product: ImportedProduct): any {
     image: product.image || '',
     additional_images: parseArrayField(product.additional_images),
     
-    // Sistema SKU
-    is_master_product: parseBooleanField(product.is_master_product),
+    // Sistema SKU - CORRIGIDO
+    product_type: productType,
+    is_master_product: isMasterProduct,
     parent_product_id: product.parent_product_id || null,
     sku_code: product.sku_code || null,
     variant_attributes: parseJsonField(product.variant_attributes) || {},
     master_slug: product.master_slug || null,
     inherit_from_master: parseJsonField(product.inherit_from_master) || {},
     sort_order: Number(product.sort_order) || 0,
+    available_variants: isMasterProduct ? getAvailableVariants(product) : {},
     
     // Preços
     pro_price: product.pro_price ? Number(product.pro_price) : null,
@@ -903,7 +990,6 @@ function convertImportedProductToDatabase(product: ImportedProduct): any {
     is_featured: parseBooleanField(product.is_featured),
     
     // Campos padrão
-    product_type: 'simple',
     sizes: [],
     colors: []
   };
