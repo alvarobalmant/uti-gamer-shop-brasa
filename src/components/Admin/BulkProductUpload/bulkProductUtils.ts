@@ -999,7 +999,7 @@ function convertImportedProductToDatabase(product: ImportedProduct): any {
     product_features: parseJsonField(product.product_features) || {},
     
     // Reviews e FAQ - CORRIGIDO
-    product_faqs: parseJsonField(product.product_faqs) || [],
+    product_faqs: parseJsonField(product.product_faqs) || null,
     product_highlights: parseJsonField(product.product_highlights) || [],
     reviews_config: parseJsonField(product.reviews_config) || {
       enabled: true,
