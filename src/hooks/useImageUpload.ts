@@ -97,12 +97,12 @@ export const useImageUpload = () => {
     }
   };
 
-  // Nova função para baixar imagem de URL e fazer upload
+  // Nova função para baixar imagem de URL via proxy
   const downloadAndUploadFromUrl = async (imageUrl: string, folder: string = 'products'): Promise<string | null> => {
     setUploading(true);
     
     try {
-      console.log('Baixando imagem da URL:', imageUrl);
+      console.log('Processando URL da imagem via proxy:', imageUrl);
       
       // Converter URLs do Imgur para formato direto da imagem
       let directImageUrl = imageUrl;
@@ -114,76 +114,47 @@ export const useImageUpload = () => {
         }
       }
       
-      // Baixar a imagem da URL com configurações adequadas
-      const response = await fetch(directImageUrl, {
-        method: 'GET',
+      // Usar proxy via edge function para contornar CORS
+      const proxyUrl = `https://pmxnfpnnvtuuiedoxuxc.supabase.co/functions/v1/image-proxy`;
+      
+      const response = await fetch(proxyUrl, {
+        method: 'POST',
         headers: {
-          'Accept': 'image/*,*/*',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBteG5mcG5udnR1dWllZG94dXhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwOTY3MTYsImV4cCI6MjA2MzY3MjcxNn0.mc3shTLqOg_Iifd1TVXg49SdVITdmsTENw5e3_TJmi4`
         },
-        mode: 'cors'
+        body: JSON.stringify({ 
+          imageUrl: directImageUrl,
+          folder: folder
+        })
       });
-      
+
       if (!response.ok) {
-        throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Erro no proxy: ${response.status} - ${errorText}`);
       }
 
-      const blob = await response.blob();
-      console.log('Blob recebido:', { type: blob.type, size: blob.size });
+      const result = await response.json();
       
-      // Verificar se é uma imagem ou se o conteúdo parece ser uma imagem
-      const isValidImage = blob.type.startsWith('image/') || 
-                          imageUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
+      if (!result.success) {
+        throw new Error(result.message || 'Erro desconhecido no proxy');
+      }
+
+      console.log('Imagem processada via proxy:', result);
       
-      if (!isValidImage) {
-        throw new Error(`Tipo de conteúdo inválido: ${blob.type}. Esperado: image/*`);
-      }
+      toast({
+        title: "Imagem baixada e salva!",
+        description: `Imagem convertida (${(result.size / 1024).toFixed(1)}KB) e salva com sucesso.`,
+      });
 
-      // Se não tem tipo MIME de imagem, tentar inferir pela extensão
-      let fileType = blob.type;
-      if (!fileType.startsWith('image/')) {
-        const extension = imageUrl.split('.').pop()?.toLowerCase();
-        switch (extension) {
-          case 'jpg':
-          case 'jpeg':
-            fileType = 'image/jpeg';
-            break;
-          case 'png':
-            fileType = 'image/png';
-            break;
-          case 'gif':
-            fileType = 'image/gif';
-            break;
-          case 'webp':
-            fileType = 'image/webp';
-            break;
-          default:
-            fileType = 'image/jpeg'; // fallback
-        }
-      }
-
-      // Converter blob para File
-      const fileName = `downloaded-${Date.now()}.${fileType.split('/')[1]}`;
-      const file = new File([blob], fileName, { type: fileType });
-
-      console.log('Arquivo criado:', { name: file.name, type: file.type, size: file.size });
-
-      // Fazer upload usando a função existente
-      const uploadedUrl = await uploadImage(file, folder);
+      return result.url;
       
-      if (uploadedUrl) {
-        toast({
-          title: "Imagem baixada e salva!",
-          description: "A imagem foi baixada da URL e convertida para WebP.",
-        });
-      }
-
-      return uploadedUrl;
     } catch (error: any) {
-      console.error('Erro detalhado ao processar URL:', error);
+      console.error('Erro ao processar URL via proxy:', error);
+      
       toast({
         title: "Erro ao processar imagem",
-        description: `Falha ao baixar imagem: ${error.message}`,
+        description: `Não foi possível processar a imagem: ${error.message}`,
         variant: "destructive",
       });
       return null;
