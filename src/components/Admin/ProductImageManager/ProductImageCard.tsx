@@ -42,6 +42,12 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
   };
 
   const additionalImages = product.additional_images || [];
+  
+  // Função segura para truncar IDs
+  const truncateId = (id: string) => {
+    if (!id || typeof id !== 'string') return 'N/A';
+    return id.length > 8 ? `${id.slice(0, 8)}...` : id;
+  };
 
   return (
     <Card className={`transition-all duration-200 ${isSelected ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'}`}>
@@ -49,9 +55,9 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <CardTitle className="text-sm font-medium text-gray-900 truncate">
-              {product.name}
+              {product.name || 'Produto sem nome'}
             </CardTitle>
-            <p className="text-xs text-gray-500 mt-1">ID: {product.id.slice(0, 8)}...</p>
+            <p className="text-xs text-gray-500 mt-1">ID: {truncateId(product.id)}</p>
           </div>
           <Checkbox
             checked={isSelected}
@@ -73,7 +79,7 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
             onDrop={(imageUrl) => onImageDrop(product.id, imageUrl, true)}
             onFileUpload={(files) => onFileUpload(files, product.id, true)}
             currentImage={product.image}
-            onRemove={() => onRemoveImage(product.id, product.image || '', true)}
+            onRemove={product.image ? () => onRemoveImage(product.id, product.image || '', true) : undefined}
             placeholder="Arraste a imagem principal aqui"
             uploading={uploading}
           />
@@ -130,7 +136,7 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
           {/* Grid de imagens secundárias */}
           <div className="grid grid-cols-2 gap-2">
             {additionalImages.map((imageUrl, index) => (
-              <div key={index} className="relative group">
+              <div key={`${product.id}-${index}`} className="relative group">
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
                   <img
                     src={imageUrl}
@@ -171,7 +177,9 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
             size="sm"
             onClick={() => {
               const url = prompt('Cole a URL da imagem:');
-              if (url) onUrlAdd(product.id, url, false);
+              if (url && url.trim()) {
+                onUrlAdd(product.id, url.trim(), false);
+              }
             }}
             className="w-full text-xs"
           >
@@ -183,7 +191,7 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
         {/* Estatísticas */}
         <div className="pt-2 border-t border-gray-100">
           <div className="flex justify-between text-xs text-gray-500">
-            <span>R$ {product.price.toFixed(2)}</span>
+            <span>R$ {(product.price || 0).toFixed(2)}</span>
             <span>{product.is_active ? 'Ativo' : 'Inativo'}</span>
           </div>
         </div>

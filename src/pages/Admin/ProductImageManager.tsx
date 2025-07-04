@@ -21,14 +21,19 @@ const ProductImageManager: React.FC = () => {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
 
   const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.id.toLowerCase().includes(searchTerm.toLowerCase())
+    product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleImageDrop = async (productId: string, imageUrl: string, isMainImage: boolean = false) => {
     try {
+      console.log('Atualizando imagem:', { productId, imageUrl, isMainImage });
+      
       const product = products.find(p => p.id === productId);
-      if (!product) return;
+      if (!product) {
+        toast.error('Produto não encontrado');
+        return;
+      }
 
       let updates: any = {};
       
@@ -41,17 +46,24 @@ const ProductImageManager: React.FC = () => {
         }
       }
 
+      console.log('Updates a serem enviados:', updates);
       await updateProduct(productId, updates);
       toast.success(`Imagem ${isMainImage ? 'principal' : 'secundária'} atualizada!`);
     } catch (error) {
+      console.error('Erro ao atualizar imagem:', error);
       toast.error('Erro ao atualizar imagem');
     }
   };
 
   const handleRemoveImage = async (productId: string, imageUrl: string, isMainImage: boolean = false) => {
     try {
+      console.log('Removendo imagem:', { productId, imageUrl, isMainImage });
+      
       const product = products.find(p => p.id === productId);
-      if (!product) return;
+      if (!product) {
+        toast.error('Produto não encontrado');
+        return;
+      }
 
       let updates: any = {};
       
@@ -62,26 +74,37 @@ const ProductImageManager: React.FC = () => {
         updates.additional_images = currentImages.filter(img => img !== imageUrl);
       }
 
+      console.log('Updates de remoção:', updates);
       await updateProduct(productId, updates);
       toast.success('Imagem removida!');
     } catch (error) {
+      console.error('Erro ao remover imagem:', error);
       toast.error('Erro ao remover imagem');
     }
   };
 
   const handleFileUpload = async (files: FileList | null, productId?: string, isMainImage: boolean = false) => {
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0 || !productId) return;
 
-    const file = files[0];
-    const uploadedUrl = await uploadImage(file, 'products');
-    
-    if (uploadedUrl && productId) {
-      await handleImageDrop(productId, uploadedUrl, isMainImage);
+    try {
+      console.log('Fazendo upload de arquivo:', { productId, isMainImage });
+      
+      const file = files[0];
+      const uploadedUrl = await uploadImage(file, 'products');
+      
+      if (uploadedUrl) {
+        await handleImageDrop(productId, uploadedUrl, isMainImage);
+      } else {
+        toast.error('Erro no upload da imagem');
+      }
+    } catch (error) {
+      console.error('Erro no upload:', error);
+      toast.error('Erro no upload da imagem');
     }
   };
 
   const handleUrlAdd = async (productId: string, url: string, isMainImage: boolean = false) => {
-    if (url.trim()) {
+    if (url && url.trim()) {
       await handleImageDrop(productId, url.trim(), isMainImage);
     }
   };
@@ -180,7 +203,7 @@ const ProductImageManager: React.FC = () => {
           ))}
         </div>
 
-        {filteredProducts.length === 0 && (
+        {filteredProducts.length === 0 && !loading && (
           <Card>
             <CardContent className="p-12 text-center">
               <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />

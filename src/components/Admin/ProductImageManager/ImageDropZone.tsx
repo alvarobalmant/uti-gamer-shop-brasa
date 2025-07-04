@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, Image, Trash2, Loader2 } from 'lucide-react';
+import { Upload, Image, Trash2, Loader2, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ImageDropZoneProps {
@@ -136,17 +136,5 @@ const ImageDropZone: React.FC<ImageDropZoneProps> = ({
     </div>
   );
 };
-
-const Plus: React.FC<{ className?: string }> = ({ className }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-  </svg>
-);
 
 export default ImageDropZone;
