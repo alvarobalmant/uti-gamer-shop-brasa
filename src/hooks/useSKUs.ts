@@ -399,15 +399,24 @@ const useSKUs = () => {
           sort_order: row.sort_order || 0
         })) || [];
 
+        // Agrupar SKUs por plataforma para evitar duplicatas
+        const platformsMap = new Map<string, any>();
+        skus.forEach(sku => {
+          const platform = sku.variant_attributes?.platform || '';
+          if (platform && !platformsMap.has(platform)) {
+            platformsMap.set(platform, {
+              platform,
+              sku: sku as any,
+              available: true
+            });
+          }
+        });
+
         return {
           masterProduct: masterProduct as any,
           currentSKU: product as any,
           availableSKUs: skus as any,
-          platforms: skus.map(sku => ({
-            platform: sku.variant_attributes?.platform || '',
-            sku: sku as any,
-            available: true
-          }))
+          platforms: Array.from(platformsMap.values())
         };
       }
 
@@ -434,15 +443,24 @@ const useSKUs = () => {
           sort_order: row.sort_order || 0
         })) || [];
 
+        // Agrupar SKUs por plataforma para evitar duplicatas
+        const platformsMap = new Map<string, any>();
+        skus.forEach(sku => {
+          const platform = sku.variant_attributes?.platform || '';
+          if (platform && !platformsMap.has(platform)) {
+            platformsMap.set(platform, {
+              platform,
+              sku: sku as any,
+              available: true
+            });
+          }
+        });
+
         return {
           masterProduct: product as any,
           currentSKU: undefined,
           availableSKUs: skus as any,
-          platforms: skus.map(sku => ({
-            platform: sku.variant_attributes?.platform || '',
-            sku: sku as any,
-            available: true
-          }))
+          platforms: Array.from(platformsMap.values())
         };
       }
 

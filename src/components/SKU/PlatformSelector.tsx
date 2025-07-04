@@ -47,7 +47,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {skuNavigation.platforms.map(({ platform, sku, available }) => {
+        {skuNavigation.platforms.map(({ platform, sku, available }, index) => {
           const platformInfo = platformConfig[platform];
           const isCurrentPlatform = currentPlatform === platform;
           
@@ -55,7 +55,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
 
           return (
             <Button
-              key={platform}
+              key={`${platform}-${sku?.id || index}`}
               variant={isCurrentPlatform ? "default" : "outline"}
               className={cn(
                 "h-auto p-4 flex flex-col items-center gap-2 relative",
