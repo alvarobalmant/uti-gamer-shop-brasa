@@ -114,22 +114,59 @@ export const useImageUpload = () => {
         }
       }
       
-      // Baixar a imagem da URL
-      const response = await fetch(directImageUrl);
+      // Baixar a imagem da URL com configurações adequadas
+      const response = await fetch(directImageUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'image/*,*/*',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        },
+        mode: 'cors'
+      });
+      
       if (!response.ok) {
-        throw new Error(`Erro ao baixar imagem: ${response.status}`);
+        throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
       }
 
       const blob = await response.blob();
+      console.log('Blob recebido:', { type: blob.type, size: blob.size });
       
-      // Verificar se é uma imagem
-      if (!blob.type.startsWith('image/')) {
-        throw new Error('URL não aponta para uma imagem válida');
+      // Verificar se é uma imagem ou se o conteúdo parece ser uma imagem
+      const isValidImage = blob.type.startsWith('image/') || 
+                          imageUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
+      
+      if (!isValidImage) {
+        throw new Error(`Tipo de conteúdo inválido: ${blob.type}. Esperado: image/*`);
+      }
+
+      // Se não tem tipo MIME de imagem, tentar inferir pela extensão
+      let fileType = blob.type;
+      if (!fileType.startsWith('image/')) {
+        const extension = imageUrl.split('.').pop()?.toLowerCase();
+        switch (extension) {
+          case 'jpg':
+          case 'jpeg':
+            fileType = 'image/jpeg';
+            break;
+          case 'png':
+            fileType = 'image/png';
+            break;
+          case 'gif':
+            fileType = 'image/gif';
+            break;
+          case 'webp':
+            fileType = 'image/webp';
+            break;
+          default:
+            fileType = 'image/jpeg'; // fallback
+        }
       }
 
       // Converter blob para File
-      const fileName = `downloaded-${Date.now()}.${blob.type.split('/')[1]}`;
-      const file = new File([blob], fileName, { type: blob.type });
+      const fileName = `downloaded-${Date.now()}.${fileType.split('/')[1]}`;
+      const file = new File([blob], fileName, { type: fileType });
+
+      console.log('Arquivo criado:', { name: file.name, type: file.type, size: file.size });
 
       // Fazer upload usando a função existente
       const uploadedUrl = await uploadImage(file, folder);
@@ -143,10 +180,10 @@ export const useImageUpload = () => {
 
       return uploadedUrl;
     } catch (error: any) {
-      console.error('Erro ao baixar e fazer upload da imagem:', error);
+      console.error('Erro detalhado ao processar URL:', error);
       toast({
         title: "Erro ao processar imagem",
-        description: error.message,
+        description: `Falha ao baixar imagem: ${error.message}`,
         variant: "destructive",
       });
       return null;
