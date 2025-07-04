@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Settings, Box, LogOut, Package, Image } from 'lucide-react'; // Example icons
+import { LayoutDashboard, Settings, Box, LogOut, Package, Image, ImagePlus } from 'lucide-react'; // Example icons
 import { useAuth } from '@/hooks/useAuth';
 
 const AdminLayout: React.FC = () => {
@@ -11,7 +12,7 @@ const AdminLayout: React.FC = () => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
     { id: 'products', label: 'Produtos', icon: Package, path: '/admin/products' },
-    { id: 'images', label: 'Gerenciar Imagens', icon: Image, path: '/admin/images' },
+    { id: 'images', label: 'Upload Fácil', icon: ImagePlus, path: '/admin/images' },
     { id: 'banners', label: 'Banners', icon: Image, path: '/admin/banners' },
     // Add more admin links here (e.g., Products, Orders, Settings)
     // { href: '/admin/settings', label: 'Configurações', icon: Settings },

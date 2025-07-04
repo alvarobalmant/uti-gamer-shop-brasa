@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductManager from './ProductManagerNew';
@@ -15,7 +16,8 @@ import { NavigationManager } from './NavigationManager';
 import MasterProductManager from './MasterProductManager';
 import PlatformManager from './PlatformManager';
 import BulkProductUpload from './BulkProductUpload';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload } from 'lucide-react';
+import ProductImageManager from '@/pages/Admin/ProductImageManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -31,6 +33,7 @@ export const AdminPanel = () => {
     { id: 'xbox4_customization', label: 'Xbox 4 - Personalização', icon: Gamepad2 },
     { id: 'products', label: 'Produtos', icon: Package },
     { id: 'bulk_upload', label: 'Importação em Massa', icon: Upload },
+    { id: 'image_upload', label: 'Upload Fácil', icon: ImagePlus },
     { id: 'skus', label: 'Sistema de SKUs', icon: Layers },
     { id: 'platforms', label: 'Plataformas', icon: Settings },
     { id: 'banners', label: 'Banners', icon: Image },
@@ -167,6 +170,10 @@ export const AdminPanel = () => {
 
               <TabsContent value="bulk_upload" className="mt-0">
                 <BulkProductUpload />
+              </TabsContent>
+
+              <TabsContent value="image_upload" className="mt-0">
+                <ProductImageManager />
               </TabsContent>
 
               <TabsContent value="skus" className="mt-0">
