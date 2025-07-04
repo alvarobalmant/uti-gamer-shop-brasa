@@ -26,6 +26,7 @@ export const useProductImageManager = () => {
           .single();
 
         if (fetchError) {
+          console.error('Erro ao buscar produto:', fetchError);
           throw new Error(`Erro ao buscar produto: ${fetchError.message}`);
         }
 
@@ -49,6 +50,7 @@ export const useProductImageManager = () => {
         .single();
 
       if (error) {
+        console.error('Erro do Supabase:', error);
         throw new Error(`Erro ao atualizar produto: ${error.message}`);
       }
 
@@ -57,6 +59,7 @@ export const useProductImageManager = () => {
 
     } catch (error) {
       console.error('Erro ao atualizar imagem do produto:', error);
+      // Não usar toast aqui, deixar para o componente pai
       throw error;
     } finally {
       setLoading(false);
@@ -82,6 +85,7 @@ export const useProductImageManager = () => {
           .single();
 
         if (fetchError) {
+          console.error('Erro ao buscar produto:', fetchError);
           throw new Error(`Erro ao buscar produto: ${fetchError.message}`);
         }
 
@@ -102,6 +106,7 @@ export const useProductImageManager = () => {
         .single();
 
       if (error) {
+        console.error('Erro do Supabase:', error);
         throw new Error(`Erro ao remover imagem: ${error.message}`);
       }
 
@@ -110,6 +115,7 @@ export const useProductImageManager = () => {
 
     } catch (error) {
       console.error('Erro ao remover imagem do produto:', error);
+      // Não usar toast aqui, deixar para o componente pai
       throw error;
     } finally {
       setLoading(false);
