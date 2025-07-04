@@ -150,7 +150,9 @@ const BulkProductUpload: React.FC = () => {
   };
 
   const handleImportProducts = async () => {
-    if (validationErrors.length > 0) {
+    const criticalErrors = validationErrors.filter(e => e.severity === 'error');
+    
+    if (criticalErrors.length > 0) {
       toast({
         title: "Corrija os erros antes de importar",
         description: "Existem erros de validação que precisam ser corrigidos.",
