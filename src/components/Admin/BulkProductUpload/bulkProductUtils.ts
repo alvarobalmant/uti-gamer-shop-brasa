@@ -524,12 +524,32 @@ export function validateProductData(products: ImportedProduct[]): ValidationErro
       });
     }
     
-    if (!product.price || isNaN(Number(product.price)) || Number(product.price) <= 0) {
+    // Validação de preço corrigida para sistema SKU
+    const isMasterProduct = parseBooleanField(product.is_master_product);
+    const price = Number(product.price);
+    
+    if (isNaN(price)) {
       errors.push({
         row,
         field: 'price',
-        message: 'Preço deve ser um número maior que zero',
+        message: 'Preço deve ser um número válido',
         severity: 'error'
+      });
+    } else if (!isMasterProduct && price <= 0) {
+      // SKUs devem ter preço > 0
+      errors.push({
+        row,
+        field: 'price',
+        message: 'SKU deve ter preço maior que zero',
+        severity: 'error'
+      });
+    } else if (isMasterProduct && price !== 0) {
+      // Produtos mestre deveriam ter preço = 0 (aviso)
+      errors.push({
+        row,
+        field: 'price',
+        message: 'Produto mestre deveria ter preço = 0',
+        severity: 'warning'
       });
     }
     
