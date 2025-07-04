@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useProductsEnhanced } from '@/hooks/useProductsEnhanced';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useProductImageManager } from '@/hooks/useProductImageManager';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,8 +14,9 @@ import ImageDropZone from '@/components/Admin/ProductImageManager/ImageDropZone'
 import BulkImageUpload from '@/components/Admin/ProductImageManager/BulkImageUpload';
 
 const ProductImageManager: React.FC = () => {
-  const { products, loading, updateProduct } = useProductsEnhanced();
+  const { products, loading } = useProductsEnhanced(); // Apenas para ler produtos
   const { uploadImage, uploading } = useImageUpload();
+  const { updateProductImage, removeProductImage, loading: imageLoading } = useProductImageManager(); // Hook específico para imagens
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
@@ -53,46 +55,17 @@ const ProductImageManager: React.FC = () => {
     addProcessingProduct(productId);
 
     try {
-      console.log('Atualizando imagem:', { productId, imageUrl, isMainImage });
+      console.log('Adicionando imagem (apenas imagens):', { productId, imageUrl, isMainImage });
       
-      const product = products.find(p => p.id === productId);
-      if (!product) {
-        toast.error('Produto não encontrado');
-        return;
-      }
-
-      // Preparar os updates de forma segura
-      const updates: any = {};
+      await updateProductImage(productId, imageUrl.trim(), isMainImage);
+      toast.success(`Imagem ${isMainImage ? 'principal' : 'secundária'} adicionada com sucesso!`);
       
-      if (isMainImage) {
-        // Atualizar apenas a imagem principal
-        updates.image = imageUrl.trim();
-        console.log('Atualizando imagem principal para:', updates.image);
-      } else {
-        // Atualizar imagens secundárias
-        const currentImages = Array.isArray(product.additional_images) ? product.additional_images : [];
-        if (!currentImages.includes(imageUrl.trim())) {
-          updates.additional_images = [...currentImages, imageUrl.trim()];
-          console.log('Adicionando imagem secundária. Total:', updates.additional_images.length);
-        } else {
-          toast.info('Esta imagem já existe nas imagens secundárias');
-          return;
-        }
-      }
-
-      console.log('Updates que serão enviados:', updates);
-      
-      const result = await updateProduct(productId, updates);
-      
-      if (result) {
-        toast.success(`Imagem ${isMainImage ? 'principal' : 'secundária'} adicionada com sucesso!`);
-      } else {
-        throw new Error('Falha ao atualizar produto');
-      }
+      // Forçar reload da página para atualizar a lista de produtos
+      window.location.reload();
       
     } catch (error) {
-      console.error('Erro ao atualizar imagem:', error);
-      toast.error('Erro ao atualizar imagem. Tente novamente.');
+      console.error('Erro ao adicionar imagem:', error);
+      toast.error('Erro ao adicionar imagem. Tente novamente.');
     } finally {
       removeProcessingProduct(productId);
     }
@@ -107,38 +80,13 @@ const ProductImageManager: React.FC = () => {
     addProcessingProduct(productId);
 
     try {
-      console.log('Removendo imagem:', { productId, imageUrl, isMainImage });
+      console.log('Removendo imagem (apenas imagens):', { productId, imageUrl, isMainImage });
       
-      const product = products.find(p => p.id === productId);
-      if (!product) {
-        toast.error('Produto não encontrado');
-        return;
-      }
-
-      // Preparar updates de forma muito específica
-      const updates: any = {};
+      await removeProductImage(productId, imageUrl, isMainImage);
+      toast.success('Imagem removida com sucesso!');
       
-      if (isMainImage) {
-        // Remover apenas a imagem principal, definindo como null
-        updates.image = null;
-        console.log('Removendo imagem principal');
-      } else {
-        // Remover das imagens secundárias
-        const currentImages = Array.isArray(product.additional_images) ? product.additional_images : [];
-        const updatedImages = currentImages.filter(img => img !== imageUrl);
-        updates.additional_images = updatedImages;
-        console.log('Removendo imagem secundária. Restam:', updatedImages.length);
-      }
-
-      console.log('Updates de remoção que serão enviados:', updates);
-      
-      const result = await updateProduct(productId, updates);
-      
-      if (result) {
-        toast.success('Imagem removida com sucesso!');
-      } else {
-        throw new Error('Falha ao remover imagem');
-      }
+      // Forçar reload da página para atualizar a lista de produtos
+      window.location.reload();
       
     } catch (error) {
       console.error('Erro ao remover imagem:', error);
@@ -247,7 +195,7 @@ const ProductImageManager: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Imagens</h1>
             <p className="text-gray-600 mt-1">
-              Gerencie as imagens dos produtos de forma fácil e segura
+              Gerencie apenas as imagens dos produtos - outros dados não serão alterados
             </p>
           </div>
           
@@ -255,7 +203,7 @@ const ProductImageManager: React.FC = () => {
             <Button 
               onClick={() => setShowBulkUpload(!showBulkUpload)}
               variant="outline"
-              disabled={uploading}
+              disabled={uploading || imageLoading}
             >
               <Upload className="w-4 h-4 mr-2" />
               Upload em Lote
@@ -294,13 +242,13 @@ const ProductImageManager: React.FC = () => {
         </Card>
 
         {/* Status Info */}
-        {processingProducts.size > 0 && (
+        {(processingProducts.size > 0 || imageLoading) && (
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 text-blue-700">
                 <div className="w-4 h-4 border-2 border-blue-700 border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm font-medium">
-                  Processando {processingProducts.size} produto(s)...
+                  Processando imagens... (Apenas imagens serão alteradas)
                 </span>
               </div>
             </CardContent>
@@ -330,7 +278,7 @@ const ProductImageManager: React.FC = () => {
                 onUrlAdd={handleUrlAdd}
                 isSelected={selectedProducts.includes(product.id)}
                 onToggleSelection={() => toggleProductSelection(product.id)}
-                uploading={uploading || processingProducts.has(product.id)}
+                uploading={uploading || processingProducts.has(product.id) || imageLoading}
               />
             ))}
           </div>
