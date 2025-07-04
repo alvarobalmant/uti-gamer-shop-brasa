@@ -97,5 +97,89 @@ export const useImageUpload = () => {
     }
   };
 
-  return { uploadImage, uploading };
+  // Nova função para baixar imagem de URL e fazer upload
+  const downloadAndUploadFromUrl = async (imageUrl: string, folder: string = 'products'): Promise<string | null> => {
+    setUploading(true);
+    
+    try {
+      console.log('Baixando imagem da URL:', imageUrl);
+      
+      // Baixar a imagem da URL
+      const response = await fetch(imageUrl);
+      if (!response.ok) {
+        throw new Error(`Erro ao baixar imagem: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      
+      // Verificar se é uma imagem
+      if (!blob.type.startsWith('image/')) {
+        throw new Error('URL não aponta para uma imagem válida');
+      }
+
+      // Converter blob para File
+      const fileName = `downloaded-${Date.now()}.${blob.type.split('/')[1]}`;
+      const file = new File([blob], fileName, { type: blob.type });
+
+      // Fazer upload usando a função existente
+      const uploadedUrl = await uploadImage(file, folder);
+      
+      if (uploadedUrl) {
+        toast({
+          title: "Imagem baixada e salva!",
+          description: "A imagem foi baixada da URL e convertida para WebP.",
+        });
+      }
+
+      return uploadedUrl;
+    } catch (error: any) {
+      console.error('Erro ao baixar e fazer upload da imagem:', error);
+      toast({
+        title: "Erro ao processar imagem",
+        description: error.message,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Nova função para deletar imagem do storage
+  const deleteImage = async (imageUrl: string): Promise<boolean> => {
+    try {
+      // Verificar se é uma URL do nosso storage
+      if (!imageUrl.includes('supabase') || !imageUrl.includes('site-images')) {
+        console.log('URL não é do storage interno, não precisa deletar:', imageUrl);
+        return true;
+      }
+
+      // Extrair o caminho do arquivo da URL
+      const urlParts = imageUrl.split('/storage/v1/object/public/site-images/');
+      if (urlParts.length !== 2) {
+        console.warn('Não foi possível extrair caminho do arquivo da URL:', imageUrl);
+        return false;
+      }
+
+      const filePath = urlParts[1];
+      console.log('Deletando arquivo do storage:', filePath);
+
+      const { error } = await supabase.storage
+        .from('site-images')
+        .remove([filePath]);
+
+      if (error) {
+        console.error('Erro ao deletar arquivo do storage:', error);
+        return false;
+      }
+
+      console.log('Arquivo deletado com sucesso:', filePath);
+      return true;
+    } catch (error) {
+      console.error('Erro ao deletar imagem:', error);
+      return false;
+    }
+  };
+
+  return { uploadImage, downloadAndUploadFromUrl, deleteImage, uploading };
 };

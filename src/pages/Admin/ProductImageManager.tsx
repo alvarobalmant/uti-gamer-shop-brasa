@@ -15,7 +15,7 @@ import BulkImageUpload from '@/components/Admin/ProductImageManager/BulkImageUpl
 
 const ProductImageManager: React.FC = () => {
   const { products, loading, refreshProducts } = useProductsEnhanced();
-  const { uploadImage, uploading } = useImageUpload();
+  const { uploadImage, downloadAndUploadFromUrl, deleteImage, uploading } = useImageUpload();
   const { updateProductImage, removeProductImage, loading: imageLoading } = useProductImageManager();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -155,7 +155,26 @@ const ProductImageManager: React.FC = () => {
       return;
     }
 
-    await handleImageDrop(productId, url.trim(), isMainImage);
+    addProcessingProduct(productId);
+
+    try {
+      console.log('Baixando e convertendo imagem da URL:', url);
+      
+      // Baixar, converter e fazer upload da imagem
+      const uploadedUrl = await downloadAndUploadFromUrl(url.trim(), 'products');
+      
+      if (uploadedUrl) {
+        // Usar a URL do nosso storage em vez da URL original
+        await handleImageDrop(productId, uploadedUrl, isMainImage);
+      } else {
+        toast.error('Falha ao processar imagem da URL');
+      }
+    } catch (error) {
+      console.error('Erro ao processar URL:', error);
+      toast.error('Erro ao processar imagem da URL');
+    } finally {
+      removeProcessingProduct(productId);
+    }
   };
 
   // Salvar todas as mudanças no servidor
@@ -188,6 +207,9 @@ const ProductImageManager: React.FC = () => {
             if (change.type === 'add') {
               await updateProductImage(productId, change.imageUrl, change.isMainImage);
             } else if (change.type === 'remove') {
+              // Deletar imagem do storage se for nossa
+              await deleteImage(change.imageUrl);
+              // Remover do produto
               await removeProductImage(productId, change.imageUrl, change.isMainImage);
             }
           }
@@ -257,7 +279,7 @@ const ProductImageManager: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Imagens</h1>
             <p className="text-gray-600 mt-1">
-              Faça mudanças localmente e salve todas de uma vez - mais rápido e eficiente
+              URLs são baixadas e convertidas para WebP automaticamente
             </p>
           </div>
           
