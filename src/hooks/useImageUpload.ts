@@ -104,8 +104,18 @@ export const useImageUpload = () => {
     try {
       console.log('Baixando imagem da URL:', imageUrl);
       
+      // Converter URLs do Imgur para formato direto da imagem
+      let directImageUrl = imageUrl;
+      if (imageUrl.includes('imgur.com/') && !imageUrl.includes('i.imgur.com')) {
+        const imgurId = imageUrl.split('/').pop()?.split('.')[0];
+        if (imgurId) {
+          directImageUrl = `https://i.imgur.com/${imgurId}.jpg`;
+          console.log('URL do Imgur convertida para:', directImageUrl);
+        }
+      }
+      
       // Baixar a imagem da URL
-      const response = await fetch(imageUrl);
+      const response = await fetch(directImageUrl);
       if (!response.ok) {
         throw new Error(`Erro ao baixar imagem: ${response.status}`);
       }
