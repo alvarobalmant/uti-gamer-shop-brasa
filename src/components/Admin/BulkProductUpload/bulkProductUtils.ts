@@ -992,12 +992,12 @@ function convertImportedProductToDatabase(product: ImportedProduct): any {
       marketing: ''
     },
     
-    // Especificações
+    // Especificações - CORRIGIDO
     specifications: parseJsonField(product.specifications) || [],
     technical_specs: parseJsonField(product.technical_specs) || {},
     product_features: parseJsonField(product.product_features) || {},
     
-    // Reviews e FAQ
+    // Reviews e FAQ - CORRIGIDO
     product_faqs: parseJsonField(product.product_faqs) || [],
     product_highlights: parseJsonField(product.product_highlights) || [],
     reviews_config: parseJsonField(product.reviews_config) || {

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Product, SKUNavigation } from '@/hooks/useProducts/types';
 import { fetchSingleProductFromDatabase } from '@/hooks/useProducts/productApi';
+import { inheritFromMaster } from '@/hooks/useInheritanceManager';
 import { supabase } from '@/integrations/supabase/client';
 
 // Cache local para produtos
@@ -129,9 +130,20 @@ export const useProductDetail = (productId: string | undefined) => {
 
         setProduct(productData);
 
-        // Carregar navegação de SKU em paralelo
-        const navigation = await fetchSKUNavigationOptimized(productData);
-        setSKUNavigation(navigation);
+        // Aplicar herança de dados se for um SKU
+        if (productData.product_type === 'sku' && productData.parent_product_id) {
+          console.log('[useProductDetail] Aplicando herança de dados do produto mestre...');
+          const enhancedProduct = await inheritFromMaster(productData);
+          setProduct(enhancedProduct);
+          
+          // Carregar navegação de SKU com produto aprimorado
+          const navigation = await fetchSKUNavigationOptimized(enhancedProduct);
+          setSKUNavigation(navigation);
+        } else {
+          // Carregar navegação de SKU em paralelo
+          const navigation = await fetchSKUNavigationOptimized(productData);
+          setSKUNavigation(navigation);
+        }
 
       } catch (err: any) {
         console.error('[useProductDetail] Error fetching product:', err);
