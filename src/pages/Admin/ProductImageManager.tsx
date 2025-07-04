@@ -1,14 +1,14 @@
-
 import React, { useState } from 'react';
 import { useProductsEnhanced } from '@/hooks/useProductsEnhanced';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useProductImageManager } from '@/hooks/useProductImageManager';
+import { useLocalImageChanges } from '@/hooks/useLocalImageChanges';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Upload, Link, Trash2, Star, Plus, AlertTriangle } from 'lucide-react';
+import { Search, Upload, Link, Trash2, Star, Plus, AlertTriangle, Save, RotateCcw } from 'lucide-react';
 import ProductImageCard from '@/components/Admin/ProductImageManager/ProductImageCard';
 import ImageDropZone from '@/components/Admin/ProductImageManager/ImageDropZone';
 import BulkImageUpload from '@/components/Admin/ProductImageManager/BulkImageUpload';
@@ -21,10 +21,22 @@ const ProductImageManager: React.FC = () => {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [processingProducts, setProcessingProducts] = useState<Set<string>>(new Set());
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Hook para gerenciar mudanças locais
+  const {
+    productsWithChanges,
+    pendingChanges,
+    addLocalChange,
+    removeLocalChange,
+    clearAllChanges,
+    hasChanges,
+    changedProductsCount
+  } = useLocalImageChanges(products);
 
   console.log('ProductImageManager: Renderizando com', products.length, 'produtos');
 
-  const filteredProducts = products.filter(product => 
+  const filteredProducts = productsWithChanges.filter(product => 
     product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -41,6 +53,7 @@ const ProductImageManager: React.FC = () => {
     });
   };
 
+  // Adicionar imagem localmente (não envia para servidor ainda)
   const handleImageDrop = async (productId: string, imageUrl: string, isMainImage: boolean = false) => {
     if (!imageUrl || !imageUrl.trim()) {
       toast.error('URL da imagem é obrigatória');
@@ -52,47 +65,34 @@ const ProductImageManager: React.FC = () => {
       return;
     }
 
-    addProcessingProduct(productId);
-
     try {
-      console.log('Adicionando imagem:', { productId, imageUrl, isMainImage });
+      console.log('Adicionando imagem localmente:', { productId, imageUrl, isMainImage });
       
-      await updateProductImage(productId, imageUrl.trim(), isMainImage);
-      toast.success(`Imagem ${isMainImage ? 'principal' : 'secundária'} adicionada com sucesso!`);
-      
-      // Atualizar dados sem reload da página
-      await refreshProducts();
+      addLocalChange(productId, imageUrl.trim(), isMainImage);
+      toast.success(`Imagem ${isMainImage ? 'principal' : 'secundária'} adicionada localmente!`);
       
     } catch (error) {
       console.error('Erro ao adicionar imagem:', error);
       toast.error('Erro ao adicionar imagem. Tente novamente.');
-    } finally {
-      removeProcessingProduct(productId);
     }
   };
 
+  // Remover imagem localmente (não envia para servidor ainda)
   const handleRemoveImage = async (productId: string, imageUrl: string, isMainImage: boolean = false) => {
     if (!productId || !imageUrl) {
       toast.error('Dados inválidos para remoção');
       return;
     }
 
-    addProcessingProduct(productId);
-
     try {
-      console.log('Removendo imagem:', { productId, imageUrl, isMainImage });
+      console.log('Removendo imagem localmente:', { productId, imageUrl, isMainImage });
       
-      await removeProductImage(productId, imageUrl, isMainImage);
-      toast.success('Imagem removida com sucesso!');
-      
-      // Atualizar dados sem reload da página
-      await refreshProducts();
+      removeLocalChange(productId, imageUrl, isMainImage);
+      toast.success('Imagem removida localmente!');
       
     } catch (error) {
       console.error('Erro ao remover imagem:', error);
       toast.error('Erro ao remover imagem. Tente novamente.');
-    } finally {
-      removeProcessingProduct(productId);
     }
   };
 
@@ -158,6 +158,68 @@ const ProductImageManager: React.FC = () => {
     await handleImageDrop(productId, url.trim(), isMainImage);
   };
 
+  // Salvar todas as mudanças no servidor
+  const handleSaveAllChanges = async () => {
+    if (!hasChanges) return;
+
+    setIsSaving(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      console.log('Salvando mudanças:', pendingChanges);
+
+      // Agrupar mudanças por produto
+      const changesByProduct = pendingChanges.reduce((acc, change) => {
+        if (!acc[change.productId]) {
+          acc[change.productId] = [];
+        }
+        acc[change.productId].push(change);
+        return acc;
+      }, {} as Record<string, typeof pendingChanges>);
+
+      // Processar cada produto
+      for (const [productId, changes] of Object.entries(changesByProduct)) {
+        addProcessingProduct(productId);
+        
+        try {
+          // Processar mudanças em ordem
+          for (const change of changes) {
+            if (change.type === 'add') {
+              await updateProductImage(productId, change.imageUrl, change.isMainImage);
+            } else if (change.type === 'remove') {
+              await removeProductImage(productId, change.imageUrl, change.isMainImage);
+            }
+          }
+          successCount++;
+        } catch (error) {
+          console.error(`Erro ao processar produto ${productId}:`, error);
+          errorCount++;
+        } finally {
+          removeProcessingProduct(productId);
+        }
+      }
+
+      // Atualizar dados do servidor
+      await refreshProducts();
+      
+      // Limpar mudanças locais
+      clearAllChanges();
+
+      if (errorCount === 0) {
+        toast.success(`Todas as ${successCount} alterações foram salvas com sucesso!`);
+      } else {
+        toast.warning(`${successCount} produtos salvos, ${errorCount} com erro. Verifique o console.`);
+      }
+
+    } catch (error) {
+      console.error('Erro ao salvar mudanças:', error);
+      toast.error('Erro ao salvar mudanças. Tente novamente.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const toggleProductSelection = (productId: string) => {
     setSelectedProducts(prev => 
       prev.includes(productId) 
@@ -195,7 +257,7 @@ const ProductImageManager: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Imagens</h1>
             <p className="text-gray-600 mt-1">
-              Gerencie apenas as imagens dos produtos - outros dados não serão alterados
+              Faça mudanças localmente e salve todas de uma vez - mais rápido e eficiente
             </p>
           </div>
           
@@ -203,7 +265,7 @@ const ProductImageManager: React.FC = () => {
             <Button 
               onClick={() => setShowBulkUpload(!showBulkUpload)}
               variant="outline"
-              disabled={uploading || imageLoading}
+              disabled={uploading || imageLoading || isSaving}
             >
               <Upload className="w-4 h-4 mr-2" />
               Upload em Lote
@@ -226,6 +288,58 @@ const ProductImageManager: React.FC = () => {
           </div>
         </div>
 
+        {/* Save Panel */}
+        {hasChanges && (
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                  <div>
+                    <span className="text-blue-800 font-medium">
+                      {changedProductsCount} produto{changedProductsCount !== 1 ? 's' : ''} com alterações ({pendingChanges.length} mudanças)
+                    </span>
+                    <p className="text-blue-600 text-sm">
+                      As alterações estão salvas localmente. Clique em "Salvar Tudo" para enviar ao servidor.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearAllChanges}
+                    disabled={isSaving}
+                    className="text-gray-600 hover:text-gray-800"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-1" />
+                    Desfazer Tudo
+                  </Button>
+                  
+                  <Button
+                    onClick={handleSaveAllChanges}
+                    disabled={isSaving}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Salvar Tudo
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Search */}
         <Card>
           <CardContent className="p-4">
@@ -242,13 +356,13 @@ const ProductImageManager: React.FC = () => {
         </Card>
 
         {/* Status Info */}
-        {(processingProducts.size > 0 || imageLoading) && (
+        {(processingProducts.size > 0 || imageLoading || isSaving) && (
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 text-blue-700">
                 <div className="w-4 h-4 border-2 border-blue-700 border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm font-medium">
-                  Processando imagens... (Apenas imagens serão alteradas)
+                  {isSaving ? 'Salvando alterações...' : 'Processando imagens...'}
                 </span>
               </div>
             </CardContent>
@@ -259,7 +373,7 @@ const ProductImageManager: React.FC = () => {
         {showBulkUpload && (
           <BulkImageUpload
             selectedProducts={selectedProducts}
-            products={products}
+            products={productsWithChanges}
             onClose={() => setShowBulkUpload(false)}
             onImageUpload={handleImageDrop}
           />
@@ -279,6 +393,7 @@ const ProductImageManager: React.FC = () => {
                 isSelected={selectedProducts.includes(product.id)}
                 onToggleSelection={() => toggleProductSelection(product.id)}
                 uploading={uploading || processingProducts.has(product.id) || imageLoading}
+                hasLocalChanges={product.localChanges?.hasChanges || false}
               />
             ))}
           </div>

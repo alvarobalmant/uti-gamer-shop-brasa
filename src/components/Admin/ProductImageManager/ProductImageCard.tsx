@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Star, Trash2, Plus, Upload, Link, Image, AlertCircle, Loader2 } from 'lucide-react';
+import { Star, Trash2, Plus, Upload, Link, Image, AlertCircle, Loader2, Clock } from 'lucide-react';
 import { Product } from '@/hooks/useProducts/types';
+import { ProductWithChanges } from '@/hooks/useLocalImageChanges';
 import ImageDropZone from './ImageDropZone';
 
 interface ProductImageCardProps {
-  product: Product;
+  product: ProductWithChanges;
   onImageDrop: (productId: string, imageUrl: string, isMainImage?: boolean) => void;
   onRemoveImage: (productId: string, imageUrl: string, isMainImage?: boolean) => void;
   onFileUpload: (files: FileList | null, productId?: string, isMainImage?: boolean) => void;
@@ -18,6 +19,7 @@ interface ProductImageCardProps {
   isSelected: boolean;
   onToggleSelection: () => void;
   uploading: boolean;
+  hasLocalChanges?: boolean;
 }
 
 const ProductImageCard: React.FC<ProductImageCardProps> = ({
@@ -28,7 +30,8 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
   onUrlAdd,
   isSelected,
   onToggleSelection,
-  uploading
+  uploading,
+  hasLocalChanges = false
 }) => {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -88,13 +91,25 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
   const hasMainImage = product.image && product.image.trim() !== '';
 
   return (
-    <Card className={`transition-all duration-200 ${isSelected ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'} ${uploading ? 'opacity-75' : ''}`}>
+    <Card className={`transition-all duration-200 ${
+      isSelected ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'
+    } ${uploading ? 'opacity-75' : ''} ${
+      hasLocalChanges ? 'ring-2 ring-amber-400 bg-amber-50' : ''
+    }`}>
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-sm font-medium text-gray-900 truncate">
-              {product.name || 'Produto sem nome'}
-            </CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium text-gray-900 truncate">
+                {product.name || 'Produto sem nome'}
+              </CardTitle>
+              {hasLocalChanges && (
+                <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Pendente
+                </Badge>
+              )}
+            </div>
             <p className="text-xs text-gray-500 mt-1">ID: {truncateId(product.id)}</p>
             {product.price && (
               <p className="text-xs text-green-600 font-medium">
@@ -111,6 +126,14 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
             />
           </div>
         </div>
+        
+        {hasLocalChanges && (
+          <div className="mt-2 p-2 bg-amber-100 rounded-md">
+            <p className="text-xs text-amber-800">
+              ⚡ Este produto possui alterações não salvas
+            </p>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -277,6 +300,11 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
               {additionalImages.length > 0 && (
                 <Badge variant="outline" className="text-xs">
                   +{additionalImages.length}
+                </Badge>
+              )}
+              {hasLocalChanges && (
+                <Badge variant="secondary" className="text-xs bg-amber-200 text-amber-800">
+                  Pendente
                 </Badge>
               )}
             </div>
