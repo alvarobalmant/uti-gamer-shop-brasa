@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Star, Trash2, Plus, Upload, Link, Image } from 'lucide-react';
+import { Star, Trash2, Plus, Upload, Link, Image, AlertCircle, Loader2 } from 'lucide-react';
 import { Product } from '@/hooks/useProducts/types';
 import ImageDropZone from './ImageDropZone';
 
@@ -32,16 +32,52 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
 }) => {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlError, setUrlError] = useState('');
 
-  const handleUrlSubmit = (isMainImage: boolean = false) => {
-    if (newImageUrl.trim()) {
-      onUrlAdd(product.id, newImageUrl, isMainImage);
-      setNewImageUrl('');
-      setShowUrlInput(false);
+  const handleUrlSubmit = async (isMainImage: boolean = false) => {
+    const url = newImageUrl.trim();
+    
+    if (!url) {
+      setUrlError('URL é obrigatória');
+      return;
     }
+
+    // Validar URL
+    try {
+      new URL(url);
+    } catch {
+      setUrlError('URL inválida');
+      return;
+    }
+
+    // Verificar se é uma URL de imagem válida
+    if (!url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) && !url.includes('supabase') && !url.includes('imgur') && !url.includes('cloudinary')) {
+      setUrlError('URL deve apontar para uma imagem válida');
+      return;
+    }
+
+    setUrlError('');
+    await onUrlAdd(product.id, url, isMainImage);
+    setNewImageUrl('');
+    setShowUrlInput(false);
   };
 
-  const additionalImages = product.additional_images || [];
+  const handleUrlChange = (value: string) => {
+    setNewImageUrl(value);
+    if (urlError) setUrlError('');
+  };
+
+  const handleRemoveImageSafe = (imageUrl: string, isMainImage: boolean) => {
+    if (!imageUrl) {
+      console.warn('Tentativa de remover imagem sem URL');
+      return;
+    }
+    
+    console.log('Removendo imagem segura:', { productId: product.id, imageUrl, isMainImage });
+    onRemoveImage(product.id, imageUrl, isMainImage);
+  };
+
+  const additionalImages = Array.isArray(product.additional_images) ? product.additional_images : [];
   
   // Função segura para truncar IDs
   const truncateId = (id: string) => {
@@ -49,8 +85,10 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
     return id.length > 8 ? `${id.slice(0, 8)}...` : id;
   };
 
+  const hasMainImage = product.image && product.image.trim() !== '';
+
   return (
-    <Card className={`transition-all duration-200 ${isSelected ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'}`}>
+    <Card className={`transition-all duration-200 ${isSelected ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'} ${uploading ? 'opacity-75' : ''}`}>
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
@@ -58,12 +96,20 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
               {product.name || 'Produto sem nome'}
             </CardTitle>
             <p className="text-xs text-gray-500 mt-1">ID: {truncateId(product.id)}</p>
+            {product.price && (
+              <p className="text-xs text-green-600 font-medium">
+                R$ {Number(product.price).toFixed(2)}
+              </p>
+            )}
           </div>
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={onToggleSelection}
-            className="ml-2"
-          />
+          <div className="flex items-center gap-2">
+            {uploading && <Loader2 className="w-4 h-4 animate-spin text-blue-500" />}
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={onToggleSelection}
+              disabled={uploading}
+            />
+          </div>
         </div>
       </CardHeader>
 
@@ -73,55 +119,76 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-yellow-500" />
             <span className="text-sm font-medium text-gray-700">Imagem Principal</span>
+            {hasMainImage && (
+              <Badge variant="outline" className="text-xs">
+                Definida
+              </Badge>
+            )}
           </div>
           
           <ImageDropZone
             onDrop={(imageUrl) => onImageDrop(product.id, imageUrl, true)}
             onFileUpload={(files) => onFileUpload(files, product.id, true)}
-            currentImage={product.image}
-            onRemove={product.image ? () => onRemoveImage(product.id, product.image || '', true) : undefined}
+            currentImage={hasMainImage ? product.image : undefined}
+            onRemove={hasMainImage ? () => handleRemoveImageSafe(product.image!, true) : undefined}
             placeholder="Arraste a imagem principal aqui"
             uploading={uploading}
           />
           
-          {!showUrlInput ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowUrlInput(true)}
-              className="w-full"
-            >
-              <Link className="w-4 h-4 mr-2" />
-              Adicionar por URL
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Input
-                placeholder="Cole a URL da imagem..."
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                className="flex-1"
-                onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit(true)}
-              />
+          <div className="space-y-2">
+            {!showUrlInput ? (
               <Button
-                size="sm"
-                onClick={() => handleUrlSubmit(true)}
-                disabled={!newImageUrl.trim()}
-              >
-                OK
-              </Button>
-              <Button
-                size="sm"
                 variant="outline"
-                onClick={() => {
-                  setShowUrlInput(false);
-                  setNewImageUrl('');
-                }}
+                size="sm"
+                onClick={() => setShowUrlInput(true)}
+                className="w-full"
+                disabled={uploading}
               >
-                ✕
+                <Link className="w-4 h-4 mr-2" />
+                Adicionar por URL
               </Button>
-            </div>
-          )}
+            ) : (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Cole a URL da imagem..."
+                      value={newImageUrl}
+                      onChange={(e) => handleUrlChange(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit(true)}
+                      disabled={uploading}
+                      className={urlError ? 'border-red-500' : ''}
+                    />
+                    {urlError && (
+                      <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {urlError}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => handleUrlSubmit(true)}
+                    disabled={!newImageUrl.trim() || uploading || !!urlError}
+                  >
+                    OK
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setShowUrlInput(false);
+                      setNewImageUrl('');
+                      setUrlError('');
+                    }}
+                    disabled={uploading}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Imagens Secundárias */}
@@ -136,14 +203,15 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
           {/* Grid de imagens secundárias */}
           <div className="grid grid-cols-2 gap-2">
             {additionalImages.map((imageUrl, index) => (
-              <div key={`${product.id}-${index}`} className="relative group">
+              <div key={`${product.id}-${index}-${imageUrl}`} className="relative group">
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
                   <img
                     src={imageUrl}
                     alt={`${product.name} ${index + 1}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = '/placeholder-image.jpg';
+                      console.warn('Erro ao carregar imagem:', imageUrl);
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMiA4VjE2TTggMTJIMTYiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+';
                     }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
@@ -151,7 +219,8 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
                       size="sm"
                       variant="destructive"
                       className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => onRemoveImage(product.id, imageUrl, false)}
+                      onClick={() => handleRemoveImageSafe(imageUrl, false)}
+                      disabled={uploading}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -171,17 +240,23 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
             />
           </div>
 
-          {/* Botão para adicionar por URL */}
+          {/* Botão para adicionar por URL - Secundárias */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
               const url = prompt('Cole a URL da imagem:');
               if (url && url.trim()) {
-                onUrlAdd(product.id, url.trim(), false);
+                try {
+                  new URL(url.trim());
+                  onUrlAdd(product.id, url.trim(), false);
+                } catch {
+                  alert('URL inválida');
+                }
               }
             }}
             className="w-full text-xs"
+            disabled={uploading}
           >
             <Link className="w-3 h-3 mr-1" />
             Adicionar por URL
@@ -192,7 +267,19 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
         <div className="pt-2 border-t border-gray-100">
           <div className="flex justify-between text-xs text-gray-500">
             <span>R$ {(product.price || 0).toFixed(2)}</span>
-            <span>{product.is_active ? 'Ativo' : 'Inativo'}</span>
+            <div className="flex items-center gap-2">
+              <span>{product.is_active !== false ? 'Ativo' : 'Inativo'}</span>
+              {hasMainImage && (
+                <Badge variant="secondary" className="text-xs">
+                  ✓ Principal
+                </Badge>
+              )}
+              {additionalImages.length > 0 && (
+                <Badge variant="outline" className="text-xs">
+                  +{additionalImages.length}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
