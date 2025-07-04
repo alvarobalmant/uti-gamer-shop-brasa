@@ -433,6 +433,7 @@ export function generateProductTemplate(): ProductTemplate {
       'variant_attributes': '{"platforms":["pc","xbox","playstation"],"editions":["standard","deluxe"]}',
       'product_descriptions': '{"short":"Terror e sobrevivência em primeira pessoa","detailed":"Anos após os trágicos eventos de Resident Evil 7 biohazard, Ethan Winters se mudou com sua esposa Mia para começar uma nova vida livre do passado, mas isso não durará muito.","technical":"Engine RE Engine, suporte 4K, Ray Tracing","marketing":"O terror retorna em alta definição!"}',
       'specifications': '[{"name":"Gênero","value":"Terror/Sobrevivência"},{"name":"Desenvolvedor","value":"Capcom"},{"name":"Classificação","value":"18 anos"}]',
+      'product_faqs': '[{"question":"O jogo é muito assustador?","answer":"Resident Evil Village tem elementos de terror, mas é mais focado na ação que nos jogos anteriores."},{"question":"Posso jogar sem ter jogado RE7?","answer":"Sim, mas recomendamos jogar RE7 primeiro para entender melhor a história."}]',
       'product_highlights': '["Gráficos em 4K","Ray Tracing","Modo VR disponível","História imersiva"]',
       'tags': 'resident evil,terror,capcom,sobrevivencia,ethan',
       'is_active': true,
