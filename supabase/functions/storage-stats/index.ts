@@ -7,89 +7,102 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    console.log('=== Iniciando busca de estatísticas de storage ===')
+    
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Variáveis de ambiente não encontradas')
+      throw new Error('Configuração do Supabase não encontrada')
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey)
+    console.log('Cliente Supabase criado com sucesso')
 
-    console.log('Calculando estatísticas de storage...')
-
-    // Buscar dados reais do banco de dados
+    // Buscar dados da tabela storage_stats
+    console.log('Buscando dados da tabela storage_stats...')
     const { data: statsData, error: fetchError } = await supabase
       .from('storage_stats')
       .select('*')
       .single()
     
     if (fetchError) {
-      console.error('Erro ao buscar stats:', fetchError)
-      throw new Error('Erro ao buscar dados de storage')
+      console.error('Erro ao buscar dados:', fetchError)
+      throw new Error(`Erro na busca: ${fetchError.message}`)
     }
 
     if (!statsData) {
+      console.error('Nenhum dado encontrado na tabela')
       throw new Error('Nenhum dado de storage encontrado')
     }
+
+    console.log('Dados encontrados:', statsData)
     
-    // Usar dados reais do banco
-    const totalSizeMB = statsData.total_size_bytes / (1024 * 1024)
+    // Calcular estatísticas
+    const totalSizeMB = Number(statsData.total_size_mb) || 0
     const storageLimitMB = 1024 // 1GB limite
-    const imageCount = statsData.total_images
-    const webpCount = statsData.webp_images
-    const nonWebpCount = statsData.non_webp_images
+    const imageCount = Number(statsData.total_images) || 0
+    const webpCount = Number(statsData.webp_images) || 0
+    const nonWebpCount = Number(statsData.non_webp_images) || 0
     
     const availableMB = storageLimitMB - totalSizeMB
     const usedPercentage = (totalSizeMB / storageLimitMB) * 100
 
-    // Atualizar última consulta
+    // Atualizar timestamp da última consulta
     const { error: updateError } = await supabase
       .from('storage_stats')
-      .update({
-        last_updated: new Date().toISOString()
+      .update({ 
+        last_scan: new Date().toISOString(),
+        updated_at: new Date().toISOString() 
       })
       .eq('id', statsData.id)
 
     if (updateError) {
-      console.warn('Erro ao atualizar tabela de stats:', updateError)
+      console.warn('Erro ao atualizar timestamp:', updateError)
     }
 
-    console.log(`Storage stats calculadas:
-      - Total usado: ${totalSizeMB} MB
-      - Limite: ${storageLimitMB} MB
-      - Disponível: ${availableMB} MB
-      - Percentual usado: ${usedPercentage.toFixed(2)}%
-      - Total de imagens: ${imageCount}
-      - WebP: ${webpCount}
-      - Não-WebP: ${nonWebpCount}`)
+    const response = {
+      success: true,
+      data: {
+        totalSizeMB: Math.round(totalSizeMB * 100) / 100,
+        storageLimitMB: storageLimitMB,
+        availableMB: Math.round(availableMB * 100) / 100,
+        usedPercentage: Math.round(usedPercentage * 100) / 100,
+        imageCount,
+        webpCount,
+        nonWebpCount,
+        compressionPotential: nonWebpCount > 0 
+          ? `${nonWebpCount} imagens podem ser otimizadas` 
+          : 'Todas as imagens já estão otimizadas',
+        lastScan: statsData.last_scan
+      }
+    }
+
+    console.log('Resposta preparada:', response)
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        data: {
-          totalSizeMB: Math.round(totalSizeMB * 100) / 100,
-          storageLimitMB: Math.round(storageLimitMB * 100) / 100,
-          availableMB: Math.round(availableMB * 100) / 100,
-          usedPercentage: Math.round(usedPercentage * 100) / 100,
-          imageCount,
-          webpCount,
-          nonWebpCount,
-          compressionPotential: nonWebpCount > 0 ? `${nonWebpCount} imagens podem ser otimizadas` : 'Todas as imagens já estão otimizadas'
-        }
-      }),
+      JSON.stringify(response),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
       }
     )
 
   } catch (error) {
-    console.error('Erro ao obter estatísticas de storage:', error)
+    console.error('ERRO COMPLETO:', error)
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        message: 'Erro ao carregar estatísticas de storage'
+        error: error.message || 'Erro interno do servidor',
+        details: 'Verifique os logs da função para mais detalhes'
       }),
       { 
         status: 500, 
