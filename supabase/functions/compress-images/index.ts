@@ -80,24 +80,7 @@ serve(async (req) => {
       )
     }
     
-    // TEMPORARIAMENTE DESABILITADO para evitar mais problemas
-    console.log('⚠️ Compressão temporariamente desabilitada para correção')
-    
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: {
-          processedCount: 0,
-          savedMB: 0,
-          errors: [],
-          message: 'Compressão temporariamente desabilitada para correção de problemas existentes.'
-        }
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
-    )
+    console.log('🚀 Iniciando compressão completa com atualização do banco...')
     
     // Listar todas as imagens não-WebP do storage
     const getAllFiles = async (path = '', allFiles: any[] = []): Promise<any[]> => {
@@ -180,10 +163,82 @@ serve(async (req) => {
           continue
         }
 
-        // REMOVIDO: Não deletar arquivo original para manter compatibilidade
-        // Manter os dois arquivos até que as referências sejam atualizadas no banco
-        console.log(`✅ Mantendo arquivo original: ${file.fullPath}`)
-        console.log(`✅ Criado arquivo WebP: ${webpFileName}`)
+        // 🔄 ATUALIZAR REFERÊNCIAS NO BANCO DE DADOS
+        console.log(`🔄 Atualizando referências no banco: ${file.fullPath} → ${webpFileName}`)
+        
+        // Construir URLs completas para busca e substituição
+        const originalUrl = `https://pmxnfpnnvtuuiedoxuxc.supabase.co/storage/v1/object/public/site-images/${file.fullPath}`
+        const webpUrl = `https://pmxnfpnnvtuuiedoxuxc.supabase.co/storage/v1/object/public/site-images/${webpFileName}`
+        
+        // Atualizar na tabela products - imagem principal
+        const { error: updateProductsError } = await supabase
+          .from('products')
+          .update({ image: webpUrl })
+          .eq('image', originalUrl)
+        
+        if (updateProductsError) {
+          console.warn(`Aviso ao atualizar products.image: ${updateProductsError.message}`)
+        }
+        
+        // Atualizar na tabela products - imagens adicionais
+        const { data: productsWithAdditionalImages } = await supabase
+          .from('products')
+          .select('id, additional_images')
+          .not('additional_images', 'is', null)
+        
+        if (productsWithAdditionalImages) {
+          for (const product of productsWithAdditionalImages) {
+            if (Array.isArray(product.additional_images)) {
+              const updatedImages = product.additional_images.map((img: string) => 
+                img === originalUrl ? webpUrl : img
+              )
+              
+              if (JSON.stringify(updatedImages) !== JSON.stringify(product.additional_images)) {
+                await supabase
+                  .from('products')
+                  .update({ additional_images: updatedImages })
+                  .eq('id', product.id)
+              }
+            }
+          }
+        }
+        
+        // Atualizar na tabela banners
+        const { error: updateBannersError1 } = await supabase
+          .from('banners')
+          .update({ image_url: webpUrl })
+          .eq('image_url', originalUrl)
+          
+        const { error: updateBannersError2 } = await supabase
+          .from('banners')
+          .update({ image_url_desktop: webpUrl })
+          .eq('image_url_desktop', originalUrl)
+          
+        const { error: updateBannersError3 } = await supabase
+          .from('banners')
+          .update({ image_url_mobile: webpUrl })
+          .eq('image_url_mobile', originalUrl)
+        
+        // Atualizar outras tabelas que podem ter imagens
+        await supabase.from('service_cards').update({ image_url: webpUrl }).eq('image_url', originalUrl)
+        await supabase.from('quick_links').update({ icon_url: webpUrl }).eq('icon_url', originalUrl)
+        await supabase.from('navigation_items').update({ icon_url: webpUrl }).eq('icon_url', originalUrl)
+        await supabase.from('news_articles').update({ image_url: webpUrl }).eq('image_url', originalUrl)
+        
+        console.log(`✅ Referências atualizadas no banco para: ${webpFileName}`)
+
+        // 🗑️ AGORA SIM: Deletar arquivo original após atualizar todas as referências
+        const { error: deleteError } = await supabase.storage
+          .from('site-images')
+          .remove([file.fullPath])
+
+        if (deleteError) {
+          console.error(`Erro ao deletar ${file.fullPath}:`, deleteError)
+          errors.push(`Erro ao deletar ${file.fullPath}: ${deleteError.message}`)
+          // Não interromper, o arquivo WebP já foi criado e referências já foram atualizadas
+        } else {
+          console.log(`🗑️ Arquivo original deletado: ${file.fullPath}`)
+        }
 
         processedCount++
         totalSavedBytes += (originalSize - compressedSize) // Economia real calculada
