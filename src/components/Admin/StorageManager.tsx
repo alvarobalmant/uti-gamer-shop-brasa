@@ -35,12 +35,20 @@ interface CompressionResult {
   message: string;
 }
 
+interface CompressionProgress {
+  currentFile: string;
+  processedCount: number;
+  totalCount: number;
+  isActive: boolean;
+}
+
 const StorageManager: React.FC = () => {
   const [storageStats, setStorageStats] = useState<StorageStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [compressing, setCompressing] = useState(false);
   const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [compressionProgress, setCompressionProgress] = useState<CompressionProgress | null>(null);
 
   // Escanear storage real para detectar novas imagens
   const scanRealStorage = async () => {
@@ -392,7 +400,7 @@ const StorageManager: React.FC = () => {
 
             {compressing && (
               <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
-                <div className="flex items-center">
+                <div className="flex items-center mb-3">
                   <Loader2 className="w-5 h-5 animate-spin text-yellow-400 mr-3" />
                   <div>
                     <h4 className="text-yellow-400 font-medium">Processando Imagens</h4>
@@ -401,6 +409,24 @@ const StorageManager: React.FC = () => {
                     </p>
                   </div>
                 </div>
+                
+                {compressionProgress && compressionProgress.isActive && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-300">Progresso</span>
+                      <span className="text-yellow-400 font-medium">
+                        {compressionProgress.processedCount}/{compressionProgress.totalCount}
+                      </span>
+                    </div>
+                    <Progress 
+                      value={(compressionProgress.processedCount / compressionProgress.totalCount) * 100} 
+                      className="h-2"
+                    />
+                    <p className="text-xs text-gray-400 truncate">
+                      Processando: {compressionProgress.currentFile}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
