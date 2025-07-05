@@ -22,13 +22,39 @@ serve(async (req) => {
     await new Promise(resolve => setTimeout(resolve, 2000)) // 2 segundos de "processamento"
 
     // Buscar dados atuais do banco
-    const { data: currentStats } = await supabase
+    const { data: currentStats, error: fetchError } = await supabase
       .from('storage_stats')
       .select('*')
       .single()
     
+    if (fetchError) {
+      console.error('Erro ao buscar stats:', fetchError)
+      throw new Error('Erro ao buscar dados de storage')
+    }
+
+    if (!currentStats) {
+      throw new Error('Nenhum dado de storage encontrado')
+    }
+
+    if (currentStats.non_webp_images === 0) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            processedCount: 0,
+            savedMB: 0,
+            errors: [],
+            message: 'Não há imagens para comprimir! Todas já estão otimizadas.'
+          }
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+    
     // Processar todas as imagens não-WebP
-    const processedCount = currentStats?.non_webp_images || 42
+    const processedCount = currentStats.non_webp_images
     const savedMB = processedCount * 0.3 // Simular economia de ~300KB por imagem
     const errors: string[] = []
 
@@ -38,7 +64,7 @@ serve(async (req) => {
       - Erros: ${errors.length}`)
 
     // Atualizar estatísticas no banco
-    const newWebpCount = (currentStats?.webp_images || 85) + processedCount
+    const newWebpCount = currentStats.webp_images + processedCount
     const { error: updateError } = await supabase
       .from('storage_stats')
       .update({
@@ -46,7 +72,7 @@ serve(async (req) => {
         non_webp_images: 0, // todas foram comprimidas
         last_updated: new Date().toISOString()
       })
-      .eq('id', currentStats?.id || (await supabase.from('storage_stats').select('id').single()).data?.id)
+      .eq('id', currentStats.id)
 
     if (updateError) {
       console.warn('Erro ao atualizar stats:', updateError)

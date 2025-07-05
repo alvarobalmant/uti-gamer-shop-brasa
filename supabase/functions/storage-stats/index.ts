@@ -19,31 +19,37 @@ serve(async (req) => {
     console.log('Calculando estatísticas de storage...')
 
     // Buscar dados reais do banco de dados
-    const { data: statsData } = await supabase
+    const { data: statsData, error: fetchError } = await supabase
       .from('storage_stats')
       .select('*')
       .single()
     
-    // Usar dados do banco ou valores padrão se não existir
-    const totalSizeMB = statsData?.total_size_bytes ? (statsData.total_size_bytes / (1024 * 1024)) : 45.2
+    if (fetchError) {
+      console.error('Erro ao buscar stats:', fetchError)
+      throw new Error('Erro ao buscar dados de storage')
+    }
+
+    if (!statsData) {
+      throw new Error('Nenhum dado de storage encontrado')
+    }
+    
+    // Usar dados reais do banco
+    const totalSizeMB = statsData.total_size_bytes / (1024 * 1024)
     const storageLimitMB = 1024 // 1GB limite
-    const imageCount = statsData?.total_images || 127
-    const webpCount = statsData?.webp_images || 85
-    const nonWebpCount = statsData?.non_webp_images || 42
+    const imageCount = statsData.total_images
+    const webpCount = statsData.webp_images
+    const nonWebpCount = statsData.non_webp_images
     
     const availableMB = storageLimitMB - totalSizeMB
     const usedPercentage = (totalSizeMB / storageLimitMB) * 100
 
-    // Atualizar tabela de estatísticas
+    // Atualizar última consulta
     const { error: updateError } = await supabase
       .from('storage_stats')
-      .upsert({
-        total_size_bytes: Math.round(totalSizeMB * 1024 * 1024),
-        total_images: imageCount,
-        webp_images: webpCount,
-        non_webp_images: nonWebpCount,
+      .update({
         last_updated: new Date().toISOString()
       })
+      .eq('id', statsData.id)
 
     if (updateError) {
       console.warn('Erro ao atualizar tabela de stats:', updateError)

@@ -62,18 +62,6 @@ const StorageManager: React.FC = () => {
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
       toast.error('Erro ao carregar estatísticas de storage');
-      
-      // Mostrar dados de exemplo se falhar
-      setStorageStats({
-        totalSizeMB: 45.2,
-        storageLimitMB: 1024,
-        availableMB: 978.8,
-        usedPercentage: 4.4,
-        imageCount: 127,
-        webpCount: 85,
-        nonWebpCount: 42,
-        compressionPotential: '42 imagens podem ser otimizadas'
-      });
     } finally {
       setLoadingStats(false);
     }
@@ -108,9 +96,7 @@ const StorageManager: React.FC = () => {
       setCompressionResult(data.data);
       
       // Recarregar estatísticas após compressão
-      setTimeout(() => {
-        loadStorageStats();
-      }, 2000); // Aguardar 2 segundos para garantir que o banco foi atualizado
+      await loadStorageStats();
       
       toast.success(data.data.message);
     } catch (error) {
