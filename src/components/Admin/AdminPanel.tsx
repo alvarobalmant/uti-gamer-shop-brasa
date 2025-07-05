@@ -17,7 +17,8 @@ import MasterProductManager from './MasterProductManager';
 import PlatformManager from './PlatformManager';
 import BulkProductUpload from './BulkProductUpload';
 import ProductImageManager from '@/pages/Admin/ProductImageManager';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus } from 'lucide-react';
+import StorageManager from './StorageManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -34,6 +35,7 @@ export const AdminPanel = () => {
     { id: 'products', label: 'Produtos', icon: Package },
     { id: 'bulk_upload', label: 'Importação em Massa', icon: Upload },
     { id: 'image_upload', label: 'Upload Fácil', icon: ImagePlus },
+    { id: 'storage', label: 'Gerenciar Storage', icon: HardDrive },
     { id: 'skus', label: 'Sistema de SKUs', icon: Layers },
     { id: 'platforms', label: 'Plataformas', icon: Settings },
     { id: 'banners', label: 'Banners', icon: Image },
@@ -174,6 +176,10 @@ export const AdminPanel = () => {
 
               <TabsContent value="image_upload" className="mt-0">
                 <ProductImageManager />
+              </TabsContent>
+
+              <TabsContent value="storage" className="mt-0">
+                <StorageManager />
               </TabsContent>
 
               <TabsContent value="skus" className="mt-0">
