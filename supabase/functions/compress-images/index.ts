@@ -164,20 +164,27 @@ serve(async (req) => {
         }
 
         // 🔄 ATUALIZAR REFERÊNCIAS NO BANCO DE DADOS
-        console.log(`🔄 Atualizando referências no banco: ${file.fullPath} → ${webpFileName}`)
+        console.log(`🔄 Atualizando referências no banco: ${file.name} → ${webpFileName.split('/').pop()}`)
         
-        // Construir URLs completas para busca e substituição
-        const originalUrl = `https://pmxnfpnnvtuuiedoxuxc.supabase.co/storage/v1/object/public/site-images/${file.fullPath}`
-        const webpUrl = `https://pmxnfpnnvtuuiedoxuxc.supabase.co/storage/v1/object/public/site-images/${webpFileName}`
+        const originalFileName = file.name
+        const webpFileName_only = webpFileName.split('/').pop() // só o nome do arquivo
         
         // Atualizar na tabela products - imagem principal
-        const { error: updateProductsError } = await supabase
+        // Buscar qualquer referência que contenha o nome do arquivo original
+        const { data: productsWithMainImage } = await supabase
           .from('products')
-          .update({ image: webpUrl })
-          .eq('image', originalUrl)
+          .select('id, image')
+          .like('image', `%${originalFileName}%`)
         
-        if (updateProductsError) {
-          console.warn(`Aviso ao atualizar products.image: ${updateProductsError.message}`)
+        if (productsWithMainImage && productsWithMainImage.length > 0) {
+          for (const product of productsWithMainImage) {
+            const updatedImageUrl = product.image.replace(originalFileName, webpFileName_only)
+            await supabase
+              .from('products')
+              .update({ image: updatedImageUrl })
+              .eq('id', product.id)
+            console.log(`✅ Atualizado products.image: ${product.image} → ${updatedImageUrl}`)
+          }
         }
         
         // Atualizar na tabela products - imagens adicionais
@@ -189,43 +196,57 @@ serve(async (req) => {
         if (productsWithAdditionalImages) {
           for (const product of productsWithAdditionalImages) {
             if (Array.isArray(product.additional_images)) {
-              const updatedImages = product.additional_images.map((img: string) => 
-                img === originalUrl ? webpUrl : img
-              )
+              let hasChanges = false
+              const updatedImages = product.additional_images.map((img: string) => {
+                if (img.includes(originalFileName)) {
+                  hasChanges = true
+                  return img.replace(originalFileName, webpFileName_only)
+                }
+                return img
+              })
               
-              if (JSON.stringify(updatedImages) !== JSON.stringify(product.additional_images)) {
+              if (hasChanges) {
                 await supabase
                   .from('products')
                   .update({ additional_images: updatedImages })
                   .eq('id', product.id)
+                console.log(`✅ Atualizado products.additional_images para produto ${product.id}`)
               }
             }
           }
         }
         
-        // Atualizar na tabela banners
-        const { error: updateBannersError1 } = await supabase
-          .from('banners')
-          .update({ image_url: webpUrl })
-          .eq('image_url', originalUrl)
-          
-        const { error: updateBannersError2 } = await supabase
-          .from('banners')
-          .update({ image_url_desktop: webpUrl })
-          .eq('image_url_desktop', originalUrl)
-          
-        const { error: updateBannersError3 } = await supabase
-          .from('banners')
-          .update({ image_url_mobile: webpUrl })
-          .eq('image_url_mobile', originalUrl)
-        
         // Atualizar outras tabelas que podem ter imagens
-        await supabase.from('service_cards').update({ image_url: webpUrl }).eq('image_url', originalUrl)
-        await supabase.from('quick_links').update({ icon_url: webpUrl }).eq('icon_url', originalUrl)
-        await supabase.from('navigation_items').update({ icon_url: webpUrl }).eq('icon_url', originalUrl)
-        await supabase.from('news_articles').update({ image_url: webpUrl }).eq('image_url', originalUrl)
+        const tablesToUpdate = [
+          { table: 'banners', columns: ['image_url', 'image_url_desktop', 'image_url_mobile'] },
+          { table: 'service_cards', columns: ['image_url'] },
+          { table: 'quick_links', columns: ['icon_url'] },
+          { table: 'navigation_items', columns: ['icon_url'] }, 
+          { table: 'news_articles', columns: ['image_url'] }
+        ]
         
-        console.log(`✅ Referências atualizadas no banco para: ${webpFileName}`)
+        for (const { table, columns } of tablesToUpdate) {
+          for (const column of columns) {
+            const { data: recordsToUpdate } = await supabase
+              .from(table)
+              .select(`id, ${column}`)
+              .like(column, `%${originalFileName}%`)
+            
+            if (recordsToUpdate && recordsToUpdate.length > 0) {
+              for (const record of recordsToUpdate) {
+                const oldValue = record[column]
+                const newValue = oldValue.replace(originalFileName, webpFileName_only)
+                await supabase
+                  .from(table)
+                  .update({ [column]: newValue })
+                  .eq('id', record.id)
+                console.log(`✅ Atualizado ${table}.${column}: ${oldValue} → ${newValue}`)
+              }
+            }
+          }
+        }
+        
+        console.log(`✅ Todas as referências atualizadas para: ${webpFileName_only}`)
 
         // 🗑️ AGORA SIM: Deletar arquivo original após atualizar todas as referências
         const { error: deleteError } = await supabase.storage
