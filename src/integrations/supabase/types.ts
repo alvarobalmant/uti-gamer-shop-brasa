@@ -1240,6 +1240,36 @@ export type Database = {
         }
         Relationships: []
       }
+      storage_stats: {
+        Row: {
+          created_at: string
+          id: string
+          last_updated: string
+          non_webp_images: number
+          total_images: number
+          total_size_bytes: number
+          webp_images: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_updated?: string
+          non_webp_images?: number
+          total_images?: number
+          total_size_bytes?: number
+          webp_images?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_updated?: string
+          non_webp_images?: number
+          total_images?: number
+          total_size_bytes?: number
+          webp_images?: number
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           created_at: string
