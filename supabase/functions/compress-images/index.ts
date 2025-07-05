@@ -80,7 +80,24 @@ serve(async (req) => {
       )
     }
     
-    console.log('🚀 Iniciando compressão real das imagens...')
+    // TEMPORARIAMENTE DESABILITADO para evitar mais problemas
+    console.log('⚠️ Compressão temporariamente desabilitada para correção')
+    
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: {
+          processedCount: 0,
+          savedMB: 0,
+          errors: [],
+          message: 'Compressão temporariamente desabilitada para correção de problemas existentes.'
+        }
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      }
+    )
     
     // Listar todas as imagens não-WebP do storage
     const getAllFiles = async (path = '', allFiles: any[] = []): Promise<any[]> => {
@@ -163,16 +180,10 @@ serve(async (req) => {
           continue
         }
 
-        // Deletar arquivo original
-        const { error: deleteError } = await supabase.storage
-          .from('site-images')
-          .remove([file.fullPath])
-
-        if (deleteError) {
-          console.error(`Erro ao deletar ${file.fullPath}:`, deleteError)
-          errors.push(`Erro ao deletar ${file.fullPath}: ${deleteError.message}`)
-          // Não interromper, o arquivo WebP já foi criado
-        }
+        // REMOVIDO: Não deletar arquivo original para manter compatibilidade
+        // Manter os dois arquivos até que as referências sejam atualizadas no banco
+        console.log(`✅ Mantendo arquivo original: ${file.fullPath}`)
+        console.log(`✅ Criado arquivo WebP: ${webpFileName}`)
 
         processedCount++
         totalSavedBytes += (originalSize - compressedSize) // Economia real calculada
