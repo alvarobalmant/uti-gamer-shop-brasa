@@ -11,7 +11,8 @@ import {
   CheckCircle, 
   AlertCircle,
   BarChart3,
-  Minimize2
+  Minimize2,
+  Search
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -39,6 +40,41 @@ const StorageManager: React.FC = () => {
   const [loadingStats, setLoadingStats] = useState(false);
   const [compressing, setCompressing] = useState(false);
   const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
+  const [scanning, setScanning] = useState(false);
+
+  // Escanear storage real para detectar novas imagens
+  const scanRealStorage = async () => {
+    setScanning(true);
+    try {
+      console.log('🔍 Iniciando scan do storage real...');
+      
+      const { data, error } = await supabase.functions.invoke('scan-storage');
+      
+      console.log('📊 Resposta da função scan-storage:', { data, error });
+      
+      if (error) {
+        console.error('❌ Erro na função scan-storage:', error);
+        throw new Error(`Erro na função: ${error.message || 'Erro desconhecido'}`);
+      }
+
+      if (!data || !data.success) {
+        console.error('❌ Resposta inválida:', data);
+        throw new Error(data?.error || data?.message || 'Resposta inválida da função');
+      }
+
+      console.log('✅ Scan concluído:', data.data);
+      setStorageStats(data.data);
+      toast.success(data.data.message || 'Storage escaneado com sucesso!');
+      
+      // Recarregar estatísticas para garantir dados atualizados
+      await loadStorageStats();
+    } catch (error: any) {
+      console.error('❌ Erro ao escanear storage:', error);
+      toast.error(`Erro ao escanear storage: ${error.message}`);
+    } finally {
+      setScanning(false);
+    }
+  };
 
   // Carregar estatísticas do storage
   const loadStorageStats = async () => {
@@ -116,7 +152,8 @@ const StorageManager: React.FC = () => {
 
   // Carregar estatísticas ao montar o componente
   useEffect(() => {
-    loadStorageStats();
+    // Primeiro fazer scan do storage real para detectar novas imagens
+    scanRealStorage();
   }, []);
 
   return (
@@ -129,19 +166,34 @@ const StorageManager: React.FC = () => {
             Monitore o uso de armazenamento e otimize suas imagens
           </p>
         </div>
-        <Button
-          onClick={loadStorageStats}
-          disabled={loadingStats}
-          variant="outline"
-          className="text-white border-gray-600 hover:bg-gray-700"
-        >
-          {loadingStats ? (
-            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-          ) : (
-            <BarChart3 className="w-4 h-4 mr-2" />
-          )}
-          Atualizar
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={scanRealStorage}
+            disabled={scanning}
+            variant="outline"
+            className="text-white border-green-600 hover:bg-green-700 bg-green-600/10"
+          >
+            {scanning ? (
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            ) : (
+              <Search className="w-4 h-4 mr-2" />
+            )}
+            Escanear
+          </Button>
+          <Button
+            onClick={loadStorageStats}
+            disabled={loadingStats}
+            variant="outline"
+            className="text-white border-gray-600 hover:bg-gray-700"
+          >
+            {loadingStats ? (
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            ) : (
+              <BarChart3 className="w-4 h-4 mr-2" />
+            )}
+            Atualizar
+          </Button>
+        </div>
       </div>
 
       {/* Storage Statistics Cards */}

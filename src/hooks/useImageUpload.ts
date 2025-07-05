@@ -78,6 +78,15 @@ export const useImageUpload = () => {
         .from('site-images')
         .getPublicUrl(fileName);
 
+      // Trigger scan automático para atualizar estatísticas
+      try {
+        await supabase.functions.invoke('scan-storage');
+        console.log('✅ Scan automático executado após upload');
+      } catch (scanError) {
+        console.warn('⚠️ Erro no scan automático:', scanError);
+        // Não bloquear o upload por falha no scan
+      }
+
       toast({
         title: "Upload realizado com sucesso!",
         description: `Imagem otimizada e carregada como ${processedFile.type}.`,
@@ -142,6 +151,15 @@ export const useImageUpload = () => {
 
       console.log('Imagem processada via proxy:', result);
       
+      // Trigger scan automático para atualizar estatísticas
+      try {
+        await supabase.functions.invoke('scan-storage');
+        console.log('✅ Scan automático executado após download');
+      } catch (scanError) {
+        console.warn('⚠️ Erro no scan automático:', scanError);
+        // Não bloquear o download por falha no scan
+      }
+      
       toast({
         title: "Imagem baixada e salva!",
         description: `Imagem convertida (${(result.size / 1024).toFixed(1)}KB) e salva com sucesso.`,
@@ -189,6 +207,15 @@ export const useImageUpload = () => {
       if (error) {
         console.error('Erro ao deletar arquivo do storage:', error);
         return false;
+      }
+
+      // Trigger scan automático para atualizar estatísticas
+      try {
+        await supabase.functions.invoke('scan-storage');
+        console.log('✅ Scan automático executado após deletar');
+      } catch (scanError) {
+        console.warn('⚠️ Erro no scan automático:', scanError);
+        // Não bloquear a deleção por falha no scan
       }
 
       console.log('Arquivo deletado com sucesso:', filePath);
