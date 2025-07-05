@@ -110,7 +110,7 @@ const StorageManager: React.FC = () => {
       // Recarregar estatísticas após compressão
       setTimeout(() => {
         loadStorageStats();
-      }, 1000);
+      }, 2000); // Aguardar 2 segundos para garantir que o banco foi atualizado
       
       toast.success(data.data.message);
     } catch (error) {

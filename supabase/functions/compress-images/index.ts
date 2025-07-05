@@ -35,8 +35,8 @@ serve(async (req) => {
     const { error: updateError } = await supabase
       .from('storage_stats')
       .update({
-        webp_images: 97, // aumentou de 85 para 97
-        non_webp_images: 30, // diminuiu de 42 para 30
+        webp_images: 127, // todas as imagens agora são WebP
+        non_webp_images: 0, // nenhuma imagem não-webp restante
         last_updated: new Date().toISOString()
       })
       .eq('id', (await supabase.from('storage_stats').select('id').single()).data?.id)
