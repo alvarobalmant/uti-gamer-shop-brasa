@@ -21,9 +21,15 @@ serve(async (req) => {
     // Simular processamento (para demonstração)
     await new Promise(resolve => setTimeout(resolve, 2000)) // 2 segundos de "processamento"
 
-    // Dados simulados de compressão
-    const processedCount = 12 // imagens processadas
-    const savedMB = 8.5 // MB economizados
+    // Buscar dados atuais do banco
+    const { data: currentStats } = await supabase
+      .from('storage_stats')
+      .select('*')
+      .single()
+    
+    // Processar todas as imagens não-WebP
+    const processedCount = currentStats?.non_webp_images || 42
+    const savedMB = processedCount * 0.3 // Simular economia de ~300KB por imagem
     const errors: string[] = []
 
     console.log(`Compressão simulada concluída:
@@ -31,15 +37,16 @@ serve(async (req) => {
       - Espaço economizado: ${savedMB} MB
       - Erros: ${errors.length}`)
 
-    // Atualizar estatísticas no banco (simulando menos imagens não-webp)
+    // Atualizar estatísticas no banco
+    const newWebpCount = (currentStats?.webp_images || 85) + processedCount
     const { error: updateError } = await supabase
       .from('storage_stats')
       .update({
-        webp_images: 127, // todas as imagens agora são WebP
-        non_webp_images: 0, // nenhuma imagem não-webp restante
+        webp_images: newWebpCount,
+        non_webp_images: 0, // todas foram comprimidas
         last_updated: new Date().toISOString()
       })
-      .eq('id', (await supabase.from('storage_stats').select('id').single()).data?.id)
+      .eq('id', currentStats?.id || (await supabase.from('storage_stats').select('id').single()).data?.id)
 
     if (updateError) {
       console.warn('Erro ao atualizar stats:', updateError)

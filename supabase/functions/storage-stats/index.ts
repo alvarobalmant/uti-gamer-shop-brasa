@@ -18,12 +18,18 @@ serve(async (req) => {
 
     console.log('Calculando estatísticas de storage...')
 
-    // Calcular estatísticas básicas (valores simulados para demonstração)
-    const totalSizeMB = 45.2 // MB usados
+    // Buscar dados reais do banco de dados
+    const { data: statsData } = await supabase
+      .from('storage_stats')
+      .select('*')
+      .single()
+    
+    // Usar dados do banco ou valores padrão se não existir
+    const totalSizeMB = statsData?.total_size_bytes ? (statsData.total_size_bytes / (1024 * 1024)) : 45.2
     const storageLimitMB = 1024 // 1GB limite
-    const imageCount = 127 // total de imagens
-    const webpCount = 85 // imagens já otimizadas
-    const nonWebpCount = 42 // imagens não otimizadas
+    const imageCount = statsData?.total_images || 127
+    const webpCount = statsData?.webp_images || 85
+    const nonWebpCount = statsData?.non_webp_images || 42
     
     const availableMB = storageLimitMB - totalSizeMB
     const usedPercentage = (totalSizeMB / storageLimitMB) * 100
