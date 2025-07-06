@@ -28,6 +28,12 @@ const mapRowToProduct = (row: any): Product => ({
   is_active: row.is_active !== false,
   is_featured: row.is_featured || false,
   
+  // Campos UTI PRO
+  uti_pro_enabled: row.uti_pro_enabled || false,
+  uti_pro_value: row.uti_pro_value ? Number(row.uti_pro_value) : undefined,
+  uti_pro_custom_price: row.uti_pro_custom_price ? Number(row.uti_pro_custom_price) : undefined,
+  uti_pro_type: row.uti_pro_type || 'percentage',
+  
   // Campos do sistema de SKUs
   parent_product_id: row.parent_product_id || undefined,
   is_master_product: row.is_master_product || false,
@@ -234,6 +240,13 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
         slug: directData.slug,
         is_active: directData.is_active,
         is_featured: directData.is_featured,
+        
+        // Campos UTI PRO
+        uti_pro_enabled: directData.uti_pro_enabled,
+        uti_pro_value: directData.uti_pro_value,
+        uti_pro_custom_price: directData.uti_pro_custom_price,
+        uti_pro_type: directData.uti_pro_type,
+        
         parent_product_id: directData.parent_product_id,
         is_master_product: directData.is_master_product,
         product_type: directData.product_type,
