@@ -14,8 +14,8 @@ export const useUTIProPricing = (product: Product): UTIProPricing => {
   const isUserPro = hasActiveSubscription();
 
   return useMemo(() => {
-    // Se UTI Pro não está habilitado para este produto
-    if (!product.uti_pro_enabled) {
+    // Só mostra preço PRO se foi configurado no admin (tem pro_price)
+    if (!product.pro_price || product.pro_price <= 0) {
       return {
         isEnabled: false,
         proPrice: null,
@@ -24,27 +24,15 @@ export const useUTIProPricing = (product: Product): UTIProPricing => {
       };
     }
 
-    let proPrice: number;
-    let discountPercentage: number;
-
-    if (product.uti_pro_type === 'fixed' && product.uti_pro_custom_price) {
-      // Preço fixo
-      proPrice = product.uti_pro_custom_price;
-      discountPercentage = Math.round(((product.price - proPrice) / product.price) * 100);
-    } else {
-      // Porcentagem de desconto
-      const discount = product.uti_pro_value || 10;
-      discountPercentage = discount;
-      proPrice = product.price * (1 - discount / 100);
-    }
-
+    const proPrice = product.pro_price;
     const savings = product.price - proPrice;
+    const discountPercentage = Math.round(((product.price - proPrice) / product.price) * 100);
 
     return {
       isEnabled: true,
-      proPrice: Math.max(0, proPrice), // Garantir que não seja negativo
+      proPrice: Math.max(0, proPrice),
       savings: Math.max(0, savings),
-      discountPercentage,
+      discountPercentage: Math.max(0, discountPercentage),
     };
   }, [product]);
 };
