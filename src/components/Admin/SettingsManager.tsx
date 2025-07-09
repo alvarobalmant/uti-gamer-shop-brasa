@@ -9,26 +9,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useProductsEnhanced } from '@/hooks/useProductsEnhanced';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Trash2, Settings2, Globe, Palette, Upload, Save, RotateCcw } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
-export const SettingsManager = () => {
+export { SettingsManagerNew as SettingsManager } from './Settings/SettingsManagerNew';
+
+export const SettingsManagerLegacy = () => {
   const { toast } = useToast();
   const { products, refreshProducts } = useProductsEnhanced();
+  const { siteInfo, utiProSettings, updateSiteInfo, updateUTIProSettings, loading } = useSiteSettings();
   
-  // Estados para configurações
-  const [utiProEnabled, setUtiProEnabled] = useState(true);
-  const [siteName, setSiteName] = useState('UTI dos Games');
-  const [siteSubtitle, setSiteSubtitle] = useState('Sua loja de games favorita');
-  const [browserTitle, setBrowserTitle] = useState('UTI dos Games - Sua loja de games favorita');
-  const [selectedFont, setSelectedFont] = useState('Inter');
-  const [logoUrl, setLogoUrl] = useState('/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png');
+  // Estados locais para o formulário
+  const [utiProEnabled, setUtiProEnabled] = useState(utiProSettings.enabled);
+  const [siteName, setSiteName] = useState(siteInfo.siteName);
+  const [siteSubtitle, setSiteSubtitle] = useState(siteInfo.siteSubtitle);
+  const [browserTitle, setBrowserTitle] = useState(siteInfo.browserTitle);
+  const [selectedFont, setSelectedFont] = useState(siteInfo.selectedFont);
+  const [logoUrl, setLogoUrl] = useState(siteInfo.logoUrl);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   
   // Loading states
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setSaving] = useState(false);
+
+  // Atualizar estados locais quando as configurações mudarem
+  React.useEffect(() => {
+    setUtiProEnabled(utiProSettings.enabled);
+    setSiteName(siteInfo.siteName);
+    setSiteSubtitle(siteInfo.siteSubtitle);
+    setBrowserTitle(siteInfo.browserTitle);
+    setSelectedFont(siteInfo.selectedFont);
+    setLogoUrl(siteInfo.logoUrl);
+  }, [siteInfo, utiProSettings]);
 
   const fonts = [
     { value: 'Inter', label: 'Inter (Padrão)' },
@@ -133,52 +147,40 @@ export const SettingsManager = () => {
   const handleSaveSettings = useCallback(async () => {
     setSaving(true);
     try {
-      // Atualizar título do navegador
-      document.title = browserTitle;
-      
-      // Salvar no localStorage por enquanto (depois pode ser movido para banco)
-      localStorage.setItem('uti_settings', JSON.stringify({
+      // Salvar configurações do site
+      const siteInfoSuccess = await updateSiteInfo({
         siteName,
         siteSubtitle,
         browserTitle,
         selectedFont,
-        logoUrl,
-        utiProEnabled
-      }));
-
-      toast({
-        title: "Configurações salvas",
-        description: "As configurações foram salvas com sucesso.",
+        logoUrl
       });
+
+      // Salvar configurações do UTI PRO
+      const utiProSuccess = await updateUTIProSettings({
+        enabled: utiProEnabled
+      });
+
+      if (siteInfoSuccess && utiProSuccess) {
+        toast({
+          title: "Configurações salvas",
+          description: "As configurações foram salvas com sucesso no banco de dados.",
+        });
+      } else {
+        throw new Error('Falha ao salvar configurações');
+      }
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
       toast({
         title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar as configurações.",
+        description: "Ocorreu um erro ao salvar as configurações no banco de dados.",
         variant: "destructive"
       });
     } finally {
       setSaving(false);
     }
-  }, [siteName, siteSubtitle, browserTitle, selectedFont, logoUrl, utiProEnabled, toast]);
+  }, [siteName, siteSubtitle, browserTitle, selectedFont, logoUrl, utiProEnabled, updateSiteInfo, updateUTIProSettings, toast]);
 
-  // Carregar configurações salvas
-  React.useEffect(() => {
-    try {
-      const savedSettings = localStorage.getItem('uti_settings');
-      if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        setSiteName(settings.siteName || 'UTI dos Games');
-        setSiteSubtitle(settings.siteSubtitle || 'Sua loja de games favorita');
-        setBrowserTitle(settings.browserTitle || 'UTI dos Games - Sua loja de games favorita');
-        setSelectedFont(settings.selectedFont || 'Inter');
-        setLogoUrl(settings.logoUrl || '/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png');
-        setUtiProEnabled(settings.utiProEnabled !== false);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar configurações:', error);
-    }
-  }, []);
 
   const handleProductSelection = (productId: string, checked: boolean) => {
     if (checked) {
