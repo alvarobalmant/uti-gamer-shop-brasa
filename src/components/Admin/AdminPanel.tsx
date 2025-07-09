@@ -18,7 +18,8 @@ import PlatformManager from './PlatformManager';
 import BulkProductUpload from './BulkProductUpload';
 import ProductImageManager from '@/pages/Admin/ProductImageManager';
 import StorageManager from './StorageManager';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive } from 'lucide-react';
+import { SettingsManager } from './SettingsManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -43,6 +44,7 @@ export const AdminPanel = () => {
     { id: 'services', label: 'Serviços', icon: Briefcase },
     { id: 'tags', label: 'Tags', icon: Tag },
     { id: 'users', label: 'Usuários/PRO', icon: Users },
+    { id: 'settings', label: 'Configurações', icon: Cog },
   ];
 
   const handleBackToHome = () => {
@@ -208,6 +210,10 @@ export const AdminPanel = () => {
 
               <TabsContent value="users" className="mt-0">
                 <UserSubscriptionManagement />
+              </TabsContent>
+
+              <TabsContent value="settings" className="mt-0">
+                <SettingsManager />
               </TabsContent>
             </Tabs>
           </div>
