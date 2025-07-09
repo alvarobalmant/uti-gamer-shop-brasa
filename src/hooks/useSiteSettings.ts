@@ -60,6 +60,8 @@ export const useSiteSettings = () => {
         .upsert({
           setting_key: 'site_info',
           setting_value: newSiteInfo as any
+        }, {
+          onConflict: 'setting_key'
         });
 
       if (error) throw error;
@@ -78,6 +80,8 @@ export const useSiteSettings = () => {
         .upsert({
           setting_key: 'uti_pro_settings',
           setting_value: newUTIProSettings as any
+        }, {
+          onConflict: 'setting_key'
         });
 
       if (error) throw error;
