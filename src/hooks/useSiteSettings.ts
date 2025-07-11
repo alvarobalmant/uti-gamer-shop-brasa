@@ -23,7 +23,7 @@ export const useSiteSettings = () => {
   });
 
   const [utiProSettings, setUtiProSettings] = useState<UTIProSettings>({
-    enabled: true
+    enabled: false
   });
 
   const [loading, setLoading] = useState(true);

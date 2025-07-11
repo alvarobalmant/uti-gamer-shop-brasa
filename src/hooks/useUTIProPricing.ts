@@ -12,10 +12,20 @@ export interface UTIProPricing {
 
 export const useUTIProPricing = (product: Product): UTIProPricing => {
   const { hasActiveSubscription } = useSubscriptions();
-  const { utiProSettings } = useSiteSettings();
+  const { utiProSettings, loading } = useSiteSettings();
   const isUserPro = hasActiveSubscription();
 
   return useMemo(() => {
+    // Se ainda está carregando, não mostrar nada do UTI PRO
+    if (loading) {
+      return {
+        isEnabled: false,
+        proPrice: null,
+        savings: null,
+        discountPercentage: null,
+      };
+    }
+
     // Verifica se o UTI PRO está globalmente habilitado
     if (!utiProSettings.enabled) {
       return {
@@ -46,5 +56,5 @@ export const useUTIProPricing = (product: Product): UTIProPricing => {
       savings: Math.max(0, savings),
       discountPercentage: Math.max(0, discountPercentage),
     };
-  }, [product, utiProSettings.enabled]);
+  }, [product, utiProSettings.enabled, loading]);
 };
