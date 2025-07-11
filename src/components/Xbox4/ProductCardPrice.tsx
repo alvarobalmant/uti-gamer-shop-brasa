@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Product } from '@/hooks/useProducts';
-import { useUTIProPricing } from '@/hooks/useUTIProPricing';
+import { useUTIProOptimized } from '@/hooks/useUTIProOptimized';
 import { formatPrice } from '@/utils/formatPrice';
 import { cn } from '@/lib/utils';
 
@@ -14,7 +14,7 @@ interface ProductCardPriceProps {
 
 const ProductCardPrice = ({ product, variant = "default", className }: ProductCardPriceProps) => {
   const isGame = variant === "game";
-  const utiProPricing = useUTIProPricing(product);
+  const utiPro = useUTIProOptimized(product);
   
   return (
     <div className={cn(
@@ -48,10 +48,10 @@ const ProductCardPrice = ({ product, variant = "default", className }: ProductCa
         )}
       </div>
 
-      {/* Preço UTI Pro - só mostra se habilitado */}
-      {utiProPricing.isEnabled && utiProPricing.proPrice && (
+      {/* Preço UTI Pro - só mostra se carregamento terminou e habilitado */}
+      {!utiPro.loading && utiPro.isEnabled && utiPro.proPrice && (
         <div className="text-xs text-yellow-400 font-semibold">
-          {formatPrice(utiProPricing.proPrice)} com Pro
+          {formatPrice(utiPro.proPrice)} {utiPro.isUserPro ? 'seu preço PRO' : 'com Pro'}
         </div>
       )}
     </div>
