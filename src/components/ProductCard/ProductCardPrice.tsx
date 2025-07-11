@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
-import { useUTIProOptimized } from '@/hooks/useUTIProOptimized';
+import { useUTIProPricing } from '@/hooks/useUTIProPricing';
 import { formatPrice } from '@/utils/formatPrice';
 
 interface ProductCardPriceProps {
@@ -9,7 +9,7 @@ interface ProductCardPriceProps {
 }
 
 const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
-  const utiPro = useUTIProOptimized(product);
+  const utiProPricing = useUTIProPricing(product);
   const originalPrice = product.list_price;
   const discount = originalPrice ? Math.round(((originalPrice - product.price) / originalPrice) * 100) : 0;
 
@@ -27,15 +27,13 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
         )}
       </div>
       
-      {/* Pro Price Section - só mostra se carregamento terminou e UTI Pro habilitado */}
-      {!utiPro.loading && utiPro.isEnabled && utiPro.proPrice && (
+      {/* Pro Price Section - só mostra se UTI Pro estiver habilitado */}
+      {utiProPricing.isEnabled && utiProPricing.proPrice && (
         <div className="text-sm">
           <span className="font-bold text-purple-600">
-            {formatPrice(utiPro.proPrice)}
+            {formatPrice(utiProPricing.proPrice)}
           </span>
-          <span className="text-muted-foreground ml-1">
-            {utiPro.isUserPro ? 'seu preço PRO' : 'com Pro'}
-          </span>
+          <span className="text-muted-foreground ml-1">com Pro</span>
         </div>
       )}
     </div>
