@@ -10,7 +10,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Menu, Search } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+<<<<<<< HEAD
 import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
+=======
+>>>>>>> db50ef72534d0ba398b3422fbeb5dbe72cba3116
 
 interface MainHeaderProps {
   onCartOpen: () => void;
@@ -28,7 +31,10 @@ const MainHeader = ({
   const location = useLocation();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const { siteInfo } = useSiteSettings();
+<<<<<<< HEAD
   const { navigateToHome } = useGlobalNavigationLinks();
+=======
+>>>>>>> db50ef72534d0ba398b3422fbeb5dbe72cba3116
 
   const toggleMobileSearch = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);

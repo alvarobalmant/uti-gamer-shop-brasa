@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePrimePages, PrimePageWithLayout } from '@/hooks/usePrimePages';
@@ -214,3 +215,14 @@ const PrimePage: React.FC = () => {
 
 export default PrimePage;
 
+=======
+
+import React from 'react';
+import PrimePageComponent from '@/components/PrimePage';
+
+const PrimePage: React.FC = () => {
+  return <PrimePageComponent />;
+};
+
+export default PrimePage;
+>>>>>>> db50ef72534d0ba398b3422fbeb5dbe72cba3116
