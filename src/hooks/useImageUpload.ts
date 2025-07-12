@@ -78,6 +78,15 @@ export const useImageUpload = () => {
         .from('site-images')
         .getPublicUrl(fileName);
 
+      // Trigger scan automático para atualizar estatísticas
+      try {
+        await supabase.functions.invoke('scan-storage');
+        console.log('✅ Scan automático executado após upload');
+      } catch (scanError) {
+        console.warn('⚠️ Erro no scan automático:', scanError);
+        // Não bloquear o upload por falha no scan
+      }
+
       toast({
         title: "Upload realizado com sucesso!",
         description: `Imagem otimizada e carregada como ${processedFile.type}.`,
@@ -97,5 +106,125 @@ export const useImageUpload = () => {
     }
   };
 
-  return { uploadImage, uploading };
+  // Nova função para baixar imagem de URL via proxy
+  const downloadAndUploadFromUrl = async (imageUrl: string, folder: string = 'products'): Promise<string | null> => {
+    setUploading(true);
+    
+    try {
+      console.log('Processando URL da imagem via proxy:', imageUrl);
+      
+      // Converter URLs do Imgur para formato direto da imagem
+      let directImageUrl = imageUrl;
+      if (imageUrl.includes('imgur.com/') && !imageUrl.includes('i.imgur.com')) {
+        const imgurId = imageUrl.split('/').pop()?.split('.')[0];
+        if (imgurId) {
+          directImageUrl = `https://i.imgur.com/${imgurId}.jpg`;
+          console.log('URL do Imgur convertida para:', directImageUrl);
+        }
+      }
+      
+      // Usar proxy via edge function para contornar CORS
+      const proxyUrl = `https://pmxnfpnnvtuuiedoxuxc.supabase.co/functions/v1/image-proxy`;
+      
+      const response = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBteG5mcG5udnR1dWllZG94dXhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwOTY3MTYsImV4cCI6MjA2MzY3MjcxNn0.mc3shTLqOg_Iifd1TVXg49SdVITdmsTENw5e3_TJmi4`
+        },
+        body: JSON.stringify({ 
+          imageUrl: directImageUrl,
+          folder: folder
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erro no proxy: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Erro desconhecido no proxy');
+      }
+
+      console.log('Imagem processada via proxy:', result);
+      
+      // Trigger scan automático para atualizar estatísticas
+      try {
+        await supabase.functions.invoke('scan-storage');
+        console.log('✅ Scan automático executado após download');
+      } catch (scanError) {
+        console.warn('⚠️ Erro no scan automático:', scanError);
+        // Não bloquear o download por falha no scan
+      }
+      
+      toast({
+        title: "Imagem baixada e salva!",
+        description: `Imagem convertida (${(result.size / 1024).toFixed(1)}KB) e salva com sucesso.`,
+      });
+
+      return result.url;
+      
+    } catch (error: any) {
+      console.error('Erro ao processar URL via proxy:', error);
+      
+      toast({
+        title: "Erro ao processar imagem",
+        description: `Não foi possível processar a imagem: ${error.message}`,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Nova função para deletar imagem do storage
+  const deleteImage = async (imageUrl: string): Promise<boolean> => {
+    try {
+      // Verificar se é uma URL do nosso storage
+      if (!imageUrl.includes('supabase') || !imageUrl.includes('site-images')) {
+        console.log('URL não é do storage interno, não precisa deletar:', imageUrl);
+        return true;
+      }
+
+      // Extrair o caminho do arquivo da URL
+      const urlParts = imageUrl.split('/storage/v1/object/public/site-images/');
+      if (urlParts.length !== 2) {
+        console.warn('Não foi possível extrair caminho do arquivo da URL:', imageUrl);
+        return false;
+      }
+
+      const filePath = urlParts[1];
+      console.log('Deletando arquivo do storage:', filePath);
+
+      const { error } = await supabase.storage
+        .from('site-images')
+        .remove([filePath]);
+
+      if (error) {
+        console.error('Erro ao deletar arquivo do storage:', error);
+        return false;
+      }
+
+      // Trigger scan automático para atualizar estatísticas
+      try {
+        await supabase.functions.invoke('scan-storage');
+        console.log('✅ Scan automático executado após deletar');
+      } catch (scanError) {
+        console.warn('⚠️ Erro no scan automático:', scanError);
+        // Não bloquear a deleção por falha no scan
+      }
+
+      console.log('Arquivo deletado com sucesso:', filePath);
+      return true;
+    } catch (error) {
+      console.error('Erro ao deletar imagem:', error);
+      return false;
+    }
+  };
+
+  return { uploadImage, downloadAndUploadFromUrl, deleteImage, uploading };
 };

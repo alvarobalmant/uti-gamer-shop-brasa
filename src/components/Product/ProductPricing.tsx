@@ -2,6 +2,8 @@
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { useUTIProPricing } from '@/hooks/useUTIProPricing';
+import { formatPrice } from '@/utils/formatPrice';
 import { Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,9 +19,9 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
   selectedCondition,
   onConditionChange,
 }) => {
-  const { hasActiveSubscription, getDiscountPercentage } = useSubscriptions();
+  const { hasActiveSubscription } = useSubscriptions();
   const isProMember = hasActiveSubscription();
-  const discountPercentage = getDiscountPercentage();
+  const utiProPricing = useUTIProPricing(product);
 
   const getBasePrice = () => {
     switch (selectedCondition) {
@@ -33,17 +35,14 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
   };
 
   const basePrice = getBasePrice();
-  const originalPrice = product.list_price || basePrice * 1.2;
-  const proPrice = basePrice * (1 - discountPercentage / 100);
-
-  // Condição removida conforme solicitado pelo usuário
+  const originalPrice = product.list_price;
 
   return (
     <div className="space-y-6">
       {/* Preços */}
       <div className="space-y-4">
-        {/* Preço UTI PRO */}
-        {isProMember ? (
+        {/* Preço UTI PRO - só mostra se habilitado para o produto */}
+        {utiProPricing.isEnabled && isProMember && utiProPricing.proPrice && (
           <div className="bg-gradient-to-r from-yellow-100 to-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Crown className="w-5 h-5 text-yellow-600" />
@@ -53,29 +52,31 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
             </div>
             <div className="flex items-center gap-3">
               <span className="text-3xl font-bold text-yellow-800">
-                R$ {proPrice.toFixed(2).replace('.', ',')}
+                {formatPrice(utiProPricing.proPrice)}
               </span>
               <Badge className="bg-green-500 text-white font-bold">
-                -{discountPercentage}% OFF
+                -{utiProPricing.discountPercentage}% OFF
               </Badge>
             </div>
             <div className="text-sm text-yellow-700 mt-1">
-              Você está economizando R$ {(basePrice - proPrice).toFixed(2).replace('.', ',')}
+              Você está economizando {formatPrice(utiProPricing.savings || 0)}
             </div>
           </div>
-        ) : (
-          /* Preço Regular */
+        )}
+
+        {/* Preço Regular - sempre mostra */}
+        {(!utiProPricing.isEnabled || !isProMember) && (
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              {originalPrice > basePrice && (
+              {originalPrice && originalPrice > basePrice && (
                 <span className="text-lg text-gray-500 line-through">
-                  R$ {originalPrice.toFixed(2).replace('.', ',')}
+                  {formatPrice(originalPrice)}
                 </span>
               )}
               <span className="text-3xl font-bold text-gray-900">
-                R$ {basePrice.toFixed(2).replace('.', ',')}
+                {formatPrice(basePrice)}
               </span>
-              {originalPrice > basePrice && (
+              {originalPrice && originalPrice > basePrice && (
                 <Badge variant="destructive" className="font-bold">
                   -{Math.round(((originalPrice - basePrice) / originalPrice) * 100)}% OFF
                 </Badge>
@@ -84,8 +85,8 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
           </div>
         )}
 
-        {/* Oferta UTI PRO para não membros */}
-        {!isProMember && (
+        {/* Oferta UTI PRO para não membros - só mostra se habilitado */}
+        {utiProPricing.isEnabled && !isProMember && utiProPricing.proPrice && (
           <div className="bg-gradient-to-r from-purple-50 to-red-50 border-2 border-purple-200 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -94,10 +95,10 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
                   <span className="font-bold text-purple-800">Preço Membro UTI PRO</span>
                 </div>
                 <div className="text-xl font-bold text-purple-700">
-                  R$ {proPrice.toFixed(2).replace('.', ',')}
+                  {formatPrice(utiProPricing.proPrice)}
                 </div>
                 <div className="text-sm text-purple-600">
-                  Economize R$ {(basePrice - proPrice).toFixed(2).replace('.', ',')} (-{discountPercentage}%)
+                  Economize {formatPrice(utiProPricing.savings || 0)} (-{utiProPricing.discountPercentage}%)
                 </div>
               </div>
               <Button

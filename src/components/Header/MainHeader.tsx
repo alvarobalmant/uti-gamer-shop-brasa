@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import scrollManager from '@/lib/scrollRestorationManager';
 import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActions from './HeaderActions';
@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Menu, Search } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
 
 interface MainHeaderProps {
   onCartOpen: () => void;
@@ -23,9 +25,10 @@ const MainHeader = ({
   onMobileMenuToggle,
   className
 }: MainHeaderProps) => {
-  const navigate = useNavigate();
   const location = useLocation();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const { siteInfo } = useSiteSettings();
+  const { navigateToHome } = useGlobalNavigationLinks();
 
   const toggleMobileSearch = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);
@@ -42,8 +45,8 @@ const MainHeader = ({
         window.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
       }
     } else {
-      // Se estamos em outra página, navegação normal
-      navigate('/');
+      // Se estamos em outra página, usar navegação global
+      await navigateToHome();
     }
   };
 
@@ -81,11 +84,11 @@ const MainHeader = ({
                   handleLogoClick(e as any);
                 }
               }}
-              aria-label="Página Inicial UTI DOS GAMES"
+              aria-label={`Página Inicial ${siteInfo.siteName}`}
             >
               <img
-                src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png"
-                alt="UTI DOS GAMES Logo"
+                src={siteInfo.logoUrl}
+                alt={`${siteInfo.siteName} Logo`}
                 className="h-10 w-auto flex-shrink-0"
               />
               <div className="ml-2 sm:ml-3 overflow-hidden">
@@ -93,13 +96,13 @@ const MainHeader = ({
                   "font-bold leading-tight text-uti-red",
                   // 🎯 TABLET: Tamanho de fonte otimizado para tablets
                   "text-sm md:text-base lg:text-lg"
-                )}>UTI DOS GAMES</h1>
+                )}>{siteInfo.siteName}</h1>
                 <p className={cn(
                   "text-gray-600 leading-tight whitespace-normal",
                   // 🎯 TABLET: Texto otimizado para tablets
                   "text-[10px] md:text-xs lg:text-sm"
                 )}>
-                  Compre online com a segurança de uma loja física.
+                  {siteInfo.siteSubtitle}
                 </p>
               </div>
             </div>

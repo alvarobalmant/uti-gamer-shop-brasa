@@ -2,7 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { SKUNavigation, Platform } from '@/hooks/useProducts/types';
-import { PLATFORM_CONFIG } from '@/hooks/useSKUs';
+import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
 import { cn } from '@/lib/utils';
 
 interface SKUPriceComparisonProps {
@@ -14,6 +14,7 @@ const SKUPriceComparison: React.FC<SKUPriceComparisonProps> = ({
   skuNavigation,
   className
 }) => {
+  const { platformConfig } = useDynamicPlatforms();
   const availableSKUs = skuNavigation.availableSKUs.filter(sku => sku.stock && sku.stock > 0);
   
   if (availableSKUs.length <= 1) {
@@ -43,8 +44,8 @@ const SKUPriceComparison: React.FC<SKUPriceComparisonProps> = ({
 
           <div className="space-y-3">
             {sortedSKUs.map((sku) => {
-              const platform = sku.variant_attributes?.platform as Platform;
-              const platformInfo = PLATFORM_CONFIG[platform];
+              const platform = sku.variant_attributes?.platform;
+              const platformInfo = platformConfig[platform || ''];
               const isLowestPrice = sku.price === minPrice;
               const isHighestPrice = sku.price === maxPrice && minPrice !== maxPrice;
               
@@ -60,7 +61,17 @@ const SKUPriceComparison: React.FC<SKUPriceComparisonProps> = ({
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="text-xl">{platformInfo.icon}</div>
+                    <div className="text-xl flex items-center justify-center w-6 h-6">
+                      {platformInfo.icon.startsWith('http') ? (
+                        <img 
+                          src={platformInfo.icon} 
+                          alt={platformInfo.name}
+                          className="w-5 h-5 object-contain"
+                        />
+                      ) : (
+                        <span className="text-xl">{platformInfo.icon}</span>
+                      )}
+                    </div>
                     <div>
                       <div className="font-medium text-gray-900">
                         {platformInfo.name}

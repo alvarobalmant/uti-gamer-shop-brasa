@@ -28,6 +28,12 @@ const mapRowToProduct = (row: any): Product => ({
   is_active: row.is_active !== false,
   is_featured: row.is_featured || false,
   
+  // Campos UTI PRO
+  uti_pro_enabled: row.uti_pro_enabled || false,
+  uti_pro_value: row.uti_pro_value ? Number(row.uti_pro_value) : undefined,
+  uti_pro_custom_price: row.uti_pro_custom_price ? Number(row.uti_pro_custom_price) : undefined,
+  uti_pro_type: row.uti_pro_type || 'percentage',
+  
   // Campos do sistema de SKUs
   parent_product_id: row.parent_product_id || undefined,
   is_master_product: row.is_master_product || false,
@@ -89,7 +95,8 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
   try {
     const { data, error } = await supabase
       .from('view_product_with_tags')
-      .select('*');
+      .select('*')
+      .neq('product_type', 'master'); // Filtrar produtos master
 
     if (error) {
       console.error('Error fetching products:', error);
@@ -106,7 +113,7 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
         productsMap.set(productId, mapRowToProduct(row));
       }
       
-      // Adicionar tag se existir
+      // Adicionar tag se existir e não for duplicata
       if (row.tag_id && row.tag_name) {
         const product = productsMap.get(productId)!;
         const tagExists = product.tags?.some(tag => tag.id === row.tag_id);
@@ -121,6 +128,7 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
       }
     });
 
+    console.log(`[fetchProductsFromDatabase] Carregados ${productsMap.size} produtos únicos`);
     return Array.from(productsMap.values());
   } catch (error) {
     console.error('Error in fetchProductsFromDatabase:', error);
@@ -130,7 +138,9 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
 
 export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<Product[]> => {
   try {
-    let query = supabase.from('view_product_with_tags').select('*');
+    let query = supabase.from('view_product_with_tags')
+      .select('*')
+      .neq('product_type', 'master'); // Filtrar produtos master
     
     // Filter by product IDs if specified
     if (config.product_ids && config.product_ids.length > 0) {
@@ -159,7 +169,7 @@ export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<P
         productsMap.set(productId, mapRowToProduct(row));
       }
       
-      // Add tag if exists
+      // Add tag if exists and not duplicate
       if (row.tag_id && row.tag_name) {
         const product = productsMap.get(productId)!;
         const tagExists = product.tags?.some(tag => tag.id === row.tag_id);
@@ -174,6 +184,7 @@ export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<P
       }
     });
 
+    console.log(`[fetchProductsByCriteria] Carregados ${productsMap.size} produtos únicos por critério`);
     return Array.from(productsMap.values());
   } catch (error) {
     console.error('Error in fetchProductsByCriteria:', error);
@@ -232,6 +243,13 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
         slug: directData.slug,
         is_active: directData.is_active,
         is_featured: directData.is_featured,
+        
+        // Campos UTI PRO
+        uti_pro_enabled: directData.uti_pro_enabled,
+        uti_pro_value: directData.uti_pro_value,
+        uti_pro_custom_price: directData.uti_pro_custom_price,
+        uti_pro_type: directData.uti_pro_type,
+        
         parent_product_id: directData.parent_product_id,
         is_master_product: directData.is_master_product,
         product_type: directData.product_type,

@@ -1,6 +1,9 @@
 
 import React, { useState } from 'react';
 import MainHeader from './Header/MainHeader';
+import MobileMenu from './Header/MobileMenu';
+import { categories, Category } from './Header/categories';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onCartOpen?: () => void;
@@ -11,6 +14,7 @@ interface HeaderProps {
 // Isso resolve o problema de importação em outros componentes que usam '@/components/Header'
 const Header: React.FC<HeaderProps> = ({ onCartOpen, onAuthOpen }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleCartOpen = () => {
     if (onCartOpen) {
@@ -25,15 +29,45 @@ const Header: React.FC<HeaderProps> = ({ onCartOpen, onAuthOpen }) => {
   };
 
   const handleMobileMenuToggle = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
+    setMobileMenuOpen(prev => {
+      const isOpen = !prev;
+      if (isOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'unset';
+      }
+      return isOpen;
+    });
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+    document.body.style.overflow = 'unset';
+  };
+
+  const handleCategoryClick = (category: Category) => {
+    navigate(category.path);
+    setMobileMenuOpen(false);
+    document.body.style.overflow = 'unset';
   };
 
   return (
-    <MainHeader 
-      onCartOpen={handleCartOpen}
-      onAuthOpen={handleAuthOpen}
-      onMobileMenuToggle={handleMobileMenuToggle}
-    />
+    <>
+      <MainHeader 
+        onCartOpen={handleCartOpen}
+        onAuthOpen={handleAuthOpen}
+        onMobileMenuToggle={handleMobileMenuToggle}
+      />
+
+      {/* MobileMenu */}
+      <MobileMenu
+        isOpen={mobileMenuOpen}
+        onClose={closeMobileMenu}
+        onAuthOpen={handleAuthOpen}
+        categories={categories}
+        onCategoryClick={handleCategoryClick}
+      />
+    </>
   );
 };
 

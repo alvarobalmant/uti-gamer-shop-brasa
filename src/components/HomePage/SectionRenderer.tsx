@@ -68,7 +68,7 @@ export const SectionRenderer: React.FC<SectionRendererProps> = ({
           
           if (!section) return null;
           
-          // --- BUG FIX: Deduplicate products --- 
+          // --- BUG FIX: Deduplicate products and filter master products --- 
           const productMap = new Map<string, Product>(); // Use a Map to store unique products by ID
           
           if (section.items) {
@@ -76,12 +76,13 @@ export const SectionRenderer: React.FC<SectionRendererProps> = ({
               if (item.item_type === 'product') {
                 // Find specific product by ID
                 const product = products.find(p => p.id === item.item_id);
-                if (product && !productMap.has(product.id)) { // Check if not already added
+                if (product && product.product_type !== 'master' && !productMap.has(product.id)) { // Filter master products
                   productMap.set(product.id, product);
                 }
               } else if (item.item_type === 'tag') {
-                // Find products with this tag
+                // Find products with this tag, excluding master products
                 const tagProducts = products.filter(p => 
+                  p.product_type !== 'master' && // Filter master products
                   p.tags?.some(tag => tag.name.toLowerCase() === item.item_id.toLowerCase() || tag.id === item.item_id)
                 );
                 // Add tag products to the map, overwriting duplicates (which is fine)
@@ -105,7 +106,7 @@ export const SectionRenderer: React.FC<SectionRendererProps> = ({
                 loading={productsLoading || sectionsLoading}
                 onAddToCart={onAddToCart}
                 title={section.title}
-                viewAllLink={section.view_all_link || undefined}
+                viewAllLink={section.view_all_link || `/secao/${sectionKey}`}
                 reduceTopSpacing={reduceTopSpacing}
               />
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
@@ -74,3 +73,4 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
 });
 
 export default ProductCard;
+

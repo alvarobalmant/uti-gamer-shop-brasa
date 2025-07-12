@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SKUNavigation, Platform } from '@/hooks/useProducts/types';
-import { PLATFORM_CONFIG } from '@/hooks/useSKUs';
+import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
 import { cn } from '@/lib/utils';
 
 interface PlatformSelectorProps {
@@ -18,6 +18,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
   className
 }) => {
   const navigate = useNavigate();
+  const { platformConfig } = useDynamicPlatforms();
 
   const handlePlatformClick = (platform: string, sku: any) => {
     if (sku) {
@@ -46,15 +47,15 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {skuNavigation.platforms.map(({ platform, sku, available }) => {
-          const platformInfo = PLATFORM_CONFIG[platform as Platform];
+        {skuNavigation.platforms.map(({ platform, sku, available }, index) => {
+          const platformInfo = platformConfig[platform];
           const isCurrentPlatform = currentPlatform === platform;
           
           if (!platformInfo) return null;
 
           return (
             <Button
-              key={platform}
+              key={`${platform}-${sku?.id || index}`}
               variant={isCurrentPlatform ? "default" : "outline"}
               className={cn(
                 "h-auto p-4 flex flex-col items-center gap-2 relative",
@@ -66,8 +67,16 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
               disabled={!available}
             >
               {/* Ícone da plataforma */}
-              <div className="text-2xl mb-1">
-                {platformInfo.icon}
+              <div className="text-2xl mb-1 flex items-center justify-center w-8 h-8">
+                {platformInfo.icon.startsWith('http') ? (
+                  <img 
+                    src={platformInfo.icon} 
+                    alt={platformInfo.name}
+                    className="w-6 h-6 object-contain"
+                  />
+                ) : (
+                  <span className="text-2xl">{platformInfo.icon}</span>
+                )}
               </div>
               
               {/* Nome da plataforma */}

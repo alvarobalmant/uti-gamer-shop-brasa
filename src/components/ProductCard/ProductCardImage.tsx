@@ -17,9 +17,11 @@ const ProductCardImage: React.FC<ProductCardImageProps> = React.memo(({ product,
   }, []);
 
   const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.log(`[IMAGE ERROR] Falha ao carregar imagem: ${e.currentTarget.src}`);
     setImageError(true);
     e.currentTarget.onerror = null;
-    e.currentTarget.src = '/placeholder-image-error.webp';
+    // Usar uma imagem de placeholder mais genérica que definitivamente existe
+    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE2MCIgdmlld0JveD0iMCAwIDIwMCAxNjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTYwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03NSA2MEw5MCA3NUwxMjUgNDBMMTUwIDY1VjEyMEg1MFY2NUw3NSA2MFoiIGZpbGw9IiNEMUQ1REIiLz4KPGNpcmNsZSBjeD0iNzAiIGN5PSI1MCIgcj0iMTAiIGZpbGw9IiNEMUQ1REIiLz4KPC9zdmc+';
   }, []);
 
   // Criar um ID único para este componente específico

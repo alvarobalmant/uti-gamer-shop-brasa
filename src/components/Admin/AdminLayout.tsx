@@ -2,16 +2,19 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Settings, Box, LogOut } from 'lucide-react'; // Example icons
+import { LayoutDashboard, Settings, Box, LogOut, Package, Image, ImagePlus, Zap } from 'lucide-react'; // Example icons
 import { useAuth } from '@/hooks/useAuth';
 
 const AdminLayout: React.FC = () => {
   const { signOut } = useAuth();
 
   // Basic sidebar navigation items
-  const navItems = [
-    // { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    // { href: '/admin/sections', label: 'Seções Produtos', icon: Box },
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
+    { id: 'products', label: 'Produtos', icon: Package, path: '/admin/products' },
+    { id: 'easy-manager', label: 'Gerenciamento Fácil', icon: Zap, path: '/admin/easy-manager' },
+    { id: 'images', label: 'Upload Fácil', icon: ImagePlus, path: '/admin/images' },
+    { id: 'banners', label: 'Banners', icon: Image, path: '/admin/banners' },
     // Add more admin links here (e.g., Products, Orders, Settings)
     // { href: '/admin/settings', label: 'Configurações', icon: Settings },
   ];
@@ -27,12 +30,12 @@ const AdminLayout: React.FC = () => {
           </Link>
         </div>
         <nav className="flex-1 py-4 px-4 space-y-1">
-          {navItems.map((item) => {
+          {menuItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.label}
-                to={item.href}
+                to={item.path}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted',
                   // Add active state styling if needed using useLocation

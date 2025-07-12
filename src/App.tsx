@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,11 +7,17 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
 import { ProductProvider } from "@/contexts/ProductContext";
+import { LoadingProvider } from "@/contexts/LoadingContext";
+import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
+import LoadingOverlay from "@/components/LoadingOverlay";
+import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 
 // Lazy loading para páginas menos críticas
-const SearchResults = lazy(() => import("./pages/SearchResults"));
+const SearchResults = lazy(() => import("./pages/SearchResultsFinal"));
+const SectionPage = lazy(() => import("./pages/SectionPage"));
+const PrimePage = lazy(() => import("./pages/PrimePage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const UTIPro = lazy(() => import("./pages/UTIPro"));
@@ -82,12 +88,16 @@ const App = () => (
     <AuthProvider>
       <CartProvider>
         <ProductProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <ScrollRestorationProvider>
-                <Suspense fallback={<PageLoader />}>
+          <LoadingProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <GlobalNavigationProvider>
+                  <ScrollRestorationProvider>
+                    <LoadingOverlay />
+                    <GlobalNavigationOverlay />
+                    <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
                   <Route path="/" element={<Index />} />
@@ -116,6 +126,7 @@ const App = () => (
 
                   {/* Special routes - MUST come before dynamic routes */}
                   <Route path="/busca" element={<SearchResults />} />
+                  <Route path="/secao/:sectionKey" element={<SectionPage />} />
                   <Route path="/categoria/:category" element={<CategoryPage />} />
                   
                   {/* Dynamic Carousel Page Route */}
@@ -139,6 +150,9 @@ const App = () => (
                   <Route path="/retro-gaming" element={<RetroGamingPage />} />
                   <Route path="/area-geek" element={<AreaGeekPage />} />
 
+                  {/* Prime Pages Route - MUST come before dynamic routes */}
+                  <Route path="/prime/:slug" element={<PrimePage />} />
+
                   {/* Dynamic Page Route - MUST be last before catch-all */}
                   <Route 
                     path="/:slug" 
@@ -150,11 +164,13 @@ const App = () => (
                 </Routes>
               </Suspense>
             </ScrollRestorationProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ProductProvider>
-    </CartProvider>
-  </AuthProvider>
+          </GlobalNavigationProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </LoadingProvider>
+  </ProductProvider>
+</CartProvider>
+</AuthProvider>
 </QueryClientProvider>
 );
 

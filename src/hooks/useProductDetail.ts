@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Product, SKUNavigation } from '@/hooks/useProducts/types';
 import { fetchSingleProductFromDatabase } from '@/hooks/useProducts/productApi';
+import { inheritFromMaster } from '@/hooks/useInheritanceManager';
 import { supabase } from '@/integrations/supabase/client';
 
 // Cache local para produtos
@@ -56,24 +57,43 @@ export const useProductDetail = (productId: string | undefined) => {
         return null;
       }
 
-      const skus = skusData?.map((row: any) => ({
-        id: row.product_id,
-        name: row.product_name || '',
-        price: Number(row.product_price) || 0,
-        variant_attributes: row.variant_attributes || {},
-        sku_code: row.sku_code,
-        sort_order: row.sort_order || 0
-      })) || [];
+      // Agrupar por product_id para evitar duplicatas devido às tags
+      const skusMap = new Map<string, any>();
+      skusData?.forEach((row: any) => {
+        if (!skusMap.has(row.product_id)) {
+          skusMap.set(row.product_id, {
+            id: row.product_id,
+            name: row.product_name || '',
+            price: Number(row.product_price) || 0,
+            variant_attributes: row.variant_attributes || {},
+            sku_code: row.sku_code,
+            sort_order: row.sort_order || 0
+          });
+        }
+      });
+
+      const skus = Array.from(skusMap.values());
+
+      // Agrupar plataformas para evitar duplicatas
+      const platformsMap = new Map<string, any>();
+      skus.forEach(sku => {
+        const platform = sku.variant_attributes?.platform || '';
+        if (platform && !platformsMap.has(platform)) {
+          platformsMap.set(platform, {
+            platform,
+            sku: sku as any,
+            available: true
+          });
+        }
+      });
+
+      console.log(`[useProductDetail] SKUs encontrados: ${skus.length}, Plataformas únicas: ${platformsMap.size}`);
 
       return {
         masterProduct: masterProduct as any,
         currentSKU: currentSKU as any,
         availableSKUs: skus as any,
-        platforms: skus.map(sku => ({
-          platform: sku.variant_attributes?.platform || '',
-          sku: sku as any,
-          available: true
-        }))
+        platforms: Array.from(platformsMap.values())
       };
     } catch (error) {
       console.error('Erro ao buscar navegação de SKUs:', error);
@@ -110,9 +130,20 @@ export const useProductDetail = (productId: string | undefined) => {
 
         setProduct(productData);
 
-        // Carregar navegação de SKU em paralelo
-        const navigation = await fetchSKUNavigationOptimized(productData);
-        setSKUNavigation(navigation);
+        // Aplicar herança de dados se for um SKU
+        if (productData.product_type === 'sku' && productData.parent_product_id) {
+          console.log('[useProductDetail] Aplicando herança de dados do produto mestre...');
+          const enhancedProduct = await inheritFromMaster(productData);
+          setProduct(enhancedProduct);
+          
+          // Carregar navegação de SKU com produto aprimorado
+          const navigation = await fetchSKUNavigationOptimized(enhancedProduct);
+          setSKUNavigation(navigation);
+        } else {
+          // Carregar navegação de SKU em paralelo
+          const navigation = await fetchSKUNavigationOptimized(productData);
+          setSKUNavigation(navigation);
+        }
 
       } catch (err: any) {
         console.error('[useProductDetail] Error fetching product:', err);

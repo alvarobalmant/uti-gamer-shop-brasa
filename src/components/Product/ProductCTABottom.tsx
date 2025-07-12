@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
+import { formatPrice } from '@/utils/formatPrice';
 import { ShoppingCart, MessageCircle, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -15,7 +16,7 @@ const ProductCTABottom: React.FC<ProductCTABottomProps> = ({ product, onAddToCar
   };
 
   const handleWhatsApp = () => {
-    const message = `Olá! Quero comprar: ${product.name} - R$ ${product.price.toFixed(2)}`;
+    const message = `Olá! Quero comprar: ${product.name} - ${formatPrice(product.price)}`;
     const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -37,7 +38,7 @@ const ProductCTABottom: React.FC<ProductCTABottomProps> = ({ product, onAddToCar
               </h3>
               <div className="flex items-center gap-3">
                 <span className="text-2xl font-bold text-red-600">
-                  R$ {product.price.toFixed(2).replace('.', ',')}
+                  {formatPrice(product.price)}
                 </span>
               </div>
             </div>

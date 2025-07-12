@@ -110,6 +110,7 @@ const ProductPageSKU = () => {
         <ProfessionalHeader 
           onCartOpen={handleCartOpen}
           onAuthOpen={handleAuthOpen}
+          showNavigation={false}
         />
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Produto não encontrado</h1>
@@ -132,6 +133,7 @@ const ProductPageSKU = () => {
       <ProfessionalHeader 
         onCartOpen={handleCartOpen}
         onAuthOpen={handleAuthOpen}
+        showNavigation={false}
       />
 
       <main className="pt-4">

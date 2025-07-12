@@ -3,6 +3,8 @@ import { Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/hooks/useProducts';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { useUTIProPricing } from '@/hooks/useUTIProPricing';
+import { formatPrice } from '@/utils/formatPrice';
 import { useNavigate } from 'react-router-dom';
 
 interface ProductProPricingProps {
@@ -12,11 +14,11 @@ interface ProductProPricingProps {
 }
 
 const ProductProPricing = ({ product, selectedCondition, onConditionChange }: ProductProPricingProps) => {
-  const { hasActiveSubscription, getDiscountPercentage } = useSubscriptions();
+  const { hasActiveSubscription } = useSubscriptions();
   const navigate = useNavigate();
+  const utiProPricing = useUTIProPricing(product);
   
   const isProMember = hasActiveSubscription();
-  const discountPercentage = getDiscountPercentage();
   
   const getBasePrice = () => {
     switch (selectedCondition) {
@@ -27,9 +29,7 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
   };
 
   const basePrice = getBasePrice();
-  const proPrice = basePrice * (1 - discountPercentage / 100);
-  const originalPrice = basePrice * 1.15;
-  const savings = basePrice - proPrice;
+  const originalPrice = product.list_price;
 
   const conditionLabels = {
     'pre-owned': 'Usado',
@@ -63,8 +63,8 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-3">Preço</h3>
         
-        {/* UTI PRO Price - Show first if user is PRO member */}
-        {isProMember && (
+        {/* UTI PRO Price - só mostra se habilitado e user é PRO member */}
+        {utiProPricing.isEnabled && isProMember && utiProPricing.proPrice && (
           <div className="bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 rounded-lg p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
               <Crown className="w-5 h-5 text-yellow-600" />
@@ -74,17 +74,17 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
             </div>
             <div className="flex items-center gap-3">
               <span className="text-3xl font-bold text-yellow-800">
-                R$ {proPrice.toFixed(2)}
+                {formatPrice(utiProPricing.proPrice)}
               </span>
               <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
-                -{discountPercentage}% OFF
+                -{utiProPricing.discountPercentage}% OFF
               </span>
             </div>
             <div className="text-sm text-yellow-700 mt-2">
-              Você está economizando R$ {savings.toFixed(2)}
+              Você está economizando {formatPrice(utiProPricing.savings || 0)}
             </div>
             <div className="text-xs text-yellow-600 mt-1">
-              ou 12x de R$ {(proPrice / 12).toFixed(2)} sem juros
+              ou 12x de {formatPrice((utiProPricing.proPrice || 0) / 12)} sem juros
             </div>
           </div>
         )}
@@ -92,25 +92,25 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
         {/* Regular Price */}
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <span className={`text-2xl font-bold ${isProMember ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
-              R$ {basePrice.toFixed(2)}
+            <span className={`text-2xl font-bold ${(utiProPricing.isEnabled && isProMember) ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
+              {formatPrice(basePrice)}
             </span>
-            {!isProMember && (
+            {!(utiProPricing.isEnabled && isProMember) && originalPrice && originalPrice > basePrice && (
               <span className="text-lg text-gray-500 line-through">
-                R$ {originalPrice.toFixed(2)}
+                {formatPrice(originalPrice)}
               </span>
             )}
           </div>
           
-          {!isProMember && (
+          {!(utiProPricing.isEnabled && isProMember) && (
             <div className="text-gray-600">
-              ou 12x de R$ {(basePrice / 12).toFixed(2)} sem juros
+              ou 12x de {formatPrice(basePrice / 12)} sem juros
             </div>
           )}
         </div>
 
-        {/* UTI PRO teaser for non-members */}
-        {!isProMember && (
+        {/* UTI PRO teaser for non-members - só mostra se habilitado */}
+        {utiProPricing.isEnabled && !isProMember && utiProPricing.proPrice && (
           <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-red-50 border border-purple-200 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Crown className="w-5 h-5 text-purple-600" />
@@ -119,10 +119,10 @@ const ProductProPricing = ({ product, selectedCondition, onConditionChange }: Pr
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xl font-bold text-purple-700">
-                  R$ {proPrice.toFixed(2)}
+                  {formatPrice(utiProPricing.proPrice)}
                 </span>
                 <div className="text-sm text-purple-600">
-                  Economize R$ {savings.toFixed(2)} (-{discountPercentage}%)
+                  Economize {formatPrice(utiProPricing.savings || 0)} (-{utiProPricing.discountPercentage}%)
                 </div>
               </div>
               <Button

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useNavigate } from 'react-router-dom';
+import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -17,7 +17,7 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
+  const { navigateToSearch } = useGlobalNavigationLinks();
   const isMobile = useIsMobile();
 
   // Focus input when the search bar opens
@@ -42,9 +42,9 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
     };
   }, [isOpen]);
 
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = async () => {
     if (searchQuery.trim()) {
-      navigate(`/busca?q=${encodeURIComponent(searchQuery.trim())}`);
+      await navigateToSearch(searchQuery.trim());
       setShowSuggestions(false);
       onClose(); // Close the search bar after submitting
     }
@@ -58,10 +58,10 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
     }
   };
 
-  const handleSuggestionSelect = (suggestion: string) => {
+  const handleSuggestionSelect = async (suggestion: string) => {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
-    navigate(`/busca?q=${encodeURIComponent(suggestion)}`);
+    await navigateToSearch(suggestion);
     onClose(); // Close after selecting suggestion
   };
 
@@ -73,7 +73,7 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 bg-white md:hidden" // Ensure it's only for mobile
+          className="fixed inset-0 z-50 bg-white lg:hidden" // Funciona até desktop (lg)
         >
           {/* Header */}
           <div className="flex items-center p-4 border-b border-gray-200 h-[72px]"> {/* Match header height */}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import useSKUs, { PLATFORM_CONFIG } from '@/hooks/useSKUs';
+import useSKUs from '@/hooks/useSKUs';
+import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
 import { Product, ProductSKU, MasterProduct, Platform } from '@/hooks/useProducts/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +29,8 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
     deleteSKU,
     loading 
   } = useSKUs();
+  
+  const { platformConfig, loading: platformsLoading } = useDynamicPlatforms();
 
   const [skus, setSKUs] = useState<ProductSKU[]>([]);
   const [selectedSKU, setSelectedSKU] = useState<ProductSKU | null>(null);
@@ -83,7 +86,7 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
     try {
       const skuData: Partial<ProductSKU> = {
         parent_product_id: masterProduct.id,
-        name: formData.name || `${masterProduct.name} - ${PLATFORM_CONFIG[formData.platform as Platform]?.name}`,
+        name: formData.name || `${masterProduct.name} - ${platformConfig[formData.platform]?.name}`,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
         sku_code: formData.sku_code,
@@ -105,7 +108,7 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
         
         toast({
           title: "SKU criado com sucesso!",
-          description: `SKU para ${PLATFORM_CONFIG[formData.platform as Platform]?.name} foi criado.`,
+          description: `SKU para ${platformConfig[formData.platform]?.name} foi criado.`,
         });
       }
     } catch (error) {
@@ -180,7 +183,7 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
 
   const getAvailablePlatforms = () => {
     const usedPlatforms = getUsedPlatforms();
-    return Object.keys(PLATFORM_CONFIG).filter(platform => 
+    return Object.keys(platformConfig).filter(platform => 
       !usedPlatforms.includes(platform)
     );
   };
@@ -229,7 +232,7 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
                     <SelectContent>
                       {getAvailablePlatforms().map(platform => (
                         <SelectItem key={platform} value={platform}>
-                          {PLATFORM_CONFIG[platform as Platform]?.icon} {PLATFORM_CONFIG[platform as Platform]?.name}
+                          {platformConfig[platform]?.icon} {platformConfig[platform]?.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -331,8 +334,8 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
           </Card>
         ) : (
           skus.map((sku) => {
-            const platform = sku.variant_attributes?.platform as Platform;
-            const platformInfo = PLATFORM_CONFIG[platform];
+            const platform = sku.variant_attributes?.platform;
+            const platformInfo = platformConfig[platform || ''];
             
             return (
               <Card key={sku.id}>
@@ -422,9 +425,9 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.keys(PLATFORM_CONFIG).map(platform => (
+                    {Object.keys(platformConfig).map(platform => (
                       <SelectItem key={platform} value={platform}>
-                        {PLATFORM_CONFIG[platform as Platform]?.icon} {PLATFORM_CONFIG[platform as Platform]?.name}
+                        {platformConfig[platform]?.icon} {platformConfig[platform]?.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

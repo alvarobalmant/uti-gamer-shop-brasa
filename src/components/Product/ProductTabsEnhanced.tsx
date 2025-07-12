@@ -44,21 +44,40 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
 
   // Processar especificações estruturadas
   const getSpecifications = () => {
-    if (product.specifications && typeof product.specifications === 'object') {
+    console.log('[ProductTabsEnhanced] Processando especificações:', product.specifications);
+    
+    if (product.specifications) {
+      // Se é um array de objetos simples [{name: "x", value: "y"}]
+      if (Array.isArray(product.specifications)) {
+        return [{
+          name: 'Especificações Técnicas',
+          specs: product.specifications.map(spec => ({
+            label: spec.name,
+            value: spec.value,
+            highlight: false
+          }))
+        }];
+      }
+      
       // Se é um objeto estruturado com categorias
       if (product.specifications.categories && Array.isArray(product.specifications.categories)) {
         return product.specifications.categories;
       }
-      // Se é um array simples
-      if (Array.isArray(product.specifications)) {
+
+      // Se é um objeto plano (chave-valor direto)
+      if (typeof product.specifications === 'object' && !Array.isArray(product.specifications)) {
         return [{
-          name: 'Especificações',
-          specs: product.specifications
+          name: 'Especificações Técnicas',
+          specs: Object.entries(product.specifications).map(([key, value]) => ({
+            label: key,
+            value: String(value),
+            highlight: false
+          }))
         }];
       }
     }
     
-    // Se não há especificações, retornar array vazio
+    console.log('[ProductTabsEnhanced] Nenhuma especificação encontrada');
     return [];
   };
 
@@ -86,13 +105,23 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
 
   // Processar FAQ do produto
   const getFAQs = () => {
+    console.log('[ProductTabsEnhanced] Processando FAQs:', product.product_faqs);
+    
     // Priorizar dados JSONB carregados diretamente
     const faqs = jsonbData?.product_faqs || product.product_faqs;
     
     if (faqs && Array.isArray(faqs) && faqs.length > 0) {
-      return faqs;
+      console.log('[ProductTabsEnhanced] FAQs encontrados:', faqs.length);
+      return faqs.map((faq, index) => ({
+        id: faq.id || index + 1,
+        question: faq.question,
+        answer: faq.answer,
+        category: faq.category || 'Geral',
+        is_visible: faq.is_visible !== false
+      }));
     }
     
+    console.log('[ProductTabsEnhanced] Nenhum FAQ encontrado');
     return [];
   };
 

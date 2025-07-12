@@ -370,9 +370,10 @@ const ProductPage: React.FC = () => {
           {/* Abas de Informações */}
           <div className="mt-16">
             <Tabs defaultValue="description" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="description">Descrição</TabsTrigger>
                 <TabsTrigger value="specifications">Especificações</TabsTrigger>
+                <TabsTrigger value="faq">FAQ</TabsTrigger>
                 <TabsTrigger value="reviews">Avaliações</TabsTrigger>
               </TabsList>
               <TabsContent value="description" className="mt-6">
@@ -405,6 +406,35 @@ const ProductPage: React.FC = () => {
                         </ul>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="faq" className="mt-6">
+                <Card>
+                  <CardContent className="p-6">
+                    {product.product_faqs && product.product_faqs.length > 0 ? (
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Perguntas Frequentes</h3>
+                        <div className="space-y-4">
+                          {product.product_faqs.map((faq, index) => (
+                            <div key={faq.id || index} className="border-b border-gray-200 pb-4 last:border-b-0">
+                              <h4 className="font-medium text-gray-900 mb-2">{faq.question}</h4>
+                              <p className="text-gray-700 text-sm leading-relaxed">{faq.answer}</p>
+                              {faq.category && (
+                                <span className="inline-block mt-2 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                                  {faq.category}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500 mb-4">Nenhuma pergunta frequente disponível para este produto.</p>
+                        <p className="text-sm text-gray-400">Entre em contato conosco se tiver alguma dúvida!</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
