@@ -459,6 +459,86 @@ export type Database = {
         }
         Relationships: []
       }
+      prime_page_layout: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          id: string
+          is_visible: boolean | null
+          page_id: string | null
+          section_config: Json | null
+          section_key: string
+          section_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          is_visible?: boolean | null
+          page_id?: string | null
+          section_config?: Json | null
+          section_key: string
+          section_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          is_visible?: boolean | null
+          page_id?: string | null
+          section_config?: Json | null
+          section_key?: string
+          section_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prime_page_layout_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "prime_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prime_pages: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          meta_description: string | null
+          meta_title: string | null
+          slug: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          slug: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       pro_codes: {
         Row: {
           code: string
