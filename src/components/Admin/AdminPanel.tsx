@@ -17,11 +17,10 @@ import MasterProductManager from './MasterProductManager';
 import PlatformManager from './PlatformManager';
 import BulkProductUpload from './BulkProductUpload';
 import ProductImageManager from '@/pages/Admin/ProductImageManager';
-import GlobalMagicBrush from '@/pages/Admin/GlobalMagicBrush';
 import StorageManager from './StorageManager';
 import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Wand2 } from 'lucide-react';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -39,7 +38,6 @@ export const AdminPanel = () => {
     { id: 'products', label: 'Produtos', icon: Package },
     { id: 'bulk_upload', label: 'Importação em Massa', icon: Upload },
     { id: 'image_upload', label: 'Upload Fácil', icon: ImagePlus },
-    { id: 'magic_brush', label: 'Pincel Mágico Geral', icon: Wand2 },
     { id: 'storage', label: 'Gerenciar Storage', icon: HardDrive },
     { id: 'skus', label: 'Sistema de SKUs', icon: Layers },
     { id: 'platforms', label: 'Plataformas', icon: Settings },
@@ -186,10 +184,6 @@ export const AdminPanel = () => {
 
               <TabsContent value="image_upload" className="mt-0">
                 <ProductImageManager />
-              </TabsContent>
-
-              <TabsContent value="magic_brush" className="mt-0">
-                <GlobalMagicBrush />
               </TabsContent>
 
               <TabsContent value="storage" className="mt-0">

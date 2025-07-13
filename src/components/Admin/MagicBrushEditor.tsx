@@ -35,81 +35,9 @@ export const MagicBrushEditor: React.FC<MagicBrushEditorProps> = ({
   const [history, setHistory] = useState<ImageData[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [safeProcessedImage, setSafeProcessedImage] = useState<HTMLImageElement | null>(null);
-  const [safeOriginalImage, setSafeOriginalImage] = useState<HTMLImageElement | null>(null);
   
-  // Função para converter imagem em blob URL seguro
-  const convertImageToBlobUrl = useCallback(async (image: HTMLImageElement): Promise<HTMLImageElement> => {
-    return new Promise((resolve, reject) => {
-      const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d');
-      
-      if (!tempCtx) {
-        reject(new Error('Não foi possível criar contexto temporário'));
-        return;
-      }
-      
-      tempCanvas.width = image.naturalWidth;
-      tempCanvas.height = image.naturalHeight;
-      
-      try {
-        tempCtx.drawImage(image, 0, 0);
-        
-        tempCanvas.toBlob((blob) => {
-          if (!blob) {
-            reject(new Error('Falha ao criar blob da imagem'));
-            return;
-          }
-          
-          const blobUrl = URL.createObjectURL(blob);
-          const newImg = new Image();
-          
-          newImg.onload = () => {
-            URL.revokeObjectURL(blobUrl);
-            resolve(newImg);
-          };
-          newImg.onerror = () => {
-            URL.revokeObjectURL(blobUrl);
-            reject(new Error('Falha ao carregar imagem do blob'));
-          };
-          newImg.src = blobUrl;
-        }, 'image/png');
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }, []);
-  
-  // Converter imagens para blob URLs seguros
+  // Inicializar canvas
   useEffect(() => {
-    const convertImages = async () => {
-      try {
-        console.log('🔄 Convertendo imagens para blob URLs seguros...');
-        
-        const [safeProcessed, safeOriginal] = await Promise.all([
-          convertImageToBlobUrl(processedImage),
-          convertImageToBlobUrl(originalImage)
-        ]);
-        
-        setSafeProcessedImage(safeProcessed);
-        setSafeOriginalImage(safeOriginal);
-        
-        console.log('✅ Imagens convertidas com sucesso');
-      } catch (error) {
-        console.error('❌ Erro ao converter imagens:', error);
-        // Fallback: tentar usar as imagens originais
-        setSafeProcessedImage(processedImage);
-        setSafeOriginalImage(originalImage);
-      }
-    };
-    
-    convertImages();
-  }, [processedImage, originalImage, convertImageToBlobUrl]);
-  
-  // Inicializar canvas apenas quando as imagens seguras estiverem prontas
-  useEffect(() => {
-    if (!safeProcessedImage) return;
-    
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -117,15 +45,15 @@ export const MagicBrushEditor: React.FC<MagicBrushEditorProps> = ({
     if (!ctx) return;
     
     // Configurar dimensões
-    canvas.width = safeProcessedImage.naturalWidth;
-    canvas.height = safeProcessedImage.naturalHeight;
+    canvas.width = processedImage.naturalWidth;
+    canvas.height = processedImage.naturalHeight;
     
     // Desenhar imagem processada como base
-    ctx.drawImage(safeProcessedImage, 0, 0);
+    ctx.drawImage(processedImage, 0, 0);
     
     // Salvar estado inicial
     saveToHistory();
-  }, [safeProcessedImage]);
+  }, [processedImage]);
   
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
@@ -134,19 +62,15 @@ export const MagicBrushEditor: React.FC<MagicBrushEditorProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    try {
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      
-      setHistory(prev => {
-        const newHistory = prev.slice(0, historyIndex + 1);
-        newHistory.push(imageData);
-        return newHistory.slice(-20); // Manter apenas 20 estados
-      });
-      
-      setHistoryIndex(prev => Math.min(prev + 1, 19));
-    } catch (error) {
-      console.error('Erro ao salvar no histórico:', error);
-    }
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    
+    setHistory(prev => {
+      const newHistory = prev.slice(0, historyIndex + 1);
+      newHistory.push(imageData);
+      return newHistory.slice(-20); // Manter apenas 20 estados
+    });
+    
+    setHistoryIndex(prev => Math.min(prev + 1, 19));
   }, [historyIndex]);
   
   const undo = () => {
@@ -299,8 +223,6 @@ export const MagicBrushEditor: React.FC<MagicBrushEditorProps> = ({
   };
   
   const handleReset = () => {
-    if (!safeProcessedImage) return;
-    
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -308,14 +230,12 @@ export const MagicBrushEditor: React.FC<MagicBrushEditorProps> = ({
     if (!ctx) return;
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(safeProcessedImage, 0, 0);
+    ctx.drawImage(processedImage, 0, 0);
     
     saveToHistory();
   };
   
   const togglePreview = () => {
-    if (!safeOriginalImage) return;
-    
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -330,21 +250,11 @@ export const MagicBrushEditor: React.FC<MagicBrushEditorProps> = ({
     } else {
       // Mostrar original
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(safeOriginalImage, 0, 0);
+      ctx.drawImage(originalImage, 0, 0);
     }
     
     setShowOriginal(!showOriginal);
   };
-
-  // Não renderizar até que as imagens seguras estejam prontas
-  if (!safeProcessedImage || !safeOriginalImage) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-4">
-        <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
-        <p className="text-gray-600">Preparando editor...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col h-full space-y-4">
