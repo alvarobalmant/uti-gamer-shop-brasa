@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Palette, Zap, Hand, CheckCircle, XCircle, Loader2, Settings, Edit3 } from 'lucide-react';
+import { Palette, Zap, Hand, CheckCircle, XCircle, Loader2, Settings } from 'lucide-react';
 import { useBackgroundRemoval } from '@/hooks/useBackgroundRemoval';
-import { BackgroundRemovalEditor } from './BackgroundRemovalEditor';
+import { MagicBrushEditor } from './MagicBrushEditor';
 import { loadImageFromUrl, convertImageToBlobUrl } from '@/utils/backgroundRemoval';
 
 interface BackgroundRemovalModalProps {
@@ -28,14 +28,14 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
   productName,
   onSuccess
 }) => {
-  const { processImageFromUrl, processManualEdit, processing, progress } = useBackgroundRemoval();
+  const { processImageFromUrl, processMagicBrushEdit, processing, progress } = useBackgroundRemoval();
   const [step, setStep] = useState<Step>('preview');
   const [processedImageUrl, setProcessedImageUrl] = useState<string>('');
   const [originalImage, setOriginalImage] = useState<HTMLImageElement | null>(null);
   const [processedImage, setProcessedImage] = useState<HTMLImageElement | null>(null);
   
   // Configurações avançadas
-  const [model, setModel] = useState<'auto' | 'general' | 'portrait' | 'object'>('auto');
+  const [model, setModel] = useState<'auto' | 'general' | 'portrait' | 'object' | 'product'>('auto');
   const [quality, setQuality] = useState<'fast' | 'balanced' | 'high'>('balanced');
   const [smoothEdges, setSmoothEdges] = useState(true);
   const [threshold, setThreshold] = useState([128]);
@@ -107,14 +107,14 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
     }
   };
 
-  const handleManualEdit = () => {
+  const handleMagicBrush = () => {
     if (originalImage && processedImage) {
       setStep('editor');
     }
   };
 
   const handleEditorSave = async (editedBlob: Blob) => {
-    const result = await processManualEdit(editedBlob);
+    const result = await processMagicBrushEdit(editedBlob);
     if (result) {
       onSuccess(result);
       onClose();
@@ -144,13 +144,13 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
         <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Edit3 className="w-5 h-5 text-purple-600" />
-              Editor Manual - {productName}
+              <Palette className="w-5 h-5 text-purple-600" />
+              Pincel Mágico - {productName}
             </DialogTitle>
           </DialogHeader>
           
           <div className="h-[80vh]">
-            <BackgroundRemovalEditor
+            <MagicBrushEditor
               originalImage={originalImage}
               processedImage={processedImage}
               onSave={handleEditorSave}
@@ -177,7 +177,7 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
           <div className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border">
             <div>
               <h3 className="font-medium text-gray-900">{productName}</h3>
-              <p className="text-sm text-gray-600">Sistema IA avançado com edição manual</p>
+              <p className="text-sm text-gray-600">Sistema IA avançado com pincel mágico</p>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant={step === 'result' ? 'default' : 'secondary'}>
@@ -233,7 +233,8 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="auto">🤖 Detecção Automática</SelectItem>
-                            <SelectItem value="object">📦 Produto/Objeto</SelectItem>
+                            <SelectItem value="product">🎮 Produto/Box Art (Recomendado)</SelectItem>
+                            <SelectItem value="object">📦 Objeto Geral</SelectItem>
                             <SelectItem value="portrait">👤 Retrato/Pessoa</SelectItem>
                             <SelectItem value="general">🔄 Uso Geral</SelectItem>
                           </SelectContent>
@@ -453,11 +454,11 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={handleManualEdit}
+                  onClick={handleMagicBrush}
                   className="px-6 border-purple-200 text-purple-700 hover:bg-purple-50"
                 >
-                  <Edit3 className="w-4 h-4 mr-2" />
-                  Editar Manual
+                  <Hand className="w-4 h-4 mr-2" />
+                  🪄 Pincel Mágico
                 </Button>
                 
                 <Button
@@ -476,7 +477,7 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
             <div className="text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Sistema IA v2.0 • Editor Manual • Múltiplos Modelos</span>
+                <span>Sistema IA v2.0 • Pincel Mágico • Múltiplos Modelos</span>
               </div>
             </div>
             

@@ -7,11 +7,12 @@ env.useBrowserCache = false;
 const MAX_IMAGE_DIMENSION = 1024;
 const MIN_IMAGE_DIMENSION = 256;
 
-// Modelos públicos disponíveis para diferentes tipos de conteúdo
+// Modelos otimizados para diferentes tipos de conteúdo
 const SEGMENTATION_MODELS = {
-  general: 'Xenova/segformer-b0-finetuned-ade-512-512',
-  portrait: 'Xenova/segformer-b0-finetuned-ade-512-512',
-  object: 'Xenova/segformer-b0-finetuned-ade-512-512'
+  general: 'Xenova/segformer-b2-finetuned-cityscapes-1024-1024',
+  portrait: 'Xenova/segformer-b0-finetuned-ade-512-512', 
+  object: 'briaai/RMBG-1.4', // Modelo especializado em remoção de fundo
+  product: 'briaai/RMBG-1.4' // Melhor para produtos como jogos
 };
 
 function resizeImageIfNeeded(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, image: HTMLImageElement) {
@@ -52,15 +53,20 @@ function resizeImageIfNeeded(canvas: HTMLCanvasElement, ctx: CanvasRenderingCont
   return resized;
 }
 
-function detectContentType(imageElement: HTMLImageElement): 'portrait' | 'object' | 'general' {
+function detectContentType(imageElement: HTMLImageElement): 'portrait' | 'object' | 'general' | 'product' {
   const { naturalWidth, naturalHeight } = imageElement;
   const aspectRatio = naturalWidth / naturalHeight;
   
-  // Heurística simples para detectar tipo de conteúdo
-  if (aspectRatio > 0.7 && aspectRatio < 1.3) {
+  // Detectar produtos/box arts (formato retangular típico)
+  if (aspectRatio > 0.6 && aspectRatio < 0.8) {
+    return 'product'; // Formato típico de box art de jogos
+  }
+  
+  // Heurística melhorada para detectar tipo de conteúdo
+  if (aspectRatio > 0.8 && aspectRatio < 1.2) {
     return 'portrait'; // Quadrado ou próximo, provavelmente retrato
-  } else if (aspectRatio > 1.5 || aspectRatio < 0.6) {
-    return 'object'; // Muito retangular, provavelmente objeto/produto
+  } else if (aspectRatio > 1.5 || aspectRatio < 0.5) {
+    return 'object'; // Muito retangular, provavelmente objeto
   }
   
   return 'general';
@@ -117,7 +123,7 @@ function applySmoothEdges(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext
 export const removeBackground = async (
   imageElement: HTMLImageElement, 
   options: {
-    model?: 'general' | 'portrait' | 'object' | 'auto';
+    model?: 'general' | 'portrait' | 'object' | 'product' | 'auto';
     quality?: 'fast' | 'balanced' | 'high';
     smoothEdges?: boolean;
     threshold?: number;
@@ -142,8 +148,21 @@ export const removeBackground = async (
     // Configurar dispositivo baseado na qualidade
     const device = quality === 'fast' ? 'cpu' : 'webgpu';
     
-    // Criar pipeline de segmentação
-    const segmenter = await pipeline('image-segmentation', modelName, { device });
+    // Escolher pipeline baseado no modelo
+    let segmenter;
+    let result;
+    
+    if (modelName === 'briaai/RMBG-1.4') {
+      // Usar pipeline especializado em remoção de fundo
+      console.log('🎯 Usando modelo RMBG especializado...');
+      segmenter = await pipeline('image-segmentation', modelName, { 
+        device,
+        revision: 'main'
+      });
+    } else {
+      // Usar pipeline de segmentação padrão
+      segmenter = await pipeline('image-segmentation', modelName, { device });
+    }
     
     // Converter HTMLImageElement para canvas
     const canvas = document.createElement('canvas');
@@ -160,7 +179,18 @@ export const removeBackground = async (
     
     // Processar com modelo de segmentação
     console.log('🤖 Processando com IA...');
-    const result = await segmenter(imageData);
+    
+    if (modelName === 'briaai/RMBG-1.4') {
+      // Para RMBG, o resultado já é uma máscara binária
+      result = await segmenter(imageData);
+      
+      // Verificar se o resultado do RMBG está no formato correto
+      if (result && result.mask) {
+        result = [result]; // Padronizar formato
+      }
+    } else {
+      result = await segmenter(imageData);
+    }
     
     if (!result || !Array.isArray(result) || result.length === 0 || !result[0].mask) {
       throw new Error('Resultado de segmentação inválido');

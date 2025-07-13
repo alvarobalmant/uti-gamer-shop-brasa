@@ -11,7 +11,7 @@ export const useBackgroundRemoval = () => {
   const processImageFromUrl = async (
     imageUrl: string, 
     options?: {
-      model?: 'general' | 'portrait' | 'object' | 'auto';
+      model?: 'general' | 'portrait' | 'object' | 'product' | 'auto';
       quality?: 'fast' | 'balanced' | 'high';
       smoothEdges?: boolean;
       threshold?: number;
@@ -66,7 +66,7 @@ export const useBackgroundRemoval = () => {
   const processImageFromFile = async (
     file: File,
     options?: {
-      model?: 'general' | 'portrait' | 'object' | 'auto';
+      model?: 'general' | 'portrait' | 'object' | 'product' | 'auto';
       quality?: 'fast' | 'balanced' | 'high';
       smoothEdges?: boolean;
       threshold?: number;
@@ -120,23 +120,23 @@ export const useBackgroundRemoval = () => {
     }
   };
 
-  const processManualEdit = async (editedBlob: Blob): Promise<string | null> => {
+  const processMagicBrushEdit = async (editedBlob: Blob): Promise<string | null> => {
     setProcessing(true);
     setProgress(0);
     
     try {
-      console.log('💾 Salvando edição manual...');
+      console.log('🪄 Salvando edição do pincel mágico...');
       setProgress(50);
       
       // Converter blob para arquivo
-      const editedFile = new File([editedBlob], 'manual_edit.png', { type: 'image/png' });
+      const editedFile = new File([editedBlob], 'magic_brush_edit.png', { type: 'image/png' });
       
       // Fazer upload da imagem editada
       const uploadedUrl = await uploadImage(editedFile, 'products');
       setProgress(100);
       
       if (uploadedUrl) {
-        toast.success('✨ Edição salva com sucesso!');
+        toast.success('🪄 Pincel mágico aplicado com sucesso!');
         return uploadedUrl;
       } else {
         throw new Error('Falha no upload da imagem editada');
@@ -156,7 +156,7 @@ export const useBackgroundRemoval = () => {
   return {
     processImageFromUrl,
     processImageFromFile,
-    processManualEdit,
+    processMagicBrushEdit,
     processing,
     progress
   };
