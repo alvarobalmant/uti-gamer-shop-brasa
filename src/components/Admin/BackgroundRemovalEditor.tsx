@@ -63,24 +63,31 @@ export const BackgroundRemovalEditor: React.FC<BackgroundRemovalEditorProps> = (
     // Desenhar imagem processada
     ctx.drawImage(processedImage, 0, 0);
     
-    // Criar máscara inicial baseada na transparência
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    maskCtx.fillStyle = 'white';
-    maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
-    
-    const maskImageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
-    
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      const alpha = imageData.data[i + 3];
-      const maskValue = alpha > 128 ? 255 : 0;
+    // Criar máscara inicial baseada na transparência (com proteção CORS)
+    try {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      maskCtx.fillStyle = 'white';
+      maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
       
-      maskImageData.data[i] = maskValue;     // R
-      maskImageData.data[i + 1] = maskValue; // G
-      maskImageData.data[i + 2] = maskValue; // B
-      maskImageData.data[i + 3] = 255;       // A
+      const maskImageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
+      
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        const alpha = imageData.data[i + 3];
+        const maskValue = alpha > 128 ? 255 : 0;
+        
+        maskImageData.data[i] = maskValue;     // R
+        maskImageData.data[i + 1] = maskValue; // G
+        maskImageData.data[i + 2] = maskValue; // B
+        maskImageData.data[i + 3] = 255;       // A
+      }
+      
+      maskCtx.putImageData(maskImageData, 0, 0);
+    } catch (error) {
+      console.warn('CORS error detectado, usando máscara padrão:', error);
+      // Fallback: criar máscara branca simples
+      maskCtx.fillStyle = 'white';
+      maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
     }
-    
-    maskCtx.putImageData(maskImageData, 0, 0);
     
     // Salvar estado inicial
     saveToHistory();

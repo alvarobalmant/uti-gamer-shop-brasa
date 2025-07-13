@@ -73,9 +73,23 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
         const processedImg = new Image();
         processedImg.onload = async () => {
           try {
-            const safeProcessedImage = await convertImageToBlobUrl(processedImg);
-            setProcessedImage(safeProcessedImage);
-            setStep('result');
+            // Converter a imagem processada para blob URL seguro
+            const response = await fetch(result.url);
+            const blob = await response.blob();
+            const safeBlobUrl = URL.createObjectURL(blob);
+            
+            const safeProcessedImg = new Image();
+            safeProcessedImg.onload = () => {
+              setProcessedImage(safeProcessedImg);
+              setStep('result');
+            };
+            safeProcessedImg.onerror = () => {
+              console.error('Erro ao carregar imagem processada segura');
+              // Fallback: usar imagem original
+              setProcessedImage(processedImg);
+              setStep('result');
+            };
+            safeProcessedImg.src = safeBlobUrl;
           } catch (error) {
             console.error('Erro ao converter imagem processada:', error);
             // Fallback: usar imagem original sem conversão
