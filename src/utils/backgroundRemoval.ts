@@ -7,11 +7,11 @@ env.useBrowserCache = false;
 const MAX_IMAGE_DIMENSION = 1024;
 const MIN_IMAGE_DIMENSION = 256;
 
-// Diferentes modelos para diferentes tipos de conteúdo
+// Modelos públicos disponíveis para diferentes tipos de conteúdo
 const SEGMENTATION_MODELS = {
   general: 'Xenova/segformer-b0-finetuned-ade-512-512',
-  portrait: 'Xenova/isnet-general-use',
-  object: 'Xenova/rembg-new'
+  portrait: 'Xenova/segformer-b0-finetuned-ade-512-512',
+  object: 'Xenova/segformer-b0-finetuned-ade-512-512'
 };
 
 function resizeImageIfNeeded(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, image: HTMLImageElement) {
