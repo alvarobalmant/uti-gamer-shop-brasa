@@ -7,7 +7,7 @@ import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
 import UserSubscriptionManagement from './UserSubscriptionManagement';
 import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
-import ProductSectionManager from './ProductSectionManager';
+import ProductSectionManagerUltraSimple from './ProductSectionManagerUltraSimple';
 import PageManager from './PageManager';
 import { QuickLinkManager } from './QuickLinkManager';
 import SpecialSectionManager from './SpecialSectionManager';
@@ -19,12 +19,8 @@ import BulkProductUpload from './BulkProductUpload';
 import ProductImageManager from '@/pages/Admin/ProductImageManager';
 import StorageManager from './StorageManager';
 import { SettingsManager } from './SettingsManager';
-<<<<<<< HEAD
 import PrimePagesAdmin from './PrimePagesAdmin';
 import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText } from 'lucide-react';
-=======
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog } from 'lucide-react';
->>>>>>> db50ef72534d0ba398b3422fbeb5dbe72cba3116
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -167,7 +163,7 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="product_sections" className="mt-0">
-                <ProductSectionManager />
+                <ProductSectionManagerUltraSimple />
               </TabsContent>
 
               <TabsContent value="special_sections" className="mt-0">

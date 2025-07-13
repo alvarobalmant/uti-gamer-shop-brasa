@@ -100,11 +100,7 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-<<<<<<< HEAD
               <CardTitle className="text-sm font-medium text-gray-900">
-=======
-              <CardTitle className="text-sm font-medium text-gray-900 truncate">
->>>>>>> db50ef72534d0ba398b3422fbeb5dbe72cba3116
                 {product.name || 'Produto sem nome'}
               </CardTitle>
               {hasLocalChanges && (
