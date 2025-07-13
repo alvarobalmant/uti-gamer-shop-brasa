@@ -177,7 +177,7 @@ export const PrimePageRenderer: React.FC<PrimePageRendererProps> = ({
               <SpecialSectionRenderer
                 key={section_key}
                 section={specialSection}
-                onAddToCart={onAddToCart}
+                onProductCardClick={(productId: string) => onAddToCart({ id: productId } as any)}
                 reduceTopSpacing={reduceTopSpacing}
               />
             </div>
