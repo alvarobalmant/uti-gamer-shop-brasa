@@ -6,7 +6,7 @@ interface Product {
   name: string;
   description?: string;
   category?: string;
-  tags?: string[];
+  tags?: { id: string; name: string; }[];
   platform?: string;
 }
 
@@ -51,12 +51,13 @@ function buildCompleteDictionary(products: Product[]): Set<string> {
   
   products.forEach(product => {
     // Extrair todas as palavras possíveis
+    const tagNames = (product.tags || []).map(tag => tag.name);
     const allText = [
       product.name,
       product.description || '',
       product.category || '',
       product.platform || '',
-      ...(product.tags || [])
+      ...tagNames
     ].join(' ');
     
     // Processar texto para extrair palavras
