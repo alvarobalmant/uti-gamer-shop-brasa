@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -58,6 +57,7 @@ export interface Product {
   
   // Campos adicionais necessários
   platform?: string;
+  platform_name?: string;
   is_on_sale?: boolean;
   category?: string;
   condition?: string;
