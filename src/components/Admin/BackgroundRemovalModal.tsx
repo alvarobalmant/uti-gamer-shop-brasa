@@ -9,7 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { Palette, Zap, Hand, CheckCircle, XCircle, Loader2, Settings, Edit3 } from 'lucide-react';
 import { useBackgroundRemoval } from '@/hooks/useBackgroundRemoval';
 import { BackgroundRemovalEditor } from './BackgroundRemovalEditor';
-import { loadImageFromUrl } from '@/utils/backgroundRemoval';
+import { loadImageFromUrl, convertImageToBlobUrl } from '@/utils/backgroundRemoval';
 
 interface BackgroundRemovalModalProps {
   isOpen: boolean;
@@ -64,13 +64,24 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
       
       if (result) {
         setProcessedImageUrl(result.url);
-        setOriginalImage(result.originalImage);
         
-        // Carregar imagem processada
+        // Converter imagem original para blob URL seguro
+        const safeOriginalImage = await convertImageToBlobUrl(result.originalImage);
+        setOriginalImage(safeOriginalImage);
+        
+        // Carregar e converter imagem processada para blob URL seguro
         const processedImg = new Image();
-        processedImg.onload = () => {
-          setProcessedImage(processedImg);
-          setStep('result');
+        processedImg.onload = async () => {
+          try {
+            const safeProcessedImage = await convertImageToBlobUrl(processedImg);
+            setProcessedImage(safeProcessedImage);
+            setStep('result');
+          } catch (error) {
+            console.error('Erro ao converter imagem processada:', error);
+            // Fallback: usar imagem original sem conversão
+            setProcessedImage(processedImg);
+            setStep('result');
+          }
         };
         processedImg.src = result.url;
       } else {

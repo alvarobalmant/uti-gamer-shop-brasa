@@ -243,14 +243,40 @@ export const loadImage = (file: Blob): Promise<HTMLImageElement> => {
   });
 };
 
-export const loadImageFromUrl = (url: string): Promise<HTMLImageElement> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = url;
-  });
+export const loadImageFromUrl = async (url: string): Promise<HTMLImageElement> => {
+  try {
+    // Primeiro tentar carregamento direto com CORS
+    const directImage = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = url;
+    });
+    return directImage;
+  } catch (error) {
+    console.log('Falha no carregamento direto, convertendo para blob...');
+    
+    // Se falhar, converter para blob primeiro
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        reject(new Error('Falha ao carregar imagem do blob'));
+      };
+      img.src = blobUrl;
+    });
+  }
 };
 
 // Utilitários para edição manual
@@ -265,6 +291,45 @@ export const createCanvasFromImage = (image: HTMLImageElement): HTMLCanvasElemen
   ctx.drawImage(image, 0, 0);
   
   return canvas;
+};
+
+// Converter imagem para blob URL seguro para canvas
+export const convertImageToBlobUrl = async (image: HTMLImageElement): Promise<HTMLImageElement> => {
+  try {
+    // Tentar criar canvas temporário para converter a imagem
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    if (!tempCtx) throw new Error('Não foi possível criar contexto temporário');
+    
+    tempCanvas.width = image.naturalWidth;
+    tempCanvas.height = image.naturalHeight;
+    tempCtx.drawImage(image, 0, 0);
+    
+    // Converter para blob
+    return new Promise((resolve, reject) => {
+      tempCanvas.toBlob(async (blob) => {
+        if (!blob) {
+          reject(new Error('Falha ao criar blob da imagem'));
+          return;
+        }
+        
+        const blobUrl = URL.createObjectURL(blob);
+        const newImg = new Image();
+        
+        newImg.onload = () => resolve(newImg);
+        newImg.onerror = () => {
+          URL.revokeObjectURL(blobUrl);
+          reject(new Error('Falha ao carregar imagem do blob'));
+        };
+        newImg.src = blobUrl;
+      }, 'image/png');
+    });
+  } catch (error) {
+    console.error('Erro ao converter imagem para blob:', error);
+    // Se falhar, retornar a imagem original (pode causar CORS mas é fallback)
+    return image;
+  }
 };
 
 export const applyManualMask = (
