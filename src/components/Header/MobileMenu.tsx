@@ -30,17 +30,12 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
   const navigate = useNavigate();
   const { items, loading, fetchVisibleItems } = useNavigationItems();
 
-  // Debug: logs para investigar o problema
-  console.log('📱 MobileMenu - Hook state:', { items, loading, itemsLength: items?.length });
-
   // Carregar itens de navegação quando o menu abrir
   useEffect(() => {
-    console.log('📱 MobileMenu - useEffect triggered:', { isOpen });
-    if (isOpen) {
-      console.log('📱 MobileMenu - Chamando fetchVisibleItems...');
+    if (isOpen && (!items || items.length === 0)) {
       fetchVisibleItems();
     }
-  }, [isOpen, fetchVisibleItems]);
+  }, [isOpen, fetchVisibleItems, items]);
 
   const handleAuthClick = () => {
     if (user) {

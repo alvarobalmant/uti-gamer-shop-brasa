@@ -49,7 +49,6 @@ export const useNavigationItems = () => {
   // Buscar apenas itens visíveis (para o frontend público)
   const fetchVisibleItems = async () => {
     try {
-      console.log('🔍 fetchVisibleItems: Iniciando consulta...');
       setLoading(true);
       setError(null);
       
@@ -59,8 +58,6 @@ export const useNavigationItems = () => {
         .eq('is_visible', true)
         .eq('is_active', true)
         .order('display_order', { ascending: true });
-
-      console.log('🔍 fetchVisibleItems: Resposta da consulta:', { data, error });
 
       if (error) throw error;
       
@@ -76,14 +73,11 @@ export const useNavigationItems = () => {
         updated_at: item.updated_at || ''
       }));
 
-      console.log('🔍 fetchVisibleItems: Itens processados:', mappedItems);
       setItems(mappedItems);
     } catch (err: any) {
-      console.error('❌ fetchVisibleItems: Erro capturado:', err);
       setError(err.message);
       console.error('Erro ao buscar itens visíveis:', err);
     } finally {
-      console.log('🔍 fetchVisibleItems: Finalizando consulta');
       setLoading(false);
     }
   };
