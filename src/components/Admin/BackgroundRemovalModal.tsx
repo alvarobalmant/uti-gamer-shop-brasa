@@ -299,6 +299,7 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
                   <Zap className="w-5 h-5 mr-2" />
                   Processar com IA
                 </Button>
+<<<<<<< HEAD
                 
                 <Button
                   onClick={() => {
@@ -319,6 +320,8 @@ export const BackgroundRemovalModal: React.FC<BackgroundRemovalModalProps> = ({
                   <Hand className="w-5 h-5 mr-2" />
                   🪄 PINCEL MÁGICO
                 </Button>
+=======
+>>>>>>> c33a6b06f606697524a8d5fd83771b934d42e5db
               </div>
             </div>
           )}
