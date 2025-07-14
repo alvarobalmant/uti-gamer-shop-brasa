@@ -34,8 +34,8 @@ const SectionPage: React.FC = () => {
       return sections.find(section => section.id === sectionId);
     }
     
-    // Caso contrário, buscar por key diretamente
-    return sections.find(section => section.key === sectionKey);
+    // Caso contrário, buscar por id diretamente
+    return sections.find(section => section.id === sectionKey);
   }, [sectionKey, sections]);
 
   // Filtrar produtos da seção
@@ -156,7 +156,7 @@ const SectionPage: React.FC = () => {
     );
   }
 
-  const sectionTitle = currentSection.title || currentSection.name || 'Produtos';
+  const sectionTitle = currentSection.title || 'Produtos';
 
   return (
     <div className="min-h-screen bg-gray-50">

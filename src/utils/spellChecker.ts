@@ -29,7 +29,7 @@ const GAMING_DICTIONARY = [
 ];
 
 // Erros comuns de digitação para termos específicos
-const COMMON_TYPOS: Record<string, string> = {
+const COMMON_TYPOS: Record<string, string[]> = {
   // PlayStation
   'playstation': ['playsation', 'playstaton', 'playstaion', 'plaistation', 'pleisteiton'],
   'ps5': ['ps 5', 'playstation5', 'play5'],

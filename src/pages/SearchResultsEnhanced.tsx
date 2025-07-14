@@ -66,7 +66,7 @@ const EnhancedProductCard = ({ product, onAddToCart, onCardClick }: {
       {/* Imagem do Produto */}
       <div className="relative h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
         <img
-          src={product.image_url || '/placeholder-product.jpg'}
+          src={product.image || '/placeholder-product.jpg'}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"

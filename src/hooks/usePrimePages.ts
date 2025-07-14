@@ -17,7 +17,7 @@ export interface PrimePage {
 }
 
 export interface PrimePageLayoutItem {
-  id?: number;
+  id: string;
   page_id: string;
   section_key: string;
   section_type: string;
@@ -53,6 +53,7 @@ export interface PrimePageLayoutInput {
 
 export const usePrimePages = () => {
   const [pages, setPages] = useState<PrimePage[]>([]);
+  const [pageLayouts, setPageLayouts] = useState<Record<string, PrimePageLayoutItem[]>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -104,7 +105,10 @@ export const usePrimePages = () => {
 
       return {
         ...pageData,
-        layout_items: layoutData || []
+        layout_items: (layoutData || []).map(item => ({
+          ...item,
+          section_config: item.section_config as Record<string, any>
+        }))
       };
     } catch (err: any) {
       console.error('[usePrimePages] Error fetching page with layout:', err);
@@ -114,7 +118,40 @@ export const usePrimePages = () => {
     }
   }, [toast]);
 
-  // Buscar página por slug
+  // Get page by slug (synchronous method for existing pages)
+  const getPageBySlug = useCallback((slug: string): PrimePage | null => {
+    return pages.find(page => page.slug === slug && page.is_active) || null;
+  }, [pages]);
+
+  // Fetch page layout by page ID
+  const fetchPageLayout = useCallback(async (pageId: string): Promise<PrimePageLayoutItem[]> => {
+    try {
+      const { data: layoutData, error: layoutError } = await supabase
+        .from('prime_page_layout')
+        .select('*')
+        .eq('page_id', pageId)
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (layoutError) throw layoutError;
+
+      const layoutItems = (layoutData || []).map(item => ({
+        ...item,
+        section_config: item.section_config as Record<string, any>
+      }));
+      
+      // Update pageLayouts cache
+      setPageLayouts(prev => ({
+        ...prev,
+        [pageId]: layoutItems
+      }));
+
+      return layoutItems;
+    } catch (err: any) {
+      console.error('[usePrimePages] Error fetching page layout:', err);
+      return [];
+    }
+  }, []);
   const fetchPageBySlug = useCallback(async (slug: string): Promise<PrimePageWithLayout | null> => {
     try {
       // Buscar página
@@ -139,7 +176,10 @@ export const usePrimePages = () => {
 
       return {
         ...pageData,
-        layout_items: layoutData || []
+        layout_items: (layoutData || []).map(item => ({
+          ...item,
+          section_config: item.section_config as Record<string, any>
+        }))
       };
     } catch (err: any) {
       console.error('[usePrimePages] Error fetching page by slug:', err);
@@ -266,7 +306,7 @@ export const usePrimePages = () => {
   }, [toast]);
 
   // Atualizar item do layout
-  const updateLayoutItem = useCallback(async (itemId: number, layoutInput: Partial<PrimePageLayoutInput>): Promise<boolean> => {
+  const updateLayoutItem = useCallback(async (itemId: string, layoutInput: Partial<PrimePageLayoutInput>): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('prime_page_layout')
@@ -286,7 +326,7 @@ export const usePrimePages = () => {
   }, [toast]);
 
   // Remover item do layout
-  const removeLayoutItem = useCallback(async (itemId: number): Promise<boolean> => {
+  const removeLayoutItem = useCallback(async (itemId: string): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('prime_page_layout')
@@ -312,11 +352,14 @@ export const usePrimePages = () => {
 
   return {
     pages,
+    pageLayouts,
     loading,
     error,
     fetchPages,
     fetchPageWithLayout,
     fetchPageBySlug,
+    getPageBySlug,
+    fetchPageLayout,
     createPage,
     updatePage,
     deletePage,

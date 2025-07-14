@@ -165,7 +165,7 @@ const PrimePagesAdmin: React.FC = () => {
     }
   };
 
-  const handleRemoveSection = async (itemId: number) => {
+  const handleRemoveSection = async (itemId: string) => {
     if (window.confirm('Tem certeza que deseja remover esta seção?')) {
       const result = await removeLayoutItem(itemId);
       if (result && selectedPageWithLayout) {
@@ -178,7 +178,7 @@ const PrimePagesAdmin: React.FC = () => {
     }
   };
 
-  const handleToggleSection = async (itemId: number, isVisible: boolean) => {
+  const handleToggleSection = async (itemId: string, isVisible: boolean) => {
     const result = await updateLayoutItem(itemId, { is_visible: !isVisible });
     if (result && selectedPageWithLayout) {
       // Recarregar página com layout

@@ -8,12 +8,23 @@ import { categories, Category } from './categories';
 import { cn } from '@/lib/utils';
 
 interface ProfessionalHeaderProps {
-  onCartOpen: () => void;
-  onAuthOpen: () => void;
-  showNavigation?: boolean; // Nova prop para controlar a barra de navegação
+  onCartOpen?: () => void;
+  onAuthOpen?: () => void;
+  showNavigation?: boolean;
+  // Additional props that components are passing
+  user?: any;
+  cartItemsCount?: number;
+  onCartClick?: () => void;
+  onAuthClick?: () => void;
 }
 
-const ProfessionalHeader = ({ onCartOpen, onAuthOpen, showNavigation = true }: ProfessionalHeaderProps) => {
+const ProfessionalHeader = ({ 
+  onCartOpen, 
+  onAuthOpen, 
+  onCartClick, 
+  onAuthClick, 
+  showNavigation = true 
+}: ProfessionalHeaderProps) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -44,8 +55,8 @@ const ProfessionalHeader = ({ onCartOpen, onAuthOpen, showNavigation = true }: P
     <>
       {/* MainHeader agora é fixed e não precisa de container wrapper */}
       <MainHeader
-        onCartOpen={onCartOpen}
-        onAuthOpen={onAuthOpen}
+        onCartOpen={onCartOpen || onCartClick || (() => {})}
+        onAuthOpen={onAuthOpen || onAuthClick || (() => {})}
         onMobileMenuToggle={toggleMobileMenu}
       />
 

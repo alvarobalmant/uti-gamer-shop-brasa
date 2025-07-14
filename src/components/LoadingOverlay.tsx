@@ -111,7 +111,7 @@ const LoadingOverlay: React.FC = () => {
       </div>
 
       {/* Estilos CSS para animação da barra */}
-      <style jsx>{`
+      <style>{`
         @keyframes loading-bar {
           0% {
             transform: translateX(-100%);

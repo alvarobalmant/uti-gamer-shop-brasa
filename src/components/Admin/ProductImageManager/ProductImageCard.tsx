@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Star, Trash2, Plus, Upload, Link, Image, AlertCircle, Loader2, Clock } from 'lucide-react';
+import { Star, Trash2, Plus, Upload, Link, Image, AlertCircle, Loader2, Clock, Palette } from 'lucide-react';
 import { Product } from '@/hooks/useProducts/types';
 import { ProductWithChanges } from '@/hooks/useLocalImageChanges';
 import ImageDropZone from './ImageDropZone';
+import { BackgroundRemovalModal } from '@/components/Admin/BackgroundRemovalModal';
 
 interface ProductImageCardProps {
   product: ProductWithChanges;
@@ -36,6 +37,7 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
   const [newImageUrl, setNewImageUrl] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlError, setUrlError] = useState('');
+  const [showBackgroundModal, setShowBackgroundModal] = useState(false);
 
   const handleUrlSubmit = async (isMainImage: boolean = false) => {
     const url = newImageUrl.trim();
@@ -78,6 +80,12 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
     
     console.log('Removendo imagem segura:', { productId: product.id, imageUrl, isMainImage });
     onRemoveImage(product.id, imageUrl, isMainImage);
+  };
+
+  const handleBackgroundRemovalSuccess = (processedImageUrl: string) => {
+    // Adicionar a imagem processada como principal
+    onImageDrop(product.id, processedImageUrl, true);
+    setShowBackgroundModal(false);
   };
 
   const additionalImages = Array.isArray(product.additional_images) ? product.additional_images : [];
@@ -160,16 +168,31 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
           
           <div className="space-y-2">
             {!showUrlInput ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowUrlInput(true)}
-                className="w-full"
-                disabled={uploading}
-              >
-                <Link className="w-4 h-4 mr-2" />
-                Adicionar por URL
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowUrlInput(true)}
+                  className="flex-1"
+                  disabled={uploading}
+                >
+                  <Link className="w-4 h-4 mr-2" />
+                  Adicionar por URL
+                </Button>
+                
+                {hasMainImage && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowBackgroundModal(true)}
+                    className="flex-1 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 hover:border-purple-300 text-purple-700"
+                    disabled={uploading}
+                  >
+                    <Palette className="w-4 h-4 mr-2" />
+                    Remover Fundo
+                  </Button>
+                )}
+              </div>
             ) : (
               <div className="space-y-2">
                 <div className="flex gap-2">
@@ -310,6 +333,17 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Modal de Remoção de Fundo */}
+        {hasMainImage && (
+          <BackgroundRemovalModal
+            isOpen={showBackgroundModal}
+            onClose={() => setShowBackgroundModal(false)}
+            imageUrl={product.image!}
+            productName={product.name || 'Produto'}
+            onSuccess={handleBackgroundRemovalSuccess}
+          />
+        )}
       </CardContent>
     </Card>
   );

@@ -5,6 +5,8 @@ interface ErrorStateProps {
   onRetry?: () => void;
   message?: string;
   error?: string;
+  title?: string;
+  showRetry?: boolean;
 }
 
 const ErrorState: React.FC<ErrorStateProps> = ({ onRetry, message, error }) => {

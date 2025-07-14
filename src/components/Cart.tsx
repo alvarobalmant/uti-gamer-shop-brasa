@@ -19,11 +19,17 @@ import { cn } from "@/lib/utils";
 import { useCart } from '@/contexts/CartContext';
 
 interface CartSheetProps {
-  showCart: boolean;
-  setShowCart: (show: boolean) => void;
+  showCart?: boolean;
+  setShowCart?: (show: boolean) => void;
+  // Additional props that components are passing
+  items?: any[];
+  onUpdateQuantity?: (productId: string, size: string, color: string, quantity: number) => void;
+  onClose?: () => void;
+  onSendToWhatsApp?: () => void;
+  total?: number;
 }
 
-const Cart = ({ showCart, setShowCart }: CartSheetProps) => {
+const Cart = ({ showCart = false, setShowCart }: CartSheetProps) => {
   const { 
     items: cart, 
     updateQuantity, 
