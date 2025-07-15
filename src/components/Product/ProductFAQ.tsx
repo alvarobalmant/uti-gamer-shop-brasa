@@ -114,10 +114,10 @@ const ProductFAQ: React.FC<ProductFAQProps> = ({ product }) => {
         </div>
 
         <Accordion type="single" collapsible className="space-y-4">
-          {faqs.map((faq) => (
+          {faqs.map((faq, index) => (
             <AccordionItem 
-              key={faq.id} 
-              value={faq.id.toString()}
+              key={faq.id || index} 
+              value={(faq.id || index).toString()}
               className="border border-gray-200 rounded-lg overflow-hidden"
             >
               <AccordionTrigger className="p-6 text-left hover:bg-gray-50 transition-colors [&[data-state=open]>svg]:rotate-180">
