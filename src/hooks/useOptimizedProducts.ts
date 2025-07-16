@@ -125,7 +125,7 @@ export const useOptimizedProducts = (options: UseOptimizedProductsOptions = {}) 
       return data as Product[];
     },
     staleTime,
-    cacheTime,
+    gcTime: cacheTime,
     refetchOnWindowFocus: false,
     retry: 2,
     select: useCallback((data: Product[]) => {
