@@ -76,6 +76,7 @@ export interface BannerConfig {
   subtitle?: string;
   button_text?: string;
   enable_hover_animation?: boolean; // New property for hover animation control
+  enable_shadow?: boolean; // New property for shadow effect control
 }
 
 // Define a row of banners, allowing different layouts per row

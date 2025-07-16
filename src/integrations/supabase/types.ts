@@ -1516,6 +1516,107 @@ export type Database = {
         }
         Relationships: []
       }
+      user_favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "user_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_savings: {
+        Row: {
+          created_at: string | null
+          id: string
+          original_price: number
+          paid_price: number
+          product_id: string
+          purchase_date: string | null
+          savings_amount: number
+          savings_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          original_price: number
+          paid_price: number
+          product_id: string
+          purchase_date?: string | null
+          savings_amount: number
+          savings_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          original_price?: number
+          paid_price?: number
+          product_id?: string
+          purchase_date?: string | null
+          savings_amount?: number
+          savings_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_savings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_savings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "user_savings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_subscriptions: {
         Row: {
           created_at: string
@@ -1708,6 +1809,15 @@ export type Database = {
       get_user_role: {
         Args: { user_id: string }
         Returns: string
+      }
+      get_user_total_savings: {
+        Args: { p_user_id: string }
+        Returns: {
+          total_savings: number
+          promotion_savings: number
+          uti_pro_savings: number
+          total_purchases: number
+        }[]
       }
       has_active_subscription: {
         Args: { user_id: string }
