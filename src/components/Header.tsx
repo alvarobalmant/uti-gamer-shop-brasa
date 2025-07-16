@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import MainHeader from './Header/MainHeader';
-import MobileMenu from './Header/MobileMenu';
+import MobileMenuEnhanced from './Header/MobileMenuEnhanced';
 import { categories, Category } from './Header/categories';
 import { useNavigate } from 'react-router-dom';
 
@@ -59,8 +59,8 @@ const Header: React.FC<HeaderProps> = ({ onCartOpen, onAuthOpen }) => {
         onMobileMenuToggle={handleMobileMenuToggle}
       />
 
-      {/* MobileMenu */}
-      <MobileMenu
+      {/* MobileMenuEnhanced */}
+      <MobileMenuEnhanced
         isOpen={mobileMenuOpen}
         onClose={closeMobileMenu}
         onAuthOpen={handleAuthOpen}

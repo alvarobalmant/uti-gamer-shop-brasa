@@ -403,7 +403,7 @@ const SearchResultsFinal = () => {
       />
 
       {/* Conteúdo principal */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 pt-[84px] pb-6">
         {/* Breadcrumb */}
         <div className="mb-4">
           <Button

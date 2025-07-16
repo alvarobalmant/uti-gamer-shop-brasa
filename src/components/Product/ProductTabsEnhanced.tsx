@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, User, Calendar, CheckCircle, Play, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { HelpCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProductTabsEnhancedProps {
@@ -23,7 +22,7 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('product_faqs, product_videos, product_descriptions, specifications')
+          .select('product_faqs, product_descriptions, specifications')
           .eq('id', product.id)
           .single();
 
@@ -92,17 +91,6 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
     };
   };
 
-  // Processar vídeos do produto
-  const getVideos = () => {
-    // Retornar vídeos reais do banco de dados
-    if (product.product_videos && Array.isArray(product.product_videos) && product.product_videos.length > 0) {
-      return product.product_videos;
-    }
-    
-    // Se não há vídeos, retornar array vazio
-    return [];
-  };
-
   // Processar FAQ do produto
   const getFAQs = () => {
     console.log('[ProductTabsEnhanced] Processando FAQs:', product.product_faqs);
@@ -125,67 +113,20 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
     return [];
   };
 
-  // Processar avaliações
-  const getReviews = () => {
-    const reviewsConfig = product.reviews_config || {};
-    
-    if (reviewsConfig.custom_rating?.use_custom) {
-      return {
-        enabled: reviewsConfig.enabled !== false,
-        rating: reviewsConfig.custom_rating.value || 0,
-        count: reviewsConfig.custom_rating.count || 0,
-        reviews: []
-      };
-    }
-
-    // Dados mock para demonstração
-    return {
-      enabled: reviewsConfig.enabled !== false,
-      rating: 4.8,
-      count: 127,
-      reviews: [
-        {
-          id: 1,
-          name: 'João Santos',
-          rating: 5,
-          date: '2024-01-15',
-          comment: 'Jogo incrível! Gráficos espetaculares e gameplay viciante. Recomendo demais!',
-          verified: true,
-        },
-        {
-          id: 2,
-          name: 'Maria Silva',
-          rating: 4,
-          date: '2024-01-10',
-          comment: 'Muito bom, mas achei um pouco difícil no início. História envolvente.',
-          verified: true,
-        }
-      ]
-    };
-  };
-
   const specifications = getSpecifications();
   const descriptions = getDescriptions();
-  const videos = getVideos();
   const faqs = getFAQs();
-  const reviewsData = getReviews();
 
   return (
     <div className="bg-white">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="description" className="text-base font-medium">
               Descrição
             </TabsTrigger>
             <TabsTrigger value="specifications" className="text-base font-medium">
               Especificações
-            </TabsTrigger>
-            <TabsTrigger value="reviews" className="text-base font-medium">
-              Avaliações
-            </TabsTrigger>
-            <TabsTrigger value="media" className="text-base font-medium">
-              Vídeos
             </TabsTrigger>
             <TabsTrigger value="faq" className="text-base font-medium">
               FAQ
@@ -279,140 +220,6 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma especificação disponível</h3>
                   <p className="text-gray-500">
                     Ainda não há especificações técnicas cadastradas para este produto.
-                  </p>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Aba Avaliações */}
-          <TabsContent value="reviews" className="space-y-6">
-            {reviewsData.enabled ? (
-              <>
-                <div className="flex items-center space-x-6 p-6 bg-gray-50 rounded-lg">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-gray-900">{reviewsData.rating}</div>
-                    <div className="flex justify-center mt-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`w-5 h-5 ${
-                            star <= reviewsData.rating
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {reviewsData.count} avaliações
-                    </div>
-                  </div>
-                </div>
-
-                {reviewsData.reviews.length > 0 && (
-                  <div className="space-y-4">
-                    {reviewsData.reviews.map((review) => (
-                      <div key={review.id} className="card"
-                        style={{
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '0.5rem',
-                          padding: '1.5rem',
-                          backgroundColor: 'white'
-                        }}>
-                        <div className="p-6">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                                <User className="w-5 h-5 text-red-600" />
-                              </div>
-                              <div>
-                                <div className="flex items-center space-x-2">
-                                  <span className="font-medium text-gray-900">{review.name}</span>
-                                  {review.verified && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      <CheckCircle className="w-3 h-3 mr-1" />
-                                      Verificado
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="flex items-center space-x-2 mt-1">
-                                  <div className="flex">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star
-                                        key={star}
-                                        className={`w-4 h-4 ${
-                                          star <= review.rating
-                                            ? 'text-yellow-400 fill-current'
-                                            : 'text-gray-300'
-                                        }`}
-                                      />
-                                    ))}
-                                  </div>
-                                  <span className="text-sm text-gray-500">{review.date}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <p className="text-gray-700">{review.comment}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-500">Avaliações não disponíveis para este produto.</p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Aba Vídeos */}
-          <TabsContent value="media" className="space-y-6">
-            {videos.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {videos.map((video) => (
-                  <div key={video.id} className="card overflow-hidden"
-                    style={{
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '0.5rem',
-                      backgroundColor: 'white'
-                    }}>
-                    <div className="relative">
-                      <img
-                        src={video.thumbnail}
-                        alt={video.title}
-                        className="w-full h-48 object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                        <Button size="lg" className="bg-white text-black hover:bg-gray-100">
-                          <Play className="w-6 h-6 mr-2" />
-                          Assistir
-                        </Button>
-                      </div>
-                      <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
-                        {video.duration}
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <h4 className="font-medium text-gray-900">{video.title}</h4>
-                      {video.is_featured && (
-                        <Badge className="mt-2">Destaque</Badge>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="max-w-md mx-auto">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                    <Play className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum vídeo disponível</h3>
-                  <p className="text-gray-500">
-                    Ainda não há vídeos cadastrados para este produto.
                   </p>
                 </div>
               </div>

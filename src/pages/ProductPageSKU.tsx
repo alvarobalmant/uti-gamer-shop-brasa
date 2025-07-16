@@ -14,6 +14,12 @@ import RelatedProductsSection from '@/components/Product/RelatedProductsSection'
 import ProductFAQ from '@/components/Product/ProductFAQ';
 import ProductGuarantees from '@/components/Product/ProductGuarantees';
 import ProductCTABottom from '@/components/Product/ProductCTABottom';
+
+// Mobile Components
+import ProductHeroMobile from '@/components/Product/Mobile/ProductHeroMobile';
+import ProductTabsMobile from '@/components/Product/Mobile/ProductTabsMobile';
+import ProductCTABottomMobile from '@/components/Product/Mobile/ProductCTABottomMobile';
+import RelatedProductsMobile from '@/components/Product/Mobile/RelatedProductsMobile';
 import ProductSEO from '@/components/Product/ProductSEO';
 import PlatformSelector from '@/components/SKU/PlatformSelector';
 import SKUBreadcrumb from '@/components/SKU/SKUBreadcrumb';
@@ -157,46 +163,75 @@ const ProductPageSKU = () => {
             )}
           </div>
 
-          {/* Hero do Produto */}
-          <ProductHero 
-            product={product}
-            viewingCount={viewingCount}
-            onAddToCart={handleAddToCart}
-          />
+          {/* Desktop Version */}
+          <div className="hidden md:block">
+            {/* Hero do Produto */}
+            <ProductHero 
+              product={product}
+              viewingCount={viewingCount}
+              onAddToCart={handleAddToCart}
+            />
 
-          {/* Seletor de Plataforma (apenas para produtos com SKUs) */}
-          {shouldShowSKUComponents() && skuNavigation && (
-            <div className="mb-6">
-              <PlatformSelector skuNavigation={skuNavigation} />
-            </div>
-          )}
+            {/* Seletor de Plataforma (apenas para produtos com SKUs) */}
+            {shouldShowSKUComponents() && skuNavigation && (
+              <div className="mb-6">
+                <PlatformSelector skuNavigation={skuNavigation} />
+              </div>
+            )}
 
-          {/* Comparação de Preços (apenas para produtos com múltiplos SKUs) */}
-          {shouldShowSKUComponents() && skuNavigation && skuNavigation.availableSKUs && skuNavigation.availableSKUs.length > 1 && (
-            <div className="mb-6">
-              <SKUPriceComparison skuNavigation={skuNavigation} />
-            </div>
-          )}
+            {/* Comparação de Preços (apenas para produtos com múltiplos SKUs) */}
+            {shouldShowSKUComponents() && skuNavigation && skuNavigation.availableSKUs && skuNavigation.availableSKUs.length > 1 && (
+              <div className="mb-6">
+                <SKUPriceComparison skuNavigation={skuNavigation} />
+              </div>
+            )}
 
-          {/* Abas do Produto */}
-          <ProductTabsEnhanced product={product} />
+            {/* Abas do Produto */}
+            <ProductTabsEnhanced product={product} />
 
-          {/* Produtos Relacionados */}
-          <RelatedProductsSection product={product} />
+            {/* Produtos Relacionados */}
+            <RelatedProductsSection product={product} />
 
-          {/* FAQ */}
-          <ProductFAQ product={product} />
+            {/* FAQ */}
+            <ProductFAQ product={product} />
 
-          {/* Garantias */}
-          <ProductGuarantees />
+            {/* Garantias */}
+            <ProductGuarantees />
+          </div>
+
+          {/* Mobile Version */}
+          <div className="block md:hidden">
+            {/* Mobile Hero */}
+            <ProductHeroMobile 
+              product={product}
+              viewingCount={viewingCount}
+              onAddToCart={handleAddToCart}
+            />
+
+            {/* Mobile Tabs */}
+            <ProductTabsMobile product={product} />
+
+            {/* Mobile Related Products */}
+            <RelatedProductsMobile product={product} />
+          </div>
         </div>
       </main>
 
-      {/* CTA Bottom */}
-      <ProductCTABottom 
-        product={product}
-        onAddToCart={handleAddToCart}
-      />
+      {/* CTA Bottom - Desktop */}
+      <div className="hidden md:block">
+        <ProductCTABottom 
+          product={product}
+          onAddToCart={handleAddToCart}
+        />
+      </div>
+
+      {/* CTA Bottom - Mobile */}
+      <div className="block md:hidden">
+        <ProductCTABottomMobile 
+          product={product}
+          onAddToCart={handleAddToCart}
+        />
+      </div>
 
       {/* Modais */}
       <Cart 

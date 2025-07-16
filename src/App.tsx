@@ -49,6 +49,10 @@ const PlatformPage = lazy(() => import("./components/PlatformPage"));
 const ProductPageSKU = lazy(() => import("./pages/ProductPageSKU"));
 const TestProduct = lazy(() => import("./pages/TestProduct"));
 
+// Lazy loading para páginas de cliente
+const ClientArea = lazy(() => import("./pages/ClientArea"));
+const WishlistPage = lazy(() => import("./pages/WishlistPage"));
+
 // Otimizar QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -105,6 +109,10 @@ const App = () => (
                   {/* Product Page Routes - MUST come before dynamic routes */}
                   <Route path="/produto/:id" element={<ProductPageSKU />} />
                   <Route path="/teste-produto/:id" element={<TestProduct />} />
+
+                  {/* Client Area Routes - MUST come before dynamic routes */}
+                  <Route path="/area-cliente" element={<ClientArea />} />
+                  <Route path="/lista-desejos" element={<WishlistPage />} />
 
                   {/* Admin Routes - Protected - MUST come before dynamic routes */}
                   <Route 

@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { X, User, LogIn } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { X, User, LogIn, Settings, Heart, LogOut, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -16,19 +16,20 @@ import {
   SheetClose
 } from "@/components/ui/sheet";
 
-interface MobileMenuProps {
+interface MobileMenuEnhancedProps {
   isOpen: boolean;
   onClose: () => void;
   onAuthOpen: () => void;
-  categories: any[]; // Mantido para compatibilidade, mas não usado
-  onCategoryClick: (category: any) => void; // Mantido para compatibilidade, mas não usado
+  categories: any[]; // Mantido para compatibilidade
+  onCategoryClick: (category: any) => void; // Mantido para compatibilidade
 }
 
-const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
-  const { user, isAdmin } = useAuth();
+const MobileMenuEnhanced = ({ isOpen, onClose, onAuthOpen }: MobileMenuEnhancedProps) => {
+  const { user, isAdmin, logout } = useAuth();
   const { hasActiveSubscription } = useSubscriptions();
   const navigate = useNavigate();
   const { items, loading, fetchVisibleItems } = useNavigationItems();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   // Carregar itens de navegação quando o menu abrir
   useEffect(() => {
@@ -38,12 +39,32 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
   }, [isOpen, fetchVisibleItems, items]);
 
   const handleAuthClick = () => {
-    if (user) {
-      navigate(isAdmin ? '/admin' : '/account'); 
-      onClose();
-    } else {
+    if (!user) {
       onAuthOpen();
       onClose(); 
+    }
+  };
+
+  const handleUserMenuToggle = () => {
+    setShowUserMenu(!showUserMenu);
+  };
+
+  const handleNavigateToClientArea = () => {
+    navigate('/client-area');
+    onClose();
+  };
+
+  const handleNavigateToWishlist = () => {
+    navigate('/lista-desejos');
+    onClose();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      onClose();
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
     }
   };
 
@@ -112,22 +133,71 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
             <div className="border-b pb-4">
               {user ? (
                 <div className="space-y-3">
+                  {/* User Info */}
                   <div className="flex items-center gap-3">
                     <User className="w-6 h-6 text-gray-600" />
                     <div className='flex-1 min-w-0'>
                       <p className="font-medium text-gray-800 truncate text-sm">{user.email}</p>
                     </div>
                   </div>
+
+                  {/* User Menu Toggle */}
                   <Button
-                    onClick={handleAuthClick}
+                    onClick={handleUserMenuToggle}
                     variant="outline"
                     className={cn(
-                      "w-full h-11 text-base border-gray-300",
+                      "w-full h-11 text-base border-gray-300 flex items-center justify-between",
                       "md:hover:bg-accent md:hover:text-accent-foreground"
                     )}
                   >
-                    {isAdmin ? 'Painel Admin' : 'Minha Conta'}
+                    <span>Minha Conta</span>
+                    {showUserMenu ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
                   </Button>
+
+                  {/* User Menu Options */}
+                  {showUserMenu && (
+                    <div className="space-y-2 pl-4 border-l-2 border-gray-200">
+                      <Button
+                        onClick={handleNavigateToClientArea}
+                        variant="ghost"
+                        className={cn(
+                          "w-full justify-start h-10 text-sm text-gray-700",
+                          "md:hover:text-red-600 md:hover:bg-red-50"
+                        )}
+                      >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Ver dados da conta
+                      </Button>
+                      
+                      <Button
+                        onClick={handleNavigateToWishlist}
+                        variant="ghost"
+                        className={cn(
+                          "w-full justify-start h-10 text-sm text-gray-700",
+                          "md:hover:text-red-600 md:hover:bg-red-50"
+                        )}
+                      >
+                        <Heart className="w-4 h-4 mr-2" />
+                        Lista de Desejos
+                      </Button>
+                      
+                      <Button
+                        onClick={handleLogout}
+                        variant="ghost"
+                        className={cn(
+                          "w-full justify-start h-10 text-sm text-gray-700",
+                          "md:hover:text-red-600 md:hover:bg-red-50"
+                        )}
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sair da conta
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <Button
@@ -188,4 +258,5 @@ const MobileMenu = ({ isOpen, onClose, onAuthOpen }: MobileMenuProps) => {
   );
 };
 
-export default MobileMenu;
+export default MobileMenuEnhanced;
+

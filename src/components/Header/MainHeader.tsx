@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import scrollManager from '@/lib/scrollRestorationManager';
 import DesktopSearchBar from './DesktopSearchBar';
-import HeaderActions from './HeaderActions';
+import HeaderActionsEnhanced from './HeaderActionsEnhanced';
 import MobileSearchBar from './MobileSearchBar';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -129,7 +129,7 @@ const MainHeader = ({
               <Search className="h-6 w-6" />
             </Button>
 
-            <HeaderActions
+            <HeaderActionsEnhanced
               onCartOpen={onCartOpen}
               onAuthOpen={onAuthOpen}
             />

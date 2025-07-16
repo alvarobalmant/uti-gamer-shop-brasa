@@ -61,7 +61,7 @@ export const useNavigationItems = () => {
 
       if (error) throw error;
       
-      setItems((data || []).map(item => ({
+      const mappedItems = (data || []).map(item => ({
         ...item,
         icon_type: (item.icon_type as 'icon' | 'image' | 'emoji') || 'image',
         link_type: (item.link_type as 'internal' | 'external') || 'internal',
@@ -71,7 +71,9 @@ export const useNavigationItems = () => {
         is_active: item.is_active ?? true,
         created_at: item.created_at || '',
         updated_at: item.updated_at || ''
-      })));
+      }));
+
+      setItems(mappedItems);
     } catch (err: any) {
       setError(err.message);
       console.error('Erro ao buscar itens visíveis:', err);

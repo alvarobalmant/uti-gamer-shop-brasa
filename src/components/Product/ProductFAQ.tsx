@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '@/hooks/useProducts';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface ProductFAQProps {
   product: Product;
@@ -11,7 +16,6 @@ const ProductFAQ: React.FC<ProductFAQProps> = ({ product }) => {
   console.log('TESTE SIMPLES - ProductFAQ carregado');
   console.log('🚀 ProductFAQ EXECUTANDO! Produto:', product?.id);
   
-  const [openFAQ, setOpenFAQ] = useState<number | null>(null);
   const [faqs, setFaqs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -96,9 +100,6 @@ const ProductFAQ: React.FC<ProductFAQProps> = ({ product }) => {
     },
   ];
 
-  const toggleFAQ = (faqId: number) => {
-    setOpenFAQ(openFAQ === faqId ? null : faqId);
-  };
 
   return (
     <div className="bg-white py-12">
@@ -112,35 +113,26 @@ const ProductFAQ: React.FC<ProductFAQProps> = ({ product }) => {
           </p>
         </div>
 
-        <div className="space-y-4">
-          {faqs.map((faq) => (
-            <div
-              key={faq.id}
+        <Accordion type="single" collapsible className="space-y-4">
+          {faqs.map((faq, index) => (
+            <AccordionItem 
+              key={faq.id || index} 
+              value={(faq.id || index).toString()}
               className="border border-gray-200 rounded-lg overflow-hidden"
             >
-              <button
-                onClick={() => toggleFAQ(faq.id)}
-                className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-900 pr-8">
+              <AccordionTrigger className="p-6 text-left hover:bg-gray-50 transition-colors [&[data-state=open]>svg]:rotate-180">
+                <span className="font-medium text-gray-900 text-left">
                   {faq.question}
                 </span>
-                {openFAQ === faq.id ? (
-                  <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                )}
-              </button>
-              {openFAQ === faq.id && (
-                <div className="px-6 pb-6">
-                  <p className="text-gray-700 leading-relaxed">
-                    {faq.answer}
-                  </p>
-                </div>
-              )}
-            </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6">
+                <p className="text-gray-700 leading-relaxed">
+                  {faq.answer}
+                </p>
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
 
         <div className="mt-8 text-center">
           <p className="text-gray-600 mb-4">

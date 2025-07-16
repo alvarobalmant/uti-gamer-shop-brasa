@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MainHeader from './MainHeader';
 import DesktopNavigation from './DesktopNavigation';
-import MobileMenu from './MobileMenu';
+import MobileMenuEnhanced from './MobileMenuEnhanced';
 import { categories, Category } from './categories';
 import { cn } from '@/lib/utils';
 
@@ -63,11 +63,14 @@ const ProfessionalHeader = ({
       {/* DesktopNavigation agora é fixed e posicionado abaixo do MainHeader */}
       {showNavigation && <DesktopNavigation />}
 
-      {/* Espaçador para compensar o header fixo - ajustado baseado na navegação */}
-      <div className={showNavigation ? "h-[72px] lg:h-[84px]" : "h-[72px]"} />
+      {/* Espaçador para compensar o header fixo - reduzido em mobile */}
+      <div className="h-[32px] lg:h-[72px]" />
+      
+      {/* Espaçador adicional para navegação desktop - apenas quando navegação está ativa e em desktop */}
+      {showNavigation && <div className="hidden lg:block h-[12px]" />}
 
-      {/* MobileMenu permanece inalterado */}
-      <MobileMenu
+      {/* MobileMenuEnhanced com sistema de autenticação integrado */}
+      <MobileMenuEnhanced
         isOpen={mobileMenuOpen}
         onClose={closeMobileMenu}
         onAuthOpen={onAuthOpen}
