@@ -21,14 +21,14 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
             {product.description || `${product.name} oferece a melhor experiência de jogo com gráficos 4K, Ray Tracing, feedback háptico DualSense e carregamento ultra-rápido. Uma experiência next-gen completa.`}
           </p>
           
-          {product.features && product.features.length > 0 && (
+          {product.product_features && Array.isArray(product.product_features) && product.product_features.length > 0 && (
             <div className="space-y-3">
               <h4 className="font-semibold text-gray-900">Características principais:</h4>
               <ul className="space-y-2">
-                {product.features.map((feature, index) => (
+                {product.product_features.map((feature: any, index: number) => (
                   <li key={index} className="flex items-start gap-3">
                     <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700">{feature}</span>
+                    <span className="text-gray-700">{typeof feature === 'string' ? feature : feature.text || feature.name || 'Característica'}</span>
                   </li>
                 ))}
               </ul>
@@ -46,9 +46,9 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
           <div className="grid grid-cols-1 gap-4">
             {[
               { label: 'Plataforma', value: product.platform || 'PlayStation 5' },
-              { label: 'Gênero', value: product.genre || 'Ação/Aventura' },
+              { label: 'Gênero', value: product.category || 'Ação/Aventura' },
               { label: 'Classificação', value: product.rating || '18 anos' },
-              { label: 'Desenvolvedor', value: product.developer || 'Capcom' },
+              { label: 'Desenvolvedor', value: product.platform || 'Capcom' },
               { label: 'Idiomas', value: 'Português, Inglês, Espanhol' },
               { label: 'Modo de Jogo', value: 'Single Player / Multiplayer' }
             ].map((spec, index) => (

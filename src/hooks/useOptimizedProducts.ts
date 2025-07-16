@@ -122,7 +122,7 @@ export const useOptimizedProducts = (options: UseOptimizedProductsOptions = {}) 
         throw error;
       }
 
-      return data as Product[];
+      return (data || []) as unknown as Product[];
     },
     staleTime,
     gcTime: cacheTime,
@@ -245,7 +245,7 @@ export const useOptimizedProducts = (options: UseOptimizedProductsOptions = {}) 
 
       if (error || !data) return [];
 
-      return data.map(optimizeProduct);
+      return data.map((product: any) => optimizeProduct(product as Product));
     } catch (error) {
       console.error('Erro ao buscar produtos relacionados:', error);
       return [];
