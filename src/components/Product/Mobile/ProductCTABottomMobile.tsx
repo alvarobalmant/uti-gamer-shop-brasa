@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { formatPrice } from '@/utils/formatPrice';
+<<<<<<< HEAD
 import { ShoppingCart, MessageCircle, Plus, Minus, X } from 'lucide-react';
+=======
+import { ShoppingCart, MessageCircle, Plus, Minus } from 'lucide-react';
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
 import { Button } from '@/components/ui/button';
 
 interface ProductCTABottomMobileProps {
@@ -26,19 +30,30 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
     for (let i = 0; i < quantity; i++) {
       onAddToCart(product);
     }
+<<<<<<< HEAD
     setIsExpanded(false);
+=======
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
   };
 
   return (
     <>
+<<<<<<< HEAD
       {/* Backdrop - Melhor Transição */}
       {isExpanded && (
         <div 
           className="fixed inset-0 bg-black/60 z-40 transition-opacity duration-300"
+=======
+      {/* Backdrop */}
+      {isExpanded && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40"
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
           onClick={() => setIsExpanded(false)}
         />
       )}
 
+<<<<<<< HEAD
       {/* CTA Bottom - Design Melhorado */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl">
         {/* Expanded Section - Melhor Layout */}
@@ -148,15 +163,60 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
                 >
                   ⚡ Comprar
                 </Button>
+=======
+      {/* CTA Bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
+        {/* Expanded Section */}
+        {isExpanded && (
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-base font-semibold text-gray-900">
+                Quantidade
+              </span>
+              <div className="flex items-center border border-gray-300 rounded-lg bg-white">
+                <button 
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-l-lg"
+                  disabled={quantity <= 1}
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <span className="w-12 text-center font-medium text-gray-900">
+                  {quantity}
+                </span>
+                <button 
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="w-10 h-10 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-r-lg"
+                  disabled={quantity >= 10}
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-sm text-gray-600 mb-1">
+                Total: {quantity} {quantity === 1 ? 'item' : 'itens'}
+              </div>
+              <div className="text-xl font-bold text-red-600">
+                {formatPrice(product.price * quantity)}
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
               </div>
             </div>
           </div>
         )}
 
+<<<<<<< HEAD
         {/* Main CTA Bar - Design Melhorado */}
         <div className="p-4 bg-white">
           <div className="flex items-center gap-4">
             {/* Product Summary - Mais Compacto */}
+=======
+        {/* Main CTA Bar */}
+        <div className="p-4">
+          <div className="flex items-center gap-3">
+            {/* Product Summary */}
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3">
                 <img
@@ -165,23 +225,37 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
                   className="w-12 h-12 object-contain bg-gray-50 rounded-lg flex-shrink-0"
                 />
                 <div className="min-w-0 flex-1">
+<<<<<<< HEAD
                   <div className="text-sm font-medium text-gray-900 truncate leading-tight">
                     {product.name}
                   </div>
                   <div className="text-lg font-bold text-red-600 mt-0.5">
+=======
+                  <div className="text-sm font-medium text-gray-900 truncate">
+                    {product.name}
+                  </div>
+                  <div className="text-lg font-bold text-red-600">
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
                     {formatPrice(product.price)}
                   </div>
                 </div>
               </div>
             </div>
 
+<<<<<<< HEAD
             {/* Action Buttons - Melhor Design */}
             <div className="flex items-center gap-3">
               {/* WhatsApp Button - Melhor Design */}
+=======
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              {/* WhatsApp Button */}
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleWhatsApp}
+<<<<<<< HEAD
                 className="w-12 h-12 p-0 border-2 border-green-500 text-green-600 hover:bg-green-50 rounded-xl transition-all duration-200"
               >
                 <MessageCircle className="w-5 h-5" />
@@ -191,21 +265,41 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
               <div className="relative">
                 {quantity > 1 && (
                   <div className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center z-10 shadow-lg">
+=======
+                className="border-green-500 text-green-600 hover:bg-green-50 p-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </Button>
+
+              {/* Add to Cart with Quantity */}
+              <div className="flex items-center">
+                {quantity > 1 && (
+                  <div className="bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center -mr-2 z-10">
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
                     {quantity}
                   </div>
                 )}
                 <Button
                   onClick={() => setIsExpanded(!isExpanded)}
+<<<<<<< HEAD
                   className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 h-12 rounded-xl font-bold shadow-lg transition-all duration-200 hover:shadow-xl"
                   disabled={product.stock === 0}
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   {product.stock === 0 ? 'Esgotado' : 'Comprar'}
+=======
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold"
+                  disabled={product.stock === 0}
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  {product.stock === 0 ? 'Esgotado' : 'Adicionar'}
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
                 </Button>
               </div>
             </div>
           </div>
 
+<<<<<<< HEAD
           {/* Quick Info - Melhor Espaçamento */}
           {!isExpanded && (
             <div className="flex items-center justify-center gap-6 mt-3 pt-3 border-t border-gray-100">
@@ -219,16 +313,51 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
               <div className="text-xs text-gray-600">
                 Entrega 2-5 dias
               </div>
+=======
+          {/* Quick Actions Row */}
+          {isExpanded && (
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <Button
+                onClick={handleAddToCart}
+                className="bg-red-600 hover:bg-red-700 text-white h-12 font-semibold"
+                disabled={product.stock === 0}
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Adicionar ao Carrinho
+              </Button>
+              
+              <Button
+                onClick={() => {
+                  handleAddToCart();
+                  // Simular redirecionamento para checkout
+                  window.location.href = '/checkout';
+                }}
+                variant="outline"
+                className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50 h-12 font-semibold"
+                disabled={product.stock === 0}
+              >
+                Comprar Agora
+              </Button>
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
             </div>
           )}
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Spacer - Altura Dinâmica */}
       <div className={`${isExpanded ? 'h-96' : 'h-24'} transition-all duration-300`} />
+=======
+      {/* Spacer to prevent content overlap */}
+      <div className={`${isExpanded ? 'h-32' : 'h-20'}`} />
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
     </>
   );
 };
 
+<<<<<<< HEAD
 export default ProductCTABottomMobile;
 
+=======
+export default ProductCTABottomMobile;
+>>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
