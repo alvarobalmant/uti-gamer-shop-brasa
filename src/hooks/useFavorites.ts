@@ -34,7 +34,12 @@ export const useFavorites = () => {
   } = useQuery({
     queryKey: ['user-favorites', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
+      console.log('🔍 Buscando favoritos para usuário:', user?.id);
+      
+      if (!user?.id) {
+        console.log('❌ Usuário não autenticado, retornando array vazio');
+        return [];
+      }
 
       const { data, error } = await supabase
         .from('user_favorites')
@@ -57,6 +62,8 @@ export const useFavorites = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
+      console.log('📥 Favoritos encontrados:', { data, error, count: data?.length });
+
       if (error) {
         console.error('Erro ao buscar favoritos:', error);
         throw error;
@@ -71,8 +78,15 @@ export const useFavorites = () => {
   // Adicionar produto aos favoritos
   const addToFavoritesMutation = useMutation({
     mutationFn: async (productId: string) => {
-      if (!user?.id) throw new Error('Usuário não autenticado');
+      console.log('🔄 addToFavoritesMutation iniciado:', { productId, userId: user?.id });
+      
+      if (!user?.id) {
+        console.log('❌ Usuário não autenticado na mutation');
+        throw new Error('Usuário não autenticado');
+      }
 
+      console.log('📤 Enviando para Supabase...');
+      
       const { data, error } = await supabase
         .from('user_favorites')
         .insert({
@@ -81,6 +95,8 @@ export const useFavorites = () => {
         })
         .select()
         .single();
+
+      console.log('📥 Resposta do Supabase:', { data, error });
 
       if (error) {
         if (error.code === '23505') { // Unique constraint violation
@@ -91,12 +107,13 @@ export const useFavorites = () => {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('✅ Favorito adicionado com sucesso:', data);
       queryClient.invalidateQueries({ queryKey: ['user-favorites'] });
       toast.success('Produto adicionado aos favoritos!');
     },
     onError: (error: Error) => {
-      console.error('Erro ao adicionar favorito:', error);
+      console.error('❌ Erro ao adicionar favorito:', error);
       if (error.message === 'Produto já está nos favoritos') {
         toast.info('Este produto já está na sua lista de desejos');
       } else {
@@ -108,7 +125,14 @@ export const useFavorites = () => {
   // Remover produto dos favoritos
   const removeFromFavoritesMutation = useMutation({
     mutationFn: async (productId: string) => {
-      if (!user?.id) throw new Error('Usuário não autenticado');
+      console.log('🔄 removeFromFavoritesMutation iniciado:', { productId, userId: user?.id });
+      
+      if (!user?.id) {
+        console.log('❌ Usuário não autenticado na mutation de remoção');
+        throw new Error('Usuário não autenticado');
+      }
+
+      console.log('📤 Removendo do Supabase...');
 
       const { error } = await supabase
         .from('user_favorites')
@@ -116,14 +140,17 @@ export const useFavorites = () => {
         .eq('user_id', user.id)
         .eq('product_id', productId);
 
+      console.log('📥 Resposta do Supabase (remoção):', { error });
+
       if (error) throw error;
     },
     onSuccess: () => {
+      console.log('✅ Favorito removido com sucesso');
       queryClient.invalidateQueries({ queryKey: ['user-favorites'] });
       toast.success('Produto removido dos favoritos');
     },
     onError: (error) => {
-      console.error('Erro ao remover favorito:', error);
+      console.error('❌ Erro ao remover favorito:', error);
       toast.error('Erro ao remover dos favoritos');
     }
   });
@@ -135,14 +162,22 @@ export const useFavorites = () => {
 
   // Toggle favorito (adicionar se não existe, remover se existe)
   const toggleFavorite = async (productId: string) => {
+    console.log('🔄 toggleFavorite chamado:', { productId, user: user?.id });
+    
     if (!user) {
+      console.log('❌ Usuário não autenticado');
       toast.error('Faça login para adicionar aos favoritos');
       return;
     }
 
-    if (isFavorite(productId)) {
+    const isCurrentlyFavorite = isFavorite(productId);
+    console.log('💖 Status atual:', { isCurrentlyFavorite, favoritesCount: favorites.length });
+
+    if (isCurrentlyFavorite) {
+      console.log('🗑️ Removendo dos favoritos');
       removeFromFavoritesMutation.mutate(productId);
     } else {
+      console.log('➕ Adicionando aos favoritos');
       addToFavoritesMutation.mutate(productId);
     }
   };
