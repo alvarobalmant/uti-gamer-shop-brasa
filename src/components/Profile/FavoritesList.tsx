@@ -10,7 +10,7 @@ import { Product } from '@/hooks/useProducts';
 import { useNavigate } from 'react-router-dom';
 
 const FavoritesList: React.FC = () => {
-  const { favorites, removeFromFavorites, loading } = useFavorites();
+  const { favorites, removeFromFavorites, isLoading } = useFavorites();
   const { addToCart } = useCart();
   const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
@@ -56,7 +56,7 @@ const FavoritesList: React.FC = () => {
     navigate(`/produto/${productId}`);
   };
 
-  if (loading || productsLoading) {
+  if (isLoading || productsLoading) {
     return (
       <Card>
         <CardHeader>
