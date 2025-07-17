@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +18,7 @@ export interface UserFavorite {
     slug: string;
     promotional_price?: number;
     uti_pro_price?: number;
+    description?: string;
   };
 }
 
@@ -48,7 +50,8 @@ export const useFavorites = () => {
             image,
             slug,
             promotional_price,
-            uti_pro_price
+            uti_pro_price,
+            description
           )
         `)
         .eq('user_id', user.id)
@@ -157,4 +160,3 @@ export const useFavorites = () => {
     favoritesCount: favorites.length
   };
 };
-

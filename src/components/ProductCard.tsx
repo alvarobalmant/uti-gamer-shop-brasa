@@ -1,7 +1,9 @@
+
 import React, { useCallback, useState } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
+import FavoriteButton from '@/components/FavoriteButton';
 
 import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
@@ -59,6 +61,11 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
         color={product.badge_color || '#22c55e'} 
         isVisible={product.badge_visible || false} 
       />
+
+      {/* Favorite Button */}
+      <div className="absolute top-2 right-2 z-10">
+        <FavoriteButton productId={product.id} size="sm" />
+      </div>
       
       <ProductCardImage product={product} isHovered={isHovered} />
 
@@ -73,4 +80,3 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
 });
 
 export default ProductCard;
-
