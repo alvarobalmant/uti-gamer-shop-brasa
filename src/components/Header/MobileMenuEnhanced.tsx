@@ -25,7 +25,7 @@ interface MobileMenuEnhancedProps {
 }
 
 const MobileMenuEnhanced = ({ isOpen, onClose, onAuthOpen }: MobileMenuEnhancedProps) => {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const { hasActiveSubscription } = useSubscriptions();
   const navigate = useNavigate();
   const { items, loading, fetchVisibleItems } = useNavigationItems();
@@ -61,7 +61,7 @@ const MobileMenuEnhanced = ({ isOpen, onClose, onAuthOpen }: MobileMenuEnhancedP
 
   const handleLogout = async () => {
     try {
-      await signOut();
+      await logout();
       onClose();
     } catch (error) {
       console.error('Erro ao fazer logout:', error);

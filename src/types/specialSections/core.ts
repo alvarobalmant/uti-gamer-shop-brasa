@@ -251,48 +251,15 @@ export interface CreateSectionRequest {
   order?: number;
   isVisible?: boolean;
   visibility?: VisibilityTypeValue;
-  background_type?: string;
-  background_color?: string;
-  background_gradient?: string;
-  background_image_url?: string;
-  background_image_position?: string;
-  background_value?: string;
-  content_config?: any;
-  display_order?: number;
-  description?: string;
-  title_color1?: string;
-  title_color2?: string;
-  title_part1?: string;
-  title_part2?: string;
-  padding_top?: number;
-  padding_bottom?: number;
-  padding_left?: number;
-  padding_right?: number;
-  margin_top?: number;
-  margin_bottom?: number;
-  border_radius?: number;
-  mobile_settings?: any;
-  is_active?: boolean;
 }
 
 export interface UpdateSectionRequest {
-  id?: string;
+  id: string;
   title?: string;
   config?: Partial<SectionConfig>;
   order?: number;
   isVisible?: boolean;
   visibility?: VisibilityTypeValue;
-  is_active?: boolean;
-  background_type?: string;
-  background_color?: string;
-  background_gradient?: string;
-  background_image_url?: string;
-  background_image_position?: string;
-  background_value?: string;
-  content_config?: any;
-  display_order?: number;
-  description?: string;
-  [key: string]: any;
 }
 
 export interface SectionListResponse {
@@ -318,8 +285,6 @@ export interface SectionPreviewProps {
 export interface DragDropItem {
   id: string;
   order: number;
-  type?: string;
-  isVisible?: boolean;
 }
 
 // Tipos para hooks

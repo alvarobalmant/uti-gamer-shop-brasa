@@ -6,7 +6,7 @@ import { CategoryGridRenderer } from './CategoryGridRenderer';
 import { PromotionalBannerRenderer } from './PromotionalBannerRenderer';
 import { NewsRenderer } from './NewsRenderer';
 import { CustomHtmlRenderer } from './CustomHtmlRenderer';
-import type { SpecialSection } from '@/hooks/specialSections/useSpecialSections';
+import type { SpecialSection } from '@/types/specialSections/core';
 
 interface SpecialSectionsRendererProps {
   pageId?: string;
@@ -17,15 +17,15 @@ export const SpecialSectionsRenderer: React.FC<SpecialSectionsRendererProps> = (
   pageId = 'homepage',
   className = ''
 }) => {
-  const { sections, loading, error, createSection, updateSection } = useSpecialSections({});
+  const { sections, loading, error } = useSpecialSections(pageId);
 
   // Filtrar e ordenar seções visíveis
   const visibleSections = useMemo(() => {
     if (!sections) return [];
     
     return sections
-      .filter(section => section.is_active)
-      .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+      .filter(section => section.isVisible)
+      .sort((a, b) => a.order - b.order);
   }, [sections]);
 
   // Renderizar seção individual
@@ -36,24 +36,21 @@ export const SpecialSectionsRenderer: React.FC<SpecialSectionsRendererProps> = (
       className: 'mb-8'
     };
 
-    // Determine section type from content_config or fallback to default
-    const sectionType = (section.content_config as any)?.type || 'custom_html';
-    
-    switch (sectionType) {
+    switch (section.type) {
       case 'banner_hero':
-        return <BannerHeroRenderer {...commonProps} section={section as any} />;
+        return <BannerHeroRenderer {...commonProps} />;
       case 'product_carousel':
-        return <ProductCarouselRenderer {...commonProps} section={section as any} />;
+        return <ProductCarouselRenderer {...commonProps} />;
       case 'category_grid':
-        return <CategoryGridRenderer {...commonProps} section={section as any} />;
+        return <CategoryGridRenderer {...commonProps} />;
       case 'promotional_banner':
-        return <PromotionalBannerRenderer {...commonProps} section={section as any} />;
+        return <PromotionalBannerRenderer {...commonProps} />;
       case 'news_section':
-        return <NewsRenderer {...commonProps} section={section as any} />;
+        return <NewsRenderer {...commonProps} />;
       case 'custom_html':
-        return <CustomHtmlRenderer {...commonProps} section={section as any} />;
+        return <CustomHtmlRenderer {...commonProps} />;
       default:
-        console.warn(`Tipo de seção não suportado: ${sectionType}`);
+        console.warn(`Tipo de seção não suportado: ${section.type}`);
         return null;
     }
   };

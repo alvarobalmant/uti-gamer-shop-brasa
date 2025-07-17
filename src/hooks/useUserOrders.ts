@@ -37,10 +37,37 @@ export const useUserOrders = () => {
     queryFn: async (): Promise<UserOrder[]> => {
       if (!user?.id) return [];
 
-      // Como a tabela user_orders ainda não existe, retornar array vazio
-      // TODO: Implementar tabela user_orders quando necessário
-      console.log('Tabela user_orders não existe ainda. Retornando array vazio.');
-      return [];
+      const { data, error } = await supabase
+        .from('user_orders')
+        .select(`
+          id,
+          user_id,
+          order_number,
+          total_amount,
+          status,
+          created_at,
+          updated_at,
+          order_items:order_items (
+            id,
+            product_id,
+            quantity,
+            price_at_time,
+            product:products (
+              id,
+              name,
+              image
+            )
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar pedidos:', error);
+        throw error;
+      }
+
+      return data || [];
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutos

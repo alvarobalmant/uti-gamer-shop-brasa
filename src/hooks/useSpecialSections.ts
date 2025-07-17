@@ -2,10 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast'; // Corrected import path
 import { supabase } from '@/integrations/supabase/client';
 import { SpecialSection, SpecialSectionCreateInput, SpecialSectionUpdateInput } from '@/types/specialSections';
-import { Database } from '@/integrations/supabase/types';
 
-export const useSpecialSections = (options?: any) => {
-  const [specialSections, setSpecialSections] = useState<Database['public']['Tables']['special_sections']['Row'][]>([]);
+export const useSpecialSections = () => {
+  const [specialSections, setSpecialSections] = useState<SpecialSection[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -26,10 +25,10 @@ export const useSpecialSections = (options?: any) => {
       if (fetchError) throw fetchError;
       
       // Dados já vêm tipados corretamente do banco
-      const sectionsData = (data || []) as Database['public']['Tables']['special_sections']['Row'][];
+      const sectionsData = data || [];
       
       console.log(`[useSpecialSections] Loaded ${sectionsData.length} sections:`, sectionsData);
-      setSpecialSections(sectionsData as any);
+      setSpecialSections(sectionsData);
     } catch (err: any) {
       console.error('Error fetching special sections:', err);
       setError('Falha ao carregar as seções especiais.');
@@ -95,7 +94,7 @@ export const useSpecialSections = (options?: any) => {
     }
   };
 
-  const addSpecialSection = async (sectionData: any) => {
+  const addSpecialSection = async (sectionData: SpecialSectionCreateInput) => {
     // Remove display_order if it exists in the input, as it's managed by homepage_layout
     const { display_order, ...dataToInsert } = sectionData as any; 
 
@@ -128,7 +127,7 @@ export const useSpecialSections = (options?: any) => {
     }
   };
 
-  const updateSpecialSection = async (id: string, updates: any) => {
+  const updateSpecialSection = async (id: string, updates: SpecialSectionUpdateInput) => {
      // Remove display_order if it exists in the input
     const { display_order, ...dataToUpdate } = updates as any;
     try {
@@ -218,19 +217,12 @@ export const useSpecialSections = (options?: any) => {
   }, [fetchSpecialSections]);
 
   return {
-    sections: specialSections,
-    specialSections: specialSections,
+    specialSections,
     loading,
-    error,
-    total: specialSections.length,
     refetch: fetchSpecialSections,
     forceRefresh,
-    createSection: addSpecialSection,
-    updateSection: updateSpecialSection,
-    deleteSection: deleteSpecialSection,
-    reorderSections: async (items: any[]) => {
-      // Implement reordering logic
-      console.log('Reordering sections:', items);
-    },
+    addSpecialSection,
+    updateSpecialSection,
+    deleteSpecialSection,
   };
 };

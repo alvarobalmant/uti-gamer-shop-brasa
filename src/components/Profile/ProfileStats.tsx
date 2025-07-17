@@ -5,9 +5,9 @@ import { TrendingDown, ShoppingBag, Award, Sparkles } from 'lucide-react';
 import { useUserSavings } from '@/hooks/useUserSavings';
 
 const ProfileStats: React.FC = () => {
-  const { savings, isLoading } = useUserSavings();
+  const { savings, loading } = useUserSavings();
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[...Array(4)].map((_, i) => (

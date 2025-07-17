@@ -58,7 +58,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
       case 'by_tag':
         if (selectedTags.length > 0) {
           filtered = filtered.filter(product =>
-            product.tags?.some(tag => selectedTags.includes(typeof tag === 'string' ? tag : tag.id))
+            product.tags?.some(tag => selectedTags.includes(tag))
           );
         }
         break;
@@ -333,7 +333,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-2">
-            {filteredProducts.map(product => renderProduct(product as unknown as Product))}
+            {filteredProducts.map(renderProduct)}
           </div>
         )}
       </div>

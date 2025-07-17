@@ -6,24 +6,24 @@ import { GripVertical, Trash2, Edit } from 'lucide-react';
 interface DragDropItem {
   id: string;
   title: string;
-  type?: string;
-  isVisible?: boolean;
-  order?: number;
-  [key: string]: any;
+  type: string;
+  isVisible: boolean;
 }
 
 interface DragDropListProps {
   items: DragDropItem[];
   onReorder: (items: DragDropItem[]) => void;
-  renderItem?: (item: DragDropItem) => React.ReactNode;
-  keyExtractor?: (item: DragDropItem) => string;
+  onEdit: (item: DragDropItem) => void;
+  onDelete: (itemId: string) => void;
+  onToggleVisibility: (itemId: string) => void;
 }
 
 export const DragDropList: React.FC<DragDropListProps> = ({
   items,
   onReorder,
-  renderItem,
-  keyExtractor
+  onEdit,
+  onDelete,
+  onToggleVisibility
 }) => {
   const moveUp = (index: number) => {
     if (index === 0) return;
@@ -42,46 +42,62 @@ export const DragDropList: React.FC<DragDropListProps> = ({
   return (
     <div className="space-y-2">
       {items.map((item, index) => (
-        <div key={keyExtractor ? keyExtractor(item) : item.id}>
-          {renderItem ? (
-            renderItem(item)
-          ) : (
-            <Card
-              className={`transition-all ${!item.isVisible ? 'opacity-60' : ''}`}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <GripVertical className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <h4 className="font-medium">{item.title}</h4>
-                      <p className="text-sm text-gray-500">{item.type}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => moveUp(index)}
-                      disabled={index === 0}
-                    >
-                      ↑
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => moveDown(index)}
-                      disabled={index === items.length - 1}
-                    >
-                      ↓
-                    </Button>
-                  </div>
+        <Card
+          key={item.id}
+          className={`transition-all ${!item.isVisible ? 'opacity-60' : ''}`}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <GripVertical className="h-4 w-4 text-gray-400" />
+                <div>
+                  <h4 className="font-medium">{item.title}</h4>
+                  <p className="text-sm text-gray-500">{item.type}</p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => moveUp(index)}
+                  disabled={index === 0}
+                >
+                  ↑
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => moveDown(index)}
+                  disabled={index === items.length - 1}
+                >
+                  ↓
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onToggleVisibility(item.id)}
+                >
+                  {item.isVisible ? '👁️' : '🙈'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(item)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onDelete(item.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );

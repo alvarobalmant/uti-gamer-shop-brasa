@@ -5,14 +5,11 @@ import { Plus, Sparkles } from 'lucide-react';
 import { useSpecialSections } from '@/hooks/useSpecialSections';
 import SpecialSectionList from './SpecialSectionManager/SpecialSectionList'; // Import the list component
 import SpecialSectionForm from './SpecialSectionManager/SpecialSectionForm'; // Import the form component
-// Use any for now to avoid type conflicts
-type SpecialSection = any;
-type SpecialSectionCreateInput = any;
-type SpecialSectionUpdateInput = any;
+import { SpecialSection, SpecialSectionCreateInput, SpecialSectionUpdateInput } from '@/types/specialSections';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const SpecialSectionManager = () => {
-  const { sections, loading, createSection, updateSection, deleteSection, refetch } = useSpecialSections();
+  const { specialSections, loading, addSpecialSection, updateSpecialSection, deleteSpecialSection, refetch } = useSpecialSections();
   const [showForm, setShowForm] = React.useState(false);
   const [editingSection, setEditingSection] = React.useState<SpecialSection | null>(null);
 
@@ -31,9 +28,9 @@ const SpecialSectionManager = () => {
       if (editingSection) {
         // Ensure we only pass fields that exist in SpecialSectionUpdateInput
         // The form should ideally return the correct type
-        await updateSection(editingSection.id, formData as SpecialSectionUpdateInput);
+        await updateSpecialSection(editingSection.id, formData as SpecialSectionUpdateInput);
       } else {
-        await createSection(formData as SpecialSectionCreateInput);
+        await addSpecialSection(formData as SpecialSectionCreateInput);
       }
       setShowForm(false);
       setEditingSection(null);
@@ -48,7 +45,7 @@ const SpecialSectionManager = () => {
     // TODO: Add a nicer confirmation dialog (e.g., shadcn/ui AlertDialog)
     if (window.confirm('Tem certeza que deseja excluir esta seção especial? Esta ação não pode ser desfeita.')) {
       try {
-        await deleteSection(id);
+        await deleteSpecialSection(id);
         // refetch(); // Hook refetches on success
       } catch (error) {
         console.error("Failed to delete special section:", error);
@@ -98,7 +95,7 @@ const SpecialSectionManager = () => {
       </CardHeader>
       <CardContent className="p-6">
         <SpecialSectionList
-          sections={sections as any}
+          sections={specialSections}
           onEdit={handleEdit}
           onDelete={handleDelete}
           loading={loading}

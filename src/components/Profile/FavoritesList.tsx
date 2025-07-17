@@ -10,7 +10,7 @@ import { Product } from '@/hooks/useProducts';
 import { useNavigate } from 'react-router-dom';
 
 const FavoritesList: React.FC = () => {
-  const { favorites, removeFromFavorites, isLoading } = useFavorites();
+  const { favorites, removeFromFavorites, loading } = useFavorites();
   const { addToCart } = useCart();
   const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
@@ -32,7 +32,7 @@ const FavoritesList: React.FC = () => {
         .in('id', productIds);
 
       if (error) throw error;
-      setFavoriteProducts((data || []) as Product[]);
+      setFavoriteProducts(data || []);
     } catch (error) {
       console.error('Error loading favorite products:', error);
     } finally {
@@ -56,7 +56,7 @@ const FavoritesList: React.FC = () => {
     navigate(`/produto/${productId}`);
   };
 
-  if (isLoading || productsLoading) {
+  if (loading || productsLoading) {
     return (
       <Card>
         <CardHeader>
