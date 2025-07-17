@@ -17,7 +17,7 @@ export const SpecialSectionsRenderer: React.FC<SpecialSectionsRendererProps> = (
   pageId = 'homepage',
   className = ''
 }) => {
-  const { sections, loading, error } = useSpecialSections(pageId);
+  const { sections, loading, error, createSection, updateSection } = useSpecialSections({});
 
   // Filtrar e ordenar seções visíveis
   const visibleSections = useMemo(() => {

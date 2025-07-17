@@ -19,15 +19,11 @@ import { SectionPreview } from './SectionPreview';
 import { ImageUploader } from '../UI/ImageUploader';
 import { ProductSelector } from '../UI/ProductSelector';
 import type { 
-  SpecialSection, 
-  CreateSectionRequest, 
-  SectionTypeValue,
-  VisibilityTypeValue
-} from '@/types/specialSections/core';
-import { 
-  BannerHeroConfigSchema,
-  ProductCarouselConfigSchema
-} from '@/types/specialSections/core';
+  CreateSectionRequest,
+  UpdateSectionRequest,
+  SpecialSection,
+  DragDropItem
+} from '@/hooks/specialSections/useSpecialSections';
 
 const SECTION_TYPES = [
   { value: 'banner_hero', label: 'Banner Hero', icon: Image },
@@ -54,7 +50,7 @@ const IMAGE_POSITIONS = [
 ] as const;
 
 // Schema de validação dinâmico
-const createValidationSchema = (sectionType: SectionTypeValue) => {
+const createValidationSchema = (sectionType: string) => {
   const baseSchema = z.object({
     type: z.enum(['banner_hero', 'product_carousel', 'category_grid', 'promotional_banner', 'news_section', 'custom_html']),
     title: z.string().min(1, 'Título é obrigatório'),
@@ -63,20 +59,9 @@ const createValidationSchema = (sectionType: SectionTypeValue) => {
     order: z.number().optional()
   });
 
-  switch (sectionType) {
-    case 'banner_hero':
-      return baseSchema.extend({
-        config: BannerHeroConfigSchema
-      });
-    case 'product_carousel':
-      return baseSchema.extend({
-        config: ProductCarouselConfigSchema
-      });
-    default:
-      return baseSchema.extend({
-        config: z.record(z.any())
-      });
-  }
+  return baseSchema.extend({
+    config: z.record(z.any())
+  });
 };
 
 interface SectionEditorProps {
@@ -92,8 +77,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   onCancel,
   isLoading = false
 }) => {
-  const [selectedType, setSelectedType] = useState<SectionTypeValue>(
-    section?.type || 'banner_hero'
+  const [selectedType, setSelectedType] = useState<string>(
+    section?.background_type || 'banner_hero'
   );
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -116,10 +101,10 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
     defaultValues: {
       type: selectedType,
       title: section?.title || '',
-      visibility: section?.visibility || 'both',
-      isVisible: section?.isVisible ?? true,
-      order: section?.order || 0,
-      config: section?.config || getDefaultConfig(selectedType)
+      visibility: 'both',
+      isVisible: section?.is_active ?? true,
+      order: section?.display_order || 0,
+      config: (section?.content_config as any) || getDefaultConfig(selectedType)
     }
   });
 
@@ -127,7 +112,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   const watchedValues = watch();
 
   // Função para obter configuração padrão por tipo
-  function getDefaultConfig(type: SectionTypeValue) {
+  function getDefaultConfig(type: string) {
     switch (type) {
       case 'banner_hero':
         return {
@@ -170,16 +155,15 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   // Atualizar preview quando formulário mudar
   useEffect(() => {
     if (isPreviewMode && watchedValues) {
-      const previewData: SpecialSection = {
+      const previewData: any = {
         id: section?.id || 'preview',
-        type: watchedValues.type,
         title: watchedValues.title,
-        visibility: watchedValues.visibility,
-        isVisible: watchedValues.isVisible,
-        order: watchedValues.order || 0,
-        config: watchedValues.config,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        background_type: watchedValues.type,
+        is_active: watchedValues.isVisible,
+        display_order: watchedValues.order || 0,
+        content_config: watchedValues.config,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       updatePreview(previewData);
     }
@@ -189,19 +173,19 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   useEffect(() => {
     if (section) {
       reset({
-        type: section.type,
+        type: section.background_type,
         title: section.title,
-        visibility: section.visibility,
-        isVisible: section.isVisible,
-        order: section.order,
-        config: section.config
+        visibility: 'both', // Default value since DB doesn't have this
+        isVisible: section.is_active,
+        order: section.display_order || 0,
+        config: section.content_config || {}
       });
-      setSelectedType(section.type);
+      setSelectedType(section.background_type || 'banner_hero');
     }
   }, [section, reset]);
 
   // Handler para mudança de tipo
-  const handleTypeChange = useCallback((newType: SectionTypeValue) => {
+  const handleTypeChange = useCallback((newType: string) => {
     setSelectedType(newType);
     setValue('type', newType);
     setValue('config', getDefaultConfig(newType));
@@ -227,16 +211,15 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
       stopPreview();
       setShowPreview(false);
     } else {
-      const previewData: SpecialSection = {
+      const previewData: any = {
         id: section?.id || 'preview',
-        type: watchedValues.type,
         title: watchedValues.title,
-        visibility: watchedValues.visibility,
-        isVisible: watchedValues.isVisible,
-        order: watchedValues.order || 0,
-        config: watchedValues.config,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        background_type: watchedValues.type,
+        is_active: watchedValues.isVisible,
+        display_order: watchedValues.order || 0,
+        content_config: watchedValues.config,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       startPreview(previewData);
       setShowPreview(true);
