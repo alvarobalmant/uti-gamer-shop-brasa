@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProductGallery from './ProductGallery';
 import ProductPricing from './ProductPricing';
-import ProductActions from './ProductActions';
+import ProductActions from '@/components/ProductPage/ProductActions';
 
 interface ProductHeroProps {
   product: Product;
@@ -137,12 +137,7 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
             {/* Quantidade e Ações */}
             <ProductActions
               product={product}
-              quantity={quantity}
-              onQuantityChange={setQuantity}
               onAddToCart={() => onAddToCart(product)}
-              onWhatsAppContact={handleWhatsAppContact}
-              showLowStockWarning={false}
-              showLimitedTimeOffer={false}
             />
 
             {/* Trust Indicators */}

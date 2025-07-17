@@ -12,14 +12,34 @@ export interface SpecialSection {
   id: string;
   title: string;
   description?: string;
-  background_type: BackgroundType;
+  background_type: string;
+  background_color?: string;
+  background_gradient?: string;
+  background_image_url?: string;
+  background_image_position?: string;
   background_value?: string;
-  background_image_position: BackgroundImagePosition;
-  content_config: SpecialSectionConfig;
+  content_config?: SpecialSectionConfig;
   is_active: boolean;
   display_order?: number;
   created_at: string;
   updated_at: string;
+  // Add missing properties from database
+  title_color1?: string;
+  title_color2?: string;
+  title_part1?: string;
+  title_part2?: string;
+  padding_top?: number;
+  padding_bottom?: number;
+  padding_left?: number;
+  padding_right?: number;
+  margin_top?: number;
+  margin_bottom?: number;
+  border_radius?: number;
+  mobile_settings?: any;
+  // Add computed properties for compatibility
+  type?: string;
+  order?: number;
+  isVisible?: boolean;
 }
 
 // Base type for Special Section Element from the database

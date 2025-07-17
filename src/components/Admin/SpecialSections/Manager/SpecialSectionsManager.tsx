@@ -13,7 +13,7 @@ import { useSpecialSections } from '@/hooks/specialSections/useSpecialSections';
 import { SectionEditor } from './SectionEditor';
 import { SectionPreview } from './SectionPreview';
 import { DragDropList } from '../UI/DragDropList';
-import type { SpecialSection, SectionTypeValue, VisibilityTypeValue, CreateSectionRequest } from '@/types/specialSections/core';
+import type { SpecialSection, CreateSectionRequest } from '@/hooks/specialSections/useSpecialSections';
 
 const SECTION_TYPE_LABELS = {
   banner_hero: 'Banner Hero',
@@ -34,8 +34,8 @@ const VISIBILITY_LABELS = {
 export const SpecialSectionsManager: React.FC = () => {
   // Estados principais
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState<SectionTypeValue | 'all'>('all');
-  const [visibilityFilter, setVisibilityFilter] = useState<VisibilityTypeValue | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [visibilityFilter, setVisibilityFilter] = useState<string>('all');
   const [selectedSection, setSelectedSection] = useState<SpecialSection | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -99,7 +99,7 @@ export const SpecialSectionsManager: React.FC = () => {
     try {
       await updateSection({
         id: section.id,
-        isVisible: !section.isVisible
+        is_active: !section.is_active
       });
     } catch (error) {
       console.error('Erro ao alterar visibilidade:', error);
@@ -137,17 +137,17 @@ export const SpecialSectionsManager: React.FC = () => {
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-medium text-sm">{section.title}</h3>
                 <Badge variant="secondary" className="text-xs">
-                  {SECTION_TYPE_LABELS[section.type]}
+                  {(section.content_config as any)?.type || 'custom_html'}
                 </Badge>
                 <Badge 
-                  variant={section.visibility === 'both' ? 'default' : 'outline'}
+                  variant={section.is_active ? 'default' : 'outline'}
                   className="text-xs"
                 >
-                  {VISIBILITY_LABELS[section.visibility]}
+                  {section.is_active ? 'Ativo' : 'Inativo'}
                 </Badge>
               </div>
               <p className="text-xs text-gray-500">
-                Ordem: {section.order} • Criado em {section.createdAt.toLocaleDateString()}
+                Ordem: {section.display_order || 0} • Criado em {new Date(section.created_at).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -157,11 +157,10 @@ export const SpecialSectionsManager: React.FC = () => {
             {/* Toggle visibilidade */}
             <div className="flex items-center gap-1">
               <Switch
-                checked={section.isVisible}
+                checked={section.is_active}
                 onCheckedChange={() => handleToggleVisibility(section)}
-                size="sm"
               />
-              {section.isVisible ? (
+              {section.is_active ? (
                 <Eye className="h-3 w-3 text-green-600" />
               ) : (
                 <EyeOff className="h-3 w-3 text-gray-400" />
@@ -308,8 +307,13 @@ export const SpecialSectionsManager: React.FC = () => {
             </div>
           ) : (
             <DragDropList
-              items={filteredSections}
-              onReorder={handleReorder}
+              items={filteredSections.map(section => ({ 
+                ...section, 
+                order: section.display_order || 0,
+                type: 'special_section',
+                isVisible: section.is_active
+              }))}
+              onReorder={(items) => handleReorder(items.map(item => ({ id: item.id, order: item.order })))}
               renderItem={renderSectionItem}
               keyExtractor={(item) => item.id}
             />
@@ -326,7 +330,7 @@ export const SpecialSectionsManager: React.FC = () => {
             </DialogTitle>
           </DialogHeader>
           <SectionEditor
-            section={selectedSection}
+            section={selectedSection as any}
             onSave={handleSaveSection}
             onCancel={() => setIsEditorOpen(false)}
           />
@@ -340,7 +344,7 @@ export const SpecialSectionsManager: React.FC = () => {
             <DialogTitle>Preview da Seção</DialogTitle>
           </DialogHeader>
           {selectedSection && (
-            <SectionPreview section={selectedSection} />
+            <SectionPreview section={selectedSection as any} />
           )}
         </DialogContent>
       </Dialog>
