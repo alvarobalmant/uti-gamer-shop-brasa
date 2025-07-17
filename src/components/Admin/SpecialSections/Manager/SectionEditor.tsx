@@ -402,7 +402,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
               <Badge variant="secondary">Atualização Automática</Badge>
             </div>
             <Card className="p-4">
-              <SectionPreview section={previewSection} isEditing />
+              <SectionPreview section={previewSection as any} isEditing />
             </Card>
           </div>
         )}

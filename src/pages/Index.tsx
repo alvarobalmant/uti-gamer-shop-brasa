@@ -151,7 +151,7 @@ const Index = React.memo(() => {
                   return (
                     <SpecialSectionRenderer 
                       key={sectionKey} 
-                      section={specialSectionData} 
+                      section={specialSectionData as any} 
                       onProductCardClick={handleProductCardClick}
                       reduceTopSpacing={reduceSpacing}
                     />

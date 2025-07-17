@@ -252,7 +252,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                       duration: 3,
                       ease: "easeOut"
                     }}
-                    className="text-lg"
+                    className="text-lg emoji-animation"
                   >
                     {['🎉', '⭐', '🏆', '✨', '🎊', '💎'][i % 6]}
                   </motion.div>

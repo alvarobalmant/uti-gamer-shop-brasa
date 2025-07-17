@@ -37,8 +37,32 @@ export interface CreateSectionRequest {
   mobile_settings?: any;
 }
 
-export interface UpdateSectionRequest extends CreateSectionRequest {
+export interface UpdateSectionRequest {
   id: string;
+  title?: string;
+  description?: string;
+  background_type?: string;
+  background_color?: string;
+  background_gradient?: string;
+  background_image_url?: string;
+  background_image_position?: string;
+  background_value?: string;
+  content_config?: any;
+  is_active?: boolean;
+  display_order?: number;
+  title_color1?: string;
+  title_color2?: string;
+  title_part1?: string;
+  title_part2?: string;
+  padding_top?: number;
+  padding_bottom?: number;
+  padding_left?: number;
+  padding_right?: number;
+  margin_top?: number;
+  margin_bottom?: number;
+  border_radius?: number;
+  mobile_settings?: any;
+  [key: string]: any;
 }
 
 export interface DragDropItem {

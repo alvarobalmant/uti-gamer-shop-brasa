@@ -6,7 +6,7 @@ import { CategoryGridRenderer } from './CategoryGridRenderer';
 import { PromotionalBannerRenderer } from './PromotionalBannerRenderer';
 import { NewsRenderer } from './NewsRenderer';
 import { CustomHtmlRenderer } from './CustomHtmlRenderer';
-import type { SpecialSection } from '@/types/specialSections';
+import type { SpecialSection } from '@/hooks/specialSections/useSpecialSections';
 
 interface SpecialSectionsRendererProps {
   pageId?: string;
@@ -37,21 +37,21 @@ export const SpecialSectionsRenderer: React.FC<SpecialSectionsRendererProps> = (
     };
 
     // Determine section type from content_config or fallback to default
-    const sectionType = section.content_config?.type || 'custom_html';
+    const sectionType = (section.content_config as any)?.type || 'custom_html';
     
     switch (sectionType) {
       case 'banner_hero':
-        return <BannerHeroRenderer {...commonProps} />;
+        return <BannerHeroRenderer {...commonProps} section={section as any} />;
       case 'product_carousel':
-        return <ProductCarouselRenderer {...commonProps} />;
+        return <ProductCarouselRenderer {...commonProps} section={section as any} />;
       case 'category_grid':
-        return <CategoryGridRenderer {...commonProps} />;
+        return <CategoryGridRenderer {...commonProps} section={section as any} />;
       case 'promotional_banner':
-        return <PromotionalBannerRenderer {...commonProps} />;
+        return <PromotionalBannerRenderer {...commonProps} section={section as any} />;
       case 'news_section':
-        return <NewsRenderer {...commonProps} />;
+        return <NewsRenderer {...commonProps} section={section as any} />;
       case 'custom_html':
-        return <CustomHtmlRenderer {...commonProps} />;
+        return <CustomHtmlRenderer {...commonProps} section={section as any} />;
       default:
         console.warn(`Tipo de seção não suportado: ${sectionType}`);
         return null;

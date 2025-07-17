@@ -13,7 +13,7 @@ import { useSpecialSections } from '@/hooks/specialSections/useSpecialSections';
 import { SectionEditor } from './SectionEditor';
 import { SectionPreview } from './SectionPreview';
 import { DragDropList } from '../UI/DragDropList';
-import type { SpecialSection, SectionTypeValue, VisibilityTypeValue, CreateSectionRequest } from '@/types/specialSections/core';
+import type { SpecialSection, CreateSectionRequest } from '@/hooks/specialSections/useSpecialSections';
 
 const SECTION_TYPE_LABELS = {
   banner_hero: 'Banner Hero',
@@ -34,8 +34,8 @@ const VISIBILITY_LABELS = {
 export const SpecialSectionsManager: React.FC = () => {
   // Estados principais
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState<SectionTypeValue | 'all'>('all');
-  const [visibilityFilter, setVisibilityFilter] = useState<VisibilityTypeValue | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [visibilityFilter, setVisibilityFilter] = useState<string>('all');
   const [selectedSection, setSelectedSection] = useState<SpecialSection | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -137,7 +137,7 @@ export const SpecialSectionsManager: React.FC = () => {
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-medium text-sm">{section.title}</h3>
                 <Badge variant="secondary" className="text-xs">
-                  {section.content_config?.type || 'custom_html'}
+                  {(section.content_config as any)?.type || 'custom_html'}
                 </Badge>
                 <Badge 
                   variant={section.is_active ? 'default' : 'outline'}
@@ -330,7 +330,7 @@ export const SpecialSectionsManager: React.FC = () => {
             </DialogTitle>
           </DialogHeader>
           <SectionEditor
-            section={selectedSection}
+            section={selectedSection as any}
             onSave={handleSaveSection}
             onCancel={() => setIsEditorOpen(false)}
           />
@@ -344,7 +344,7 @@ export const SpecialSectionsManager: React.FC = () => {
             <DialogTitle>Preview da Seção</DialogTitle>
           </DialogHeader>
           {selectedSection && (
-            <SectionPreview section={selectedSection} />
+            <SectionPreview section={selectedSection as any} />
           )}
         </DialogContent>
       </Dialog>

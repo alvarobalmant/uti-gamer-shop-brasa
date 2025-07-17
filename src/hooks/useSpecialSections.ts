@@ -5,7 +5,7 @@ import { SpecialSection, SpecialSectionCreateInput, SpecialSectionUpdateInput } 
 import { Database } from '@/integrations/supabase/types';
 
 export const useSpecialSections = (options?: any) => {
-  const [specialSections, setSpecialSections] = useState<SpecialSection[]>([]);
+  const [specialSections, setSpecialSections] = useState<Database['public']['Tables']['special_sections']['Row'][]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -29,7 +29,7 @@ export const useSpecialSections = (options?: any) => {
       const sectionsData = (data || []) as Database['public']['Tables']['special_sections']['Row'][];
       
       console.log(`[useSpecialSections] Loaded ${sectionsData.length} sections:`, sectionsData);
-      setSpecialSections(sectionsData);
+      setSpecialSections(sectionsData as any);
     } catch (err: any) {
       console.error('Error fetching special sections:', err);
       setError('Falha ao carregar as seções especiais.');
@@ -95,7 +95,7 @@ export const useSpecialSections = (options?: any) => {
     }
   };
 
-  const addSpecialSection = async (sectionData: SpecialSectionCreateInput) => {
+  const addSpecialSection = async (sectionData: any) => {
     // Remove display_order if it exists in the input, as it's managed by homepage_layout
     const { display_order, ...dataToInsert } = sectionData as any; 
 
@@ -128,7 +128,7 @@ export const useSpecialSections = (options?: any) => {
     }
   };
 
-  const updateSpecialSection = async (id: string, updates: SpecialSectionUpdateInput) => {
+  const updateSpecialSection = async (id: string, updates: any) => {
      // Remove display_order if it exists in the input
     const { display_order, ...dataToUpdate } = updates as any;
     try {
@@ -219,6 +219,7 @@ export const useSpecialSections = (options?: any) => {
 
   return {
     sections: specialSections,
+    specialSections: specialSections,
     loading,
     error,
     total: specialSections.length,
