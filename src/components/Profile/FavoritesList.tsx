@@ -32,7 +32,7 @@ const FavoritesList: React.FC = () => {
         .in('id', productIds);
 
       if (error) throw error;
-      setFavoriteProducts(data || []);
+      setFavoriteProducts((data || []) as Product[]);
     } catch (error) {
       console.error('Error loading favorite products:', error);
     } finally {
