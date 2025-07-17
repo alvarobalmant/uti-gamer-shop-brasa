@@ -22,7 +22,9 @@ import type {
   SpecialSection, 
   CreateSectionRequest, 
   SectionTypeValue,
-  VisibilityTypeValue,
+  VisibilityTypeValue
+} from '@/types/specialSections/core';
+import { 
   BannerHeroConfigSchema,
   ProductCarouselConfigSchema
 } from '@/types/specialSections/core';
@@ -107,6 +109,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
     watch,
     setValue,
     reset,
+    getValues,
     formState: { errors, isDirty }
   } = useForm({
     resolver: zodResolver(validationSchema),
@@ -312,12 +315,15 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     name="title"
                     control={control}
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        id="title"
-                        placeholder="Digite o título da seção"
-                        error={errors.title?.message}
-                      />
+                      <>
+                        <Input
+                          {...field}
+                          id="title"
+                          placeholder="Digite o título da seção"
+                          disabled={isLoading}
+                        />
+                        {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
+                      </>
                     )}
                   />
                 </div>
@@ -714,7 +720,7 @@ const ProductCarouselForm: React.FC<{ control: any; errors: any }> = ({ control,
           <ProductSelector
             selectedIds={field.value || []}
             onChange={field.onChange}
-            selectionType={watch('config.productSelectionType')}
+            selectionType="manual"
           />
         )}
       />
