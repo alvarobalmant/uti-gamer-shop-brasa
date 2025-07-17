@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-=======
-
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
->>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
 import { toast } from 'sonner';
 
 export interface UserFavorite {
@@ -16,7 +9,6 @@ export interface UserFavorite {
   user_id: string;
   product_id: string;
   created_at: string;
-<<<<<<< HEAD
   product?: {
     id: string;
     name: string;
@@ -26,13 +18,10 @@ export interface UserFavorite {
     promotional_price?: number;
     uti_pro_price?: number;
   };
-=======
->>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
 }
 
 export const useFavorites = () => {
   const { user } = useAuth();
-<<<<<<< HEAD
   const queryClient = useQueryClient();
 
   // Buscar favoritos do usuário
@@ -82,47 +71,10 @@ export const useFavorites = () => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
       const { data, error } = await supabase
-=======
-  const [favorites, setFavorites] = useState<UserFavorite[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // Load user favorites
-  const loadFavorites = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('user_favorites')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setFavorites(data || []);
-    } catch (error) {
-      console.error('Error loading favorites:', error);
-      toast.error('Erro ao carregar lista de desejos');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Add product to favorites
-  const addToFavorites = async (productId: string) => {
-    if (!user) {
-      toast.error('Você precisa estar logado para adicionar aos favoritos');
-      return;
-    }
-
-    try {
-      const { error } = await supabase
->>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
         .from('user_favorites')
         .insert({
           user_id: user.id,
           product_id: productId
-<<<<<<< HEAD
         })
         .select()
         .single();
@@ -155,25 +107,6 @@ export const useFavorites = () => {
     mutationFn: async (productId: string) => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
-=======
-        });
-
-      if (error) throw error;
-      
-      toast.success('Produto adicionado aos favoritos!');
-      loadFavorites(); // Reload favorites
-    } catch (error) {
-      console.error('Error adding to favorites:', error);
-      toast.error('Erro ao adicionar aos favoritos');
-    }
-  };
-
-  // Remove product from favorites
-  const removeFromFavorites = async (productId: string) => {
-    if (!user) return;
-
-    try {
->>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3
       const { error } = await supabase
         .from('user_favorites')
         .delete()
@@ -181,7 +114,6 @@ export const useFavorites = () => {
         .eq('product_id', productId);
 
       if (error) throw error;
-<<<<<<< HEAD
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-favorites'] });
@@ -226,42 +158,3 @@ export const useFavorites = () => {
   };
 };
 
-=======
-      
-      toast.success('Produto removido dos favoritos!');
-      loadFavorites(); // Reload favorites
-    } catch (error) {
-      console.error('Error removing from favorites:', error);
-      toast.error('Erro ao remover dos favoritos');
-    }
-  };
-
-  // Check if product is in favorites
-  const isFavorite = (productId: string) => {
-    return favorites.some(fav => fav.product_id === productId);
-  };
-
-  // Toggle favorite status
-  const toggleFavorite = async (productId: string) => {
-    if (isFavorite(productId)) {
-      await removeFromFavorites(productId);
-    } else {
-      await addToFavorites(productId);
-    }
-  };
-
-  useEffect(() => {
-    loadFavorites();
-  }, [user]);
-
-  return {
-    favorites,
-    loading,
-    addToFavorites,
-    removeFromFavorites,
-    toggleFavorite,
-    isFavorite,
-    loadFavorites
-  };
-};
->>>>>>> a08235d3a56d734c06d5e45b7a55a52a13c49cf3

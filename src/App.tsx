@@ -13,6 +13,46 @@ import LoadingOverlay from "@/components/LoadingOverlay";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
+import { useEffect } from "react";
+
+// Hook para prevenir layout shift globalmente
+const usePreventLayoutShift = () => {
+  useEffect(() => {
+    // Observer para monitorar mudanças no body
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          const target = mutation.target as HTMLElement;
+          if (target === document.body) {
+            // Prevenir qualquer alteração que cause layout shift
+            if (target.style.paddingRight || target.style.marginRight) {
+              target.style.paddingRight = '';
+              target.style.marginRight = '';
+            }
+            // Garantir que overflow-y seja sempre scroll
+            if (target.style.overflow !== 'hidden') {
+              document.documentElement.style.overflowY = 'scroll';
+            }
+          }
+        }
+      });
+    });
+
+    // Observar mudanças no body
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['style', 'data-scroll-locked']
+    });
+
+    // Garantir configuração inicial
+    document.documentElement.style.overflowY = 'scroll';
+    document.body.style.overflowX = 'hidden';
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+};
 
 // Lazy loading para páginas menos críticas
 const SearchResults = lazy(() => import("./pages/SearchResultsFinal"));
@@ -52,6 +92,7 @@ const TestProduct = lazy(() => import("./pages/TestProduct"));
 // Lazy loading para páginas de cliente
 const ClientArea = lazy(() => import("./pages/ClientArea"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
+const MeusCoins = lazy(() => import("./pages/MeusCoins"));
 
 // Otimizar QueryClient
 const queryClient = new QueryClient({
@@ -87,16 +128,20 @@ const ProtectedAdminRoute = React.memo(({ children }: { children: React.ReactNod
   return <>{children}</>;
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <CartProvider>
-        <ProductProvider>
-          <LoadingProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
+const App = () => {
+  // Hook para prevenir layout shift globalmente
+  usePreventLayoutShift();
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <CartProvider>
+          <ProductProvider>
+            <LoadingProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
                 <GlobalNavigationProvider>
                   <ScrollRestorationProvider>
                     <LoadingOverlay />
@@ -110,9 +155,10 @@ const App = () => (
                   <Route path="/produto/:id" element={<ProductPageSKU />} />
                   <Route path="/teste-produto/:id" element={<TestProduct />} />
 
-                  {/* Client Area Routes - MUST come before dynamic routes */}
+                  {/* Client Area Routes */}
                   <Route path="/area-cliente" element={<ClientArea />} />
                   <Route path="/lista-desejos" element={<WishlistPage />} />
+                  <Route path="/meus-coins" element={<MeusCoins />} />
 
                   {/* Admin Routes - Protected - MUST come before dynamic routes */}
                   <Route 
@@ -180,6 +226,7 @@ const App = () => (
 </CartProvider>
 </AuthProvider>
 </QueryClientProvider>
-);
+  );
+};
 
 export default App;

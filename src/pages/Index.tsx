@@ -11,6 +11,7 @@ import SectionRenderer from '@/components/HomePage/SectionRenderer';
 import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
+import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
 
 // Lazy load AdminPanel para reduzir bundle inicial
 const AdminPanel = lazy(() => import('./Admin'));
@@ -182,6 +183,9 @@ const Index = React.memo(() => {
       </main>
 
       <Footer />
+
+      {/* Floating Action Button */}
+      <FloatingActionButton />
 
       <Cart
         showCart={showCart}

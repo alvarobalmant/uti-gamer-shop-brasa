@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
+import { UTICoinsWidget } from '@/components/Retention/UTICoinsWidget';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -111,6 +112,9 @@ const HeaderActionsEnhanced = ({
           Sign In
         </Button>
       )}
+
+      {/* UTI Coins Widget - Only for logged users */}
+      {user && <UTICoinsWidget className="hidden md:block" />}
 
       {/* Global Shopping Cart Icon - Always visible */}
       <GlobalCartIcon onCartOpen={onCartOpen} /> 
