@@ -6,7 +6,7 @@ import { CategoryGridRenderer } from './CategoryGridRenderer';
 import { PromotionalBannerRenderer } from './PromotionalBannerRenderer';
 import { NewsRenderer } from './NewsRenderer';
 import { CustomHtmlRenderer } from './CustomHtmlRenderer';
-import type { SpecialSection } from '@/types/specialSections/core';
+import type { SpecialSection } from '@/types/specialSections';
 
 interface SpecialSectionsRendererProps {
   pageId?: string;
@@ -24,8 +24,8 @@ export const SpecialSectionsRenderer: React.FC<SpecialSectionsRendererProps> = (
     if (!sections) return [];
     
     return sections
-      .filter(section => section.isVisible)
-      .sort((a, b) => a.order - b.order);
+      .filter(section => section.is_active)
+      .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
   }, [sections]);
 
   // Renderizar seção individual
@@ -36,7 +36,10 @@ export const SpecialSectionsRenderer: React.FC<SpecialSectionsRendererProps> = (
       className: 'mb-8'
     };
 
-    switch (section.type) {
+    // Determine section type from content_config or fallback to default
+    const sectionType = section.content_config?.type || 'custom_html';
+    
+    switch (sectionType) {
       case 'banner_hero':
         return <BannerHeroRenderer {...commonProps} />;
       case 'product_carousel':
@@ -50,7 +53,7 @@ export const SpecialSectionsRenderer: React.FC<SpecialSectionsRendererProps> = (
       case 'custom_html':
         return <CustomHtmlRenderer {...commonProps} />;
       default:
-        console.warn(`Tipo de seção não suportado: ${section.type}`);
+        console.warn(`Tipo de seção não suportado: ${sectionType}`);
         return null;
     }
   };

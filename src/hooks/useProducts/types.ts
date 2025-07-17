@@ -70,7 +70,6 @@ export interface Product {
   product_videos?: any;
   product_faqs?: any;
   product_highlights?: any;
-  product_features?: any; // Added for ProductTabsMobile
   features?: any; // Added for ProductTabsMobile backward compatibility
   reviews_config?: any;
   trust_indicators?: any;

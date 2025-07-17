@@ -36,6 +36,10 @@ export interface SpecialSection {
   margin_bottom?: number;
   border_radius?: number;
   mobile_settings?: any;
+  // Add computed properties for compatibility
+  type?: string;
+  order?: number;
+  isVisible?: boolean;
 }
 
 // Base type for Special Section Element from the database
