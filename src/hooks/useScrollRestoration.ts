@@ -24,7 +24,7 @@ export const useScrollRestoration = () => {
     const currentPathKey = location.pathname + location.search;
     const previousPathKey = lastPathRef.current;
 
-    console.log(`[ScrollRestoration] Navigating. Type: ${navigationType}, From: ${previousPathKey}, To: ${currentPathKey}`);
+    console.log(`[ScrollRestoration] 🔄 NAVEGAÇÃO DETECTADA. Tipo: ${navigationType}, De: ${previousPathKey}, Para: ${currentPathKey}`);
 
     // Salva a posição da página anterior ANTES de navegar para a nova
     // Isso é feito no cleanup do effect anterior ou antes da mudança de estado
@@ -33,12 +33,12 @@ export const useScrollRestoration = () => {
     // Lógica de restauração/scroll para a NOVA página
     if (navigationType === NavigationType.Pop) {
       // Tentativa de restaurar a posição salva para esta página
-      console.log(`[ScrollRestoration] POP detected. Attempting restore for: ${currentPathKey}`);
+      console.log(`[ScrollRestoration] ⬅️ POP detectado (VOLTAR). Tentando restaurar para: ${currentPathKey}`);
       
       // Verificar se é homepage para aguardar carregamento
       const isHomepage = currentPathKey === '/' || currentPathKey === '';
       
-      // Aguardar um pouco mais para garantir que o DOM esteja completamente renderizado
+      // Aguardar mais tempo para garantir que o DOM esteja completamente renderizado
       const restoreTimer = setTimeout(async () => {
         const restored = await scrollManager.restorePosition(
           currentPathKey, 
@@ -46,22 +46,24 @@ export const useScrollRestoration = () => {
           isHomepage // Aguardar carregamento apenas na homepage
         );
         if (!restored) {
-          console.log(`[ScrollRestoration] Restore failed or no position saved for ${currentPathKey}. Staying at current position.`);
+          console.log(`[ScrollRestoration] ❌ Restauração falhou ou sem posição para ${currentPathKey}. Mantendo posição atual.`);
           // Não força scroll para o topo em navegação POP - deixa o navegador gerenciar
+        } else {
+          console.log(`[ScrollRestoration] ✅ Posição restaurada com sucesso para ${currentPathKey}!`);
         }
-      }, isHomepage ? 100 : 200); // Delay maior para garantir renderização
+      }, isHomepage ? 200 : 300); // Delay aumentado para garantir renderização
       return () => clearTimeout(restoreTimer);
 
     } else {
       // Nova navegação (PUSH ou REPLACE), apenas para páginas que não são produto
       const isProductPage = currentPathKey.startsWith('/produto/');
       if (!isProductPage) {
-        console.log(`[ScrollRestoration] ${navigationType} detected. Scrolling top for: ${currentPathKey}`);
+        console.log(`[ScrollRestoration] ➡️ ${navigationType} detectado para página que NÃO é produto. Indo para topo: ${currentPathKey}`);
         // Remove qualquer posição salva para o caminho atual, pois é uma nova visita
         scrollManager.removePosition(currentPathKey);
         window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
       } else {
-        console.log(`[ScrollRestoration] ${navigationType} detected on product page. No automatic scroll.`);
+        console.log(`[ScrollRestoration] ➡️ ${navigationType} detectado em página de produto. SEM scroll automático: ${currentPathKey}`);
         // Para páginas de produto, remove posição mas não força scroll
         scrollManager.removePosition(currentPathKey);
       }

@@ -48,7 +48,16 @@ const Index = React.memo(() => {
     return specialSections.find(s => s.id === id);
   }, [specialSections]);
 
-  const handleProductCardClick = useCallback((productId: string) => {
+  const handleProductCardClick = useCallback(async (productId: string) => {
+    // Salvar posição atual antes de navegar
+    console.log('[Index] Salvando posição antes de navegar para produto:', productId);
+    const currentScrollY = window.scrollY;
+    console.log('[Index] Posição atual do scroll:', currentScrollY);
+    
+    // Salvar usando o manager diretamente para garantir que seja salvo
+    const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
+    scrollManager.savePosition('/', 'product-navigation');
+    
     // Encontrar o produto clicado para verificar se é SKU
     const clickedProduct = products.find(p => p.id === productId);
     

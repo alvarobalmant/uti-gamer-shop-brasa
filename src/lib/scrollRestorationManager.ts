@@ -30,9 +30,9 @@ class ScrollRestorationManager {
       timestamp: Date.now()
     };
 
-    // Salva qualquer posição de scroll (removido threshold)
+    // Salva qualquer posição de scroll
     this.positions.set(path, position);
-    console.log(`[ScrollManager] Saved position for ${path} (${source}): y=${position.y}`);
+    console.log(`[ScrollManager] ✅ SALVOU posição para ${path} (${source}): y=${position.y}px`);
   }
 
   async restorePosition(path: string, context: string = 'unknown', waitForContent: boolean = false): Promise<boolean> {
@@ -53,8 +53,8 @@ class ScrollRestorationManager {
       return false;
     }
 
-    // Restaura qualquer posição salva (removido threshold)
-    console.log(`[ScrollManager] Restoring saved position for ${path}: ${savedPosition.y}px`);
+    // Restaura qualquer posição salva
+    console.log(`[ScrollManager] 🎯 TENTANDO RESTAURAR posição para ${path}: ${savedPosition.y}px (context: ${context})`);
 
     console.log(`[ScrollManager] Restoring position for ${path} (${context}): y=${savedPosition.y}, waitForContent=${waitForContent}`);
     
@@ -73,11 +73,11 @@ class ScrollRestorationManager {
           const currentY = window.scrollY;
           const success = Math.abs(currentY - savedPosition.y) <= 100;
           
-          console.log(`[ScrollManager] Restore result: target=${savedPosition.y}, current=${currentY}, success=${success}`);
+          console.log(`[ScrollManager] 🏁 RESULTADO da restauração: target=${savedPosition.y}px, atual=${currentY}px, sucesso=${success}`);
           
           this.isRestoring = false;
           resolve(success);
-        }, 200);
+        }, 300); // Aumentado para 300ms para dar mais tempo
       };
 
       if (waitForContent) {
@@ -98,17 +98,20 @@ class ScrollRestorationManager {
 
   private waitForContentLoaded(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const timeout = 8000; // 8 segundos timeout
-      const checkInterval = 100; // Verificar a cada 100ms
+      const timeout = 10000; // 10 segundos timeout
+      const checkInterval = 50; // Verificar a cada 50ms (mais frequente)
       let elapsed = 0;
 
       const checkContent = () => {
         // Verificar se elementos críticos existem e têm altura
         const criticalSelectors = [
           '[data-section="products"]',
-          '[data-section="jogos-da-galera"]',
+          '[data-section="jogos-da-galera"]', 
           '.product-card',
-          '[data-testid="section-renderer"]'
+          '[data-testid="section-renderer"]',
+          '[data-testid="product-card"]',
+          '.grid', // Para grids de produtos
+          '.container' // Para containers principais
         ];
 
         const hasContent = criticalSelectors.some(selector => {
@@ -122,16 +125,22 @@ class ScrollRestorationManager {
           });
         });
 
-        if (hasContent) {
-          console.log(`[ScrollManager] Critical content detected after ${elapsed}ms`);
+        // Verificar se o documento está completamente carregado
+        const isDocumentReady = document.readyState === 'complete';
+        
+        // Verificar se há pelo menos algum conteúdo visível na página
+        const hasVisibleContent = document.body.scrollHeight > window.innerHeight;
+
+        if (hasContent || isDocumentReady || hasVisibleContent) {
+          console.log(`[ScrollManager] ✅ Conteúdo detectado após ${elapsed}ms (hasContent: ${hasContent}, docReady: ${isDocumentReady}, hasVisible: ${hasVisibleContent})`);
           resolve();
           return;
         }
 
         elapsed += checkInterval;
         if (elapsed >= timeout) {
-          console.log(`[ScrollManager] Content loading timeout after ${elapsed}ms`);
-          reject(new Error('Content loading timeout'));
+          console.log(`[ScrollManager] ⏱️ Timeout de carregamento após ${elapsed}ms`);
+          resolve(); // Resolver mesmo com timeout para continuar
           return;
         }
 
