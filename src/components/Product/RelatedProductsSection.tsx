@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -7,7 +7,6 @@ import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
 import SectionTitle from '@/components/SectionTitle';
-import { useHorizontalScrollRestoration } from '@/hooks/useHorizontalScrollRestoration';
 import { cn } from '@/lib/utils';
 
 interface RelatedProductsSectionProps {
@@ -18,17 +17,16 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const { products: allProducts, loading } = useProducts();
   const { addToCart } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [animateProducts, setAnimateProducts] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Use horizontal scroll restoration for related products
-  const { elementRef: scrollContainerRef } = useHorizontalScrollRestoration('related-products');
-
   useEffect(() => {
     if (allProducts.length > 0 && product) {
-      // Logic for related products based on tags
+      // Lógica para produtos relacionados baseada em tags
       const currentProductTags = product.tags?.map(t => t.id) || [];
       const related = allProducts
         .filter(p => 
@@ -37,7 +35,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
         )
         .slice(0, 8);
       
-      // If there are no tag-related products, get random products
+      // Se não houver produtos relacionados por tag, pegar produtos aleatórios
       if (related.length < 4) {
         const others = allProducts
           .filter(p => p.id !== product.id && !related.some(r => r.id === p.id))
@@ -54,9 +52,12 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   };
 
   const handleProductClick = useCallback(async (productId: string) => {
-    console.log('[RelatedProducts] Navigating to related product:', productId);
+    // Salvar posição atual antes de navegar para produto relacionado
+    console.log('[RelatedProducts] Salvando posição antes de navegar para produto relacionado:', productId);
+    const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
+    scrollManager.savePosition(location.pathname, 'related-product-navigation');
     navigate(`/produto/${productId}`);
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const handleViewAllClick = () => {
     navigate('/categoria/inicio');
@@ -111,6 +112,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
     const container = scrollContainerRef.current;
     if (container) {
       container.addEventListener('scroll', checkScrollButtons);
+      // Initial check
       checkScrollButtons();
       return () => container.removeEventListener('scroll', checkScrollButtons);
     }

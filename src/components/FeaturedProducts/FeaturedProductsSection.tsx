@@ -1,12 +1,12 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/hooks/useProducts";
 import SectionTitle from "@/components/SectionTitle";
-import { useHorizontalScrollRestoration } from "@/hooks/useHorizontalScrollRestoration";
 import { cn } from "@/lib/utils";
 
 interface FeaturedProductsSectionProps {
@@ -29,12 +29,9 @@ const FeaturedProductsSection = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [animateProducts, setAnimateProducts] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-
-  // Generate unique section ID based on title
-  const sectionId = `featured-${title.toLowerCase().replace(/\s+/g, '-')}`;
-  const { elementRef: scrollContainerRef, debugScrollPositions } = useHorizontalScrollRestoration(sectionId);
 
   const handleViewAllClick = () => {
     navigate(viewAllLink);
@@ -42,9 +39,12 @@ const FeaturedProductsSection = ({
 
   // Function to handle product click - always navigate to product page
   const handleProductCardClick = useCallback(async (productId: string) => {
-    console.log('[FeaturedProducts] Navigating to product:', productId);
+    // Salvar posição atual antes de navegar
+    console.log('[FeaturedProducts] Salvando posição antes de navegar para produto:', productId);
+    const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
+    scrollManager.savePosition(location.pathname, 'featured-product-navigation');
     navigate(`/produto/${productId}`);
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   // Check scroll position and update button states
   const checkScrollButtons = () => {
@@ -95,20 +95,14 @@ const FeaturedProductsSection = ({
     const container = scrollContainerRef.current;
     if (container) {
       container.addEventListener('scroll', checkScrollButtons);
+      // Initial check
       checkScrollButtons();
       return () => container.removeEventListener('scroll', checkScrollButtons);
     }
   }, [products]);
 
-  // Debug function for development
-  useEffect(() => {
-    // Add debug function to window for development
-    if (typeof window !== 'undefined') {
-      (window as any).debugHorizontalScroll = debugScrollPositions;
-    }
-  }, [debugScrollPositions]);
-
   if (loading) {
+    // Render loading state if needed
     return (
       <section className={reduceTopSpacing ? "py-4 md:py-6 bg-background" : "py-12 md:py-16 bg-background"}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -173,7 +167,7 @@ const FeaturedProductsSection = ({
             <div
               ref={scrollContainerRef}
               className={cn(
-                "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2",
+                "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2", // Restored overflow-x-auto for scrolling
                 "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
                 "overscroll-behavior-x-contain"
               )}
@@ -187,8 +181,9 @@ const FeaturedProductsSection = ({
               <div 
                 className="flex gap-3 min-w-max px-1 py-1"
                 style={{
-                  width: 'calc(100% + 100px)',
-                  paddingRight: '120px'
+                  // Force the last card to be partially cut by making the container slightly smaller
+                  width: 'calc(100% + 100px)', // Extend beyond container to force cutting
+                  paddingRight: '120px' // Ensure last card is partially visible
                 }}
               >
                 {products.map((product, index) => (
@@ -203,8 +198,8 @@ const FeaturedProductsSection = ({
                     )}
                     style={{
                       transitionDelay: animateProducts ? `${index * 75}ms` : "0ms",
-                      width: "200px",
-                      flexShrink: 0
+                      width: "200px", // Fixed width for consistent card sizing
+                      flexShrink: 0 // Prevent cards from shrinking
                     }}
                   >
                     <ProductCard
