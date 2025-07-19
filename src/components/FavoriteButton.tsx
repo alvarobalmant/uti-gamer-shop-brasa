@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
 
 interface FavoriteButtonProps {
   productId: string;
@@ -16,37 +17,17 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   size = 'md'
 }) => {
   const { user } = useAuth();
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { isFavorite, toggleFavorite, isAddingToFavorites, isRemovingFromFavorites } = useFavorites();
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    if (!user) {
-      toast.error('Faça login para adicionar aos favoritos');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      if (isFavorited) {
-        setIsFavorited(false);
-        toast.success('Produto removido dos favoritos');
-      } else {
-        setIsFavorited(true);
-        toast.success('Produto adicionado aos favoritos!');
-      }
-    } catch (error) {
-      toast.error('Erro ao atualizar favoritos');
-    } finally {
-      setIsLoading(false);
-    }
+    
+    await toggleFavorite(productId);
   };
+
+  const isLoading = isAddingToFavorites || isRemovingFromFavorites;
+  const isFavorited = isFavorite(productId);
 
   const getButtonSize = () => {
     switch (size) {
@@ -91,4 +72,3 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
 };
 
 export default FavoriteButton;
-

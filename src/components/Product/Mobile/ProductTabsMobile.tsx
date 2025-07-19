@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { ChevronDown, ChevronUp, Info, Package, Shield, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,61 @@ interface ProductTabsMobileProps {
 
 const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
   const [activeTab, setActiveTab] = useState<string | null>('description');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Função para fazer scroll preciso alinhando com o cabeçalho
+  const scrollToContent = (tabId: string) => {
+    setTimeout(() => {
+      const contentElement = contentRefs.current[tabId];
+      if (contentElement) {
+        // Tenta diferentes seletores para encontrar o cabeçalho
+        const possibleHeaders = [
+          document.querySelector('header'),
+          document.querySelector('.header'),
+          document.querySelector('[data-header]'),
+          document.querySelector('nav'),
+          document.querySelector('.navbar'),
+          document.querySelector('.nav')
+        ].filter(Boolean);
+        
+        let headerHeight = 0;
+        
+        // Calcula a altura total de todos os elementos de cabeçalho encontrados
+        possibleHeaders.forEach(element => {
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            // Só considera elementos que estão no topo da página (position fixed/sticky)
+            if (rect.top <= 10) { // margem de 10px para elementos sticky
+              headerHeight = Math.max(headerHeight, rect.bottom);
+            }
+          }
+        });
+        
+        // Se não encontrar cabeçalho, usa altura padrão baseada no viewport
+        if (headerHeight === 0) {
+          headerHeight = window.innerHeight * 0.1; // 10% da altura da tela
+        }
+        
+        // Adiciona uma margem extra para melhor visualização
+        const extraMargin = 96; // Aumentei de 72px para 96px para bem mais respiro visual
+        headerHeight += extraMargin;
+        
+        // Calcula a posição do elemento expandido
+        const elementRect = contentElement.getBoundingClientRect();
+        const elementTop = elementRect.top + window.pageYOffset;
+        
+        // Calcula a posição final: topo do elemento - altura do cabeçalho
+        const finalScrollPosition = elementTop - headerHeight;
+        
+        // Faz scroll suave para a posição calculada
+        window.scrollTo({
+          top: Math.max(0, finalScrollPosition),
+          behavior: 'smooth'
+        });
+      }
+    }, 250); // Aumentei para 250ms para garantir estabilidade
+  };
 
   const tabs = [
     {
@@ -43,7 +98,7 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
       icon: Package,
       content: (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3">
             {[
               { label: 'Plataforma', value: product.platform || 'PlayStation 5' },
               { label: 'Gênero', value: product.genre || 'Ação/Aventura' },
@@ -53,9 +108,9 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
               { label: 'Modo de Jogo', value: 'Single Player / Multiplayer' }
             ].map((spec, index) => (
               <div key={index} className="bg-gray-50 rounded-xl p-4">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-gray-900">{spec.label}</span>
-                  <span className="text-gray-700">{spec.value}</span>
+                <div className="space-y-1">
+                  <div className="font-medium text-gray-900 text-sm">{spec.label}</div>
+                  <div className="text-gray-700 text-sm">{spec.value}</div>
                 </div>
               </div>
             ))}
@@ -72,18 +127,18 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
           {/* Shipping Info */}
           <div className="space-y-4">
             <h4 className="font-semibold text-gray-900 text-lg">📦 Informações de Entrega</h4>
-            <div className="bg-blue-50 rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-900">Frete Grátis</span>
-                <span className="text-green-600 font-semibold">Compras acima de R$ 150</span>
+            <div className="bg-blue-50 rounded-xl p-4 space-y-4">
+              <div className="space-y-1">
+                <div className="font-medium text-gray-900 text-sm">Frete Grátis</div>
+                <div className="text-green-600 font-semibold text-sm">Compras acima de R$ 150</div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-900">Prazo de Entrega</span>
-                <span className="text-gray-700">2 a 5 dias úteis</span>
+              <div className="space-y-1">
+                <div className="font-medium text-gray-900 text-sm">Prazo de Entrega</div>
+                <div className="text-gray-700 text-sm">2 a 5 dias úteis</div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-900">Rastreamento</span>
-                <span className="text-gray-700">Código enviado por email</span>
+              <div className="space-y-1">
+                <div className="font-medium text-gray-900 text-sm">Rastreamento</div>
+                <div className="text-gray-700 text-sm">Código enviado por email</div>
               </div>
             </div>
           </div>
@@ -99,8 +154,10 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
                 { title: 'Suporte Especializado', desc: 'Atendimento gamer por especialistas' }
               ].map((guarantee, index) => (
                 <div key={index} className="bg-green-50 rounded-xl p-4">
-                  <div className="font-semibold text-gray-900 mb-1">{guarantee.title}</div>
-                  <div className="text-sm text-gray-700">{guarantee.desc}</div>
+                  <div className="space-y-1">
+                    <div className="font-semibold text-gray-900 text-sm">{guarantee.title}</div>
+                    <div className="text-gray-700 text-sm">{guarantee.desc}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -109,23 +166,23 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
           {/* Return Policy */}
           <div className="space-y-4">
             <h4 className="font-semibold text-gray-900 text-lg">🔄 Política de Troca</h4>
-            <div className="bg-yellow-50 rounded-xl p-4 space-y-2">
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600">•</span>
-                  <span>7 dias corridos a partir do recebimento</span>
+            <div className="bg-yellow-50 rounded-xl p-4">
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-600 text-lg leading-none">•</span>
+                  <span className="text-gray-700 text-sm">7 dias corridos a partir do recebimento</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600">•</span>
-                  <span>Produto deve estar lacrado e sem sinais de uso</span>
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-600 text-lg leading-none">•</span>
+                  <span className="text-gray-700 text-sm">Produto deve estar lacrado e sem sinais de uso</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600">•</span>
-                  <span>Embalagem original preservada</span>
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-600 text-lg leading-none">•</span>
+                  <span className="text-gray-700 text-sm">Embalagem original preservada</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600">•</span>
-                  <span>Frete de retorno por conta da UTI dos Games</span>
+                <li className="flex items-start gap-3">
+                  <span className="text-yellow-600 text-lg leading-none">•</span>
+                  <span className="text-gray-700 text-sm">Frete de retorno por conta da UTI dos Games</span>
                 </li>
               </ul>
             </div>
@@ -182,11 +239,21 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
   ];
 
   const toggleTab = (tabId: string) => {
+    const isOpening = activeTab !== tabId;
+    
     setActiveTab(activeTab === tabId ? null : tabId);
+    
+    // Se está abrindo um accordion, faz scroll para mostrar o conteúdo
+    if (isOpening) {
+      scrollToContent(tabId);
+    }
   };
 
   return (
-    <div className="bg-white">
+    <div 
+      ref={containerRef}
+      className="bg-white"
+    >
       <div className="px-6 py-8 space-y-4">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
           Informações do Produto
@@ -196,7 +263,7 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
           <div key={tab.id} className="border border-gray-200 rounded-2xl overflow-hidden">
             <button
               onClick={() => toggleTab(tab.id)}
-              className="w-full p-6 text-left bg-white hover:bg-gray-50 transition-colors duration-200 flex items-center justify-between"
+              className="w-full p-6 text-left bg-white hover:bg-gray-50 transition-colors duration-200 flex items-center justify-between focus:outline-none"
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
@@ -216,7 +283,10 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
             </button>
             
             {activeTab === tab.id && (
-              <div className="px-6 pb-6 bg-gray-50 animate-in slide-in-from-top duration-300">
+              <div 
+                ref={(el) => contentRefs.current[tab.id] = el}
+                className="px-6 pb-6 bg-gray-50 transition-all duration-200 ease-out"
+              >
                 <div className="pt-4">
                   {tab.content}
                 </div>

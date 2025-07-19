@@ -1,6 +1,10 @@
+
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useUserOrders } from '@/hooks/useUserOrders';
+import { useUserSavings } from '@/hooks/useUserSavings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, Heart, ShoppingBag, Settings, Shield, Clock, MapPin, Phone, Mail } from 'lucide-react';
@@ -8,6 +12,9 @@ import { User, Heart, ShoppingBag, Settings, Shield, Clock, MapPin, Phone, Mail 
 const ClientArea = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { favoritesCount } = useFavorites();
+  const { ordersCount, totalSpent, formatCurrency } = useUserOrders();
+  const { formattedTotalSavings } = useUserSavings();
 
   // Redirecionar se não estiver logado
   React.useEffect(() => {
@@ -20,16 +27,13 @@ const ClientArea = () => {
     return null;
   }
 
-  // Dados estáticos para garantir funcionamento
+  // Dados do usuário
   const userData = {
     name: user.email?.split('@')[0] || 'Usuário',
     email: user.email || '',
     phone: '(27) 99999-9999',
     address: 'Colatina, ES',
-    totalSaved: 'R$ 245,50',
-    favoriteCount: 8,
-    orderCount: 12,
-    lastAccess: '15/07/2025 às 16:45'
+    lastAccess: new Date().toLocaleString('pt-BR')
   };
 
   return (
@@ -94,7 +98,7 @@ const ClientArea = () => {
               <Card>
                 <CardContent className="p-6 text-center">
                   <div className="text-2xl font-bold text-green-600 mb-2">
-                    {userData.totalSaved}
+                    {formattedTotalSavings}
                   </div>
                   <p className="text-sm text-gray-600">Total Economizado</p>
                   <p className="text-xs text-gray-500 mt-1">
@@ -106,7 +110,7 @@ const ClientArea = () => {
               <Card>
                 <CardContent className="p-6 text-center">
                   <div className="text-2xl font-bold text-blue-600 mb-2">
-                    {userData.favoriteCount}
+                    {favoritesCount}
                   </div>
                   <p className="text-sm text-gray-600">Produtos Favoritos</p>
                   <p className="text-xs text-gray-500 mt-1">
@@ -118,11 +122,11 @@ const ClientArea = () => {
               <Card>
                 <CardContent className="p-6 text-center">
                   <div className="text-2xl font-bold text-purple-600 mb-2">
-                    {userData.orderCount}
+                    {ordersCount}
                   </div>
                   <p className="text-sm text-gray-600">Pedidos Realizados</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Histórico de compras
+                    Total gasto: {formatCurrency(totalSpent)}
                   </p>
                 </CardContent>
               </Card>
@@ -139,13 +143,13 @@ const ClientArea = () => {
                 <Link to="/lista-desejos">
                   <Button variant="outline" className="w-full justify-start">
                     <Heart className="h-4 w-4 mr-2" />
-                    Lista de Desejos
+                    Lista de Desejos ({favoritesCount})
                   </Button>
                 </Link>
                 
                 <Button variant="outline" className="w-full justify-start">
                   <ShoppingBag className="h-4 w-4 mr-2" />
-                  Meus Pedidos
+                  Meus Pedidos ({ordersCount})
                 </Button>
                 
                 <Button variant="outline" className="w-full justify-start">
@@ -190,4 +194,3 @@ const ClientArea = () => {
 };
 
 export default ClientArea;
-

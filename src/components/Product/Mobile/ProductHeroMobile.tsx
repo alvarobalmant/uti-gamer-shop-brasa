@@ -4,6 +4,7 @@ import { Star, Heart, Share2, ChevronDown, Shield, Truck, Clock } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/utils/formatPrice';
+import FavoriteButton from '@/components/FavoriteButton';
 
 interface ProductHeroMobileProps {
   product: Product;
@@ -17,7 +18,6 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
   onAddToCart 
 }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [isFavorited, setIsFavorited] = useState(false);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('new');
   const [quantity, setQuantity] = useState(1);
 
@@ -68,16 +68,11 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
           
           {/* Overlay Actions - Melhor Posicionamento */}
           <div className="absolute top-6 right-6 flex flex-col gap-3">
-            <Button
-              variant="outline"
+            <FavoriteButton 
+              productId={product.id} 
               size="sm"
-              onClick={() => setIsFavorited(!isFavorited)}
-              className={`w-12 h-12 p-0 bg-white/95 backdrop-blur-md shadow-lg border-0 rounded-full transition-all duration-200 ${
-                isFavorited ? 'text-red-600 bg-red-50/95' : 'hover:bg-gray-50/95'
-              }`}
-            >
-              <Heart className={`w-5 h-5 ${isFavorited ? 'fill-current' : ''}`} />
-            </Button>
+              className="w-12 h-12 bg-white/95 backdrop-blur-md shadow-lg border-0 rounded-full"
+            />
             <Button 
               variant="outline" 
               size="sm" 
@@ -208,7 +203,7 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-purple-600 font-medium mb-1">
-                    💎 Preço Membro UTI PRO
+                    💎 Preço UTI PRO
                   </div>
                   <div className="text-2xl font-bold text-purple-600">
                     {formatPrice(product.pro_price)}

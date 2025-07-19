@@ -34,9 +34,7 @@ const ProductPage: React.FC = () => {
     (p.category === product?.category || p.platform === product?.platform)
   ).slice(0, 4);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [id]);
+  // Removido o scroll forçado para permitir restauração de posição
 
   // Sistema de sincronização em tempo real
   useEffect(() => {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useCallback, useEffect } from 'react';
 import { Controller, useFieldArray, Control, UseFormSetValue } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -31,6 +30,9 @@ interface BannerRowConfig {
   banners: BannerConfig[];
   custom_sizes?: Array<{width: string, widthUnit: string, height: string}>; // Para layouts customizados
   margin_included_in_banner?: boolean; // Campo para controle de margem horizontal
+  selection_mode?: 'tags' | 'products' | 'combined'; // Added for carousel
+  tag_ids?: string[]; // Added for carousel
+  product_ids?: string[]; // Added for carousel
 }
 
 interface BannersSectionProps {
@@ -62,6 +64,9 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
     control,
     name: 'banner_rows',
   });
+  
+  // Cast the fields to the correct type
+  const typedBannerRows = bannerRows as (BannerRowConfig & { id: string })[];
 
   const getLayoutDisplayName = (layout: string) => {
     switch (layout) {
@@ -385,7 +390,7 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
       </div>
 
       {/* Lista de linhas de banners */}
-      {bannerRows.length === 0 ? (
+      {typedBannerRows.length === 0 ? (
         <Card className="bg-[#2C2C44] border-[#343A40] border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Image className="h-12 w-12 text-gray-500 mb-4" />
@@ -404,7 +409,7 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
         </Card>
       ) : (
         <div className="space-y-4">
-          {bannerRows.map((row, rowIndex) => (
+          {typedBannerRows.map((row, rowIndex) => (
             <Card key={row.id} className="bg-[#2C2C44] border-[#343A40]">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
@@ -555,7 +560,7 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
                     </div>
 
                     {/* Debug log para verificar selection_mode */}
-                    {console.log(`[BannersSection] Row ${rowIndex} selection_mode:`, row.selection_mode)}
+                    {(() => { console.log(`[BannersSection] Row ${rowIndex} selection_mode:`, row.selection_mode); return null; })()}
 
                     {/* Seleção de Produtos Moderna */}
                     {(row.selection_mode === 'products' || row.selection_mode === 'combined') && (
@@ -626,7 +631,7 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
                                       className="w-full h-full object-cover"
                                       onError={(e) => {
                                         e.currentTarget.style.display = 'none';
-                                        e.currentTarget.nextElementSibling.style.display = 'flex';
+                                        (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
                                       }}
                                     />
                                   ) : null}
@@ -1004,16 +1009,20 @@ const BannersSection: React.FC<BannersSectionProps> = ({ control, onImageUpload,
                             <Controller
                               name={`banner_rows.${rowIndex}.banners.${bannerIndex}.enable_hover_animation`}
                               control={control}
+                              defaultValue={true}
                               render={({ field }) => (
                                 <Checkbox
                                   id={`hover-animation-${rowIndex}-${bannerIndex}`}
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
+                                  checked={field.value ?? true}
+                                  onCheckedChange={(checked) => {
+                                    field.onChange(checked);
+                                    console.log(`Hover animation for banner ${rowIndex}-${bannerIndex}:`, checked);
+                                  }}
                                   className="border-[#495057] data-[state=checked]:bg-[#FF8C00] data-[state=checked]:text-white"
                                 />
                               )}
                             />
-                            <Label htmlFor={`hover-animation-${rowIndex}-${bannerIndex}`} className="text-xs text-gray-300">
+                            <Label htmlFor={`hover-animation-${rowIndex}-${bannerIndex}`} className="text-xs text-gray-300 cursor-pointer">
                               Habilitar animação de hover
                             </Label>
                           </div>
