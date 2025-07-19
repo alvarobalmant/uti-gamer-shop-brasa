@@ -10,6 +10,7 @@ export const useScrollRestoration = () => {
   const location = useLocation();
   const navigationType = useNavigationType();
   const lastPathRef = useRef<string>(location.pathname + location.search);
+  const restoreTimeoutRef = useRef<number | null>(null);
 
   // Desabilita a restauração nativa do navegador
   useEffect(() => {
@@ -26,9 +27,17 @@ export const useScrollRestoration = () => {
 
     console.log(`[ScrollRestoration] 🔄 NAVEGAÇÃO DETECTADA. Tipo: ${navigationType}, De: ${previousPathKey}, Para: ${currentPathKey}`);
 
-    // Salva a posição da página anterior ANTES de navegar para a nova
-    // Isso é feito no cleanup do effect anterior ou antes da mudança de estado
-    // A lógica do manager já inclui debounce/visibility checks para salvar durante o uso
+    // Limpa qualquer timeout de restauração anterior
+    if (restoreTimeoutRef.current) {
+      clearTimeout(restoreTimeoutRef.current);
+      restoreTimeoutRef.current = null;
+    }
+
+    // SALVA IMEDIATAMENTE a posição da página anterior antes de qualquer coisa
+    if (previousPathKey !== currentPathKey && !scrollManager.getIsRestoring()) {
+      scrollManager.savePosition(previousPathKey, 'navigation sync save');
+      console.log(`[ScrollRestoration] 💾 SALVOU posição da página anterior: ${previousPathKey}`);
+    }
 
     // Lógica de restauração/scroll para a NOVA página
     if (navigationType === NavigationType.Pop) {
@@ -38,24 +47,32 @@ export const useScrollRestoration = () => {
       // Verificar se é homepage para aguardar carregamento
       const isHomepage = currentPathKey === '/' || currentPathKey === '';
       
-      // Aguardar mais tempo para garantir que o DOM esteja completamente renderizado
-      const restoreTimer = setTimeout(async () => {
+      // Aguardar para garantir que o DOM esteja completamente renderizado
+      restoreTimeoutRef.current = window.setTimeout(async () => {
         const restored = await scrollManager.restorePosition(
           currentPathKey, 
           'POP navigation',
           isHomepage // Aguardar carregamento apenas na homepage
         );
+        
         if (!restored) {
-          console.log(`[ScrollRestoration] ❌ Restauração falhou ou sem posição para ${currentPathKey}. Mantendo posição atual.`);
-          // Não força scroll para o topo em navegação POP - deixa o navegador gerenciar
+          console.log(`[ScrollRestoration] ❌ Restauração falhou para ${currentPathKey}. Aplicando fallback.`);
+          // Emergency fallback: tenta restaurar após um delay maior
+          setTimeout(async () => {
+            const fallbackRestored = await scrollManager.restorePosition(currentPathKey, 'emergency fallback');
+            if (!fallbackRestored) {
+              console.log(`[ScrollRestoration] ⚠️ Fallback também falhou. Mantendo posição atual.`);
+            }
+          }, 500);
         } else {
           console.log(`[ScrollRestoration] ✅ Posição restaurada com sucesso para ${currentPathKey}!`);
         }
-      }, isHomepage ? 200 : 300); // Delay aumentado para garantir renderização
-      return () => clearTimeout(restoreTimer);
+        
+        restoreTimeoutRef.current = null;
+      }, isHomepage ? 250 : 350); // Delay otimizado
 
     } else {
-      // Nova navegação (PUSH ou REPLACE), apenas para páginas que não são produto
+      // Nova navegação (PUSH ou REPLACE)
       const isProductPage = currentPathKey.startsWith('/produto/');
       if (!isProductPage) {
         console.log(`[ScrollRestoration] ➡️ ${navigationType} detectado para página que NÃO é produto. Indo para topo: ${currentPathKey}`);
@@ -72,34 +89,53 @@ export const useScrollRestoration = () => {
     // Atualiza a referência do último caminho *após* o processamento
     lastPathRef.current = currentPathKey;
 
+    // Cleanup function
+    return () => {
+      if (restoreTimeoutRef.current) {
+        clearTimeout(restoreTimeoutRef.current);
+        restoreTimeoutRef.current = null;
+      }
+    };
+
   }, [location.pathname, location.search, navigationType]); // Depende do pathname e search para identificar a página única
 
-  // Efeito para salvar a posição durante o scroll (usa o manager interno)
+  // Efeito para salvar a posição durante o scroll (inteligente)
   useEffect(() => {
     const currentPathKey = location.pathname + location.search;
     let scrollDebounceTimer: number | null = null;
+    let lastSavedPosition = 0;
 
     const handleScroll = () => {
-      if (scrollManager.getIsRestoring()) return; // Não salva enquanto restaura
+      // Não salva enquanto restaura ou se a posição não mudou significativamente
+      if (scrollManager.getIsRestoring()) return;
+      
+      const currentY = window.scrollY;
+      if (Math.abs(currentY - lastSavedPosition) < 50) return; // Evita saves desnecessários
 
       if (scrollDebounceTimer) {
         clearTimeout(scrollDebounceTimer);
       }
+      
       scrollDebounceTimer = window.setTimeout(() => {
-        scrollManager.savePosition(currentPathKey, 'scroll debounce');
-      }, 300); // Ajuste o debounce conforme necessário
+        scrollManager.savePosition(currentPathKey, 'intelligent scroll');
+        lastSavedPosition = currentY;
+      }, 400); // Debounce aumentado para evitar conflitos
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    console.log(`[ScrollRestoration] Scroll listener added for: ${currentPathKey}`);
+    console.log(`[ScrollRestoration] Intelligent scroll listener added for: ${currentPathKey}`);
 
     return () => {
       if (scrollDebounceTimer) {
         clearTimeout(scrollDebounceTimer);
       }
       window.removeEventListener('scroll', handleScroll);
-      // Salva uma última vez ao desmontar/mudar de rota
-      scrollManager.savePosition(currentPathKey, 'listener cleanup');
+      
+      // Salva uma última vez ao desmontar/mudar de rota APENAS se não estiver restaurando
+      if (!scrollManager.getIsRestoring()) {
+        scrollManager.savePosition(currentPathKey, 'cleanup save');
+        console.log(`[ScrollRestoration] Final position saved for: ${currentPathKey}`);
+      }
       console.log(`[ScrollRestoration] Scroll listener removed for: ${currentPathKey}`);
     };
   }, [location.pathname, location.search]);

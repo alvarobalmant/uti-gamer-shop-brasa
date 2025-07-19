@@ -53,15 +53,24 @@ class ScrollRestorationManager {
       return false;
     }
 
-    // Restaura qualquer posição salva
-    console.log(`[ScrollManager] 🎯 TENTANDO RESTAURAR posição para ${path}: ${savedPosition.y}px (context: ${context})`);
+    // Se já está restaurando, aguarda um pouco e tenta novamente
+    if (this.isRestoring) {
+      console.log(`[ScrollManager] Already restoring, queuing for ${path}`);
+      await new Promise(resolve => setTimeout(resolve, 200));
+      if (this.isRestoring) {
+        console.log(`[ScrollManager] Still restoring, aborting for ${path}`);
+        return false;
+      }
+    }
 
-    console.log(`[ScrollManager] Restoring position for ${path} (${context}): y=${savedPosition.y}, waitForContent=${waitForContent}`);
+    console.log(`[ScrollManager] 🎯 TENTANDO RESTAURAR posição para ${path}: ${savedPosition.y}px (context: ${context})`);
     
     this.isRestoring = true;
 
     return new Promise((resolve) => {
-      const attemptRestore = () => {
+      const attemptRestore = (attempt: number = 1) => {
+        console.log(`[ScrollManager] Restore attempt ${attempt} for ${path}`);
+        
         window.scrollTo({
           left: savedPosition.x,
           top: savedPosition.y,
@@ -71,13 +80,19 @@ class ScrollRestorationManager {
         // Verifica se conseguiu restaurar
         setTimeout(() => {
           const currentY = window.scrollY;
-          const success = Math.abs(currentY - savedPosition.y) <= 100;
+          const tolerance = 50; // Tolerância reduzida
+          const success = Math.abs(currentY - savedPosition.y) <= tolerance;
           
-          console.log(`[ScrollManager] 🏁 RESULTADO da restauração: target=${savedPosition.y}px, atual=${currentY}px, sucesso=${success}`);
+          console.log(`[ScrollManager] 🏁 RESULTADO tentativa ${attempt}: target=${savedPosition.y}px, atual=${currentY}px, sucesso=${success}`);
           
-          this.isRestoring = false;
-          resolve(success);
-        }, 300); // Aumentado para 300ms para dar mais tempo
+          if (!success && attempt < 3) {
+            // Tenta mais uma vez com delay maior
+            setTimeout(() => attemptRestore(attempt + 1), 200);
+          } else {
+            this.isRestoring = false;
+            resolve(success);
+          }
+        }, attempt === 1 ? 200 : 400); // Delay progressivo
       };
 
       if (waitForContent) {
@@ -90,8 +105,8 @@ class ScrollRestorationManager {
           attemptRestore();
         });
       } else {
-        // Comportamento original para outras páginas
-        setTimeout(attemptRestore, 150);
+        // Delay inicial menor para outras páginas
+        setTimeout(() => attemptRestore(), 100);
       }
     });
   }
