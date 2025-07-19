@@ -1,16 +1,17 @@
+
 import React, { createContext } from 'react';
-import { useSimpleScrollRestoration } from '@/hooks/useSimpleScrollRestoration';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 
 // Contexto vazio apenas para fornecer o provedor
 const ScrollRestorationContext = createContext<null>(null);
 
 /**
- * Provedor que gerencia a restauração de scroll para toda a aplicação
- * Sistema novo: robusto, simples e eficaz
+ * Provedor que gerencia apenas a restauração de scroll VERTICAL
+ * O scroll horizontal é gerenciado individualmente por cada seção via useHorizontalScrollRestoration
  */
 const ScrollRestorationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Usa o novo sistema simples de restauração
-  useSimpleScrollRestoration();
+  // Usa apenas o sistema de scroll vertical
+  useScrollRestoration();
   
   return (
     <ScrollRestorationContext.Provider value={null}>
