@@ -1,6 +1,6 @@
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,7 +27,6 @@ const FeaturedProductsSection = ({
   reduceTopSpacing = false,
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [animateProducts, setAnimateProducts] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -38,13 +37,9 @@ const FeaturedProductsSection = ({
   };
 
   // Function to handle product click - always navigate to product page
-  const handleProductCardClick = useCallback(async (productId: string) => {
-    // Salvar posição atual antes de navegar
-    console.log('[FeaturedProducts] Salvando posição antes de navegar para produto:', productId);
-    const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
-    scrollManager.savePosition(location.pathname, 'featured-product-navigation');
+  const handleProductCardClick = (productId: string) => {
     navigate(`/produto/${productId}`);
-  }, [navigate, location.pathname]);
+  };
 
   // Check scroll position and update button states
   const checkScrollButtons = () => {

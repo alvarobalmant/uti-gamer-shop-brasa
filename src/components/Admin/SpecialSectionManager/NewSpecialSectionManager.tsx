@@ -34,7 +34,6 @@ import {
 } from 'lucide-react';
 import { useTags } from '@/hooks/useTags';
 import { useProducts } from '@/hooks/useProducts';
-import { useSpecialSections } from '@/hooks/useSpecialSections';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -130,7 +129,6 @@ const NewSpecialSectionManager: React.FC<NewSpecialSectionManagerProps> = ({ sec
   
   const { tags, loading: tagsLoading } = useTags();
   const { products, loading: productsLoading, refetch: refetchProducts } = useProducts();
-  const { forceRefresh: refreshSpecialSections } = useSpecialSections();
 
   const { 
     handleSubmit, 
@@ -281,23 +279,19 @@ const NewSpecialSectionManager: React.FC<NewSpecialSectionManagerProps> = ({ sec
       console.log('✅ Salvo com sucesso!');
       setLastSaved(new Date());
       
-      // Invalidar cache do frontend para sincronizar dados
+      // Forçar refresh dos dados no frontend para sincronizar
       console.log('🔄 Invalidando cache do frontend...');
-      
-      // Forçar refetch dos dados das seções especiais
-      await refreshSpecialSections();
-      
-      // Invalidar cache do layout da homepage se necessário
-      if (typeof window !== 'undefined' && window.location.pathname === '/') {
-        // Se estiver na homepage, forçar refetch do layout
-        window.dispatchEvent(new CustomEvent('invalidate-homepage-cache'));
+      if (window.location.pathname !== '/admin') {
+        // Se não estiver no admin, recarregar a página para garantir sincronização
+        window.location.reload();
+      } else {
+        // Se estiver no admin, apenas mostrar sucesso
+        console.log('📱 Cache invalidado - dados atualizados');
       }
-      
-      console.log('📱 Cache invalidado - dados atualizados');
       
       toast({
         title: 'Configuração salva com sucesso!',
-        description: 'Todas as alterações foram salvas e sincronizadas.',
+        description: 'Todas as alterações foram salvas no banco de dados.',
         variant: 'default',
       });
     } catch (error: any) {

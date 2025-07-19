@@ -66,10 +66,8 @@ const ProductPageSKU = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleBack = async () => {
-    console.log('[ProductPageSKU] Botão voltar clicado');
-    // NÃO salvar a posição atual da página de produto - queremos manter a posição da página anterior
-    // Usar navigate(-1) para voltar no histórico, que vai acionar o sistema de restauração
+  const handleBack = () => {
+    saveScrollPosition(location.pathname, 'product-back-button');
     navigate(-1);
   };
 

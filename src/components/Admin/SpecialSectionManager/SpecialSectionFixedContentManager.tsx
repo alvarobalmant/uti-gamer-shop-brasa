@@ -630,16 +630,11 @@ const SpecialSectionFixedContentManager: React.FC<SpecialSectionFixedContentMana
                               <Controller
                                 name={`banner_rows.${rowIndex}.banners.${bannerIndex}.enable_hover_animation`}
                                 control={control}
-                                defaultValue={true}
                                 render={({ field }) => (
                                   <Checkbox
                                     id={`hover-${rowIndex}-${bannerIndex}`}
-                                    checked={field.value ?? true}
-                                    onCheckedChange={(checked) => {
-                                      field.onChange(checked);
-                                      console.log(`Hover animation for banner ${rowIndex}-${bannerIndex}:`, checked);
-                                    }}
-                                    className="border-[#495057] data-[state=checked]:bg-[#FF8C00] data-[state=checked]:text-white"
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
                                   />
                                 )}
                               />

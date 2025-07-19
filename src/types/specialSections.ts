@@ -1,46 +1,12 @@
 
 import { Database } from "../integrations/supabase/types";
-import { SpecialSectionConfig } from "./specialSectionConfig";
 
-// Tipos mais específicos para evitar transformações manuais
-export type BackgroundType = 'color' | 'image';
-export type BackgroundImagePosition = 'center' | 'top' | 'bottom' | 'left' | 'right';
-export type SelectionMode = 'tags' | 'products' | 'combined';
-
-// Base type for Special Section from the database com tipos mais específicos
-export interface SpecialSection {
-  id: string;
-  title: string;
-  description?: string;
-  background_type: string;
-  background_color?: string;
-  background_gradient?: string;
-  background_image_url?: string;
-  background_image_position?: string;
+// Base type for Special Section from the database
+export type SpecialSection = Database["public"]["Tables"]["special_sections"]["Row"] & {
+  background_type?: 'color' | 'image';
   background_value?: string;
-  content_config?: SpecialSectionConfig;
-  is_active: boolean;
-  display_order?: number;
-  created_at: string;
-  updated_at: string;
-  // Add missing properties from database
-  title_color1?: string;
-  title_color2?: string;
-  title_part1?: string;
-  title_part2?: string;
-  padding_top?: number;
-  padding_bottom?: number;
-  padding_left?: number;
-  padding_right?: number;
-  margin_top?: number;
-  margin_bottom?: number;
-  border_radius?: number;
-  mobile_settings?: any;
-  // Add computed properties for compatibility
-  type?: string;
-  order?: number;
-  isVisible?: boolean;
-}
+  background_image_position?: 'center' | 'top' | 'bottom' | 'left' | 'right';
+};
 
 // Base type for Special Section Element from the database
 export type SpecialSectionElement = Database["public"]["Tables"]["special_section_elements"]["Row"] & {
@@ -110,6 +76,7 @@ export interface BannerConfig {
   subtitle?: string;
   button_text?: string;
   enable_hover_animation?: boolean; // New property for hover animation control
+  enable_shadow?: boolean; // New property for shadow effect control
 }
 
 // Define a row of banners, allowing different layouts per row

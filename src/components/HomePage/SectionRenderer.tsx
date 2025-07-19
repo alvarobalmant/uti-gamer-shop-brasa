@@ -10,7 +10,6 @@ import WhyChooseUs from '@/components/ServiceCards/WhyChooseUs';
 import ContactHelp from '@/components/ServiceCards/ContactHelp';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
 
-
 interface SectionRendererProps {
   sectionKey: string;
   bannerData: {

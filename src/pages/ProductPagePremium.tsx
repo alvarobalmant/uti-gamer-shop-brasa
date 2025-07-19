@@ -72,9 +72,9 @@ const ProductPagePremium = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleBack = async () => {
-    console.log('[ProductPagePremium] Botão voltar clicado');
-    // NÃO salvar a posição atual da página de produto - queremos manter a posição da página anterior
+  const handleBack = () => {
+    // Salvar a posição atual antes de voltar
+    saveScrollPosition(location.pathname, 'product-back-button');
     navigate(-1);
   };
 

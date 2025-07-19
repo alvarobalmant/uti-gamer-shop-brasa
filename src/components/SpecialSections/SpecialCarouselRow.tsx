@@ -1,8 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import SpecialCarouselCard from './SpecialCarouselCard';
-import ProductCard from '@/components/ProductCard';
-import { Product } from '@/hooks/useProducts';
 
 interface CarouselRowConfig {
   title?: string;

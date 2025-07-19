@@ -9,7 +9,7 @@ export const useIndexPage = () => {
   const { products, loading: productsLoading, refetch: refetchProducts } = useProducts();
   const { layoutItems, loading: layoutLoading } = useHomepageLayout();
   const { sections, loading: sectionsLoading } = useProductSections();
-  const { sections: specialSections, loading: specialSectionsLoading } = useSpecialSections();
+  const { specialSections, loading: specialSectionsLoading } = useSpecialSections();
 
   // Memoizar banner data (dados estáticos)
   const bannerData = useMemo(() => ({

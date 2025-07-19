@@ -1,8 +1,8 @@
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
@@ -17,7 +17,6 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const { products: allProducts, loading } = useProducts();
   const { addToCart } = useCart();
   const navigate = useNavigate();
-  const location = useLocation();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [animateProducts, setAnimateProducts] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -51,13 +50,9 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
     addToCart(product);
   };
 
-  const handleProductClick = useCallback(async (productId: string) => {
-    // Salvar posição atual antes de navegar para produto relacionado
-    console.log('[RelatedProducts] Salvando posição antes de navegar para produto relacionado:', productId);
-    const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
-    scrollManager.savePosition(location.pathname, 'related-product-navigation');
+  const handleProductClick = (productId: string) => {
     navigate(`/produto/${productId}`);
-  }, [navigate, location.pathname]);
+  };
 
   const handleViewAllClick = () => {
     navigate('/categoria/inicio');

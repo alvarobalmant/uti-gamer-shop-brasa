@@ -5,9 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import ProductCard from '@/components/ProductCard';
-
 import SpecialCarouselRow from './SpecialCarouselRow';
-
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SpecialSectionRendererProps {
@@ -242,7 +240,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
                           <img 
                             src={banner.image_url} 
                             alt={banner.title || `Banner ${rowIndex + 1}-${bannerIndex + 1}`} 
-                            className={`w-full h-full object-cover ${!isMobile && banner.enable_hover_animation ? 'transition-transform duration-300 hover:scale-105' : ''}`}
+                            className={`w-full h-full object-cover ${!isMobile && banner.enable_hover_animation ? 'transition-transform duration-300' : ''}`}
                             onError={(e) => (e.currentTarget.src = '/placeholder-banner.png')}
                           />
                           {(banner.title || banner.subtitle) && (
@@ -291,7 +289,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
                           <img 
                             src={banner.image_url} 
                             alt={banner.title || `Banner ${rowIndex + 1}-${bannerIndex + 1}`} 
-                            className={`w-full h-auto object-cover ${!isMobile && banner.enable_hover_animation ? 'transition-transform duration-300 hover:scale-105' : ''}`}
+                            className={`w-full h-auto object-cover ${!isMobile && banner.enable_hover_animation ? 'transition-transform duration-300' : ''}`}
                             onError={(e) => (e.currentTarget.src = '/placeholder-banner.png')}
                           />
                           {(banner.title || banner.subtitle) && (

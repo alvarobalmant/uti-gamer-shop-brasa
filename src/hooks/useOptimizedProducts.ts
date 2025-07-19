@@ -99,7 +99,7 @@ export const useOptimizedProducts = (options: UseOptimizedProductsOptions = {}) 
           category,
           platform,
           is_featured,
-          stock,
+          stock_quantity,
           created_at
         `)
         .eq('is_active', true)
@@ -122,7 +122,7 @@ export const useOptimizedProducts = (options: UseOptimizedProductsOptions = {}) 
         throw error;
       }
 
-      return (data || []) as Product[];
+      return data as Product[];
     },
     staleTime,
     gcTime: cacheTime,
@@ -245,7 +245,7 @@ export const useOptimizedProducts = (options: UseOptimizedProductsOptions = {}) 
 
       if (error || !data) return [];
 
-      return (data || []).map(product => optimizeProduct(product as Product));
+      return data.map(optimizeProduct);
     } catch (error) {
       console.error('Erro ao buscar produtos relacionados:', error);
       return [];

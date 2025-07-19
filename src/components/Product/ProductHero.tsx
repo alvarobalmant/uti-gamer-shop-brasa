@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProductGallery from './ProductGallery';
 import ProductPricing from './ProductPricing';
-import ProductActions from '@/components/ProductPage/ProductActions';
-import FavoriteButton from '@/components/FavoriteButton';
+import ProductActions from './ProductActions';
 
 interface ProductHeroProps {
   product: Product;
@@ -20,6 +19,7 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   // Mock de avaliações
   const rating = 4.8;
@@ -66,7 +66,14 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <FavoriteButton productId={product.id} size="sm" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsFavorited(!isFavorited)}
+                  className={isFavorited ? 'text-red-600 border-red-200' : ''}
+                >
+                  <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
+                </Button>
                 <Button variant="outline" size="sm" onClick={handleShare}>
                   <Share2 className="w-4 h-4" />
                 </Button>
@@ -130,7 +137,12 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
             {/* Quantidade e Ações */}
             <ProductActions
               product={product}
+              quantity={quantity}
+              onQuantityChange={setQuantity}
               onAddToCart={() => onAddToCart(product)}
+              onWhatsAppContact={handleWhatsAppContact}
+              showLowStockWarning={false}
+              showLimitedTimeOffer={false}
             />
 
             {/* Trust Indicators */}

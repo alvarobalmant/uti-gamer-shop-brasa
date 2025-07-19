@@ -29,7 +29,7 @@ const PrimePage: React.FC = () => {
   const { fetchPageBySlug } = usePrimePages();
   const { products, loading: productsLoading } = useProducts();
   const { sections, loading: sectionsLoading } = useProductSections();
-  const { sections: specialSections, loading: specialSectionsLoading } = useSpecialSections();
+  const { specialSections, loading: specialSectionsLoading } = useSpecialSections();
 
   // Buscar página por slug
   useEffect(() => {

@@ -30,7 +30,7 @@ const PrimePagesAdmin: React.FC = () => {
   } = usePrimePages();
   
   const { sections } = useProductSections();
-  const { sections: specialSections } = useSpecialSections();
+  const { specialSections } = useSpecialSections();
 
   // Estados para modais e formulários
   const [showCreateModal, setShowCreateModal] = useState(false);

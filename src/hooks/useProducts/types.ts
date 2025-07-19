@@ -16,7 +16,6 @@ export interface Product {
   uti_pro_price?: number;
   installment_options?: number;
   image: string;
-  image_url?: string; // Added for backward compatibility
   images?: string[];
   additional_images?: string[];
   sizes?: string[];
@@ -63,14 +62,11 @@ export interface Product {
   category?: string;
   condition?: string;
   title?: string;
-  genre?: string; // Added for ProductTabsMobile
-  developer?: string; // Added for ProductTabsMobile
   
   // Novos campos expandidos
   product_videos?: any;
   product_faqs?: any;
   product_highlights?: any;
-  features?: any; // Added for ProductTabsMobile backward compatibility
   reviews_config?: any;
   trust_indicators?: any;
   manual_related_products?: any;

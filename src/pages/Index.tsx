@@ -5,14 +5,12 @@ import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
-
 import Footer from '@/components/Footer';
 import { useIndexPage } from '@/hooks/useIndexPage';
 import SectionRenderer from '@/components/HomePage/SectionRenderer';
 import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
-import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
 
 // Lazy load AdminPanel para reduzir bundle inicial
 const AdminPanel = lazy(() => import('./Admin'));
@@ -48,16 +46,7 @@ const Index = React.memo(() => {
     return specialSections.find(s => s.id === id);
   }, [specialSections]);
 
-  const handleProductCardClick = useCallback(async (productId: string) => {
-    // Salvar posição atual antes de navegar
-    console.log('[Index] Salvando posição antes de navegar para produto:', productId);
-    const currentScrollY = window.scrollY;
-    console.log('[Index] Posição atual do scroll:', currentScrollY);
-    
-    // Salvar usando o manager diretamente para garantir que seja salvo
-    const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
-    scrollManager.savePosition('/', 'product-navigation');
-    
+  const handleProductCardClick = useCallback((productId: string) => {
     // Encontrar o produto clicado para verificar se é SKU
     const clickedProduct = products.find(p => p.id === productId);
     
@@ -161,7 +150,7 @@ const Index = React.memo(() => {
                   return (
                     <SpecialSectionRenderer 
                       key={sectionKey} 
-                      section={specialSectionData as any} 
+                      section={specialSectionData} 
                       onProductCardClick={handleProductCardClick}
                       reduceTopSpacing={reduceSpacing}
                     />
@@ -193,9 +182,6 @@ const Index = React.memo(() => {
       </main>
 
       <Footer />
-
-      {/* Floating Action Button */}
-      <FloatingActionButton />
 
       <Cart
         showCart={showCart}

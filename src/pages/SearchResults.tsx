@@ -1,25 +1,19 @@
 
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts, Product } from '@/hooks/useProducts'; // Updated import
 import ProductCard from '@/components/ProductCard';
-import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { searchProducts } from '@/utils/fuzzySearch';
 import ProductModal from '@/components/ProductModal';
 
 const SearchResults = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setSearchTerm(params.get('q') || '');
-  }, []);
-  const query = searchTerm;
+  const query = searchParams.get('q') || '';
   const { products, loading } = useProducts();
   const { user } = useAuth();
   const { addToCart } = useCart();

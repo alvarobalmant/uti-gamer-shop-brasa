@@ -65,7 +65,7 @@ const CategoryPage = () => {
       <header className="bg-white shadow-lg sticky top-0 z-40">
         <div className="px-4 py-3 flex items-center gap-3">
           <Button
-            onClick={() => navigate(-1)} // Manter navegação reversa normal
+            onClick={() => navigate(-1)} // CORRIGIDO: Usar navigate(-1) para voltar no histórico
             variant="ghost"
             size="sm"
             className="flex items-center gap-2"
