@@ -7,7 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import ProductGallery from './ProductGallery';
 import ProductPricing from './ProductPricing';
 import ProductActions from '@/components/ProductPage/ProductActions';
+<<<<<<< HEAD
 import FavoriteButton from '@/components/FavoriteButton';
+=======
+>>>>>>> bfa95a9c80e920d73792566cea20d27f2d8f8fc9
 
 interface ProductHeroProps {
   product: Product;

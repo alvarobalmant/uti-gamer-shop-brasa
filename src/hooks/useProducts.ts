@@ -10,6 +10,10 @@ import {
   fetchProductsByCriteria, // Import the new API function
   fetchSingleProductFromDatabase // Import the single product function
 } from './useProducts/productApi';
+import { 
+  fetchMasterProductsForAdmin, 
+  fetchAllProductsForAdmin 
+} from './useProducts/adminProductApi';
 import { handleProductError } from './useProducts/productErrorHandler';
 import { CarouselConfig } from '@/types/specialSections'; // Import CarouselConfig type
 
@@ -46,7 +50,7 @@ export const useProducts = () => {
     if (!config) return;
     setLoading(true);
     try {
-      const productsData = await fetchProductsByCriteria(config);
+      const productsData = await fetchProductsByCriteria(config, 'no-masters');
       setProducts(productsData);
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produtos do carrossel');
@@ -60,6 +64,48 @@ export const useProducts = () => {
       setLoading(false);
     }
   }, [toast]); // Add dependencies
+
+  // Função específica para buscar produtos mestres (admin)
+  const fetchMasterProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const masterProducts = await fetchMasterProductsForAdmin();
+      setProducts(masterProducts);
+      return masterProducts;
+    } catch (error: any) {
+      const errorMessage = handleProductError(error, 'ao carregar produtos mestres');
+      toast({
+        title: "Erro ao carregar produtos mestres",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      setProducts([]);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  // Função para buscar todos os produtos incluindo mestres (admin)
+  const fetchAllProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const allProducts = await fetchAllProductsForAdmin();
+      setProducts(allProducts);
+      return allProducts;
+    } catch (error: any) {
+      const errorMessage = handleProductError(error, 'ao carregar todos os produtos');
+      toast({
+        title: "Erro ao carregar produtos",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      setProducts([]);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
   const addProduct = async (productData: Omit<Product, 'id' | 'tags'> & { tagIds: string[] }) => {
     try {
@@ -149,6 +195,8 @@ export const useProducts = () => {
     refetch: fetchProducts, // Keep refetch for general product list if needed elsewhere
     fetchProductsByConfig, // Expose the new function
     fetchSingleProduct, // Expose the new single product function
+    fetchMasterProducts, // Função específica para produtos mestres
+    fetchAllProducts, // Função para todos os produtos incluindo mestres
   };
 };
 
