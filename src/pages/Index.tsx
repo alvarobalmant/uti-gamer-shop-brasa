@@ -5,7 +5,7 @@ import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
-import { useProductsOptimized } from '@/contexts/ProductContextOptimized';
+
 import Footer from '@/components/Footer';
 import { useIndexPage } from '@/hooks/useIndexPage';
 import SectionRenderer from '@/components/HomePage/SectionRenderer';

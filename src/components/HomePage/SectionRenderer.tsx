@@ -9,7 +9,7 @@ import SpecializedServices from '@/components/ServiceCards/SpecializedServices';
 import WhyChooseUs from '@/components/ServiceCards/WhyChooseUs';
 import ContactHelp from '@/components/ServiceCards/ContactHelp';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
-import ProductCarouselOptimized from '@/components/sections/ProductCarouselOptimized';
+
 
 interface SectionRendererProps {
   sectionKey: string;

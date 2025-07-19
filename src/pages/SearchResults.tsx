@@ -12,9 +12,14 @@ import { searchProducts } from '@/utils/fuzzySearch';
 import ProductModal from '@/components/ProductModal';
 
 const SearchResults = () => {
-  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-  const query = searchParams.get('q') || '';
+  
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setSearchTerm(params.get('q') || '');
+  }, []);
+  const query = searchTerm;
   const { products, loading } = useProducts();
   const { user } = useAuth();
   const { addToCart } = useCart();
