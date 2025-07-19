@@ -231,7 +231,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 {[...Array(12)].map((_, i) => (
                   <motion.div
                     key={i}
-                    className="absolute"
+                    className="absolute text-lg"
                     style={{
                       left: `${Math.random() * 100}%`,
                       top: `${Math.random() * 100}%`,
@@ -252,7 +252,6 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                       duration: 3,
                       ease: "easeOut"
                     }}
-                    className="text-lg"
                   >
                     {['🎉', '⭐', '🏆', '✨', '🎊', '💎'][i % 6]}
                   </motion.div>

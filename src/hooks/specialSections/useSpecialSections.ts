@@ -1,15 +1,95 @@
+// Fix the useSpecialSections hook to work with actual database schema
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import type {
-  SpecialSection,
-  CreateSectionRequest,
-  UpdateSectionRequest,
-  UseSectionsOptions,
-  UseSectionsReturn,
-  DragDropItem,
-  SectionTypeValue
-} from '@/types/specialSections/core';
+import type { Database } from '@/integrations/supabase/types';
+
+// Use the actual database types
+type SpecialSectionRow = Database["public"]["Tables"]["special_sections"]["Row"];
+
+export interface SpecialSection extends SpecialSectionRow {
+  // Extend with computed properties if needed
+}
+
+export interface CreateSectionRequest {
+  title: string;
+  description?: string;
+  background_type?: string;
+  background_color?: string;
+  background_gradient?: string;
+  background_image_url?: string;
+  background_image_position?: string;
+  background_value?: string;
+  content_config?: any;
+  is_active?: boolean;
+  display_order?: number;
+  title_color1?: string;
+  title_color2?: string;
+  title_part1?: string;
+  title_part2?: string;
+  padding_top?: number;
+  padding_bottom?: number;
+  padding_left?: number;
+  padding_right?: number;
+  margin_top?: number;
+  margin_bottom?: number;
+  border_radius?: number;
+  mobile_settings?: any;
+}
+
+export interface UpdateSectionRequest {
+  id: string;
+  title?: string;
+  description?: string;
+  background_type?: string;
+  background_color?: string;
+  background_gradient?: string;
+  background_image_url?: string;
+  background_image_position?: string;
+  background_value?: string;
+  content_config?: any;
+  is_active?: boolean;
+  display_order?: number;
+  title_color1?: string;
+  title_color2?: string;
+  title_part1?: string;
+  title_part2?: string;
+  padding_top?: number;
+  padding_bottom?: number;
+  padding_left?: number;
+  padding_right?: number;
+  margin_top?: number;
+  margin_bottom?: number;
+  border_radius?: number;
+  mobile_settings?: any;
+  [key: string]: any;
+}
+
+export interface DragDropItem {
+  id: string;
+  order?: number;
+}
+
+export interface UseSectionsOptions {
+  page?: number;
+  limit?: number;
+  type?: string;
+  visibility?: string;
+}
+
+export interface UseSectionsReturn {
+  sections: SpecialSection[];
+  loading: boolean;
+  error: string | null;
+  total: number;
+  page: number;
+  limit: number;
+  refetch: () => Promise<void>;
+  createSection: (data: CreateSectionRequest) => Promise<SpecialSection>;
+  updateSection: (data: UpdateSectionRequest) => Promise<SpecialSection>;
+  deleteSection: (id: string) => Promise<void>;
+  reorderSections: (items: DragDropItem[]) => Promise<void>;
+}
 
 export const useSpecialSections = (options: UseSectionsOptions = {}): UseSectionsReturn => {
   const {
@@ -34,16 +114,16 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
       let query = supabase
         .from('special_sections')
         .select('*', { count: 'exact' })
-        .order('order', { ascending: true })
+        .order('display_order', { ascending: true })
         .range((page - 1) * limit, page * limit - 1);
 
       // Aplicar filtros
       if (type) {
-        query = query.eq('type', type);
+        query = query.eq('background_type', type);
       }
       
       if (visibility) {
-        query = query.eq('visibility', visibility);
+        query = query.eq('is_active', visibility === 'visible');
       }
 
       const { data, error: fetchError, count } = await query;
@@ -52,127 +132,60 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
         throw fetchError;
       }
 
-      // Transformar dados para o formato correto
-      const transformedSections: SpecialSection[] = (data || []).map(section => ({
-        ...section,
-        createdAt: new Date(section.created_at),
-        updatedAt: new Date(section.updated_at),
-        isVisible: section.is_visible,
-        config: section.content_config || {}
-      }));
-
-      setSections(transformedSections);
+      setSections(data || []);
       setTotal(count || 0);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar seções';
-      setError(errorMessage);
-      toast.error(errorMessage);
       console.error('Erro ao buscar seções:', err);
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      toast.error('Erro ao carregar seções especiais');
     } finally {
       setLoading(false);
     }
   }, [page, limit, type, visibility]);
 
-  // Função para criar nova seção
+  // Função para criar seção
   const createSection = useCallback(async (data: CreateSectionRequest): Promise<SpecialSection> => {
     try {
-      // Buscar próxima ordem disponível
-      const { data: lastSection } = await supabase
-        .from('special_sections')
-        .select('order')
-        .order('order', { ascending: false })
-        .limit(1)
-        .single();
-
-      const nextOrder = (lastSection?.order || 0) + 1;
-
-      const sectionData = {
-        type: data.type,
-        title: data.title,
-        content_config: data.config,
-        order: data.order ?? nextOrder,
-        is_visible: data.isVisible ?? true,
-        visibility: data.visibility ?? 'both'
-      };
-
       const { data: newSection, error: createError } = await supabase
         .from('special_sections')
-        .insert(sectionData)
+        .insert([data])
         .select()
         .single();
 
-      if (createError) {
-        throw createError;
-      }
-
-      const transformedSection: SpecialSection = {
-        ...newSection,
-        createdAt: new Date(newSection.created_at),
-        updatedAt: new Date(newSection.updated_at),
-        isVisible: newSection.is_visible,
-        config: newSection.content_config || {}
-      };
-
-      // Atualizar estado local
-      setSections(prev => [...prev, transformedSection].sort((a, b) => a.order - b.order));
-      setTotal(prev => prev + 1);
-
+      if (createError) throw createError;
+      
+      await fetchSections();
       toast.success('Seção criada com sucesso!');
-      return transformedSection;
+      return newSection;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao criar seção';
-      toast.error(errorMessage);
-      throw new Error(errorMessage);
+      console.error('Erro ao criar seção:', err);
+      toast.error('Erro ao criar seção');
+      throw err;
     }
-  }, []);
+  }, [fetchSections]);
 
   // Função para atualizar seção
   const updateSection = useCallback(async (data: UpdateSectionRequest): Promise<SpecialSection> => {
     try {
-      const updateData: any = {
-        updated_at: new Date().toISOString()
-      };
-
-      if (data.title !== undefined) updateData.title = data.title;
-      if (data.config !== undefined) updateData.content_config = data.config;
-      if (data.order !== undefined) updateData.order = data.order;
-      if (data.isVisible !== undefined) updateData.is_visible = data.isVisible;
-      if (data.visibility !== undefined) updateData.visibility = data.visibility;
-
+      const { id, ...updateData } = data;
       const { data: updatedSection, error: updateError } = await supabase
         .from('special_sections')
         .update(updateData)
-        .eq('id', data.id)
+        .eq('id', id)
         .select()
         .single();
 
-      if (updateError) {
-        throw updateError;
-      }
-
-      const transformedSection: SpecialSection = {
-        ...updatedSection,
-        createdAt: new Date(updatedSection.created_at),
-        updatedAt: new Date(updatedSection.updated_at),
-        isVisible: updatedSection.is_visible,
-        config: updatedSection.content_config || {}
-      };
-
-      // Atualizar estado local
-      setSections(prev => 
-        prev.map(section => 
-          section.id === data.id ? transformedSection : section
-        ).sort((a, b) => a.order - b.order)
-      );
-
+      if (updateError) throw updateError;
+      
+      await fetchSections();
       toast.success('Seção atualizada com sucesso!');
-      return transformedSection;
+      return updatedSection;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao atualizar seção';
-      toast.error(errorMessage);
-      throw new Error(errorMessage);
+      console.error('Erro ao atualizar seção:', err);
+      toast.error('Erro ao atualizar seção');
+      throw err;
     }
-  }, []);
+  }, [fetchSections]);
 
   // Função para deletar seção
   const deleteSection = useCallback(async (id: string): Promise<void> => {
@@ -182,75 +195,56 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
         .delete()
         .eq('id', id);
 
-      if (deleteError) {
-        throw deleteError;
-      }
-
-      // Atualizar estado local
-      setSections(prev => prev.filter(section => section.id !== id));
-      setTotal(prev => prev - 1);
-
+      if (deleteError) throw deleteError;
+      
+      await fetchSections();
       toast.success('Seção removida com sucesso!');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao remover seção';
-      toast.error(errorMessage);
-      throw new Error(errorMessage);
+      console.error('Erro ao deletar seção:', err);
+      toast.error('Erro ao remover seção');
+      throw err;
     }
-  }, []);
+  }, [fetchSections]);
 
   // Função para reordenar seções
   const reorderSections = useCallback(async (items: DragDropItem[]): Promise<void> => {
     try {
-      // Atualizar ordem no banco de dados
-      const updates = items.map(item => ({
+      // Update display_order for each section
+      const updates = items.map((item, index) => ({
         id: item.id,
-        order: item.order
+        display_order: index
       }));
 
-      const { error: updateError } = await supabase
-        .from('special_sections')
-        .upsert(updates);
-
-      if (updateError) {
-        throw updateError;
+      for (const update of updates) {
+        await supabase
+          .from('special_sections')
+          .update({ display_order: update.display_order })
+          .eq('id', update.id);
       }
-
-      // Atualizar estado local
-      setSections(prev => {
-        const updated = prev.map(section => {
-          const newOrder = items.find(item => item.id === section.id)?.order;
-          return newOrder !== undefined ? { ...section, order: newOrder } : section;
-        });
-        return updated.sort((a, b) => a.order - b.order);
-      });
-
+      
+      await fetchSections();
       toast.success('Ordem das seções atualizada!');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao reordenar seções';
-      toast.error(errorMessage);
-      throw new Error(errorMessage);
+      console.error('Erro ao reordenar seções:', err);
+      toast.error('Erro ao reordenar seções');
+      throw err;
     }
-  }, []);
-
-  // Função para refetch (invalidação reativa)
-  const refetch = useCallback(async () => {
-    await fetchSections();
   }, [fetchSections]);
 
-  // Carregar dados iniciais
+  // Carregar seções ao montar o componente ou quando as opções mudarem
   useEffect(() => {
     fetchSections();
   }, [fetchSections]);
 
-  // Memoizar resultado para evitar re-renders desnecessários
-  const result = useMemo((): UseSectionsReturn => ({
+  // Preparar valor de retorno do hook
+  const returnValue: UseSectionsReturn = useMemo(() => ({
     sections,
     loading,
     error,
     total,
     page,
     limit,
-    refetch,
+    refetch: fetchSections,
     createSection,
     updateSection,
     deleteSection,
@@ -262,26 +256,17 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
     total,
     page,
     limit,
-    refetch,
+    fetchSections,
     createSection,
     updateSection,
     deleteSection,
     reorderSections
   ]);
 
-  return result;
+  return returnValue;
 };
 
-// Hook especializado para seções visíveis (frontend)
-export const useVisibleSections = (type?: SectionTypeValue) => {
-  return useSpecialSections({
-    visibility: 'both',
-    type,
-    limit: 100 // Carregar todas as seções visíveis
-  });
-};
-
-// Hook para preview em tempo real
+// Hook for section preview functionality
 export const useSectionPreview = () => {
   const [previewSection, setPreviewSection] = useState<SpecialSection | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -296,9 +281,11 @@ export const useSectionPreview = () => {
     setIsPreviewMode(false);
   }, []);
 
-  const updatePreview = useCallback((config: Partial<SpecialSection>) => {
-    setPreviewSection(prev => prev ? { ...prev, ...config } : null);
-  }, []);
+  const updatePreview = useCallback((section: SpecialSection) => {
+    if (isPreviewMode) {
+      setPreviewSection(section);
+    }
+  }, [isPreviewMode]);
 
   return {
     previewSection,
@@ -308,4 +295,3 @@ export const useSectionPreview = () => {
     updatePreview
   };
 };
-

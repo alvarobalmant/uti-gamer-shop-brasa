@@ -5,7 +5,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import ProductCard from '@/components/ProductCard';
+import ProductCardOptimized from '@/components/ProductCardOptimized';
 import SpecialCarouselRow from './SpecialCarouselRow';
+import ProductCarouselOptimized from '@/components/sections/ProductCarouselOptimized';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SpecialSectionRendererProps {

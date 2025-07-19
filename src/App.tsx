@@ -6,10 +6,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
-import { ProductProvider } from "@/contexts/ProductContext";
+import { ProductProvider } from '@/contexts/ProductContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
@@ -131,6 +132,11 @@ const ProtectedAdminRoute = React.memo(({ children }: { children: React.ReactNod
 const App = () => {
   // Hook para prevenir layout shift globalmente
   usePreventLayoutShift();
+  
+  // Setup de interceptação de erros 404
+  React.useEffect(() => {
+    setupErrorInterception();
+  }, []);
   
   return (
     <QueryClientProvider client={queryClient}>
