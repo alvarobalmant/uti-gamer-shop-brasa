@@ -30,11 +30,9 @@ class ScrollRestorationManager {
       timestamp: Date.now()
     };
 
-    // Só salva se tiver scroll significativo
-    if (position.y > 50) {
-      this.positions.set(path, position);
-      console.log(`[ScrollManager] Saved position for ${path} (${source}): y=${position.y}`);
-    }
+    // Salva qualquer posição de scroll (removido threshold)
+    this.positions.set(path, position);
+    console.log(`[ScrollManager] Saved position for ${path} (${source}): y=${position.y}`);
   }
 
   async restorePosition(path: string, context: string = 'unknown', waitForContent: boolean = false): Promise<boolean> {
@@ -55,11 +53,8 @@ class ScrollRestorationManager {
       return false;
     }
 
-    // Só restaura se for uma posição significativa
-    if (savedPosition.y < 100) {
-      console.log(`[ScrollManager] Position too small for ${path}: ${savedPosition.y}px`);
-      return false;
-    }
+    // Restaura qualquer posição salva (removido threshold)
+    console.log(`[ScrollManager] Restoring saved position for ${path}: ${savedPosition.y}px`);
 
     console.log(`[ScrollManager] Restoring position for ${path} (${context}): y=${savedPosition.y}, waitForContent=${waitForContent}`);
     

@@ -38,7 +38,7 @@ export const useScrollRestoration = () => {
       // Verificar se é homepage para aguardar carregamento
       const isHomepage = currentPathKey === '/' || currentPathKey === '';
       
-      // Adiciona um pequeno delay para garantir que o DOM esteja pronto
+      // Aguardar um pouco mais para garantir que o DOM esteja completamente renderizado
       const restoreTimer = setTimeout(async () => {
         const restored = await scrollManager.restorePosition(
           currentPathKey, 
@@ -46,18 +46,25 @@ export const useScrollRestoration = () => {
           isHomepage // Aguardar carregamento apenas na homepage
         );
         if (!restored) {
-          console.log(`[ScrollRestoration] Restore failed or no position saved for ${currentPathKey}. Scrolling top.`);
-          window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+          console.log(`[ScrollRestoration] Restore failed or no position saved for ${currentPathKey}. Staying at current position.`);
+          // Não força scroll para o topo em navegação POP - deixa o navegador gerenciar
         }
-      }, isHomepage ? 50 : 100); // Delay menor para homepage pois já aguarda internamente
+      }, isHomepage ? 100 : 200); // Delay maior para garantir renderização
       return () => clearTimeout(restoreTimer);
 
     } else {
-      // Nova navegação (PUSH ou REPLACE), rolar para o topo
-      console.log(`[ScrollRestoration] ${navigationType} detected. Scrolling top for: ${currentPathKey}`);
-      // Remove qualquer posição salva para o caminho atual, pois é uma nova visita
-      scrollManager.removePosition(currentPathKey);
-      window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+      // Nova navegação (PUSH ou REPLACE), apenas para páginas que não são produto
+      const isProductPage = currentPathKey.startsWith('/produto/');
+      if (!isProductPage) {
+        console.log(`[ScrollRestoration] ${navigationType} detected. Scrolling top for: ${currentPathKey}`);
+        // Remove qualquer posição salva para o caminho atual, pois é uma nova visita
+        scrollManager.removePosition(currentPathKey);
+        window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+      } else {
+        console.log(`[ScrollRestoration] ${navigationType} detected on product page. No automatic scroll.`);
+        // Para páginas de produto, remove posição mas não força scroll
+        scrollManager.removePosition(currentPathKey);
+      }
     }
 
     // Atualiza a referência do último caminho *após* o processamento
