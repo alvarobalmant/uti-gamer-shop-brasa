@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigationType, NavigationType } from 'react-router-dom';
 import simpleScrollManager from '@/lib/simpleScrollManager';
-import horizontalScrollManager from '@/lib/horizontalScrollManager';
+import preLoadHorizontalScrollManager from '@/lib/preLoadHorizontalScrollManager';
 
 /**
  * Hook simples e robusto para restauração de scroll
@@ -29,26 +29,23 @@ export const useSimpleScrollRestoration = () => {
     
     // Define a página atual em ambos os managers
     simpleScrollManager.setCurrentPage(currentPath);
-    horizontalScrollManager.setCurrentPage(currentPath);
+    preLoadHorizontalScrollManager.setCurrentPage(currentPath);
     
     // Lógica baseada no tipo de navegação
     if (navigationType === NavigationType.Pop) {
-      // VOLTAR - restaura posições obrigatoriamente (vertical + horizontal)
-      console.log(`[SimpleScrollRestoration] ⬅️ VOLTAR detectado - restaurando posições vertical e horizontal`);
+      // VOLTAR - restaura apenas posição vertical (horizontal já é pré-carregado)
+      console.log(`[SimpleScrollRestoration] ⬅️ VOLTAR detectado - restaurando posição vertical`);
       
-      // Restaura ambos os tipos de scroll
-      Promise.all([
-        simpleScrollManager.restoreCurrentPagePosition(),
-        horizontalScrollManager.restoreCurrentPageHorizontalPositions()
-      ]).then(() => {
-        console.log(`[SimpleScrollRestoration] ✅ Restauração completa finalizada para ${currentPath}`);
+      // Restaura apenas scroll vertical (horizontal é automático via preLoad)
+      simpleScrollManager.restoreCurrentPagePosition().then(() => {
+        console.log(`[SimpleScrollRestoration] ✅ Restauração vertical finalizada para ${currentPath}`);
       });
       
     } else {
-      // NOVA NAVEGAÇÃO - limpa posições e vai para topo/esquerda
+      // NOVA NAVEGAÇÃO - limpa posições e vai para topo
       console.log(`[SimpleScrollRestoration] ➡️ NOVA navegação - limpando posições e indo para topo`);
       simpleScrollManager.clearPagePosition(currentPath);
-      horizontalScrollManager.clearPageHorizontalPositions(currentPath);
+      preLoadHorizontalScrollManager.clearPagePositions(currentPath);
       window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
     
