@@ -47,8 +47,11 @@ export const useScrollRestoration = () => {
       // Verificar se é homepage para aguardar carregamento
       const isHomepage = currentPathKey === '/' || currentPathKey === '';
       
+      console.log(`[ScrollRestoration] 🔧 CONFIGURANDO restauração para ${currentPathKey}, isHomepage: ${isHomepage}`);
+      
       // Aguardar para garantir que o DOM esteja completamente renderizado
       restoreTimeoutRef.current = window.setTimeout(async () => {
+        console.log(`[ScrollRestoration] ⏰ EXECUTANDO restauração após delay para ${currentPathKey}`);
         const restored = await scrollManager.restorePosition(
           currentPathKey, 
           'POP navigation',

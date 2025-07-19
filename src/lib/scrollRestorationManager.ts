@@ -80,7 +80,7 @@ class ScrollRestorationManager {
         // Verifica se conseguiu restaurar
         setTimeout(() => {
           const currentY = window.scrollY;
-          const tolerance = 50; // Tolerância reduzida
+          const tolerance = 100; // Tolerância aumentada para lidar com conflitos CSS
           const success = Math.abs(currentY - savedPosition.y) <= tolerance;
           
           console.log(`[ScrollManager] 🏁 RESULTADO tentativa ${attempt}: target=${savedPosition.y}px, atual=${currentY}px, sucesso=${success}`);
@@ -182,6 +182,17 @@ class ScrollRestorationManager {
     return this.isRestoring;
   }
 
+  // Método de debug para verificar posições salvas
+  debugPositions(): void {
+    console.log('[ScrollManager] 🔍 DEBUG - Posições salvas:');
+    for (const [path, position] of this.positions.entries()) {
+      const age = Date.now() - position.timestamp;
+      console.log(`  ${path}: y=${position.y}px (${Math.round(age/1000)}s ago)`);
+    }
+    console.log(`[ScrollManager] 🔍 DEBUG - isRestoring: ${this.isRestoring}`);
+    console.log(`[ScrollManager] 🔍 DEBUG - Total positions: ${this.positions.size}`);
+  }
+
   private cleanup(): void {
     const now = Date.now();
     const maxAge = 15 * 60 * 1000; // 15 minutos
@@ -205,6 +216,18 @@ class ScrollRestorationManager {
 // Instância singleton
 const scrollManager = new ScrollRestorationManager();
 
+// Expor globalmente para integração com outros sistemas
+declare global {
+  interface Window {
+    scrollManager: typeof scrollManager;
+  }
+}
+
+// Disponibilizar globalmente
+if (typeof window !== 'undefined') {
+  window.scrollManager = scrollManager;
+}
+
 // Exports simplificados
 export const saveScrollPosition = (path: string, source?: string) => {
   scrollManager.savePosition(path, source);
@@ -224,6 +247,10 @@ export const setIsRestoring = (restoring: boolean) => {
 
 export const getIsRestoring = (): boolean => {
   return scrollManager.getIsRestoring();
+};
+
+export const debugScrollPositions = () => {
+  scrollManager.debugPositions();
 };
 
 export default scrollManager;

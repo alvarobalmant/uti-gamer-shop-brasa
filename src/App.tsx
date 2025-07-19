@@ -16,23 +16,37 @@ import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { useEffect } from "react";
 
-// Hook para prevenir layout shift globalmente
+// Hook para prevenir layout shift globalmente (otimizado para compatibilidade com scroll restoration)
 const usePreventLayoutShift = () => {
   useEffect(() => {
+    let isScrollRestoring = false;
+    
     // Observer para monitorar mudanças no body
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
           const target = mutation.target as HTMLElement;
           if (target === document.body) {
-            // Prevenir qualquer alteração que cause layout shift
-            if (target.style.paddingRight || target.style.marginRight) {
-              target.style.paddingRight = '';
-              target.style.marginRight = '';
+            // Verificar se o scroll restoration está ativo através do scrollManager
+            try {
+              // @ts-ignore - Acessar o manager global se disponível
+              isScrollRestoring = window.scrollManager?.getIsRestoring?.() || false;
+            } catch (e) {
+              isScrollRestoring = false;
             }
-            // Garantir que overflow-y seja sempre scroll
-            if (target.style.overflow !== 'hidden') {
-              document.documentElement.style.overflowY = 'scroll';
+
+            // Se não está restaurando scroll, aplicar prevenção de layout shift
+            if (!isScrollRestoring) {
+              // Prevenir alterações de padding/margin que causam layout shift
+              if (target.style.paddingRight || target.style.marginRight) {
+                target.style.paddingRight = '';
+                target.style.marginRight = '';
+              }
+            }
+            
+            // Garantir overflow-x hidden sempre (não interfere com scroll vertical)
+            if (target.style.overflowX !== 'hidden') {
+              target.style.overflowX = 'hidden';
             }
           }
         }
@@ -45,12 +59,22 @@ const usePreventLayoutShift = () => {
       attributeFilter: ['style', 'data-scroll-locked']
     });
 
-    // Garantir configuração inicial
-    document.documentElement.style.overflowY = 'scroll';
-    document.body.style.overflowX = 'hidden';
+    // Configuração inicial mais suave
+    const setupInitialStyles = () => {
+      // Apenas garantir overflow-x hidden (não tocar no overflow-y)
+      document.body.style.overflowX = 'hidden';
+      
+      // Limpar qualquer padding/margin que possa causar layout shift
+      document.body.style.paddingRight = '';
+      document.body.style.marginRight = '';
+    };
+
+    // Aplicar após um pequeno delay para não interferir com inicialização
+    const timeoutId = setTimeout(setupInitialStyles, 100);
 
     return () => {
       observer.disconnect();
+      clearTimeout(timeoutId);
     };
   }, []);
 };
