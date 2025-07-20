@@ -22,9 +22,15 @@ class SimpleScrollManager {
     
     this.saveInterval = window.setInterval(() => {
       this.saveCurrentPosition();
+<<<<<<< HEAD
     }, 150);
     
     console.log('[SimpleScrollManager] ✅ Sistema iniciado - salvamento a cada 150ms');
+=======
+    }, 20);
+    
+    console.log('[SimpleScrollManager] ✅ Sistema iniciado - salvamento a cada 20ms');
+>>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
   }
 
   // Salva a posição atual
