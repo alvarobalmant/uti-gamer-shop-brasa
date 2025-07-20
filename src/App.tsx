@@ -16,38 +16,32 @@ import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { useEffect } from "react";
 
-// Hook para prevenir layout shift globalmente
+// Hook minimalista para prevenir layout shift sem interferir no scroll
 const usePreventLayoutShift = () => {
   useEffect(() => {
-    // Observer para monitorar mudanças no body
+    // Apenas configuração básica, sem interferir no scroll restoration
+    document.body.style.overflowX = 'hidden';
+    
+    // Observer mais específico - apenas para mudanças críticas
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
           const target = mutation.target as HTMLElement;
           if (target === document.body) {
-            // Prevenir qualquer alteração que cause layout shift
+            // Apenas remove padding/margin que causam layout shift, SEM tocar no overflow-y
             if (target.style.paddingRight || target.style.marginRight) {
               target.style.paddingRight = '';
               target.style.marginRight = '';
-            }
-            // Garantir que overflow-y seja sempre scroll
-            if (target.style.overflow !== 'hidden') {
-              document.documentElement.style.overflowY = 'scroll';
             }
           }
         }
       });
     });
 
-    // Observar mudanças no body
     observer.observe(document.body, {
       attributes: true,
-      attributeFilter: ['style', 'data-scroll-locked']
+      attributeFilter: ['style']
     });
-
-    // Garantir configuração inicial
-    document.documentElement.style.overflowY = 'scroll';
-    document.body.style.overflowX = 'hidden';
 
     return () => {
       observer.disconnect();

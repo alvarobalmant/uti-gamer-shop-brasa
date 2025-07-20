@@ -19,14 +19,7 @@ import SKUManager from './SKUManager';
 const MasterProductManager: React.FC = () => {
   const { toast } = useToast();
   const { createMasterProduct, fetchSKUsForMaster } = useSKUs();
-  const { 
-    products, 
-    loading, 
-    addProduct, 
-    updateProduct, 
-    deleteProduct, 
-    fetchMasterProducts 
-  } = useProducts();
+  const { products, deleteProduct } = useProducts();
   
   const [masterProducts, setMasterProducts] = useState<MasterProduct[]>([]);
   const [selectedMaster, setSelectedMaster] = useState<MasterProduct | null>(null);
@@ -49,17 +42,15 @@ const MasterProductManager: React.FC = () => {
   // Carregar produtos mestre quando o componente montar
   useEffect(() => {
     loadMasterProducts();
-  }, []);
+  }, [products]);
 
-  const loadMasterProducts = async () => {
+  const loadMasterProducts = () => {
     try {
-      console.log('MasterProductManager: Carregando produtos mestres...');
-      const masters = await fetchMasterProducts();
-      console.log('MasterProductManager: Produtos mestres carregados:', masters);
-      setMasterProducts(masters as MasterProduct[]);
+      // Filtrar apenas produtos mestre dos produtos já carregados
+      const masters = products.filter(p => p.product_type === 'master') as MasterProduct[];
+      setMasterProducts(masters);
     } catch (error) {
       console.error('Erro ao carregar produtos mestre:', error);
-      setMasterProducts([]);
     }
   };
 
@@ -95,7 +86,7 @@ const MasterProductManager: React.FC = () => {
       const newMasterId = await createMasterProduct(masterData);
       if (newMasterId) {
         // Recarregar produtos para garantir que a lista está atualizada
-        await loadMasterProducts();
+        loadMasterProducts();
         
         // Fechar modal e resetar form
         setShowCreateDialog(false);
@@ -106,7 +97,8 @@ const MasterProductManager: React.FC = () => {
         
         // Aguardar um breve momento para a lista atualizar e então selecionar o produto
         setTimeout(() => {
-          const newMaster = masterProducts.find(m => m.id === newMasterId);
+          const updatedMasters = products.filter(p => p.product_type === 'master') as MasterProduct[];
+          const newMaster = updatedMasters.find(m => m.id === newMasterId);
           if (newMaster) {
             setSelectedMaster(newMaster);
           }
@@ -135,7 +127,6 @@ const MasterProductManager: React.FC = () => {
   const handleDeleteMaster = async (master: MasterProduct) => {
     try {
       await deleteProduct(master.id);
-      await loadMasterProducts(); // Recarregar a lista
       
       // Se o produto deletado estava selecionado, limpar seleção
       if (selectedMaster?.id === master.id) {

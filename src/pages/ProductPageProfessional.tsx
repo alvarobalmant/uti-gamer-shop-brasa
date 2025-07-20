@@ -80,7 +80,9 @@ const ProductPageProfessional = () => {
     }
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    console.log('[ProductPageProfessional] Botão voltar clicado');
+    // NÃO salvar a posição atual da página de produto - queremos manter a posição da página anterior
     navigate(-1);
   };
 
