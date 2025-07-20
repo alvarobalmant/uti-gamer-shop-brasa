@@ -108,7 +108,11 @@ const ProductCardOptimized = memo<ProductCardOptimizedProps>(({
     },
     tags: [],
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    // Fix the uti_pro_type typing issue
+    uti_pro_type: (product.uti_pro_type === 'fixed' || product.uti_pro_type === 'percentage') 
+      ? product.uti_pro_type 
+      : 'percentage' as const
   };
 
   return (

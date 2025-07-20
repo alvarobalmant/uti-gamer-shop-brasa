@@ -1,6 +1,20 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from './types';
-import { CarouselConfig } from '@/types/specialSections';
+
+// Interface para configuração de critérios
+interface ProductCriteriaConfig {
+  product_ids?: string[];
+  filter_featured?: boolean;
+  sort_by?: 'name' | 'price' | 'created_at';
+  sort_order?: 'asc' | 'desc';
+  category_id?: string;
+  tags?: string[];
+  price_range?: {
+    min: number;
+    max: number;
+  };
+}
 
 // Versão simplificada do produto para listagens
 export interface ProductLight {
@@ -19,7 +33,7 @@ export interface ProductLight {
   uti_pro_enabled: boolean;
   uti_pro_value?: number;
   uti_pro_custom_price?: number;
-  uti_pro_type: string;
+  uti_pro_type: 'fixed' | 'percentage';
 }
 
 // Cache simples em memória
@@ -42,7 +56,9 @@ const mapRowToProductLight = (row: any): ProductLight => ({
   uti_pro_enabled: row.uti_pro_enabled || false,
   uti_pro_value: row.uti_pro_value ? Number(row.uti_pro_value) : undefined,
   uti_pro_custom_price: row.uti_pro_custom_price ? Number(row.uti_pro_custom_price) : undefined,
-  uti_pro_type: row.uti_pro_type || 'percentage',
+  uti_pro_type: (row.uti_pro_type === 'fixed' || row.uti_pro_type === 'percentage') 
+    ? row.uti_pro_type 
+    : 'percentage',
 });
 
 const mapRowToProduct = (row: any): Product => ({
@@ -75,7 +91,9 @@ const mapRowToProduct = (row: any): Product => ({
   uti_pro_enabled: row.uti_pro_enabled || false,
   uti_pro_value: row.uti_pro_value ? Number(row.uti_pro_value) : undefined,
   uti_pro_custom_price: row.uti_pro_custom_price ? Number(row.uti_pro_custom_price) : undefined,
-  uti_pro_type: row.uti_pro_type || 'percentage',
+  uti_pro_type: (row.uti_pro_type === 'fixed' || row.uti_pro_type === 'percentage') 
+    ? row.uti_pro_type 
+    : 'percentage',
   
   // Campos do sistema de SKUs
   parent_product_id: row.parent_product_id || undefined,
@@ -213,7 +231,7 @@ export const fetchProductDetails = async (productId: string): Promise<Product | 
 
 // Função otimizada para seções específicas (carrosséis)
 export const fetchProductsByCriteriaOptimized = async (
-  config: CarouselConfig,
+  config: ProductCriteriaConfig,
   limit: number = 12
 ): Promise<ProductLight[]> => {
   try {
@@ -370,4 +388,3 @@ export const preloadCriticalImages = (products: ProductLight[], count: number = 
   
   console.log(`[preloadCriticalImages] Pré-carregando ${criticalProducts.length} imagens críticas`);
 };
-

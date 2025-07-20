@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Product } from '@/hooks/useProducts/types';
 import { 
@@ -9,7 +10,7 @@ import {
   ProductLight
 } from '@/hooks/useProducts/productApiOptimized';
 import { handleProductError } from '@/hooks/useProducts/productErrorHandler';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface ProductContextOptimizedType {
   // Estado para listagem (versão light)
@@ -59,8 +60,6 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
   
   // Subscribers para notificações
   const [subscribers, setSubscribers] = useState<Set<(products: ProductLight[]) => void>>(new Set());
-  
-  const { toast } = useToast();
 
   // Função para notificar subscribers
   const notifySubscribers = useCallback((updatedProducts: ProductLight[]) => {
@@ -102,11 +101,12 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
       console.log(`[loadMoreProducts] Carregados ${result.products.length} produtos, página ${currentPage}`);
     } catch (error) {
       console.error('Error loading more products:', error);
-      handleProductError(error, toast);
+      const errorMessage = handleProductError(error, 'ao carregar produtos');
+      toast.error(errorMessage);
     } finally {
       setLoadingLight(false);
     }
-  }, [loadingLight, hasMore, currentPage, productsLight, toast, notifySubscribers]);
+  }, [loadingLight, hasMore, currentPage, productsLight, notifySubscribers]);
 
   // Refresh completo dos produtos
   const refreshProducts = useCallback(async () => {
@@ -119,9 +119,10 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
       await loadMoreProducts();
     } catch (error) {
       console.error('Error refreshing products:', error);
-      handleProductError(error, toast);
+      const errorMessage = handleProductError(error, 'ao atualizar produtos');
+      toast.error(errorMessage);
     }
-  }, [loadMoreProducts, toast]);
+  }, [loadMoreProducts]);
 
   // Obter detalhes completos de um produto
   const getProductDetails = useCallback(async (id: string): Promise<Product | null> => {
@@ -159,7 +160,8 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
       return product;
     } catch (error) {
       console.error('Error loading product details:', error);
-      handleProductError(error, toast);
+      const errorMessage = handleProductError(error, 'ao carregar detalhes do produto');
+      toast.error(errorMessage);
       return null;
     } finally {
       // Remover do loading
@@ -169,7 +171,7 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
         return newSet;
       });
     }
-  }, [productDetails, loadingDetails, toast]);
+  }, [productDetails, loadingDetails]);
 
   // Carregar produtos para seção específica
   const loadProductsForSection = useCallback(async (
@@ -182,10 +184,11 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
       return products;
     } catch (error) {
       console.error('Error loading products for section:', error);
-      handleProductError(error, toast);
+      const errorMessage = handleProductError(error, 'ao carregar produtos da seção');
+      toast.error(errorMessage);
       return [];
     }
-  }, [toast]);
+  }, []);
 
   // Invalidar cache
   const invalidateCache = useCallback(() => {
@@ -256,4 +259,3 @@ export const useProductsOptimized = () => {
 };
 
 export default ProductContextOptimized;
-
