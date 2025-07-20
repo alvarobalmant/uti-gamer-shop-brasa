@@ -40,117 +40,146 @@ export interface ProductLight {
 const productCache = new Map<string, { data: Product[], timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
+// Helper function para garantir tipo correto do uti_pro_type
+const normalizeUtiProType = (type: any): 'fixed' | 'percentage' => {
+  return (type === 'fixed' || type === 'percentage') ? type : 'percentage';
+};
+
+// Helper function para converter valores numéricos
+const toNumber = (value: any): number => {
+  const num = Number(value);
+  return isNaN(num) ? 0 : num;
+};
+
+// Helper function para arrays
+const ensureArray = (value: any): any[] => {
+  return Array.isArray(value) ? value : [];
+};
+
 const mapRowToProductLight = (row: any): ProductLight => ({
-  id: row.product_id,
+  id: row.product_id || '',
   name: row.product_name || '',
-  price: Number(row.product_price) || 0,
-  pro_price: row.pro_price ? Number(row.pro_price) : undefined,
-  list_price: row.list_price ? Number(row.list_price) : undefined,
+  price: toNumber(row.product_price),
+  pro_price: row.pro_price ? toNumber(row.pro_price) : undefined,
+  list_price: row.list_price ? toNumber(row.list_price) : undefined,
   image: row.product_image || '',
   badge_text: row.badge_text || '',
   badge_color: row.badge_color || '#22c55e',
-  badge_visible: row.badge_visible || false,
+  badge_visible: Boolean(row.badge_visible),
   slug: row.slug || '',
   is_active: row.is_active !== false,
-  is_featured: row.is_featured || false,
-  uti_pro_enabled: row.uti_pro_enabled || false,
-  uti_pro_value: row.uti_pro_value ? Number(row.uti_pro_value) : undefined,
-  uti_pro_custom_price: row.uti_pro_custom_price ? Number(row.uti_pro_custom_price) : undefined,
-  uti_pro_type: (row.uti_pro_type === 'fixed' || row.uti_pro_type === 'percentage') 
-    ? row.uti_pro_type 
-    : 'percentage',
+  is_featured: Boolean(row.is_featured),
+  uti_pro_enabled: Boolean(row.uti_pro_enabled),
+  uti_pro_value: row.uti_pro_value ? toNumber(row.uti_pro_value) : undefined,
+  uti_pro_custom_price: row.uti_pro_custom_price ? toNumber(row.uti_pro_custom_price) : undefined,
+  uti_pro_type: normalizeUtiProType(row.uti_pro_type),
 });
 
-const mapRowToProduct = (row: any): Product => ({
-  id: row.product_id,
-  name: row.product_name || '',
-  description: row.product_description || '',
-  price: Number(row.product_price) || 0,
-  pro_price: row.pro_price ? Number(row.pro_price) : undefined,
-  list_price: row.list_price ? Number(row.list_price) : undefined,
-  image: row.product_image || '',
-  additional_images: row.additional_images || [],
-  sizes: row.sizes || [],
-  colors: row.colors || [],
-  stock: row.product_stock || 0,
-  badge_text: row.badge_text || '',
-  badge_color: row.badge_color || '#22c55e',
-  badge_visible: row.badge_visible || false,
-  specifications: row.specifications || [],
-  technical_specs: row.technical_specs || {},
-  product_features: row.product_features || {},
-  shipping_weight: row.shipping_weight ? Number(row.shipping_weight) : undefined,
-  free_shipping: row.free_shipping || false,
-  meta_title: row.meta_title || '',
-  meta_description: row.meta_description || '',
-  slug: row.slug || '',
-  is_active: row.is_active !== false,
-  is_featured: row.is_featured || false,
-  
-  // Campos UTI PRO
-  uti_pro_enabled: row.uti_pro_enabled || false,
-  uti_pro_value: row.uti_pro_value ? Number(row.uti_pro_value) : undefined,
-  uti_pro_custom_price: row.uti_pro_custom_price ? Number(row.uti_pro_custom_price) : undefined,
-  uti_pro_type: (row.uti_pro_type === 'fixed' || row.uti_pro_type === 'percentage') 
-    ? row.uti_pro_type 
-    : 'percentage',
-  
-  // Campos do sistema de SKUs
-  parent_product_id: row.parent_product_id || undefined,
-  is_master_product: row.is_master_product || false,
-  product_type: row.product_type || 'simple',
-  sku_code: row.sku_code || undefined,
-  variant_attributes: row.variant_attributes || {},
-  sort_order: row.sort_order || 0,
-  available_variants: row.available_variants || {},
-  master_slug: row.master_slug || undefined,
-  inherit_from_master: row.inherit_from_master || {},
-  
-  // Novos campos expandidos
-  product_videos: row.product_videos || [],
-  product_faqs: row.product_faqs || [],
-  product_highlights: row.product_highlights || [],
-  reviews_config: row.reviews_config || {
-    enabled: true,
-    show_rating: true,
-    show_count: true,
-    allow_reviews: true,
-    custom_rating: { value: 0, count: 0, use_custom: false }
-  },
-  trust_indicators: row.trust_indicators || [],
-  manual_related_products: row.manual_related_products || [],
-  breadcrumb_config: row.breadcrumb_config || {
-    custom_path: [],
-    use_custom: false,
-    show_breadcrumb: true
-  },
-  product_descriptions: row.product_descriptions || {
-    short: '',
-    detailed: '',
-    technical: '',
-    marketing: ''
-  },
-  delivery_config: row.delivery_config || {
-    custom_shipping_time: '',
-    shipping_regions: [],
-    express_available: false,
-    pickup_locations: [],
-    shipping_notes: ''
-  },
-  display_config: row.display_config || {
-    show_stock_counter: true,
-    show_view_counter: false,
-    custom_view_count: 0,
-    show_urgency_banner: false,
-    urgency_text: '',
-    show_social_proof: false,
-    social_proof_text: ''
-  },
-  
-  tags: [],
-  created_at: row.created_at || new Date().toISOString(),
-  updated_at: row.updated_at || new Date().toISOString()
-});
+// Simplified product mapping to avoid deep type instantiation
+const mapRowToProduct = (row: any): Product => {
+  // Basic product properties
+  const basicProduct = {
+    id: row.product_id || '',
+    name: row.product_name || '',
+    description: row.product_description || '',
+    price: toNumber(row.product_price),
+    pro_price: row.pro_price ? toNumber(row.pro_price) : undefined,
+    list_price: row.list_price ? toNumber(row.list_price) : undefined,
+    image: row.product_image || '',
+    additional_images: ensureArray(row.additional_images),
+    sizes: ensureArray(row.sizes),
+    colors: ensureArray(row.colors),
+    stock: toNumber(row.product_stock),
+    badge_text: row.badge_text || '',
+    badge_color: row.badge_color || '#22c55e',
+    badge_visible: Boolean(row.badge_visible),
+    specifications: ensureArray(row.specifications),
+    technical_specs: row.technical_specs || {},
+    product_features: row.product_features || {},
+    shipping_weight: row.shipping_weight ? toNumber(row.shipping_weight) : undefined,
+    free_shipping: Boolean(row.free_shipping),
+    meta_title: row.meta_title || '',
+    meta_description: row.meta_description || '',
+    slug: row.slug || '',
+    is_active: row.is_active !== false,
+    is_featured: Boolean(row.is_featured),
+    created_at: row.created_at || new Date().toISOString(),
+    updated_at: row.updated_at || new Date().toISOString()
+  };
+
+  // UTI PRO properties
+  const utiProProps = {
+    uti_pro_enabled: Boolean(row.uti_pro_enabled),
+    uti_pro_value: row.uti_pro_value ? toNumber(row.uti_pro_value) : undefined,
+    uti_pro_custom_price: row.uti_pro_custom_price ? toNumber(row.uti_pro_custom_price) : undefined,
+    uti_pro_type: normalizeUtiProType(row.uti_pro_type)
+  };
+
+  // SKU system properties
+  const skuProps = {
+    parent_product_id: row.parent_product_id || undefined,
+    is_master_product: Boolean(row.is_master_product),
+    product_type: (row.product_type || 'simple') as 'simple' | 'master' | 'sku',
+    sku_code: row.sku_code || undefined,
+    variant_attributes: row.variant_attributes || {},
+    sort_order: toNumber(row.sort_order),
+    available_variants: row.available_variants || {},
+    master_slug: row.master_slug || undefined,
+    inherit_from_master: row.inherit_from_master || {}
+  };
+
+  // Extended properties with default values
+  const extendedProps = {
+    product_videos: row.product_videos || [],
+    product_faqs: row.product_faqs || [],
+    product_highlights: row.product_highlights || [],
+    reviews_config: row.reviews_config || {
+      enabled: true,
+      show_rating: true,
+      show_count: true,
+      allow_reviews: true,
+      custom_rating: { value: 0, count: 0, use_custom: false }
+    },
+    trust_indicators: row.trust_indicators || [],
+    manual_related_products: row.manual_related_products || [],
+    breadcrumb_config: row.breadcrumb_config || {
+      custom_path: [],
+      use_custom: false,
+      show_breadcrumb: true
+    },
+    product_descriptions: row.product_descriptions || {
+      short: '',
+      detailed: '',
+      technical: '',
+      marketing: ''
+    },
+    delivery_config: row.delivery_config || {
+      custom_shipping_time: '',
+      shipping_regions: [],
+      express_available: false,
+      pickup_locations: [],
+      shipping_notes: ''
+    },
+    display_config: row.display_config || {
+      show_stock_counter: true,
+      show_view_counter: false,
+      custom_view_count: 0,
+      show_urgency_banner: false,
+      urgency_text: '',
+      show_social_proof: false,
+      social_proof_text: ''
+    },
+    tags: []
+  };
+
+  // Combine all properties
+  return {
+    ...basicProduct,
+    ...utiProProps,
+    ...skuProps,
+    ...extendedProps
+  } as Product;
+};
 
 // Função otimizada para carregar produtos com paginação
 export const fetchProductsLightPaginated = async (
@@ -164,12 +193,12 @@ export const fetchProductsLightPaginated = async (
     const { data, error, count } = await supabase
       .from('products')
       .select(`
-        product_id,
-        product_name,
-        product_price,
+        id as product_id,
+        name as product_name,
+        price as product_price,
         pro_price,
         list_price,
-        product_image,
+        image as product_image,
         badge_text,
         badge_color,
         badge_visible,
@@ -238,12 +267,12 @@ export const fetchProductsByCriteriaOptimized = async (
     let query = supabase
       .from('products')
       .select(`
-        product_id,
-        product_name,
-        product_price,
+        id as product_id,
+        name as product_name,
+        price as product_price,
         pro_price,
         list_price,
-        product_image,
+        image as product_image,
         badge_text,
         badge_color,
         badge_visible,
@@ -261,7 +290,7 @@ export const fetchProductsByCriteriaOptimized = async (
     
     // Filter by product IDs if specified
     if (config.product_ids && config.product_ids.length > 0) {
-      query = query.in('product_id', config.product_ids);
+      query = query.in('id', config.product_ids);
     }
     
     // Filter by featured if specified
@@ -274,10 +303,10 @@ export const fetchProductsByCriteriaOptimized = async (
       const ascending = config.sort_order === 'asc';
       switch (config.sort_by) {
         case 'name':
-          query = query.order('product_name', { ascending });
+          query = query.order('name', { ascending });
           break;
         case 'price':
-          query = query.order('product_price', { ascending });
+          query = query.order('price', { ascending });
           break;
         case 'created_at':
           query = query.order('created_at', { ascending });
