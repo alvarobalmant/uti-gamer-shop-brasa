@@ -1,7 +1,8 @@
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ProductLight } from '@/hooks/useProducts/productApiOptimized';
 import ProductCardOptimized from '../ProductCardOptimized';
-import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 
 interface ProductGridOptimizedProps {
@@ -25,10 +26,10 @@ const ProductGridOptimized: React.FC<ProductGridOptimizedProps> = ({
   itemsPerRow = 5,
   gap = 'gap-4'
 }) => {
-  const router = useRouter();
+  const navigate = useNavigate();
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [visibleProducts, setVisibleProducts] = useState<ProductLight[]>([]);
-  const [displayCount, setDisplayCount] = useState(20); // Começar com 20 produtos
+  const [displayCount, setDisplayCount] = useState(20);
 
   // Intersection Observer para carregamento infinito
   useEffect(() => {
@@ -42,7 +43,7 @@ const ProductGridOptimized: React.FC<ProductGridOptimizedProps> = ({
         }
       },
       {
-        rootMargin: '100px', // Carregar quando estiver 100px antes do final
+        rootMargin: '100px',
         threshold: 0.1
       }
     );
@@ -73,11 +74,11 @@ const ProductGridOptimized: React.FC<ProductGridOptimizedProps> = ({
   const handleCardClick = useCallback((productId: string) => {
     const product = products.find(p => p.id === productId);
     if (product?.slug) {
-      router.push(`/produto/${product.slug}`);
+      navigate(`/produto/${product.slug}`);
     } else {
-      router.push(`/produto/${productId}`);
+      navigate(`/produto/${productId}`);
     }
-  }, [products, router]);
+  }, [products, navigate]);
 
   const handleAddToCart = useCallback((product: ProductLight) => {
     if (onAddToCart) {
@@ -127,7 +128,7 @@ const ProductGridOptimized: React.FC<ProductGridOptimizedProps> = ({
             product={product}
             onCardClick={handleCardClick}
             onAddToCart={handleAddToCart}
-            priority={index < 6} // Primeiros 6 produtos são prioritários
+            priority={index < 6}
             index={index}
           />
         ))}
@@ -203,4 +204,3 @@ const ProductGridOptimized: React.FC<ProductGridOptimizedProps> = ({
 };
 
 export default ProductGridOptimized;
-

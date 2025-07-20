@@ -1,8 +1,9 @@
-// Sistema SIMPLIFICADO de scroll horizontal baseado no vertical que funciona
+
+// Sistema ROBUSTO de scroll horizontal com delay de 0.5s para garantir carregamento
 interface HorizontalScrollData {
   x: number;
   timestamp: number;
-  sectionId?: string; // Identificador específico da seção
+  sectionId?: string;
 }
 
 interface PageHorizontalScrolls {
@@ -16,7 +17,7 @@ class HorizontalScrollManager {
   private currentPath: string = '';
   
   constructor() {
-    console.log('[HorizontalScrollManager] ✅ Sistema iniciado');
+    console.log('[HorizontalScrollManager] ✅ Sistema iniciado com delay de 0.5s');
   }
 
   // Método principal para rastrear um elemento específico
@@ -106,7 +107,7 @@ class HorizontalScrollManager {
     }
   }
 
-  // Restaura posições horizontais para a página atual
+  // Restaura posições horizontais para a página atual COM DELAY DE 0.5s
   async restoreCurrentPageHorizontalPositions(): Promise<void> {
     if (!this.currentPath) return;
     
@@ -116,14 +117,19 @@ class HorizontalScrollManager {
       return;
     }
 
-    console.log(`[HorizontalScrollManager] 🎯 RESTAURANDO posições horizontais para ${this.currentPath}`);
+    console.log(`[HorizontalScrollManager] 🎯 INICIANDO restauração horizontal para ${this.currentPath} (aguardando 0.5s)`);
     
-    // Aguarda carregamento da página
-    await this.waitForPageLoad();
+    // DELAY DE 0.5s PARA GARANTIR QUE AS SEÇÕES CARREGUEM
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Aguarda carregamento completo da página
+    await this.waitForSectionsToLoad();
     
     this.isRestoring = true;
     
     try {
+      console.log(`[HorizontalScrollManager] 🔄 EXECUTANDO restauração após delay`);
+      
       // Restaura elementos rastreados primeiro
       for (const element of this.trackedElements) {
         const elementKey = this.generateElementKey(element);
@@ -136,21 +142,21 @@ class HorizontalScrollManager {
       
       // Depois tenta restaurar outros elementos por seletor
       const allScrollElements = document.querySelectorAll('.overflow-x-auto, .overflow-x-scroll');
-      allScrollElements.forEach((element, index) => {
-        const htmlElement = element as HTMLElement;
-        if (!this.trackedElements.has(htmlElement)) {
-          const fallbackKey = `element-${index}`;
+      for (let i = 0; i < allScrollElements.length; i++) {
+        const element = allScrollElements[i] as HTMLElement;
+        if (!this.trackedElements.has(element)) {
+          const fallbackKey = `element-${i}`;
           const scrollData = savedData[fallbackKey];
           if (scrollData) {
-            this.restoreElementPosition(htmlElement, scrollData, fallbackKey);
+            await this.restoreElementPosition(element, scrollData, fallbackKey);
           }
         }
-      });
+      }
       
     } finally {
       setTimeout(() => {
         this.isRestoring = false;
-        console.log(`[HorizontalScrollManager] ✅ Restauração horizontal completa para ${this.currentPath}`);
+        console.log(`[HorizontalScrollManager] ✅ Restauração horizontal COMPLETA para ${this.currentPath}`);
       }, 300);
     }
   }
@@ -167,35 +173,81 @@ class HorizontalScrollManager {
     // Verifica se funcionou após um delay
     setTimeout(() => {
       const currentX = element.scrollLeft;
-      const tolerance = 5;
+      const tolerance = 10;
       const success = Math.abs(currentX - scrollData.x) <= tolerance;
       
       if (success) {
         console.log(`[HorizontalScrollManager] ✅ SUCESSO! ${elementKey} restaurado: ${currentX}px`);
       } else {
-        console.log(`[HorizontalScrollManager] ⚠️ PARTIAL ${elementKey}. Target: ${scrollData.x}px, Atual: ${currentX}px`);
-        // Tenta mais uma vez
-        element.scrollLeft = scrollData.x;
+        console.log(`[HorizontalScrollManager] ⚠️ TENTATIVA 2 ${elementKey}. Target: ${scrollData.x}px, Atual: ${currentX}px`);
+        // Tenta mais uma vez com força
+        element.scrollTo({ left: scrollData.x, behavior: 'auto' });
+        
+        // Verifica novamente
+        setTimeout(() => {
+          const finalX = element.scrollLeft;
+          if (Math.abs(finalX - scrollData.x) <= tolerance) {
+            console.log(`[HorizontalScrollManager] ✅ RECUPERADO! ${elementKey}: ${finalX}px`);
+          } else {
+            console.log(`[HorizontalScrollManager] ❌ FALHOU ${elementKey}. Final: ${finalX}px`);
+          }
+        }, 100);
       }
-    }, 100);
+    }, 150);
   }
 
-  // Aguarda carregamento da página
-  private async waitForPageLoad(): Promise<void> {
+  // Aguarda carregamento das seções com produtos
+  private async waitForSectionsToLoad(): Promise<void> {
     return new Promise((resolve) => {
-      const checkContent = () => {
-        const hasScrollElements = document.querySelectorAll('.overflow-x-auto, .overflow-x-scroll').length > 0;
-        const isDocumentReady = document.readyState === 'complete';
-        
-        if (hasScrollElements || isDocumentReady) {
-          resolve();
-        } else {
-          setTimeout(checkContent, 50);
-        }
-      };
+      const maxWaitTime = 3000; // 3 segundos máximo
+      const checkInterval = 100; // Verifica a cada 100ms
+      let elapsed = 0;
       
-      // Aguarda mínimo de 500ms para estabilizar
-      setTimeout(checkContent, 500);
+      const checkSections = () => {
+        // Verifica se seções críticas existem e têm conteúdo
+        const criticalSelectors = [
+          '[data-section="featured-products"]',
+          '[data-section="related-products"]',
+          '.product-card',
+          '[data-testid="horizontal-scroll-featured-products"]',
+          '[data-testid="horizontal-scroll-related-products"]',
+          '.overflow-x-auto'
+        ];
+
+        const hasSections = criticalSelectors.some(selector => {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length === 0) return false;
+          
+          // Verifica se pelo menos um elemento tem largura significativa
+          return Array.from(elements).some(el => {
+            const rect = el.getBoundingClientRect();
+            return rect.width > 200; // Seções de produtos devem ter pelo menos 200px
+          });
+        });
+
+        // Verifica se há elementos com scroll horizontal disponível
+        const hasScrollableContent = Array.from(document.querySelectorAll('.overflow-x-auto')).some(el => {
+          const element = el as HTMLElement;
+          return element.scrollWidth > element.clientWidth;
+        });
+
+        if (hasSections || hasScrollableContent) {
+          console.log(`[HorizontalScrollManager] ✅ Seções carregadas após ${elapsed}ms`);
+          resolve();
+          return;
+        }
+
+        elapsed += checkInterval;
+        if (elapsed >= maxWaitTime) {
+          console.log(`[HorizontalScrollManager] ⏱️ Timeout de carregamento de seções após ${elapsed}ms - continuando mesmo assim`);
+          resolve();
+          return;
+        }
+
+        setTimeout(checkSections, checkInterval);
+      };
+
+      checkSections();
     });
   }
 
@@ -248,4 +300,3 @@ if (typeof window !== 'undefined') {
 }
 
 export default horizontalScrollManager;
-

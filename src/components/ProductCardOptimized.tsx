@@ -1,3 +1,4 @@
+
 import React, { useCallback, useState, memo } from 'react';
 import { ProductLight } from '@/hooks/useProducts/productApiOptimized';
 import { cn } from '@/lib/utils';
@@ -13,8 +14,8 @@ interface ProductCardOptimizedProps {
   product: ProductLight;
   onCardClick: (productId: string) => void;
   onAddToCart?: (product: ProductLight) => void;
-  priority?: boolean; // Para imagens críticas (above the fold)
-  index?: number; // Para debugging e analytics
+  priority?: boolean;
+  index?: number;
 }
 
 const ProductCardOptimized = memo<ProductCardOptimizedProps>(({ 
@@ -133,7 +134,9 @@ const ProductCardOptimized = memo<ProductCardOptimizedProps>(({
       {/* Badge */}
       {product.badge_visible && product.badge_text && (
         <ProductCardBadge 
-          product={productForComponents}
+          text={product.badge_text}
+          color={product.badge_color || '#22c55e'}
+          isVisible={product.badge_visible}
         />
       )}
 
@@ -171,4 +174,3 @@ const ProductCardOptimized = memo<ProductCardOptimizedProps>(({
 ProductCardOptimized.displayName = 'ProductCardOptimized';
 
 export default ProductCardOptimized;
-
