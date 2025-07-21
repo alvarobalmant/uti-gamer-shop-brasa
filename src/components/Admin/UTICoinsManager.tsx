@@ -12,7 +12,9 @@ import {
   Trash2,
   Save,
   X,
-  DollarSign
+  DollarSign,
+  Search,
+  Power
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +38,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CodeVerifier from './CodeVerifier';
 
 interface CoinRule {
   id: string;
@@ -139,30 +142,48 @@ const UTICoinsManager = () => {
   };
 
   const loadUsers = async () => {
-    const { data, error } = await supabase
-      .from('uti_coins')
-      .select(`
-        user_id,
-        balance,
-        total_earned,
-        total_spent,
-        profiles!inner(email, name)
-      `)
-      .order('total_earned', { ascending: false })
-      .limit(100);
-    
-    if (error) {
+    try {
+      const { data, error } = await supabase
+        .from('uti_coins')
+        .select(`
+          user_id,
+          balance,
+          total_earned,
+          total_spent
+        `)
+        .order('total_earned', { ascending: false })
+        .limit(100);
+      
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        // Buscar dados dos usuários separadamente
+        const userIds = data.map(u => u.user_id);
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, email, name')
+          .in('id', userIds);
+
+        const formattedUsers = data.map(u => {
+          const profile = profilesData?.find(p => p.id === u.user_id);
+          return {
+            user_id: u.user_id,
+            balance: u.balance,
+            total_earned: u.total_earned,
+            total_spent: u.total_spent,
+            email: profile?.email || 'Email não encontrado',
+            name: profile?.name || 'Nome não encontrado'
+          };
+        });
+        
+        setUsers(formattedUsers);
+      } else {
+        setUsers([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
       toast({ title: 'Erro', description: 'Erro ao carregar usuários', variant: 'destructive' });
-    } else {
-      const formattedUsers = data?.map(u => ({
-        user_id: u.user_id,
-        balance: u.balance,
-        total_earned: u.total_earned,
-        total_spent: u.total_spent,
-        email: (u.profiles as any)?.email,
-        name: (u.profiles as any)?.name
-      })) || [];
-      setUsers(formattedUsers);
+      setUsers([]);
     }
   };
 
@@ -342,9 +363,13 @@ const UTICoinsManager = () => {
       </div>
 
       <Tabs defaultValue="rules" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="rules" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="config" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
+            Sistema
+          </TabsTrigger>
+          <TabsTrigger value="rules" className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
             Regras
           </TabsTrigger>
           <TabsTrigger value="products" className="flex items-center gap-2">
@@ -355,9 +380,9 @@ const UTICoinsManager = () => {
             <Users className="w-4 h-4" />
             Usuários
           </TabsTrigger>
-          <TabsTrigger value="config" className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Configurações
+          <TabsTrigger value="verifier" className="flex items-center gap-2">
+            <Search className="w-4 h-4" />
+            Verificador
           </TabsTrigger>
         </TabsList>
 
@@ -604,35 +629,110 @@ const UTICoinsManager = () => {
 
         {/* Aba de Configurações */}
         <TabsContent value="config">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configurações do Sistema</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {configs.map((config) => (
-                  <div key={config.setting_key} className="border rounded-lg p-4">
-                    <Label className="font-medium">{config.setting_key}</Label>
-                    <Input
-                      value={config.setting_value}
-                      onChange={(e) => {
-                        // Atualizar configuração localmente
-                        setConfigs(prev => prev.map(c => 
-                          c.setting_key === config.setting_key 
-                            ? { ...c, setting_value: e.target.value }
-                            : c
-                        ));
-                      }}
-                      className="mt-2"
-                    />
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {config.description}
+          <div className="space-y-6">
+            {/* Sistema On/Off */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Power className="w-5 h-5" />
+                  Controle do Sistema
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h3 className="font-medium">Sistema UTI Coins</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Ativar ou desativar completamente o sistema de moedas
                     </p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <Switch
+                    checked={configs.find(c => c.setting_key === 'system_enabled')?.setting_value === '"true"'}
+                    onCheckedChange={async (checked) => {
+                      try {
+                        const { error } = await supabase
+                          .from('coin_system_config')
+                          .update({ setting_value: checked ? '"true"' : '"false"' })
+                          .eq('setting_key', 'system_enabled');
+                        
+                        if (error) throw error;
+                        
+                        setConfigs(prev => prev.map(c => 
+                          c.setting_key === 'system_enabled' 
+                            ? { ...c, setting_value: checked ? '"true"' : '"false"' }
+                            : c
+                        ));
+                        
+                        toast({ 
+                          title: 'Sucesso', 
+                          description: `Sistema ${checked ? 'ativado' : 'desativado'}!` 
+                        });
+                      } catch (error) {
+                        toast({ 
+                          title: 'Erro', 
+                          description: 'Erro ao atualizar configuração', 
+                          variant: 'destructive' 
+                        });
+                      }
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Outras Configurações */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações Avançadas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {configs.filter(c => c.setting_key !== 'system_enabled').map((config) => (
+                    <div key={config.setting_key} className="border rounded-lg p-4">
+                      <Label className="font-medium capitalize">{config.setting_key.replace('_', ' ')}</Label>
+                      <Input
+                        value={config.setting_value}
+                        onChange={async (e) => {
+                          try {
+                            const { error } = await supabase
+                              .from('coin_system_config')
+                              .update({ setting_value: e.target.value })
+                              .eq('setting_key', config.setting_key);
+                            
+                            if (error) throw error;
+                            
+                            // Atualizar configuração localmente
+                            setConfigs(prev => prev.map(c => 
+                              c.setting_key === config.setting_key 
+                                ? { ...c, setting_value: e.target.value }
+                                : c
+                            ));
+                            
+                            toast({ title: 'Sucesso', description: 'Configuração salva!' });
+                          } catch (error) {
+                            toast({ 
+                              title: 'Erro', 
+                              description: 'Erro ao salvar configuração', 
+                              variant: 'destructive' 
+                            });
+                          }
+                        }}
+                        className="mt-2"
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {config.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Aba do Verificador de Códigos */}
+        <TabsContent value="verifier">
+          <CodeVerifier />
         </TabsContent>
       </Tabs>
 

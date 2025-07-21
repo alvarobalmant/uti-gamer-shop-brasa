@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
+import { RedemptionModal } from '@/components/Retention/RedemptionModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,15 @@ const CoinsShop = () => {
   const { toast } = useToast();
   const [products, setProducts] = useState<CoinProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [redemptionModal, setRedemptionModal] = useState<{
+    isOpen: boolean;
+    code: string;
+    productName: string;
+  }>({
+    isOpen: false,
+    code: '',
+    productName: ''
+  });
 
   useEffect(() => {
     if (!user) {
@@ -65,7 +75,11 @@ const CoinsShop = () => {
   const handleRedeem = async (productId: string, productName: string) => {
     const result = await spendCoins(productId);
     if (result?.success) {
-      // Recarregar produtos para atualizar estoque
+      setRedemptionModal({
+        isOpen: true,
+        code: (result as any).redemption_code || 'ERRO',
+        productName: productName
+      });
       loadProducts();
     }
   };
@@ -241,6 +255,14 @@ const CoinsShop = () => {
           </div>
         )}
       </div>
+      
+      <RedemptionModal
+        isOpen={redemptionModal.isOpen}
+        onClose={() => setRedemptionModal(prev => ({ ...prev, isOpen: false }))}
+        redemptionCode={redemptionModal.code}
+        productName={redemptionModal.productName}
+        userEmail={user?.email}
+      />
     </div>
   );
 };
