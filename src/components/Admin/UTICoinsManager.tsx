@@ -174,13 +174,21 @@ const UTICoinsManager = () => {
   }, []);
 
   // Funções para regras
-  const saveRule = async (rule: Partial<CoinRule>) => {
+  const saveRule = async (rule: CoinRule) => {
     setLoading(true);
     try {
       if (rule.id) {
         const { error } = await supabase
           .from('coin_rules')
-          .update(rule)
+          .update({
+            action: rule.action,
+            amount: rule.amount,
+            description: rule.description,
+            max_per_day: rule.max_per_day,
+            max_per_month: rule.max_per_month,
+            is_active: rule.is_active,
+            cooldown_minutes: rule.cooldown_minutes
+          })
           .eq('id', rule.id);
         
         if (error) throw error;
@@ -188,7 +196,15 @@ const UTICoinsManager = () => {
       } else {
         const { error } = await supabase
           .from('coin_rules')
-          .insert(rule);
+          .insert({
+            action: rule.action,
+            amount: rule.amount,
+            description: rule.description,
+            max_per_day: rule.max_per_day,
+            max_per_month: rule.max_per_month,
+            is_active: rule.is_active,
+            cooldown_minutes: rule.cooldown_minutes
+          });
         
         if (error) throw error;
         toast({ title: 'Sucesso', description: 'Regra criada!' });
@@ -221,13 +237,23 @@ const UTICoinsManager = () => {
   };
 
   // Funções para produtos
-  const saveProduct = async (product: Partial<CoinProduct>) => {
+  const saveProduct = async (product: CoinProduct) => {
     setLoading(true);
     try {
       if (product.id) {
         const { error } = await supabase
           .from('coin_products')
-          .update(product)
+          .update({
+            name: product.name,
+            description: product.description,
+            cost: product.cost,
+            product_type: product.product_type,
+            product_data: product.product_data || {},
+            stock: product.stock,
+            is_active: product.is_active,
+            display_order: product.display_order,
+            image_url: product.image_url
+          })
           .eq('id', product.id);
         
         if (error) throw error;
@@ -235,7 +261,17 @@ const UTICoinsManager = () => {
       } else {
         const { error } = await supabase
           .from('coin_products')
-          .insert(product);
+          .insert({
+            name: product.name,
+            description: product.description,
+            cost: product.cost,
+            product_type: product.product_type,
+            product_data: product.product_data || {},
+            stock: product.stock,
+            is_active: product.is_active,
+            display_order: product.display_order || 0,
+            image_url: product.image_url
+          });
         
         if (error) throw error;
         toast({ title: 'Sucesso', description: 'Produto criado!' });
@@ -331,7 +367,17 @@ const UTICoinsManager = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Regras de Ganho de Moedas</CardTitle>
-                <Button onClick={() => setShowNewRule(true)}>
+                <Button onClick={() => {
+                  setEditingRule({
+                    id: '',
+                    action: '',
+                    amount: 0,
+                    description: '',
+                    is_active: true,
+                    cooldown_minutes: 0
+                  });
+                  setShowNewRule(true);
+                }}>
                   <Plus className="w-4 h-4 mr-2" />
                   Nova Regra
                 </Button>
@@ -395,7 +441,20 @@ const UTICoinsManager = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Produtos Resgatáveis</CardTitle>
-                <Button onClick={() => setShowNewProduct(true)}>
+                <Button onClick={() => {
+                  setEditingProduct({
+                    id: '',
+                    name: '',
+                    description: '',
+                    cost: 0,
+                    product_type: 'discount',
+                    product_data: {},
+                    is_active: true,
+                    display_order: 0,
+                    image_url: ''
+                  });
+                  setShowNewProduct(true);
+                }}>
                   <Plus className="w-4 h-4 mr-2" />
                   Novo Produto
                 </Button>
@@ -591,7 +650,14 @@ const UTICoinsManager = () => {
                 <Label>Ação</Label>
                 <Input
                   value={editingRule?.action || ''}
-                  onChange={(e) => setEditingRule(prev => ({ ...prev!, action: e.target.value }))}
+                  onChange={(e) => setEditingRule(prev => ({ 
+                    ...prev!, 
+                    action: e.target.value,
+                    amount: prev?.amount || 0,
+                    description: prev?.description || '',
+                    is_active: prev?.is_active !== undefined ? prev.is_active : true,
+                    cooldown_minutes: prev?.cooldown_minutes || 0
+                  }))}
                   placeholder="nome_da_acao"
                 />
               </div>

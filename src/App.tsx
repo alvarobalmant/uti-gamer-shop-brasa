@@ -89,6 +89,10 @@ const ClientArea = lazy(() => import("./pages/ClientArea"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const MeusCoins = lazy(() => import("./pages/MeusCoins"));
 
+// Lazy loading para páginas de UTI Coins
+const CoinsShop = lazy(() => import("./pages/CoinsShop"));
+const CoinsHistory = lazy(() => import("./pages/CoinsHistory"));
+
 // Otimizar QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -159,6 +163,10 @@ const App = () => {
                   <Route path="/area-cliente" element={<ClientArea />} />
                   <Route path="/lista-desejos" element={<WishlistPage />} />
                   <Route path="/meus-coins" element={<MeusCoins />} />
+                  
+                  {/* UTI Coins Routes */}
+                  <Route path="/coins/loja" element={<CoinsShop />} />
+                  <Route path="/coins/historico" element={<CoinsHistory />} />
 
                   {/* Admin Routes - Protected - MUST come before dynamic routes */}
                   <Route 
