@@ -128,6 +128,215 @@ export type Database = {
           },
         ]
       }
+      coin_products: {
+        Row: {
+          cost: number
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          product_data: Json
+          product_type: string
+          stock: number | null
+          updated_at: string
+        }
+        Insert: {
+          cost: number
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          product_data?: Json
+          product_type: string
+          stock?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          product_data?: Json
+          product_type?: string
+          stock?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      coin_redemptions: {
+        Row: {
+          cost: number
+          id: string
+          notes: string | null
+          processed_at: string | null
+          product_id: string
+          redeemed_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          cost: number
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          product_id: string
+          redeemed_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          cost?: number
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          product_id?: string
+          redeemed_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coin_redemptions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "coin_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coin_rules: {
+        Row: {
+          action: string
+          amount: number
+          cooldown_minutes: number | null
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          max_per_day: number | null
+          max_per_month: number | null
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          amount: number
+          cooldown_minutes?: number | null
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          max_per_day?: number | null
+          max_per_month?: number | null
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          amount?: number
+          cooldown_minutes?: number | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          max_per_day?: number | null
+          max_per_month?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      coin_system_config: {
+        Row: {
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      coin_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          reason: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          reason: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          reason?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_actions: {
+        Row: {
+          action: string
+          action_date: string
+          count: number
+          id: string
+          last_performed_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          action_date?: string
+          count?: number
+          id?: string
+          last_performed_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          action_date?: string
+          count?: number
+          id?: string
+          last_performed_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       homepage_layout: {
         Row: {
           created_at: string | null
@@ -1617,6 +1826,39 @@ export type Database = {
           },
         ]
       }
+      user_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_login_date: string | null
+          longest_streak: number
+          streak_multiplier: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_login_date?: string | null
+          longest_streak?: number
+          streak_multiplier?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_login_date?: string | null
+          longest_streak?: number
+          streak_multiplier?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_subscriptions: {
         Row: {
           created_at: string
@@ -1714,6 +1956,36 @@ export type Database = {
         }
         Relationships: []
       }
+      uti_coins: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_earned: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       view_product_with_tags: {
@@ -1797,6 +2069,16 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      earn_coins: {
+        Args: {
+          p_user_id: string
+          p_action: string
+          p_amount?: number
+          p_description?: string
+          p_metadata?: Json
+        }
+        Returns: Json
+      }
       get_active_subscription: {
         Args: { user_id: string }
         Returns: {
@@ -1843,9 +2125,17 @@ export type Database = {
         Args: { event_type: string; user_id?: string; details?: Json }
         Returns: undefined
       }
+      process_daily_login: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       promote_user_to_admin: {
         Args: { user_email: string }
         Returns: boolean
+      }
+      redeem_coin_product: {
+        Args: { p_user_id: string; p_product_id: string }
+        Returns: Json
       }
       redeem_pro_code: {
         Args: { p_code_id: string; p_user_id: string; p_end_date: string }

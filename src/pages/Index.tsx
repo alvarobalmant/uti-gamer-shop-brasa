@@ -13,6 +13,7 @@ import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionR
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
 import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
+import { useScrollCoins } from '@/hooks/useScrollCoins';
 
 // Lazy load AdminPanel para reduzir bundle inicial
 const AdminPanel = lazy(() => import('./Admin'));
@@ -37,6 +38,9 @@ const Index = React.memo(() => {
     specialSectionsLoading,
     handleRetryProducts
   } = useIndexPage();
+
+  // Ativar sistema de ganho de moedas por scroll
+  useScrollCoins();
 
   const handleAddToCart = useCallback((product: any, size?: string, color?: string) => {
     addToCart(product, size, color);
