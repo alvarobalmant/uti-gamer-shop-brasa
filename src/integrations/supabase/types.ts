@@ -1259,6 +1259,60 @@ export type Database = {
         }
         Relationships: []
       }
+      redemption_codes: {
+        Row: {
+          code: string
+          cost: number
+          created_at: string
+          id: string
+          product_id: string
+          redeemed_at: string | null
+          redeemed_by_admin: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          cost: number
+          created_at?: string
+          id?: string
+          product_id: string
+          redeemed_at?: string | null
+          redeemed_by_admin?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          cost?: number
+          created_at?: string
+          id?: string
+          product_id?: string
+          redeemed_at?: string | null
+          redeemed_by_admin?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemption_codes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "coin_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redemption_codes_redeemed_by_admin_fkey"
+            columns: ["redeemed_by_admin"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_cards: {
         Row: {
           created_at: string
@@ -2079,6 +2133,10 @@ export type Database = {
         }
         Returns: Json
       }
+      generate_redemption_code: {
+        Args: { p_user_id: string; p_product_id: string; p_cost: number }
+        Returns: Json
+      }
       get_active_subscription: {
         Args: { user_id: string }
         Returns: {
@@ -2133,6 +2191,10 @@ export type Database = {
         Args: { user_email: string }
         Returns: boolean
       }
+      redeem_code_admin: {
+        Args: { p_code: string; p_admin_id: string }
+        Returns: Json
+      }
       redeem_coin_product: {
         Args: { p_user_id: string; p_product_id: string }
         Returns: Json
@@ -2154,6 +2216,10 @@ export type Database = {
           is_admin_result: boolean
           can_read_profiles: boolean
         }[]
+      }
+      verify_redemption_code: {
+        Args: { p_code: string }
+        Returns: Json
       }
     }
     Enums: {
