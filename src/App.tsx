@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
 import { ProductProvider } from '@/contexts/ProductContext';
+import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
@@ -139,10 +140,11 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <CartProvider>
-          <ProductProvider>
-            <LoadingProvider>
-              <TooltipProvider>
+        <UTICoinsProvider>
+          <CartProvider>
+            <ProductProvider>
+              <LoadingProvider>
+                <TooltipProvider>
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
@@ -232,6 +234,7 @@ const App = () => {
     </LoadingProvider>
   </ProductProvider>
 </CartProvider>
+</UTICoinsProvider>
 </AuthProvider>
 </QueryClientProvider>
   );
