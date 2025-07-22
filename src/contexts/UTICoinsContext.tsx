@@ -216,13 +216,21 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     };
   }, [user?.id, loadUserData, loadRules]);
 
-  // Processar login diário de forma segura
+  // Processar login diário de forma segura (via edge function)
   const processDailyLogin = useCallback(async () => {
     if (!user) return null;
 
     try {
-      const { data, error } = await supabase.rpc('process_daily_login', {
-        p_user_id: user.id
+      console.log('[SECURE] Processing daily login');
+      
+      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
+        body: {
+          action: 'daily_login',
+          metadata: {
+            timestamp: new Date().toISOString(),
+            source: 'daily_login_process'
+          }
+        }
       });
 
       if (error) {
@@ -244,7 +252,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     }
   }, [user, loadUserData]);
 
-  // Ganhar moedas por ação de forma segura
+  // Ganhar moedas por ação de forma segura (via edge function)
   const earnCoins = useCallback(async (
     action: string, 
     amount?: number, 
@@ -254,17 +262,23 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     if (!user) return { success: false, message: 'Usuário não logado' };
 
     try {
-      const { data, error } = await supabase.rpc('earn_coins', {
-        p_user_id: user.id,
-        p_action: action,
-        p_amount: amount,
-        p_description: description,
-        p_metadata: metadata || {}
+      console.log(`[SECURE] Earning coins for action: ${action}`);
+      
+      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
+        body: {
+          action,
+          metadata: {
+            amount,
+            description,
+            ...metadata,
+            timestamp: new Date().toISOString()
+          }
+        }
       });
 
       if (error) {
-        console.warn('Erro ao ganhar moedas:', error);
-        return { success: false, message: 'Função não disponível' };
+        console.warn('Erro ao ganhar moedas (edge function):', error);
+        return { success: false, message: 'Erro de segurança' };
       }
 
       const result = data as any;
@@ -350,9 +364,13 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     return rule?.amount || 0;
   }, [rules]);
 
-  // Ganhar moedas por scroll de forma segura
+  // Ganhar moedas por scroll de forma segura (via edge function)
   const earnScrollCoins = useCallback(async () => {
-    return await earnCoins('scroll_page');
+    console.log('[SECURE] Earning scroll coins');
+    return await earnCoins('scroll_page', undefined, 'Scroll da página', {
+      source: 'scroll_tracking',
+      page: window.location.pathname
+    });
   }, [earnCoins]);
 
   const value: UTICoinsContextType = {

@@ -39,3 +39,6 @@ verify_jwt = true
 
 [functions.compress-images]
 verify_jwt = true
+
+[functions.secure-coin-actions]
+verify_jwt = true

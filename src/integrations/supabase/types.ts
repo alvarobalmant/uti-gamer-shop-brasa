@@ -1313,6 +1313,75 @@ export type Database = {
           },
         ]
       }
+      security_flags: {
+        Row: {
+          created_at: string
+          flag_type: string
+          id: string
+          metadata: Json | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          flag_type: string
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          flag_type?: string
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      security_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          suspicious: boolean | null
+          timestamp: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          suspicious?: boolean | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          suspicious?: boolean | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       service_cards: {
         Row: {
           created_at: string
@@ -2123,6 +2192,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      cleanup_old_security_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       earn_coins: {
         Args: {
           p_user_id: string
@@ -2177,6 +2250,10 @@ export type Database = {
       }
       is_user_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_user_flagged: {
+        Args: { p_user_id: string }
         Returns: boolean
       }
       log_security_event: {
