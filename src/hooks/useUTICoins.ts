@@ -18,10 +18,13 @@ export const useUTICoins = () => {
 
   // Configurar listener em tempo real para atualizações do saldo
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
+    // Criar canal único por usuário para evitar conflitos
+    const channelName = `uti_coins_${user.id}`;
+    
     const channel = supabase
-      .channel('uti_coins_realtime')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -62,16 +65,16 @@ export const useUTICoins = () => {
         },
         (payload) => {
           console.log('New coin transaction:', payload);
-          // Recarregar dados quando houver nova transação
-          loadUserData();
+          // Apenas atualizar transações quando necessário via realtime
         }
       )
       .subscribe();
 
     return () => {
+      console.log('Removendo canal realtime:', channelName);
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user?.id]); // Apenas user.id como dependência
 
   // Carregar dados do usuário logado de forma segura
   const loadUserData = useCallback(async () => {
