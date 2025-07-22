@@ -14,14 +14,20 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
   const navigate = useNavigate();
   const { user } = useAuth();
   const { coins, transactions, loading, balanceChanged, processDailyLogin } = useUTICoins();
-
-  // Processar login diário ao montar o componente
+  const [previousBalance, setPreviousBalance] = useState(coins.balance);
   useEffect(() => {
     if (user) {
       processDailyLogin();
     }
   }, [user, processDailyLogin]);
-  
+
+  // Detectar mudança no saldo para animação local
+  useEffect(() => {
+    if (coins.balance !== previousBalance) {
+      setPreviousBalance(coins.balance);
+    }
+  }, [coins.balance, previousBalance]);
+   
   // Calcular nível baseado no total de moedas ganhas
   const calculateLevel = (totalEarned: number) => {
     if (totalEarned < 100) return { 
@@ -90,18 +96,9 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
 
   return (
     <div className={`relative ${className}`}>
-      <motion.button
+      <button
         onClick={() => setShowPopover(!showPopover)}
         className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg"
-        animate={balanceChanged ? {
-          scale: [1, 1.1, 1],
-          boxShadow: [
-            "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-            "0 10px 15px -3px rgba(251, 191, 36, 0.4)",
-            "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-          ]
-        } : {}}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
       >
         <motion.div
           animate={balanceChanged ? { rotate: [0, 360] } : {}}
@@ -109,17 +106,30 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
         >
           <Coins className="w-4 h-4" />
         </motion.div>
+        
         <motion.span 
+          key={coins.balance} // Force re-render when balance changes
           className="font-semibold"
-          animate={balanceChanged ? { 
-            color: ["#ffffff", "#fef3c7", "#ffffff"] 
-          } : {}}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
+          initial={{ 
+            scale: 1, 
+            color: "#ffffff" 
+          }}
+          animate={{ 
+            scale: [1, 1.2, 1], 
+            color: ["#ffffff", "#fef3c7", "#ffffff"]
+          }}
+          transition={{ 
+            duration: 0.8, 
+            ease: "easeInOut",
+            scale: { duration: 0.6 },
+            color: { duration: 0.8 }
+          }}
         >
           {coins.balance.toLocaleString()}
         </motion.span>
+        
         <span className="text-xs opacity-90">UTI Coins</span>
-      </motion.button>
+      </button>
 
       {showPopover && (
         <>
