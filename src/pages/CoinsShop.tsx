@@ -4,11 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
 import { RedemptionModal } from '@/components/Retention/RedemptionModal';
+<<<<<<< HEAD
 import { RedemptionHistoryModal } from '@/components/Retention/RedemptionHistoryModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Coins, Gift, Star, Package, Zap, History } from 'lucide-react';
+=======
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Coins, Gift, Star, Package, Zap } from 'lucide-react';
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
 import { useToast } from '@/hooks/use-toast';
 
 interface CoinProduct {
@@ -39,7 +46,10 @@ const CoinsShop = () => {
     code: '',
     productName: ''
   });
+<<<<<<< HEAD
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
+=======
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
 
   useEffect(() => {
     if (!user) {
@@ -131,8 +141,13 @@ const CoinsShop = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+<<<<<<< HEAD
         <div className="container mx-auto px-4 py-4 md:py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+=======
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
@@ -144,6 +159,7 @@ const CoinsShop = () => {
                 Voltar
               </Button>
               <div>
+<<<<<<< HEAD
                 <h1 className="text-xl md:text-3xl font-bold flex items-center gap-2">
                   <Gift className="w-6 h-6 md:w-8 md:h-8" />
                   Loja UTI Coins
@@ -174,6 +190,24 @@ const CoinsShop = () => {
                   </div>
                   <div className="text-xs md:text-sm opacity-90">Seu saldo</div>
                 </div>
+=======
+                <h1 className="text-3xl font-bold flex items-center gap-2">
+                  <Gift className="w-8 h-8" />
+                  Loja UTI Coins
+                </h1>
+                <p className="opacity-90">Troque suas moedas por recompensas incríveis!</p>
+              </div>
+            </div>
+            
+            {/* Saldo atual */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+              <div className="text-center">
+                <div className="text-2xl font-bold flex items-center gap-2">
+                  <Coins className="w-6 h-6" />
+                  {coins.balance.toLocaleString()}
+                </div>
+                <div className="text-sm opacity-90">Seu saldo</div>
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
               </div>
             </div>
           </div>
@@ -181,6 +215,7 @@ const CoinsShop = () => {
       </div>
 
       {/* Produtos */}
+<<<<<<< HEAD
       <div className="container mx-auto px-4 py-4 md:py-8">
         {products.length === 0 ? (
           <div className="text-center py-16">
@@ -189,11 +224,25 @@ const CoinsShop = () => {
               Nenhum produto disponível
             </h2>
             <p className="text-gray-500 text-sm md:text-base">
+=======
+      <div className="container mx-auto px-4 py-8">
+        {products.length === 0 ? (
+          <div className="text-center py-16">
+            <Gift className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-gray-600 mb-2">
+              Nenhum produto disponível
+            </h2>
+            <p className="text-gray-500">
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
               Novos produtos serão adicionados em breve!
             </p>
           </div>
         ) : (
+<<<<<<< HEAD
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+=======
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
             {products.map((product) => (
               <Card key={product.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
@@ -201,6 +250,7 @@ const CoinsShop = () => {
                     <div className="flex items-center gap-2 text-yellow-600">
                       {getProductIcon(product.product_type)}
                     </div>
+<<<<<<< HEAD
                     <Badge className={`text-xs ${getProductTypeColor(product.product_type)}`}>
                       {getProductTypeLabel(product.product_type)}
                     </Badge>
@@ -208,18 +258,35 @@ const CoinsShop = () => {
                   <CardTitle className="text-base md:text-lg">{product.name}</CardTitle>
                   {product.description && (
                     <p className="text-xs md:text-sm text-muted-foreground">
+=======
+                    <Badge className={getProductTypeColor(product.product_type)}>
+                      {getProductTypeLabel(product.product_type)}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg">{product.name}</CardTitle>
+                  {product.description && (
+                    <p className="text-sm text-muted-foreground">
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
                       {product.description}
                     </p>
                   )}
                 </CardHeader>
                 
+<<<<<<< HEAD
                 <CardContent className="pt-0">
+=======
+                <CardContent>
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
                   {product.image_url && (
                     <div className="mb-4">
                       <img
                         src={product.image_url}
                         alt={product.name}
+<<<<<<< HEAD
                         className="w-full h-24 md:h-32 object-cover rounded-lg"
+=======
+                        className="w-full h-32 object-cover rounded-lg"
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
                       />
                     </div>
                   )}
@@ -227,9 +294,15 @@ const CoinsShop = () => {
                   <div className="space-y-3">
                     {/* Preço */}
                     <div className="flex items-center justify-between">
+<<<<<<< HEAD
                       <span className="text-xs md:text-sm text-muted-foreground">Custo:</span>
                       <div className="flex items-center gap-1 font-semibold text-yellow-600 text-sm md:text-base">
                         <Coins className="w-3 h-3 md:w-4 md:h-4" />
+=======
+                      <span className="text-sm text-muted-foreground">Custo:</span>
+                      <div className="flex items-center gap-1 font-semibold text-yellow-600">
+                        <Coins className="w-4 h-4" />
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
                         {product.cost.toLocaleString()}
                       </div>
                     </div>
@@ -237,8 +310,13 @@ const CoinsShop = () => {
                     {/* Estoque */}
                     {product.stock !== null && (
                       <div className="flex items-center justify-between">
+<<<<<<< HEAD
                         <span className="text-xs md:text-sm text-muted-foreground">Estoque:</span>
                         <span className={`text-xs md:text-sm font-medium ${
+=======
+                        <span className="text-sm text-muted-foreground">Estoque:</span>
+                        <span className={`text-sm font-medium ${
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
                           product.stock <= 0 ? 'text-red-500' : 
                           product.stock <= 5 ? 'text-yellow-500' : 'text-green-500'
                         }`}>
@@ -254,8 +332,12 @@ const CoinsShop = () => {
                         coins.balance < product.cost || 
                         (product.stock !== null && product.stock <= 0)
                       }
+<<<<<<< HEAD
                       className="w-full text-sm md:text-base py-2 md:py-3"
                       size="sm"
+=======
+                      className="w-full"
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
                     >
                       {coins.balance < product.cost ? (
                         'Saldo Insuficiente'
@@ -280,12 +362,15 @@ const CoinsShop = () => {
         productName={redemptionModal.productName}
         userEmail={user?.email}
       />
+<<<<<<< HEAD
       
       <RedemptionHistoryModal
         isOpen={historyModalOpen}
         onClose={() => setHistoryModalOpen(false)}
         userId={user?.id}
       />
+=======
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
     </div>
   );
 };

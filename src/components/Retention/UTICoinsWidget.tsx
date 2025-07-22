@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Coins, TrendingUp, Gift, Star } from 'lucide-react';
+<<<<<<< HEAD
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+=======
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -11,9 +14,14 @@ interface UTICoinsWidgetProps {
 
 export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }) => {
   const [showPopover, setShowPopover] = useState(false);
+<<<<<<< HEAD
   const navigate = useNavigate();
   const { user } = useAuth();
   const { coins, transactions, loading, balanceChanged, processDailyLogin } = useUTICoins();
+=======
+  const { user } = useAuth();
+  const { coins, transactions, loading, processDailyLogin } = useUTICoins();
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
 
   // Processar login diário ao montar o componente
   useEffect(() => {
@@ -103,6 +111,7 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
         } : {}}
         transition={{ duration: 0.6, ease: "easeInOut" }}
       >
+<<<<<<< HEAD
         <motion.div
           animate={balanceChanged ? { rotate: [0, 360] } : {}}
           transition={{ duration: 0.6, ease: "easeInOut" }}
@@ -118,6 +127,10 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
         >
           {coins.balance.toLocaleString()}
         </motion.span>
+=======
+        <Coins className="w-4 h-4" />
+        <span className="font-semibold">{coins.balance.toLocaleString()}</span>
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
         <span className="text-xs opacity-90">UTI Coins</span>
       </motion.button>
 
@@ -211,7 +224,11 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
                 <button 
                   onClick={() => {
                     setShowPopover(false);
+<<<<<<< HEAD
                     navigate('/coins/loja');
+=======
+                    window.location.href = '/coins/loja';
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
                   }}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 flex items-center justify-center gap-2"
                 >
@@ -222,7 +239,11 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
                 <button 
                   onClick={() => {
                     setShowPopover(false);
+<<<<<<< HEAD
                     navigate('/coins/historico');
+=======
+                    window.location.href = '/coins/historico';
+>>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
                   }}
                   className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200"
                 >
