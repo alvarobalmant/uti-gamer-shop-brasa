@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import GlobalCartIcon from '@/components/GlobalCart/GlobalCartIcon';
-import { UTICoinsWidget } from '@/components/Retention/UTICoinsWidget';
+import { CoinAnimatedWidget } from '@/components/Retention/CoinAnimatedWidget';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -114,7 +114,7 @@ const HeaderActionsEnhanced = ({
       )}
 
       {/* UTI Coins Widget - Only for logged users */}
-      {user && <UTICoinsWidget className="hidden md:block" />}
+      {user && <CoinAnimatedWidget className="hidden md:block" />}
 
       {/* Global Shopping Cart Icon - Always visible */}
       <GlobalCartIcon onCartOpen={onCartOpen} /> 

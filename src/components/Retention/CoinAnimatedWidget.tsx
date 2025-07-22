@@ -1,19 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Coins, TrendingUp, Gift, Star } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface UTICoinsWidgetProps {
   className?: string;
 }
 
-export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }) => {
+interface CoinAnimation {
+  id: string;
+  amount: number;
+}
+
+export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }) => {
   const [showPopover, setShowPopover] = useState(false);
-  const navigate = useNavigate();
+  const [coinAnimations, setCoinAnimations] = useState<CoinAnimation[]>([]);
   const { user } = useAuth();
-  const { coins, transactions, loading, balanceChanged, processDailyLogin } = useUTICoins();
+  const { coins, transactions, loading, processDailyLogin } = useUTICoins();
+  const previousBalance = useRef(coins.balance);
+
+  // Detectar mudança no saldo para animar moedas
+  useEffect(() => {
+    if (previousBalance.current !== undefined && coins.balance > previousBalance.current) {
+      const diff = coins.balance - previousBalance.current;
+      const animationId = Date.now().toString();
+      
+      setCoinAnimations(prev => [...prev, { id: animationId, amount: diff }]);
+      
+      // Remover animação após completar
+      setTimeout(() => {
+        setCoinAnimations(prev => prev.filter(anim => anim.id !== animationId));
+      }, 1500);
+    }
+    previousBalance.current = coins.balance;
+  }, [coins.balance]);
 
   // Processar login diário ao montar o componente
   useEffect(() => {
@@ -90,36 +111,43 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
 
   return (
     <div className={`relative ${className}`}>
-      <motion.button
+      <button
         onClick={() => setShowPopover(!showPopover)}
-        className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg"
-        animate={balanceChanged ? {
-          scale: [1, 1.1, 1],
-          boxShadow: [
-            "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-            "0 10px 15px -3px rgba(251, 191, 36, 0.4)",
-            "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-          ]
-        } : {}}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
+        className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden"
       >
-        <motion.div
-          animate={balanceChanged ? { rotate: [0, 360] } : {}}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
-        >
-          <Coins className="w-4 h-4" />
-        </motion.div>
-        <motion.span 
-          className="font-semibold"
-          animate={balanceChanged ? { 
-            color: ["#ffffff", "#fef3c7", "#ffffff"] 
-          } : {}}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
-        >
-          {coins.balance.toLocaleString()}
-        </motion.span>
+        <Coins className="w-4 h-4" />
+        <div className="relative">
+          <motion.span 
+            key={coins.balance}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="font-semibold"
+          >
+            {coins.balance.toLocaleString()}
+          </motion.span>
+          
+          {/* Animações de moedas caindo */}
+          <AnimatePresence>
+            {coinAnimations.map((animation) => (
+              <motion.div
+                key={animation.id}
+                initial={{ y: -20, x: 0, opacity: 1, scale: 1 }}
+                animate={{ y: 30, x: Math.random() * 20 - 10, opacity: 0, scale: 0.5 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                className="absolute top-0 left-1/2 transform -translate-x-1/2 pointer-events-none"
+              >
+                <div className="flex items-center gap-1 text-yellow-200 font-bold text-sm">
+                  <Coins className="w-3 h-3" />
+                  +{animation.amount}
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
         <span className="text-xs opacity-90">UTI Coins</span>
-      </motion.button>
+      </button>
 
       {showPopover && (
         <>
@@ -211,7 +239,7 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
                 <button 
                   onClick={() => {
                     setShowPopover(false);
-                    navigate('/coins/loja');
+                    window.location.href = '/coins/loja';
                   }}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 flex items-center justify-center gap-2"
                 >
@@ -222,7 +250,7 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
                 <button 
                   onClick={() => {
                     setShowPopover(false);
-                    navigate('/coins/historico');
+                    window.location.href = '/coins/historico';
                   }}
                   className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200"
                 >

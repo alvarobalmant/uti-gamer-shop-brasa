@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
 import SectionTitle from '@/components/SectionTitle';
 import { cn } from '@/lib/utils';
+import { useHorizontalScrollTracking } from '@/hooks/useHorizontalScrollTracking';
 
 interface RelatedProductsSectionProps {
   product: Product;
@@ -20,7 +21,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const location = useLocation();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [animateProducts, setAnimateProducts] = useState(true);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useHorizontalScrollTracking('related-products', true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 

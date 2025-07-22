@@ -8,6 +8,7 @@ import ProductCard from "@/components/ProductCard";
 import { Product } from "@/hooks/useProducts";
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
+import { useHorizontalScrollTracking } from "@/hooks/useHorizontalScrollTracking";
 
 interface FeaturedProductsSectionProps {
   products: Product[];
@@ -28,8 +29,7 @@ const FeaturedProductsSection = ({
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [animateProducts, setAnimateProducts] = useState(true);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useHorizontalScrollTracking('featured-products', true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
@@ -75,12 +75,6 @@ const FeaturedProductsSection = ({
       });
     }
   };
-
-  useEffect(() => {
-    setAnimateProducts(false);
-    const timer = setTimeout(() => setAnimateProducts(true), 50);
-    return () => clearTimeout(timer);
-  }, [products]);
 
   // Check scroll buttons when products change or component mounts
   useEffect(() => {
@@ -189,15 +183,8 @@ const FeaturedProductsSection = ({
                 {products.map((product, index) => (
                   <div
                     key={product.id}
-                    className={cn(
-                      "flex-shrink-0",
-                      "transition-all duration-300 ease-in-out",
-                      animateProducts
-                        ? "opacity-100 translate-y-0"
-                        : "opacity-0 translate-y-4"
-                    )}
+                    className="flex-shrink-0"
                     style={{
-                      transitionDelay: animateProducts ? `${index * 75}ms` : "0ms",
                       width: "200px", // Fixed width for consistent card sizing
                       flexShrink: 0 // Prevent cards from shrinking
                     }}

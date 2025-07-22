@@ -20,7 +20,8 @@ import ProductImageManager from '@/pages/Admin/ProductImageManager';
 import StorageManager from './StorageManager';
 import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText } from 'lucide-react';
+import UTICoinsManager from './UTICoinsManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -45,6 +46,7 @@ export const AdminPanel = () => {
     { id: 'quick_links', label: 'Links Rápidos', icon: Link },
     { id: 'services', label: 'Serviços', icon: Briefcase },
     { id: 'tags', label: 'Tags', icon: Tag },
+    { id: 'uti_coins', label: 'UTI Coins', icon: Coins },
     { id: 'users', label: 'Usuários/PRO', icon: Users },
     { id: 'settings', label: 'Configurações', icon: Cog },
   ];
@@ -212,6 +214,10 @@ export const AdminPanel = () => {
 
               <TabsContent value="tags" className="mt-0">
                 <TagManager />
+              </TabsContent>
+
+              <TabsContent value="uti_coins" className="mt-0">
+                <UTICoinsManager />
               </TabsContent>
 
               <TabsContent value="users" className="mt-0">

@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigationType, NavigationType } from 'react-router-dom';
-import scrollManager from '@/lib/scrollRestorationManager'; // Assuming default export
+import scrollManager from '@/lib/scrollRestorationManager';
+import horizontalScrollManager from '@/lib/horizontalScrollManager';
 
 /**
  * Hook para gerenciar a restauração da posição de scroll entre navegações.
- * Implementado com base nas melhores práticas e guias fornecidos.
+ * Implementado com sistema robusto de delay de 0.5s para scroll horizontal.
  */
 export const useScrollRestoration = () => {
   const location = useLocation();
@@ -33,6 +34,9 @@ export const useScrollRestoration = () => {
       restoreTimeoutRef.current = null;
     }
 
+    // Set current page for tracking in horizontal scroll system
+    horizontalScrollManager.setCurrentPage(currentPathKey);
+
     // SALVA IMEDIATAMENTE a posição da página anterior antes de qualquer coisa
     if (previousPathKey !== currentPathKey && !scrollManager.getIsRestoring()) {
       scrollManager.savePosition(previousPathKey, 'navigation sync save');
@@ -55,8 +59,14 @@ export const useScrollRestoration = () => {
         const restored = await scrollManager.restorePosition(
           currentPathKey, 
           'POP navigation',
-          isHomepage // Aguardar carregamento apenas na homepage
+          isHomepage
         );
+        
+        // RESTAURA POSIÇÕES HORIZONTAIS APÓS SCROLL VERTICAL COM DELAY DE 0.5s
+        console.log(`[ScrollRestoration] 📐 Iniciando restauração horizontal com delay de 0.5s`);
+        setTimeout(async () => {
+          await horizontalScrollManager.restoreCurrentPageHorizontalPositions();
+        }, 100); // Pequeno delay adicional após o vertical
         
         if (!restored) {
           console.log(`[ScrollRestoration] ❌ Restauração falhou para ${currentPathKey}. Aplicando fallback.`);
@@ -72,7 +82,7 @@ export const useScrollRestoration = () => {
         }
         
         restoreTimeoutRef.current = null;
-      }, isHomepage ? 250 : 350); // Delay otimizado
+      }, isHomepage ? 300 : 400); // Delay otimizado
 
     } else {
       // Nova navegação (PUSH ou REPLACE)
@@ -100,7 +110,7 @@ export const useScrollRestoration = () => {
       }
     };
 
-  }, [location.pathname, location.search, navigationType]); // Depende do pathname e search para identificar a página única
+  }, [location.pathname, location.search, navigationType]);
 
   // Efeito para salvar a posição durante o scroll (inteligente)
   useEffect(() => {
@@ -109,11 +119,10 @@ export const useScrollRestoration = () => {
     let lastSavedPosition = 0;
 
     const handleScroll = () => {
-      // Não salva enquanto restaura ou se a posição não mudou significativamente
       if (scrollManager.getIsRestoring()) return;
       
       const currentY = window.scrollY;
-      if (Math.abs(currentY - lastSavedPosition) < 50) return; // Evita saves desnecessários
+      if (Math.abs(currentY - lastSavedPosition) < 50) return;
 
       if (scrollDebounceTimer) {
         clearTimeout(scrollDebounceTimer);
@@ -122,7 +131,7 @@ export const useScrollRestoration = () => {
       scrollDebounceTimer = window.setTimeout(() => {
         scrollManager.savePosition(currentPathKey, 'intelligent scroll');
         lastSavedPosition = currentY;
-      }, 400); // Debounce aumentado para evitar conflitos
+      }, 400);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -134,7 +143,6 @@ export const useScrollRestoration = () => {
       }
       window.removeEventListener('scroll', handleScroll);
       
-      // Salva uma última vez ao desmontar/mudar de rota APENAS se não estiver restaurando
       if (!scrollManager.getIsRestoring()) {
         scrollManager.savePosition(currentPathKey, 'cleanup save');
         console.log(`[ScrollRestoration] Final position saved for: ${currentPathKey}`);
@@ -171,4 +179,3 @@ export const useScrollRestoration = () => {
   }, [location.pathname, location.search]);
 
 };
-

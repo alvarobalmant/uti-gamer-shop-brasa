@@ -1,24 +1,55 @@
 import React, { useState } from 'react';
 import { Coins, X, Gift, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useUTICoins } from '@/hooks/useUTICoins';
+import { useToast } from '@/hooks/use-toast';
 
 export const FloatingActionButton: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isClaimingDaily, setIsClaimingDaily] = useState(false);
+  const navigate = useNavigate();
   const { user } = useAuth();
+  const { coins, processDailyLogin } = useUTICoins();
+  const { toast } = useToast();
 
   // Só mostrar para usuários logados
   if (!user) return null;
 
-  // Dados mock
-  const mockData = {
-    balance: 1250,
-    dailyBonus: 10,
-    canClaimDaily: true
-  };
-
-  const handleClaimDaily = () => {
-    // Simular claim do bônus diário
-    alert(`Você ganhou ${mockData.dailyBonus} UTI Coins pelo login diário!`);
+  const handleClaimDaily = async () => {
+    if (isClaimingDaily) return;
+    
+    setIsClaimingDaily(true);
+    try {
+      const result = await processDailyLogin();
+      
+      if (result?.success) {
+        toast({
+          title: "Bônus Diário Resgatado!",
+          description: `Você ganhou ${result.coins_earned} UTI Coins!`,
+        });
+      } else if (result?.message) {
+        toast({
+          title: "Bônus Diário",
+          description: result.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Bônus Diário",
+          description: "Você já resgatou seu bônus diário hoje!",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao resgatar bônus diário. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsClaimingDaily(false);
+    }
   };
 
   return (
@@ -48,7 +79,7 @@ export const FloatingActionButton: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm opacity-90">Seu saldo</p>
-                  <p className="text-2xl font-bold">{mockData.balance.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{coins.balance.toLocaleString()}</p>
                 </div>
                 <Coins className="w-8 h-8 text-yellow-200" />
               </div>
@@ -56,18 +87,35 @@ export const FloatingActionButton: React.FC = () => {
 
             {/* Ações rápidas */}
             <div className="space-y-2">
-              {mockData.canClaimDaily && (
-                <button
-                  onClick={handleClaimDaily}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                >
-                  <Gift className="w-4 h-4" />
-                  Resgatar Bônus Diário (+{mockData.dailyBonus})
-                </button>
-              )}
+              <button
+                onClick={handleClaimDaily}
+                disabled={isClaimingDaily}
+                className={`w-full py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                  isClaimingDaily 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-green-500 hover:bg-green-600'
+                } text-white`}
+              >
+                <Gift className="w-4 h-4" />
+                {isClaimingDaily ? 'Resgatando...' : 'Resgatar Bônus Diário (+10)'}
+              </button>
               
               <button
-                onClick={() => window.location.href = '/meus-coins'}
+                onClick={() => {
+                  setIsExpanded(false);
+                  navigate('/coins/loja');
+                }}
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <Gift className="w-4 h-4" />
+                Loja de Recompensas
+              </button>
+              
+              <button
+                onClick={() => {
+                  setIsExpanded(false);
+                  navigate('/coins/historico');
+                }}
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <TrendingUp className="w-4 h-4" />

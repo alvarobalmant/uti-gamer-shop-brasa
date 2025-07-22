@@ -18,7 +18,7 @@ const HorizontalScrollSection: React.FC<HorizontalScrollSectionProps> = ({
   className = '',
   autoTrack = true
 }) => {
-  const elementRef = useHorizontalScrollTracking(autoTrack) as React.RefObject<HTMLDivElement>;
+  const elementRef = useHorizontalScrollTracking(sectionId, autoTrack) as React.RefObject<HTMLDivElement>;
 
   return (
     <div

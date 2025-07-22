@@ -1,398 +1,264 @@
-<<<<<<< HEAD
-// Sistema de scroll horizontal ULTRA SIMPLES baseado no vertical que funciona
-=======
-// Sistema de scroll horizontal para seções de produtos
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
+
+// Sistema ROBUSTO de scroll horizontal com delay de 0.5s para garantir carregamento
 interface HorizontalScrollData {
   x: number;
   timestamp: number;
+  sectionId?: string;
 }
 
 interface PageHorizontalScrolls {
-<<<<<<< HEAD
-  [elementIndex: string]: HorizontalScrollData;
-=======
-  [sectionId: string]: HorizontalScrollData;
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
+  [elementKey: string]: HorizontalScrollData;
 }
 
 class HorizontalScrollManager {
   private horizontalPositions = new Map<string, PageHorizontalScrolls>();
-  private saveInterval: number | null = null;
-  private currentPath: string = '';
-<<<<<<< HEAD
-  private isRestoring = false;
-  
-=======
   private trackedElements = new Set<HTMLElement>();
   private isRestoring = false;
-
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
+  private currentPath: string = '';
+  
   constructor() {
-    this.initializeSaveInterval();
+    console.log('[HorizontalScrollManager] ✅ Sistema iniciado com delay de 0.5s');
   }
 
-<<<<<<< HEAD
-  // Inicia o salvamento automático (IGUAL AO VERTICAL)
-=======
-  // Inicia o salvamento automático a cada 20ms
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
-  private initializeSaveInterval(): void {
-    if (this.saveInterval) {
-      clearInterval(this.saveInterval);
+  // Método principal para rastrear um elemento específico
+  trackElement(element: HTMLElement, sectionId?: string): void {
+    if (!element || this.trackedElements.has(element)) return;
+    
+    this.trackedElements.add(element);
+    
+    // Adiciona listener de scroll para salvar posição automaticamente
+    const savePosition = () => {
+      if (this.isRestoring || !this.currentPath) return;
+      this.saveElementPosition(element, sectionId);
+    };
+    
+    element.addEventListener('scroll', savePosition, { passive: true });
+    
+    // Salva referência para cleanup
+    (element as any).__horizontalScrollCleanup = () => {
+      element.removeEventListener('scroll', savePosition);
+      this.trackedElements.delete(element);
+    };
+    
+    console.log(`[HorizontalScrollManager] 📍 Elemento rastreado: ${sectionId || 'unnamed'}`);
+  }
+
+  // Para de rastrear um elemento
+  untrackElement(element: HTMLElement): void {
+    if (!element || !this.trackedElements.has(element)) return;
+    
+    const cleanup = (element as any).__horizontalScrollCleanup;
+    if (cleanup) {
+      cleanup();
+      delete (element as any).__horizontalScrollCleanup;
     }
     
-    this.saveInterval = window.setInterval(() => {
-<<<<<<< HEAD
-      this.saveCurrentHorizontalPositions();
-    }, 150);
-    
-    console.log('[HorizontalScrollManager] ✅ Sistema iniciado - salvamento a cada 150ms');
+    console.log(`[HorizontalScrollManager] 🚫 Elemento removido do rastreamento`);
   }
 
-  // Salva posições horizontais (SIMPLIFICADO)
-  private saveCurrentHorizontalPositions(): void {
-    if (this.isRestoring || !this.currentPath) return;
-
-    const scrollElements = document.querySelectorAll('.overflow-x-auto, .overflow-x-scroll');
-    const pageScrolls: PageHorizontalScrolls = {};
+  // Salva posição de um elemento específico
+  private saveElementPosition(element: HTMLElement, sectionId?: string): void {
+    if (!element || !this.currentPath) return;
     
-    scrollElements.forEach((element, index) => {
-      const htmlElement = element as HTMLElement;
-      
-      // Só salva se tem scroll real
-      if (htmlElement.scrollWidth > htmlElement.clientWidth) {
-        pageScrolls[`element-${index}`] = {
-          x: htmlElement.scrollLeft,
-=======
-      this.saveAllHorizontalPositions();
-    }, 20);
+    // Só salva se o elemento tem scroll horizontal
+    if (element.scrollWidth <= element.clientWidth) return;
     
-    console.log('[HorizontalScrollManager] ✅ Sistema horizontal iniciado - salvamento a cada 20ms');
-  }
-
-  // Salva todas as posições horizontais da página atual
-  private saveAllHorizontalPositions(): void {
-    if (this.isRestoring || !this.currentPath) return;
-
-    const pageScrolls: PageHorizontalScrolls = this.horizontalPositions.get(this.currentPath) || {};
-
-    // Busca automaticamente por elementos com scroll horizontal
-    this.findAndTrackHorizontalScrollElements();
-
-    // Salva posição de cada elemento rastreado
-    this.trackedElements.forEach(element => {
-      const sectionId = this.getElementId(element);
-      if (sectionId && element.scrollLeft > 0) {
-        pageScrolls[sectionId] = {
-          x: element.scrollLeft,
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
-          timestamp: Date.now()
-        };
-      }
-    });
-
-<<<<<<< HEAD
-    // Só salva se encontrou elementos
-    if (Object.keys(pageScrolls).length > 0) {
-      this.horizontalPositions.set(this.currentPath, pageScrolls);
-    }
-  }
-
-  // Define a página atual (IGUAL AO VERTICAL)
-  setCurrentPage(path: string): void {
-    console.log(`[HorizontalScrollManager] 📄 Mudança de página: ${this.currentPath} → ${path}`);
-    this.currentPath = path;
-  }
-
-  // Restaura posições horizontais (IGUAL AO VERTICAL)
-  async restoreCurrentPageHorizontalPositions(): Promise<void> {
-    const savedData = this.horizontalPositions.get(this.currentPath);
+    const pageScrolls = this.horizontalPositions.get(this.currentPath) || {};
+    const elementKey = sectionId || this.generateElementKey(element);
     
-    if (!savedData) {
-=======
+    pageScrolls[elementKey] = {
+      x: element.scrollLeft,
+      timestamp: Date.now(),
+      sectionId
+    };
+    
     this.horizontalPositions.set(this.currentPath, pageScrolls);
+    console.log(`[HorizontalScrollManager] 💾 Posição salva para ${elementKey}: ${element.scrollLeft}px`);
   }
 
-  // Encontra e rastreia elementos com scroll horizontal
-  private findAndTrackHorizontalScrollElements(): void {
-    // Selectors para elementos que normalmente têm scroll horizontal
-    const selectors = [
-      '[data-section="products"]',
-      '[data-section="jogos-da-galera"]',
-      '.horizontal-scroll',
-      '.product-carousel',
-      '.products-grid',
-      '.overflow-x-auto',
-      '.overflow-x-scroll',
-      '.carousel-container',
-      '[data-testid="product-carousel"]',
-      '[data-testid="horizontal-scroll"]'
-    ];
-
-    selectors.forEach(selector => {
-      const elements = document.querySelectorAll(selector);
-      elements.forEach(element => {
-        const htmlElement = element as HTMLElement;
-        
-        // Verifica se realmente tem scroll horizontal
-        if (this.hasHorizontalScroll(htmlElement)) {
-          this.trackedElements.add(htmlElement);
-        }
-      });
-    });
-
-    // Também procura por elementos filhos que podem ter scroll
-    this.trackedElements.forEach(parent => {
-      const scrollableChildren = parent.querySelectorAll('.overflow-x-auto, .overflow-x-scroll');
-      scrollableChildren.forEach(child => {
-        const htmlChild = child as HTMLElement;
-        if (this.hasHorizontalScroll(htmlChild)) {
-          this.trackedElements.add(htmlChild);
-        }
-      });
-    });
-  }
-
-  // Verifica se elemento tem scroll horizontal
-  private hasHorizontalScroll(element: HTMLElement): boolean {
-    return element.scrollWidth > element.clientWidth;
-  }
-
-  // Gera ID único para elemento
-  private getElementId(element: HTMLElement): string {
-    // Tenta usar ID existente
-    if (element.id) return element.id;
+  // Gera uma chave única para o elemento baseada em sua posição no DOM
+  private generateElementKey(element: HTMLElement): string {
+    // Usa data attributes se disponível
+    if (element.dataset.section) {
+      return `section-${element.dataset.section}`;
+    }
     
-    // Tenta usar data-section
-    const dataSection = element.getAttribute('data-section');
-    if (dataSection) return `section-${dataSection}`;
+    // Usa ID se disponível
+    if (element.id) {
+      return `id-${element.id}`;
+    }
     
-    // Tenta usar data-testid
-    const dataTestId = element.getAttribute('data-testid');
-    if (dataTestId) return `testid-${dataTestId}`;
+    // Fallback: posição no DOM
+    const parent = element.parentElement;
+    if (parent) {
+      const siblings = Array.from(parent.children);
+      const index = siblings.indexOf(element);
+      return `element-${index}`;
+    }
     
-    // Usa classe + posição como fallback
-    const className = element.className.split(' ')[0] || 'unknown';
-    const siblings = Array.from(element.parentElement?.children || []);
-    const index = siblings.indexOf(element);
-    
-    return `${className}-${index}`;
+    return 'unknown-element';
   }
 
   // Define a página atual
   setCurrentPage(path: string): void {
-    console.log(`[HorizontalScrollManager] 📄 Mudança de página: ${this.currentPath} → ${path}`);
-    
-    // Limpa elementos rastreados da página anterior
-    this.trackedElements.clear();
-    this.currentPath = path;
+    if (path !== this.currentPath) {
+      console.log(`[HorizontalScrollManager] 📄 Página alterada: ${this.currentPath} → ${path}`);
+      this.currentPath = path;
+    }
   }
 
-  // Restaura as posições horizontais da página atual
+  // Restaura posições horizontais para a página atual COM DELAY DE 0.5s
   async restoreCurrentPageHorizontalPositions(): Promise<void> {
-    const pageScrolls = this.horizontalPositions.get(this.currentPath);
+    if (!this.currentPath) return;
     
-    if (!pageScrolls || Object.keys(pageScrolls).length === 0) {
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
+    const savedData = this.horizontalPositions.get(this.currentPath);
+    if (!savedData || Object.keys(savedData).length === 0) {
       console.log(`[HorizontalScrollManager] 📍 Nenhuma posição horizontal salva para ${this.currentPath}`);
       return;
     }
 
-<<<<<<< HEAD
-    console.log(`[HorizontalScrollManager] 🎯 RESTAURANDO posições horizontais para ${this.currentPath}`);
+    console.log(`[HorizontalScrollManager] 🎯 INICIANDO restauração horizontal para ${this.currentPath} (aguardando 0.5s)`);
     
-    // Aguarda carregamento da página (IGUAL AO VERTICAL)
-    await this.waitForPageLoad();
+    // DELAY DE 0.5s PARA GARANTIR QUE AS SEÇÕES CARREGUEM
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    this.isRestoring = true;
-    
-    const scrollElements = document.querySelectorAll('.overflow-x-auto, .overflow-x-scroll');
-    
-    // Restaura cada elemento por índice
-    scrollElements.forEach((element, index) => {
-      const htmlElement = element as HTMLElement;
-      const elementKey = `element-${index}`;
-      const scrollData = savedData[elementKey];
-      
-      if (scrollData && htmlElement.scrollWidth > htmlElement.clientWidth) {
-        console.log(`[HorizontalScrollManager] 🔄 Restaurando elemento ${index}: ${scrollData.x}px`);
-        
-        // Aplica scroll (IGUAL AO VERTICAL - direto e simples)
-        htmlElement.scrollLeft = scrollData.x;
-        
-        // Verifica se funcionou (IGUAL AO VERTICAL)
-        setTimeout(() => {
-          const currentX = htmlElement.scrollLeft;
-          const success = Math.abs(currentX - scrollData.x) <= 10;
-          
-          if (success) {
-            console.log(`[HorizontalScrollManager] ✅ SUCESSO! Elemento ${index} restaurado: ${currentX}px`);
-          } else {
-            console.log(`[HorizontalScrollManager] ❌ FALHA elemento ${index}. Target: ${scrollData.x}px, Atual: ${currentX}px`);
-            // Tenta mais uma vez (IGUAL AO VERTICAL)
-            htmlElement.scrollLeft = scrollData.x;
-          }
-        }, 100);
-=======
-    console.log(`[HorizontalScrollManager] 🎯 RESTAURANDO ${Object.keys(pageScrolls).length} posições horizontais para ${this.currentPath}`);
-    
-    // Aguarda conteúdo carregar
-    await this.waitForContent();
+    // Aguarda carregamento completo da página
+    await this.waitForSectionsToLoad();
     
     this.isRestoring = true;
     
-    // Busca elementos novamente
-    this.findAndTrackHorizontalScrollElements();
-    
-    // Restaura cada posição salva
-    Object.entries(pageScrolls).forEach(([sectionId, scrollData]) => {
-      const element = this.findElementById(sectionId);
+    try {
+      console.log(`[HorizontalScrollManager] 🔄 EXECUTANDO restauração após delay`);
       
-      if (element) {
-        console.log(`[HorizontalScrollManager] 🔄 Restaurando seção ${sectionId}: ${scrollData.x}px`);
+      // Restaura elementos rastreados primeiro
+      for (const element of this.trackedElements) {
+        const elementKey = this.generateElementKey(element);
+        const scrollData = savedData[elementKey];
         
-        element.scrollTo({
-          left: scrollData.x,
-          behavior: 'auto'
-        });
-        
-        // Verifica se funcionou
-        setTimeout(() => {
-          const currentX = element.scrollLeft;
-          const success = Math.abs(currentX - scrollData.x) <= 10;
-          
-          if (success) {
-            console.log(`[HorizontalScrollManager] ✅ Seção ${sectionId} restaurada: ${currentX}px`);
-          } else {
-            console.log(`[HorizontalScrollManager] ❌ Falha na restauração da seção ${sectionId}. Target: ${scrollData.x}px, Atual: ${currentX}px`);
-            // Tenta mais uma vez
-            element.scrollTo({ left: scrollData.x, behavior: 'auto' });
-          }
-        }, 100);
-      } else {
-        console.log(`[HorizontalScrollManager] ⚠️ Elemento ${sectionId} não encontrado`);
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
-      }
-    });
-    
-    setTimeout(() => {
-      this.isRestoring = false;
-<<<<<<< HEAD
-      console.log(`[HorizontalScrollManager] ✅ Restauração horizontal completa para ${this.currentPath}`);
-    }, 200);
-  }
-
-  // Aguarda carregamento da página (IGUAL AO VERTICAL)
-  private async waitForPageLoad(): Promise<void> {
-    return new Promise((resolve) => {
-      // Sempre aguarda 500ms mínimo (IGUAL AO VERTICAL)
-      setTimeout(() => {
-        // Verifica se documento está pronto
-        if (document.readyState === 'complete') {
-          resolve();
-        } else {
-          // Se não estiver pronto, aguarda mais um pouco
-          const checkReady = () => {
-            if (document.readyState === 'complete') {
-              resolve();
-            } else {
-              setTimeout(checkReady, 50);
-            }
-          };
-          checkReady();
+        if (scrollData) {
+          await this.restoreElementPosition(element, scrollData, elementKey);
         }
-      }, 500); // 500ms obrigatório (IGUAL AO VERTICAL)
-    });
-  }
-
-  // Remove posições horizontais de uma página (IGUAL AO VERTICAL)
-=======
-    }, 500);
-  }
-
-  // Encontra elemento pelo ID gerado
-  private findElementById(sectionId: string): HTMLElement | null {
-    // Busca por ID direto
-    let element = document.getElementById(sectionId);
-    if (element) return element;
-
-    // Busca por data-section
-    if (sectionId.startsWith('section-')) {
-      const dataSection = sectionId.replace('section-', '');
-      element = document.querySelector(`[data-section="${dataSection}"]`) as HTMLElement;
-      if (element) return element;
-    }
-
-    // Busca por data-testid
-    if (sectionId.startsWith('testid-')) {
-      const dataTestId = sectionId.replace('testid-', '');
-      element = document.querySelector(`[data-testid="${dataTestId}"]`) as HTMLElement;
-      if (element) return element;
-    }
-
-    // Busca nos elementos rastreados
-    for (const trackedElement of this.trackedElements) {
-      if (this.getElementId(trackedElement) === sectionId) {
-        return trackedElement;
       }
-    }
-
-    return null;
-  }
-
-  // Aguarda carregamento do conteúdo
-  private async waitForContent(): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const checkContent = () => {
-          // Verifica se há elementos com scroll horizontal carregados
-          const hasHorizontalScrollElements = document.querySelectorAll('[data-section], .overflow-x-auto, .overflow-x-scroll').length > 0;
-          
-          if (hasHorizontalScrollElements || document.readyState === 'complete') {
-            resolve();
-          } else {
-            setTimeout(checkContent, 50);
+      
+      // Depois tenta restaurar outros elementos por seletor
+      const allScrollElements = document.querySelectorAll('.overflow-x-auto, .overflow-x-scroll');
+      for (let i = 0; i < allScrollElements.length; i++) {
+        const element = allScrollElements[i] as HTMLElement;
+        if (!this.trackedElements.has(element)) {
+          const fallbackKey = `element-${i}`;
+          const scrollData = savedData[fallbackKey];
+          if (scrollData) {
+            await this.restoreElementPosition(element, scrollData, fallbackKey);
           }
-        };
-        checkContent();
-      }, 300); // Delay menor para horizontal
+        }
+      }
+      
+    } finally {
+      setTimeout(() => {
+        this.isRestoring = false;
+        console.log(`[HorizontalScrollManager] ✅ Restauração horizontal COMPLETA para ${this.currentPath}`);
+      }, 300);
+    }
+  }
+
+  // Restaura posição de um elemento específico
+  private async restoreElementPosition(element: HTMLElement, scrollData: HorizontalScrollData, elementKey: string): Promise<void> {
+    if (!element || element.scrollWidth <= element.clientWidth) return;
+    
+    console.log(`[HorizontalScrollManager] 🔄 Restaurando ${elementKey}: ${scrollData.x}px`);
+    
+    // Aplica scroll imediatamente
+    element.scrollLeft = scrollData.x;
+    
+    // Verifica se funcionou após um delay
+    setTimeout(() => {
+      const currentX = element.scrollLeft;
+      const tolerance = 10;
+      const success = Math.abs(currentX - scrollData.x) <= tolerance;
+      
+      if (success) {
+        console.log(`[HorizontalScrollManager] ✅ SUCESSO! ${elementKey} restaurado: ${currentX}px`);
+      } else {
+        console.log(`[HorizontalScrollManager] ⚠️ TENTATIVA 2 ${elementKey}. Target: ${scrollData.x}px, Atual: ${currentX}px`);
+        // Tenta mais uma vez com força
+        element.scrollTo({ left: scrollData.x, behavior: 'auto' });
+        
+        // Verifica novamente
+        setTimeout(() => {
+          const finalX = element.scrollLeft;
+          if (Math.abs(finalX - scrollData.x) <= tolerance) {
+            console.log(`[HorizontalScrollManager] ✅ RECUPERADO! ${elementKey}: ${finalX}px`);
+          } else {
+            console.log(`[HorizontalScrollManager] ❌ FALHOU ${elementKey}. Final: ${finalX}px`);
+          }
+        }, 100);
+      }
+    }, 150);
+  }
+
+  // Aguarda carregamento das seções com produtos
+  private async waitForSectionsToLoad(): Promise<void> {
+    return new Promise((resolve) => {
+      const maxWaitTime = 3000; // 3 segundos máximo
+      const checkInterval = 100; // Verifica a cada 100ms
+      let elapsed = 0;
+      
+      const checkSections = () => {
+        // Verifica se seções críticas existem e têm conteúdo
+        const criticalSelectors = [
+          '[data-section="featured-products"]',
+          '[data-section="related-products"]',
+          '.product-card',
+          '[data-testid="horizontal-scroll-featured-products"]',
+          '[data-testid="horizontal-scroll-related-products"]',
+          '.overflow-x-auto'
+        ];
+
+        const hasSections = criticalSelectors.some(selector => {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length === 0) return false;
+          
+          // Verifica se pelo menos um elemento tem largura significativa
+          return Array.from(elements).some(el => {
+            const rect = el.getBoundingClientRect();
+            return rect.width > 200; // Seções de produtos devem ter pelo menos 200px
+          });
+        });
+
+        // Verifica se há elementos com scroll horizontal disponível
+        const hasScrollableContent = Array.from(document.querySelectorAll('.overflow-x-auto')).some(el => {
+          const element = el as HTMLElement;
+          return element.scrollWidth > element.clientWidth;
+        });
+
+        if (hasSections || hasScrollableContent) {
+          console.log(`[HorizontalScrollManager] ✅ Seções carregadas após ${elapsed}ms`);
+          resolve();
+          return;
+        }
+
+        elapsed += checkInterval;
+        if (elapsed >= maxWaitTime) {
+          console.log(`[HorizontalScrollManager] ⏱️ Timeout de carregamento de seções após ${elapsed}ms - continuando mesmo assim`);
+          resolve();
+          return;
+        }
+
+        setTimeout(checkSections, checkInterval);
+      };
+
+      checkSections();
     });
   }
 
-  // Remove posições horizontais de uma página
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
-  clearPageHorizontalPositions(path: string): void {
-    this.horizontalPositions.delete(path);
-    console.log(`[HorizontalScrollManager] 🗑️ Posições horizontais removidas para: ${path}`);
-  }
-
-<<<<<<< HEAD
-  // Debug: mostra todas as posições horizontais salvas (IGUAL AO VERTICAL)
-  debugHorizontalPositions(): void {
-    console.log('[HorizontalScrollManager] 🔍 DEBUG - Posições horizontais salvas:');
-    for (const [path, pageScrolls] of this.horizontalPositions.entries()) {
-      const age = Object.keys(pageScrolls).length;
-      console.log(`  ${path}: ${age} elementos salvos`);
-      for (const [elementKey, scrollData] of Object.entries(pageScrolls)) {
-        const ageSeconds = Math.round((Date.now() - scrollData.timestamp) / 1000);
-        console.log(`    ${elementKey}: ${scrollData.x}px (${ageSeconds}s atrás)`);
-      }
-    }
-    console.log(`  Página atual: ${this.currentPath}`);
-    console.log(`  Restaurando: ${this.isRestoring}`);
-  }
-
-  // Limpa o sistema (IGUAL AO VERTICAL)
-=======
   // Debug: mostra todas as posições horizontais salvas
   debugHorizontalPositions(): void {
     console.log('[HorizontalScrollManager] 🔍 DEBUG - Posições horizontais salvas:');
     for (const [path, pageScrolls] of this.horizontalPositions.entries()) {
-      console.log(`  Página: ${path}`);
-      for (const [sectionId, scrollData] of Object.entries(pageScrolls)) {
-        const age = Math.round((Date.now() - scrollData.timestamp) / 1000);
-        console.log(`    ${sectionId}: ${scrollData.x}px (${age}s atrás)`);
+      console.log(`  📄 ${path}:`);
+      for (const [elementKey, scrollData] of Object.entries(pageScrolls)) {
+        const ageSeconds = Math.round((Date.now() - scrollData.timestamp) / 1000);
+        console.log(`    ${elementKey}: ${scrollData.x}px (${ageSeconds}s atrás)`);
       }
     }
     console.log(`  Página atual: ${this.currentPath}`);
@@ -400,32 +266,21 @@ class HorizontalScrollManager {
     console.log(`  Restaurando: ${this.isRestoring}`);
   }
 
-  // Força rastreamento de elemento específico
-  trackElement(element: HTMLElement): void {
-    if (this.hasHorizontalScroll(element)) {
-      this.trackedElements.add(element);
-      console.log(`[HorizontalScrollManager] 📌 Elemento adicionado ao rastreamento: ${this.getElementId(element)}`);
-    }
-  }
-
-  // Remove elemento do rastreamento
-  untrackElement(element: HTMLElement): void {
-    this.trackedElements.delete(element);
-    console.log(`[HorizontalScrollManager] 📌 Elemento removido do rastreamento: ${this.getElementId(element)}`);
+  // Remove posições horizontais de uma página
+  clearPageHorizontalPositions(path: string): void {
+    this.horizontalPositions.delete(path);
+    console.log(`[HorizontalScrollManager] 🗑️ Posições horizontais removidas para: ${path}`);
   }
 
   // Limpa o sistema
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
   destroy(): void {
-    if (this.saveInterval) {
-      clearInterval(this.saveInterval);
-      this.saveInterval = null;
+    // Limpa todos os listeners
+    for (const element of this.trackedElements) {
+      this.untrackElement(element);
     }
+    
     this.horizontalPositions.clear();
-<<<<<<< HEAD
-=======
     this.trackedElements.clear();
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
     console.log('[HorizontalScrollManager] 🔌 Sistema horizontal destruído');
   }
 }
@@ -444,9 +299,4 @@ if (typeof window !== 'undefined') {
   window.horizontalScrollManager = horizontalScrollManager;
 }
 
-<<<<<<< HEAD
 export default horizontalScrollManager;
-
-=======
-export default horizontalScrollManager;
->>>>>>> f4f3b9ce92abff7508966d295fc2a040175fa4e9
