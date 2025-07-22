@@ -16,6 +16,63 @@ export const useUTICoins = () => {
   const [loading, setLoading] = useState(false);
   const [balanceChanged, setBalanceChanged] = useState(false);
 
+  // Configurar listener em tempo real para atualizações do saldo
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('uti_coins_realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'uti_coins',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('UTI Coins real-time update:', payload);
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const newData = payload.new as any;
+            const newCoins = {
+              balance: newData.balance || 0,
+              totalEarned: newData.total_earned || 0,
+              totalSpent: newData.total_spent || 0,
+              lastUpdated: newData.updated_at || new Date().toISOString()
+            };
+
+            setCoins(prevCoins => {
+              // Detectar mudança no saldo para ativar animação
+              if (prevCoins.balance !== newCoins.balance && prevCoins.balance > 0) {
+                setBalanceChanged(true);
+                setTimeout(() => setBalanceChanged(false), 1000);
+              }
+              return newCoins;
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'coin_transactions',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('New coin transaction:', payload);
+          // Recarregar dados quando houver nova transação
+          loadUserData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   // Carregar dados do usuário logado de forma segura
   const loadUserData = useCallback(async () => {
     if (!user) return;
