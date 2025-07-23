@@ -7,7 +7,6 @@ export const useScrollCoins = () => {
   const { user } = useAuth();
   const { earnScrollCoins } = useUTICoins();
   const { toast } = useToast();
-  const lastScrollTime = useRef<number>(0);
   const scrollDistance = useRef<number>(0);
   const lastScrollY = useRef<number>(0);
   const isEarning = useRef<boolean>(false);
@@ -19,7 +18,6 @@ export const useScrollCoins = () => {
       // Evitar múltiplas execuções simultâneas
       if (isEarning.current) return;
 
-      const currentTime = Date.now();
       const currentScrollY = window.scrollY;
       
       // Calcular distância de scroll
@@ -27,17 +25,13 @@ export const useScrollCoins = () => {
       scrollDistance.current += deltaY;
       lastScrollY.current = currentScrollY;
 
-      // Verificar se passou pelo cooldown (30 segundos) e scrollou pelo menos 500px
-      if (
-        currentTime - lastScrollTime.current > 30000 && // 30 segundos
-        scrollDistance.current > 500 // Pelo menos 500px de scroll
-      ) {
+      // Verificar se scrollou pelo menos 500px - backend controlará o timing
+      if (scrollDistance.current > 500) {
         isEarning.current = true;
-        lastScrollTime.current = currentTime;
         scrollDistance.current = 0; // Reset da distância
 
         try {
-          console.log('[SCROLL] Attempting to earn coins for scroll');
+          console.log('[SCROLL] Attempting to earn coins for scroll - backend controls timing');
           const result = await earnScrollCoins();
           
           if (result?.success) {
@@ -47,8 +41,8 @@ export const useScrollCoins = () => {
               duration: 3000,
             });
           } else if (result?.rateLimited) {
-            // Não mostrar toast para rate limiting normal
-            console.log('[SCROLL] Rate limited:', result.message);
+            // Backend controlou o timing - não mostrar erro
+            console.log('[SCROLL] Backend timing control:', result.message);
           } else if (result?.suspicious) {
             toast({
               title: '⚠️ Atividade Suspeita',
@@ -67,7 +61,7 @@ export const useScrollCoins = () => {
       }
     };
 
-    // Throttle para não executar muito frequentemente
+    // Throttle para reduzir carga no servidor
     let ticking = false;
     const throttledScroll = () => {
       if (!ticking) {

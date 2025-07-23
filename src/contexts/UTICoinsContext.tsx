@@ -324,40 +324,15 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     }
   }, [user, loadUserData]);
 
-  // Verificar se pode ganhar moedas para uma ação de forma segura
+  // Verificar se pode ganhar moedas para uma ação - DEPRECATED: Backend agora controla tudo
   const canEarnCoins = useCallback(async (action: string): Promise<boolean> => {
     if (!user) return false;
-
-    try {
-      const rule = rules.find(r => r.action === action && r.isActive);
-      if (!rule) return false;
-
-      // Verificar limites diários se existirem
-      if (rule.maxPerDay) {
-        const { data: dailyCount, error } = await supabase
-          .from('daily_actions')
-          .select('count')
-          .eq('user_id', user.id)
-          .eq('action', action)
-          .eq('action_date', new Date().toISOString().split('T')[0])
-          .single();
-
-        if (error) {
-          console.warn('Erro ao verificar limite diário:', error);
-          return true; // Em caso de erro, permitir ação
-        }
-
-        if (dailyCount && dailyCount.count >= rule.maxPerDay) {
-          return false;
-        }
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Erro ao verificar se pode ganhar moedas:', error);
-      return false;
-    }
-  }, [user, rules]);
+    
+    // Sempre retorna true - o backend fará toda a validação
+    // Isso evita duplicação de lógica e garante que o backend seja a única fonte de verdade
+    console.log(`[FRONTEND] Deferring validation to backend for action: ${action}`);
+    return true;
+  }, [user]);
 
   const getCoinsForAction = useCallback((action: string): number => {
     const rule = rules.find(r => r.action === action && r.isActive);

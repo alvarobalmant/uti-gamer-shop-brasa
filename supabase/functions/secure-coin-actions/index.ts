@@ -148,6 +148,11 @@ async function validateSecureAction(
   context: any
 ): Promise<ActionValidation> {
   try {
+    const currentTime = new Date()
+    const currentTimestamp = currentTime.toISOString()
+    
+    console.log(`[BACKEND_CLOCK] Validating action "${action}" at ${currentTimestamp}`)
+
     // 1. Check if action exists and is active
     const { data: rule, error: ruleError } = await supabase
       .from('coin_rules')
@@ -157,120 +162,96 @@ async function validateSecureAction(
       .single()
 
     if (ruleError || !rule) {
+      console.log(`[BACKEND_CLOCK] Action "${action}" not found or inactive`)
       return { isValid: false, reason: 'Ação não autorizada' }
     }
 
-    // 2. Rate limiting - check recent actions (last 5 minutes)
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-    const { data: recentActions, error: recentError } = await supabase
+    // 2. Get the most recent transaction for this action to check exact cooldown
+    const { data: lastTransaction, error: lastError } = await supabase
       .from('coin_transactions')
-      .select('created_at, metadata')
+      .select('created_at')
       .eq('user_id', userId)
       .eq('reason', action)
-      .gte('created_at', fiveMinutesAgo)
       .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
 
-    if (recentError) {
-      console.error('Error checking recent actions:', recentError)
+    if (lastError && lastError.code !== 'PGRST116') {
+      console.error('Error checking last transaction:', lastError)
       return { isValid: false, reason: 'Erro de validação' }
     }
 
-    // 3. Specific action validations
-    switch (action) {
-      case 'scroll_page':
-        // Allow max 1 scroll reward per 30 seconds
-        const thirtySecondsAgo = new Date(Date.now() - 30 * 1000).toISOString()
-        const recentScrolls = recentActions?.filter(a => 
-          a.created_at >= thirtySecondsAgo
-        ) || []
-        
-        if (recentScrolls.length > 0) {
-          return { 
-            isValid: false, 
-            reason: 'Aguarde 30 segundos entre ações de scroll',
-            rateLimited: true
-          }
-        }
+    // 3. Precise cooldown validation based on action type
+    if (lastTransaction) {
+      const lastActionTime = new Date(lastTransaction.created_at)
+      const timeDiff = currentTime.getTime() - lastActionTime.getTime()
+      const timeDiffSeconds = Math.floor(timeDiff / 1000)
+      
+      let requiredCooldown = 0 // in seconds
+      let cooldownName = ''
 
-        // Check for suspicious rapid scrolling (more than 5 in 5 minutes)
-        if (recentActions && recentActions.length >= 5) {
-          return {
-            isValid: false,
-            reason: 'Muitas ações de scroll detectadas. Aguarde antes de tentar novamente.',
-            suspicious: true,
-            rateLimited: true
+      switch (action) {
+        case 'scroll_page':
+          requiredCooldown = 30 // 30 segundos
+          cooldownName = '30 segundos'
+          break
+        case 'daily_login':
+          // Check if it's the same day
+          const lastActionDate = lastActionTime.toISOString().split('T')[0]
+          const currentDate = currentTime.toISOString().split('T')[0]
+          if (lastActionDate === currentDate) {
+            console.log(`[BACKEND_CLOCK] Daily login already done today. Last: ${lastActionTime.toISOString()}, Current: ${currentTimestamp}`)
+            return { 
+              isValid: false, 
+              reason: 'Login diário já realizado hoje',
+              rateLimited: true
+            }
           }
-        }
-        break
+          break
+        case 'page_visit':
+          requiredCooldown = 1200 // 20 minutos = 1200 segundos
+          cooldownName = '20 minutos'
+          break
+        default:
+          requiredCooldown = rule.cooldown_minutes ? rule.cooldown_minutes * 60 : 60
+          cooldownName = `${requiredCooldown} segundos`
+      }
 
-      case 'daily_login':
-        // Only allow once per day
-        const today = new Date().toISOString().split('T')[0]
-        const todayLogins = recentActions?.filter(a => 
-          a.created_at.split('T')[0] === today
-        ) || []
-        
-        if (todayLogins.length > 0) {
-          return { 
-            isValid: false, 
-            reason: 'Login diário já realizado hoje',
-            rateLimited: true
-          }
+      if (requiredCooldown > 0 && timeDiffSeconds < requiredCooldown) {
+        const remainingSeconds = requiredCooldown - timeDiffSeconds
+        console.log(`[BACKEND_CLOCK] Cooldown not met. Last action: ${lastActionTime.toISOString()}, Current: ${currentTimestamp}, Required: ${requiredCooldown}s, Elapsed: ${timeDiffSeconds}s, Remaining: ${remainingSeconds}s`)
+        return { 
+          isValid: false, 
+          reason: `Aguarde ${remainingSeconds} segundos para realizar esta ação novamente`,
+          rateLimited: true
         }
-        break
-
-      case 'page_visit':
-        // Allow max 3 per hour
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-        const recentVisits = recentActions?.filter(a => 
-          a.created_at >= oneHourAgo
-        ) || []
-        
-        if (recentVisits.length >= 3) {
-          return { 
-            isValid: false, 
-            reason: 'Limite de visitas por hora atingido',
-            rateLimited: true
-          }
-        }
-        break
-
-      default:
-        // For unknown actions, apply conservative rate limiting
-        const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString()
-        const veryRecentActions = recentActions?.filter(a => 
-          a.created_at >= oneMinuteAgo
-        ) || []
-        
-        if (veryRecentActions.length > 0) {
-          return { 
-            isValid: false, 
-            reason: 'Ação muito frequente. Aguarde um momento.',
-            rateLimited: true
-          }
-        }
+      }
     }
 
-    // 4. Check daily limits
+    // 4. Check daily limits using precise backend counting
     if (rule.max_per_day) {
-      const startOfDay = new Date()
+      const startOfDay = new Date(currentTime)
       startOfDay.setHours(0, 0, 0, 0)
-      
-      const { data: dailyActions, error: dailyError } = await supabase
-        .from('daily_actions')
-        .select('count')
-        .eq('user_id', userId)
-        .eq('action', action)
-        .eq('action_date', startOfDay.toISOString().split('T')[0])
-        .single()
+      const endOfDay = new Date(currentTime)
+      endOfDay.setHours(23, 59, 59, 999)
 
-      if (dailyError && dailyError.code !== 'PGRST116') {
+      const { data: todayTransactions, error: dailyError } = await supabase
+        .from('coin_transactions')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('reason', action)
+        .gte('created_at', startOfDay.toISOString())
+        .lte('created_at', endOfDay.toISOString())
+
+      if (dailyError) {
         console.error('Error checking daily limits:', dailyError)
         return { isValid: false, reason: 'Erro de validação' }
       }
 
-      const dailyCount = dailyActions?.count || 0
-      if (dailyCount >= rule.max_per_day) {
+      const todayCount = todayTransactions?.length || 0
+      console.log(`[BACKEND_CLOCK] Daily limit check: ${todayCount}/${rule.max_per_day} for action "${action}"`)
+      
+      if (todayCount >= rule.max_per_day) {
         return { 
           isValid: false, 
           reason: 'Limite diário atingido para esta ação',
@@ -279,7 +260,21 @@ async function validateSecureAction(
       }
     }
 
-    // 5. Check for suspicious patterns
+    // 5. Rate limiting - check for suspicious rapid-fire requests
+    const fiveMinutesAgo = new Date(currentTime.getTime() - 5 * 60 * 1000).toISOString()
+    const { data: recentActions, error: recentError } = await supabase
+      .from('coin_transactions')
+      .select('created_at')
+      .eq('user_id', userId)
+      .eq('reason', action)
+      .gte('created_at', fiveMinutesAgo)
+
+    if (recentError) {
+      console.error('Error checking recent actions:', recentError)
+      return { isValid: false, reason: 'Erro de validação' }
+    }
+
+    // Check for suspicious patterns
     const suspiciousCheck = await checkSuspiciousActivity(supabase, userId, action, recentActions || [])
     if (suspiciousCheck.suspicious) {
       return {
@@ -289,6 +284,7 @@ async function validateSecureAction(
       }
     }
 
+    console.log(`[BACKEND_CLOCK] Action "${action}" validated successfully at ${currentTimestamp}`)
     return { isValid: true }
 
   } catch (error) {
