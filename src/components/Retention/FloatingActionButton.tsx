@@ -4,53 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useToast } from '@/hooks/use-toast';
+import { DailyLoginSection } from './DailyLoginSection';
 
 export const FloatingActionButton: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isClaimingDaily, setIsClaimingDaily] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { coins, processDailyLogin } = useUTICoins();
-  const { toast } = useToast();
+  const { coins } = useUTICoins();
 
   // Só mostrar para usuários logados
   if (!user) return null;
-
-  const handleClaimDaily = async () => {
-    if (isClaimingDaily) return;
-    
-    setIsClaimingDaily(true);
-    try {
-      const result = await processDailyLogin();
-      
-      if (result?.success) {
-        toast({
-          title: "Bônus Diário Resgatado!",
-          description: `Você ganhou ${result.coins_earned} UTI Coins!`,
-        });
-      } else if (result?.message) {
-        toast({
-          title: "Bônus Diário",
-          description: result.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Bônus Diário",
-          description: "Você já resgatou seu bônus diário hoje!",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao resgatar bônus diário. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsClaimingDaily(false);
-    }
-  };
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
@@ -63,7 +26,7 @@ export const FloatingActionButton: React.FC = () => {
           />
           
           {/* Menu expandido */}
-          <div className="absolute bottom-16 right-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-72 transform transition-all duration-300 scale-100">
+          <div className="absolute bottom-16 right-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-96 transform transition-all duration-300 scale-100 max-h-[80vh] overflow-y-auto">{/* Updated width from w-72 to w-96 */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-lg text-gray-800">UTI Coins</h3>
               <button
@@ -85,20 +48,13 @@ export const FloatingActionButton: React.FC = () => {
               </div>
             </div>
 
+            {/* Seção de Login Diário */}
+            <div className="mb-4">
+              <DailyLoginSection showTitle={true} />
+            </div>
+
             {/* Ações rápidas */}
             <div className="space-y-2">
-              <button
-                onClick={handleClaimDaily}
-                disabled={isClaimingDaily}
-                className={`w-full py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                  isClaimingDaily 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-green-500 hover:bg-green-600'
-                } text-white`}
-              >
-                <Gift className="w-4 h-4" />
-                {isClaimingDaily ? 'Resgatando...' : 'Resgatar Bônus Diário (+10)'}
-              </button>
               
               <button
                 onClick={() => {
