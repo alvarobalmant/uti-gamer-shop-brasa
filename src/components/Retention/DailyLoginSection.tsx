@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Coins, Clock, TrendingUp, Calendar, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -39,12 +40,17 @@ export const DailyLoginSection: React.FC<DailyLoginSectionProps> = ({ showTitle 
         // Atualizar dados de streak
         await refreshStreak();
       } else {
+        // Mostrar mensagem específica do backend
+        const errorMessage = result?.message || "Não foi possível resgatar o bônus diário";
+        
         toast({
-          title: "Erro",
-          description: result?.message || "Não foi possível resgatar o bônus diário",
+          title: "Erro ao Resgatar Bônus",
+          description: errorMessage,
           variant: "destructive",
-          duration: 3000,
+          duration: 5000,
         });
+        
+        console.log('Erro detalhado:', result);
       }
     } catch (error) {
       console.error('Erro ao resgatar bônus diário:', error);
