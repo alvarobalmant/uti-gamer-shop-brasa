@@ -218,7 +218,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
 
   // Processar login diário de forma segura (via edge function)
   const processDailyLogin = useCallback(async () => {
-    if (!user) return null;
+    if (!user) return { success: false, message: 'Usuário não logado' };
 
     try {
       console.log('[SECURE] Processing daily login');
@@ -234,8 +234,8 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       });
 
       if (error) {
-        console.warn('Erro ao processar login diário:', error);
-        return { success: false, message: 'Função não disponível' };
+        console.warn('Erro ao processar login diário (edge function):', error);
+        return { success: false, message: error.message || 'Erro de conexão com o servidor' };
       }
 
       const result = data as any;
@@ -245,10 +245,11 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
         return result;
       }
 
-      return result || { success: false, message: 'Erro desconhecido' };
+      // Retornar a mensagem específica do backend em vez de uma mensagem genérica
+      return result || { success: false, message: 'Erro desconhecido do servidor' };
     } catch (error) {
       console.error('Erro ao processar login diário:', error);
-      return { success: false, message: 'Erro interno' };
+      return { success: false, message: 'Erro interno do sistema' };
     }
   }, [user, loadUserData]);
 
@@ -278,7 +279,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
 
       if (error) {
         console.warn('Erro ao ganhar moedas (edge function):', error);
-        return { success: false, message: 'Erro de segurança' };
+        return { success: false, message: error.message || 'Erro de conexão com o servidor' };
       }
 
       const result = data as any;
@@ -287,10 +288,10 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
         await loadUserData();
       }
 
-      return result || { success: false, message: 'Erro desconhecido' };
+      return result || { success: false, message: 'Erro desconhecido do servidor' };
     } catch (error) {
       console.error('Erro ao ganhar moedas:', error);
-      return { success: false, message: 'Erro interno' };
+      return { success: false, message: 'Erro interno do sistema' };
     }
   }, [user, loadUserData]);
 
