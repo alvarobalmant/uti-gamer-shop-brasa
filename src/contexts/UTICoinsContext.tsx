@@ -160,8 +160,8 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     loadUserData();
     loadRules();
 
-    // Criar canal único por usuário para evitar conflitos
-    const channelName = `uti_coins_provider_${user.id}`;
+    // Criar canal único com timestamp para evitar conflitos
+    const channelName = `uti_coins_provider_${user.id}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     
     console.log('Criando canal realtime:', channelName);
     
@@ -217,7 +217,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       console.log('Removendo canal realtime (Provider):', channelName);
       supabase.removeChannel(channel);
     };
-  }, [user?.id, loadUserData, loadRules, isEnabled]);
+  }, [user?.id, isEnabled]);
 
   // Processar login diário de forma segura (via edge function)
   const processDailyLogin = useCallback(async () => {
