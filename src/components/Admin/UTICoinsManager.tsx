@@ -656,33 +656,40 @@ const UTICoinsManager = () => {
                   <Switch
                     checked={configs.find(c => c.setting_key === 'uti_coins_settings')?.setting_value?.enabled || false}
                     onCheckedChange={async (checked) => {
-                      try {
-                        const { error } = await supabase
-                          .from('site_settings')
-                          .upsert({ 
-                            setting_key: 'uti_coins_settings', 
-                            setting_value: { enabled: checked }
-                          });
-                        
-                        if (error) throw error;
-                        
-                        setConfigs(prev => prev.map(c => 
-                          c.setting_key === 'uti_coins_settings' 
-                            ? { ...c, setting_value: { enabled: checked } }
-                            : c
-                        ));
-                        
-                        toast({ 
-                          title: 'Sucesso', 
-                          description: `Sistema UTI Coins ${checked ? 'ativado' : 'desativado'}!` 
-                        });
-                      } catch (error) {
-                        toast({ 
-                          title: 'Erro', 
-                          description: 'Erro ao atualizar configuração', 
-                          variant: 'destructive' 
-                        });
-                      }
+                       console.log('[ADMIN UTI COINS] Tentando atualizar:', { checked });
+                        try {
+                         const { data, error } = await supabase
+                           .from('site_settings')
+                           .update({ 
+                             setting_value: { enabled: checked },
+                             updated_at: new Date().toISOString()
+                           })
+                           .eq('setting_key', 'uti_coins_settings');
+                         
+                         console.log('[ADMIN UTI COINS] Resultado da query:', { data, error });
+                         
+                         if (error) throw error;
+                         
+                         setConfigs(prev => prev.map(c => 
+                           c.setting_key === 'uti_coins_settings' 
+                             ? { ...c, setting_value: { enabled: checked } }
+                             : c
+                         ));
+                         
+                         console.log('[ADMIN UTI COINS] Configuração atualizada com sucesso');
+                         
+                         toast({ 
+                           title: 'Sucesso', 
+                           description: `Sistema UTI Coins ${checked ? 'ativado' : 'desativado'}!` 
+                         });
+                       } catch (error) {
+                         console.error('[ADMIN UTI COINS] Erro:', error);
+                         toast({ 
+                           title: 'Erro', 
+                           description: 'Erro ao atualizar configuração', 
+                           variant: 'destructive' 
+                         });
+                       }
                     }}
                   />
                 </div>
