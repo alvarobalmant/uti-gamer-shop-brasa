@@ -43,21 +43,22 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     try {
       setIsUploading(true);
 
-      // Simular upload - em produção, usar serviço real
+      // Upload real para o Lovable
       const formData = new FormData();
       formData.append('file', file);
 
-      // Por enquanto, criar URL local para preview
-      const imageUrl = URL.createObjectURL(file);
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha no upload');
+      }
+
+      const { url } = await response.json();
       
-      // Em produção, fazer upload real:
-      // const response = await fetch('/api/upload', {
-      //   method: 'POST',
-      //   body: formData
-      // });
-      // const { url } = await response.json();
-      
-      onChange(imageUrl);
+      onChange(url);
       toast.success('Imagem carregada com sucesso!');
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
