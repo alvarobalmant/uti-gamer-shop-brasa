@@ -1421,6 +1421,8 @@ export type Database = {
       site_settings: {
         Row: {
           created_at: string
+          header_image_url: string | null
+          header_layout_type: string | null
           id: string
           setting_key: string
           setting_value: Json
@@ -1428,6 +1430,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          header_image_url?: string | null
+          header_layout_type?: string | null
           id?: string
           setting_key: string
           setting_value: Json
@@ -1435,6 +1439,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          header_image_url?: string | null
+          header_layout_type?: string | null
           id?: string
           setting_key?: string
           setting_value?: Json

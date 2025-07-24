@@ -21,6 +21,8 @@ export const SettingsManagerNew = () => {
   const [browserTitle, setBrowserTitle] = useState(siteInfo.browserTitle);
   const [selectedFont, setSelectedFont] = useState(siteInfo.selectedFont);
   const [logoUrl, setLogoUrl] = useState(siteInfo.logoUrl);
+  const [headerLayoutType, setHeaderLayoutType] = useState(siteInfo.headerLayoutType);
+  const [headerImageUrl, setHeaderImageUrl] = useState(siteInfo.headerImageUrl);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   
   // Loading states
@@ -35,6 +37,8 @@ export const SettingsManagerNew = () => {
     setBrowserTitle(siteInfo.browserTitle);
     setSelectedFont(siteInfo.selectedFont);
     setLogoUrl(siteInfo.logoUrl);
+    setHeaderLayoutType(siteInfo.headerLayoutType);
+    setHeaderImageUrl(siteInfo.headerImageUrl);
   }, [siteInfo, utiProSettings]);
 
   // Função para deletar produtos de forma segura, respeitando relacionamentos parent/child
@@ -240,7 +244,9 @@ export const SettingsManagerNew = () => {
         siteSubtitle,
         browserTitle,
         selectedFont,
-        logoUrl
+        logoUrl,
+        headerLayoutType,
+        headerImageUrl
       });
 
       const utiProSuccess = await updateUTIProSettings({
@@ -265,7 +271,7 @@ export const SettingsManagerNew = () => {
     } finally {
       setSaving(false);
     }
-  }, [siteName, siteSubtitle, browserTitle, selectedFont, logoUrl, utiProEnabled, updateSiteInfo, updateUTIProSettings, toast]);
+  }, [siteName, siteSubtitle, browserTitle, selectedFont, logoUrl, headerLayoutType, headerImageUrl, utiProEnabled, updateSiteInfo, updateUTIProSettings, toast]);
 
   const handleProductSelection = (productId: string, checked: boolean) => {
     if (checked) {
@@ -311,6 +317,10 @@ export const SettingsManagerNew = () => {
           setSelectedFont={setSelectedFont}
           logoUrl={logoUrl}
           setLogoUrl={setLogoUrl}
+          headerLayoutType={headerLayoutType}
+          setHeaderLayoutType={setHeaderLayoutType}
+          headerImageUrl={headerImageUrl}
+          setHeaderImageUrl={setHeaderImageUrl}
         />
       </div>
 

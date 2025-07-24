@@ -58,7 +58,7 @@ const MainHeader = ({
         className
       )}>
         <div className="container flex h-[72px] items-center justify-between px-4 gap-2">
-          {/* Left side: Mobile Menu Toggle + Logo */}
+          {/* Left side: Mobile Menu Toggle + Header Content */}
           <div className="flex items-center flex-shrink min-w-0"> 
             <Button
               variant="ghost"
@@ -86,25 +86,37 @@ const MainHeader = ({
               }}
               aria-label={`Página Inicial ${siteInfo.siteName}`}
             >
-              <img
-                src={siteInfo.logoUrl}
-                alt={`${siteInfo.siteName} Logo`}
-                className="h-10 w-auto flex-shrink-0"
-              />
-              <div className="ml-2 sm:ml-3 overflow-hidden">
-                <h1 className={cn(
-                  "font-bold leading-tight text-uti-red",
-                  // 🎯 TABLET: Tamanho de fonte otimizado para tablets
-                  "text-sm md:text-base lg:text-lg"
-                )}>{siteInfo.siteName}</h1>
-                <p className={cn(
-                  "text-gray-600 leading-tight whitespace-normal",
-                  // 🎯 TABLET: Texto otimizado para tablets
-                  "text-[10px] md:text-xs lg:text-sm"
-                )}>
-                  {siteInfo.siteSubtitle}
-                </p>
-              </div>
+              {siteInfo.headerLayoutType === 'single_image' && siteInfo.headerImageUrl ? (
+                /* Modo Imagem Única */
+                <img
+                  src={siteInfo.headerImageUrl}
+                  alt={`${siteInfo.siteName} - ${siteInfo.siteSubtitle}`}
+                  className="h-12 w-auto flex-shrink-0 max-w-64"
+                />
+              ) : (
+                /* Modo Logo + Título tradicional */
+                <>
+                  <img
+                    src={siteInfo.logoUrl}
+                    alt={`${siteInfo.siteName} Logo`}
+                    className="h-10 w-auto flex-shrink-0"
+                  />
+                  <div className="ml-2 sm:ml-3 overflow-hidden">
+                    <h1 className={cn(
+                      "font-bold leading-tight text-uti-red",
+                      // 🎯 TABLET: Tamanho de fonte otimizado para tablets
+                      "text-sm md:text-base lg:text-lg"
+                    )}>{siteInfo.siteName}</h1>
+                    <p className={cn(
+                      "text-gray-600 leading-tight whitespace-normal",
+                      // 🎯 TABLET: Texto otimizado para tablets
+                      "text-[10px] md:text-xs lg:text-sm"
+                    )}>
+                      {siteInfo.siteSubtitle}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

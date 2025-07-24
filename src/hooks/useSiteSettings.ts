@@ -7,6 +7,8 @@ export interface SiteInfo {
   browserTitle: string;
   selectedFont: string;
   logoUrl: string;
+  headerLayoutType: 'logo_title' | 'single_image';
+  headerImageUrl: string;
 }
 
 export interface UTIProSettings {
@@ -19,7 +21,9 @@ export const useSiteSettings = () => {
     siteSubtitle: 'Sua loja de games favorita',
     browserTitle: 'UTI dos Games - Sua loja de games favorita',
     selectedFont: 'Inter',
-    logoUrl: '/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png'
+    logoUrl: '/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png',
+    headerLayoutType: 'logo_title',
+    headerImageUrl: ''
   });
 
   const [utiProSettings, setUtiProSettings] = useState<UTIProSettings>({
