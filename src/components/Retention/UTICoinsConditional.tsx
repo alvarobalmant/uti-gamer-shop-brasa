@@ -12,16 +12,21 @@ export const UTICoinsConditional: React.FC<UTICoinsConditionalProps> = memo(({
 }) => {
   const { isEnabled, loading } = useUTICoinsSettings();
 
+  console.log('[UTI COINS CONDITIONAL] State:', { isEnabled, loading });
+
   // Não renderizar nada durante o carregamento
   if (loading) {
+    console.log('[UTI COINS CONDITIONAL] Ainda carregando...');
     return null;
   }
 
   // Só renderizar o children se o sistema estiver habilitado
   if (!isEnabled) {
+    console.log('[UTI COINS CONDITIONAL] Sistema desabilitado - não renderizando');
     return <>{fallback}</>;
   }
 
+  console.log('[UTI COINS CONDITIONAL] Sistema habilitado - renderizando children');
   return <>{children}</>;
 });
 
