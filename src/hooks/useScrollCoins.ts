@@ -2,20 +2,17 @@ import { useEffect, useRef } from 'react';
 import { useUTICoins } from './useUTICoins';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useUTICoinsSettings } from './useUTICoinsSettings';
 
 export const useScrollCoins = () => {
   const { user } = useAuth();
   const { earnScrollCoins } = useUTICoins();
-  const { isEnabled } = useUTICoinsSettings();
   const { toast } = useToast();
   const scrollDistance = useRef<number>(0);
   const lastScrollY = useRef<number>(0);
   const isEarning = useRef<boolean>(false);
 
   useEffect(() => {
-    // Só funcionar se o usuário estiver logado e o sistema estiver habilitado
-    if (!user || !isEnabled) return;
+    if (!user) return;
 
     const handleScroll = async () => {
       // Evitar múltiplas execuções simultâneas
@@ -81,5 +78,5 @@ export const useScrollCoins = () => {
     return () => {
       window.removeEventListener('scroll', throttledScroll);
     };
-  }, [user, earnScrollCoins, toast, isEnabled]);
+  }, [user, earnScrollCoins, toast]);
 };

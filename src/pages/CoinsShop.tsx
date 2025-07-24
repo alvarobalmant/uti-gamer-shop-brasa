@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
-import { useUTICoinsRouteProtection } from '@/hooks/useUTICoinsRouteProtection';
 import { RedemptionModal } from '@/components/Retention/RedemptionModal';
 import { RedemptionHistoryModal } from '@/components/Retention/RedemptionHistoryModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +28,6 @@ const CoinsShop = () => {
   const { user } = useAuth();
   const { coins, spendCoins, loading: coinsLoading } = useUTICoins();
   const { toast } = useToast();
-  const { isEnabled, loading: settingsLoading } = useUTICoinsRouteProtection();
   const [products, setProducts] = useState<CoinProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [redemptionModal, setRedemptionModal] = useState<{
@@ -48,11 +46,8 @@ const CoinsShop = () => {
       navigate('/');
       return;
     }
-    // Só carregar produtos se o sistema estiver habilitado
-    if (isEnabled && !settingsLoading) {
-      loadProducts();
-    }
-  }, [user, navigate, isEnabled, settingsLoading]);
+    loadProducts();
+  }, [user, navigate]);
 
   const loadProducts = async () => {
     try {

@@ -4,8 +4,6 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
-import { DailyLoginSection } from './DailyLoginSection';
-import { UTICoinsConditional } from './UTICoinsConditional';
 
 interface UTICoinsWidgetProps {
   className?: string;
@@ -97,7 +95,6 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
   }
 
   return (
-    <UTICoinsConditional>
     <div className={`relative ${className}`}>
       <button
         onClick={() => setShowPopover(!showPopover)}
@@ -143,7 +140,7 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
           />
           
           {/* Popover */}
-          <div className="absolute top-full right-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden max-h-[80vh] overflow-y-auto">{/* Updated width from w-80 to w-96 */}
+          <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-4 text-white">
               <div className="flex items-center justify-between">
@@ -177,13 +174,8 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
               )}
             </div>
 
-            {/* Seção de Login Diário */}
-            <div className="p-4 border-t border-gray-200">
-              <DailyLoginSection showTitle={false} />
-            </div>
-
             {/* Ganhos recentes */}
-            <div className="p-4">{/* Added border-t border-gray-200 to separate sections */}
+            <div className="p-4">
               <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-green-500" />
                 Transações Recentes
@@ -252,6 +244,5 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
         </>
       )}
     </div>
-    </UTICoinsConditional>
   );
 };

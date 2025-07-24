@@ -4,25 +4,14 @@ import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { useUTICoinsRouteProtection } from '@/hooks/useUTICoinsRouteProtection';
 
 const MeusCoins: React.FC = () => {
   const { user } = useAuth();
-  const { isEnabled, loading } = useUTICoinsRouteProtection();
   const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'rewards'>('overview');
 
   // Redirecionar se não estiver logado
   if (!user) {
     return <Navigate to="/" replace />;
-  }
-
-  // Aguardar carregamento das configurações
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
   }
 
   // Dados mock completos
