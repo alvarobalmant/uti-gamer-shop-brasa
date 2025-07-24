@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, Search } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
+import OptimizedImage from '@/components/OptimizedImage';
 
 interface MainHeaderProps {
   onCartOpen: () => void;
@@ -88,10 +89,14 @@ const MainHeader = ({
             >
               {siteInfo.headerLayoutType === 'single_image' && siteInfo.headerImageUrl ? (
                 /* Modo Imagem Única */
-                <img
+                <OptimizedImage
                   src={siteInfo.headerImageUrl}
                   alt={`${siteInfo.siteName} - ${siteInfo.siteSubtitle}`}
-                  className="h-12 w-auto flex-shrink-0 max-w-64"
+                  className="h-12 w-auto flex-shrink-0 max-w-64 object-contain"
+                  width={256}
+                  height={48}
+                  quality={90}
+                  priority={true}
                 />
               ) : (
                 /* Modo Logo + Título tradicional */
