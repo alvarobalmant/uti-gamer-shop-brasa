@@ -26,7 +26,7 @@ export const useUTICoinsSettings = () => {
       const { data, error } = await supabase
         .from('site_settings')
         .select('setting_value')
-        .eq('setting_key', 'uti_pro_settings')
+        .eq('setting_key', 'uti_coins_settings')
         .single();
 
       if (error) {
@@ -66,7 +66,7 @@ export const useUTICoinsSettings = () => {
           event: 'UPDATE',
           schema: 'public',
           table: 'site_settings',
-          filter: 'setting_key=eq.uti_pro_settings'
+          filter: 'setting_key=eq.uti_coins_settings'
         },
         (payload) => {
           if (payload.new?.setting_value) {
