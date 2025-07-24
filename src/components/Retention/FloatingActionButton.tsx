@@ -5,7 +5,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useToast } from '@/hooks/use-toast';
 import { DailyLoginSection } from './DailyLoginSection';
-import { UTICoinsConditional } from './UTICoinsConditional';
 
 export const FloatingActionButton: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -17,7 +16,6 @@ export const FloatingActionButton: React.FC = () => {
   if (!user) return null;
 
   return (
-    <UTICoinsConditional>
     <div className="fixed bottom-6 right-6 z-50">
       {isExpanded && (
         <>
@@ -100,7 +98,6 @@ export const FloatingActionButton: React.FC = () => {
         )}
       </button>
     </div>
-    </UTICoinsConditional>
   );
 };
 
