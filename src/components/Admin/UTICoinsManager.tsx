@@ -661,10 +661,10 @@ const UTICoinsManager = () => {
                          const { data, error } = await supabase
                            .from('site_settings')
                            .update({ 
-                             setting_value: { enabled: checked },
-                             updated_at: new Date().toISOString()
+                             setting_value: { enabled: checked }
                            })
-                           .eq('setting_key', 'uti_coins_settings');
+                           .eq('setting_key', 'uti_coins_settings')
+                           .select();
                          
                          console.log('[ADMIN UTI COINS] Resultado da query:', { data, error });
                          
