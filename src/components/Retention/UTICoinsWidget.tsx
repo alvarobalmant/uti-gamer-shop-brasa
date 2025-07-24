@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
 import { DailyLoginSection } from './DailyLoginSection';
+import { UTICoinsConditional } from './UTICoinsConditional';
 
 interface UTICoinsWidgetProps {
   className?: string;
@@ -96,6 +97,7 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
   }
 
   return (
+    <UTICoinsConditional>
     <div className={`relative ${className}`}>
       <button
         onClick={() => setShowPopover(!showPopover)}
@@ -250,5 +252,6 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
         </>
       )}
     </div>
+    </UTICoinsConditional>
   );
 };
