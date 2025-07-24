@@ -54,9 +54,12 @@ export const useUTICoinsSettings = () => {
   useEffect(() => {
     loadSettings();
 
+    // Criar nome único para evitar conflitos de canal
+    const channelName = `uti_coins_settings_${Math.random().toString(36).substring(7)}`;
+    
     // Listener para mudanças em tempo real
     const channel = supabase
-      .channel('uti_coins_settings')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
