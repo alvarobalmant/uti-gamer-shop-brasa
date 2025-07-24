@@ -1,15 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UTICoinsSettings {
   enabled: boolean;
 }
 
+// Cache global para evitar múltiplas requisições
+let globalCache: { isEnabled: boolean; timestamp: number } | null = null;
+const CACHE_DURATION = 30000; // 30 segundos
+
 export const useUTICoinsSettings = () => {
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+  const initialLoadDone = useRef(false);
 
   const loadSettings = async () => {
+    // Verificar cache primeiro
+    if (globalCache && Date.now() - globalCache.timestamp < CACHE_DURATION) {
+      setIsEnabled(globalCache.isEnabled);
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('site_settings')
@@ -23,12 +35,14 @@ export const useUTICoinsSettings = () => {
         return;
       }
 
-      if (data?.setting_value) {
-        const settings = data.setting_value as unknown as UTICoinsSettings;
-        setIsEnabled(settings.enabled || false);
-      } else {
-        setIsEnabled(false);
-      }
+      const newIsEnabled = (data?.setting_value as any)?.enabled || false;
+      setIsEnabled(newIsEnabled);
+      
+      // Atualizar cache global
+      globalCache = {
+        isEnabled: newIsEnabled,
+        timestamp: Date.now()
+      };
     } catch (error) {
       console.error('Erro ao carregar configurações UTI Coins:', error);
       setIsEnabled(false);
@@ -53,8 +67,14 @@ export const useUTICoinsSettings = () => {
         },
         (payload) => {
           if (payload.new?.setting_value) {
-            const settings = payload.new.setting_value as unknown as UTICoinsSettings;
-            setIsEnabled(settings.enabled || false);
+            const newIsEnabled = (payload.new.setting_value as any)?.enabled || false;
+            setIsEnabled(newIsEnabled);
+            
+            // Atualizar cache global
+            globalCache = {
+              isEnabled: newIsEnabled,
+              timestamp: Date.now()
+            };
           }
         }
       )

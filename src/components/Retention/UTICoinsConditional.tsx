@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useUTICoinsSettings } from '@/hooks/useUTICoinsSettings';
 
 interface UTICoinsConditionalProps {
@@ -6,7 +6,7 @@ interface UTICoinsConditionalProps {
   fallback?: React.ReactNode;
 }
 
-export const UTICoinsConditional: React.FC<UTICoinsConditionalProps> = ({ 
+export const UTICoinsConditional: React.FC<UTICoinsConditionalProps> = memo(({ 
   children, 
   fallback = null 
 }) => {
@@ -23,4 +23,6 @@ export const UTICoinsConditional: React.FC<UTICoinsConditionalProps> = ({
   }
 
   return <>{children}</>;
-};
+});
+
+UTICoinsConditional.displayName = 'UTICoinsConditional';

@@ -4,6 +4,7 @@ import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DailyLoginSection } from './DailyLoginSection';
+import { UTICoinsConditional } from './UTICoinsConditional';
 
 interface UTICoinsWidgetProps {
   className?: string;
@@ -111,6 +112,7 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
   }
 
   return (
+    <UTICoinsConditional>
     <div className={`relative ${className}`}>
       <button
         onClick={() => setShowPopover(!showPopover)}
@@ -268,5 +270,6 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
         </>
       )}
     </div>
+    </UTICoinsConditional>
   );
 };

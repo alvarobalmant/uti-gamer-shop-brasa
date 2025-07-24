@@ -153,7 +153,8 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
 
   // Configurar listener em tempo real APENAS uma vez por usuário
   useEffect(() => {
-    if (!user?.id) return;
+    // Só carregar dados se o sistema estiver habilitado
+    if (!user?.id || !isEnabled) return;
 
     // Primeiro carregar os dados
     loadUserData();
@@ -216,7 +217,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       console.log('Removendo canal realtime (Provider):', channelName);
       supabase.removeChannel(channel);
     };
-  }, [user?.id, loadUserData, loadRules]);
+  }, [user?.id, loadUserData, loadRules, isEnabled]);
 
   // Processar login diário de forma segura (via edge function)
   const processDailyLogin = useCallback(async () => {

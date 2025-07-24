@@ -107,11 +107,12 @@ const queryClient = new QueryClient({
 });
 
 // Loading component otimizado
-const PageLoader = () => (
+const PageLoader = React.memo(() => (
   <div className="min-h-screen flex items-center justify-center">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
   </div>
-);
+));
+PageLoader.displayName = 'PageLoader';
 
 // Protected Route Component otimizado
 const ProtectedAdminRoute = React.memo(({ children }: { children: React.ReactNode }) => {
@@ -127,6 +128,7 @@ const ProtectedAdminRoute = React.memo(({ children }: { children: React.ReactNod
 
   return <>{children}</>;
 });
+ProtectedAdminRoute.displayName = 'ProtectedAdminRoute';
 
 const App = () => {
   // Hook para prevenir layout shift globalmente
