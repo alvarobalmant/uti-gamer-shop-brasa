@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { useAuth } from '@/hooks/useAuth';
 import { UTICoins, CoinTransaction, CoinRule } from '@/types/retention';
 import { supabase } from '@/integrations/supabase/client';
+import { useUTICoinsSettings } from '@/hooks/useUTICoinsSettings';
 
 interface UTICoinsContextType {
   coins: UTICoins;
@@ -26,6 +27,7 @@ interface UTICoinsProviderProps {
 
 export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) => {
   const { user } = useAuth();
+  const { isEnabled } = useUTICoinsSettings();
   const [coins, setCoins] = useState<UTICoins>({
     balance: 0,
     totalEarned: 0,
@@ -219,6 +221,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
   // Processar login diário de forma segura (via edge function)
   const processDailyLogin = useCallback(async () => {
     if (!user) return { success: false, message: 'Usuário não logado' };
+    if (!isEnabled) return { success: false, message: 'Sistema UTI Coins desabilitado' };
 
     try {
       console.log('[SECURE] Processing daily login');
@@ -251,7 +254,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       console.error('Erro ao processar login diário:', error);
       return { success: false, message: 'Erro interno do sistema' };
     }
-  }, [user, loadUserData]);
+  }, [user, loadUserData, isEnabled]);
 
   // Ganhar moedas por ação de forma segura (via edge function)
   const earnCoins = useCallback(async (
@@ -261,6 +264,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     metadata?: Record<string, any>
   ) => {
     if (!user) return { success: false, message: 'Usuário não logado' };
+    if (!isEnabled) return { success: false, message: 'Sistema UTI Coins desabilitado' };
 
     try {
       console.log(`[SECURE] Earning coins for action: ${action}`);
@@ -293,13 +297,14 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       console.error('Erro ao ganhar moedas:', error);
       return { success: false, message: 'Erro interno do sistema' };
     }
-  }, [user, loadUserData]);
+  }, [user, loadUserData, isEnabled]);
 
   // Gastar moedas (resgate de produto) de forma segura
   const spendCoins = useCallback(async (
     productId: string
   ) => {
     if (!user) return { success: false, message: 'Usuário não logado' };
+    if (!isEnabled) return { success: false, message: 'Sistema UTI Coins desabilitado' };
 
     try {
       const { data, error } = await supabase.rpc('redeem_coin_product', {
@@ -323,17 +328,18 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       console.error('Erro ao resgatar produto:', error);
       return { success: false, message: 'Erro interno' };
     }
-  }, [user, loadUserData]);
+  }, [user, loadUserData, isEnabled]);
 
   // Verificar se pode ganhar moedas para uma ação - DEPRECATED: Backend agora controla tudo
   const canEarnCoins = useCallback(async (action: string): Promise<boolean> => {
     if (!user) return false;
+    if (!isEnabled) return false;
     
     // Sempre retorna true - o backend fará toda a validação
     // Isso evita duplicação de lógica e garante que o backend seja a única fonte de verdade
     console.log(`[FRONTEND] Deferring validation to backend for action: ${action}`);
     return true;
-  }, [user]);
+  }, [user, isEnabled]);
 
   const getCoinsForAction = useCallback((action: string): number => {
     const rule = rules.find(r => r.action === action && r.isActive);
@@ -342,12 +348,13 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
 
   // Ganhar moedas por scroll de forma segura (via edge function)
   const earnScrollCoins = useCallback(async () => {
+    if (!isEnabled) return { success: false, message: 'Sistema UTI Coins desabilitado' };
     console.log('[SECURE] Earning scroll coins');
     return await earnCoins('scroll_page', undefined, 'Scroll da página', {
       source: 'scroll_tracking',
       page: window.location.pathname
     });
-  }, [earnCoins]);
+  }, [earnCoins, isEnabled]);
 
   const value: UTICoinsContextType = {
     coins,
