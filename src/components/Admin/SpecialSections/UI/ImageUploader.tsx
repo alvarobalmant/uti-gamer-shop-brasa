@@ -3,6 +3,7 @@ import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImageUploaderProps {
   value?: string;
@@ -43,22 +44,28 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     try {
       setIsUploading(true);
 
-      // Upload real para o Lovable
-      const formData = new FormData();
-      formData.append('file', file);
+      // Gerar nome único para o arquivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
+      // Upload para o Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('site-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (!response.ok) {
-        throw new Error('Falha no upload');
+      if (uploadError) {
+        throw uploadError;
       }
 
-      const { url } = await response.json();
-      
-      onChange(url);
+      // Obter URL pública
+      const { data: urlData } = supabase.storage
+        .from('site-images')
+        .getPublicUrl(fileName);
+
+      onChange(urlData.publicUrl);
       toast.success('Imagem carregada com sucesso!');
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
