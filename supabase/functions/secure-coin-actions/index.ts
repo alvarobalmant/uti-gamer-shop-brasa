@@ -53,6 +53,24 @@ serve(async (req) => {
 
     const { action, metadata = {} } = await req.json()
     
+    // Check if UTI Coins system is enabled
+    const { data: settingsData, error: settingsError } = await supabase
+      .from('site_settings')
+      .select('setting_value')
+      .eq('setting_key', 'uti_pro_settings')
+      .single()
+
+    if (settingsError || !settingsData?.setting_value?.enabled) {
+      console.log('[SYSTEM] UTI Coins system is disabled')
+      return new Response(
+        JSON.stringify({ success: false, message: 'Sistema UTI Coins desabilitado' }),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+    
     // Get client info for security
     const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
     const userAgent = req.headers.get('user-agent') || 'unknown'

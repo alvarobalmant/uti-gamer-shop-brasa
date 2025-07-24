@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUTICoins } from '@/hooks/useUTICoins';
+import { useUTICoinsRouteProtection } from '@/hooks/useUTICoinsRouteProtection';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +54,7 @@ const CoinsHistory = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { coins } = useUTICoins();
+  const { isEnabled, loading: settingsLoading } = useUTICoinsRouteProtection();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [streak, setStreak] = useState<UserStreak | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,8 +65,11 @@ const CoinsHistory = () => {
       navigate('/');
       return;
     }
-    loadData();
-  }, [user, navigate]);
+    // Só carregar dados se o sistema estiver habilitado
+    if (isEnabled && !settingsLoading) {
+      loadData();
+    }
+  }, [user, navigate, isEnabled, settingsLoading]);
 
   const loadData = async () => {
     try {
