@@ -86,26 +86,24 @@ const MainHeader = ({
               }}
               aria-label={`Página Inicial ${siteInfo.siteName}`}
             >
-              {/* Logo UTI em estilo similar à imagem */}
-              <div className="flex items-center">
-                <div className="bg-white p-2 rounded-sm shadow-sm border border-gray-200">
-                  <div className="text-red-600 font-black text-2xl md:text-3xl tracking-wider" 
-                       style={{ fontFamily: 'Arial, sans-serif' }}>
-                    UTI
-                  </div>
-                </div>
-                <div className="ml-3 overflow-hidden">
-                  <h1 className={cn(
-                    "font-bold leading-tight text-gray-800",
-                    "text-sm md:text-base lg:text-lg"
-                  )}>dos Games</h1>
-                  <p className={cn(
-                    "text-gray-600 leading-tight whitespace-normal",
-                    "text-[10px] md:text-xs lg:text-sm"
-                  )}>
-                    {siteInfo.siteSubtitle}
-                  </p>
-                </div>
+              <img
+                src={siteInfo.logoUrl}
+                alt={`${siteInfo.siteName} Logo`}
+                className="h-10 w-auto flex-shrink-0"
+              />
+              <div className="ml-2 sm:ml-3 overflow-hidden">
+                <h1 className={cn(
+                  "font-bold leading-tight text-uti-red",
+                  // 🎯 TABLET: Tamanho de fonte otimizado para tablets
+                  "text-sm md:text-base lg:text-lg"
+                )}>{siteInfo.siteName}</h1>
+                <p className={cn(
+                  "text-gray-600 leading-tight whitespace-normal",
+                  // 🎯 TABLET: Texto otimizado para tablets
+                  "text-[10px] md:text-xs lg:text-sm"
+                )}>
+                  {siteInfo.siteSubtitle}
+                </p>
               </div>
             </div>
           </div>
