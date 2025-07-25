@@ -6,7 +6,25 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { 
   Type, 
   Image, 
@@ -29,6 +47,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { SortableEmailBlock } from './SortableEmailBlock';
 
 export interface EmailBlock {
   id: string;
@@ -51,6 +70,13 @@ export const EmailVisualEditor: React.FC<EmailVisualEditorProps> = ({
   const [blocks, setBlocks] = useState<EmailBlock[]>(initialBlocks);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const generateId = () => `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -168,15 +194,17 @@ export const EmailVisualEditor: React.FC<EmailVisualEditorProps> = ({
     updateOutput(newBlocks);
   };
 
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return;
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-    const newBlocks = Array.from(blocks);
-    const [reorderedItem] = newBlocks.splice(result.source.index, 1);
-    newBlocks.splice(result.destination.index, 0, reorderedItem);
-
-    setBlocks(newBlocks);
-    updateOutput(newBlocks);
+    if (active.id !== over?.id) {
+      const oldIndex = blocks.findIndex(block => block.id === active.id);
+      const newIndex = blocks.findIndex(block => block.id === over?.id);
+      
+      const newBlocks = arrayMove(blocks, oldIndex, newIndex);
+      setBlocks(newBlocks);
+      updateOutput(newBlocks);
+    }
   };
 
   const updateOutput = useCallback((currentBlocks: EmailBlock[]) => {
@@ -308,62 +336,32 @@ export const EmailVisualEditor: React.FC<EmailVisualEditorProps> = ({
                   }} 
                 />
               ) : (
-                <DragDropContext onDragEnd={handleDragEnd}>
-                  <Droppable droppableId="email-blocks">
-                    {(provided) => (
-                      <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        className="space-y-2 min-h-[200px]"
-                      >
-                        {blocks.map((block, index) => (
-                          <Draggable key={block.id} draggableId={block.id} index={index}>
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                className={`
-                                  relative border-2 border-dashed rounded-lg p-3 cursor-pointer
-                                  ${selectedBlock === block.id ? 'border-primary bg-primary/5' : 'border-muted-foreground/20'}
-                                  ${snapshot.isDragging ? 'shadow-lg' : ''}
-                                `}
-                                onClick={() => setSelectedBlock(block.id)}
-                              >
-                                <div {...provided.dragHandleProps} className="absolute top-1 left-1">
-                                  <Move className="w-4 h-4 text-muted-foreground" />
-                                </div>
-                                
-                                <div className="ml-6">
-                                  <EmailBlockRenderer block={block} />
-                                </div>
-
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  className="absolute top-1 right-1 h-6 w-6 p-0"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteBlock(block.id);
-                                  }}
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                        
-                        {blocks.length === 0 && (
-                          <div className="text-center py-12 text-muted-foreground">
-                            <Plus className="w-8 h-8 mx-auto mb-2" />
-                            <p>Adicione elementos ao seu email usando a barra lateral</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </Droppable>
-                </DragDropContext>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-2 min-h-[200px]">
+                      {blocks.map((block) => (
+                        <SortableEmailBlock
+                          key={block.id}
+                          block={block}
+                          isSelected={selectedBlock === block.id}
+                          onSelect={() => setSelectedBlock(block.id)}
+                          onDelete={() => deleteBlock(block.id)}
+                        />
+                      ))}
+                      
+                      {blocks.length === 0 && (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <Plus className="w-8 h-8 mx-auto mb-2" />
+                          <p>Adicione elementos ao seu email usando a barra lateral</p>
+                        </div>
+                      )}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               )}
             </CardContent>
           </Card>
@@ -381,42 +379,6 @@ export const EmailVisualEditor: React.FC<EmailVisualEditorProps> = ({
       </div>
     </div>
   );
-};
-
-// Component to render individual blocks
-const EmailBlockRenderer: React.FC<{ block: EmailBlock }> = ({ block }) => {
-  switch (block.type) {
-    case 'text':
-      return (
-        <div style={block.styles}>
-          {block.content.text}
-        </div>
-      );
-    case 'image':
-      return (
-        <div style={{ textAlign: block.styles.textAlign }}>
-          <img 
-            src={block.content.src} 
-            alt={block.content.alt}
-            style={{ maxWidth: block.styles.maxWidth, height: 'auto' }}
-          />
-        </div>
-      );
-    case 'button':
-      return (
-        <div style={{ textAlign: block.styles.textAlign }}>
-          <span style={block.styles}>
-            {block.content.text}
-          </span>
-        </div>
-      );
-    case 'spacer':
-      return <div style={block.styles} />;
-    case 'divider':
-      return <div style={block.styles} />;
-    default:
-      return null;
-  }
 };
 
 // Properties panel for editing block properties

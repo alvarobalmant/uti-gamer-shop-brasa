@@ -39,7 +39,7 @@ interface EmailTemplate {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  visual_config?: EmailBlock[];
+  visual_config?: any;
 }
 
 export const EmailTemplatesTab: React.FC = () => {
@@ -175,7 +175,7 @@ export const EmailTemplatesTab: React.FC = () => {
       html_content: '',
       text_content: '',
       variables: [],
-      visual_config: [],
+      visual_config: [] as any,
       is_active: true,
     });
     setEditMode('visual');
@@ -185,7 +185,7 @@ export const EmailTemplatesTab: React.FC = () => {
   const handleVisualEditorChange = (blocks: EmailBlock[], html: string) => {
     setEditingTemplate(prev => ({
       ...prev,
-      visual_config: blocks,
+      visual_config: blocks as any,
       html_content: html
     }));
   };
@@ -333,7 +333,7 @@ export const EmailTemplatesTab: React.FC = () => {
               <div className="space-y-2">
                 <Label>Design Visual do Email</Label>
                 <EmailVisualEditor
-                  initialBlocks={editingTemplate.visual_config || []}
+                  initialBlocks={(editingTemplate.visual_config as EmailBlock[]) || []}
                   onChange={handleVisualEditorChange}
                   emailConfig={emailConfig}
                 />
