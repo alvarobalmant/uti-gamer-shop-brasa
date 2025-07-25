@@ -8,7 +8,6 @@ const supabase = createClient(
 );
 
 const resendApiKey = Deno.env.get('RESEND_API_KEY');
-console.log('Resend API Key present:', !!resendApiKey);
 const resend = new Resend(resendApiKey);
 
 const corsHeaders = {
@@ -56,48 +55,59 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== EMAIL WEBHOOK TRIGGERED ===');
-    console.log('Headers:', req.headers);
-    console.log('Method:', req.method);
+    console.log('=== EMAIL WEBHOOK STARTED ===');
+    
+    // Verificar se a chave Resend existe
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY not found');
+      return new Response('RESEND_API_KEY not configured', { status: 500 });
+    }
+    console.log('✓ Resend API Key exists');
+
     const payload = await req.text();
-    console.log('Received payload:', payload.substring(0, 200) + '...');
+    console.log('✓ Payload received, length:', payload.length);
     
     // Parse do webhook do Supabase Auth
     let webhookData;
     try {
       webhookData = JSON.parse(payload);
+      console.log('✓ Webhook data parsed');
     } catch (error) {
-      console.error('Error parsing webhook payload:', error);
+      console.error('❌ Error parsing webhook payload:', error);
       return new Response('Invalid JSON payload', { status: 400 });
     }
 
     const { user, email_data }: { user: User; email_data: EmailData } = webhookData;
     
     if (!user?.email || !email_data) {
-      console.error('Missing required data in webhook payload');
+      console.error('❌ Missing required data in webhook payload');
       return new Response('Missing required data', { status: 400 });
     }
 
-    console.log('Processing email for type:', email_data.email_action_type);
+    console.log('✓ User email:', user.email);
+    console.log('✓ Action type:', email_data.email_action_type);
 
     // Buscar configurações de email
-    console.log('Fetching email config...');
+    console.log('⏳ Fetching email config...');
     const { data: emailConfig, error: configError } = await supabase
       .from('email_config')
       .select('*')
       .single();
 
     if (configError) {
-      console.error('Error fetching email config:', configError);
-      return new Response('Error fetching email config', { status: 500 });
+      console.error('❌ Error fetching email config:', configError);
+      return new Response(`Error fetching email config: ${configError.message}`, { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     if (!emailConfig) {
-      console.error('Email config not found');
+      console.error('❌ Email config not found');
       return new Response('Email config not found', { status: 500 });
     }
 
-    console.log('Email config found:', emailConfig.from_name);
+    console.log('✓ Email config found for:', emailConfig.from_name);
 
     // Determinar tipo de template baseado na ação
     let templateType = 'confirmation';
@@ -107,8 +117,7 @@ serve(async (req) => {
       templateType = 'confirmation';
     }
 
-    // Buscar template
-    console.log('Fetching template for type:', templateType);
+    console.log('⏳ Fetching template for type:', templateType);
     const { data: template, error: templateError } = await supabase
       .from('email_templates')
       .select('*')
@@ -117,16 +126,19 @@ serve(async (req) => {
       .single();
 
     if (templateError) {
-      console.error('Error fetching template:', templateError);
-      return new Response(`Error fetching template: ${templateError.message}`, { status: 500 });
+      console.error('❌ Error fetching template:', templateError);
+      return new Response(`Error fetching template: ${templateError.message}`, { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     if (!template) {
-      console.error(`Template not found for type: ${templateType}`);
+      console.error('❌ Template not found for type:', templateType);
       return new Response(`Template not found for type: ${templateType}`, { status: 500 });
     }
 
-    console.log('Template found:', template.name);
+    console.log('✓ Template found:', template.name);
 
     // Preparar variáveis para o template
     const templateVariables = {
@@ -142,14 +154,15 @@ serve(async (req) => {
       platform_url: email_data.site_url || email_data.redirect_to,
     };
 
-    // Processar templates
+    console.log('⏳ Processing templates...');
     const htmlContent = processTemplate(template.html_content, templateVariables);
     const textContent = template.text_content ? processTemplate(template.text_content, templateVariables) : undefined;
     const subject = processTemplate(template.subject, templateVariables);
 
+    console.log('✓ Templates processed');
+    console.log('⏳ Sending email via Resend...');
+
     // Enviar email
-    console.log('Sending email to:', user.email);
-    console.log('Email subject:', subject);
     const emailResult = await resend.emails.send({
       from: `${emailConfig.from_name} <${emailConfig.from_email}>`,
       to: [user.email],
@@ -160,7 +173,7 @@ serve(async (req) => {
     });
 
     if (emailResult.error) {
-      console.error('Error sending email:', emailResult.error);
+      console.error('❌ Error sending email:', emailResult.error);
       return new Response(
         JSON.stringify({ error: emailResult.error }),
         { 
@@ -170,7 +183,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Email sent successfully:', emailResult.data);
+    console.log('✅ Email sent successfully! ID:', emailResult.data?.id);
 
     return new Response(
       JSON.stringify({ success: true, email_id: emailResult.data?.id }),
@@ -181,9 +194,10 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in send-custom-emails function:', error);
+    console.error('❌ CRITICAL ERROR in send-custom-emails function:', error);
+    console.error('Error stack:', error.stack);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message, stack: error.stack }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
