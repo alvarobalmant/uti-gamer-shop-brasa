@@ -3,7 +3,6 @@ import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 interface ImageUploaderProps {
   value?: string;
@@ -44,28 +43,21 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     try {
       setIsUploading(true);
 
-      // Gerar nome único para o arquivo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      // Simular upload - em produção, usar serviço real
+      const formData = new FormData();
+      formData.append('file', file);
 
-      // Upload para o Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('site-images')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Obter URL pública
-      const { data: urlData } = supabase.storage
-        .from('site-images')
-        .getPublicUrl(fileName);
-
-      onChange(urlData.publicUrl);
+      // Por enquanto, criar URL local para preview
+      const imageUrl = URL.createObjectURL(file);
+      
+      // Em produção, fazer upload real:
+      // const response = await fetch('/api/upload', {
+      //   method: 'POST',
+      //   body: formData
+      // });
+      // const { url } = await response.json();
+      
+      onChange(imageUrl);
       toast.success('Imagem carregada com sucesso!');
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
