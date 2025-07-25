@@ -31,7 +31,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        setIsEmailConfirmed(session?.user?.email_confirmed_at ? true : false);
+        
+        // Verificar se email está confirmado - usar email_confirmed_at do JWT
+        const isConfirmed = session?.user?.email_confirmed_at != null;
+        setIsEmailConfirmed(isConfirmed);
         
         if (session?.user) {
           // Check admin role using setTimeout to avoid infinite recursion
@@ -62,7 +65,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setIsEmailConfirmed(session?.user?.email_confirmed_at ? true : false);
+      const isConfirmed = session?.user?.email_confirmed_at != null;
+      setIsEmailConfirmed(isConfirmed);
       setLoading(false);
     });
 

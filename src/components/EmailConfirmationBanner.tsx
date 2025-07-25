@@ -17,6 +17,12 @@ export const EmailConfirmationBanner = () => {
     return null;
   }
 
+  console.log('Email confirmation status:', { 
+    hasUser: !!user, 
+    isEmailConfirmed, 
+    email_confirmed_at: user?.email_confirmed_at 
+  });
+
   const resendConfirmation = async () => {
     setIsResending(true);
     try {
