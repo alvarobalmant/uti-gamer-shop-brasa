@@ -7,7 +7,9 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+const resendApiKey = Deno.env.get('RESEND_API_KEY');
+console.log('Resend API Key present:', !!resendApiKey);
+const resend = new Resend(resendApiKey);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -55,6 +57,8 @@ serve(async (req) => {
 
   try {
     console.log('=== EMAIL WEBHOOK TRIGGERED ===');
+    console.log('Headers:', req.headers);
+    console.log('Method:', req.method);
     const payload = await req.text();
     console.log('Received payload:', payload.substring(0, 200) + '...');
     
@@ -77,15 +81,23 @@ serve(async (req) => {
     console.log('Processing email for type:', email_data.email_action_type);
 
     // Buscar configurações de email
-    const { data: emailConfig } = await supabase
+    console.log('Fetching email config...');
+    const { data: emailConfig, error: configError } = await supabase
       .from('email_config')
       .select('*')
       .single();
+
+    if (configError) {
+      console.error('Error fetching email config:', configError);
+      return new Response('Error fetching email config', { status: 500 });
+    }
 
     if (!emailConfig) {
       console.error('Email config not found');
       return new Response('Email config not found', { status: 500 });
     }
+
+    console.log('Email config found:', emailConfig.from_name);
 
     // Determinar tipo de template baseado na ação
     let templateType = 'confirmation';
@@ -96,17 +108,25 @@ serve(async (req) => {
     }
 
     // Buscar template
-    const { data: template } = await supabase
+    console.log('Fetching template for type:', templateType);
+    const { data: template, error: templateError } = await supabase
       .from('email_templates')
       .select('*')
       .eq('type', templateType)
       .eq('is_active', true)
       .single();
 
+    if (templateError) {
+      console.error('Error fetching template:', templateError);
+      return new Response(`Error fetching template: ${templateError.message}`, { status: 500 });
+    }
+
     if (!template) {
       console.error(`Template not found for type: ${templateType}`);
       return new Response(`Template not found for type: ${templateType}`, { status: 500 });
     }
+
+    console.log('Template found:', template.name);
 
     // Preparar variáveis para o template
     const templateVariables = {
@@ -128,6 +148,8 @@ serve(async (req) => {
     const subject = processTemplate(template.subject, templateVariables);
 
     // Enviar email
+    console.log('Sending email to:', user.email);
+    console.log('Email subject:', subject);
     const emailResult = await resend.emails.send({
       from: `${emailConfig.from_name} <${emailConfig.from_email}>`,
       to: [user.email],
