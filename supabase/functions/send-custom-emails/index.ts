@@ -105,7 +105,13 @@ serve(async (req) => {
     console.log('✅ Template loaded:', template.name);
     
     // Preparar variáveis
-    const redirectUrl = email_data.redirect_to || email_data.site_url || `${supabaseUrl}/`;
+    let redirectUrl = email_data.redirect_to || email_data.site_url || `${supabaseUrl}/`;
+    
+    // Adicionar protocolo se não houver
+    if (redirectUrl && !redirectUrl.startsWith('http://') && !redirectUrl.startsWith('https://') && !redirectUrl.includes('supabase.co')) {
+      redirectUrl = 'https://' + redirectUrl;
+    }
+    
     const confirmationLink = `${supabaseUrl}/functions/v1/confirm-email-and-redirect?token_hash=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${encodeURIComponent(redirectUrl)}`;
     
     const templateVariables = {

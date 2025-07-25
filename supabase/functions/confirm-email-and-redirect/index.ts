@@ -17,7 +17,12 @@ serve(async (req: Request) => {
     const url = new URL(req.url);
     const token_hash = url.searchParams.get('token_hash');
     const type = url.searchParams.get('type');
-    const redirect_to = url.searchParams.get('redirect_to') || 'https://pmxnfpnnvtuuiedoxuxc.supabase.co';
+    let redirect_to = url.searchParams.get('redirect_to') || 'https://pmxnfpnnvtuuiedoxuxc.supabase.co';
+    
+    // Adicionar protocolo se não houver
+    if (redirect_to && !redirect_to.startsWith('http://') && !redirect_to.startsWith('https://')) {
+      redirect_to = 'https://' + redirect_to;
+    }
 
     if (!token_hash || !type) {
       return new Response(
@@ -298,7 +303,7 @@ serve(async (req: Request) => {
       {
         status: 200,
         headers: { 
-          'Content-Type': 'text/html',
+          'Content-Type': 'text/html; charset=utf-8',
           ...corsHeaders
         }
       }
