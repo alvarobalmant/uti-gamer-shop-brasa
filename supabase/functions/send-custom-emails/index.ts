@@ -54,7 +54,9 @@ serve(async (req) => {
   }
 
   try {
+    console.log('=== EMAIL WEBHOOK TRIGGERED ===');
     const payload = await req.text();
+    console.log('Received payload:', payload.substring(0, 200) + '...');
     
     // Parse do webhook do Supabase Auth
     let webhookData;
