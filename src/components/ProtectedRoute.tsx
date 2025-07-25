@@ -1,6 +1,6 @@
 
 import React, { ReactNode } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
