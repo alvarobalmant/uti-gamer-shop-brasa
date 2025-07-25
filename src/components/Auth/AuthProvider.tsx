@@ -95,7 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       console.log('🔑 Tentando login:', email);
-      setLoading(true);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
@@ -128,15 +127,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       console.error('💥 Erro inesperado no login:', error);
       return { success: false, error: 'Erro inesperado. Tente novamente.' };
-    } finally {
-      setLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
     try {
       console.log('📝 Tentando cadastro:', email);
-      setLoading(true);
       
       const cleanEmail = email.trim().toLowerCase();
       
@@ -183,8 +179,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       console.error('💥 Erro inesperado no cadastro:', error);
       return { success: false, error: 'Erro inesperado. Tente novamente.' };
-    } finally {
-      setLoading(false);
     }
   };
 
