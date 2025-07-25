@@ -7,9 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Edit, Eye, Plus, Save, X } from 'lucide-react';
+import { Edit, Eye, Plus, Save, X, Palette, Code } from 'lucide-react';
+import { EmailVisualEditor, EmailBlock } from './EmailVisualEditor';
 import {
   Dialog,
   DialogContent,
@@ -37,6 +39,7 @@ interface EmailTemplate {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  visual_config?: EmailBlock[];
 }
 
 export const EmailTemplatesTab: React.FC = () => {
@@ -46,6 +49,8 @@ export const EmailTemplatesTab: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Partial<EmailTemplate>>({});
+  const [editMode, setEditMode] = useState<'visual' | 'code'>('visual');
+  const [emailConfig, setEmailConfig] = useState<any>(null);
   const { toast } = useToast();
 
   const templateTypes = [
@@ -58,6 +63,7 @@ export const EmailTemplatesTab: React.FC = () => {
 
   useEffect(() => {
     loadTemplates();
+    loadEmailConfig();
   }, []);
 
   const loadTemplates = async () => {
@@ -81,6 +87,20 @@ export const EmailTemplatesTab: React.FC = () => {
     }
   };
 
+  const loadEmailConfig = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('email_config')
+        .select('*')
+        .maybeSingle();
+
+      if (error) throw error;
+      setEmailConfig(data);
+    } catch (error) {
+      console.error('Error loading email config:', error);
+    }
+  };
+
   const handleSaveTemplate = async () => {
     try {
       if (!editingTemplate.type || !editingTemplate.name || !editingTemplate.subject || !editingTemplate.html_content) {
@@ -99,6 +119,7 @@ export const EmailTemplatesTab: React.FC = () => {
         html_content: editingTemplate.html_content,
         text_content: editingTemplate.text_content || '',
         variables: editingTemplate.variables || [],
+        visual_config: editingTemplate.visual_config || null,
         is_active: editingTemplate.is_active ?? true,
       };
 
@@ -154,9 +175,19 @@ export const EmailTemplatesTab: React.FC = () => {
       html_content: '',
       text_content: '',
       variables: [],
+      visual_config: [],
       is_active: true,
     });
+    setEditMode('visual');
     setIsEditDialogOpen(true);
+  };
+
+  const handleVisualEditorChange = (blocks: EmailBlock[], html: string) => {
+    setEditingTemplate(prev => ({
+      ...prev,
+      visual_config: blocks,
+      html_content: html
+    }));
   };
 
   if (loading) {
@@ -226,15 +257,36 @@ export const EmailTemplatesTab: React.FC = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {editMode === 'visual' ? <Palette className="w-4 h-4" /> : <Code className="w-4 h-4" />}
               {editingTemplate.id ? 'Editar Template' : 'Novo Template'}
             </DialogTitle>
             <DialogDescription>
-              Configure o template de email com HTML personalizado e variáveis.
+              {editMode === 'visual' 
+                ? 'Design seu email visualmente usando blocos arrastáveis.'
+                : 'Configure o template de email com HTML personalizado e variáveis.'
+              }
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* Header Controls */}
+            <div className="flex items-center justify-between">
+              <Tabs value={editMode} onValueChange={(value) => setEditMode(value as 'visual' | 'code')}>
+                <TabsList>
+                  <TabsTrigger value="visual" className="flex items-center gap-2">
+                    <Palette className="w-4 h-4" />
+                    Visual
+                  </TabsTrigger>
+                  <TabsTrigger value="code" className="flex items-center gap-2">
+                    <Code className="w-4 h-4" />
+                    Código
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* Basic Info */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="template-type">Tipo de Template</Label>
@@ -276,27 +328,41 @@ export const EmailTemplatesTab: React.FC = () => {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="template-html">Conteúdo HTML</Label>
-              <Textarea
-                id="template-html"
-                value={editingTemplate.html_content || ''}
-                onChange={(e) => setEditingTemplate(prev => ({ ...prev, html_content: e.target.value }))}
-                placeholder="Conteúdo HTML do email..."
-                className="min-h-[200px] font-mono text-sm"
-              />
-            </div>
+            {/* Content Editor */}
+            {editMode === 'visual' ? (
+              <div className="space-y-2">
+                <Label>Design Visual do Email</Label>
+                <EmailVisualEditor
+                  initialBlocks={editingTemplate.visual_config || []}
+                  onChange={handleVisualEditorChange}
+                  emailConfig={emailConfig}
+                />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="template-html">Conteúdo HTML</Label>
+                  <Textarea
+                    id="template-html"
+                    value={editingTemplate.html_content || ''}
+                    onChange={(e) => setEditingTemplate(prev => ({ ...prev, html_content: e.target.value }))}
+                    placeholder="Conteúdo HTML do email..."
+                    className="min-h-[200px] font-mono text-sm"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="template-text">Conteúdo Texto (Opcional)</Label>
-              <Textarea
-                id="template-text"
-                value={editingTemplate.text_content || ''}
-                onChange={(e) => setEditingTemplate(prev => ({ ...prev, text_content: e.target.value }))}
-                placeholder="Versão em texto simples do email..."
-                className="min-h-[100px]"
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="template-text">Conteúdo Texto (Opcional)</Label>
+                  <Textarea
+                    id="template-text"
+                    value={editingTemplate.text_content || ''}
+                    onChange={(e) => setEditingTemplate(prev => ({ ...prev, text_content: e.target.value }))}
+                    placeholder="Versão em texto simples do email..."
+                    className="min-h-[100px]"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="flex items-center space-x-2">
               <Switch
