@@ -66,22 +66,29 @@ export const EmailConfirmationGuard = ({
 
   // Mostrar aviso padrão
   return (
-    <Alert className="border-amber-200 bg-amber-50">
+    <Alert className="border-amber-200 bg-amber-50 shadow-sm">
       <Mail className="h-4 w-4 text-amber-600" />
       <AlertDescription className="text-amber-800">
         <div className="mb-3">
-          <strong>Email não confirmado</strong>
-          <br />
-          Para acessar {featureName}, você precisa confirmar seu email primeiro.
+          <div className="font-semibold text-amber-900 mb-2">
+            🔒 Email não confirmado
+          </div>
+          <div className="text-sm text-amber-700">
+            Para acessar <strong>{featureName}</strong>, você precisa confirmar seu email primeiro.
+            <br />
+            <span className="text-xs mt-1 block text-amber-600">
+              ✨ Confirme seu email e desbloqueie recursos exclusivos como UTI Coins e UTI Pro!
+            </span>
+          </div>
         </div>
         <Button
           variant="outline"
           size="sm"
           onClick={resendConfirmation}
           disabled={isResending}
-          className="border-amber-300 text-amber-800 hover:bg-amber-100"
+          className="border-amber-300 text-amber-800 hover:bg-amber-100 font-medium"
         >
-          {isResending ? "Reenviando..." : "Reenviar email de confirmação"}
+          {isResending ? "Reenviando..." : "📬 Reenviar email de confirmação"}
         </Button>
       </AlertDescription>
     </Alert>
