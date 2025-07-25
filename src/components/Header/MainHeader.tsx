@@ -92,9 +92,7 @@ const MainHeader = ({
                 <OptimizedImage
                   src={siteInfo.headerImageUrl}
                   alt={`${siteInfo.siteName} - ${siteInfo.siteSubtitle}`}
-                  className="h-12 w-auto flex-shrink-0 max-w-none object-contain"
-                  width={200}
-                  height={48}
+                  className="max-h-12 w-auto flex-shrink-0 object-contain"
                   quality={90}
                   priority={true}
                   placeholder="empty"
