@@ -337,6 +337,84 @@ export type Database = {
         }
         Relationships: []
       }
+      email_config: {
+        Row: {
+          company_address: string | null
+          created_at: string
+          from_email: string
+          from_name: string
+          id: string
+          logo_url: string | null
+          primary_color: string | null
+          reply_to: string | null
+          secondary_color: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_address?: string | null
+          created_at?: string
+          from_email?: string
+          from_name?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          reply_to?: string | null
+          secondary_color?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_address?: string | null
+          created_at?: string
+          from_email?: string
+          from_name?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          reply_to?: string | null
+          secondary_color?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          created_at: string
+          html_content: string
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string
+          text_content: string | null
+          type: string
+          updated_at: string
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject: string
+          text_content?: string | null
+          type: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string
+          text_content?: string | null
+          type?: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Relationships: []
+      }
       homepage_layout: {
         Row: {
           created_at: string | null
