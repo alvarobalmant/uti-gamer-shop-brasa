@@ -248,9 +248,28 @@ export const EmailVisualEditor: React.FC<EmailVisualEditorProps> = ({
             </div>
           `;
         case 'button':
+          let buttonUrl = '#';
+          
+          switch (block.content.actionType) {
+            case 'confirm_email':
+              const redirectUrl = block.content.redirectUrl || 'https://pmxnfpnnvtuuiedoxuxc.supabase.co';
+              buttonUrl = `https://pmxnfpnnvtuuiedoxuxc.supabase.co/functions/v1/confirm-email-and-redirect?token_hash={{token_hash}}&type={{email_action_type}}&redirect_to=${encodeURIComponent(redirectUrl)}`;
+              break;
+            case 'redirect_site':
+              buttonUrl = block.content.redirectUrl || 'https://pmxnfpnnvtuuiedoxuxc.supabase.co';
+              break;
+            case 'download':
+              buttonUrl = block.content.downloadUrl || '#';
+              break;
+            case 'link':
+            default:
+              buttonUrl = block.content.href || '#';
+              break;
+          }
+          
           return `
             <div style="text-align: ${block.styles.textAlign}; margin-bottom: ${block.styles.marginBottom};">
-              <a href="${block.content.href}" style="${stylesToCSS(block.styles)}">
+              <a href="${buttonUrl}" style="${stylesToCSS(block.styles)}">
                 ${block.content.text}
               </a>
             </div>
@@ -551,14 +570,71 @@ const EmailBlockProperties: React.FC<{
               placeholder="Texto do botão"
             />
           </div>
+          
           <div>
-            <Label>Link</Label>
-            <Input
-              value={block.content.href}
-              onChange={(e) => updateContent('href', e.target.value)}
-              placeholder="https://..."
-            />
+            <Label>Tipo de Ação</Label>
+            <Select
+              value={block.content.actionType || 'link'}
+              onValueChange={(value) => updateContent('actionType', value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="link">Link Personalizado</SelectItem>
+                <SelectItem value="confirm_email">Confirmar Email e Fazer Login</SelectItem>
+                <SelectItem value="redirect_site">Redirecionar para o Site</SelectItem>
+                <SelectItem value="download">Download de Arquivo</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
+          {block.content.actionType === 'link' && (
+            <div>
+              <Label>Link</Label>
+              <Input
+                value={block.content.href || ''}
+                onChange={(e) => updateContent('href', e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+          )}
+
+          {block.content.actionType === 'confirm_email' && (
+            <div className="space-y-2">
+              <Label>URL de Redirecionamento (após confirmar)</Label>
+              <Input
+                value={block.content.redirectUrl || ''}
+                onChange={(e) => updateContent('redirectUrl', e.target.value)}
+                placeholder="https://seusite.com (opcional)"
+              />
+              <p className="text-xs text-muted-foreground">
+                O botão irá confirmar o email do usuário e redirecioná-lo logado para esta URL
+              </p>
+            </div>
+          )}
+
+          {block.content.actionType === 'redirect_site' && (
+            <div>
+              <Label>URL de Destino</Label>
+              <Input
+                value={block.content.redirectUrl || ''}
+                onChange={(e) => updateContent('redirectUrl', e.target.value)}
+                placeholder="https://seusite.com"
+              />
+            </div>
+          )}
+
+          {block.content.actionType === 'download' && (
+            <div>
+              <Label>URL do Arquivo</Label>
+              <Input
+                value={block.content.downloadUrl || ''}
+                onChange={(e) => updateContent('downloadUrl', e.target.value)}
+                placeholder="https://exemplo.com/arquivo.pdf"
+              />
+            </div>
+          )}
         </div>
       )}
 
