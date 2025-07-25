@@ -92,9 +92,17 @@ serve(async (req: Request) => {
     );
 
     // Verify the email using admin client
+    // Mapear tipos de verificação para o formato correto
+    let verificationType = type;
+    if (type === 'signup' || type === 'confirmation') {
+      verificationType = 'email';
+    }
+    
+    console.log(`Verificando email com tipo: ${verificationType} (original: ${type})`);
+    
     const { data, error } = await supabaseAdmin.auth.verifyOtp({
       token_hash,
-      type: type as any
+      type: verificationType as any
     });
 
     if (error) {

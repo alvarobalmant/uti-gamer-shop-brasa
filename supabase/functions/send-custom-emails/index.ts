@@ -105,6 +105,9 @@ serve(async (req) => {
     console.log('✅ Template loaded:', template.name);
     
     // Preparar variáveis
+    const redirectUrl = email_data.redirect_to || email_data.site_url || `${supabaseUrl}/`;
+    const confirmationLink = `${supabaseUrl}/functions/v1/confirm-email-and-redirect?token_hash=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${encodeURIComponent(redirectUrl)}`;
+    
     const templateVariables = {
       from_name: emailConfig.from_name,
       logo_url: emailConfig.logo_url || '',
@@ -112,9 +115,13 @@ serve(async (req) => {
       company_address: emailConfig.company_address || '',
       user_name: user.user_metadata?.name || user.email.split('@')[0],
       user_email: user.email,
-      confirmation_url: `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${email_data.redirect_to}`,
-      reset_url: `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${email_data.redirect_to}`,
-      platform_url: email_data.site_url || email_data.redirect_to,
+      confirmation_link: confirmationLink,
+      confirmation_url: confirmationLink, // Compatibilidade
+      reset_url: confirmationLink,
+      reset_link: confirmationLink,
+      token_hash: email_data.token_hash,
+      email_action_type: email_data.email_action_type,
+      platform_url: redirectUrl,
     };
     
     // Processar templates
