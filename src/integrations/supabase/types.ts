@@ -2129,7 +2129,7 @@ export type Database = {
           desconto: number | null
           email: string
           id: string
-          nome: string
+          nome: string | null
           papel: string
           plano: string | null
           status_assinatura: string
@@ -2142,7 +2142,7 @@ export type Database = {
           desconto?: number | null
           email: string
           id?: string
-          nome: string
+          nome?: string | null
           papel?: string
           plano?: string | null
           status_assinatura?: string
@@ -2155,7 +2155,7 @@ export type Database = {
           desconto?: number | null
           email?: string
           id?: string
-          nome?: string
+          nome?: string | null
           papel?: string
           plano?: string | null
           status_assinatura?: string
@@ -2329,6 +2329,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_email_confirmed: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
