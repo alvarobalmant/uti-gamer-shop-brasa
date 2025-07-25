@@ -74,7 +74,7 @@ serve(async (req) => {
     const { data: emailConfig, error: configError } = await supabase
       .from('email_config')
       .select('*')
-      .single();
+      .maybeSingle();
     
     if (configError || !emailConfig) {
       console.log('❌ Email config error:', configError);
