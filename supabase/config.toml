@@ -45,3 +45,6 @@ verify_jwt = true
 
 [functions.send-custom-emails]
 verify_jwt = false
+
+[functions.send-test-email]
+verify_jwt = false

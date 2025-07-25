@@ -3,7 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmailTemplatesTab } from './EmailTemplatesTab';
 import { EmailConfigTab } from './EmailConfigTab';
 import { EmailTestTab } from './EmailTestTab';
-import { Mail, Settings, TestTube } from 'lucide-react';
+import { EmailWebhookSetup } from './EmailWebhookSetup';
+import { Mail, Settings, TestTube, Webhook } from 'lucide-react';
 
 export const EmailManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState('templates');
@@ -18,7 +19,7 @@ export const EmailManager: React.FC = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="templates" className="flex items-center gap-2">
             <Mail className="w-4 h-4" />
             Templates
@@ -26,6 +27,10 @@ export const EmailManager: React.FC = () => {
           <TabsTrigger value="config" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Configurações
+          </TabsTrigger>
+          <TabsTrigger value="webhook" className="flex items-center gap-2">
+            <Webhook className="w-4 h-4" />
+            Webhook
           </TabsTrigger>
           <TabsTrigger value="test" className="flex items-center gap-2">
             <TestTube className="w-4 h-4" />
@@ -39,6 +44,10 @@ export const EmailManager: React.FC = () => {
 
         <TabsContent value="config" className="mt-6">
           <EmailConfigTab />
+        </TabsContent>
+
+        <TabsContent value="webhook" className="mt-6">
+          <EmailWebhookSetup />
         </TabsContent>
 
         <TabsContent value="test" className="mt-6">

@@ -21,6 +21,7 @@ import StorageManager from './StorageManager';
 import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
 import UTICoinsManager from './UTICoinsManager';
+import { EmailManager } from './EmailManager/EmailManager';
 import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -219,6 +220,10 @@ export const AdminPanel = () => {
 
               <TabsContent value="uti_coins" className="mt-0">
                 <UTICoinsManager />
+              </TabsContent>
+
+              <TabsContent value="emails" className="mt-0">
+                <EmailManager />
               </TabsContent>
 
               <TabsContent value="users" className="mt-0">

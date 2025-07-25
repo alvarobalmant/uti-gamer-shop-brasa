@@ -80,16 +80,6 @@ export const EmailTestTab: React.FC = () => {
       return;
     }
 
-    const template = templates.find(t => t.id === selectedTemplate);
-    if (!template) {
-      toast({
-        title: 'Erro',
-        description: 'Template não encontrado.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setSending(true);
 
     try {
@@ -107,40 +97,30 @@ export const EmailTestTab: React.FC = () => {
         return;
       }
 
-      // Simular dados do webhook
-      const webhookData = {
-        user: {
-          email: testEmail,
-          user_metadata: {
-            name: variables['user_name'] || 'Usuário Teste'
+      // Chamar a edge function de teste
+      const { data, error } = await supabase.functions.invoke('send-test-email', {
+        body: {
+          template_id: selectedTemplate,
+          recipient_email: testEmail,
+          test_variables: {
+            ...variables,
+            platform_url: window.location.origin
           }
-        },
-        email_data: {
-          token: 'test_token',
-          token_hash: 'test_token_hash',
-          redirect_to: window.location.origin,
-          email_action_type: template.type === 'reset_password' ? 'recovery' : 'signup',
-          site_url: window.location.origin
         }
-      };
-
-      // Chamar a edge function
-      const { data, error } = await supabase.functions.invoke('send-custom-emails', {
-        body: JSON.stringify(webhookData)
       });
 
       if (error) throw error;
 
       toast({
         title: 'Sucesso',
-        description: `Email de teste enviado para ${testEmail}!`,
+        description: data.message || `Email de teste enviado para ${testEmail}!`,
       });
 
     } catch (error) {
       console.error('Error sending test email:', error);
       toast({
         title: 'Erro',
-        description: 'Erro ao enviar email de teste.',
+        description: error.message || 'Erro ao enviar email de teste.',
         variant: 'destructive',
       });
     } finally {
