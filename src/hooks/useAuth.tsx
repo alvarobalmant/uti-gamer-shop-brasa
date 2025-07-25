@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  isEmailConfirmed: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
@@ -20,6 +21,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isEmailConfirmed, setIsEmailConfirmed] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -29,6 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        setIsEmailConfirmed(session?.user?.email_confirmed_at ? true : false);
         
         if (session?.user) {
           // Check admin role using setTimeout to avoid infinite recursion
@@ -48,6 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }, 0);
         } else {
           setIsAdmin(false);
+          setIsEmailConfirmed(false);
         }
         
         setLoading(false);
@@ -58,6 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setIsEmailConfirmed(session?.user?.email_confirmed_at ? true : false);
       setLoading(false);
     });
 
@@ -150,6 +155,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       session,
       isAdmin,
+      isEmailConfirmed,
       loading,
       signIn,
       signUp,

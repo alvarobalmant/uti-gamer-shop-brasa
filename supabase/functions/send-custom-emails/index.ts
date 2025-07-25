@@ -64,28 +64,40 @@ serve(async (req) => {
       webhookData = JSON.parse(payload);
     } catch (error) {
       console.error('Error parsing webhook payload:', error);
-      return new Response('Invalid JSON payload', { status: 400 });
+      return new Response('Invalid JSON payload', { 
+        status: 400, 
+        headers: corsHeaders 
+      });
     }
 
     const { user, email_data }: { user: User; email_data: EmailData } = webhookData;
     
     if (!user?.email || !email_data) {
       console.error('Missing required data in webhook payload');
-      return new Response('Missing required data', { status: 400 });
+      return new Response('Missing required data', { 
+        status: 400, 
+        headers: corsHeaders 
+      });
     }
 
     console.log('Processing email for type:', email_data.email_action_type);
+    console.log('User email:', user.email);
 
     // Buscar configurações de email
-    const { data: emailConfig } = await supabase
+    const { data: emailConfig, error: configError } = await supabase
       .from('email_config')
       .select('*')
       .single();
 
-    if (!emailConfig) {
-      console.error('Email config not found');
-      return new Response('Email config not found', { status: 500 });
+    if (configError || !emailConfig) {
+      console.error('Email config not found:', configError);
+      return new Response('Email config not found', { 
+        status: 500, 
+        headers: corsHeaders 
+      });
     }
+
+    console.log('Email config found:', emailConfig.from_email);
 
     // Determinar tipo de template baseado na ação
     let templateType = 'confirmation';
@@ -95,18 +107,57 @@ serve(async (req) => {
       templateType = 'confirmation';
     }
 
+    console.log('Looking for template type:', templateType);
+
     // Buscar template
-    const { data: template } = await supabase
+    const { data: template, error: templateError } = await supabase
       .from('email_templates')
       .select('*')
       .eq('type', templateType)
       .eq('is_active', true)
       .single();
 
-    if (!template) {
-      console.error(`Template not found for type: ${templateType}`);
-      return new Response(`Template not found for type: ${templateType}`, { status: 500 });
+    if (templateError || !template) {
+      console.error(`Template not found for type: ${templateType}`, templateError);
+      
+      // Fallback: enviar email simples sem template customizado
+      console.log('Sending fallback email without custom template');
+      
+      const emailResult = await resend.emails.send({
+        from: `${emailConfig.from_name} <${emailConfig.from_email}>`,
+        to: [user.email],
+        subject: email_data.email_action_type === 'signup' ? 'Confirme seu email' : 'Recuperar senha',
+        html: `
+          <h1>Olá!</h1>
+          <p>Clique no link abaixo para ${email_data.email_action_type === 'signup' ? 'confirmar seu email' : 'redefinir sua senha'}:</p>
+          <a href="${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${email_data.redirect_to}">
+            ${email_data.email_action_type === 'signup' ? 'Confirmar Email' : 'Redefinir Senha'}
+          </a>
+        `,
+      });
+
+      if (emailResult.error) {
+        console.error('Error sending fallback email:', emailResult.error);
+        return new Response(
+          JSON.stringify({ error: emailResult.error }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      console.log('Fallback email sent successfully:', emailResult.data);
+      return new Response(
+        JSON.stringify({ success: true, email_id: emailResult.data?.id, fallback: true }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
+
+    console.log('Template found:', template.name);
 
     // Preparar variáveis para o template
     const templateVariables = {
@@ -126,6 +177,8 @@ serve(async (req) => {
     const htmlContent = processTemplate(template.html_content, templateVariables);
     const textContent = template.text_content ? processTemplate(template.text_content, templateVariables) : undefined;
     const subject = processTemplate(template.subject, templateVariables);
+
+    console.log('Sending custom template email...');
 
     // Enviar email
     const emailResult = await resend.emails.send({
