@@ -28,7 +28,7 @@ const MainHeader = ({
 }: MainHeaderProps) => {
   const location = useLocation();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const { siteInfo } = useSiteSettings();
+  const { siteInfo, loading } = useSiteSettings();
   const { navigateToHome } = useGlobalNavigationLinks();
 
   const toggleMobileSearch = () => {
@@ -75,56 +75,58 @@ const MainHeader = ({
               <Menu className="h-6 w-6" />
             </Button>
 
-            <div 
-              onClick={handleLogoClick}
-              className="flex items-center min-w-0 cursor-pointer" 
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  handleLogoClick(e as any);
-                }
-              }}
-              aria-label={`Página Inicial ${siteInfo.siteName}`}
-            >
-              {siteInfo.headerLayoutType === 'single_image' && siteInfo.headerImageUrl ? (
-                /* Modo Imagem Única */
-                <img
-                  src={siteInfo.headerImageUrl}
-                  alt={`${siteInfo.siteName} - ${siteInfo.siteSubtitle}`}
-                  className="h-12 w-auto flex-shrink-0 max-w-64"
-                />
-              ) : siteInfo.headerLayoutType === 'css_logo' ? (
-                /* Modo Logo CSS */
-                <CSSLogo 
-                  size="sm" 
-                  className="flex-shrink-0"
-                />
-              ) : (
-                /* Modo Logo + Título tradicional */
-                <>
+            {!loading && (
+              <div 
+                onClick={handleLogoClick}
+                className="flex items-center min-w-0 cursor-pointer" 
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleLogoClick(e as any);
+                  }
+                }}
+                aria-label={`Página Inicial ${siteInfo.siteName}`}
+              >
+                {siteInfo.headerLayoutType === 'single_image' && siteInfo.headerImageUrl ? (
+                  /* Modo Imagem Única */
                   <img
-                    src={siteInfo.logoUrl}
-                    alt={`${siteInfo.siteName} Logo`}
-                    className="h-10 w-auto flex-shrink-0"
+                    src={siteInfo.headerImageUrl}
+                    alt={`${siteInfo.siteName} - ${siteInfo.siteSubtitle}`}
+                    className="h-12 w-auto flex-shrink-0 max-w-64"
                   />
-                  <div className="ml-2 sm:ml-3 overflow-hidden">
-                    <h1 className={cn(
-                      "font-bold leading-tight text-uti-red",
-                      // 🎯 TABLET: Tamanho de fonte otimizado para tablets
-                      "text-sm md:text-base lg:text-lg"
-                    )}>{siteInfo.siteName}</h1>
-                    <p className={cn(
-                      "text-gray-600 leading-tight whitespace-normal",
-                      // 🎯 TABLET: Texto otimizado para tablets
-                      "text-[10px] md:text-xs lg:text-sm"
-                    )}>
-                      {siteInfo.siteSubtitle}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
+                ) : siteInfo.headerLayoutType === 'css_logo' ? (
+                  /* Modo Logo CSS */
+                  <CSSLogo 
+                    size="sm" 
+                    className="flex-shrink-0"
+                  />
+                ) : (
+                  /* Modo Logo + Título tradicional */
+                  <>
+                    <img
+                      src={siteInfo.logoUrl}
+                      alt={`${siteInfo.siteName} Logo`}
+                      className="h-10 w-auto flex-shrink-0"
+                    />
+                    <div className="ml-2 sm:ml-3 overflow-hidden">
+                      <h1 className={cn(
+                        "font-bold leading-tight text-uti-red",
+                        // 🎯 TABLET: Tamanho de fonte otimizado para tablets
+                        "text-sm md:text-base lg:text-lg"
+                      )}>{siteInfo.siteName}</h1>
+                      <p className={cn(
+                        "text-gray-600 leading-tight whitespace-normal",
+                        // 🎯 TABLET: Texto otimizado para tablets
+                        "text-[10px] md:text-xs lg:text-sm"
+                      )}>
+                        {siteInfo.siteSubtitle}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Center: Desktop Search Bar - Só aparece em desktop */}
