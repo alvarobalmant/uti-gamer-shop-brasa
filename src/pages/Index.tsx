@@ -5,7 +5,6 @@ import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
-import { EmailConfirmationBanner } from '@/components/EmailConfirmationBanner';
 
 import Footer from '@/components/Footer';
 import { useIndexPage } from '@/hooks/useIndexPage';
@@ -148,11 +147,6 @@ const Index = React.memo(() => {
         onCartOpen={handleCartOpen}
         onAuthOpen={handleAuthOpen}
       />
-
-      {/* Banner de confirmação de email */}
-      <div className="sticky top-0 z-50">
-        <EmailConfirmationBanner />
-      </div>
 
       <main className="flex-grow">
         {isLoading ? (
