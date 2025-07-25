@@ -152,53 +152,106 @@ serve(async (req) => {
 
     console.log('Email config found:', emailConfig.from_email);
 
-    // Enviar email simples sem template customizado por enquanto
-    console.log('Sending simple email...');
-    
+    // Construir email moderno e profissional
     const confirmationUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${email_data.redirect_to}`;
     
-    const subject = email_data.email_action_type === 'signup' ? 'Confirme seu email' : 'Recuperar senha';
-    const actionText = email_data.email_action_type === 'signup' ? 'confirmar seu email' : 'redefinir sua senha';
-    const buttonText = email_data.email_action_type === 'signup' ? 'Confirmar Email' : 'Redefinir Senha';
+    const subject = email_data.email_action_type === 'signup' ? 
+      '🎮 Confirme seu email - UTI dos Games' : 
+      '🔐 Redefinir senha - UTI dos Games';
+    
+    const actionText = email_data.email_action_type === 'signup' ? 
+      'confirmar seu email' : 
+      'redefinir sua senha';
+    
+    const buttonText = email_data.email_action_type === 'signup' ? 
+      'Confirmar Email' : 
+      'Redefinir Senha';
+
+    const welcomeMessage = email_data.email_action_type === 'signup' ? 
+      `<p style="font-size: 16px; margin-bottom: 20px;">Bem-vindo à <strong>UTI dos Games</strong>! 🎮</p>
+       <p style="color: #666; margin-bottom: 25px;">Para começar a desfrutar de todas as funcionalidades exclusivas como UTI Coins, UTI Pro e muito mais, você precisa confirmar seu email.</p>` :
+      `<p style="font-size: 16px; margin-bottom: 20px;">Solicitação de redefinição de senha recebida 🔐</p>
+       <p style="color: #666; margin-bottom: 25px;">Clique no botão abaixo para redefinir sua senha. Se você não solicitou esta ação, pode ignorar este email.</p>`;
     
     const htmlContent = `
       <!DOCTYPE html>
-      <html>
+      <html lang="pt-BR">
       <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${subject}</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+          .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+          .header { background: linear-gradient(135deg, #2563eb, #7c3aed); padding: 40px 20px; text-align: center; }
+          .logo { color: white; font-size: 28px; font-weight: bold; margin: 0; }
+          .content { padding: 40px 30px; }
+          .button { display: inline-block; background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+          .button:hover { background: linear-gradient(135deg, #1d4ed8, #6d28d9); }
+          .footer { background: #f8fafc; padding: 30px; text-align: center; color: #666; border-top: 1px solid #e2e8f0; }
+          .features { background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 25px 0; }
+          .feature-item { display: flex; align-items: center; margin: 10px 0; }
+        </style>
       </head>
-      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #2563eb;">Olá!</h1>
-          <p>Você solicitou para ${actionText} em ${emailConfig.from_name}.</p>
-          <p>Clique no botão abaixo para continuar:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${confirmationUrl}" 
-               style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-              ${buttonText}
-            </a>
+      <body style="margin: 0; padding: 0; background-color: #f1f5f9;">
+        <div class="container">
+          <div class="header">
+            <h1 class="logo">🎮 UTI dos Games</h1>
+            <p style="color: #e2e8f0; margin: 10px 0 0 0;">Sua plataforma de jogos favorita</p>
           </div>
-          <p style="color: #666; font-size: 14px;">
-            Se você não solicitou esta ação, pode ignorar este email.
-          </p>
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-          <p style="color: #666; font-size: 12px;">
-            ${emailConfig.from_name}<br>
-            Este é um email automático, não responda.
-          </p>
+          
+          <div class="content">
+            <h2 style="color: #1e293b; margin-bottom: 20px;">Olá!</h2>
+            
+            ${welcomeMessage}
+            
+            ${email_data.email_action_type === 'signup' ? `
+            <div class="features">
+              <h3 style="color: #2563eb; margin-top: 0;">🚀 O que você terá acesso:</h3>
+              <div class="feature-item">✨ UTI Coins para resgatar jogos grátis</div>
+              <div class="feature-item">🏆 UTI Pro com descontos exclusivos</div>
+              <div class="feature-item">🎯 Acesso antecipado a promoções</div>
+              <div class="feature-item">🎮 Catálogo completo de jogos</div>
+            </div>
+            ` : ''}
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${confirmationUrl}" class="button" style="color: white;">
+                ${buttonText} →
+              </a>
+            </div>
+            
+            <p style="color: #64748b; font-size: 14px; margin-top: 30px;">
+              Se o botão não funcionar, copie e cole este link no seu navegador:
+              <br>
+              <a href="${confirmationUrl}" style="color: #2563eb; word-break: break-all;">${confirmationUrl}</a>
+            </p>
+            
+            <p style="color: #94a3b8; font-size: 13px; margin-top: 25px;">
+              Se você não solicitou esta ação, pode ignorar este email com segurança.
+            </p>
+          </div>
+          
+          <div class="footer">
+            <p style="margin: 0 0 10px 0;"><strong>UTI dos Games</strong></p>
+            <p style="margin: 0; font-size: 14px;">
+              Este é um email automático, não responda.
+              <br>
+              <a href="mailto:contato@utidosgames.com" style="color: #2563eb;">contato@utidosgames.com</a>
+            </p>
+          </div>
         </div>
       </body>
       </html>
     `;
 
-    console.log('Sending email via Resend...');
+    console.log('Sending modern email...');
     const emailResult = await resend.emails.send({
-      from: `${emailConfig.from_name} <${emailConfig.from_email}>`,
+      from: `UTI dos Games <noreply@utidosgames.com>`,
       to: [user.email],
       subject: subject,
       html: htmlContent,
-      reply_to: emailConfig.reply_to || undefined,
+      reply_to: 'contato@utidosgames.com',
     });
 
     if (emailResult.error) {
