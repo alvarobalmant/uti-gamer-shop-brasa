@@ -20,8 +20,8 @@ interface SiteAppearanceSettingsProps {
   setSelectedFont: (font: string) => void;
   logoUrl: string;
   setLogoUrl: (url: string) => void;
-  headerLayoutType: 'logo_title' | 'single_image';
-  setHeaderLayoutType: (type: 'logo_title' | 'single_image') => void;
+  headerLayoutType: 'logo_title' | 'single_image' | 'css_logo';
+  setHeaderLayoutType: (type: 'logo_title' | 'single_image' | 'css_logo') => void;
   headerImageUrl: string;
   setHeaderImageUrl: (url: string) => void;
   disableHeaderImageCompression: boolean;
@@ -73,7 +73,7 @@ export const SiteAppearanceSettings: React.FC<SiteAppearanceSettingsProps> = ({
           <Label className="text-base font-semibold">Layout do Cabeçalho</Label>
           <RadioGroup 
             value={headerLayoutType} 
-            onValueChange={(value: 'logo_title' | 'single_image') => setHeaderLayoutType(value)}
+            onValueChange={(value: 'logo_title' | 'single_image' | 'css_logo') => setHeaderLayoutType(value)}
             className="space-y-3"
           >
             <div className="flex items-center space-x-2">
@@ -86,6 +86,12 @@ export const SiteAppearanceSettings: React.FC<SiteAppearanceSettingsProps> = ({
               <RadioGroupItem value="single_image" id="single_image" />
               <Label htmlFor="single_image" className="cursor-pointer">
                 Imagem Única (Substitui logo, título e subtítulo)
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="css_logo" id="css_logo" />
+              <Label htmlFor="css_logo" className="cursor-pointer">
+                Logo CSS (Logo estilizada sem imagem)
               </Label>
             </div>
           </RadioGroup>
@@ -139,6 +145,39 @@ export const SiteAppearanceSettings: React.FC<SiteAppearanceSettingsProps> = ({
                   <span className="text-sm text-muted-foreground">Preview</span>
                 </div>
               )}
+            </div>
+          </div>
+        ) : headerLayoutType === 'css_logo' ? (
+          /* Configurações do modo Logo CSS */
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Logo CSS</Label>
+            <p className="text-sm text-muted-foreground">
+              Logo estilizada criada com CSS, sem necessidade de imagem externa.
+            </p>
+            
+            <div className="space-y-2">
+              <Label htmlFor="site-name-css">Nome do Site</Label>
+              <Input
+                id="site-name-css"
+                value={siteName}
+                onChange={(e) => setSiteName(e.target.value)}
+                placeholder="UTI dos Games"
+              />
+              <p className="text-xs text-muted-foreground">
+                A primeira palavra aparecerá em vermelho, o resto em preto
+              </p>
+            </div>
+
+            <div className="p-4 bg-muted/50 rounded-md">
+              <Label className="text-sm font-medium">Preview da Logo CSS:</Label>
+              <div className="mt-2 flex items-center">
+                <span className="text-uti-red font-bold text-2xl tracking-tight">
+                  {siteName.split(' ')[0] || 'UTI'}
+                </span>
+                <span className="text-foreground font-medium text-2xl ml-1">
+                  {siteName.split(' ').slice(1).join(' ') || 'dos Games'}
+                </span>
+              </div>
             </div>
           </div>
         ) : (

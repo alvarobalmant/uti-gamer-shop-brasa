@@ -7,7 +7,7 @@ export interface SiteInfo {
   browserTitle: string;
   selectedFont: string;
   logoUrl: string;
-  headerLayoutType: 'logo_title' | 'single_image';
+  headerLayoutType: 'logo_title' | 'single_image' | 'css_logo';
   headerImageUrl: string;
   disableHeaderImageCompression: boolean;
 }

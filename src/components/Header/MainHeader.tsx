@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, Search } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
+import { CSSLogo } from '@/components/UI/CSSLogo';
 
 interface MainHeaderProps {
   onCartOpen: () => void;
@@ -92,6 +93,12 @@ const MainHeader = ({
                   src={siteInfo.headerImageUrl}
                   alt={`${siteInfo.siteName} - ${siteInfo.siteSubtitle}`}
                   className="h-12 w-auto flex-shrink-0 max-w-64"
+                />
+              ) : siteInfo.headerLayoutType === 'css_logo' ? (
+                /* Modo Logo CSS */
+                <CSSLogo 
+                  size="sm" 
+                  className="flex-shrink-0"
                 />
               ) : (
                 /* Modo Logo + Título tradicional */
