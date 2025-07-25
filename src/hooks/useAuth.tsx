@@ -10,7 +10,7 @@ interface AuthContextType {
   isAdmin: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -88,32 +88,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-          },
-          emailRedirectTo: `${window.location.origin}/`
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
         },
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Você já pode fazer login.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erro ao criar conta",
-        description: error.message,
-        variant: "destructive",
-      });
+        emailRedirectTo: `${window.location.origin}/`
+      },
+    });
+    
+    if (error) {
       throw error;
     }
+    
+    return { error: null };
   };
 
   const signOut = async () => {

@@ -89,6 +89,8 @@ const TestProduct = lazy(() => import("./pages/TestProduct"));
 const ClientArea = lazy(() => import("./pages/ClientArea"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const MeusCoins = lazy(() => import("./pages/MeusCoins"));
+const ConfirmarConta = lazy(() => import("./pages/ConfirmarConta"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 
 // Lazy loading para páginas de UTI Coins
 const CoinsShop = lazy(() => import("./pages/CoinsShop"));
@@ -163,10 +165,16 @@ const App = () => {
                   <Route path="/produto/:id" element={<ProductPageSKU />} />
                   <Route path="/teste-produto/:id" element={<TestProduct />} />
 
-                  {/* Client Area Routes */}
+                   {/* Client Area Routes */}
                   <Route path="/area-cliente" element={<ClientArea />} />
                   <Route path="/lista-desejos" element={<WishlistPage />} />
                   <Route path="/meus-coins" element={<MeusCoins />} />
+                  
+                  {/* Email Confirmation Route */}
+                  <Route path="/confirmar-conta/:codigo" element={<React.Suspense fallback={<PageLoader />}><ConfirmarConta /></React.Suspense>} />
+                  
+                  {/* Registration Route */}
+                  <Route path="/cadastro" element={<RegisterPage />} />
                   
                   {/* UTI Coins Routes */}
                   <Route path="/coins/loja" element={<CoinsShop />} />

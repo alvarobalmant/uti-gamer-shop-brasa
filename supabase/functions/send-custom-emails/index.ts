@@ -112,7 +112,8 @@ serve(async (req) => {
       redirectUrl = 'https://' + redirectUrl;
     }
     
-    const confirmationLink = `${supabaseUrl}/functions/v1/confirm-email-and-redirect?token_hash=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${encodeURIComponent(redirectUrl)}`;
+    // Criar link personalizado que vai direto para o site
+    const confirmationLink = `${redirectUrl}/confirmar-conta/${email_data.token_hash}`;
     
     const templateVariables = {
       from_name: emailConfig.from_name,
