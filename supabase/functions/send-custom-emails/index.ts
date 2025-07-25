@@ -1,9 +1,29 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8';
+import { Resend } from 'npm:resend@4.0.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Template engine simples para substituir variáveis
+function processTemplate(template: string, variables: Record<string, any>): string {
+  let processed = template;
+  
+  // Substituir variáveis simples {{variable}}
+  Object.entries(variables).forEach(([key, value]) => {
+    const regex = new RegExp(`{{${key}}}`, 'g');
+    processed = processed.replace(regex, value || '');
+  });
+  
+  // Processar condicionais simples {{#if variable}}content{{/if}}
+  processed = processed.replace(/{{#if\s+(\w+)}}(.*?){{\/if}}/gs, (match, variable, content) => {
+    return variables[variable] ? content : '';
+  });
+  
+  return processed;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,60 +31,129 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🚀 SIMPLE TEST VERSION STARTED');
+    console.log('🚀 EMAIL SENDER STARTED');
     
-    // Log básico
-    console.log('Method:', req.method);
-    console.log('URL:', req.url);
-    
-    // Testar se consegue ler o payload
-    const payload = await req.text();
-    console.log('✅ Payload length:', payload.length);
-    
-    // Testar se as variáveis de ambiente existem
+    // Verificar variáveis de ambiente
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const resendKey = Deno.env.get('RESEND_API_KEY');
     
-    console.log('Supabase URL exists:', !!supabaseUrl);
-    console.log('Supabase Key exists:', !!supabaseKey);
-    console.log('Resend Key exists:', !!resendKey);
-    
     if (!resendKey) {
       console.log('❌ RESEND_API_KEY missing');
+      return new Response('RESEND_API_KEY not configured', { status: 500 });
+    }
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.log('❌ Supabase credentials missing');
+      return new Response('Supabase credentials missing', { status: 500 });
+    }
+    
+    console.log('✅ All environment variables present');
+    
+    // Inicializar clientes
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const resend = new Resend(resendKey);
+    
+    console.log('✅ Clients initialized');
+    
+    // Processar payload
+    const payload = await req.text();
+    const data = JSON.parse(payload);
+    
+    const { user, email_data } = data;
+    
+    if (!user?.email || !email_data) {
+      console.log('❌ Missing user or email_data');
+      return new Response('Missing required data', { status: 400 });
+    }
+    
+    console.log('✅ Processing email for:', user.email);
+    console.log('✅ Action type:', email_data.email_action_type);
+    
+    // Buscar configuração de email
+    const { data: emailConfig, error: configError } = await supabase
+      .from('email_config')
+      .select('*')
+      .single();
+    
+    if (configError || !emailConfig) {
+      console.log('❌ Email config error:', configError);
+      return new Response('Email config not found', { status: 500 });
+    }
+    
+    console.log('✅ Email config loaded');
+    
+    // Determinar tipo de template
+    let templateType = 'confirmation';
+    if (email_data.email_action_type === 'recovery') {
+      templateType = 'reset_password';
+    }
+    
+    // Buscar template
+    const { data: template, error: templateError } = await supabase
+      .from('email_templates')
+      .select('*')
+      .eq('type', templateType)
+      .eq('is_active', true)
+      .single();
+    
+    if (templateError || !template) {
+      console.log('❌ Template error:', templateError);
+      return new Response(`Template not found for type: ${templateType}`, { status: 500 });
+    }
+    
+    console.log('✅ Template loaded:', template.name);
+    
+    // Preparar variáveis
+    const templateVariables = {
+      from_name: emailConfig.from_name,
+      logo_url: emailConfig.logo_url || '',
+      primary_color: emailConfig.primary_color || '#2563eb',
+      company_address: emailConfig.company_address || '',
+      user_name: user.user_metadata?.name || user.email.split('@')[0],
+      user_email: user.email,
+      confirmation_url: `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${email_data.redirect_to}`,
+      reset_url: `${supabaseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${email_data.redirect_to}`,
+      platform_url: email_data.site_url || email_data.redirect_to,
+    };
+    
+    // Processar templates
+    const htmlContent = processTemplate(template.html_content, templateVariables);
+    const textContent = template.text_content ? processTemplate(template.text_content, templateVariables) : undefined;
+    const subject = processTemplate(template.subject, templateVariables);
+    
+    console.log('✅ Templates processed');
+    console.log('📧 Sending email to:', user.email);
+    console.log('📧 Subject:', subject);
+    
+    // Enviar email
+    const emailResult = await resend.emails.send({
+      from: `${emailConfig.from_name} <${emailConfig.from_email}>`,
+      to: [user.email],
+      subject: subject,
+      html: htmlContent,
+      text: textContent,
+      reply_to: emailConfig.reply_to || undefined,
+    });
+    
+    if (emailResult.error) {
+      console.log('❌ Resend error:', emailResult.error);
       return new Response(
-        JSON.stringify({ error: 'RESEND_API_KEY not configured' }),
+        JSON.stringify({ error: emailResult.error }),
         { 
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
     
-    // Testar parse do JSON
-    try {
-      const data = JSON.parse(payload);
-      console.log('✅ JSON parsed successfully');
-      console.log('User email:', data?.user?.email);
-      console.log('Email action:', data?.email_data?.email_action_type);
-    } catch (e) {
-      console.log('❌ JSON parse error:', e.message);
-      return new Response(
-        JSON.stringify({ error: 'Invalid JSON: ' + e.message }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-    
-    console.log('✅ Basic tests passed');
+    console.log('✅ Email sent successfully! ID:', emailResult.data?.id);
     
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Function is working - basic test passed',
-        timestamp: new Date().toISOString()
+        email_id: emailResult.data?.id,
+        message: 'Email sent successfully'
       }),
       { 
         status: 200,
@@ -74,13 +163,10 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ CRITICAL ERROR:', error);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    
     return new Response(
       JSON.stringify({ 
-        error: 'Critical error: ' + error.message,
-        stack: error.stack
+        error: error.message,
+        details: 'Check function logs for more information'
       }),
       { 
         status: 500,
