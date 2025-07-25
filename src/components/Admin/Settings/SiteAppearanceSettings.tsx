@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { ImageUploader } from '../SpecialSections/UI/ImageUploader';
 import { Palette } from 'lucide-react';
@@ -23,6 +24,8 @@ interface SiteAppearanceSettingsProps {
   setHeaderLayoutType: (type: 'logo_title' | 'single_image') => void;
   headerImageUrl: string;
   setHeaderImageUrl: (url: string) => void;
+  disableHeaderImageCompression: boolean;
+  setDisableHeaderImageCompression: (disabled: boolean) => void;
 }
 
 const fonts = [
@@ -49,7 +52,9 @@ export const SiteAppearanceSettings: React.FC<SiteAppearanceSettingsProps> = ({
   headerLayoutType,
   setHeaderLayoutType,
   headerImageUrl,
-  setHeaderImageUrl
+  setHeaderImageUrl,
+  disableHeaderImageCompression,
+  setDisableHeaderImageCompression
 }) => {
   return (
     <Card>
@@ -143,11 +148,24 @@ export const SiteAppearanceSettings: React.FC<SiteAppearanceSettingsProps> = ({
             <p className="text-sm text-muted-foreground">
               Esta imagem irá substituir completamente o logo, título e subtítulo no cabeçalho.
             </p>
+            
+            <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-md">
+              <Checkbox
+                id="disable-compression"
+                checked={disableHeaderImageCompression}
+                onCheckedChange={(checked) => setDisableHeaderImageCompression(checked as boolean)}
+              />
+              <Label htmlFor="disable-compression" className="cursor-pointer text-sm">
+                Desabilitar compressão WebP (manter qualidade original)
+              </Label>
+            </div>
+            
             <ImageUploader
               value={headerImageUrl}
               onChange={setHeaderImageUrl}
               aspectRatio="auto"
               className="max-w-md"
+              disableCompression={disableHeaderImageCompression}
             />
           </div>
         )}

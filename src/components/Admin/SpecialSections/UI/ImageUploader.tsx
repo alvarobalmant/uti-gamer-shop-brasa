@@ -12,6 +12,7 @@ interface ImageUploaderProps {
   maxSize?: number; // em bytes
   accept?: string;
   className?: string;
+  disableCompression?: boolean;
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -20,7 +21,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   aspectRatio = '16:9',
   maxSize = 10 * 1024 * 1024, // 10MB para melhor qualidade
   accept = 'image/*',
-  className = ''
+  className = '',
+  disableCompression = false
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,11 +45,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
     try {
       // Upload real para Supabase Storage
-      const imageUrl = await uploadImage(file, 'site-images');
+      const imageUrl = await uploadImage(file, 'site-images', disableCompression);
       
       if (imageUrl) {
         onChange(imageUrl);
-        toast.success('Imagem carregada com sucesso!');
+        const compressionText = disableCompression ? ' (sem compressão)' : '';
+        toast.success(`Imagem carregada com sucesso${compressionText}!`);
       } else {
         toast.error('Erro ao fazer upload da imagem');
       }
@@ -55,7 +58,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       console.error('Erro ao fazer upload:', error);
       toast.error('Erro ao fazer upload da imagem');
     }
-  }, [maxSize, onChange, uploadImage]);
+  }, [maxSize, onChange, uploadImage, disableCompression]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();

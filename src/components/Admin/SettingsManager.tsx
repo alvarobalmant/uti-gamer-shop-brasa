@@ -155,7 +155,8 @@ export const SettingsManagerLegacy = () => {
         selectedFont,
         logoUrl,
         headerLayoutType: 'logo_title', // Sempre usar logo_title no legacy
-        headerImageUrl: ''
+        headerImageUrl: '',
+        disableHeaderImageCompression: false
       });
 
       // Salvar configurações do UTI PRO

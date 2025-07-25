@@ -23,6 +23,7 @@ export const SettingsManagerNew = () => {
   const [logoUrl, setLogoUrl] = useState(siteInfo.logoUrl);
   const [headerLayoutType, setHeaderLayoutType] = useState(siteInfo.headerLayoutType);
   const [headerImageUrl, setHeaderImageUrl] = useState(siteInfo.headerImageUrl);
+  const [disableHeaderImageCompression, setDisableHeaderImageCompression] = useState(siteInfo.disableHeaderImageCompression);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   
   // Loading states
@@ -39,6 +40,7 @@ export const SettingsManagerNew = () => {
     setLogoUrl(siteInfo.logoUrl);
     setHeaderLayoutType(siteInfo.headerLayoutType);
     setHeaderImageUrl(siteInfo.headerImageUrl);
+    setDisableHeaderImageCompression(siteInfo.disableHeaderImageCompression);
   }, [siteInfo, utiProSettings]);
 
   // Função para deletar produtos de forma segura, respeitando relacionamentos parent/child
@@ -246,7 +248,8 @@ export const SettingsManagerNew = () => {
         selectedFont,
         logoUrl,
         headerLayoutType,
-        headerImageUrl
+        headerImageUrl,
+        disableHeaderImageCompression
       });
 
       const utiProSuccess = await updateUTIProSettings({
@@ -321,6 +324,8 @@ export const SettingsManagerNew = () => {
           setHeaderLayoutType={setHeaderLayoutType}
           headerImageUrl={headerImageUrl}
           setHeaderImageUrl={setHeaderImageUrl}
+          disableHeaderImageCompression={disableHeaderImageCompression}
+          setDisableHeaderImageCompression={setDisableHeaderImageCompression}
         />
       </div>
 

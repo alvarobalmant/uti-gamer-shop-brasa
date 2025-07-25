@@ -61,14 +61,14 @@ export const useImageUpload = () => {
     });
   };
 
-  const uploadImage = async (file: File, folder: string = 'general'): Promise<string | null> => {
+  const uploadImage = async (file: File, folder: string = 'general', disableCompression: boolean = false): Promise<string | null> => {
     setUploading(true);
     
     try {
       let processedFile = file;
 
-      // Converter para WebP com alta qualidade para imagens importantes (site-images)
-      if (file.type !== 'image/webp') {
+      // Converter para WebP apenas se a compressão não estiver desabilitada
+      if (!disableCompression && file.type !== 'image/webp') {
         try {
           // Para imagens de site/header, usar qualidade máxima
           const quality = folder === 'site-images' ? 0.95 : 0.85;
@@ -78,6 +78,8 @@ export const useImageUpload = () => {
           console.warn('Falha na conversão para WebP, usando arquivo original:', conversionError);
           // Continua com o arquivo original se a conversão falhar
         }
+      } else if (disableCompression) {
+        console.log('Compressão desabilitada, mantendo arquivo original');
       }
 
       const fileExt = processedFile.name.split('.').pop();
@@ -105,9 +107,10 @@ export const useImageUpload = () => {
         // Não bloquear o upload por falha no scan
       }
 
+      const compressionText = disableCompression ? ' (original)' : ' (otimizada)';
       toast({
         title: "Upload realizado com sucesso!",
-        description: `Imagem otimizada e carregada como ${processedFile.type}.`,
+        description: `Imagem${compressionText} carregada como ${processedFile.type}.`,
       });
 
       return publicUrl;

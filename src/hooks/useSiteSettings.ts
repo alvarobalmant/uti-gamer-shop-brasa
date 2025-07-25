@@ -9,6 +9,7 @@ export interface SiteInfo {
   logoUrl: string;
   headerLayoutType: 'logo_title' | 'single_image';
   headerImageUrl: string;
+  disableHeaderImageCompression: boolean;
 }
 
 export interface UTIProSettings {
@@ -23,7 +24,8 @@ export const useSiteSettings = () => {
     selectedFont: 'Inter',
     logoUrl: '/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png',
     headerLayoutType: 'logo_title',
-    headerImageUrl: ''
+    headerImageUrl: '',
+    disableHeaderImageCompression: false
   });
 
   const [utiProSettings, setUtiProSettings] = useState<UTIProSettings>({
