@@ -388,6 +388,7 @@ export type Database = {
           type: string
           updated_at: string
           variables: Json | null
+          visual_config: Json | null
         }
         Insert: {
           created_at?: string
@@ -400,6 +401,7 @@ export type Database = {
           type: string
           updated_at?: string
           variables?: Json | null
+          visual_config?: Json | null
         }
         Update: {
           created_at?: string
@@ -412,6 +414,7 @@ export type Database = {
           type?: string
           updated_at?: string
           variables?: Json | null
+          visual_config?: Json | null
         }
         Relationships: []
       }
