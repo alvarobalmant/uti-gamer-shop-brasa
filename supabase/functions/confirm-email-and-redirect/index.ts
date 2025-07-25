@@ -4,6 +4,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 serve(async (req: Request) => {
@@ -18,6 +20,14 @@ serve(async (req: Request) => {
     const token_hash = url.searchParams.get('token_hash');
     const type = url.searchParams.get('type');
     let redirect_to = url.searchParams.get('redirect_to') || 'https://pmxnfpnnvtuuiedoxuxc.supabase.co';
+    
+    // Debug logging
+    console.log('🚀 Email confirmation request:', {
+      token_hash: token_hash ? 'present' : 'missing',
+      type,
+      redirect_to,
+      url: req.url
+    });
     
     // Adicionar protocolo se não houver
     if (redirect_to && !redirect_to.startsWith('http://') && !redirect_to.startsWith('https://')) {
@@ -79,7 +89,13 @@ serve(async (req: Request) => {
         `,
         {
           status: 400,
-          headers: { 'Content-Type': 'text/html' }
+          headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            ...corsHeaders
+          }
         }
       );
     }
@@ -168,7 +184,13 @@ serve(async (req: Request) => {
         `,
         {
           status: 400,
-          headers: { 'Content-Type': 'text/html' }
+          headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            ...corsHeaders
+          }
         }
       );
     }
@@ -304,6 +326,9 @@ serve(async (req: Request) => {
         status: 200,
         headers: { 
           'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
           ...corsHeaders
         }
       }
@@ -366,7 +391,13 @@ serve(async (req: Request) => {
       `,
       {
         status: 500,
-        headers: { 'Content-Type': 'text/html' }
+        headers: { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          ...corsHeaders
+        }
       }
     );
   }
