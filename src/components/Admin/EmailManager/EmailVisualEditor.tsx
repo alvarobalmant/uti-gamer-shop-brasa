@@ -6,6 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { EmailTemplateLibrary } from './EmailTemplateLibrary';
 import {
   DndContext,
   closestCenter,
@@ -70,6 +73,8 @@ export const EmailVisualEditor: React.FC<EmailVisualEditorProps> = ({
   const [blocks, setBlocks] = useState<EmailBlock[]>(initialBlocks);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
+  const [activeTab, setActiveTab] = useState<'builder' | 'templates'>('builder');
+  const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -212,6 +217,17 @@ export const EmailVisualEditor: React.FC<EmailVisualEditorProps> = ({
     onChange(currentBlocks, html);
   }, [onChange]);
 
+  const handleSelectTemplate = (template: any) => {
+    const templateBlocks = template.blocks.map((block: any) => ({
+      ...block,
+      id: generateId()
+    }));
+    setBlocks(templateBlocks);
+    setShowTemplateLibrary(false);
+    setActiveTab('builder');
+    updateOutput(templateBlocks);
+  };
+
   const generateHTML = (currentBlocks: EmailBlock[]) => {
     const blocksHTML = currentBlocks.map(block => {
       switch (block.type) {
@@ -287,96 +303,173 @@ export const EmailVisualEditor: React.FC<EmailVisualEditorProps> = ({
   const selectedBlockData = selectedBlock ? blocks.find(b => b.id === selectedBlock) : null;
 
   return (
-    <div className="flex h-[600px] border rounded-lg overflow-hidden">
-      {/* Toolbar */}
-      <div className="w-64 bg-muted/30 border-r p-4 overflow-y-auto">
-        <div className="space-y-4">
-          <div>
-            <h4 className="font-medium mb-2">Adicionar Elementos</h4>
-            <div className="grid grid-cols-1 gap-2">
-              {blockTemplates.map((template) => (
-                <Button
-                  key={template.type}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addBlock(template.type)}
-                  className="justify-start h-auto p-2"
-                >
-                  <template.icon className="w-4 h-4 mr-2" />
-                  {template.label}
-                </Button>
-              ))}
+    <div className="h-[700px] border rounded-lg overflow-hidden bg-background">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="h-full">
+        <div className="border-b px-4 py-2">
+          <TabsList className="grid w-fit grid-cols-2">
+            <TabsTrigger value="builder">Editor Visual</TabsTrigger>
+            <TabsTrigger value="templates">Templates Profissionais</TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="templates" className="h-[calc(100%-60px)] p-6 overflow-y-auto">
+          <EmailTemplateLibrary onSelectTemplate={handleSelectTemplate} />
+        </TabsContent>
+
+        <TabsContent value="builder" className="h-[calc(100%-60px)] p-0">
+          <div className="flex h-full">
+            {/* Toolbar */}
+            <div className="w-64 bg-muted/30 border-r overflow-y-auto">
+              <div className="p-4 space-y-4">
+                <div className="text-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setActiveTab('templates')}
+                    className="w-full mb-4"
+                  >
+                    🎨 Usar Template Profissional
+                  </Button>
+                </div>
+
+                <Separator />
+
+                <div>
+                  <h4 className="font-medium mb-3 text-sm">Elementos Básicos</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {blockTemplates.map((template) => (
+                      <Button
+                        key={template.type}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addBlock(template.type)}
+                        className="justify-start h-auto p-3 text-xs"
+                      >
+                        <template.icon className="w-4 h-4 mr-2" />
+                        {template.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      checked={previewMode}
+                      onCheckedChange={setPreviewMode}
+                    />
+                    <Label className="text-sm">Preview Final</Label>
+                  </div>
+                  
+                  {blocks.length > 0 && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => {
+                        setBlocks([]);
+                        setSelectedBlock(null);
+                        updateOutput([]);
+                      }}
+                      className="w-full text-xs"
+                    >
+                      🗑️ Limpar Tudo
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Editor Area */}
+            <div className="flex-1 flex">
+              <div className="flex-1 p-4 overflow-y-auto bg-gradient-to-br from-background to-muted/20">
+                <Card className="max-w-2xl mx-auto shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">📧 Email Template</CardTitle>
+                      <Badge variant="secondary" className="text-xs">
+                        {blocks.length} elemento{blocks.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    {previewMode ? (
+                      <div className="border rounded-lg p-4 bg-white shadow-inner">
+                        <div 
+                          dangerouslySetInnerHTML={{ 
+                            __html: generateHTML(blocks) 
+                          }} 
+                        />
+                      </div>
+                    ) : (
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+                          <div className="space-y-3 min-h-[300px] p-4 border-2 border-dashed border-muted-foreground/20 rounded-lg">
+                            {blocks.map((block) => (
+                              <SortableEmailBlock
+                                key={block.id}
+                                block={block}
+                                isSelected={selectedBlock === block.id}
+                                onSelect={() => setSelectedBlock(block.id)}
+                                onDelete={() => deleteBlock(block.id)}
+                              />
+                            ))}
+                            
+                            {blocks.length === 0 && (
+                              <div className="text-center py-16 text-muted-foreground">
+                                <div className="space-y-4">
+                                  <Plus className="w-12 h-12 mx-auto opacity-50" />
+                                  <div>
+                                    <p className="font-medium mb-2">Comece criando seu email</p>
+                                    <p className="text-sm">Use um template profissional ou adicione elementos básicos</p>
+                                  </div>
+                                  <div className="flex gap-2 justify-center">
+                                    <Button 
+                                      variant="default" 
+                                      size="sm"
+                                      onClick={() => setActiveTab('templates')}
+                                    >
+                                      📋 Templates
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => addBlock('text')}
+                                    >
+                                      📝 Adicionar Texto
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Properties Panel */}
+              {selectedBlockData && !previewMode && (
+                <div className="w-80 bg-muted/30 border-l overflow-y-auto">
+                  <div className="p-4">
+                    <EmailBlockProperties
+                      block={selectedBlockData}
+                      onChange={(updates) => updateBlock(selectedBlockData.id, updates)}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
-          <Separator />
-
-          <div className="flex items-center space-x-2">
-            <Switch 
-              checked={previewMode}
-              onCheckedChange={setPreviewMode}
-            />
-            <Label>Modo Preview</Label>
-          </div>
-        </div>
-      </div>
-
-      {/* Editor Area */}
-      <div className="flex-1 flex">
-        <div className="flex-1 p-4 overflow-y-auto">
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle>Email Template</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {previewMode ? (
-                <div 
-                  dangerouslySetInnerHTML={{ 
-                    __html: generateHTML(blocks) 
-                  }} 
-                />
-              ) : (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-2 min-h-[200px]">
-                      {blocks.map((block) => (
-                        <SortableEmailBlock
-                          key={block.id}
-                          block={block}
-                          isSelected={selectedBlock === block.id}
-                          onSelect={() => setSelectedBlock(block.id)}
-                          onDelete={() => deleteBlock(block.id)}
-                        />
-                      ))}
-                      
-                      {blocks.length === 0 && (
-                        <div className="text-center py-12 text-muted-foreground">
-                          <Plus className="w-8 h-8 mx-auto mb-2" />
-                          <p>Adicione elementos ao seu email usando a barra lateral</p>
-                        </div>
-                      )}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Properties Panel */}
-        {selectedBlockData && !previewMode && (
-          <div className="w-80 bg-muted/30 border-l p-4 overflow-y-auto">
-            <EmailBlockProperties
-              block={selectedBlockData}
-              onChange={(updates) => updateBlock(selectedBlockData.id, updates)}
-            />
-          </div>
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
