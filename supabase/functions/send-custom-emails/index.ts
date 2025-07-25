@@ -104,11 +104,16 @@ serve(async (req) => {
     
     console.log('✅ Template loaded:', template.name);
     
-    // Preparar variáveis
-    let redirectUrl = email_data.redirect_to || email_data.site_url || `${supabaseUrl}/`;
+    // Preparar variáveis - usar domínio correto do site
+    let redirectUrl = email_data.redirect_to || email_data.site_url;
+    
+    // Se não tem redirect_to definido, usar o domínio do projeto
+    if (!redirectUrl || redirectUrl.includes('localhost') || redirectUrl.includes('supabase.co')) {
+      redirectUrl = 'https://utidosgames.com'; // Usar domínio real do site
+    }
     
     // Adicionar protocolo se não houver
-    if (redirectUrl && !redirectUrl.startsWith('http://') && !redirectUrl.startsWith('https://') && !redirectUrl.includes('supabase.co')) {
+    if (redirectUrl && !redirectUrl.startsWith('http://') && !redirectUrl.startsWith('https://')) {
       redirectUrl = 'https://' + redirectUrl;
     }
     
