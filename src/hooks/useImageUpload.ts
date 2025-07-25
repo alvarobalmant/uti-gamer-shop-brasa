@@ -7,22 +7,38 @@ export const useImageUpload = () => {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
-  // Função para converter imagem para WebP
-  const convertToWebP = (file: File, quality: number = 0.85): Promise<File> => {
+  // Função para converter imagem para WebP com alta qualidade
+  const convertToWebP = (file: File, quality: number = 0.95): Promise<File> => {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
 
       img.onload = () => {
-        // Definir dimensões do canvas
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
+        // Para imagens de header/site, manter resolução alta
+        const maxWidth = 2000;
+        const maxHeight = 1000;
+        
+        let { width, height } = img;
+        
+        // Redimensionar apenas se for muito grande
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = width * ratio;
+          height = height * ratio;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
 
-        // Desenhar imagem no canvas
-        ctx?.drawImage(img, 0, 0);
+        // Configurar contexto para alta qualidade
+        if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+        }
 
-        // Converter para WebP
+        // Converter para WebP com alta qualidade
         canvas.toBlob(
           (blob) => {
             if (blob) {
@@ -51,11 +67,13 @@ export const useImageUpload = () => {
     try {
       let processedFile = file;
 
-      // Converter para WebP se não for WebP
+      // Converter para WebP com alta qualidade para imagens importantes (site-images)
       if (file.type !== 'image/webp') {
         try {
-          processedFile = await convertToWebP(file);
-          console.log(`Imagem convertida para WebP: ${file.size} bytes → ${processedFile.size} bytes`);
+          // Para imagens de site/header, usar qualidade máxima
+          const quality = folder === 'site-images' ? 0.95 : 0.85;
+          processedFile = await convertToWebP(file, quality);
+          console.log(`Imagem convertida para WebP (qualidade ${quality}): ${file.size} bytes → ${processedFile.size} bytes`);
         } catch (conversionError) {
           console.warn('Falha na conversão para WebP, usando arquivo original:', conversionError);
           // Continua com o arquivo original se a conversão falhar

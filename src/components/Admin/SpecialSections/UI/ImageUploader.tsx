@@ -3,6 +3,7 @@ import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 interface ImageUploaderProps {
   value?: string;
@@ -17,13 +18,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   value,
   onChange,
   aspectRatio = '16:9',
-  maxSize = 5 * 1024 * 1024, // 5MB
+  maxSize = 10 * 1024 * 1024, // 10MB para melhor qualidade
   accept = 'image/*',
   className = ''
 }) => {
-  const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadImage, uploading } = useImageUpload();
 
   const handleFileSelect = useCallback(async (file: File) => {
     if (!file) return;
@@ -41,31 +42,20 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     }
 
     try {
-      setIsUploading(true);
-
-      // Simular upload - em produção, usar serviço real
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Por enquanto, criar URL local para preview
-      const imageUrl = URL.createObjectURL(file);
+      // Upload real para Supabase Storage
+      const imageUrl = await uploadImage(file, 'site-images');
       
-      // Em produção, fazer upload real:
-      // const response = await fetch('/api/upload', {
-      //   method: 'POST',
-      //   body: formData
-      // });
-      // const { url } = await response.json();
-      
-      onChange(imageUrl);
-      toast.success('Imagem carregada com sucesso!');
+      if (imageUrl) {
+        onChange(imageUrl);
+        toast.success('Imagem carregada com sucesso!');
+      } else {
+        toast.error('Erro ao fazer upload da imagem');
+      }
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
       toast.error('Erro ao fazer upload da imagem');
-    } finally {
-      setIsUploading(false);
     }
-  }, [maxSize, onChange]);
+  }, [maxSize, onChange, uploadImage]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -136,7 +126,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 variant="secondary"
                 size="sm"
                 onClick={handleClick}
-                disabled={isUploading}
+                disabled={uploading}
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Alterar
@@ -146,7 +136,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 variant="destructive"
                 size="sm"
                 onClick={handleRemove}
-                disabled={isUploading}
+                disabled={uploading}
               >
                 <X className="h-4 w-4 mr-2" />
                 Remover
@@ -160,14 +150,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             dragActive
               ? 'border-blue-500 bg-blue-50'
               : 'border-gray-300 hover:border-gray-400'
-          } ${isUploading ? 'pointer-events-none opacity-50' : ''}`}
+          } ${uploading ? 'pointer-events-none opacity-50' : ''}`}
           onClick={handleClick}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
           <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-            {isUploading ? (
+            {uploading ? (
               <>
                 <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-2" />
                 <p className="text-sm text-gray-600">Fazendo upload...</p>
