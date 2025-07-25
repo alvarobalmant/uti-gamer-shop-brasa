@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAuth } from './AuthProvider';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SignupFormProps {
   onSuccess?: () => void;

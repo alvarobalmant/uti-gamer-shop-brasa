@@ -45,28 +45,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Configurar listeners de autenticação
   useEffect(() => {
+    let mounted = true;
+
+    // Verificar sessão inicial
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (mounted) {
+          if (session?.user) {
+            setSession(session);
+            setUser(session.user);
+            setIsEmailConfirmed(!!session.user.email_confirmed_at);
+            await checkAdminStatus(session.user.id);
+            console.log('✅ Sessão inicial carregada:', session.user.email);
+          } else {
+            setSession(null);
+            setUser(null);
+            setIsEmailConfirmed(false);
+            setIsAdmin(false);
+          }
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar sessão inicial:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
     // Listener para mudanças de estado
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+
         console.log('🔐 Auth state change:', event, session?.user?.email);
         
-        setSession(session);
-        setUser(session?.user ?? null);
-        
         if (session?.user) {
-          // Verificar confirmação de email
-          const confirmed = !!session.user.email_confirmed_at;
-          setIsEmailConfirmed(confirmed);
+          setSession(session);
+          setUser(session.user);
+          setIsEmailConfirmed(!!session.user.email_confirmed_at);
           
-          // Verificar se é admin
-          await checkAdminStatus(session.user.id);
-          
-          console.log('✅ Usuário autenticado:', {
-            email: session.user.email,
-            emailConfirmed: confirmed,
-            userId: session.user.id
-          });
+          // Verificar se é admin apenas se não estamos fazendo logout
+          if (event !== 'SIGNED_OUT') {
+            await checkAdminStatus(session.user.id);
+          }
         } else {
+          setSession(null);
+          setUser(null);
           setIsEmailConfirmed(false);
           setIsAdmin(false);
         }
@@ -75,21 +102,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Verificar sessão inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🔍 Sessão inicial:', session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        setIsEmailConfirmed(!!session.user.email_confirmed_at);
-        checkAdminStatus(session.user.id);
-      }
-      
-      setLoading(false);
-    });
+    initializeAuth();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
@@ -185,14 +203,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async (): Promise<void> => {
     try {
       console.log('🚪 Fazendo logout...');
-      await supabase.auth.signOut();
+      
+      // Limpar estado imediatamente para feedback visual
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+      setIsEmailConfirmed(false);
+      
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Erro no logout:', error);
+        // Mesmo com erro, manter o estado limpo
+      }
       
       toast({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso.",
       });
+      
+      console.log('✅ Logout concluído');
     } catch (error) {
-      console.error('Erro no logout:', error);
+      console.error('Erro inesperado no logout:', error);
+      // Mesmo com erro, manter o estado limpo
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado.",
+      });
     }
   };
 
