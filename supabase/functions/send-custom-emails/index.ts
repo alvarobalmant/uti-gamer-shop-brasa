@@ -49,6 +49,7 @@ function processTemplate(template: string, variables: Record<string, any>): stri
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests first
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -57,13 +58,26 @@ serve(async (req) => {
     console.log('=== EMAIL WEBHOOK TRIGGERED ===');
     console.log('Method:', req.method);
     console.log('URL:', req.url);
+    console.log('Headers:', Object.fromEntries(req.headers.entries()));
     
-    // Resposta simples para testar se a função está funcionando
+    // Test endpoint to verify function is working
     if (req.method === 'GET') {
       return new Response(
-        JSON.stringify({ status: 'ok', message: 'Email webhook is working' }),
+        JSON.stringify({ status: 'ok', message: 'Email webhook is working', timestamp: new Date().toISOString() }),
         { 
           status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Only handle POST requests for webhooks
+    if (req.method !== 'POST') {
+      console.log('Invalid method:', req.method);
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        { 
+          status: 405,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
