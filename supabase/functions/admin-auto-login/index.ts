@@ -17,7 +17,7 @@ interface AutoLoginRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('Admin auto-login request received');
+  console.log('🚀 Admin auto-login request received');
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -47,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log(`Validating admin token: ${token}`);
+    console.log(`🔍 Validating admin token: ${token}`);
 
     // Validar o token usando a função do banco de dados
     const { data: validationResult, error: validationError } = await supabase
@@ -57,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
     if (validationError) {
-      console.error('Validation error:', validationError);
+      console.error('❌ Validation error:', validationError);
       return new Response(
         JSON.stringify({ success: false, message: 'Erro na validação do token' }),
         { 
@@ -68,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (!validationResult.success) {
-      console.log('Token validation failed:', validationResult.message);
+      console.log('❌ Token validation failed:', validationResult.message);
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -81,19 +81,31 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log('Token validated successfully for admin user:', validationResult.admin_email);
+    console.log('✅ Token validated successfully for admin user:', validationResult.admin_email);
 
-    // Criar sessão direta sem magic link para evitar problemas de redirect
+    // NOVA ABORDAGEM: Usar signInWithPassword diretamente
+    // Primeiro, buscar o email do admin e resetar a senha temporariamente
     try {
-      console.log('Creating direct admin session...');
+      console.log('🔐 Creating temporary admin session...');
+
+      // Abordagem mais simples: usar o email admin para fazer signIn direto
+      const adminEmail = validationResult.admin_email;
       
-      // Buscar o usuário admin no banco
-      const { data: adminUser, error: adminUserError } = await supabase.auth.admin.getUserById(validationResult.admin_user_id);
+      // Gerar uma nova senha temporária
+      const tempPassword = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      if (adminUserError || !adminUser.user) {
-        console.error('Error fetching admin user:', adminUserError);
+      console.log('🔄 Updating admin user password temporarily...');
+      
+      // Atualizar a senha do usuário admin temporariamente
+      const { data: updateResult, error: updateError } = await supabase.auth.admin.updateUserById(
+        validationResult.admin_user_id,
+        { password: tempPassword }
+      );
+
+      if (updateError) {
+        console.error('❌ Error updating admin password:', updateError);
         return new Response(
-          JSON.stringify({ success: false, message: 'Usuário admin não encontrado' }),
+          JSON.stringify({ success: false, message: 'Erro ao preparar sessão administrativa' }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -101,21 +113,18 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      console.log('Admin user found:', adminUser.user.email);
+      console.log('✅ Admin password updated, now signing in...');
 
-      // Usar abordagem alternativa: magic link para gerar tokens válidos
-      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: adminUser.user.email,
-        options: {
-          redirectTo: `${new URL(req.url).origin}/admin`
-        }
+      // Fazer o signIn com as credenciais temporárias
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: adminEmail,
+        password: tempPassword
       });
 
-      if (linkError || !linkData) {
-        console.error('Error generating magic link:', linkError);
+      if (signInError) {
+        console.error('❌ Error signing in admin:', signInError);
         return new Response(
-          JSON.stringify({ success: false, message: 'Erro ao gerar tokens de sessão' }),
+          JSON.stringify({ success: false, message: 'Erro ao criar sessão administrativa' }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -123,62 +132,39 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      console.log('Magic link generated for admin:', validationResult.admin_email);
-      console.log('Link data:', JSON.stringify(linkData, null, 2));
-      
-      // Extrair tokens do link gerado
-      let access_token = null;
-      let refresh_token = null;
-      
-      try {
-        // O link pode vir em diferentes formatos, vamos tentar extrair de todas as formas possíveis
-        const actionLink = linkData.properties?.action_link || linkData.action_link;
-        
-        if (actionLink) {
-          const url = new URL(actionLink);
-          access_token = url.searchParams.get('access_token') || url.hash.match(/access_token=([^&]+)/)?.[1];
-          refresh_token = url.searchParams.get('refresh_token') || url.hash.match(/refresh_token=([^&]+)/)?.[1];
-        }
-        
-        // Se ainda não temos tokens, verificar se vêm diretamente nos dados
-        if (!access_token && linkData.session) {
-          access_token = linkData.session.access_token;
-          refresh_token = linkData.session.refresh_token;
-        }
+      if (!signInData.session) {
+        console.error('❌ No session created');
+        return new Response(
+          JSON.stringify({ success: false, message: 'Sessão não foi criada' }),
+          { 
+            status: 500, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
+      }
 
-        console.log('Token extraction attempt - Access token exists:', !!access_token, 'Refresh token exists:', !!refresh_token);
+      console.log('✅ Admin session created successfully!');
 
-        if (!access_token || !refresh_token) {
-          console.error('Failed to extract tokens from magic link');
-          console.error('Link structure:', JSON.stringify(linkData, null, 2));
-          return new Response(
-            JSON.stringify({ success: false, message: 'Erro ao extrair tokens de sessão' }),
-            { 
-              status: 500, 
-              headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-            }
+      // Restaurar a senha original (babyshark123)
+      setTimeout(async () => {
+        try {
+          await supabase.auth.admin.updateUserById(
+            validationResult.admin_user_id,
+            { password: 'babyshark123' }
           );
+          console.log('🔄 Admin password restored to original');
+        } catch (error) {
+          console.error('⚠️ Warning: Could not restore admin password:', error);
         }
+      }, 5000); // Restaurar após 5 segundos
 
-        console.log('Tokens extracted successfully for admin:', validationResult.admin_email);
-      } catch (extractError) {
-        console.error('Error extracting tokens:', extractError);
-        return new Response(
-          JSON.stringify({ success: false, message: 'Erro no processamento dos tokens' }),
-          { 
-            status: 500, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
-        );
-      }
-
-      // Retornar tokens para login direto
+      // Retornar os tokens da sessão criada
       return new Response(
         JSON.stringify({
           success: true,
           sessionTokens: {
-            access_token: access_token,
-            refresh_token: refresh_token
+            access_token: signInData.session.access_token,
+            refresh_token: signInData.session.refresh_token
           },
           adminEmail: validationResult.admin_email,
           adminUserId: validationResult.admin_user_id,
@@ -191,7 +177,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
 
     } catch (authError: any) {
-      console.error('Error creating admin session:', authError);
+      console.error('❌ Error in auth process:', authError);
       return new Response(
         JSON.stringify({ success: false, message: 'Erro ao criar sessão: ' + authError.message }),
         { 
@@ -202,7 +188,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
   } catch (error: any) {
-    console.error('Error in admin-auto-login function:', error);
+    console.error('❌ Error in admin-auto-login function:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 

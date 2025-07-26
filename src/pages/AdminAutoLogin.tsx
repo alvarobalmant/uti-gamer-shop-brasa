@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const AdminAutoLogin = () => {
   const { token } = useParams<{ token: string }>();
@@ -11,11 +12,10 @@ export const AdminAutoLogin = () => {
   
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [message, setMessage] = useState('Processando login automático...');
-  const hasProcessed = useRef(false); // Evitar processamento duplo
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
     const processAutoLogin = async () => {
-      // Evitar processamento duplo
       if (hasProcessed.current || !token) {
         if (!token) {
           setStatus('error');
@@ -27,12 +27,15 @@ export const AdminAutoLogin = () => {
       hasProcessed.current = true;
 
       try {
-        console.log('Iniciando processo de auto-login com token:', token);
+        console.log('🚀 Iniciando processo de auto-login com token:', token);
         setMessage('Validando token administrativo...');
         
-        console.log('Chamando edge function admin-auto-login');
+        // Fazer logout primeiro para garantir sessão limpa
+        await signOut();
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Processar o login automático via edge function (uma única vez)
+        console.log('📞 Chamando edge function admin-auto-login');
+
         const { data, error } = await supabase.functions.invoke('admin-auto-login', {
           body: { 
             token: token,
@@ -40,95 +43,67 @@ export const AdminAutoLogin = () => {
           }
         });
 
-        console.log('Resposta da edge function:', { data, error });
+        console.log('📋 Resposta da edge function:', { data, error });
 
         if (error) {
-          console.error('Erro na edge function:', error);
-          throw new Error(`Erro no Login: ${error.message || 'Edge Function returned a non-2xx status code'}`);
+          console.error('❌ Erro na edge function:', error);
+          throw new Error(`Erro na comunicação: ${error.message}`);
         }
 
         if (!data?.success) {
-          console.error('Edge function retornou falha:', data?.message);
-          throw new Error(`Erro no Login: ${data?.message || 'Falha na validação do token'}`);
+          console.error('❌ Edge function retornou falha:', data?.message);
+          throw new Error(data?.message || 'Falha na validação do token');
         }
 
-        console.log('Token validado com sucesso, processando login...');
-        console.log('Dados recebidos da edge function:', JSON.stringify(data, null, 2));
+        console.log('✅ Token validado com sucesso');
         setMessage('Criando sessão administrativa...');
 
-        // Verificar se recebemos tokens de sessão
-        if (data.sessionTokens?.access_token && data.sessionTokens?.refresh_token) {
-          console.log('✅ Tokens de sessão recebidos:', {
-            access_token_length: data.sessionTokens.access_token?.length,
-            refresh_token_length: data.sessionTokens.refresh_token?.length,
-            admin_email: data.adminEmail
-          });
-          
-          // Aguardar um pouco antes de tentar criar a sessão
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          console.log('🔄 Criando sessão com tokens...');
-          
-          // Usar os tokens para criar a sessão localmente
-          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-            access_token: data.sessionTokens.access_token,
-            refresh_token: data.sessionTokens.refresh_token
-          });
-
-          console.log('📋 Resultado do setSession:', {
-            sessionData,
-            sessionError,
-            hasSession: !!sessionData?.session,
-            hasUser: !!sessionData?.session?.user,
-            userId: sessionData?.session?.user?.id,
-            userEmail: sessionData?.session?.user?.email
-          });
-
-          if (sessionError) {
-            console.error('❌ Erro ao criar sessão:', sessionError);
-            throw new Error(`Erro ao criar sessão administrativa: ${sessionError.message}`);
-          }
-
-          if (!sessionData.session) {
-            console.error('❌ Sessão não foi criada - sessionData.session é null');
-            throw new Error('Sessão não foi criada corretamente');
-          }
-
-          console.log('✅ Sessão administrativa criada com sucesso!');
-          console.log('👤 Usuário logado:', {
-            id: sessionData.session.user.id,
-            email: sessionData.session.user.email,
-            role: sessionData.session.user.user_metadata?.role
-          });
-          
-          // Verificar se a sessão foi realmente estabelecida
-          console.log('🔍 Verificando sessão atual...');
-          const { data: currentSession } = await supabase.auth.getSession();
-          console.log('📊 Sessão atual:', {
-            hasCurrentSession: !!currentSession?.session,
-            currentUserId: currentSession?.session?.user?.id,
-            currentUserEmail: currentSession?.session?.user?.email
-          });
-          
-          setStatus('success');
-          setMessage('✅ Login administrativo realizado com sucesso! Redirecionando para painel...');
-          
-          // Aguardar 2 segundos para mostrar a mensagem de sucesso
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          console.log('🔄 Redirecionando para /admin...');
-          navigate('/admin', { replace: true });
-        } else {
-          console.error('❌ Tokens de sessão não recebidos');
-          console.log('📋 Dados recebidos:', data);
-          throw new Error('Tokens de autenticação não foram recebidos da edge function');
+        if (!data.sessionTokens?.access_token || !data.sessionTokens?.refresh_token) {
+          console.error('❌ Tokens não recebidos');
+          throw new Error('Tokens de autenticação não foram recebidos');
         }
 
+        console.log('🔑 Estabelecendo sessão com tokens recebidos...');
+        
+        const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+          access_token: data.sessionTokens.access_token,
+          refresh_token: data.sessionTokens.refresh_token
+        });
+
+        if (sessionError) {
+          console.error('❌ Erro ao estabelecer sessão:', sessionError);
+          throw new Error(`Erro ao estabelecer sessão: ${sessionError.message}`);
+        }
+
+        if (!sessionData.session) {
+          console.error('❌ Sessão não foi estabelecida');
+          throw new Error('Sessão não foi estabelecida corretamente');
+        }
+
+        console.log('✅ Sessão administrativa estabelecida com sucesso!');
+        console.log('👤 Admin logado:', {
+          id: sessionData.session.user.id,
+          email: sessionData.session.user.email
+        });
+        
+        setStatus('success');
+        setMessage('✅ Login realizado com sucesso! Redirecionando...');
+        
+        toast.success('Login administrativo realizado com sucesso!');
+        
+        // Aguardar e redirecionar
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log('🔄 Redirecionando para /admin...');
+        navigate('/admin', { replace: true });
+
       } catch (error: any) {
-        console.error('Erro no processo de auto-login:', error);
+        console.error('❌ Erro no processo de auto-login:', error);
         setStatus('error');
         setMessage(error.message || 'Erro desconhecido no processo de login');
         
-        // Redirecionar para home após erro (3 segundos)
+        toast.error('Erro no login automático');
+        
+        // Redirecionar para home após erro
         setTimeout(() => {
           navigate('/');
         }, 3000);
