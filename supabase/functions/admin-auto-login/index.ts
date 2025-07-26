@@ -83,26 +83,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Token validated successfully for admin user:', validationResult.admin_email);
 
-    // Criar um link de acesso direto que bypass o sistema normal de login
+    // Criar sessão direta sem magic link para evitar problemas de redirect
     try {
-      console.log('Creating admin direct access link...');
+      console.log('Creating direct admin session...');
       
-      // Gerar um magic link que irá automaticamente logar o usuário
-      // IMPORTANTE: Sempre usar o domínio correto, nunca localhost
-      const baseUrl = 'https://www.utidosgames.com';
+      // Buscar o usuário admin no banco
+      const { data: adminUser, error: adminUserError } = await supabase.auth.admin.getUserById(validationResult.admin_user_id);
       
-      const { data: magicLinkData, error: magicLinkError } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: validationResult.admin_email,
-        options: {
-          redirectTo: `${baseUrl}/admin`
-        }
-      });
-
-      if (magicLinkError) {
-        console.error('Magic link generation error:', magicLinkError);
+      if (adminUserError || !adminUser.user) {
+        console.error('Error fetching admin user:', adminUserError);
         return new Response(
-          JSON.stringify({ success: false, message: 'Erro ao gerar link de acesso administrativo' }),
+          JSON.stringify({ success: false, message: 'Usuário admin não encontrado' }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -110,16 +101,41 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      console.log('Magic link created successfully:', magicLinkData.properties?.action_link);
+      console.log('Admin user found:', adminUser.user.email);
 
-      // Retornar o link para redirecionamento direto
+      // Gerar tokens de sessão diretamente
+      const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
+        user_id: validationResult.admin_user_id,
+        session: {
+          access_token: '', // Será gerado automaticamente
+          refresh_token: '' // Será gerado automaticamente
+        }
+      });
+
+      if (sessionError || !sessionData.session) {
+        console.error('Error creating session:', sessionError);
+        return new Response(
+          JSON.stringify({ success: false, message: 'Erro ao criar sessão administrativa' }),
+          { 
+            status: 500, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
+      }
+
+      console.log('Session created successfully for admin:', validationResult.admin_email);
+
+      // Retornar tokens para login direto
       return new Response(
         JSON.stringify({
           success: true,
-          redirectUrl: magicLinkData.properties?.action_link,
+          sessionTokens: {
+            access_token: sessionData.session.access_token,
+            refresh_token: sessionData.session.refresh_token
+          },
           adminEmail: validationResult.admin_email,
           adminUserId: validationResult.admin_user_id,
-          message: 'Link de acesso administrativo gerado com sucesso'
+          message: 'Sessão administrativa criada com sucesso'
         }),
         { 
           status: 200, 
@@ -128,9 +144,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
 
     } catch (authError: any) {
-      console.error('Error creating admin access link:', authError);
+      console.error('Error creating admin session:', authError);
       return new Response(
-        JSON.stringify({ success: false, message: 'Erro ao criar link de acesso: ' + authError.message }),
+        JSON.stringify({ success: false, message: 'Erro ao criar sessão: ' + authError.message }),
         { 
           status: 500, 
           headers: { 'Content-Type': 'application/json', ...corsHeaders } 

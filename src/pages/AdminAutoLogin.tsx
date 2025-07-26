@@ -54,37 +54,20 @@ export const AdminAutoLogin = () => {
 
         console.log('Token validado com sucesso, processando login...');
         console.log('Dados recebidos da edge function:', JSON.stringify(data, null, 2));
-        setMessage('Login administrativo validado! Redirecionando...');
+        setMessage('Criando sessão administrativa...');
 
-        // Verificar se recebemos uma URL de redirecionamento direto
-        if (data.redirectUrl) {
-          console.log('✅ URL de redirecionamento recebida:', data.redirectUrl);
-          
-          setStatus('success');
-          setMessage('✅ Login administrativo realizado com sucesso! Redirecionando automaticamente...');
-          
-          // Aguardar um momento para mostrar a mensagem
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          
-          // Redirecionar diretamente para o magic link que irá fazer o login automático
-          console.log('🔄 Redirecionando para magic link...');
-          window.location.href = data.redirectUrl;
-          
-        } else if (data.sessionTokens?.access_token && data.sessionTokens?.refresh_token) {
-          // Fallback para tokens (código anterior como backup)
-          console.log('✅ Tokens recebidos:', {
+        // Verificar se recebemos tokens de sessão
+        if (data.sessionTokens?.access_token && data.sessionTokens?.refresh_token) {
+          console.log('✅ Tokens de sessão recebidos:', {
             access_token_length: data.sessionTokens.access_token?.length,
             refresh_token_length: data.sessionTokens.refresh_token?.length,
-            access_token_preview: data.sessionTokens.access_token?.substring(0, 20) + '...',
-            refresh_token_preview: data.sessionTokens.refresh_token?.substring(0, 20) + '...'
+            admin_email: data.adminEmail
           });
-          
-          setMessage('Criando sessão administrativa...');
           
           // Aguardar um pouco antes de tentar criar a sessão
           await new Promise(resolve => setTimeout(resolve, 500));
           
-          console.log('🔄 Tentando criar sessão com setSession...');
+          console.log('🔄 Criando sessão com tokens...');
           
           // Usar os tokens para criar a sessão localmente
           const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
@@ -128,17 +111,16 @@ export const AdminAutoLogin = () => {
           });
           
           setStatus('success');
-          setMessage('✅ Login administrativo realizado com sucesso! Redirecionando em 3 segundos...');
+          setMessage('✅ Login administrativo realizado com sucesso! Redirecionando para painel...');
           
-          // Aguardar 3 segundos para mostrar a mensagem de sucesso claramente
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          // Aguardar 2 segundos para mostrar a mensagem de sucesso
+          await new Promise(resolve => setTimeout(resolve, 2000));
           console.log('🔄 Redirecionando para /admin...');
-          navigate('/admin');
+          navigate('/admin', { replace: true });
         } else {
-          // Fallback caso não tenha nem URL nem tokens
-          console.warn('⚠️ Nem URL de redirecionamento nem tokens de sessão foram recebidos');
-          console.log('📋 Dados recebidos sem redirecionamento:', data);
-          throw new Error('Resposta inválida da edge function - faltam dados de autenticação');
+          console.error('❌ Tokens de sessão não recebidos');
+          console.log('📋 Dados recebidos:', data);
+          throw new Error('Tokens de autenticação não foram recebidos da edge function');
         }
 
       } catch (error: any) {
