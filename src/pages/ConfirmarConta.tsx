@@ -18,92 +18,107 @@ const ConfirmarConta = () => {
   useEffect(() => {
     const confirmarEmail = async () => {
       if (!codigo) {
+        console.error('❌ Código de confirmação não fornecido');
         setStatus('error');
-        setMessage('Código de confirmação inválido');
+        setMessage('Código de confirmação inválido ou não fornecido');
         return;
       }
 
       try {
-        console.log('🔄 Iniciando confirmação com código:', codigo);
-        console.log('🔄 URL atual:', window.location.href);
+        console.log('🔄 Iniciando confirmação de email');
+        console.log('🔄 Código:', codigo);
+        console.log('🔄 URL completa:', window.location.href);
+        console.log('🔄 User Agent:', navigator.userAgent);
 
-        // Primeiro tentar confirmar o email usando verifyOtp
-        const { data, error } = await supabase.auth.verifyOtp({
+        // Método 1: Tentar verifyOtp (para links tradicionais do Supabase)
+        console.log('🔄 Tentativa 1: verifyOtp');
+        const { data: otpData, error: otpError } = await supabase.auth.verifyOtp({
           token_hash: codigo,
           type: 'email'
         });
 
-        console.log('🔄 Resposta verifyOtp:', { data, error });
+        console.log('🔄 Resultado verifyOtp:', { 
+          success: !otpError, 
+          hasUser: !!otpData?.user, 
+          userEmail: otpData?.user?.email,
+          error: otpError?.message 
+        });
 
-        if (error) {
-          console.error('❌ Erro na confirmação com verifyOtp:', error);
+        if (!otpError && otpData?.user) {
+          console.log('✅ Confirmação bem-sucedida via verifyOtp');
           
-          // Se verifyOtp falhar, tentar usar exchangeCodeForSession
-          console.log('🔄 Tentando exchangeCodeForSession...');
-          
-          const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(codigo);
-          
-          console.log('🔄 Resposta exchangeCodeForSession:', { sessionData, sessionError });
-          
-          if (sessionError) {
-            console.error('❌ Erro na confirmação com exchangeCodeForSession:', sessionError);
-            setStatus('error');
-            setMessage('Link de confirmação inválido ou expirado. Tente solicitar um novo email de confirmação.');
-            return;
-          }
-          
-          if (sessionData.user) {
-            console.log('✅ Email confirmado com sucesso via exchangeCodeForSession para:', sessionData.user.email);
-            
-            setStatus('success');
-            setMessage('Email confirmado com sucesso! Você foi logado automaticamente.');
-            setUserData({ email: sessionData.user.email || '' });
-
-            // Auto-redirecionar após 2 segundos
-            setTimeout(() => {
-              navigate('/', { replace: true });
-            }, 2000);
-
-            // Mostrar toast de sucesso
-            toast({
-              title: "Email Confirmado!",
-              description: "Sua conta foi ativada com sucesso. Bem-vindo ao UTI dos Games!",
-            });
-            return;
-          }
-        }
-
-        if (data.user) {
-          console.log('✅ Email confirmado com sucesso via verifyOtp para:', data.user.email);
-          
-          // Email confirmado com sucesso
           setStatus('success');
           setMessage('Email confirmado com sucesso! Você foi logado automaticamente.');
-          setUserData({ email: data.user.email || '' });
-
-          // Auto-redirecionar após 2 segundos
-          setTimeout(() => {
-            navigate('/', { replace: true });
-          }, 2000);
+          setUserData({ email: otpData.user.email || '' });
 
           // Mostrar toast de sucesso
           toast({
             title: "Email Confirmado!",
             description: "Sua conta foi ativada com sucesso. Bem-vindo ao UTI dos Games!",
           });
-        } else {
-          setStatus('error');
-          setMessage('Erro na confirmação do email. Tente novamente.');
+
+          // Auto-redirecionar após 3 segundos
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 3000);
+          
+          return;
         }
 
-      } catch (error: any) {
-        console.error('❌ Erro inesperado:', error);
+        // Método 2: Tentar exchangeCodeForSession (para códigos PKCE)
+        console.log('🔄 Tentativa 2: exchangeCodeForSession');
+        const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(codigo);
+        
+        console.log('🔄 Resultado exchangeCodeForSession:', { 
+          success: !sessionError, 
+          hasUser: !!sessionData?.user, 
+          userEmail: sessionData?.user?.email,
+          error: sessionError?.message 
+        });
+
+        if (!sessionError && sessionData?.user) {
+          console.log('✅ Confirmação bem-sucedida via exchangeCodeForSession');
+          
+          setStatus('success');
+          setMessage('Email confirmado com sucesso! Você foi logado automaticamente.');
+          setUserData({ email: sessionData.user.email || '' });
+
+          // Mostrar toast de sucesso
+          toast({
+            title: "Email Confirmado!",
+            description: "Sua conta foi ativada com sucesso. Bem-vindo ao UTI dos Games!",
+          });
+
+          // Auto-redirecionar após 3 segundos
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 3000);
+          
+          return;
+        }
+
+        // Se ambos os métodos falharam
+        console.error('❌ Ambos os métodos de confirmação falharam');
+        console.error('❌ Erro verifyOtp:', otpError?.message);
+        console.error('❌ Erro exchangeCodeForSession:', sessionError?.message);
+        
         setStatus('error');
-        setMessage('Erro interno. Tente novamente mais tarde.');
+        setMessage(
+          'Link de confirmação inválido ou expirado. ' +
+          'Tente solicitar um novo email de confirmação ou entre em contato com o suporte.'
+        );
+
+      } catch (error: any) {
+        console.error('❌ Erro inesperado na confirmação:', error);
+        setStatus('error');
+        setMessage('Erro interno do sistema. Tente novamente mais tarde ou entre em contato com o suporte.');
       }
     };
 
-    confirmarEmail();
+    // Aguardar um pouco para garantir que o Supabase está pronto
+    const timer = setTimeout(confirmarEmail, 100);
+    
+    return () => clearTimeout(timer);
   }, [codigo, navigate, toast]);
 
   const handleVoltar = () => {
