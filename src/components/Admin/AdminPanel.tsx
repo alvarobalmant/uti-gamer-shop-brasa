@@ -22,7 +22,8 @@ import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
 import UTICoinsManager from './UTICoinsManager';
 import { EmailManager } from './EmailManager/EmailManager';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail } from 'lucide-react';
+import { AdminLoginManager } from './AdminLoginManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -49,6 +50,7 @@ export const AdminPanel = () => {
     { id: 'tags', label: 'Tags', icon: Tag },
     { id: 'uti_coins', label: 'UTI Coins', icon: Coins },
     { id: 'emails', label: 'Emails', icon: Mail },
+    { id: 'admin_login', label: 'LOGIN ADM', icon: Shield },
     { id: 'users', label: 'Usuários/PRO', icon: Users },
     { id: 'settings', label: 'Configurações', icon: Cog },
   ];
@@ -224,6 +226,10 @@ export const AdminPanel = () => {
 
               <TabsContent value="emails" className="mt-0">
                 <EmailManager />
+              </TabsContent>
+
+              <TabsContent value="admin_login" className="mt-0">
+                <AdminLoginManager />
               </TabsContent>
 
               <TabsContent value="users" className="mt-0">

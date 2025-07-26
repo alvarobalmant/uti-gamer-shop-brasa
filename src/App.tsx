@@ -92,6 +92,7 @@ const MeusCoins = lazy(() => import("./pages/MeusCoins"));
 // Import direto para páginas críticas de auth
 import ConfirmarConta from "./pages/ConfirmarConta";
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module => ({ default: module.AdminAutoLogin })));
 
 // Lazy loading para páginas de UTI Coins
 const CoinsShop = lazy(() => import("./pages/CoinsShop"));
@@ -180,6 +181,9 @@ const App = () => {
                   {/* UTI Coins Routes */}
                   <Route path="/coins/loja" element={<CoinsShop />} />
                   <Route path="/coins/historico" element={<CoinsHistory />} />
+
+                  {/* Admin Auto Login Route - MUST come before admin routes */}
+                  <Route path="/admin-login/:token" element={<AdminAutoLogin />} />
 
                   {/* Admin Routes - Protected - MUST come before dynamic routes */}
                   <Route 

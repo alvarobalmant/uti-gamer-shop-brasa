@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_login_links: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          token: string
+          used_at: string | null
+          used_by_ip: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          token: string
+          used_at?: string | null
+          used_by_ip?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          token?: string
+          used_at?: string | null
+          used_by_ip?: string | null
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           background_type: string | null
@@ -2283,6 +2316,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      create_admin_link: {
+        Args: { duration_minutes: number }
+        Returns: Json
+      }
       earn_coins: {
         Args: {
           p_user_id: string
@@ -2292,6 +2329,10 @@ export type Database = {
           p_metadata?: Json
         }
         Returns: Json
+      }
+      generate_admin_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       generate_redemption_code: {
         Args: { p_user_id: string; p_product_id: string; p_cost: number }
@@ -2384,6 +2425,10 @@ export type Database = {
           is_admin_result: boolean
           can_read_profiles: boolean
         }[]
+      }
+      validate_admin_token: {
+        Args: { p_token: string; p_ip?: string }
+        Returns: Json
       }
       verify_redemption_code: {
         Args: { p_code: string }
