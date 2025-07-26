@@ -88,11 +88,14 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('Creating admin direct access link...');
       
       // Gerar um magic link que irá automaticamente logar o usuário
+      // IMPORTANTE: Sempre usar o domínio correto, nunca localhost
+      const baseUrl = 'https://www.utidosgames.com';
+      
       const { data: magicLinkData, error: magicLinkError } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
         email: validationResult.admin_email,
         options: {
-          redirectTo: `${req.headers.get('origin') || 'https://pmxnfpnnvtuuiedoxuxc.lovableproject.com'}/admin`
+          redirectTo: `${baseUrl}/admin`
         }
       });
 
