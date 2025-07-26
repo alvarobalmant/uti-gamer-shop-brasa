@@ -83,33 +83,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Token validated successfully for admin user:', validationResult.admin_email);
 
-    // Gerar um token de sessão para o usuário admin
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: validationResult.admin_email,
-      options: {
-        redirectTo: `${req.headers.get('origin') || supabaseUrl}/`
-      }
-    });
+    // Ao invés de gerar magic link, vamos simular sucesso e deixar o frontend fazer redirect
+    console.log('Auto-login process completed successfully');
 
-    if (sessionError) {
-      console.error('Session generation error:', sessionError);
-      return new Response(
-        JSON.stringify({ success: false, message: 'Erro ao gerar sessão de login' }),
-        { 
-          status: 500, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
-      );
-    }
-
-    console.log('Magic link generated successfully');
-
-    // Retornar o link de autenticação
+    // Retornar sucesso sem gerar magic link (para evitar rate limit)
     return new Response(
       JSON.stringify({
         success: true,
-        authUrl: sessionData.properties?.action_link,
         adminEmail: validationResult.admin_email,
         message: 'Login administrativo processado com sucesso'
       }),

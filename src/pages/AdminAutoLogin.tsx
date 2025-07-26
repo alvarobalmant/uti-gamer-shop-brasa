@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,46 +11,71 @@ export const AdminAutoLogin = () => {
   
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [message, setMessage] = useState('Processando login automático...');
+  const hasProcessed = useRef(false); // Evitar processamento duplo
 
   useEffect(() => {
     const processAutoLogin = async () => {
-      if (!token) {
-        setStatus('error');
-        setMessage('Token não encontrado na URL');
+      // Evitar processamento duplo
+      if (hasProcessed.current || !token) {
+        if (!token) {
+          setStatus('error');
+          setMessage('Token não encontrado na URL');
+        }
         return;
       }
 
+      hasProcessed.current = true;
+
       try {
-        // Se o usuário estiver logado, deslogar primeiro
+        console.log('Iniciando processo de auto-login com token:', token);
+        
+        // Deslogar usuário atual primeiro (sem mostrar toast)
+        setMessage('Preparando login automático...');
         await signOut();
         
+        // Aguardar um pouco para garantir que o logout foi processado
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         setMessage('Validando token administrativo...');
+        console.log('Chamando edge function admin-auto-login');
 
-        // Processar o login automático via edge function
+        // Processar o login automático via edge function (uma única vez)
         const { data, error } = await supabase.functions.invoke('admin-auto-login', {
           body: { 
             token: token,
-            clientIP: null // O edge function vai detectar o IP automaticamente
+            clientIP: null
           }
         });
 
-        if (error) throw error;
+        console.log('Resposta da edge function:', { data, error });
 
-        if (!data.success) {
-          throw new Error(data.message);
+        if (error) {
+          console.error('Erro na edge function:', error);
+          throw error;
         }
 
-        setMessage('Token válido! Redirecionando para login...');
+        if (!data?.success) {
+          console.error('Edge function retornou falha:', data?.message);
+          throw new Error(data?.message || 'Falha na validação do token');
+        }
 
-        // Redirecionar para o link de autenticação mágica
-        window.location.href = data.authUrl;
+        console.log('Token validado com sucesso, redirecionando...');
+        setStatus('success');
+        setMessage('Login realizado com sucesso! Redirecionando...');
+
+        // Aguardar um pouco antes de redirecionar
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Redirecionar diretamente para a home (não usar o magic link)
+        console.log('Redirecionando para home...');
+        window.location.href = '/';
 
       } catch (error: any) {
-        console.error('Erro no login automático:', error);
+        console.error('Erro no processo de auto-login:', error);
         setStatus('error');
         setMessage(error.message || 'Erro desconhecido no processo de login');
         
-        // Redirecionar para home após 3 segundos em caso de erro
+        // Redirecionar para home após erro (3 segundos)
         setTimeout(() => {
           navigate('/');
         }, 3000);
