@@ -83,18 +83,21 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Token validated successfully for admin user:', validationResult.admin_email);
 
-    // Criar sessão direta usando recovery link para obter tokens
+    // Criar sessão usando magiclink para obter tokens válidos
     try {
       console.log('Creating admin session with tokens...');
       
-      // Gerar tokens de recuperação que podemos usar para criar sessão direta
-      const { data: recoveryData, error: recoveryError } = await supabase.auth.admin.generateLink({
-        type: 'recovery',
-        email: validationResult.admin_email
+      // Usar magiclink para gerar tokens válidos que podem ser usados com setSession
+      const { data: magicLinkData, error: magicLinkError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email: validationResult.admin_email,
+        options: {
+          redirectTo: 'https://pmxnfpnnvtuuiedoxuxc.supabase.co/auth/v1/verify'
+        }
       });
 
-      if (recoveryError) {
-        console.error('Recovery token generation error:', recoveryError);
+      if (magicLinkError) {
+        console.error('Magic link generation error:', magicLinkError);
         return new Response(
           JSON.stringify({ success: false, message: 'Erro ao gerar tokens de sessão' }),
           { 
@@ -111,8 +114,8 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({
           success: true,
           sessionTokens: {
-            access_token: recoveryData.properties?.access_token,
-            refresh_token: recoveryData.properties?.refresh_token
+            access_token: magicLinkData.properties?.access_token,
+            refresh_token: magicLinkData.properties?.refresh_token
           },
           adminEmail: validationResult.admin_email,
           message: 'Tokens de sessão gerados com sucesso'

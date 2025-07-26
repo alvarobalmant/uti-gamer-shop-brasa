@@ -67,25 +67,34 @@ export const AdminAutoLogin = () => {
           console.log('Criando sessão administrativa com tokens...');
           setMessage('Criando sessão administrativa...');
           
+          // Aguardar um pouco antes de tentar criar a sessão
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
           // Usar os tokens para criar a sessão localmente
-          const { error: sessionError } = await supabase.auth.setSession({
+          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
             access_token: data.sessionTokens.access_token,
             refresh_token: data.sessionTokens.refresh_token
           });
 
           if (sessionError) {
             console.error('Erro ao criar sessão:', sessionError);
-            throw new Error('Erro ao criar sessão administrativa');
+            throw new Error(`Erro ao criar sessão administrativa: ${sessionError.message}`);
           }
 
+          if (!sessionData.session) {
+            throw new Error('Sessão não foi criada corretamente');
+          }
+
+          console.log('Sessão administrativa criada com sucesso:', sessionData.session);
           setStatus('success');
           setMessage('Login administrativo realizado com sucesso!');
           
           // Aguardar um momento e redirecionar para admin
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 1500));
           navigate('/admin');
         } else {
           // Fallback caso não tenha tokens
+          console.warn('Tokens de sessão não recebidos');
           setStatus('success');
           setMessage('Login realizado com sucesso! Redirecionando...');
           
