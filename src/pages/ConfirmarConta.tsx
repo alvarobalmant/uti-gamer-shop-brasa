@@ -25,32 +25,66 @@ const ConfirmarConta = () => {
 
       try {
         console.log('🔄 Iniciando confirmação com código:', codigo);
+        console.log('🔄 URL atual:', window.location.href);
 
-        // Tentar confirmar o email usando o código como token_hash
+        // Primeiro tentar confirmar o email usando verifyOtp
         const { data, error } = await supabase.auth.verifyOtp({
           token_hash: codigo,
           type: 'email'
         });
 
+        console.log('🔄 Resposta verifyOtp:', { data, error });
+
         if (error) {
-          console.error('❌ Erro na confirmação:', error);
-          setStatus('error');
-          setMessage('Link de confirmação inválido ou expirado. Tente solicitar um novo email de confirmação.');
-          return;
+          console.error('❌ Erro na confirmação com verifyOtp:', error);
+          
+          // Se verifyOtp falhar, tentar usar exchangeCodeForSession
+          console.log('🔄 Tentando exchangeCodeForSession...');
+          
+          const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(codigo);
+          
+          console.log('🔄 Resposta exchangeCodeForSession:', { sessionData, sessionError });
+          
+          if (sessionError) {
+            console.error('❌ Erro na confirmação com exchangeCodeForSession:', sessionError);
+            setStatus('error');
+            setMessage('Link de confirmação inválido ou expirado. Tente solicitar um novo email de confirmação.');
+            return;
+          }
+          
+          if (sessionData.user) {
+            console.log('✅ Email confirmado com sucesso via exchangeCodeForSession para:', sessionData.user.email);
+            
+            setStatus('success');
+            setMessage('Email confirmado com sucesso! Você foi logado automaticamente.');
+            setUserData({ email: sessionData.user.email || '' });
+
+            // Auto-redirecionar após 2 segundos
+            setTimeout(() => {
+              navigate('/', { replace: true });
+            }, 2000);
+
+            // Mostrar toast de sucesso
+            toast({
+              title: "Email Confirmado!",
+              description: "Sua conta foi ativada com sucesso. Bem-vindo ao UTI dos Games!",
+            });
+            return;
+          }
         }
 
         if (data.user) {
-          console.log('✅ Email confirmado com sucesso para:', data.user.email);
+          console.log('✅ Email confirmado com sucesso via verifyOtp para:', data.user.email);
           
           // Email confirmado com sucesso
           setStatus('success');
-          setMessage('Email confirmado com sucesso! Você será redirecionado em alguns segundos...');
+          setMessage('Email confirmado com sucesso! Você foi logado automaticamente.');
           setUserData({ email: data.user.email || '' });
 
-          // Auto-redirecionar após 3 segundos
+          // Auto-redirecionar após 2 segundos
           setTimeout(() => {
             navigate('/', { replace: true });
-          }, 3000);
+          }, 2000);
 
           // Mostrar toast de sucesso
           toast({
@@ -70,7 +104,7 @@ const ConfirmarConta = () => {
     };
 
     confirmarEmail();
-  }, [codigo, navigate, signIn]);
+  }, [codigo, navigate, toast]);
 
   const handleVoltar = () => {
     navigate('/', { replace: true });

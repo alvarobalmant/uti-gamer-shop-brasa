@@ -89,7 +89,8 @@ const TestProduct = lazy(() => import("./pages/TestProduct"));
 const ClientArea = lazy(() => import("./pages/ClientArea"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const MeusCoins = lazy(() => import("./pages/MeusCoins"));
-const ConfirmarConta = lazy(() => import("./pages/ConfirmarConta"));
+// Import direto para páginas críticas de auth
+import ConfirmarConta from "./pages/ConfirmarConta";
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 
 // Lazy loading para páginas de UTI Coins
@@ -171,7 +172,7 @@ const App = () => {
                   <Route path="/meus-coins" element={<MeusCoins />} />
                   
                   {/* Email Confirmation Route */}
-                  <Route path="/confirmar-conta/:codigo" element={<React.Suspense fallback={<PageLoader />}><ConfirmarConta /></React.Suspense>} />
+                  <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
                   
                   {/* Registration Route */}
                   <Route path="/cadastro" element={<RegisterPage />} />
