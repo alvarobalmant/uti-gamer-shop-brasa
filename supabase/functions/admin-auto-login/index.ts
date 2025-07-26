@@ -103,16 +103,12 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log('Admin user found:', adminUser.user.email);
 
-      // Gerar tokens de sessão diretamente
-      const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
-        user_id: validationResult.admin_user_id,
-        session: {
-          access_token: '', // Será gerado automaticamente
-          refresh_token: '' // Será gerado automaticamente
-        }
-      });
+      // Gerar tokens de acesso usando a API correta
+      const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateAccessToken(
+        validationResult.admin_user_id
+      );
 
-      if (sessionError || !sessionData.session) {
+      if (sessionError || !sessionData) {
         console.error('Error creating session:', sessionError);
         return new Response(
           JSON.stringify({ success: false, message: 'Erro ao criar sessão administrativa' }),
@@ -124,14 +120,15 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       console.log('Session created successfully for admin:', validationResult.admin_email);
+      console.log('Session data structure:', JSON.stringify(sessionData, null, 2));
 
       // Retornar tokens para login direto
       return new Response(
         JSON.stringify({
           success: true,
           sessionTokens: {
-            access_token: sessionData.session.access_token,
-            refresh_token: sessionData.session.refresh_token
+            access_token: sessionData.access_token,
+            refresh_token: sessionData.refresh_token
           },
           adminEmail: validationResult.admin_email,
           adminUserId: validationResult.admin_user_id,
