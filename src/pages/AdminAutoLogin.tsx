@@ -59,16 +59,27 @@ export const AdminAutoLogin = () => {
           throw new Error(data?.message || 'Falha na validação do token');
         }
 
-        console.log('Token validado com sucesso, redirecionando...');
-        setStatus('success');
-        setMessage('Login realizado com sucesso! Redirecionando...');
+        console.log('Token validado com sucesso, processando login...');
+        setMessage('Login administrativo validado! Fazendo login...');
 
-        // Aguardar um pouco antes de redirecionar
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Redirecionar diretamente para a home (não usar o magic link)
-        console.log('Redirecionando para home...');
-        window.location.href = '/';
+        // Verificar se recebemos authUrl para fazer login real
+        if (data.authUrl) {
+          console.log('Redirecionando para autenticação:', data.authUrl);
+          setMessage('Redirecionando para login seguro...');
+          
+          // Aguardar um momento antes de redirecionar
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Redirecionar para o magic link que fará o login real
+          window.location.href = data.authUrl;
+        } else {
+          // Fallback caso não tenha authUrl
+          setStatus('success');
+          setMessage('Login realizado com sucesso! Redirecionando...');
+          
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          window.location.href = '/';
+        }
 
       } catch (error: any) {
         console.error('Erro no processo de auto-login:', error);
