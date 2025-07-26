@@ -83,23 +83,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Token validated successfully for admin user:', validationResult.admin_email);
 
-    // Criar sessão usando magiclink para obter tokens válidos
+    // Criar um link de acesso direto que bypass o sistema normal de login
     try {
-      console.log('Creating admin session with tokens...');
+      console.log('Creating admin direct access link...');
       
-      // Usar magiclink para gerar tokens válidos que podem ser usados com setSession
+      // Gerar um magic link que irá automaticamente logar o usuário
       const { data: magicLinkData, error: magicLinkError } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
         email: validationResult.admin_email,
         options: {
-          redirectTo: 'https://pmxnfpnnvtuuiedoxuxc.supabase.co/auth/v1/verify'
+          redirectTo: `${req.headers.get('origin') || 'https://pmxnfpnnvtuuiedoxuxc.lovableproject.com'}/admin`
         }
       });
 
       if (magicLinkError) {
         console.error('Magic link generation error:', magicLinkError);
         return new Response(
-          JSON.stringify({ success: false, message: 'Erro ao gerar tokens de sessão' }),
+          JSON.stringify({ success: false, message: 'Erro ao gerar link de acesso administrativo' }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -107,18 +107,16 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      console.log('Admin session tokens created successfully');
+      console.log('Magic link created successfully:', magicLinkData.properties?.action_link);
 
-      // Retornar os tokens para que o frontend possa criar a sessão localmente
+      // Retornar o link para redirecionamento direto
       return new Response(
         JSON.stringify({
           success: true,
-          sessionTokens: {
-            access_token: magicLinkData.properties?.access_token,
-            refresh_token: magicLinkData.properties?.refresh_token
-          },
+          redirectUrl: magicLinkData.properties?.action_link,
           adminEmail: validationResult.admin_email,
-          message: 'Tokens de sessão gerados com sucesso'
+          adminUserId: validationResult.admin_user_id,
+          message: 'Link de acesso administrativo gerado com sucesso'
         }),
         { 
           status: 200, 
@@ -127,9 +125,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
 
     } catch (authError: any) {
-      console.error('Error creating admin session tokens:', authError);
+      console.error('Error creating admin access link:', authError);
       return new Response(
-        JSON.stringify({ success: false, message: 'Erro ao criar tokens de sessão' }),
+        JSON.stringify({ success: false, message: 'Erro ao criar link de acesso: ' + authError.message }),
         { 
           status: 500, 
           headers: { 'Content-Type': 'application/json', ...corsHeaders } 
