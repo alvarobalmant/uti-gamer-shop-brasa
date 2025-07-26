@@ -61,7 +61,15 @@ serve(async (req) => {
     }
 
     if (req.method === 'POST') {
-      const body: CreateLinkRequest = await req.json()
+      let body: CreateLinkRequest;
+      try {
+        body = await req.json()
+      } catch (error) {
+        return new Response(JSON.stringify({ error: 'Body JSON inválido' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
       
       // Criar link usando função segura
       const { data, error } = await supabase.rpc('create_admin_link_secure', {
@@ -80,7 +88,15 @@ serve(async (req) => {
       })
 
     } else if (req.method === 'PUT') {
-      const body: DeactivateLinkRequest = await req.json()
+      let body: DeactivateLinkRequest;
+      try {
+        body = await req.json()
+      } catch (error) {
+        return new Response(JSON.stringify({ error: 'Body JSON inválido' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
       
       // Desativar link
       const { error } = await supabase
@@ -101,7 +117,7 @@ serve(async (req) => {
       })
 
     } else if (req.method === 'GET') {
-      // Listar links do admin atual
+      // Listar links do admin atual - sem fazer parse de JSON
       const { data: links, error } = await supabase
         .from('admin_login_links')
         .select('id, expires_at, created_at, used_at, is_active')
