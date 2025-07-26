@@ -103,14 +103,17 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log('Admin user found:', adminUser.user.email);
 
-      // Gerar link de recuperação para extrair tokens válidos
+      // Usar abordagem alternativa: magic link para gerar tokens válidos
       const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-        type: 'recovery',
-        email: adminUser.user.email
+        type: 'magiclink',
+        email: adminUser.user.email,
+        options: {
+          redirectTo: `${new URL(req.url).origin}/admin`
+        }
       });
 
       if (linkError || !linkData) {
-        console.error('Error generating recovery link:', linkError);
+        console.error('Error generating magic link:', linkError);
         return new Response(
           JSON.stringify({ success: false, message: 'Erro ao gerar tokens de sessão' }),
           { 
@@ -120,25 +123,54 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      console.log('Recovery link generated for admin:', validationResult.admin_email);
+      console.log('Magic link generated for admin:', validationResult.admin_email);
+      console.log('Link data:', JSON.stringify(linkData, null, 2));
       
-      // Extrair tokens válidos do link de recuperação
-      const url = new URL(linkData.properties.action_link);
-      const access_token = url.searchParams.get('access_token');
-      const refresh_token = url.searchParams.get('refresh_token');
+      // Extrair tokens do link gerado
+      let access_token = null;
+      let refresh_token = null;
+      
+      try {
+        // O link pode vir em diferentes formatos, vamos tentar extrair de todas as formas possíveis
+        const actionLink = linkData.properties?.action_link || linkData.action_link;
+        
+        if (actionLink) {
+          const url = new URL(actionLink);
+          access_token = url.searchParams.get('access_token') || url.hash.match(/access_token=([^&]+)/)?.[1];
+          refresh_token = url.searchParams.get('refresh_token') || url.hash.match(/refresh_token=([^&]+)/)?.[1];
+        }
+        
+        // Se ainda não temos tokens, verificar se vêm diretamente nos dados
+        if (!access_token && linkData.session) {
+          access_token = linkData.session.access_token;
+          refresh_token = linkData.session.refresh_token;
+        }
 
-      if (!access_token || !refresh_token) {
-        console.error('Failed to extract tokens from recovery link');
+        console.log('Token extraction attempt - Access token exists:', !!access_token, 'Refresh token exists:', !!refresh_token);
+
+        if (!access_token || !refresh_token) {
+          console.error('Failed to extract tokens from magic link');
+          console.error('Link structure:', JSON.stringify(linkData, null, 2));
+          return new Response(
+            JSON.stringify({ success: false, message: 'Erro ao extrair tokens de sessão' }),
+            { 
+              status: 500, 
+              headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+            }
+          );
+        }
+
+        console.log('Tokens extracted successfully for admin:', validationResult.admin_email);
+      } catch (extractError) {
+        console.error('Error extracting tokens:', extractError);
         return new Response(
-          JSON.stringify({ success: false, message: 'Erro ao extrair tokens de sessão' }),
+          JSON.stringify({ success: false, message: 'Erro no processamento dos tokens' }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
           }
         );
       }
-
-      console.log('Tokens extracted successfully for admin:', validationResult.admin_email);
 
       // Retornar tokens para login direto
       return new Response(

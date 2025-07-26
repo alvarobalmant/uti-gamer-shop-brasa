@@ -44,12 +44,12 @@ export const AdminAutoLogin = () => {
 
         if (error) {
           console.error('Erro na edge function:', error);
-          throw error;
+          throw new Error(`Erro no Login: ${error.message || 'Edge Function returned a non-2xx status code'}`);
         }
 
         if (!data?.success) {
           console.error('Edge function retornou falha:', data?.message);
-          throw new Error(data?.message || 'Falha na validação do token');
+          throw new Error(`Erro no Login: ${data?.message || 'Falha na validação do token'}`);
         }
 
         console.log('Token validado com sucesso, processando login...');
