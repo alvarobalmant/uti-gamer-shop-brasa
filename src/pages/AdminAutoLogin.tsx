@@ -62,23 +62,35 @@ export const AdminAutoLogin = () => {
         console.log('Token validado com sucesso, processando login...');
         setMessage('Login administrativo validado! Fazendo login...');
 
-        // Verificar se recebemos authUrl para fazer login real
-        if (data.authUrl) {
-          console.log('Redirecionando para autenticação:', data.authUrl);
-          setMessage('Redirecionando para login seguro...');
+        // Verificar se recebemos tokens para criar sessão direta
+        if (data.sessionTokens?.access_token && data.sessionTokens?.refresh_token) {
+          console.log('Criando sessão administrativa com tokens...');
+          setMessage('Criando sessão administrativa...');
           
-          // Aguardar um momento antes de redirecionar
+          // Usar os tokens para criar a sessão localmente
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: data.sessionTokens.access_token,
+            refresh_token: data.sessionTokens.refresh_token
+          });
+
+          if (sessionError) {
+            console.error('Erro ao criar sessão:', sessionError);
+            throw new Error('Erro ao criar sessão administrativa');
+          }
+
+          setStatus('success');
+          setMessage('Login administrativo realizado com sucesso!');
+          
+          // Aguardar um momento e redirecionar para admin
           await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // Redirecionar para o magic link que fará o login real
-          window.location.href = data.authUrl;
+          navigate('/admin');
         } else {
-          // Fallback caso não tenha authUrl
+          // Fallback caso não tenha tokens
           setStatus('success');
           setMessage('Login realizado com sucesso! Redirecionando...');
           
           await new Promise(resolve => setTimeout(resolve, 1500));
-          window.location.href = '/';
+          navigate('/');
         }
 
       } catch (error: any) {

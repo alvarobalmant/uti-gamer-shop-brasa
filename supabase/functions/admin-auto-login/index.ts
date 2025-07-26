@@ -83,23 +83,20 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Token validated successfully for admin user:', validationResult.admin_email);
 
-    // Agora vamos fazer o login real usando o Auth Admin
+    // Criar sessão direta usando recovery link para obter tokens
     try {
-      console.log('Creating admin session...');
+      console.log('Creating admin session with tokens...');
       
-      // Gerar uma sessão real para o usuário admin
-      const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: validationResult.admin_email,
-        options: {
-          redirectTo: `https://b9f9d803-360a-4ca9-bd16-5b8453326c6f.lovableproject.com/`
-        }
+      // Gerar tokens de recuperação que podemos usar para criar sessão direta
+      const { data: recoveryData, error: recoveryError } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: validationResult.admin_email
       });
 
-      if (sessionError) {
-        console.error('Session generation error:', sessionError);
+      if (recoveryError) {
+        console.error('Recovery token generation error:', recoveryError);
         return new Response(
-          JSON.stringify({ success: false, message: 'Erro ao gerar sessão de login' }),
+          JSON.stringify({ success: false, message: 'Erro ao gerar tokens de sessão' }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -107,15 +104,18 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      console.log('Admin session created successfully');
+      console.log('Admin session tokens created successfully');
 
-      // Retornar o link de autenticação que realmente faz login
+      // Retornar os tokens para que o frontend possa criar a sessão localmente
       return new Response(
         JSON.stringify({
           success: true,
-          authUrl: sessionData.properties?.action_link,
+          sessionTokens: {
+            access_token: recoveryData.properties?.access_token,
+            refresh_token: recoveryData.properties?.refresh_token
+          },
           adminEmail: validationResult.admin_email,
-          message: 'Login administrativo processado com sucesso'
+          message: 'Tokens de sessão gerados com sucesso'
         }),
         { 
           status: 200, 
@@ -124,9 +124,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
 
     } catch (authError: any) {
-      console.error('Error creating admin session:', authError);
+      console.error('Error creating admin session tokens:', authError);
       return new Response(
-        JSON.stringify({ success: false, message: 'Erro ao criar sessão administrativa' }),
+        JSON.stringify({ success: false, message: 'Erro ao criar tokens de sessão' }),
         { 
           status: 500, 
           headers: { 'Content-Type': 'application/json', ...corsHeaders } 
