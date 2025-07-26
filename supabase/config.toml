@@ -54,3 +54,6 @@ verify_jwt = false
 
 [functions.admin-auto-login]
 verify_jwt = false
+
+[functions.admin-link-manager]
+verify_jwt = true

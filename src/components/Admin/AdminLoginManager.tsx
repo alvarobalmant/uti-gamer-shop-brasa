@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Copy, Check, Clock, Plus } from 'lucide-react';
+import { Ban, Clock, Plus, Shield, Loader2, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,11 +12,9 @@ import { ptBR } from 'date-fns/locale';
 
 interface AdminLink {
   id: string;
-  token: string;
   expires_at: string;
   created_at: string;
   used_at: string | null;
-  used_by_ip: string | null;
   is_active: boolean;
 }
 
@@ -25,18 +23,21 @@ export const AdminLoginManager = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [duration, setDuration] = useState(60); // minutos
-  const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchLinks = async () => {
     try {
-      const { data, error } = await supabase
-        .from('admin_login_links')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Não autenticado');
 
-      if (error) throw error;
-      setLinks(data || []);
+      const response = await supabase.functions.invoke('admin-link-manager', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) throw response.error;
+      setLinks(response.data || []);
     } catch (error: any) {
       toast({
         title: "Erro ao carregar links",
@@ -60,13 +61,20 @@ export const AdminLoginManager = () => {
 
     setCreating(true);
     try {
-      const { data, error } = await supabase.rpc('create_admin_link', {
-        duration_minutes: duration
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Não autenticado');
+
+      const response = await supabase.functions.invoke('admin-link-manager', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: { duration },
       });
 
-      if (error) throw error;
+      if (response.error) throw response.error;
 
-      const result = data as any; // Type assertion para o retorno da função
+      const result = response.data;
       if (result.success) {
         toast({
           title: "Link criado com sucesso!",
@@ -91,12 +99,18 @@ export const AdminLoginManager = () => {
 
   const deactivateLink = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('admin_login_links')
-        .update({ is_active: false })
-        .eq('id', id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Não autenticado');
 
-      if (error) throw error;
+      const response = await supabase.functions.invoke('admin-link-manager', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: { linkId: id },
+      });
+
+      if (response.error) throw response.error;
 
       toast({
         title: "Link desativado",
@@ -108,27 +122,6 @@ export const AdminLoginManager = () => {
       toast({
         title: "Erro ao desativar link",
         description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const copyToClipboard = async (token: string) => {
-    const fullUrl = `${window.location.origin}/admin-login/${token}`;
-    
-    try {
-      await navigator.clipboard.writeText(fullUrl);
-      setCopiedToken(token);
-      toast({
-        title: "Link copiado!",
-        description: "O link foi copiado para a área de transferência",
-      });
-      
-      setTimeout(() => setCopiedToken(null), 2000);
-    } catch (error) {
-      toast({
-        title: "Erro ao copiar",
-        description: "Não foi possível copiar o link",
         variant: "destructive",
       });
     }
@@ -158,6 +151,7 @@ export const AdminLoginManager = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin mr-2" />
         <div className="text-muted-foreground">Carregando links...</div>
       </div>
     );
@@ -165,6 +159,22 @@ export const AdminLoginManager = () => {
 
   return (
     <div className="space-y-6">
+      {/* Aviso de segurança */}
+      <Card className="border-orange-200 bg-orange-50">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-orange-800 mb-1">Sistema de Login Seguro</h3>
+              <p className="text-sm text-orange-700">
+                Os links são criados de forma segura e não expõem tokens no frontend. 
+                Apenas você (admin logado) pode ver e gerenciar seus próprios links.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Criar novo link */}
       <Card>
         <CardHeader>
@@ -192,12 +202,12 @@ export const AdminLoginManager = () => {
               disabled={creating}
               className="flex items-center gap-2"
             >
+              {creating && <Loader2 className="h-4 w-4 animate-spin" />}
               {creating ? "Criando..." : "Criar Link"}
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
-            Qualquer pessoa que acessar este link será automaticamente logada como administrador.
-            Use com extrema cautela e apenas para situações específicas.
+            Os links são criados com máxima segurança e validados no backend.
           </p>
         </CardContent>
       </Card>
@@ -205,7 +215,10 @@ export const AdminLoginManager = () => {
       {/* Lista de links */}
       <Card>
         <CardHeader>
-          <CardTitle>Links Administrativos</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Seus Links Administrativos
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {links.length === 0 ? (
@@ -223,24 +236,10 @@ export const AdminLoginManager = () => {
                     <div className="flex items-center gap-2">
                       {getStatusBadge(link)}
                       <span className="text-sm text-muted-foreground">
-                        Token: {link.token.substring(0, 8)}...
+                        ID: {link.id.substring(0, 8)}...
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToClipboard(link.token)}
-                        disabled={!link.is_active || isExpired(link.expires_at)}
-                        className="flex items-center gap-1"
-                      >
-                        {copiedToken === link.token ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                        {copiedToken === link.token ? "Copiado" : "Copiar"}
-                      </Button>
                       {link.is_active && !isExpired(link.expires_at) && (
                         <Button
                           variant="destructive"
@@ -248,7 +247,7 @@ export const AdminLoginManager = () => {
                           onClick={() => deactivateLink(link.id)}
                           className="flex items-center gap-1"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Ban className="h-4 w-4" />
                           Desativar
                         </Button>
                       )}
@@ -278,24 +277,21 @@ export const AdminLoginManager = () => {
                       )}
                     </div>
                     {link.used_at && (
-                      <>
-                        <div>
-                          <strong>Usado em:</strong>{' '}
-                          {formatDistanceToNow(new Date(link.used_at), {
-                            addSuffix: true,
-                            locale: ptBR,
-                          })}
-                        </div>
-                        <div>
-                          <strong>IP:</strong> {link.used_by_ip || 'Desconhecido'}
-                        </div>
-                      </>
+                      <div className="col-span-2">
+                        <strong>Usado em:</strong>{' '}
+                        {formatDistanceToNow(new Date(link.used_at), {
+                          addSuffix: true,
+                          locale: ptBR,
+                        })}
+                      </div>
                     )}
                   </div>
 
                   {link.is_active && !isExpired(link.expires_at) && (
-                    <div className="bg-muted p-2 rounded text-sm font-mono break-all">
-                      {window.location.origin}/admin-login/{link.token}
+                    <div className="bg-green-50 border border-green-200 p-3 rounded">
+                      <p className="text-sm text-green-700 font-medium">
+                        ✅ Link ativo e seguro. O token está protegido no backend.
+                      </p>
                     </div>
                   )}
                 </div>

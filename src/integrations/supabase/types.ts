@@ -2320,6 +2320,10 @@ export type Database = {
         Args: { duration_minutes: number }
         Returns: Json
       }
+      create_admin_link_secure: {
+        Args: { duration_minutes: number }
+        Returns: Json
+      }
       earn_coins: {
         Args: {
           p_user_id: string
