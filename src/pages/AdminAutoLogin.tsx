@@ -28,15 +28,8 @@ export const AdminAutoLogin = () => {
 
       try {
         console.log('Iniciando processo de auto-login com token:', token);
-        
-        // Deslogar usuário atual primeiro (sem mostrar toast)
-        setMessage('Preparando login automático...');
-        await signOut();
-        
-        // Aguardar um pouco para garantir que o logout foi processado
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
         setMessage('Validando token administrativo...');
+        
         console.log('Chamando edge function admin-auto-login');
 
         // Processar o login automático via edge function (uma única vez)
@@ -86,11 +79,13 @@ export const AdminAutoLogin = () => {
           }
 
           console.log('Sessão administrativa criada com sucesso:', sessionData.session);
+          console.log('Usuário logado:', sessionData.session.user);
           setStatus('success');
-          setMessage('Login administrativo realizado com sucesso!');
+          setMessage('✅ Login administrativo realizado com sucesso! Redirecionando em 3 segundos...');
           
-          // Aguardar um momento e redirecionar para admin
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          // Aguardar 3 segundos para mostrar a mensagem de sucesso claramente
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          console.log('Redirecionando para /admin...');
           navigate('/admin');
         } else {
           // Fallback caso não tenha tokens
