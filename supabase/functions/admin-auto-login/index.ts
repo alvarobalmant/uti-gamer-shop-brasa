@@ -92,7 +92,7 @@ const handler = async (req: Request): Promise<Response> => {
         type: 'magiclink',
         email: validationResult.admin_email,
         options: {
-          redirectTo: `${req.headers.get('origin') || supabaseUrl}/`
+          redirectTo: `https://b9f9d803-360a-4ca9-bd16-5b8453326c6f.lovableproject.com/`
         }
       });
 
