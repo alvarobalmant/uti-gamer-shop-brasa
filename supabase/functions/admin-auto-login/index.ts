@@ -103,15 +103,16 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log('Admin user found:', adminUser.user.email);
 
-      // Gerar tokens de acesso usando a API correta
-      const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateAccessToken(
-        validationResult.admin_user_id
-      );
+      // Gerar link de recuperação para extrair tokens válidos
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: adminUser.user.email
+      });
 
-      if (sessionError || !sessionData) {
-        console.error('Error creating session:', sessionError);
+      if (linkError || !linkData) {
+        console.error('Error generating recovery link:', linkError);
         return new Response(
-          JSON.stringify({ success: false, message: 'Erro ao criar sessão administrativa' }),
+          JSON.stringify({ success: false, message: 'Erro ao gerar tokens de sessão' }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -119,16 +120,33 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      console.log('Session created successfully for admin:', validationResult.admin_email);
-      console.log('Session data structure:', JSON.stringify(sessionData, null, 2));
+      console.log('Recovery link generated for admin:', validationResult.admin_email);
+      
+      // Extrair tokens válidos do link de recuperação
+      const url = new URL(linkData.properties.action_link);
+      const access_token = url.searchParams.get('access_token');
+      const refresh_token = url.searchParams.get('refresh_token');
+
+      if (!access_token || !refresh_token) {
+        console.error('Failed to extract tokens from recovery link');
+        return new Response(
+          JSON.stringify({ success: false, message: 'Erro ao extrair tokens de sessão' }),
+          { 
+            status: 500, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
+      }
+
+      console.log('Tokens extracted successfully for admin:', validationResult.admin_email);
 
       // Retornar tokens para login direto
       return new Response(
         JSON.stringify({
           success: true,
           sessionTokens: {
-            access_token: sessionData.access_token,
-            refresh_token: sessionData.refresh_token
+            access_token: access_token,
+            refresh_token: refresh_token
           },
           adminEmail: validationResult.admin_email,
           adminUserId: validationResult.admin_user_id,
