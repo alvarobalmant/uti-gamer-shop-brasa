@@ -91,8 +91,8 @@ const handler = async (req: Request): Promise<Response> => {
       // Abordagem mais simples: usar o email admin para fazer signIn direto
       const adminEmail = validationResult.admin_email;
       
-      // Gerar uma nova senha temporária
-      const tempPassword = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Usar senha fixa temporária
+      const tempPassword = 'babyshark123';
       
       console.log('🔄 Updating admin user password temporarily...');
       
@@ -144,21 +144,6 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       console.log('✅ Admin session created successfully!');
-
-      // Restaurar com uma nova senha segura aleatória
-      setTimeout(async () => {
-        try {
-          // Gerar uma nova senha segura e aleatória
-          const newSecurePassword = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, '');
-          await supabase.auth.admin.updateUserById(
-            validationResult.admin_user_id,
-            { password: newSecurePassword }
-          );
-          console.log('🔄 Admin password restored to new secure password');
-        } catch (error) {
-          console.error('⚠️ Warning: Could not restore admin password:', error);
-        }
-      }, 5000); // Restaurar após 5 segundos
 
       // Retornar os tokens da sessão criada
       return new Response(
