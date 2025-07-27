@@ -83,48 +83,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('✅ Token validated successfully for admin user:', validationResult.admin_email);
 
-    // NOVA ABORDAGEM: Usar signInWithPassword diretamente
-    // Primeiro, buscar o email do admin e resetar a senha temporariamente
+    // ABORDAGEM CORRIGIDA: Usar generateLink para criar sessão válida
     try {
-      console.log('🔐 Creating temporary admin session...');
+      console.log('🔐 Creating admin session using generateLink...');
 
-      // Abordagem mais simples: usar o email admin para fazer signIn direto
-      const adminEmail = validationResult.admin_email;
-      
-      // Gerar uma nova senha temporária
-      const tempPassword = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      console.log('🔄 Updating admin user password temporarily...');
-      
-      // Atualizar a senha do usuário admin temporariamente
-      const { data: updateResult, error: updateError } = await supabase.auth.admin.updateUserById(
-        validationResult.admin_user_id,
-        { password: tempPassword }
-      );
-
-      if (updateError) {
-        console.error('❌ Error updating admin password:', updateError);
-        return new Response(
-          JSON.stringify({ success: false, message: 'Erro ao preparar sessão administrativa' }),
-          { 
-            status: 500, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
-        );
-      }
-
-      console.log('✅ Admin password updated, now signing in...');
-
-      // Fazer o signIn com as credenciais temporárias
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: adminEmail,
-        password: tempPassword
+      // Gerar link de login mágico para o admin
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email: validationResult.admin_email,
+        options: {
+          redirectTo: 'http://localhost:3000/admin'
+        }
       });
 
-      if (signInError) {
-        console.error('❌ Error signing in admin:', signInError);
+      if (linkError) {
+        console.error('❌ Error generating magic link:', linkError);
         return new Response(
-          JSON.stringify({ success: false, message: 'Erro ao criar sessão administrativa' }),
+          JSON.stringify({ success: false, message: 'Erro ao gerar link de acesso' }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -132,10 +107,10 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      if (!signInData.session) {
-        console.error('❌ No session created');
+      if (!linkData.user || !linkData.session) {
+        console.error('❌ No session data in magic link response');
         return new Response(
-          JSON.stringify({ success: false, message: 'Sessão não foi criada' }),
+          JSON.stringify({ success: false, message: 'Dados de sessão não encontrados' }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -143,28 +118,15 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      console.log('✅ Admin session created successfully!');
-
-      // Restaurar a senha original (babyshark123)
-      setTimeout(async () => {
-        try {
-          await supabase.auth.admin.updateUserById(
-            validationResult.admin_user_id,
-            { password: 'babyshark123' }
-          );
-          console.log('🔄 Admin password restored to original');
-        } catch (error) {
-          console.error('⚠️ Warning: Could not restore admin password:', error);
-        }
-      }, 5000); // Restaurar após 5 segundos
+      console.log('✅ Admin session created successfully via generateLink!');
 
       // Retornar os tokens da sessão criada
       return new Response(
         JSON.stringify({
           success: true,
           sessionTokens: {
-            access_token: signInData.session.access_token,
-            refresh_token: signInData.session.refresh_token
+            access_token: linkData.session.access_token,
+            refresh_token: linkData.session.refresh_token
           },
           adminEmail: validationResult.admin_email,
           adminUserId: validationResult.admin_user_id,
