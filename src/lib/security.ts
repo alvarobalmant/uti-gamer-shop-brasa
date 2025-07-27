@@ -100,6 +100,9 @@ class SecurityMonitor {
     maxLength?: number;
     allowHtml?: boolean;
     allowSpecialChars?: boolean;
+    minLength?: number;
+    patterns?: RegExp[];
+    blockedPatterns?: RegExp[];
   } = {}): { isValid: boolean; reason?: string } {
     const { maxLength = 10000, allowHtml = false, allowSpecialChars = true } = options;
     
