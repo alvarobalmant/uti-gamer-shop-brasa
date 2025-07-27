@@ -147,9 +147,9 @@ const App = () => {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <SecurityProvider>
-        <SecurityHeaders />
-        <AuthProvider>
+      <AuthProvider>
+        <SecurityProvider>
+          <SecurityHeaders />
           <UTICoinsProvider>
             <CartProvider>
             <ProductProvider>
@@ -254,9 +254,9 @@ const App = () => {
   </ProductProvider>
 </CartProvider>
 </UTICoinsProvider>
-</AuthProvider>
-</SecurityProvider>
-</QueryClientProvider>
+        </SecurityProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
 
