@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { SortableEmailBlock } from './SortableEmailBlock';
+import { sanitizeHtml } from '@/lib/sanitizer';
 
 export interface EmailBlock {
   id: string;
@@ -417,7 +418,7 @@ export const EmailVisualEditor: React.FC<EmailVisualEditorProps> = ({
                       <div className="border rounded-lg p-4 bg-white shadow-inner">
                         <div 
                           dangerouslySetInnerHTML={{ 
-                            __html: generateHTML(blocks) 
+                            __html: sanitizeHtml(generateHTML(blocks)) 
                           }} 
                         />
                       </div>

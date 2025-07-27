@@ -10,6 +10,7 @@ import WhyChooseUs from '@/components/ServiceCards/WhyChooseUs';
 import ContactHelp from '@/components/ServiceCards/ContactHelp';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
 import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
+import { sanitizeHtml } from '@/lib/sanitizer';
 
 interface PrimePageRendererProps {
   layoutItem: PrimePageLayoutItem;
@@ -191,7 +192,7 @@ export const PrimePageRenderer: React.FC<PrimePageRendererProps> = ({
           <div 
             key={section_key} 
             className="container mx-auto px-4 sm:px-6 lg:px-8 my-8 md:my-12"
-            dangerouslySetInnerHTML={{ __html: section_config.html || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(section_config.html || '') }}
           />
         );
 

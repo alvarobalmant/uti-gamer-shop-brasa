@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SpecialSection } from '@/types/specialSections/core';
+import { sanitizeHtml } from '@/lib/sanitizer';
 
 interface CustomHtmlRendererProps {
   section: SpecialSection;
@@ -16,10 +17,13 @@ export const CustomHtmlRenderer: React.FC<CustomHtmlRendererProps> = ({
     return null;
   }
 
+  // Sanitize HTML content to prevent XSS attacks
+  const sanitizedHtml = sanitizeHtml(config.htmlContent);
+
   return (
     <section 
       className={className}
-      dangerouslySetInnerHTML={{ __html: config.htmlContent }}
+      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
   );
 };

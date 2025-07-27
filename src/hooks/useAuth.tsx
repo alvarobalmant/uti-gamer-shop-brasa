@@ -24,10 +24,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    let sessionCheckInProgress = false;
+    
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        // Se há uma sessão, verificar se ela foi invalidada manualmente
+      (event, session) => {
+        // Prevent race conditions during session checks
+        if (sessionCheckInProgress) return;
+        sessionCheckInProgress = true;
+        
+        // Handle session invalidation check
         if (session?.access_token) {
           setTimeout(async () => {
             try {
@@ -38,54 +44,68 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 .maybeSingle();
               
               if (invalidatedSession) {
-                // Sessão foi invalidada manualmente, forçar logout local
+                // Session was manually invalidated, force local logout
                 setSession(null);
                 setUser(null);
                 setIsAdmin(false);
                 setLoading(false);
+                sessionCheckInProgress = false;
                 return;
               }
             } catch (error) {
               console.log('Error checking invalidated session:', error);
+              // Continue with normal flow even if check fails
             }
-          }, 0);
-        }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Check admin role using setTimeout to avoid infinite recursion
-          setTimeout(async () => {
-            try {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', session.user.id)
-                .single();
-              
-              setIsAdmin(profile?.role === 'admin');
-            } catch (error) {
-              console.log('Error checking admin role:', error);
+            
+            // Update session state
+            setSession(session);
+            setUser(session?.user ?? null);
+            
+            // Check admin role
+            if (session?.user) {
+              try {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('role')
+                  .eq('id', session.user.id)
+                  .maybeSingle();
+                
+                setIsAdmin(profile?.role === 'admin');
+              } catch (error) {
+                console.log('Error checking admin role:', error);
+                setIsAdmin(false);
+              }
+            } else {
               setIsAdmin(false);
             }
+            
+            setLoading(false);
+            sessionCheckInProgress = false;
           }, 0);
         } else {
+          // No session
+          setSession(null);
+          setUser(null);
           setIsAdmin(false);
+          setLoading(false);
+          sessionCheckInProgress = false;
         }
-        
-        setLoading(false);
       }
     );
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      if (!sessionCheckInProgress) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      sessionCheckInProgress = false;
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

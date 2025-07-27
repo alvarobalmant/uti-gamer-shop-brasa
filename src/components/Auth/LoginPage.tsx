@@ -162,10 +162,10 @@ export const LoginPage = () => {
           </CardContent>
         </Card>
 
-        <Alert className="bg-blue-900/50 border-blue-700">
-          <Info className="h-4 w-4 text-blue-400" />
-          <AlertDescription className="text-blue-200">
-            <strong>Acesso Admin:</strong> admin@utidosgames.com / admin123
+        <Alert className="bg-amber-900/50 border-amber-700">
+          <Info className="h-4 w-4 text-amber-400" />
+          <AlertDescription className="text-amber-200">
+            <strong>Importante:</strong> Para acesso administrativo, entre em contato com o suporte técnico.
           </AlertDescription>
         </Alert>
       </div>

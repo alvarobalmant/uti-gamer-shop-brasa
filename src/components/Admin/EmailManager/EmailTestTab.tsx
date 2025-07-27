@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Send, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { sanitizeHtml } from '@/lib/sanitizer';
 
 interface EmailTemplate {
   id: string;
@@ -249,7 +250,7 @@ export const EmailTestTab: React.FC = () => {
                 <Label>Conteúdo HTML:</Label>
                 <div 
                   className="border rounded-lg p-4 bg-background max-h-64 overflow-y-auto"
-                  dangerouslySetInnerHTML={{ __html: selectedTemplateData.html_content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedTemplateData.html_content || '') }}
                 />
               </div>
               

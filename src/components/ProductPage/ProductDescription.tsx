@@ -1,6 +1,7 @@
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { Separator } from '@/components/ui/separator';
+import { sanitizeHtml } from '@/lib/sanitizer';
 
 interface ProductDescriptionProps {
   product: Product;
@@ -19,7 +20,7 @@ const ProductDescription: React.FC<ProductDescriptionProps> = ({ product }) => {
       {/* Render HTML content safely or use a markdown parser if description is in markdown */}
       <div 
         className="prose prose-sm sm:prose-base max-w-none text-muted-foreground" 
-        dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(descriptionHtml) }}
       />
       {/* Add Features section if applicable, similar to GameStop */}
       {/* Example:

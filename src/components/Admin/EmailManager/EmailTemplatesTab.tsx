@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { sanitizeHtml } from '@/lib/sanitizer';
 
 interface EmailTemplate {
   id: string;
@@ -414,7 +415,7 @@ export const EmailTemplatesTab: React.FC = () => {
                 <Label>Conteúdo HTML:</Label>
                 <div
                   className="border rounded-lg p-4 bg-background"
-                  dangerouslySetInnerHTML={{ __html: selectedTemplate.html_content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedTemplate.html_content || '') }}
                 />
               </div>
 
