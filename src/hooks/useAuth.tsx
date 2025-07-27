@@ -27,6 +27,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // Se há uma sessão, verificar se ela foi invalidada manualmente
+        if (session?.access_token) {
+          setTimeout(async () => {
+            try {
+              const { data: invalidatedSession } = await supabase
+                .from('invalidated_sessions')
+                .select('id')
+                .eq('session_id', session.access_token)
+                .maybeSingle();
+              
+              if (invalidatedSession) {
+                // Sessão foi invalidada manualmente, forçar logout local
+                setSession(null);
+                setUser(null);
+                setIsAdmin(false);
+                setLoading(false);
+                return;
+              }
+            } catch (error) {
+              console.log('Error checking invalidated session:', error);
+            }
+          }, 0);
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -108,7 +132,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
+      const currentSession = session;
       const isAutoLoginSession = localStorage.getItem('admin_auto_login_session') === 'true';
+      
+      // Se há uma sessão válida e usuário autenticado, marcar como invalidada
+      if (currentSession?.access_token && currentSession?.user?.id) {
+        try {
+          await supabase
+            .from('invalidated_sessions')
+            .insert({
+              session_id: currentSession.access_token,
+              user_id: currentSession.user.id
+            });
+        } catch (invalidateError: any) {
+          console.log('Erro ao invalidar sessão:', invalidateError.message);
+          // Continua com o logout mesmo se falhar ao invalidar
+        }
+      }
       
       // Limpar flag de auto-login se existir
       if (isAutoLoginSession) {

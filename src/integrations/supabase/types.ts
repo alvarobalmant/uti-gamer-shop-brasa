@@ -478,6 +478,30 @@ export type Database = {
         }
         Relationships: []
       }
+      invalidated_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          invalidated_at: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invalidated_at?: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invalidated_at?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       navigation_items: {
         Row: {
           background_color: string | null
@@ -2311,6 +2335,10 @@ export type Database = {
       cancelar_assinatura: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      cleanup_old_invalidated_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       cleanup_old_security_logs: {
         Args: Record<PropertyKey, never>
