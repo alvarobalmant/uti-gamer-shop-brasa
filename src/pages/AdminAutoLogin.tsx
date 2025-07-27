@@ -86,6 +86,9 @@ export const AdminAutoLogin = () => {
           email: sessionData.session.user.email
         });
         
+        // Marcar que esta sessão foi estabelecida via auto-login
+        localStorage.setItem('admin_auto_login_session', 'true');
+        
         setStatus('success');
         setMessage('✅ Login realizado com sucesso! Redirecionando...');
         
