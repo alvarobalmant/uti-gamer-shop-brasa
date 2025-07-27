@@ -111,21 +111,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const isAutoLoginSession = localStorage.getItem('admin_auto_login_session') === 'true';
       
       if (isAutoLoginSession) {
-        // Para sessões de auto-login, fazer apenas limpeza local
+        // Limpar flag de auto-login
         localStorage.removeItem('admin_auto_login_session');
-        
-        // Limpar sessão local sem chamar o servidor
-        setSession(null);
-        setUser(null);
-        setIsAdmin(false);
-        
-        toast({
-          title: "Logout realizado com sucesso!",
-        });
-        return;
       }
       
-      // Para sessões normais, fazer logout no servidor
+      // Sempre fazer logout no servidor para invalidar a sessão
       const { error } = await supabase.auth.signOut();
       
       // Se a sessão não existe, considere como logout bem-sucedido
