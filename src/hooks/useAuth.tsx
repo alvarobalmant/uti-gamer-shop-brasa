@@ -110,35 +110,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const isAutoLoginSession = localStorage.getItem('admin_auto_login_session') === 'true';
       
+      // Limpar flag de auto-login se existir
       if (isAutoLoginSession) {
-        // Limpar flag de auto-login
         localStorage.removeItem('admin_auto_login_session');
       }
       
-      // Sempre fazer logout no servidor para invalidar a sessão
-      const { error } = await supabase.auth.signOut();
-      
-      // Se a sessão não existe, considere como logout bem-sucedido
-      if (error && error.message !== 'Session not found') {
-        throw error;
+      // Tentar logout no servidor, mas não falhar se a sessão não existir
+      try {
+        await supabase.auth.signOut();
+      } catch (serverError: any) {
+        // Para sessões de auto-login ou sessões inválidas, o servidor pode não reconhecer
+        console.log('Logout do servidor falhou (esperado para auto-login):', serverError.message);
       }
+      
+      // Sempre limpar estado local independentemente do resultado do servidor
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
       
       toast({
         title: "Logout realizado com sucesso!",
       });
     } catch (error: any) {
-      // Ignore erros de sessão não encontrada - usuário já está deslogado
-      if (error.message === 'Session not found') {
-        toast({
-          title: "Logout realizado com sucesso!",
-        });
-        return;
-      }
+      // Em caso de erro geral, ainda fazer limpeza local
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
       
       toast({
-        title: "Erro no logout",
-        description: error.message,
-        variant: "destructive",
+        title: "Logout realizado com sucesso!",
       });
     }
   };
