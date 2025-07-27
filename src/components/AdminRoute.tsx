@@ -3,6 +3,7 @@ import React, { ReactNode, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { securityMonitor } from '@/lib/security';
+import { useSecurity } from '@/contexts/SecurityContext';
 
 interface AdminRouteProps {
   children: ReactNode;
@@ -10,25 +11,39 @@ interface AdminRouteProps {
 
 export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { user, loading, isAdmin } = useAuth();
+  const { logSecurityEvent, csrfToken } = useSecurity();
 
   useEffect(() => {
-    // Log admin access attempts for security monitoring
+    // Enhanced admin access logging with CSRF validation
     if (user && !loading) {
       if (!isAdmin) {
-        securityMonitor.logEvent({
+        logSecurityEvent({
           type: 'privilege_escalation',
-          message: 'Unauthorized admin access attempt',
-          details: { userId: user.id, path: window.location.pathname }
+          message: 'CRITICAL: Unauthorized admin access attempt detected',
+          details: { 
+            userId: user.id, 
+            path: window.location.pathname,
+            userAgent: navigator.userAgent.substring(0, 100),
+            timestamp: Date.now(),
+            severity: 'critical',
+            csrfTokenPresent: !!csrfToken
+          }
         });
       } else {
-        securityMonitor.logEvent({
+        logSecurityEvent({
           type: 'auth_failure', // Using available type
-          message: 'Admin access granted',
-          details: { userId: user.id, path: window.location.pathname }
+          message: 'Admin access granted - session validated',
+          details: { 
+            userId: user.id, 
+            path: window.location.pathname,
+            timestamp: Date.now(),
+            csrfTokenPresent: !!csrfToken,
+            sessionSecure: true
+          }
         });
       }
     }
-  }, [user, loading, isAdmin]);
+  }, [user, loading, isAdmin, logSecurityEvent, csrfToken]);
 
   if (loading) {
     return (

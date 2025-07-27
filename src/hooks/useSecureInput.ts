@@ -135,24 +135,58 @@ export const useSecureInput = () => {
   };
 };
 
-// Predefined validation patterns for common use cases
+// Enhanced validation patterns with stronger security
 export const ValidationPatterns = {
   email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-  password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, // Minimum complexity
+  password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/, // Increased to 12 chars minimum
+  strongPassword: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{16,}$/, // Very strong 16+ chars
   url: /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/,
+  secureUrl: /^https:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/, // HTTPS only
   alphanumeric: /^[a-zA-Z0-9]+$/,
   numeric: /^\d+$/,
-  phone: /^[\+]?[1-9][\d]{0,15}$/
+  phone: /^[\+]?[1-9][\d]{0,15}$/,
+  username: /^[a-zA-Z0-9_-]{3,20}$/,
+  slug: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+  hexColor: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
+  safeText: /^[a-zA-Z0-9\s\-_.,:;!?()\[\]]+$/,
+  noSpecialChars: /^[a-zA-Z0-9\s]+$/,
+  safeFilename: /^[a-zA-Z0-9._-]+$/
 };
 
-// Common blocked patterns for security
+// Enhanced patterns for detecting malicious input and common attack vectors
 export const BlockedPatterns = {
+  // XSS Prevention
   script: /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
   iframe: /<iframe\b[^>]*>/gi,
   object: /<object\b[^>]*>/gi,
   embed: /<embed\b[^>]*>/gi,
+  link: /<link\b[^>]*>/gi,
   style: /<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi,
-  javascript: /javascript:/gi,
-  vbscript: /vbscript:/gi,
-  onEvents: /on\w+\s*=/gi
+  meta: /<meta\b[^>]*>/gi,
+  base: /<base\b[^>]*>/gi,
+  
+  // Event handlers and protocols
+  javascript: /javascript\s*:/gi,
+  vbscript: /vbscript\s*:/gi,
+  dataUrl: /data\s*:/gi,
+  onEvents: /on\w+\s*=/gi,
+  inlineStyles: /style\s*=/gi,
+  
+  // SQL Injection
+  sqlInjection: /(union|select|insert|update|delete|drop|create|alter|exec|execute)\s+/gi,
+  sqlComments: /(\/\*[\s\S]*?\*\/|--[^\r\n]*)/gi,
+  
+  // Path Traversal
+  pathTraversal: /\.\.[\/\\]/gi,
+  absolutePaths: /^(\/|\\|[a-zA-Z]:\\)/gi,
+  
+  // Command Injection
+  commandChars: /[;&|`$(){}[\]]/gi,
+  shellCommands: /(cat|ls|dir|type|copy|del|rm|mv|cp|chmod|ps|kill|wget|curl)\s+/gi,
+  
+  // Additional security patterns
+  htmlComments: /<!--[\s\S]*?-->/gi,
+  base64Suspicious: /data:[\w\/\+]+;base64,/gi,
+  xmlEntities: /<!ENTITY/gi,
+  ssiInclusion: /<!--\s*#\s*(include|exec|echo)\s+/gi
 };

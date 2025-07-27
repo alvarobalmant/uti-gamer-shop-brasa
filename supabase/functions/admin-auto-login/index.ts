@@ -145,14 +145,16 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log('✅ Admin session created successfully!');
 
-      // Restaurar a senha original (babyshark123)
+      // Restaurar com uma nova senha segura aleatória
       setTimeout(async () => {
         try {
+          // Gerar uma nova senha segura e aleatória
+          const newSecurePassword = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, '');
           await supabase.auth.admin.updateUserById(
             validationResult.admin_user_id,
-            { password: 'babyshark123' }
+            { password: newSecurePassword }
           );
-          console.log('🔄 Admin password restored to original');
+          console.log('🔄 Admin password restored to new secure password');
         } catch (error) {
           console.error('⚠️ Warning: Could not restore admin password:', error);
         }
