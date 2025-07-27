@@ -3,6 +3,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { securityMonitor } from '@/lib/security';
 
 interface AuthContextType {
   user: User | null;
@@ -12,6 +13,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  invalidateSession: (sessionId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -110,12 +112,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Check rate limiting before attempting login
+      if (!securityMonitor.checkRateLimit(`login_${email}`, 5, 900000)) { // 5 attempts per 15 minutes
+        throw new Error('Too many login attempts. Please try again later.');
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (error) throw error;
+      if (error) {
+        securityMonitor.logEvent({
+          type: 'auth_failure',
+          message: 'Login failed',
+          details: { email, error: error.message }
+        });
+        throw error;
+      }
+      
+      securityMonitor.logEvent({
+        type: 'auth_failure', // Using existing type for consistency
+        message: 'User logged in successfully',
+        details: { email }
+      });
       
       toast({
         title: "Login realizado com sucesso!",
@@ -155,6 +175,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const currentSession = session;
       const isAutoLoginSession = localStorage.getItem('admin_auto_login_session') === 'true';
       
+      // Log security event
+      securityMonitor.logEvent({
+        type: 'auth_failure',
+        message: 'User signed out',
+        details: { userId: currentSession?.user?.id, isAutoLogin: isAutoLoginSession }
+      });
+      
       // Se há uma sessão válida e usuário autenticado, marcar como invalidada
       if (currentSession?.access_token && currentSession?.user?.id) {
         try {
@@ -169,6 +196,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Continua com o logout mesmo se falhar ao invalidar
         }
       }
+      
+      // Clear any cached admin status
+      sessionStorage.removeItem('isAdmin');
       
       // Limpar flag de auto-login se existir
       if (isAutoLoginSession) {
@@ -203,6 +233,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const invalidateSession = async (sessionId: string) => {
+    try {
+      if (!session) return;
+      
+      await supabase.from('invalidated_sessions').insert({
+        user_id: session.user.id,
+        session_id: sessionId
+      });
+      
+      securityMonitor.logEvent({
+        type: 'privilege_escalation',
+        message: 'Session manually invalidated',
+        details: { sessionId }
+      });
+      
+      // Force sign out if it's the current session
+      if (session.access_token === sessionId) {
+        await signOut();
+      }
+    } catch (error: any) {
+      console.error('Error invalidating session:', error);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -212,6 +266,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signIn,
       signUp,
       signOut,
+      invalidateSession,
     }}>
       {children}
     </AuthContext.Provider>

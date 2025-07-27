@@ -47,6 +47,42 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_security_logs: {
+        Row: {
+          action_type: string
+          admin_user_id: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_user_id: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_user_id?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           background_type: string | null
@@ -2419,6 +2455,17 @@ export type Database = {
       is_user_flagged: {
         Args: { p_user_id: string }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          p_action_type: string
+          p_resource_type?: string
+          p_resource_id?: string
+          p_details?: Json
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: undefined
       }
       log_security_event: {
         Args: { event_type: string; user_id?: string; details?: Json }

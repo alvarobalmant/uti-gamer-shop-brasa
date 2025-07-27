@@ -15,6 +15,8 @@ import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
+import { SecurityProvider } from "@/contexts/SecurityContext";
+import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { useEffect } from "react";
 
 // Hook minimalista para prevenir layout shift sem interferir no scroll
@@ -145,9 +147,11 @@ const App = () => {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <UTICoinsProvider>
-          <CartProvider>
+      <SecurityProvider>
+        <SecurityHeaders />
+        <AuthProvider>
+          <UTICoinsProvider>
+            <CartProvider>
             <ProductProvider>
               <LoadingProvider>
                 <TooltipProvider>
@@ -251,6 +255,7 @@ const App = () => {
 </CartProvider>
 </UTICoinsProvider>
 </AuthProvider>
+</SecurityProvider>
 </QueryClientProvider>
   );
 };
