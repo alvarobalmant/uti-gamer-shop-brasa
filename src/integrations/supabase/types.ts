@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_login_links: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          token: string
+          used_at: string | null
+          used_by_ip: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          token: string
+          used_at?: string | null
+          used_by_ip?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          token?: string
+          used_at?: string | null
+          used_by_ip?: string | null
+        }
+        Relationships: []
+      }
+      admin_security_logs: {
+        Row: {
+          action_type: string
+          admin_user_id: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_user_id: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_user_id?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           background_type: string | null
@@ -337,6 +406,87 @@ export type Database = {
         }
         Relationships: []
       }
+      email_config: {
+        Row: {
+          company_address: string | null
+          created_at: string
+          from_email: string
+          from_name: string
+          id: string
+          logo_url: string | null
+          primary_color: string | null
+          reply_to: string | null
+          secondary_color: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_address?: string | null
+          created_at?: string
+          from_email?: string
+          from_name?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          reply_to?: string | null
+          secondary_color?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_address?: string | null
+          created_at?: string
+          from_email?: string
+          from_name?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          reply_to?: string | null
+          secondary_color?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          created_at: string
+          html_content: string
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string
+          text_content: string | null
+          type: string
+          updated_at: string
+          variables: Json | null
+          visual_config: Json | null
+        }
+        Insert: {
+          created_at?: string
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject: string
+          text_content?: string | null
+          type: string
+          updated_at?: string
+          variables?: Json | null
+          visual_config?: Json | null
+        }
+        Update: {
+          created_at?: string
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string
+          text_content?: string | null
+          type?: string
+          updated_at?: string
+          variables?: Json | null
+          visual_config?: Json | null
+        }
+        Relationships: []
+      }
       homepage_layout: {
         Row: {
           created_at: string | null
@@ -361,6 +511,30 @@ export type Database = {
           is_visible?: boolean
           section_key?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      invalidated_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          invalidated_at: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invalidated_at?: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invalidated_at?: string
+          session_id?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1313,6 +1487,75 @@ export type Database = {
           },
         ]
       }
+      security_flags: {
+        Row: {
+          created_at: string
+          flag_type: string
+          id: string
+          metadata: Json | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          flag_type: string
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          flag_type?: string
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      security_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          suspicious: boolean | null
+          timestamp: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          suspicious?: boolean | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          suspicious?: boolean | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       service_cards: {
         Row: {
           created_at: string
@@ -1352,6 +1595,8 @@ export type Database = {
       site_settings: {
         Row: {
           created_at: string
+          header_image_url: string | null
+          header_layout_type: string | null
           id: string
           setting_key: string
           setting_value: Json
@@ -1359,6 +1604,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          header_image_url?: string | null
+          header_layout_type?: string | null
           id?: string
           setting_key: string
           setting_value: Json
@@ -1366,6 +1613,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          header_image_url?: string | null
+          header_layout_type?: string | null
           id?: string
           setting_key?: string
           setting_value?: Json
@@ -1976,7 +2225,7 @@ export type Database = {
           desconto: number | null
           email: string
           id: string
-          nome: string
+          nome: string | null
           papel: string
           plano: string | null
           status_assinatura: string
@@ -1989,7 +2238,7 @@ export type Database = {
           desconto?: number | null
           email: string
           id?: string
-          nome: string
+          nome?: string | null
           papel?: string
           plano?: string | null
           status_assinatura?: string
@@ -2002,7 +2251,7 @@ export type Database = {
           desconto?: number | null
           email?: string
           id?: string
-          nome?: string
+          nome?: string | null
           papel?: string
           plano?: string | null
           status_assinatura?: string
@@ -2123,6 +2372,22 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      cleanup_old_invalidated_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_old_security_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      create_admin_link: {
+        Args: { duration_minutes: number }
+        Returns: Json
+      }
+      create_admin_link_secure: {
+        Args: { duration_minutes: number }
+        Returns: Json
+      }
       earn_coins: {
         Args: {
           p_user_id: string
@@ -2132,6 +2397,10 @@ export type Database = {
           p_metadata?: Json
         }
         Returns: Json
+      }
+      generate_admin_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       generate_redemption_code: {
         Args: { p_user_id: string; p_product_id: string; p_cost: number }
@@ -2175,9 +2444,28 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_email_confirmed: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_user_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      is_user_flagged: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          p_action_type: string
+          p_resource_type?: string
+          p_resource_id?: string
+          p_details?: Json
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: undefined
       }
       log_security_event: {
         Args: { event_type: string; user_id?: string; details?: Json }
@@ -2216,6 +2504,10 @@ export type Database = {
           is_admin_result: boolean
           can_read_profiles: boolean
         }[]
+      }
+      validate_admin_token: {
+        Args: { p_token: string; p_ip?: string }
+        Returns: Json
       }
       verify_redemption_code: {
         Args: { p_code: string }

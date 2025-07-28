@@ -29,10 +29,6 @@ const FeaturedProductsSection = ({
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-<<<<<<< HEAD
-=======
-  const [animateProducts, setAnimateProducts] = useState(true);
->>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
   const scrollContainerRef = useHorizontalScrollTracking('featured-products', true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);

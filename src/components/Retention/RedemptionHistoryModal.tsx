@@ -36,12 +36,13 @@ interface RedemptionHistoryModalProps {
 
 interface RedemptionRecord {
   id: string;
+  code: string;
   product_id: string;
   cost: number;
-  status: 'pending' | 'approved' | 'rejected' | 'delivered';
-  redeemed_at: string;
-  processed_at?: string;
-  notes?: string;
+  status: 'pending' | 'redeemed';
+  created_at: string;
+  redeemed_at?: string;
+  redeemed_by_admin?: string;
   coin_products: {
     name: string;
     description?: string;
@@ -72,16 +73,17 @@ export const RedemptionHistoryModal: React.FC<RedemptionHistoryModalProps> = ({
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('coin_redemptions')
+        .from('redemption_codes')
         .select(`
           id,
+          code,
           product_id,
           cost,
           status,
+          created_at,
           redeemed_at,
-          processed_at,
-          notes,
-          coin_products (
+          redeemed_by_admin,
+          coin_products:product_id (
             name,
             description,
             product_type,
@@ -90,11 +92,19 @@ export const RedemptionHistoryModal: React.FC<RedemptionHistoryModalProps> = ({
           )
         `)
         .eq('user_id', userId)
-        .order('redeemed_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setRedemptions(data || []);
+      const formattedData = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'pending' | 'redeemed',
+        coin_products: {
+          ...item.coin_products,
+          product_type: item.coin_products?.product_type as 'discount' | 'freebie' | 'exclusive_access' | 'physical_product'
+        }
+      }));
+      setRedemptions(formattedData as RedemptionRecord[]);
     } catch (error) {
       console.error('Erro ao carregar histórico:', error);
       toast({
@@ -110,9 +120,7 @@ export const RedemptionHistoryModal: React.FC<RedemptionHistoryModalProps> = ({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending': return <Clock className="w-4 h-4 text-yellow-500" />;
-      case 'approved': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'rejected': return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'delivered': return <Truck className="w-4 h-4 text-blue-500" />;
+      case 'redeemed': return <CheckCircle className="w-4 h-4 text-green-500" />;
       default: return <Clock className="w-4 h-4 text-gray-500" />;
     }
   };
@@ -120,9 +128,7 @@ export const RedemptionHistoryModal: React.FC<RedemptionHistoryModalProps> = ({
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pending': return 'Pendente';
-      case 'approved': return 'Aprovado';
-      case 'rejected': return 'Rejeitado';
-      case 'delivered': return 'Entregue';
+      case 'redeemed': return 'Resgatado';
       default: return 'Desconhecido';
     }
   };
@@ -130,9 +136,7 @@ export const RedemptionHistoryModal: React.FC<RedemptionHistoryModalProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'delivered': return 'bg-blue-100 text-blue-800';
+      case 'redeemed': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -148,13 +152,10 @@ export const RedemptionHistoryModal: React.FC<RedemptionHistoryModalProps> = ({
   };
 
   const copyRedemptionCode = (redemption: RedemptionRecord) => {
-    const code = redemption.coin_products.product_data?.redemption_code || 
-                 `UTI-${redemption.id.slice(0, 8).toUpperCase()}`;
-    
-    navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(redemption.code);
     toast({
       title: 'Código copiado!',
-      description: `Código ${code} copiado para a área de transferência`,
+      description: `Código ${redemption.code} copiado para a área de transferência`,
     });
   };
 
@@ -250,16 +251,16 @@ export const RedemptionHistoryModal: React.FC<RedemptionHistoryModalProps> = ({
                           <span className="text-sm text-muted-foreground">Data do resgate:</span>
                           <div className="flex items-center gap-1 text-sm">
                             <Calendar className="w-4 h-4" />
-                            {formatDate(redemption.redeemed_at)}
+                            {formatDate(redemption.created_at)}
                           </div>
                         </div>
 
-                        {redemption.processed_at && (
+                        {redemption.redeemed_at && (
                           <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Processado em:</span>
+                            <span className="text-sm text-muted-foreground">Resgatado em:</span>
                             <div className="flex items-center gap-1 text-sm">
                               <Calendar className="w-4 h-4" />
-                              {formatDate(redemption.processed_at)}
+                              {formatDate(redemption.redeemed_at)}
                             </div>
                           </div>
                         )}
@@ -282,18 +283,17 @@ export const RedemptionHistoryModal: React.FC<RedemptionHistoryModalProps> = ({
                             </Button>
                           </div>
                           <code className="text-lg font-mono font-bold text-purple-600">
-                            {redemption.coin_products.product_data?.redemption_code || 
-                             `UTI-${redemption.id.slice(0, 8).toUpperCase()}`}
+                            {redemption.code}
                           </code>
                         </div>
 
-                        {redemption.notes && (
+                        {redemption.status === 'pending' && (
                           <div className="bg-blue-50 rounded-lg p-3">
                             <span className="text-sm font-medium text-blue-700 block mb-1">
-                              Observações:
+                              Instruções:
                             </span>
                             <p className="text-sm text-blue-600">
-                              {redemption.notes}
+                              Leve este código em uma loja UTI Games para resgatar seu produto
                             </p>
                           </div>
                         )}

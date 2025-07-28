@@ -129,15 +129,22 @@ const UTICoinsManager = () => {
   };
 
   const loadConfigs = async () => {
-    const { data, error } = await supabase
-      .from('coin_system_config')
-      .select('*')
-      .order('setting_key');
-    
-    if (error) {
+    try {
+      // Carregar configurações do sistema UTI Coins
+      const [systemConfigsResult, siteSettingsResult] = await Promise.all([
+        supabase.from('coin_system_config').select('*').order('setting_key'),
+        supabase.from('site_settings').select('*').eq('setting_key', 'uti_coins_settings')
+      ]);
+      
+      const allConfigs = [
+        ...(systemConfigsResult.data || []),
+        ...(siteSettingsResult.data || [])
+      ];
+      
+      setConfigs(allConfigs);
+    } catch (error) {
       toast({ title: 'Erro', description: 'Erro ao carregar configurações', variant: 'destructive' });
-    } else {
-      setConfigs(data || []);
+      setConfigs([]);
     }
   };
 
@@ -647,33 +654,42 @@ const UTICoinsManager = () => {
                     </p>
                   </div>
                   <Switch
-                    checked={configs.find(c => c.setting_key === 'system_enabled')?.setting_value === '"true"'}
+                    checked={configs.find(c => c.setting_key === 'uti_coins_settings')?.setting_value?.enabled || false}
                     onCheckedChange={async (checked) => {
-                      try {
-                        const { error } = await supabase
-                          .from('coin_system_config')
-                          .update({ setting_value: checked ? '"true"' : '"false"' })
-                          .eq('setting_key', 'system_enabled');
-                        
-                        if (error) throw error;
-                        
-                        setConfigs(prev => prev.map(c => 
-                          c.setting_key === 'system_enabled' 
-                            ? { ...c, setting_value: checked ? '"true"' : '"false"' }
-                            : c
-                        ));
-                        
-                        toast({ 
-                          title: 'Sucesso', 
-                          description: `Sistema ${checked ? 'ativado' : 'desativado'}!` 
-                        });
-                      } catch (error) {
-                        toast({ 
-                          title: 'Erro', 
-                          description: 'Erro ao atualizar configuração', 
-                          variant: 'destructive' 
-                        });
-                      }
+                       console.log('[ADMIN UTI COINS] Tentando atualizar:', { checked });
+                        try {
+                         const { data, error } = await supabase
+                           .from('site_settings')
+                           .update({ 
+                             setting_value: { enabled: checked }
+                           })
+                           .eq('setting_key', 'uti_coins_settings')
+                           .select();
+                         
+                         console.log('[ADMIN UTI COINS] Resultado da query:', { data, error });
+                         
+                         if (error) throw error;
+                         
+                         setConfigs(prev => prev.map(c => 
+                           c.setting_key === 'uti_coins_settings' 
+                             ? { ...c, setting_value: { enabled: checked } }
+                             : c
+                         ));
+                         
+                         console.log('[ADMIN UTI COINS] Configuração atualizada com sucesso');
+                         
+                         toast({ 
+                           title: 'Sucesso', 
+                           description: `Sistema UTI Coins ${checked ? 'ativado' : 'desativado'}!` 
+                         });
+                       } catch (error) {
+                         console.error('[ADMIN UTI COINS] Erro:', error);
+                         toast({ 
+                           title: 'Erro', 
+                           description: 'Erro ao atualizar configuração', 
+                           variant: 'destructive' 
+                         });
+                       }
                     }}
                   />
                 </div>

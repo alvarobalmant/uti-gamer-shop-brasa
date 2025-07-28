@@ -1,19 +1,26 @@
 import { useEffect, useRef } from 'react';
 import { useUTICoins } from './useUTICoins';
 import { useAuth } from './useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { useUTICoinsSettings } from './useUTICoinsSettings';
 
 export const useScrollCoins = () => {
   const { user } = useAuth();
   const { earnScrollCoins } = useUTICoins();
-  const lastScrollTime = useRef<number>(0);
+  const { isEnabled } = useUTICoinsSettings();
+  const { toast } = useToast();
   const scrollDistance = useRef<number>(0);
   const lastScrollY = useRef<number>(0);
+  const isEarning = useRef<boolean>(false);
 
   useEffect(() => {
-    if (!user) return;
+    // Só funcionar se o usuário estiver logado e o sistema estiver habilitado
+    if (!user || !isEnabled) return;
 
-    const handleScroll = () => {
-      const currentTime = Date.now();
+    const handleScroll = async () => {
+      // Evitar múltiplas execuções simultâneas
+      if (isEarning.current) return;
+
       const currentScrollY = window.scrollY;
       
       // Calcular distância de scroll
@@ -21,18 +28,43 @@ export const useScrollCoins = () => {
       scrollDistance.current += deltaY;
       lastScrollY.current = currentScrollY;
 
-      // Verificar se passou pelo cooldown (30 segundos) e scrollou pelo menos 500px
-      if (
-        currentTime - lastScrollTime.current > 30000 && // 30 segundos
-        scrollDistance.current > 500 // Pelo menos 500px de scroll
-      ) {
-        earnScrollCoins();
-        lastScrollTime.current = currentTime;
+      // Verificar se scrollou pelo menos 500px - backend controlará o timing
+      if (scrollDistance.current > 500) {
+        isEarning.current = true;
         scrollDistance.current = 0; // Reset da distância
+
+        try {
+          console.log('[SCROLL] Attempting to earn coins for scroll - backend controls timing');
+          const result = await earnScrollCoins();
+          
+          if (result?.success) {
+            toast({
+              title: '🪙 UTI Coins ganhas!',
+              description: `Você ganhou ${result.amount} moedas por explorar o site!`,
+              duration: 3000,
+            });
+          } else if (result?.rateLimited) {
+            // Backend controlou o timing - não mostrar erro
+            console.log('[SCROLL] Backend timing control:', result.message);
+          } else if (result?.suspicious) {
+            toast({
+              title: '⚠️ Atividade Suspeita',
+              description: 'Muitas ações detectadas. Aguarde um momento.',
+              variant: 'destructive',
+              duration: 5000,
+            });
+          } else if (result?.message) {
+            console.warn('[SCROLL] Action rejected:', result.message);
+          }
+        } catch (error) {
+          console.error('[SCROLL] Error earning coins:', error);
+        } finally {
+          isEarning.current = false;
+        }
       }
     };
 
-    // Throttle para não executar muito frequentemente
+    // Throttle para reduzir carga no servidor
     let ticking = false;
     const throttledScroll = () => {
       if (!ticking) {
@@ -49,5 +81,5 @@ export const useScrollCoins = () => {
     return () => {
       window.removeEventListener('scroll', throttledScroll);
     };
-  }, [user, earnScrollCoins]);
+  }, [user, earnScrollCoins, toast, isEnabled]);
 };

@@ -9,6 +9,7 @@ import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import ProductHero from '@/components/Product/ProductHero';
+import ProductLayout from '@/components/Product/Layout/ProductLayout';
 import ProductTabsEnhanced from '@/components/Product/ProductTabsEnhanced';
 import RelatedProductsSection from '@/components/Product/RelatedProductsSection';
 import ProductFAQ from '@/components/Product/ProductFAQ';
@@ -144,7 +145,7 @@ const ProductPageSKU = () => {
         showNavigation={false}
       />
 
-      <main className="pt-4">
+      <main className="pt-20 md:pt-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb com suporte a SKUs */}
           <div className="mb-4">
@@ -165,40 +166,14 @@ const ProductPageSKU = () => {
             )}
           </div>
 
-          {/* Desktop Version */}
+          {/* Desktop Version - Novo Layout */}
           <div className="hidden md:block">
-            {/* Hero do Produto */}
-            <ProductHero 
+            <ProductLayout
               product={product}
+              skuNavigation={skuNavigation}
               viewingCount={viewingCount}
               onAddToCart={handleAddToCart}
             />
-
-            {/* Seletor de Plataforma (apenas para produtos com SKUs) */}
-            {shouldShowSKUComponents() && skuNavigation && (
-              <div className="mb-6">
-                <PlatformSelector skuNavigation={skuNavigation} />
-              </div>
-            )}
-
-            {/* Comparação de Preços (apenas para produtos com múltiplos SKUs) */}
-            {shouldShowSKUComponents() && skuNavigation && skuNavigation.availableSKUs && skuNavigation.availableSKUs.length > 1 && (
-              <div className="mb-6">
-                <SKUPriceComparison skuNavigation={skuNavigation} />
-              </div>
-            )}
-
-            {/* Abas do Produto */}
-            <ProductTabsEnhanced product={product} />
-
-            {/* Produtos Relacionados */}
-            <RelatedProductsSection product={product} />
-
-            {/* FAQ */}
-            <ProductFAQ product={product} />
-
-            {/* Garantias */}
-            <ProductGuarantees />
           </div>
 
           {/* Mobile Version */}

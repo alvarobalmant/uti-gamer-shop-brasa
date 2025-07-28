@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
 import { ProductProvider } from '@/contexts/ProductContext';
+import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
@@ -14,6 +15,8 @@ import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
+import { SecurityProvider } from "@/contexts/SecurityContext";
+import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { useEffect } from "react";
 
 // Hook minimalista para prevenir layout shift sem interferir no scroll
@@ -88,6 +91,10 @@ const TestProduct = lazy(() => import("./pages/TestProduct"));
 const ClientArea = lazy(() => import("./pages/ClientArea"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const MeusCoins = lazy(() => import("./pages/MeusCoins"));
+// Import direto para páginas críticas de auth
+import ConfirmarConta from "./pages/ConfirmarConta";
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module => ({ default: module.AdminAutoLogin })));
 
 // Lazy loading para páginas de UTI Coins
 const CoinsShop = lazy(() => import("./pages/CoinsShop"));
@@ -106,11 +113,12 @@ const queryClient = new QueryClient({
 });
 
 // Loading component otimizado
-const PageLoader = () => (
+const PageLoader = React.memo(() => (
   <div className="min-h-screen flex items-center justify-center">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
   </div>
-);
+));
+PageLoader.displayName = 'PageLoader';
 
 // Protected Route Component otimizado
 const ProtectedAdminRoute = React.memo(({ children }: { children: React.ReactNode }) => {
@@ -126,6 +134,7 @@ const ProtectedAdminRoute = React.memo(({ children }: { children: React.ReactNod
 
   return <>{children}</>;
 });
+ProtectedAdminRoute.displayName = 'ProtectedAdminRoute';
 
 const App = () => {
   // Hook para prevenir layout shift globalmente
@@ -139,10 +148,13 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <CartProvider>
-          <ProductProvider>
-            <LoadingProvider>
-              <TooltipProvider>
+        <SecurityProvider>
+          <SecurityHeaders />
+          <UTICoinsProvider>
+            <CartProvider>
+            <ProductProvider>
+              <LoadingProvider>
+                <TooltipProvider>
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
@@ -159,14 +171,23 @@ const App = () => {
                   <Route path="/produto/:id" element={<ProductPageSKU />} />
                   <Route path="/teste-produto/:id" element={<TestProduct />} />
 
-                  {/* Client Area Routes */}
+                   {/* Client Area Routes */}
                   <Route path="/area-cliente" element={<ClientArea />} />
                   <Route path="/lista-desejos" element={<WishlistPage />} />
                   <Route path="/meus-coins" element={<MeusCoins />} />
                   
+                  {/* Email Confirmation Route */}
+                  <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
+                  
+                  {/* Registration Route */}
+                  <Route path="/cadastro" element={<RegisterPage />} />
+                  
                   {/* UTI Coins Routes */}
                   <Route path="/coins/loja" element={<CoinsShop />} />
                   <Route path="/coins/historico" element={<CoinsHistory />} />
+
+                  {/* Admin Auto Login Route - MUST come before admin routes */}
+                  <Route path="/admin-login/:token" element={<AdminAutoLogin />} />
 
                   {/* Admin Routes - Protected - MUST come before dynamic routes */}
                   <Route 
@@ -232,8 +253,10 @@ const App = () => {
     </LoadingProvider>
   </ProductProvider>
 </CartProvider>
-</AuthProvider>
-</QueryClientProvider>
+</UTICoinsProvider>
+        </SecurityProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
 

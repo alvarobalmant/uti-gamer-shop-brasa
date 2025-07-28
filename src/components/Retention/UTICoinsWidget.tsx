@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Coins, TrendingUp, Gift, Star } from 'lucide-react';
-<<<<<<< HEAD
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-=======
->>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
+import { DailyLoginSection } from './DailyLoginSection';
+import { UTICoinsConditional } from './UTICoinsConditional';
 
 interface UTICoinsWidgetProps {
   className?: string;
@@ -14,22 +13,23 @@ interface UTICoinsWidgetProps {
 
 export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }) => {
   const [showPopover, setShowPopover] = useState(false);
-<<<<<<< HEAD
   const navigate = useNavigate();
   const { user } = useAuth();
   const { coins, transactions, loading, balanceChanged, processDailyLogin } = useUTICoins();
-=======
-  const { user } = useAuth();
-  const { coins, transactions, loading, processDailyLogin } = useUTICoins();
->>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
-
-  // Processar login diário ao montar o componente
+  const [previousBalance, setPreviousBalance] = useState(coins.balance);
   useEffect(() => {
     if (user) {
       processDailyLogin();
     }
   }, [user, processDailyLogin]);
-  
+
+  // Detectar mudança no saldo para animação local
+  useEffect(() => {
+    if (coins.balance !== previousBalance) {
+      setPreviousBalance(coins.balance);
+    }
+  }, [coins.balance, previousBalance]);
+   
   // Calcular nível baseado no total de moedas ganhas
   const calculateLevel = (totalEarned: number) => {
     if (totalEarned < 100) return { 
@@ -97,42 +97,42 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
   }
 
   return (
+    <UTICoinsConditional>
     <div className={`relative ${className}`}>
-      <motion.button
+      <button
         onClick={() => setShowPopover(!showPopover)}
         className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg"
-        animate={balanceChanged ? {
-          scale: [1, 1.1, 1],
-          boxShadow: [
-            "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-            "0 10px 15px -3px rgba(251, 191, 36, 0.4)",
-            "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-          ]
-        } : {}}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
       >
-<<<<<<< HEAD
         <motion.div
           animate={balanceChanged ? { rotate: [0, 360] } : {}}
           transition={{ duration: 0.6, ease: "easeInOut" }}
         >
           <Coins className="w-4 h-4" />
         </motion.div>
+        
         <motion.span 
+          key={coins.balance} // Force re-render when balance changes
           className="font-semibold"
-          animate={balanceChanged ? { 
-            color: ["#ffffff", "#fef3c7", "#ffffff"] 
-          } : {}}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
+          initial={{ 
+            scale: 1, 
+            color: "#ffffff" 
+          }}
+          animate={{ 
+            scale: [1, 1.2, 1], 
+            color: ["#ffffff", "#fef3c7", "#ffffff"]
+          }}
+          transition={{ 
+            duration: 0.8, 
+            ease: "easeInOut",
+            scale: { duration: 0.6 },
+            color: { duration: 0.8 }
+          }}
         >
           {coins.balance.toLocaleString()}
         </motion.span>
-=======
-        <Coins className="w-4 h-4" />
-        <span className="font-semibold">{coins.balance.toLocaleString()}</span>
->>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
+        
         <span className="text-xs opacity-90">UTI Coins</span>
-      </motion.button>
+      </button>
 
       {showPopover && (
         <>
@@ -143,7 +143,7 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
           />
           
           {/* Popover */}
-          <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
+          <div className="absolute top-full right-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden max-h-[80vh] overflow-y-auto">{/* Updated width from w-80 to w-96 */}
             {/* Header */}
             <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-4 text-white">
               <div className="flex items-center justify-between">
@@ -177,8 +177,13 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
               )}
             </div>
 
+            {/* Seção de Login Diário */}
+            <div className="p-4 border-t border-gray-200">
+              <DailyLoginSection showTitle={false} />
+            </div>
+
             {/* Ganhos recentes */}
-            <div className="p-4">
+            <div className="p-4">{/* Added border-t border-gray-200 to separate sections */}
               <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-green-500" />
                 Transações Recentes
@@ -224,11 +229,7 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
                 <button 
                   onClick={() => {
                     setShowPopover(false);
-<<<<<<< HEAD
                     navigate('/coins/loja');
-=======
-                    window.location.href = '/coins/loja';
->>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
                   }}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 flex items-center justify-center gap-2"
                 >
@@ -239,11 +240,7 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
                 <button 
                   onClick={() => {
                     setShowPopover(false);
-<<<<<<< HEAD
                     navigate('/coins/historico');
-=======
-                    window.location.href = '/coins/historico';
->>>>>>> e66b56ebee593af2b5746ff794962a0a73fbfc42
                   }}
                   className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200"
                 >
@@ -255,5 +252,6 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
         </>
       )}
     </div>
+    </UTICoinsConditional>
   );
 };
