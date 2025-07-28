@@ -958,6 +958,63 @@ export type Database = {
         }
         Relationships: []
       }
+      product_faqs: {
+        Row: {
+          active: boolean | null
+          answer: string
+          category: string | null
+          created_at: string | null
+          helpful_count: number | null
+          id: string
+          order_index: number | null
+          product_id: string | null
+          question: string
+          tags: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          answer: string
+          category?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          order_index?: number | null
+          product_id?: string | null
+          question: string
+          tags?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          answer?: string
+          category?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          order_index?: number | null
+          product_id?: string | null
+          question?: string
+          tags?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_faqs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_faqs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
       product_section_items: {
         Row: {
           created_at: string | null
@@ -1029,6 +1086,57 @@ export type Database = {
         }
         Relationships: []
       }
+      product_specifications: {
+        Row: {
+          category: string
+          created_at: string | null
+          highlight: boolean | null
+          id: string
+          label: string
+          order_index: number | null
+          product_id: string | null
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          highlight?: boolean | null
+          id?: string
+          label: string
+          order_index?: number | null
+          product_id?: string | null
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          highlight?: boolean | null
+          id?: string
+          label?: string
+          order_index?: number | null
+          product_id?: string | null
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_specifications_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_specifications_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
       product_tags: {
         Row: {
           created_at: string
@@ -1086,6 +1194,7 @@ export type Database = {
           badge_color: string | null
           badge_text: string | null
           badge_visible: boolean | null
+          brand: string | null
           breadcrumb_config: Json | null
           category: string | null
           colors: string[] | null
@@ -1163,6 +1272,7 @@ export type Database = {
           badge_color?: string | null
           badge_text?: string | null
           badge_visible?: boolean | null
+          brand?: string | null
           breadcrumb_config?: Json | null
           category?: string | null
           colors?: string[] | null
@@ -1240,6 +1350,7 @@ export type Database = {
           badge_color?: string | null
           badge_text?: string | null
           badge_visible?: boolean | null
+          brand?: string | null
           breadcrumb_config?: Json | null
           category?: string | null
           colors?: string[] | null
