@@ -39,3 +39,18 @@ verify_jwt = true
 
 [functions.compress-images]
 verify_jwt = true
+
+[functions.secure-coin-actions]
+verify_jwt = true
+
+[functions.send-custom-emails]
+verify_jwt = false
+
+[functions.send-test-email]
+verify_jwt = false
+
+[functions.confirm-email-and-redirect]
+verify_jwt = false
+
+[functions.admin-auto-login]
+verify_jwt = false
