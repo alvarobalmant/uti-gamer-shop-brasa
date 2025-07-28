@@ -43,10 +43,50 @@ const ProductManager = () => {
 
   const handleFormSubmit = async (productData: any) => {
     try {
+      let savedProduct;
       if (editingProduct) {
-        await updateProduct(editingProduct.id, productData);
+        savedProduct = await updateProduct(editingProduct.id, productData);
       } else {
-        await addProduct(productData);
+        savedProduct = await addProduct(productData);
+        
+        // If there are local specifications to save after product creation
+        if (productData.localSpecifications && productData.localSpecifications.length > 0) {
+          // Import supabase client to save specs
+          const { supabase } = await import('@/integrations/supabase/client');
+          
+          for (const spec of productData.localSpecifications) {
+            await supabase
+              .from('product_specifications')
+              .insert({
+                product_id: savedProduct.id,
+                category: spec.category,
+                label: spec.label,
+                value: spec.value,
+                highlight: spec.highlight,
+                order_index: spec.order_index
+              });
+          }
+        }
+
+        // If there are local FAQs to save after product creation
+        if (productData.localFAQs && productData.localFAQs.length > 0) {
+          const { supabase } = await import('@/integrations/supabase/client');
+          
+          for (const faq of productData.localFAQs) {
+            await supabase
+              .from('product_faqs')
+              .insert({
+                product_id: savedProduct.id,
+                question: faq.question,
+                answer: faq.answer,
+                category: faq.category,
+                active: faq.is_visible,
+                order_index: faq.order,
+                helpful_count: 0,
+                tags: []
+              });
+          }
+        }
       }
       setShowForm(false);
       setEditingProduct(null);

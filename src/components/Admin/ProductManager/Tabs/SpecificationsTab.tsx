@@ -20,14 +20,25 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
   const { toast } = useToast();
   const productId = formData.id;
   
+  // Use hook only if productId exists, otherwise manage locally
   const { 
-    categorizedSpecs, 
+    categorizedSpecs: dbSpecs, 
     loading, 
     addSpecification, 
     updateSpecification, 
     deleteSpecification,
     refreshSpecifications 
   } = useProductSpecifications(productId || '');
+  
+  // Local state for unsaved products
+  const [localSpecs, setLocalSpecs] = useState<Array<{
+    id: string;
+    category: string;
+    label: string;
+    value: string;
+    highlight: boolean;
+    order_index: number;
+  }>>([]);
   
   const [newSpec, setNewSpec] = useState({ 
     category: '',
@@ -39,20 +50,42 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
   const [editingSpec, setEditingSpec] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Se não há ID do produto, não pode gerenciar especificações
-  if (!productId) {
-    return (
-      <Card>
-        <CardContent className="text-center py-12">
-          <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Produto não salvo</h3>
-          <p className="text-gray-500">
-            Salve o produto primeiro para gerenciar suas especificações técnicas.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Helper function to group specs by category
+  const groupSpecificationsByCategory = (specs: typeof localSpecs) => {
+    const categoryMap = new Map<string, typeof localSpecs>();
+    
+    specs.forEach(spec => {
+      if (!categoryMap.has(spec.category)) {
+        categoryMap.set(spec.category, []);
+      }
+      categoryMap.get(spec.category)!.push(spec);
+    });
+
+    return Array.from(categoryMap.entries()).map(([category, items]) => ({
+      category,
+      items: items.sort((a, b) => a.order_index - b.order_index)
+    }));
+  };
+
+  // Get specs from database if product exists, otherwise use local state
+  const hasProductId = Boolean(productId);
+  const categorizedSpecs = hasProductId ? dbSpecs : groupSpecificationsByCategory(localSpecs);
+
+  // Sync local specs changes to parent form
+  React.useEffect(() => {
+    if (!hasProductId) {
+      // Update the form data with local specs for unsaved products
+      const specsForSaving = localSpecs.map(spec => ({
+        product_id: '', // Will be filled when product is saved
+        category: spec.category,
+        label: spec.label,
+        value: spec.value,
+        highlight: spec.highlight,
+        order_index: spec.order_index
+      }));
+      onChange('localSpecifications', specsForSaving);
+    }
+  }, [localSpecs, hasProductId, onChange]);
 
   // Templates de especificações por categoria
   const predefinedCategories = [
@@ -101,31 +134,41 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
   };
 
   const handleApplyTemplate = async (templateKey: keyof typeof specTemplates) => {
-    if (!productId) return;
-    
     setSaving(true);
     try {
       const template = specTemplates[templateKey];
       
-      // Adicionar cada especificação do template
-      for (let i = 0; i < template.length; i++) {
-        const spec = template[i];
-        await addSpecification({
-          product_id: productId,
+      if (hasProductId) {
+        // Product exists, save to database
+        for (let i = 0; i < template.length; i++) {
+          const spec = template[i];
+          await addSpecification({
+            product_id: productId!,
+            category: spec.category,
+            label: spec.label,
+            value: spec.value,
+            highlight: spec.highlight,
+            order_index: i + 1
+          });
+        }
+        await refreshSpecifications();
+      } else {
+        // Product doesn't exist, save to local state
+        const templateSpecs = template.map((spec, i) => ({
+          id: `temp-${Date.now()}-${i}`,
           category: spec.category,
           label: spec.label,
           value: spec.value,
           highlight: spec.highlight,
           order_index: i + 1
-        });
+        }));
+        setLocalSpecs(prev => [...prev, ...templateSpecs]);
       }
       
       toast({
         title: "Template aplicado!",
         description: `${template.length} especificações foram adicionadas.`,
       });
-      
-      await refreshSpecifications();
     } catch (error) {
       console.error('Erro ao aplicar template:', error);
       toast({
@@ -139,21 +182,35 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
   };
 
   const handleAddSpec = async () => {
-    if (!productId || !newSpec.category || !newSpec.label || !newSpec.value) return;
+    if (!newSpec.category || !newSpec.label || !newSpec.value) return;
     
     setSaving(true);
     try {
       const categorySpecs = categorizedSpecs.find(cat => cat.category === newSpec.category);
       const nextOrderIndex = categorySpecs ? categorySpecs.items.length + 1 : 1;
       
-      await addSpecification({
-        product_id: productId,
-        category: newSpec.category,
-        label: newSpec.label,
-        value: newSpec.value,
-        highlight: newSpec.highlight,
-        order_index: nextOrderIndex
-      });
+      if (hasProductId) {
+        // Product exists, save to database
+        await addSpecification({
+          product_id: productId!,
+          category: newSpec.category,
+          label: newSpec.label,
+          value: newSpec.value,
+          highlight: newSpec.highlight,
+          order_index: nextOrderIndex
+        });
+      } else {
+        // Product doesn't exist, save to local state
+        const newSpecWithId = {
+          id: `temp-${Date.now()}`,
+          category: newSpec.category,
+          label: newSpec.label,
+          value: newSpec.value,
+          highlight: newSpec.highlight,
+          order_index: nextOrderIndex
+        };
+        setLocalSpecs(prev => [...prev, newSpecWithId]);
+      }
       
       setNewSpec({ 
         category: '',
@@ -182,7 +239,15 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
   const handleUpdateSpec = async (specId: string, field: string, value: any) => {
     setSaving(true);
     try {
-      await updateSpecification(specId, { [field]: value });
+      if (hasProductId) {
+        // Product exists, update in database
+        await updateSpecification(specId, { [field]: value });
+      } else {
+        // Product doesn't exist, update in local state
+        setLocalSpecs(prev => prev.map(spec => 
+          spec.id === specId ? { ...spec, [field]: value } : spec
+        ));
+      }
       
       toast({
         title: "Especificação atualizada!",
@@ -203,7 +268,13 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
   const handleDeleteSpec = async (specId: string) => {
     setSaving(true);
     try {
-      await deleteSpecification(specId);
+      if (hasProductId) {
+        // Product exists, delete from database
+        await deleteSpecification(specId);
+      } else {
+        // Product doesn't exist, delete from local state
+        setLocalSpecs(prev => prev.filter(spec => spec.id !== specId));
+      }
       
       toast({
         title: "Especificação removida!",

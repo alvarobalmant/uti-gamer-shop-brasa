@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useProductFAQs } from '@/hooks/useProductFAQs';
 
 interface ProductFAQSectionProps {
   product: Product;
@@ -28,6 +29,9 @@ const ProductFAQSection: React.FC<ProductFAQSectionProps> = ({
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  // Fetch FAQs from database
+  const { categorizedFaqs, loading } = useProductFAQs(product.id);
 
   const toggleItem = (itemId: string) => {
     setExpandedItems(prev =>
@@ -37,8 +41,21 @@ const ProductFAQSection: React.FC<ProductFAQSectionProps> = ({
     );
   };
 
-  // Mock de perguntas frequentes
-  const faqItems: FAQItem[] = [
+  // Convert database FAQs to display format
+  const faqItems: FAQItem[] = categorizedFaqs.flatMap(category => 
+    category.faqs.map(faq => ({
+      id: faq.id,
+      question: faq.question,
+      answer: faq.answer,
+      category: faq.category || 'geral',
+      helpful: faq.helpful_count,
+      date: faq.created_at,
+      tags: faq.tags || []
+    }))
+  );
+
+  // Fallback to mock data if no FAQs in database
+  const mockFAQs: FAQItem[] = [
     {
       id: '1',
       question: 'Este jogo é compatível com PlayStation 4?',
@@ -113,23 +130,47 @@ const ProductFAQSection: React.FC<ProductFAQSectionProps> = ({
     }
   ];
 
+  // Use database FAQs if available, otherwise use mock data
+  const displayFAQs = faqItems.length > 0 ? faqItems : mockFAQs;
+
   const categories = [
-    { id: 'all', label: 'Todas', count: faqItems.length },
-    { id: 'compatibilidade', label: 'Compatibilidade', count: faqItems.filter(f => f.category === 'compatibilidade').length },
-    { id: 'requisitos', label: 'Requisitos', count: faqItems.filter(f => f.category === 'requisitos').length },
-    { id: 'idioma', label: 'Idioma', count: faqItems.filter(f => f.category === 'idioma').length },
-    { id: 'garantia', label: 'Garantia', count: faqItems.filter(f => f.category === 'garantia').length },
-    { id: 'entrega', label: 'Entrega', count: faqItems.filter(f => f.category === 'entrega').length }
+    { id: 'all', label: 'Todas', count: displayFAQs.length },
+    { id: 'compatibilidade', label: 'Compatibilidade', count: displayFAQs.filter(f => f.category === 'compatibilidade').length },
+    { id: 'requisitos', label: 'Requisitos', count: displayFAQs.filter(f => f.category === 'requisitos').length },
+    { id: 'idioma', label: 'Idioma', count: displayFAQs.filter(f => f.category === 'idioma').length },
+    { id: 'garantia', label: 'Garantia', count: displayFAQs.filter(f => f.category === 'garantia').length },
+    { id: 'entrega', label: 'Entrega', count: displayFAQs.filter(f => f.category === 'entrega').length },
+    { id: 'geral', label: 'Geral', count: displayFAQs.filter(f => f.category === 'geral').length }
   ];
 
   // Filtrar FAQs
-  const filteredFAQs = faqItems.filter(item => {
+  const filteredFAQs = displayFAQs.filter(item => {
     const matchesSearch = item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.answer.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  if (loading) {
+    return (
+      <div className={cn("space-y-6", className)}>
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't show FAQ section if no FAQs are available (including mock)
+  if (displayFAQs.length === 0) {
+    return null;
+  }
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -140,7 +181,7 @@ const ProductFAQSection: React.FC<ProductFAQSectionProps> = ({
             Perguntas Frequentes
           </h3>
           <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-            {faqItems.length} perguntas
+            {displayFAQs.length} perguntas
           </Badge>
         </div>
         <Button className="bg-purple-600 hover:bg-purple-700 text-white">
@@ -317,7 +358,7 @@ const ProductFAQSection: React.FC<ProductFAQSectionProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-2xl font-bold text-purple-600">
-              {faqItems.length}
+              {displayFAQs.length}
             </div>
             <div className="text-sm text-gray-600">
               Perguntas respondidas
