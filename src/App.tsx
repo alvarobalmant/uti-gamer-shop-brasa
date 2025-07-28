@@ -18,7 +18,6 @@ import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { useEffect } from "react";
-// Removed problematic usePerformanceOptimizations import
 
 // Hook minimalista para prevenir layout shift sem interferir no scroll
 const usePreventLayoutShift = () => {
@@ -84,8 +83,8 @@ const Xbox4AdminPage = lazy(() => import("./components/Admin/Xbox4AdminPage"));
 const SpecialSectionCarouselPage = lazy(() => import("./pages/SpecialSectionCarouselPage"));
 const PlatformPage = lazy(() => import("./components/PlatformPage"));
 
-// Import direto para páginas críticas de produto (para evitar problemas de context)
-import ProductPageSKU from "./pages/ProductPageSKU";
+// Lazy loading para páginas de produto
+const ProductPageSKU = lazy(() => import("./pages/ProductPageSKU"));
 const TestProduct = lazy(() => import("./pages/TestProduct"));
 
 // Lazy loading para páginas de cliente
@@ -101,24 +100,14 @@ const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module =
 const CoinsShop = lazy(() => import("./pages/CoinsShop"));
 const CoinsHistory = lazy(() => import("./pages/CoinsHistory"));
 
-// Otimizar QueryClient com configurações mais agressivas
+// Otimizar QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutos
-      gcTime: 10 * 60 * 1000, // 10 minutos
+      gcTime: 10 * 60 * 1000, // 10 minutos (antes era cacheTime)
       refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      retry: (failureCount, error: any) => {
-        // Não tentar novamente para erros 404 ou 403
-        if (error?.status === 404 || error?.status === 403) return false;
-        return failureCount < 2;
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    },
-    mutations: {
       retry: 1,
-      retryDelay: 1000,
     },
   },
 });
@@ -150,8 +139,6 @@ ProtectedAdminRoute.displayName = 'ProtectedAdminRoute';
 const App = () => {
   // Hook para prevenir layout shift globalmente
   usePreventLayoutShift();
-  
-  // Removed problematic usePerformanceOptimizations hook call
   
   // Setup de interceptação de erros 404
   React.useEffect(() => {
