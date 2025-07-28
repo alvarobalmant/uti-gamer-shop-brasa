@@ -172,9 +172,9 @@ const SpecificationCategoryManager: React.FC<SpecificationCategoryManagerProps> 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-h-none overflow-visible">
       {/* Quick Templates */}
-      <Card>
+      <Card className="overflow-visible">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -200,7 +200,7 @@ const SpecificationCategoryManager: React.FC<SpecificationCategoryManagerProps> 
       </Card>
 
       {/* Add New Specification */}
-      <Card>
+      <Card className="overflow-visible">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Plus className="h-4 w-4" />
@@ -261,11 +261,11 @@ const SpecificationCategoryManager: React.FC<SpecificationCategoryManagerProps> 
       </Card>
 
       {/* Existing Specifications */}
-      <Card>
+      <Card className="overflow-visible">
         <CardHeader>
           <CardTitle className="text-base">Especificações Existentes</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="max-h-none overflow-visible">
           {categorizedSpecs.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <PackageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />

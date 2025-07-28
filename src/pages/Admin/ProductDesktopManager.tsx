@@ -119,20 +119,22 @@ const ProductDesktopManager: React.FC = () => {
 
       {/* Editor Dialog */}
       <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
-          <DialogHeader>
+        <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden p-0 gap-0">
+          <DialogHeader className="p-6 pb-2 border-b">
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5" />
               Editar Produto Desktop: {selectedProduct?.name}
             </DialogTitle>
           </DialogHeader>
-          {selectedProduct && (
-            <ProductDesktopEditor
-              product={selectedProduct}
-              onSave={handleSaveProduct}
-              onCancel={() => setIsEditorOpen(false)}
-            />
-          )}
+          <div className="flex-1 overflow-hidden">
+            {selectedProduct && (
+              <ProductDesktopEditor
+                product={selectedProduct}
+                onSave={handleSaveProduct}
+                onCancel={() => setIsEditorOpen(false)}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
