@@ -18,7 +18,7 @@ import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { useEffect } from "react";
-import { usePerformanceOptimizations } from "@/hooks/usePerformanceOptimizations";
+// Removed problematic usePerformanceOptimizations import
 
 // Hook minimalista para prevenir layout shift sem interferir no scroll
 const usePreventLayoutShift = () => {
@@ -151,8 +151,7 @@ const App = () => {
   // Hook para prevenir layout shift globalmente
   usePreventLayoutShift();
   
-  // Hook para otimizações de performance
-  usePerformanceOptimizations();
+  // Removed problematic usePerformanceOptimizations hook call
   
   // Setup de interceptação de erros 404
   React.useEffect(() => {
