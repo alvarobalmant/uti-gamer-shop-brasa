@@ -2528,7 +2528,9 @@ export type Database = {
           badge_color: string | null
           badge_text: string | null
           badge_visible: boolean | null
+          brand: string | null
           breadcrumb_config: Json | null
+          category: string | null
           colors: string[] | null
           created_at: string | null
           delivery_config: Json | null
