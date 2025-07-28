@@ -84,8 +84,8 @@ const Xbox4AdminPage = lazy(() => import("./components/Admin/Xbox4AdminPage"));
 const SpecialSectionCarouselPage = lazy(() => import("./pages/SpecialSectionCarouselPage"));
 const PlatformPage = lazy(() => import("./components/PlatformPage"));
 
-// Lazy loading para páginas de produto
-const ProductPageSKU = lazy(() => import("./pages/ProductPageSKU"));
+// Import direto para páginas críticas de produto (para evitar problemas de context)
+import ProductPageSKU from "./pages/ProductPageSKU";
 const TestProduct = lazy(() => import("./pages/TestProduct"));
 
 // Lazy loading para páginas de cliente
