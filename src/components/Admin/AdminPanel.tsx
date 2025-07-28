@@ -23,7 +23,8 @@ import PrimePagesAdmin from './PrimePagesAdmin';
 import UTICoinsManager from './UTICoinsManager';
 import { EmailManager } from './EmailManager/EmailManager';
 import { AdminLoginManager } from './AdminLoginManager';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield } from 'lucide-react';
+import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -39,6 +40,7 @@ export const AdminPanel = () => {
     { id: 'special_sections', label: 'Seções Especiais', icon: Star },
     { id: 'xbox4_customization', label: 'Xbox 4 - Personalização', icon: Gamepad2 },
     { id: 'products', label: 'Produtos', icon: Package },
+    { id: 'desktop_products', label: 'Produtos Desktop', icon: Monitor },
     { id: 'bulk_upload', label: 'Importação em Massa', icon: Upload },
     { id: 'image_upload', label: 'Upload Fácil', icon: ImagePlus },
     { id: 'storage', label: 'Gerenciar Storage', icon: HardDrive },
@@ -182,6 +184,10 @@ export const AdminPanel = () => {
 
               <TabsContent value="products" className="mt-0">
                 <ProductManager />
+              </TabsContent>
+
+              <TabsContent value="desktop_products" className="mt-0">
+                <ProductDesktopManager />
               </TabsContent>
 
               <TabsContent value="bulk_upload" className="mt-0">
