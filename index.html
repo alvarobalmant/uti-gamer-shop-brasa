@@ -5,6 +5,18 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Critical performance optimizations -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://supabase.co" crossorigin>
+    <link rel="dns-prefetch" href="//lovable-uploads.s3.amazonaws.com">
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/src/main.tsx" as="script" crossorigin>
+    <link rel="preload" href="/src/index.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" as="style">
+    
     <title>UTI DOS GAMES - A Loja de Games Mais Tradicional de Colatina</title>
     <meta name="description" content="UTI DOS GAMES - Mais de 10 anos oferecendo os melhores produtos em games para Colatina e região. PlayStation, Xbox, Nintendo, PC Gaming, Acessórios e muito mais!" />
     <meta name="keywords" content="games, jogos, playstation, xbox, nintendo, pc gaming, colatina, espírito santo, loja de games, console, acessórios" />
@@ -24,10 +36,11 @@
     <meta property="twitter:description" content="Mais de 10 anos oferecendo os melhores produtos em games para Colatina e região." />
     <meta property="twitter:image" content="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" />
 
-    <!-- Professional Fonts from Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Professional Fonts from Google Fonts - Optimized -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
     
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png">
@@ -44,6 +57,33 @@
   </head>
   <body class="antialiased">
     <div id="root"></div>
+    
+    <!-- Performance monitoring and service worker -->
+    <script>
+      // Register service worker for caching
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('SW registered: ', registration);
+            })
+            .catch(registrationError => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+      
+      // Performance monitoring
+      window.addEventListener('load', () => {
+        if ('performance' in window) {
+          setTimeout(() => {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            console.log('Page Load Time:', perfData.loadEventEnd - perfData.fetchStart, 'ms');
+          }, 0);
+        }
+      });
+    </script>
+    
     <script type="module" src="/src/main.tsx"></script>
     <script src="https://cdn.gpteng.co/gptengineer.js" defer></script>
   </body>
