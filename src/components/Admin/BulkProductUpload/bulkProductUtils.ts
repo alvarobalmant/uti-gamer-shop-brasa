@@ -855,6 +855,9 @@ export async function processProductImport(
         console.log(`[IMPORT] Tags adicionadas: ${tagNames.join(', ')}`);
       }
       
+      // Processar especificações técnicas
+      await processProductSpecifications(newProduct.id, product);
+      
       created++;
       processed++;
       onProgress(Math.round((processed / total) * 100));
@@ -870,6 +873,9 @@ export async function processProductImport(
         const tagNames = parseArrayField(product.tags);
         await createProductTags(newProduct.id, tagNames);
       }
+      
+      // Processar especificações técnicas
+      await processProductSpecifications(newProduct.id, product);
       
       created++;
       processed++;
@@ -899,6 +905,9 @@ export async function processProductImport(
         await createProductTags(newProduct.id, tagNames);
         console.log(`[IMPORT] Tags da variação adicionadas: ${tagNames.join(', ')}`);
       }
+      
+      // Processar especificações técnicas
+      await processProductSpecifications(newProduct.id, product);
       
       created++;
       processed++;
@@ -1057,4 +1066,87 @@ function convertImportedProductToDatabase(product: ImportedProduct): any {
     sizes: [],
     colors: []
   };
+}
+
+// Função para processar especificações técnicas do produto importado
+async function processProductSpecifications(productId: string, product: ImportedProduct): Promise<void> {
+  if (!productId) return;
+  
+  try {
+    const specifications = parseJsonField(product.specifications);
+    const technicalSpecs = parseJsonField(product.technical_specs);
+    
+    const specsToInsert: any[] = [];
+    let orderIndex = 1;
+    
+    // Processar especificações básicas
+    if (specifications && Array.isArray(specifications)) {
+      specifications.forEach((spec: any) => {
+        if (spec.name && spec.value) {
+          specsToInsert.push({
+            product_id: productId,
+            category: 'general',
+            label: spec.name,
+            value: spec.value.toString(),
+            highlight: Boolean(spec.highlight || false),
+            order_index: orderIndex++
+          });
+        }
+      });
+    }
+    
+    // Processar especificações técnicas detalhadas
+    if (technicalSpecs && typeof technicalSpecs === 'object') {
+      Object.entries(technicalSpecs).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          // Determinar categoria com base na chave
+          let category = 'technical';
+          
+          if (['cpu', 'processor', 'processador'].includes(key.toLowerCase())) {
+            category = 'technical';
+          } else if (['ram', 'memory', 'memoria'].includes(key.toLowerCase())) {
+            category = 'technical';
+          } else if (['storage', 'armazenamento', 'disco'].includes(key.toLowerCase())) {
+            category = 'storage';
+          } else if (['resolution', 'fps', 'resolução'].includes(key.toLowerCase())) {
+            category = 'performance';
+          } else if (['multiplayer', 'online', 'network'].includes(key.toLowerCase())) {
+            category = 'multiplayer';
+          }
+          
+          // Formatar o nome da especificação
+          const formattedLabel = key
+            .replace(/_/g, ' ')
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^\w/, c => c.toUpperCase())
+            .trim();
+          
+          specsToInsert.push({
+            product_id: productId,
+            category: category,
+            label: formattedLabel,
+            value: value.toString(),
+            highlight: ['cpu', 'gpu', 'ram', 'storage', 'resolution'].includes(key.toLowerCase()),
+            order_index: orderIndex++
+          });
+        }
+      });
+    }
+    
+    // Inserir todas as especificações no banco
+    if (specsToInsert.length > 0) {
+      const { error } = await supabase
+        .from('product_specifications')
+        .insert(specsToInsert);
+      
+      if (error) {
+        console.error('Erro ao inserir especificações:', error);
+      } else {
+        console.log(`[IMPORT] ${specsToInsert.length} especificações adicionadas para produto ${productId}`);
+      }
+    }
+    
+  } catch (error) {
+    console.error('Erro ao processar especificações do produto:', error);
+  }
 }
