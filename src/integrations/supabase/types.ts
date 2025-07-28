@@ -1972,6 +1972,125 @@ export type Database = {
         }
         Relationships: []
       }
+      specification_categories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          label: string
+          name: string
+          order_index: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          label: string
+          name: string
+          order_index?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          name?: string
+          order_index?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      specification_template_items: {
+        Row: {
+          category_name: string
+          created_at: string | null
+          default_value: string | null
+          highlight: boolean | null
+          id: string
+          is_required: boolean | null
+          label: string
+          order_index: number | null
+          template_id: string | null
+          validation_rules: Json | null
+        }
+        Insert: {
+          category_name: string
+          created_at?: string | null
+          default_value?: string | null
+          highlight?: boolean | null
+          id?: string
+          is_required?: boolean | null
+          label: string
+          order_index?: number | null
+          template_id?: string | null
+          validation_rules?: Json | null
+        }
+        Update: {
+          category_name?: string
+          created_at?: string | null
+          default_value?: string | null
+          highlight?: boolean | null
+          id?: string
+          is_required?: boolean | null
+          label?: string
+          order_index?: number | null
+          template_id?: string | null
+          validation_rules?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specification_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "specification_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      specification_templates: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          label: string
+          name: string
+          product_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          label: string
+          name: string
+          product_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          name?: string
+          product_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       storage_stats: {
         Row: {
           created_at: string
