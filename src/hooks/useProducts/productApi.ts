@@ -5,6 +5,8 @@ import { CarouselConfig } from '@/types/specialSections';
 const mapRowToProduct = (row: any): Product => ({
   id: row.product_id,
   name: row.product_name || '',
+  brand: row.brand || '',
+  category: row.category || '',
   description: row.product_description || '',
   price: Number(row.product_price) || 0,
   pro_price: row.pro_price ? Number(row.pro_price) : undefined,
@@ -221,6 +223,8 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
       const product = mapRowToProduct({
         product_id: directData.id,
         product_name: directData.name,
+        brand: directData.brand,
+        category: directData.category,
         product_description: directData.description,
         product_price: directData.price,
         pro_price: directData.pro_price,
