@@ -30,7 +30,9 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
       list_price: 349.99,
       image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400',
       category: 'games',
-      stock: 15
+      stock: 15,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       id: '2', 
@@ -39,7 +41,9 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
       list_price: 299.99,
       image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400',
       category: 'games',
-      stock: 8
+      stock: 8,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       id: '3',
@@ -48,7 +52,9 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
       list_price: 329.99,
       image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400',
       category: 'games',
-      stock: 12
+      stock: 12,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       id: '4',
@@ -57,7 +63,9 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
       list_price: 299.99,
       image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400',
       category: 'games',
-      stock: 20
+      stock: 20,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       id: '5',
@@ -66,7 +74,9 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
       list_price: 249.99,
       image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400',
       category: 'games',
-      stock: 6
+      stock: 6,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       id: '6',
@@ -75,7 +85,9 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
       list_price: 229.99,
       image: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400',
       category: 'games',
-      stock: 25
+      stock: 25,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
   ];
 
@@ -172,7 +184,6 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
                       <FavoriteButton 
                         productId={product.id} 
                         size="sm"
-                        onClick={(e) => e.stopPropagation()}
                       />
                     </div>
 

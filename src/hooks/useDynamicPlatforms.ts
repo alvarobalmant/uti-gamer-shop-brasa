@@ -7,6 +7,7 @@ export interface PlatformConfig {
   name: string;
   icon: string;
   color: string;
+  description?: string;
 }
 
 const useDynamicPlatforms = () => {
@@ -26,7 +27,8 @@ const useDynamicPlatforms = () => {
           id: platform.slug,
           name: platform.name,
           icon: platform.icon_url || platform.icon_emoji,
-          color: platform.color
+          color: platform.color,
+          description: 'Console de jogos'
         };
       });
       

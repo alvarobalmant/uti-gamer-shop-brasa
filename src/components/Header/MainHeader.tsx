@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, Search } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
-import { CSSLogo } from '@/components/UI/CSSLogo';
+import { CSSLogo } from '@/components/ui/CSSLogo';
 
 interface MainHeaderProps {
   onCartOpen: () => void;
