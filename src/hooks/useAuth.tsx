@@ -26,86 +26,87 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    let mounted = true;
+    let sessionCheckInProgress = false;
     
-    const checkSessionAndRole = async (session: Session | null) => {
-      if (!mounted) return;
-      
-      if (session?.access_token) {
-        try {
-          // Check if session was manually invalidated
-          const { data: invalidatedSession } = await supabase
-            .from('invalidated_sessions')
-            .select('id')
-            .eq('session_id', session.access_token)
-            .maybeSingle();
-          
-          if (invalidatedSession) {
-            // Session was manually invalidated, force local logout
-            if (mounted) {
-              setSession(null);
-              setUser(null);
-              setIsAdmin(false);
-              setLoading(false);
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        // Prevent race conditions during session checks
+        if (sessionCheckInProgress) return;
+        sessionCheckInProgress = true;
+        
+        // Handle session invalidation check
+        if (session?.access_token) {
+          setTimeout(async () => {
+            try {
+              const { data: invalidatedSession } = await supabase
+                .from('invalidated_sessions')
+                .select('id')
+                .eq('session_id', session.access_token)
+                .maybeSingle();
+              
+              if (invalidatedSession) {
+                // Session was manually invalidated, force local logout
+                setSession(null);
+                setUser(null);
+                setIsAdmin(false);
+                setLoading(false);
+                sessionCheckInProgress = false;
+                return;
+              }
+            } catch (error) {
+              console.log('Error checking invalidated session:', error);
+              // Continue with normal flow even if check fails
             }
-            return;
-          }
-        } catch (error) {
-          console.log('Error checking invalidated session:', error);
-        }
-        
-        // Update session state
-        if (mounted) {
-          setSession(session);
-          setUser(session.user);
-        }
-        
-        // Check admin role
-        try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          
-          if (mounted) {
-            setIsAdmin(profile?.role === 'admin');
-          }
-        } catch (error) {
-          console.log('Error checking admin role:', error);
-          if (mounted) {
-            setIsAdmin(false);
-          }
-        }
-      } else {
-        // No session
-        if (mounted) {
+            
+            // Update session state
+            setSession(session);
+            setUser(session?.user ?? null);
+            
+            // Check admin role
+            if (session?.user) {
+              try {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('role')
+                  .eq('id', session.user.id)
+                  .maybeSingle();
+                
+                setIsAdmin(profile?.role === 'admin');
+              } catch (error) {
+                console.log('Error checking admin role:', error);
+                setIsAdmin(false);
+              }
+            } else {
+              setIsAdmin(false);
+            }
+            
+            setLoading(false);
+            sessionCheckInProgress = false;
+          }, 0);
+        } else {
+          // No session
           setSession(null);
           setUser(null);
           setIsAdmin(false);
+          setLoading(false);
+          sessionCheckInProgress = false;
         }
-      }
-      
-      if (mounted) {
-        setLoading(false);
-      }
-    };
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        await checkSessionAndRole(session);
       }
     );
 
-    // Check for existing session
+    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      checkSessionAndRole(session);
+      if (!sessionCheckInProgress) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
     });
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
+      sessionCheckInProgress = false;
     };
   }, []);
 
