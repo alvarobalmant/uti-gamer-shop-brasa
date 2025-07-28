@@ -1,4 +1,4 @@
-/* Critical CSS inlined in HTML, remove import to prevent render blocking */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Circular+Std:wght@400;500;600;700;800&family=Gilroy:wght@400;500;600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -106,9 +106,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
-    /* Performance optimizations */
-    contain: layout style;
-    will-change: scroll-position;
   }
 
   h1, h2, h3, h4, h5, h6 {

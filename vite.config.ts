@@ -55,21 +55,12 @@ export default defineConfig(({ mode }) => ({
           forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
           utils: ['clsx', 'tailwind-merge', 'class-variance-authority'],
         },
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
       },
     },
     chunkSizeWarningLimit: 500,
-    target: 'es2020',
+    target: 'esnext',
     minify: 'esbuild',
-    cssMinify: true,
     sourcemap: false,
-    reportCompressedSize: false,
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js'],
-    exclude: ['@lovable/tagger']
   },
   esbuild: {
     drop: mode === 'production' ? ['console', 'debugger'] : [],

@@ -18,7 +18,6 @@ import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { useEffect } from "react";
-import { usePerformanceOptimizations } from "@/hooks/usePerformanceOptimizations";
 
 // Hook minimalista para prevenir layout shift sem interferir no scroll
 const usePreventLayoutShift = () => {
@@ -101,24 +100,14 @@ const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module =
 const CoinsShop = lazy(() => import("./pages/CoinsShop"));
 const CoinsHistory = lazy(() => import("./pages/CoinsHistory"));
 
-// Otimizar QueryClient com configurações mais agressivas
+// Otimizar QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutos
-      gcTime: 10 * 60 * 1000, // 10 minutos
+      gcTime: 10 * 60 * 1000, // 10 minutos (antes era cacheTime)
       refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      retry: (failureCount, error: any) => {
-        // Não tentar novamente para erros 404 ou 403
-        if (error?.status === 404 || error?.status === 403) return false;
-        return failureCount < 2;
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    },
-    mutations: {
       retry: 1,
-      retryDelay: 1000,
     },
   },
 });
@@ -150,9 +139,6 @@ ProtectedAdminRoute.displayName = 'ProtectedAdminRoute';
 const App = () => {
   // Hook para prevenir layout shift globalmente
   usePreventLayoutShift();
-  
-  // Hook para otimizações de performance
-  usePerformanceOptimizations();
   
   // Setup de interceptação de erros 404
   React.useEffect(() => {
