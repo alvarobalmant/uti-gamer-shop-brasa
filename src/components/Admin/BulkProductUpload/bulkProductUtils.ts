@@ -1242,9 +1242,9 @@ async function processProductSpecifications(productId: string, product: Imported
   }
 }
 
-// Função para validar categoria de especificação personalizada
+// Função para validar categoria de especificação personalizada com abordagem de blacklist
 function validateSpecificationCategory(category: string, allowFallback: boolean = true): string | null {
-  console.log('[DIAGNOSTIC] validateSpecificationCategory - Input:', {
+  console.log('[BULK IMPORT] validateSpecificationCategory - Input:', {
     category,
     type: typeof category,
     length: category?.length,
@@ -1252,7 +1252,7 @@ function validateSpecificationCategory(category: string, allowFallback: boolean 
   });
   
   if (!category || typeof category !== 'string') {
-    console.log('[DIAGNOSTIC] validateSpecificationCategory - Falhou: categoria inválida ou não é string');
+    console.log('[BULK IMPORT] Categoria inválida (tipo):', typeof category);
     return allowFallback ? 'Informações Gerais' : null;
   }
   
@@ -1260,38 +1260,27 @@ function validateSpecificationCategory(category: string, allowFallback: boolean 
   const cleanCategory = category.trim().slice(0, 50);
   
   if (!cleanCategory) {
-    console.log('[DIAGNOSTIC] validateSpecificationCategory - Categoria vazia após limpeza');
+    console.log('[BULK IMPORT] Categoria vazia após limpeza');
     return allowFallback ? 'Informações Gerais' : null;
   }
   
-  console.log('[DIAGNOSTIC] validateSpecificationCategory - Categoria limpa:', cleanCategory);
+  console.log('[BULK IMPORT] Categoria limpa:', cleanCategory);
   
-  // Regex CORRIGIDA - Aceita TODOS os emojis e caracteres especiais
-  // Esta é a mesma regex que foi corrigida no specificationFixer.ts
-  const validPattern = /^[\p{L}\p{N}\p{M}\p{S}\p{P}\s\-_()&📋⚙️💾🌐🎮📺🔧🎯⚡💻🎨🔊🎧📱⭐✨🚀💎🏆🔥👥🎯🔥💰🏪🎪🎭🎨🎵🎬🎤🎸🎹🥁🎺🎷🎻🎪🎠🎡🎢🎳🎯🎱🎲🃏🎴🀄🎯]+$/u;
+  // ABORDAGEM DE BLACKLIST PARA SEGURANÇA - mesma lógica do specificationFixer.ts
+  // Bloquear apenas caracteres perigosos que podem causar problemas de segurança
+  const dangerousChars = /[<>'"\\\/\x00-\x1f\x7f]/;
   
-  const isValid = validPattern.test(cleanCategory);
-  console.log('[DIAGNOSTIC] validateSpecificationCategory - Teste de padrão:', {
-    input: cleanCategory,
-    pattern: validPattern.toString(),
-    isValid,
-    characterCodes: Array.from(cleanCategory).map(c => `${c}(${c.charCodeAt(0)})`),
-    result: isValid ? cleanCategory : (allowFallback ? 'Informações Gerais' : null)
-  });
-  
-  // Se passar na validação, retornar categoria original
-  if (isValid) {
-    console.log('[DIAGNOSTIC] validateSpecificationCategory - Categoria aprovada:', cleanCategory);
-    return cleanCategory;
+  if (dangerousChars.test(cleanCategory)) {
+    console.log('[BULK IMPORT] Categoria contém caracteres perigosos:', {
+      category: cleanCategory,
+      characterCodes: Array.from(cleanCategory).map(c => `${c}(${c.charCodeAt(0)})`)
+    });
+    return allowFallback ? 'Informações Gerais' : null;
   }
   
-  // Se não for válido mas allowFallback for true, usar categoria padrão
-  if (allowFallback) {
-    console.log('[DIAGNOSTIC] validateSpecificationCategory - Usando categoria padrão devido a caracteres inválidos');
-    return 'Informações Gerais';
-  }
-  
-  return null;
+  // Se passou na verificação de segurança, aceitar a categoria
+  console.log('[BULK IMPORT] Categoria aprovada com sucesso:', cleanCategory);
+  return cleanCategory;
 }
 
 // Função para validar ícone de especificação

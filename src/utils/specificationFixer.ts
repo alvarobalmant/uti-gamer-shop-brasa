@@ -13,15 +13,17 @@ export interface SpecificationFixResult {
   };
 }
 
-// Função melhorada de validação de categoria
+// Função melhorada de validação de categoria com abordagem de blacklist para segurança
 function validateAndFixCategory(category: string): string {
   if (!category || typeof category !== 'string') {
+    console.log(`[SPEC FIXER] Categoria inválida (tipo: ${typeof category}): "${category}"`);
     return 'Informações Gerais';
   }
   
   const cleanCategory = category.trim().slice(0, 50);
   
   if (!cleanCategory) {
+    console.log(`[SPEC FIXER] Categoria vazia após limpeza: "${category}"`);
     return 'Informações Gerais';
   }
   
@@ -32,16 +34,18 @@ function validateAndFixCategory(category: string): string {
     return smartCategory;
   }
   
-  // Regex expandida para incluir TODOS os emojis possíveis e caracteres especiais
-  const validPattern = /^[\p{L}\p{N}\p{M}\p{S}\p{P}\s\-_()&📋⚙️💾🌐🎮📺🔧🎯⚡💻🎨🔊🎧📱⭐✨🚀💎🏆🔥👥🎯🔥💰🏪🎪🎭🎨🎵🎬🎤🎸🎹🥁🎺🎷🎻🎪🎠🎡🎢🎳🎯🎱🎲🃏🎴🀄🎯]+$/u;
+  // ABORDAGEM DE BLACKLIST PARA SEGURANÇA
+  // Bloquear apenas caracteres perigosos que podem causar problemas de segurança
+  const dangerousChars = /[<>'"\\\/\x00-\x1f\x7f]/;
   
-  if (validPattern.test(cleanCategory)) {
-    return cleanCategory;
+  if (dangerousChars.test(cleanCategory)) {
+    console.log(`[SPEC FIXER] Categoria contém caracteres perigosos: "${cleanCategory}"`);
+    return 'Informações Gerais';
   }
   
-  // Se não passou na validação, usar categoria padrão
-  console.log(`[SPEC FIXER] Categoria inválida "${category}" convertida para "Informações Gerais"`);
-  return 'Informações Gerais';
+  // Se passou na verificação de segurança, aceitar a categoria
+  console.log(`[SPEC FIXER] Categoria aprovada: "${cleanCategory}"`);
+  return cleanCategory;
 }
 
 // Nova função para categorização inteligente baseada em palavras-chave
