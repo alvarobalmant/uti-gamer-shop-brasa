@@ -1230,8 +1230,9 @@ function validateSpecificationCategory(category: string): string | null {
   // Limitar tamanho e caracteres permitidos
   const cleanCategory = category.trim().slice(0, 50);
   
-  // Verificar se contém apenas caracteres válidos (letras, números, espaços, acentos)
-  const validPattern = /^[a-zA-ZÀ-ÿ0-9\s\-_]+$/;
+  // Verificar se contém apenas caracteres válidos (letras, números, espaços, acentos, emojis)
+  // Incluindo suporte para emojis unicode
+  const validPattern = /^[a-zA-ZÀ-ÿ0-9\s\-_\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F000}-\u{1F2FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2700}-\u{27BF}]+$/u;
   
   return validPattern.test(cleanCategory) ? cleanCategory : null;
 }
