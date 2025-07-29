@@ -25,8 +25,8 @@ function validateAndFixCategory(category: string): string {
     return 'Informações Gerais';
   }
   
-  // Regex mais permissiva usando Unicode property escapes
-  const validPattern = /^[\p{L}\p{N}\p{M}\s\-_()&🎮📺🔧💾🎯⚡🌐💻🎨🔊🎧📱⭐✨🚀💎🏆🔥]+$/u;
+  // Regex completa incluindo TODOS os emojis das categorias específicas
+  const validPattern = /^[\p{L}\p{N}\p{M}\s\-_()&📋⚙️💾🌐🎮📺🔧🎯⚡💻🎨🔊🎧📱⭐✨🚀💎🏆🔥]+$/u;
   
   if (validPattern.test(cleanCategory)) {
     return cleanCategory;
