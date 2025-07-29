@@ -158,13 +158,13 @@ export const testSpecificationValidation = () => {
   ];
 
   const results = testCategories.map(category => {
-    // Replicar lógica de validação
+    // Replicar lógica de validação atualizada
     if (!category || typeof category !== 'string') {
       return { input: category, output: null, reason: 'null or not string' };
     }
     
     const cleanCategory = category.trim().slice(0, 50);
-    const validPattern = /^[a-zA-ZÀ-ÿ0-9\s\-_\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F000}-\u{1F2FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2700}-\u{27BF}]+$/u;
+    const validPattern = /^[\p{L}\p{N}\p{M}\s\-_()&🎮📺🔧💾🎯⚡🌐💻🎨🔊🎧📱⭐✨🚀💎🏆🔥]+$/u;
     const isValid = validPattern.test(cleanCategory);
     
     return {

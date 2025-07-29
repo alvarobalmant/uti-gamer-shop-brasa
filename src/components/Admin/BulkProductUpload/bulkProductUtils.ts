@@ -1172,8 +1172,8 @@ async function processProductSpecifications(productId: string, product: Imported
         if (spec.label && spec.value) {
           // Validar categoria personalizada
           const originalCategory = spec.category;
-          const validatedCategory = validateSpecificationCategory(spec.category);
-          const finalCategory = validatedCategory || 'custom';
+          const validatedCategory = validateSpecificationCategory(spec.category, true);
+          const finalCategory = validatedCategory;
           
           console.log(`[DIAGNOSTIC] processProductSpecifications - Categoria: ${originalCategory} -> ${validatedCategory} -> ${finalCategory}`);
           
@@ -1243,33 +1243,47 @@ async function processProductSpecifications(productId: string, product: Imported
 }
 
 // Função para validar categoria de especificação personalizada
-function validateSpecificationCategory(category: string): string | null {
+function validateSpecificationCategory(category: string, allowFallback: boolean = true): string | null {
   console.log('[DIAGNOSTIC] validateSpecificationCategory - Input:', {
     category,
     type: typeof category,
-    length: category?.length
+    length: category?.length,
+    allowFallback
   });
   
   if (!category || typeof category !== 'string') {
     console.log('[DIAGNOSTIC] validateSpecificationCategory - Falhou: categoria inválida ou não é string');
-    return null;
+    return allowFallback ? 'Informações Gerais' : null;
   }
   
-  // Limitar tamanho e caracteres permitidos
+  // Limitar tamanho e remover espaços em excesso
   const cleanCategory = category.trim().slice(0, 50);
+  
+  if (!cleanCategory) {
+    console.log('[DIAGNOSTIC] validateSpecificationCategory - Categoria vazia após limpeza');
+    return allowFallback ? 'Informações Gerais' : null;
+  }
+  
   console.log('[DIAGNOSTIC] validateSpecificationCategory - Categoria limpa:', cleanCategory);
   
-  // Verificar se contém apenas caracteres válidos (letras, números, espaços, acentos, emojis)
-  // Incluindo suporte para emojis unicode
-  const validPattern = /^[a-zA-ZÀ-ÿ0-9\s\-_\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F000}-\u{1F2FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2700}-\u{27BF}]+$/u;
+  // Regex mais permissiva para aceitar mais caracteres válidos
+  // Aceita: letras (incluindo acentuadas), números, espaços, hífens, sublinhados, parênteses, &, emojis
+  const validPattern = /^[\p{L}\p{N}\p{M}\s\-_()&🎮📺🔧💾🎯⚡🌐💻🎨🔊🎧📱⭐✨🚀💎🏆🔥]+$/u;
   
   const isValid = validPattern.test(cleanCategory);
   console.log('[DIAGNOSTIC] validateSpecificationCategory - Teste de padrão:', {
     input: cleanCategory,
     pattern: validPattern.toString(),
     isValid,
-    result: isValid ? cleanCategory : null
+    characterCodes: Array.from(cleanCategory).map(c => `${c}(${c.charCodeAt(0)})`),
+    result: isValid ? cleanCategory : (allowFallback ? 'Informações Gerais' : null)
   });
+  
+  // Se não for válido mas allowFallback for true, usar categoria padrão
+  if (!isValid && allowFallback) {
+    console.log('[DIAGNOSTIC] validateSpecificationCategory - Usando categoria padrão devido a caracteres inválidos');
+    return 'Informações Gerais';
+  }
   
   return isValid ? cleanCategory : null;
 }

@@ -3,11 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { runSpecificationDiagnostic, testSpecificationValidation, DiagnosticResult } from '@/utils/specificationDiagnostic';
-import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { runSpecificationFix, SpecificationFixResult } from '@/utils/specificationFixer';
+import { AlertCircle, CheckCircle, XCircle, Wrench } from 'lucide-react';
 
 const SpecificationDiagnosticPanel: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
+  const [isFixing, setIsFixing] = useState(false);
   const [result, setResult] = useState<DiagnosticResult | null>(null);
+  const [fixResult, setFixResult] = useState<SpecificationFixResult | null>(null);
   const [validationResults, setValidationResults] = useState<any[] | null>(null);
 
   const handleRunDiagnostic = async () => {
@@ -35,6 +38,20 @@ const SpecificationDiagnosticPanel: React.FC = () => {
     }
   };
 
+  const handleFixSpecifications = async () => {
+    setIsFixing(true);
+    setFixResult(null);
+    
+    try {
+      const fixResultData = await runSpecificationFix();
+      setFixResult(fixResultData);
+    } catch (error) {
+      console.error('Erro ao corrigir especificações:', error);
+    } finally {
+      setIsFixing(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
       <Card>
@@ -50,13 +67,25 @@ const SpecificationDiagnosticPanel: React.FC = () => {
             se o sistema está processando e agrupando as categorias corretamente.
           </p>
           
-          <Button 
-            onClick={handleRunDiagnostic} 
-            disabled={isRunning}
-            className="w-full"
-          >
-            {isRunning ? 'Executando Diagnóstico...' : 'Executar Diagnóstico'}
-          </Button>
+          <div className="space-y-2">
+            <Button 
+              onClick={handleRunDiagnostic} 
+              disabled={isRunning || isFixing}
+              className="w-full"
+            >
+              {isRunning ? 'Executando Diagnóstico...' : 'Executar Diagnóstico'}
+            </Button>
+            
+            <Button 
+              onClick={handleFixSpecifications} 
+              disabled={isRunning || isFixing}
+              variant="outline"
+              className="w-full"
+            >
+              <Wrench className="w-4 h-4 mr-2" />
+              {isFixing ? 'Corrigindo...' : 'Corrigir Especificações Existentes'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -150,6 +179,62 @@ const SpecificationDiagnosticPanel: React.FC = () => {
                     <Badge key={index} variant="secondary">
                       {category}
                     </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Resultado da Correção */}
+      {fixResult && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {fixResult.success ? (
+                <CheckCircle className="h-5 w-5 text-green-500" />
+              ) : (
+                <XCircle className="h-5 w-5 text-red-500" />
+              )}
+              Resultado da Correção
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className={`p-4 rounded ${fixResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+              <p className="font-medium">{fixResult.message}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium">Total de especificações:</span>
+                <div>{fixResult.details.totalSpecs}</div>
+              </div>
+              <div>
+                <span className="font-medium">Especificações corrigidas:</span>
+                <div>{fixResult.details.fixedSpecs}</div>
+              </div>
+            </div>
+            
+            {fixResult.details.categoriesUpdated.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-2">Categorias atualizadas:</h4>
+                <div className="space-y-1">
+                  {fixResult.details.categoriesUpdated.map((update, index) => (
+                    <Badge key={index} variant="outline" className="mr-2">
+                      {update}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {fixResult.details.errors && fixResult.details.errors.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-2 text-red-600">Erros:</h4>
+                <div className="space-y-1">
+                  {fixResult.details.errors.map((error, index) => (
+                    <div key={index} className="text-sm text-red-600">{error}</div>
                   ))}
                 </div>
               </div>
