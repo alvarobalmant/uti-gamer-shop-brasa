@@ -161,14 +161,47 @@ const SpecificationCategoryManager: React.FC<SpecificationCategoryManagerProps> 
     }
   };
 
+  const extractEmojiFromText = (text: string): { emoji: string | null; cleanText: string } => {
+    // Regex para detectar emojis no início do texto
+    const emojiRegex = /^([\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}])\s*/u;
+    const match = text.match(emojiRegex);
+    
+    if (match) {
+      return {
+        emoji: match[1],
+        cleanText: text.replace(emojiRegex, '').trim()
+      };
+    }
+    
+    return {
+      emoji: null,
+      cleanText: text
+    };
+  };
+
   const getCategoryIcon = (category: string) => {
+    // Primeiro, tentar extrair emoji da própria categoria
+    const { emoji } = extractEmojiFromText(category);
+    if (emoji) {
+      return emoji;
+    }
+    
+    // Se não tem emoji, tentar mapear por categorias predefinidas
     const categoryConfig = predefinedCategories.find(c => c.value === category);
     return categoryConfig?.icon || '📄';
   };
 
   const getCategoryLabel = (category: string) => {
-    const categoryConfig = predefinedCategories.find(c => c.value === category);
-    return categoryConfig?.label || category;
+    // Extrair texto limpo sem emoji
+    const { cleanText } = extractEmojiFromText(category);
+    
+    // Se não conseguiu extrair texto limpo, tentar mapear por categorias predefinidas
+    if (cleanText === category) {
+      const categoryConfig = predefinedCategories.find(c => c.value === category);
+      return categoryConfig?.label || category;
+    }
+    
+    return cleanText;
   };
 
   return (
