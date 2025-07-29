@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { runSpecificationDiagnostic, testSpecificationValidation, DiagnosticResult } from '@/utils/specificationDiagnostic';
 import { runSpecificationFix, SpecificationFixResult } from '@/utils/specificationFixer';
+import { testCategoryValidation, simulateSpecificationProcessing, CategoryTestResult } from '@/utils/categoryValidationTest';
 import { AlertCircle, CheckCircle, XCircle, Wrench } from 'lucide-react';
 
 const SpecificationDiagnosticPanel: React.FC = () => {
@@ -12,6 +13,9 @@ const SpecificationDiagnosticPanel: React.FC = () => {
   const [result, setResult] = useState<DiagnosticResult | null>(null);
   const [fixResult, setFixResult] = useState<SpecificationFixResult | null>(null);
   const [validationResults, setValidationResults] = useState<any[] | null>(null);
+  const [categoryTestResult, setCategoryTestResult] = useState<CategoryTestResult | null>(null);
+  const [simulationResult, setSimulationResult] = useState<CategoryTestResult | null>(null);
+  const [isTesting, setIsTesting] = useState(false);
 
   const handleRunDiagnostic = async () => {
     setIsRunning(true);
@@ -52,6 +56,34 @@ const SpecificationDiagnosticPanel: React.FC = () => {
     }
   };
 
+  const handleTestCategoryValidation = async () => {
+    setIsTesting(true);
+    setCategoryTestResult(null);
+    
+    try {
+      const testResult = await testCategoryValidation();
+      setCategoryTestResult(testResult);
+    } catch (error) {
+      console.error('Erro ao testar validação de categoria:', error);
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  const handleSimulateProcessing = async () => {
+    setIsTesting(true);
+    setSimulationResult(null);
+    
+    try {
+      const simResult = await simulateSpecificationProcessing();
+      setSimulationResult(simResult);
+    } catch (error) {
+      console.error('Erro ao simular processamento:', error);
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
       <Card>
@@ -78,13 +110,33 @@ const SpecificationDiagnosticPanel: React.FC = () => {
             
             <Button 
               onClick={handleFixSpecifications} 
-              disabled={isRunning || isFixing}
+              disabled={isRunning || isFixing || isTesting}
               variant="outline"
               className="w-full"
             >
               <Wrench className="w-4 h-4 mr-2" />
               {isFixing ? 'Corrigindo...' : 'Corrigir Especificações Existentes'}
             </Button>
+            
+            <div className="grid grid-cols-2 gap-2">
+              <Button 
+                onClick={handleTestCategoryValidation} 
+                disabled={isRunning || isFixing || isTesting}
+                variant="secondary"
+                size="sm"
+              >
+                {isTesting ? 'Testando...' : 'Testar Regex Categorias'}
+              </Button>
+              
+              <Button 
+                onClick={handleSimulateProcessing} 
+                disabled={isRunning || isFixing || isTesting}
+                variant="secondary"
+                size="sm"
+              >
+                {isTesting ? 'Simulando...' : 'Simular Processamento'}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -234,6 +286,122 @@ const SpecificationDiagnosticPanel: React.FC = () => {
                 <h4 className="font-medium mb-2 text-red-600">Erros:</h4>
                 <div className="space-y-1">
                   {fixResult.details.errors.map((error, index) => (
+                    <div key={index} className="text-sm text-red-600">{error}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Resultado do Teste de Categoria */}
+      {categoryTestResult && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {categoryTestResult.success ? (
+                <CheckCircle className="h-5 w-5 text-green-500" />
+              ) : (
+                <XCircle className="h-5 w-5 text-red-500" />
+              )}
+              Teste de Validação de Regex
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className={`p-4 rounded ${categoryTestResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+              <p className="font-medium">{categoryTestResult.message}</p>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="font-medium">Categorias Testadas:</h4>
+              <div className="space-y-2">
+                {categoryTestResult.details.originalCategories.map((original, index) => {
+                  const validated = categoryTestResult.details.validatedCategories[index];
+                  const isMatch = original === validated;
+                  return (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded">
+                      <div className="flex-1">
+                        <code className="text-sm">{original}</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isMatch ? (
+                          <>
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <Badge variant="secondary">✅ Mantida</Badge>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-4 w-4 text-red-500" />
+                            <Badge variant="destructive">❌ → {validated}</Badge>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {categoryTestResult.details.errors && categoryTestResult.details.errors.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-2 text-red-600">Erros:</h4>
+                <div className="space-y-1">
+                  {categoryTestResult.details.errors.map((error, index) => (
+                    <div key={index} className="text-sm text-red-600">{error}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Resultado da Simulação */}
+      {simulationResult && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {simulationResult.success ? (
+                <CheckCircle className="h-5 w-5 text-green-500" />
+              ) : (
+                <XCircle className="h-5 w-5 text-red-500" />
+              )}
+              Simulação de Processamento Completo
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className={`p-4 rounded ${simulationResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+              <p className="font-medium">{simulationResult.message}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium">Categorias Esperadas:</span>
+                <div>{simulationResult.details.originalCategories.length}</div>
+              </div>
+              <div>
+                <span className="font-medium">Categorias Processadas:</span>
+                <div>{simulationResult.details.validatedCategories.length}</div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="font-medium">Categorias Finais:</h4>
+              <div className="flex flex-wrap gap-2">
+                {simulationResult.details.validatedCategories.map((category, index) => (
+                  <Badge key={index} variant="secondary">
+                    {category}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            
+            {simulationResult.details.errors && simulationResult.details.errors.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-2 text-red-600">Erros:</h4>
+                <div className="space-y-1">
+                  {simulationResult.details.errors.map((error, index) => (
                     <div key={index} className="text-sm text-red-600">{error}</div>
                   ))}
                 </div>

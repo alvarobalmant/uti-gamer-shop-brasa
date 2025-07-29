@@ -1267,8 +1267,8 @@ function validateSpecificationCategory(category: string, allowFallback: boolean 
   console.log('[DIAGNOSTIC] validateSpecificationCategory - Categoria limpa:', cleanCategory);
   
   // Regex mais permissiva para aceitar mais caracteres válidos
-  // Aceita: letras (incluindo acentuadas), números, espaços, hífens, sublinhados, parênteses, &, emojis
-  const validPattern = /^[\p{L}\p{N}\p{M}\s\-_()&🎮📺🔧💾🎯⚡🌐💻🎨🔊🎧📱⭐✨🚀💎🏆🔥]+$/u;
+  // Aceita: letras (incluindo acentuadas), números, espaços, hífens, sublinhados, parênteses, &, emojis comuns
+  const validPattern = /^[\p{L}\p{N}\p{M}\s\-_()&📋⚙️💾🌐🎮📺🔧🎯⚡💻🎨🔊🎧📱⭐✨🚀💎🏆🔥]+$/u;
   
   const isValid = validPattern.test(cleanCategory);
   console.log('[DIAGNOSTIC] validateSpecificationCategory - Teste de padrão:', {
