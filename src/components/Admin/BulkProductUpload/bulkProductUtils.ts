@@ -162,11 +162,19 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
   // === ESPECIFICAÇÕES ===
   {
     key: 'specifications',
-    label: 'Especificações',
-    instructions: 'JSON com especificações. Ex: [{"name":"Processador","value":"AMD Ryzen Zen 2"},{"name":"Memória","value":"16GB GDDR6"}]',
+    label: 'Especificações Básicas',
+    instructions: 'JSON com especificações básicas. Ex: [{"name":"Processador","value":"AMD Ryzen Zen 2","category":"technical","icon":"⚙️","highlight":true}]',
     type: 'json',
-    example: '[{"name":"Processador","value":"AMD Ryzen Zen 2"},{"name":"Memória","value":"16GB GDDR6"}]',
-    width: 50
+    example: '[{"name":"Processador","value":"AMD Ryzen Zen 2","category":"technical","icon":"⚙️","highlight":true},{"name":"Memória","value":"16GB GDDR6","category":"technical","icon":"💾"}]',
+    width: 60
+  },
+  {
+    key: 'custom_specifications',
+    label: 'Especificações Personalizadas',
+    instructions: 'JSON com especificações categorizadas. Ex: [{"category":"Gameplay","label":"Modo Historia","value":"40+ horas","icon":"🎮","highlight":false},{"category":"Multiplayer","label":"Jogadores Online","value":"Até 16","icon":"👥"}]',
+    type: 'json',
+    example: '[{"category":"Gameplay","label":"Modo História","value":"40+ horas","icon":"🎮","highlight":false},{"category":"Multiplayer","label":"Jogadores Online","value":"Até 16","icon":"👥","highlight":true}]',
+    width: 70
   },
   {
     key: 'technical_specs',
@@ -430,9 +438,17 @@ export function generateProductTemplate(): ProductTemplate {
     },
     {
       'Seção': 'ESPECIFICAÇÕES',
-      'Descrição': 'Características técnicas do produto',
+      'Descrição': 'Características técnicas do produto - 3 formatos suportados',
       'Campos Obrigatórios': 'Nenhum',
-      'Observações': 'Use JSON para listas de especificações'
+      'Observações': '1) specifications: formato antigo [{"name":"CPU","value":"Intel i7"}] 2) custom_specifications: novo formato com categorias [{"category":"Hardware","label":"Processador","value":"Intel i7","icon":"⚙️","highlight":true}] 3) technical_specs: formato objeto {"cpu":"Intel i7","ram":"16GB"}'
+    },
+    {
+      'Seção': 'ESPECIFICAÇÕES PERSONALIZADAS',
+      'Descrição': 'Sistema avançado de especificações com categorias customizadas e ícones',
+      'Campos Suportados': 'custom_specifications',
+      'Formato': '[{"category":"Nome da Categoria","label":"Nome da Spec","value":"Valor","icon":"🎮","highlight":true}]',
+      'Ícones Suportados': 'Emojis (🎮), nomes Lucide (cpu, memory, etc), URLs de imagens',
+      'Categorias Automáticas': 'Hardware, Armazenamento, Performance, Conectividade, Áudio/Vídeo (baseadas em technical_specs)'
     },
     {
       'Seção': 'CONTEÚDO EXTRA',
@@ -474,7 +490,8 @@ export function generateProductTemplate(): ProductTemplate {
       'master_slug': 'resident-evil-village',
       'variant_attributes': '{"platforms":["pc","xbox","playstation"],"editions":["standard","deluxe"]}',
       'product_descriptions': '{"short":"Terror e sobrevivência em primeira pessoa","detailed":"Anos após os trágicos eventos de Resident Evil 7 biohazard, Ethan Winters se mudou com sua esposa Mia para começar uma nova vida livre do passado, mas isso não durará muito.","technical":"Engine RE Engine, suporte 4K, Ray Tracing","marketing":"O terror retorna em alta definição!"}',
-      'specifications': '[{"name":"Gênero","value":"Terror/Sobrevivência"},{"name":"Desenvolvedor","value":"Capcom"},{"name":"Classificação","value":"18 anos"}]',
+      'specifications': '[{"name":"Gênero","value":"Terror/Sobrevivência","category":"general","icon":"🎮"},{"name":"Desenvolvedor","value":"Capcom","category":"general","icon":"🏢"},{"name":"Classificação","value":"18 anos","category":"general","icon":"🔞"}]',
+      'custom_specifications': '[{"category":"Gameplay","label":"Modo História","value":"8-12 horas","icon":"📖","highlight":true},{"category":"Gameplay","label":"Dificuldades","value":"4 níveis","icon":"⚔️","highlight":false},{"category":"Tecnologia","label":"Engine","value":"RE Engine","icon":"⚙️","highlight":true}]',
       'product_faqs': '[{"question":"O jogo é muito assustador?","answer":"Resident Evil Village tem elementos de terror, mas é mais focado na ação que nos jogos anteriores."},{"question":"Posso jogar sem ter jogado RE7?","answer":"Sim, mas recomendamos jogar RE7 primeiro para entender melhor a história."}]',
       'product_highlights': '["Gráficos em 4K","Ray Tracing","Modo VR disponível","História imersiva"]',
       'tags': 'resident evil,terror,capcom,sobrevivencia,ethan',
@@ -496,7 +513,8 @@ export function generateProductTemplate(): ProductTemplate {
       'master_slug': 'resident-evil-village',
       'pro_price': 179.99,
       'list_price': 249.99,
-      'technical_specs': '{"min_requirements":"GTX 1050 Ti","recommended":"RTX 2070","dlss":"Suportado","raytracing":"Suportado"}',
+      'technical_specs': '{"cpu":"Intel i5-8400 / AMD Ryzen 3 3300X","gpu":"GTX 1050 Ti / RX 560","ram":"8GB","storage":"50GB SSD","dlss":"Suportado","raytracing":"Suportado"}',
+      'custom_specifications': '[{"category":"Requisitos PC","label":"Processador Mínimo","value":"Intel i5-8400","icon":"⚙️","highlight":true},{"category":"Requisitos PC","label":"Placa de Vídeo Mínima","value":"GTX 1050 Ti","icon":"🎮","highlight":true},{"category":"Tecnologias","label":"DLSS","value":"Suportado","icon":"⚡","highlight":false},{"category":"Tecnologias","label":"Ray Tracing","value":"Suportado","icon":"💎","highlight":true}]',
       'tags': 'resident evil,pc,steam,dlss,raytracing',
       'is_active': true
     },
@@ -515,7 +533,8 @@ export function generateProductTemplate(): ProductTemplate {
       'master_slug': 'resident-evil-village',
       'pro_price': 199.99,
       'list_price': 269.99,
-      'technical_specs': '{"resolution":"4K","fps":"60 FPS","hdr":"Suportado","smart_delivery":"Sim"}',
+      'technical_specs': '{"resolution":"4K","fps":"60 FPS","hdr":"Suportado","smart_delivery":"Sim","quick_resume":"Sim"}',
+      'custom_specifications': '[{"category":"Performance Xbox","label":"Resolução Máxima","value":"4K Ultra HD","icon":"📺","highlight":true},{"category":"Performance Xbox","label":"Taxa de Quadros","value":"Até 60 FPS","icon":"⚡","highlight":true},{"category":"Recursos Xbox","label":"Smart Delivery","value":"Otimização Automática","icon":"📦","highlight":false},{"category":"Recursos Xbox","label":"Quick Resume","value":"Retomada Rápida","icon":"⏱️","highlight":false}]',
       'tags': 'resident evil,xbox,series x,4k,smart delivery',
       'is_active': true
     },
@@ -534,7 +553,8 @@ export function generateProductTemplate(): ProductTemplate {
       'master_slug': 'resident-evil-village',
       'pro_price': 209.99,
       'list_price': 279.99,
-      'technical_specs': '{"resolution":"4K","fps":"60 FPS","haptic_feedback":"Sim","adaptive_triggers":"Sim","3d_audio":"Sim"}',
+      'technical_specs': '{"resolution":"4K","fps":"60 FPS","haptic_feedback":"Sim","adaptive_triggers":"Sim","3d_audio":"Sim","activity_cards":"Sim"}',
+      'custom_specifications': '[{"category":"Performance PS5","label":"Resolução Nativa","value":"4K (2160p)","icon":"📺","highlight":true},{"category":"Performance PS5","label":"Taxa de Quadros","value":"60 FPS estáveis","icon":"⚡","highlight":true},{"category":"DualSense","label":"Feedback Háptico","value":"Sensações imersivas","icon":"🎮","highlight":true},{"category":"DualSense","label":"Gatilhos Adaptativos","value":"Resistência variável","icon":"🎯","highlight":true},{"category":"Recursos PS5","label":"Áudio 3D","value":"Tempest 3D AudioTech","icon":"🔊","highlight":false},{"category":"Recursos PS5","label":"Cartões de Atividade","value":"Acesso rápido a objetivos","icon":"🎯","highlight":false}]',
       'product_features': '{"dualsense_haptic":true,"adaptive_triggers":true,"3d_audio":true,"activity_cards":true}',
       'tags': 'resident evil,playstation,ps5,dualsense,haptic',
       'is_active': true
@@ -668,7 +688,7 @@ export function validateProductData(products: ImportedProduct[]): ValidationErro
     // Validação JSON
     const jsonFields = [
       'variant_attributes', 'product_videos', 'product_descriptions',
-      'specifications', 'technical_specs', 'product_features',
+      'specifications', 'custom_specifications', 'technical_specs', 'product_features',
       'product_faqs', 'product_highlights', 'reviews_config',
       'trust_indicators', 'delivery_config', 'display_config',
       'breadcrumb_config'
@@ -1116,59 +1136,69 @@ async function processProductSpecifications(productId: string, product: Imported
   
   try {
     const specifications = parseJsonField(product.specifications);
+    const customSpecifications = parseJsonField(product.custom_specifications);
     const technicalSpecs = parseJsonField(product.technical_specs);
     
     const specsToInsert: any[] = [];
     let orderIndex = 1;
     
-    // Processar especificações básicas
+    // Processar especificações básicas (formato antigo)
     if (specifications && Array.isArray(specifications)) {
       specifications.forEach((spec: any) => {
         if (spec.name && spec.value) {
           specsToInsert.push({
             product_id: productId,
-            category: 'general',
+            category: spec.category || 'general',
             label: spec.name,
             value: spec.value.toString(),
             highlight: Boolean(spec.highlight || false),
+            icon: spec.icon || null,
+            order_index: orderIndex++
+          });
+        }
+      });
+    }
+
+    // Processar especificações personalizadas (novo formato)
+    if (customSpecifications && Array.isArray(customSpecifications)) {
+      customSpecifications.forEach((spec: any) => {
+        if (spec.label && spec.value) {
+          // Validar categoria personalizada
+          const category = validateSpecificationCategory(spec.category) || 'custom';
+          
+          // Validar ícone
+          const icon = validateSpecificationIcon(spec.icon);
+          
+          specsToInsert.push({
+            product_id: productId,
+            category: category,
+            label: spec.label,
+            value: spec.value.toString(),
+            highlight: Boolean(spec.highlight || false),
+            icon: icon,
             order_index: orderIndex++
           });
         }
       });
     }
     
-    // Processar especificações técnicas detalhadas
+    // Processar especificações técnicas detalhadas (formato objeto)
     if (technicalSpecs && typeof technicalSpecs === 'object') {
       Object.entries(technicalSpecs).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
-          // Determinar categoria com base na chave
-          let category = 'technical';
-          
-          if (['cpu', 'processor', 'processador'].includes(key.toLowerCase())) {
-            category = 'technical';
-          } else if (['ram', 'memory', 'memoria'].includes(key.toLowerCase())) {
-            category = 'technical';
-          } else if (['storage', 'armazenamento', 'disco'].includes(key.toLowerCase())) {
-            category = 'storage';
-          } else if (['resolution', 'fps', 'resolução'].includes(key.toLowerCase())) {
-            category = 'performance';
-          } else if (['multiplayer', 'online', 'network'].includes(key.toLowerCase())) {
-            category = 'multiplayer';
-          }
+          // Determinar categoria e ícone com base na chave
+          const { category, icon } = getCategoryAndIconFromKey(key);
           
           // Formatar o nome da especificação
-          const formattedLabel = key
-            .replace(/_/g, ' ')
-            .replace(/([A-Z])/g, ' $1')
-            .replace(/^\w/, c => c.toUpperCase())
-            .trim();
+          const formattedLabel = formatSpecificationLabel(key);
           
           specsToInsert.push({
             product_id: productId,
             category: category,
             label: formattedLabel,
             value: value.toString(),
-            highlight: ['cpu', 'gpu', 'ram', 'storage', 'resolution'].includes(key.toLowerCase()),
+            highlight: isHighlightField(key),
+            icon: icon,
             order_index: orderIndex++
           });
         }
@@ -1191,4 +1221,121 @@ async function processProductSpecifications(productId: string, product: Imported
   } catch (error) {
     console.error('Erro ao processar especificações do produto:', error);
   }
+}
+
+// Função para validar categoria de especificação personalizada
+function validateSpecificationCategory(category: string): string | null {
+  if (!category || typeof category !== 'string') return null;
+  
+  // Limitar tamanho e caracteres permitidos
+  const cleanCategory = category.trim().slice(0, 50);
+  
+  // Verificar se contém apenas caracteres válidos (letras, números, espaços, acentos)
+  const validPattern = /^[a-zA-ZÀ-ÿ0-9\s\-_]+$/;
+  
+  return validPattern.test(cleanCategory) ? cleanCategory : null;
+}
+
+// Função para validar ícone de especificação
+function validateSpecificationIcon(icon: string): string | null {
+  if (!icon || typeof icon !== 'string') return null;
+  
+  const cleanIcon = icon.trim();
+  
+  // Verificar se é emoji (unicode de 1-4 caracteres)
+  const emojiPattern = /^[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{27BF}]|[\u{1F000}-\u{1F2FF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{2700}-\u{27BF}]$/u;
+  
+  // Verificar se é nome de ícone Lucide válido (letras, números, hífens)
+  const lucidePattern = /^[a-z0-9\-]+$/;
+  
+  // Verificar se é URL válida (para ícones customizados)
+  const urlPattern = /^https?:\/\/.+\.(png|jpg|jpeg|svg|webp)(\?.*)?$/i;
+  
+  if (emojiPattern.test(cleanIcon) || lucidePattern.test(cleanIcon) || urlPattern.test(cleanIcon)) {
+    return cleanIcon;
+  }
+  
+  return null;
+}
+
+// Função para determinar categoria e ícone baseado na chave
+function getCategoryAndIconFromKey(key: string): { category: string; icon: string | null } {
+  const lowerKey = key.toLowerCase();
+  
+  // Mapeamento de chaves para categorias e ícones
+  const categoryMap: Record<string, { category: string; icon: string }> = {
+    // Hardware
+    'cpu': { category: 'Hardware', icon: '⚙️' },
+    'processor': { category: 'Hardware', icon: '⚙️' },
+    'processador': { category: 'Hardware', icon: '⚙️' },
+    'gpu': { category: 'Hardware', icon: '🎮' },
+    'graphics': { category: 'Hardware', icon: '🎮' },
+    'placa_video': { category: 'Hardware', icon: '🎮' },
+    'ram': { category: 'Hardware', icon: '💾' },
+    'memory': { category: 'Hardware', icon: '💾' },
+    'memoria': { category: 'Hardware', icon: '💾' },
+    
+    // Armazenamento
+    'storage': { category: 'Armazenamento', icon: '💿' },
+    'armazenamento': { category: 'Armazenamento', icon: '💿' },
+    'disco': { category: 'Armazenamento', icon: '💿' },
+    'ssd': { category: 'Armazenamento', icon: '💿' },
+    'hdd': { category: 'Armazenamento', icon: '💿' },
+    
+    // Performance
+    'resolution': { category: 'Performance', icon: '📺' },
+    'fps': { category: 'Performance', icon: '⚡' },
+    'resolução': { category: 'Performance', icon: '📺' },
+    'performance': { category: 'Performance', icon: '⚡' },
+    
+    // Conectividade
+    'multiplayer': { category: 'Conectividade', icon: '👥' },
+    'online': { category: 'Conectividade', icon: '🌐' },
+    'network': { category: 'Conectividade', icon: '🌐' },
+    'wifi': { category: 'Conectividade', icon: '📶' },
+    'bluetooth': { category: 'Conectividade', icon: '📶' },
+    
+    // Áudio/Vídeo
+    'audio': { category: 'Áudio/Vídeo', icon: '🔊' },
+    'video': { category: 'Áudio/Vídeo', icon: '📹' },
+    'sound': { category: 'Áudio/Vídeo', icon: '🔊' },
+    'som': { category: 'Áudio/Vídeo', icon: '🔊' }
+  };
+  
+  // Buscar correspondência exata
+  if (categoryMap[lowerKey]) {
+    return categoryMap[lowerKey];
+  }
+  
+  // Buscar correspondência parcial
+  for (const [mapKey, value] of Object.entries(categoryMap)) {
+    if (lowerKey.includes(mapKey) || mapKey.includes(lowerKey)) {
+      return value;
+    }
+  }
+  
+  // Padrão
+  return { category: 'Geral', icon: null };
+}
+
+// Função para formatar label de especificação
+function formatSpecificationLabel(key: string): string {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^\w/, c => c.toUpperCase())
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Função para determinar se um campo deve ser destacado
+function isHighlightField(key: string): boolean {
+  const highlightKeys = [
+    'cpu', 'gpu', 'processor', 'processador', 'placa_video', 'graphics',
+    'ram', 'memory', 'memoria',
+    'storage', 'armazenamento', 'ssd',
+    'resolution', 'fps', 'resolução'
+  ];
+  
+  return highlightKeys.some(hKey => key.toLowerCase().includes(hKey));
 }

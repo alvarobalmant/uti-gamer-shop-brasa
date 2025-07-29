@@ -31,6 +31,7 @@ export interface ImportedProduct {
   
   // Especificações
   specifications?: string;
+  custom_specifications?: string;
   technical_specs?: string;
   product_features?: string;
   
