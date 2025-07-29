@@ -83,48 +83,29 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('✅ Token validated successfully for admin user:', validationResult.admin_email);
 
-    // NOVA ABORDAGEM: Usar signInWithPassword diretamente
-    // Primeiro, buscar o email do admin e resetar a senha temporariamente
+    // 🔐 Creating secure admin session using Supabase admin capabilities
     try {
-      console.log('🔐 Creating temporary admin session...');
+      console.log('🔐 Creating secure admin session...');
 
-      // Abordagem mais simples: usar o email admin para fazer signIn direto
       const adminEmail = validationResult.admin_email;
+      const request_url = new URL(req.url);
       
-      // Usar senha fixa temporária
-      const tempPassword = 'babyshark123';
-      
-      console.log('🔄 Updating admin user password temporarily...');
-      
-      // Atualizar a senha do usuário admin temporariamente
-      const { data: updateResult, error: updateError } = await supabase.auth.admin.updateUserById(
-        validationResult.admin_user_id,
-        { password: tempPassword }
-      );
-
-      if (updateError) {
-        console.error('❌ Error updating admin password:', updateError);
-        return new Response(
-          JSON.stringify({ success: false, message: 'Erro ao preparar sessão administrativa' }),
-          { 
-            status: 500, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
-        );
-      }
-
-      console.log('✅ Admin password updated, now signing in...');
-
-      // Fazer o signIn com as credenciais temporárias
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      // Generate secure session using admin generateLink
+      const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
         email: adminEmail,
-        password: tempPassword
+        options: {
+          redirectTo: `${request_url.origin}/admin`
+        }
       });
 
-      if (signInError) {
-        console.error('❌ Error signing in admin:', signInError);
+      if (sessionError || !sessionData) {
+        console.error('❌ Error generating admin session:', sessionError);
         return new Response(
-          JSON.stringify({ success: false, message: 'Erro ao criar sessão administrativa' }),
+          JSON.stringify({ 
+            success: false, 
+            message: `Erro ao gerar sessão administrativa: ${sessionError?.message || 'Dados da sessão não gerados'}` 
+          }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -132,10 +113,30 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      if (!signInData.session) {
-        console.error('❌ No session created');
+      if (!sessionData.properties) {
+        console.error('❌ No session data generated');
         return new Response(
-          JSON.stringify({ success: false, message: 'Sessão não foi criada' }),
+          JSON.stringify({ 
+            success: false, 
+            message: 'Dados da sessão não foram gerados corretamente' 
+          }),
+          { 
+            status: 500, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
+      }
+
+      // Extract tokens from the generated link properties
+      const { access_token, refresh_token } = sessionData.properties;
+
+      if (!access_token || !refresh_token) {
+        console.error('❌ Session tokens not generated');
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'Tokens de autenticação não foram gerados' 
+          }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -145,13 +146,13 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log('✅ Admin session created successfully!');
 
-      // Retornar os tokens da sessão criada
+      // Return the generated session tokens
       return new Response(
         JSON.stringify({
           success: true,
           sessionTokens: {
-            access_token: signInData.session.access_token,
-            refresh_token: signInData.session.refresh_token
+            access_token: access_token,
+            refresh_token: refresh_token
           },
           adminEmail: validationResult.admin_email,
           adminUserId: validationResult.admin_user_id,
