@@ -144,37 +144,77 @@ export const runSpecificationDiagnostic = async (): Promise<DiagnosticResult> =>
 export const testSpecificationValidation = () => {
   console.log('[DIAGNOSTIC TEST] Testando validação de categorias...');
   
-  // Simular a função de validação para teste local
+  // Categorias de teste mais abrangentes incluindo emojis e casos extremos
   const testCategories = [
     "Informações Gerais",
+    "📋 Informações Gerais",
     "Especificações Técnicas", 
-    "Multiplayer",
+    "⚙️ Especificações Técnicas",
+    "💾 Armazenamento e Instalação",
+    "🌐 Recursos Online",
+    "🎮 Jogabilidade",
+    "📺 Vídeo e Gráficos",
+    "🔧 Hardware",
+    "🎯 Performance",
+    "⚡ Performance",
+    "💻 Sistema",
+    "🎨 Personalização",
+    "🔊 Áudio/Vídeo",
+    "🎧 Áudio",
+    "📱 Compatibilidade",
+    "⭐ Avaliações",
+    "✨ Recursos Especiais",
+    "🚀 Novidades",
+    "💎 Premium",
+    "🏆 Conquistas",
+    "🔥 Destaques",
+    "👥 Multiplayer",
     "Hardware 🔧",
     "Storage & Memory",
+    "Audio/Video 🎧",
     "invalid@category!",
+    "categoria com símbolos $%#",
     "",
     null,
-    undefined
+    undefined,
+    "   espaços extras   ",
+    "categoria muito longa que excede o limite de cinquenta caracteres estabelecido"
   ];
 
   const results = testCategories.map(category => {
     // Replicar lógica de validação atualizada
     if (!category || typeof category !== 'string') {
-      return { input: category, output: null, reason: 'null or not string' };
+      return { input: category, output: 'Informações Gerais', reason: 'null or not string - fallback applied' };
     }
     
     const cleanCategory = category.trim().slice(0, 50);
-    const validPattern = /^[\p{L}\p{N}\p{M}\s\-_()&🎮📺🔧💾🎯⚡🌐💻🎨🔊🎧📱⭐✨🚀💎🏆🔥]+$/u;
+    if (!cleanCategory) {
+      return { input: category, output: 'Informações Gerais', reason: 'empty after cleaning - fallback applied' };
+    }
+    
+    // Usar o mesmo pattern expandido
+    const validPattern = /^[\p{L}\p{N}\p{M}\p{S}\p{P}\s\-_()&📋⚙️💾🌐🎮📺🔧🎯⚡💻🎨🔊🎧📱⭐✨🚀💎🏆🔥👥🎯🔥💰🏪🎪🎭🎨🎵🎬🎤🎸🎹🥁🎺🎷🎻🎪🎠🎡🎢🎳🎯🎱🎲🃏🎴🀄🎯]+$/u;
     const isValid = validPattern.test(cleanCategory);
     
     return {
       input: category,
       cleaned: cleanCategory,
-      output: isValid ? cleanCategory : null,
-      reason: isValid ? 'valid' : 'invalid pattern'
+      output: isValid ? cleanCategory : 'Informações Gerais',
+      reason: isValid ? 'valid' : 'invalid pattern - fallback applied',
+      isValid
     };
   });
 
   console.log('[DIAGNOSTIC TEST] Resultados da validação:', results);
-  return results;
+  
+  // Contar estatísticas
+  const stats = {
+    total: results.length,
+    valid: results.filter(r => r.isValid).length,
+    fallback: results.filter(r => !r.isValid).length,
+    withEmojis: results.filter(r => r.isValid && /[\p{S}]/u.test(r.cleaned || '')).length
+  };
+  
+  console.log('[DIAGNOSTIC TEST] Estatísticas:', stats);
+  return { results, stats };
 };

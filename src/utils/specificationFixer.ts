@@ -25,8 +25,15 @@ function validateAndFixCategory(category: string): string {
     return 'Informações Gerais';
   }
   
-  // Regex completa incluindo TODOS os emojis das categorias específicas
-  const validPattern = /^[\p{L}\p{N}\p{M}\s\-_()&📋⚙️💾🌐🎮📺🔧🎯⚡💻🎨🔊🎧📱⭐✨🚀💎🏆🔥]+$/u;
+  // Primeiro, tentar re-categorizar baseado em palavras-chave
+  const smartCategory = smartCategorizeByKeywords(cleanCategory);
+  if (smartCategory !== cleanCategory) {
+    console.log(`[SPEC FIXER] Categoria inteligente: "${cleanCategory}" → "${smartCategory}"`);
+    return smartCategory;
+  }
+  
+  // Regex expandida para incluir TODOS os emojis possíveis e caracteres especiais
+  const validPattern = /^[\p{L}\p{N}\p{M}\p{S}\p{P}\s\-_()&📋⚙️💾🌐🎮📺🔧🎯⚡💻🎨🔊🎧📱⭐✨🚀💎🏆🔥👥🎯🔥💰🏪🎪🎭🎨🎵🎬🎤🎸🎹🥁🎺🎷🎻🎪🎠🎡🎢🎳🎯🎱🎲🃏🎴🀄🎯]+$/u;
   
   if (validPattern.test(cleanCategory)) {
     return cleanCategory;
@@ -35,6 +42,75 @@ function validateAndFixCategory(category: string): string {
   // Se não passou na validação, usar categoria padrão
   console.log(`[SPEC FIXER] Categoria inválida "${category}" convertida para "Informações Gerais"`);
   return 'Informações Gerais';
+}
+
+// Nova função para categorização inteligente baseada em palavras-chave
+function smartCategorizeByKeywords(category: string): string {
+  const lowerCategory = category.toLowerCase().trim();
+  
+  // Mapeamentos inteligentes baseados em palavras-chave
+  const keywordMappings: Record<string, string> = {
+    // Armazenamento e instalação
+    'armazenamento': '💾 Armazenamento e Instalação',
+    'storage': '💾 Armazenamento e Instalação', 
+    'instalação': '💾 Armazenamento e Instalação',
+    'installation': '💾 Armazenamento e Instalação',
+    'tamanho': '💾 Armazenamento e Instalação',
+    'size': '💾 Armazenamento e Instalação',
+    'gb': '💾 Armazenamento e Instalação',
+    'mb': '💾 Armazenamento e Instalação',
+    'space': '💾 Armazenamento e Instalação',
+    
+    // Recursos online/multiplayer
+    'multiplayer': '🌐 Recursos Online',
+    'online': '🌐 Recursos Online',
+    'internet': '🌐 Recursos Online',
+    'network': '🌐 Recursos Online',
+    'co-op': '🌐 Recursos Online',
+    'cooperative': '🌐 Recursos Online',
+    'jogadores': '🌐 Recursos Online',
+    'players': '🌐 Recursos Online',
+    
+    // Hardware/especificações técnicas
+    'hardware': '🔧 Hardware',
+    'processador': '🔧 Hardware',
+    'processor': '🔧 Hardware',
+    'cpu': '🔧 Hardware',
+    'gpu': '🔧 Hardware',
+    'placa': '🔧 Hardware',
+    'memória': '🔧 Hardware',
+    'memory': '🔧 Hardware',
+    'ram': '🔧 Hardware',
+    
+    // Áudio e vídeo
+    'áudio': '🔊 Áudio/Vídeo',
+    'audio': '🔊 Áudio/Vídeo',
+    'vídeo': '🔊 Áudio/Vídeo',
+    'video': '🔊 Áudio/Vídeo',
+    'som': '🔊 Áudio/Vídeo',
+    'sound': '🔊 Áudio/Vídeo',
+    'música': '🔊 Áudio/Vídeo',
+    'music': '🔊 Áudio/Vídeo',
+    
+    // Performance
+    'performance': '⚡ Performance',
+    'fps': '⚡ Performance',
+    'resolução': '⚡ Performance',
+    'resolution': '⚡ Performance',
+    '4k': '⚡ Performance',
+    'hd': '⚡ Performance',
+    'qualidade': '⚡ Performance',
+    'quality': '⚡ Performance'
+  };
+  
+  // Verificar se alguma palavra-chave está presente na categoria
+  for (const [keyword, newCategory] of Object.entries(keywordMappings)) {
+    if (lowerCategory.includes(keyword)) {
+      return newCategory;
+    }
+  }
+  
+  return category; // Retorna categoria original se não encontrar correspondência
 }
 
 // Função para mapear categorias comuns mal categorizadas
@@ -186,6 +262,117 @@ export async function fixExistingSpecifications(): Promise<SpecificationFixResul
 }
 
 // Função para executar correção com feedback visual
+// Função para executar correção avançada baseada em labels das especificações
+export async function runAdvancedSpecificationFix(): Promise<SpecificationFixResult> {
+  console.log('[ADVANCED SPEC FIXER] Iniciando correção avançada...');
+  
+  try {
+    // Buscar todas as especificações existentes
+    const { data: allSpecs, error: fetchError } = await supabase
+      .from('product_specifications')
+      .select('*')
+      .order('product_id', { ascending: true });
+
+    if (fetchError) {
+      throw new Error(`Erro ao buscar especificações: ${fetchError.message}`);
+    }
+
+    if (!allSpecs || allSpecs.length === 0) {
+      return {
+        success: true,
+        message: 'Nenhuma especificação encontrada',
+        details: { totalSpecs: 0, fixedSpecs: 0, categoriesUpdated: [] }
+      };
+    }
+
+    const specsToUpdate: any[] = [];
+    const categoriesUpdated = new Set<string>();
+    const errors: string[] = [];
+
+    // Processar cada especificação com base no label
+    allSpecs.forEach((spec) => {
+      const originalCategory = spec.category;
+      const label = spec.label?.toLowerCase() || '';
+      
+      let newCategory = originalCategory;
+      
+      // Categorização inteligente baseada no label
+      if (label.includes('tamanho') || label.includes('size') || label.includes('gb') || label.includes('mb')) {
+        newCategory = '💾 Armazenamento e Instalação';
+      } else if (label.includes('multiplayer') || label.includes('jogador') || label.includes('player') || label.includes('co-op')) {
+        newCategory = '🌐 Recursos Online';
+      } else if (label.includes('audio') || label.includes('áudio') || label.includes('som') || label.includes('sound')) {
+        newCategory = '🔊 Áudio/Vídeo';
+      } else if (label.includes('video') || label.includes('vídeo') || label.includes('resolução') || label.includes('fps')) {
+        newCategory = '📺 Vídeo e Gráficos';
+      } else if (label.includes('hardware') || label.includes('processador') || label.includes('cpu') || label.includes('gpu') || label.includes('memória')) {
+        newCategory = '🔧 Hardware';
+      } else if (label.includes('performance') || label.includes('qualidade') || label.includes('4k') || label.includes('hd')) {
+        newCategory = '⚡ Performance';
+      } else if (label.includes('desenvolved') || label.includes('publisher') || label.includes('estúdio') || label.includes('studio')) {
+        newCategory = '📋 Informações Gerais';
+      }
+      
+      // Se a categoria mudou, adicionar à lista de atualizações
+      if (newCategory !== originalCategory) {
+        specsToUpdate.push({
+          id: spec.id,
+          category: newCategory,
+          original_category: originalCategory,
+          label: spec.label
+        });
+        
+        categoriesUpdated.add(`${originalCategory} → ${newCategory} (${spec.label})`);
+        console.log(`[ADVANCED SPEC FIXER] Spec "${spec.label}": "${originalCategory}" → "${newCategory}"`);
+      }
+    });
+
+    console.log(`[ADVANCED SPEC FIXER] ${specsToUpdate.length} especificações precisam de correção`);
+
+    // Atualizar especificações
+    let fixedCount = 0;
+    for (const specUpdate of specsToUpdate) {
+      const { error: updateError } = await supabase
+        .from('product_specifications')
+        .update({ category: specUpdate.category })
+        .eq('id', specUpdate.id);
+
+      if (updateError) {
+        errors.push(`Erro ao atualizar spec ${specUpdate.label}: ${updateError.message}`);
+        console.error(`[ADVANCED SPEC FIXER] Erro:`, updateError);
+      } else {
+        fixedCount++;
+      }
+    }
+
+    return {
+      success: fixedCount > 0 || specsToUpdate.length === 0,
+      message: fixedCount > 0 
+        ? `Corrigidas ${fixedCount} especificações com categorização inteligente`
+        : 'Todas as especificações já estão categorizadas corretamente',
+      details: {
+        totalSpecs: allSpecs.length,
+        fixedSpecs: fixedCount,
+        categoriesUpdated: Array.from(categoriesUpdated),
+        errors: errors.length > 0 ? errors : undefined
+      }
+    };
+
+  } catch (error) {
+    console.error('[ADVANCED SPEC FIXER] Erro:', error);
+    return {
+      success: false,
+      message: `Erro durante correção avançada: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+      details: {
+        totalSpecs: 0,
+        fixedSpecs: 0,
+        categoriesUpdated: [],
+        errors: [error instanceof Error ? error.message : 'Erro desconhecido']
+      }
+    };
+  }
+}
+
 export async function runSpecificationFix(): Promise<SpecificationFixResult> {
   try {
     toast({
@@ -258,7 +445,7 @@ export function validateSpecificationCategoryUI(category: string): {
     };
   }
 
-  const validPattern = /^[\p{L}\p{N}\p{M}\s\-_()&🎮📺🔧💾🎯⚡🌐💻🎨🔊🎧📱⭐✨🚀💎🏆🔥]+$/u;
+  const validPattern = /^[\p{L}\p{N}\p{M}\p{S}\p{P}\s\-_()&📋⚙️💾🌐🎮📺🔧🎯⚡💻🎨🔊🎧📱⭐✨🚀💎🏆🔥👥🎯🔥💰🏪🎪🎭🎨🎵🎬🎤🎸🎹🥁🎺🎷🎻🎪🎠🎡🎢🎳🎯🎱🎲🃏🎴🀄🎯]+$/u;
   const isValid = validPattern.test(cleanCategory);
 
   if (isValid) {

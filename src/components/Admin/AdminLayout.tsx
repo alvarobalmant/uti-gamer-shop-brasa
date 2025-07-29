@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Settings, Box, LogOut, Package, Image, ImagePlus, Zap, Monitor } from 'lucide-react'; // Example icons
+import { LayoutDashboard, Settings, Box, LogOut, Package, Image, ImagePlus, Zap, Monitor, Wrench } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const AdminLayout: React.FC = () => {
@@ -16,6 +16,7 @@ const AdminLayout: React.FC = () => {
     { id: 'easy-manager', label: 'Gerenciamento Fácil', icon: Zap, path: '/admin/easy-manager' },
     { id: 'images', label: 'Upload Fácil', icon: ImagePlus, path: '/admin/images' },
     { id: 'banners', label: 'Banners', icon: Image, path: '/admin/banners' },
+    { id: 'spec-diagnostic', label: 'Diagnóstico Specs', icon: Wrench, path: '/admin/spec-diagnostic' },
     // Add more admin links here (e.g., Products, Orders, Settings)
     // { href: '/admin/settings', label: 'Configurações', icon: Settings },
   ];
