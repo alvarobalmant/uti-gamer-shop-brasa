@@ -1161,25 +1161,44 @@ async function processProductSpecifications(productId: string, product: Imported
 
     // Processar especificações personalizadas (novo formato)
     if (customSpecifications && Array.isArray(customSpecifications)) {
-      customSpecifications.forEach((spec: any) => {
+      console.log('[DIAGNOSTIC] processProductSpecifications - custom_specifications encontradas:', {
+        count: customSpecifications.length,
+        data: customSpecifications
+      });
+      
+      customSpecifications.forEach((spec: any, index: number) => {
+        console.log(`[DIAGNOSTIC] processProductSpecifications - Processando spec ${index}:`, spec);
+        
         if (spec.label && spec.value) {
           // Validar categoria personalizada
-          const category = validateSpecificationCategory(spec.category) || 'custom';
+          const originalCategory = spec.category;
+          const validatedCategory = validateSpecificationCategory(spec.category);
+          const finalCategory = validatedCategory || 'custom';
+          
+          console.log(`[DIAGNOSTIC] processProductSpecifications - Categoria: ${originalCategory} -> ${validatedCategory} -> ${finalCategory}`);
           
           // Validar ícone
           const icon = validateSpecificationIcon(spec.icon);
+          console.log(`[DIAGNOSTIC] processProductSpecifications - Ícone: ${spec.icon} -> ${icon}`);
           
-          specsToInsert.push({
+          const specToInsert = {
             product_id: productId,
-            category: category,
+            category: finalCategory,
             label: spec.label,
             value: spec.value.toString(),
             highlight: Boolean(spec.highlight || false),
             icon: icon,
             order_index: orderIndex++
-          });
+          };
+          
+          console.log('[DIAGNOSTIC] processProductSpecifications - Spec a ser inserida:', specToInsert);
+          specsToInsert.push(specToInsert);
+        } else {
+          console.log(`[DIAGNOSTIC] processProductSpecifications - Spec ${index} ignorada (falta label ou value):`, spec);
         }
       });
+    } else {
+      console.log('[DIAGNOSTIC] processProductSpecifications - Nenhuma custom_specifications encontrada ou não é array');
     }
     
     // Processar especificações técnicas detalhadas (formato objeto)
@@ -1225,16 +1244,34 @@ async function processProductSpecifications(productId: string, product: Imported
 
 // Função para validar categoria de especificação personalizada
 function validateSpecificationCategory(category: string): string | null {
-  if (!category || typeof category !== 'string') return null;
+  console.log('[DIAGNOSTIC] validateSpecificationCategory - Input:', {
+    category,
+    type: typeof category,
+    length: category?.length
+  });
+  
+  if (!category || typeof category !== 'string') {
+    console.log('[DIAGNOSTIC] validateSpecificationCategory - Falhou: categoria inválida ou não é string');
+    return null;
+  }
   
   // Limitar tamanho e caracteres permitidos
   const cleanCategory = category.trim().slice(0, 50);
+  console.log('[DIAGNOSTIC] validateSpecificationCategory - Categoria limpa:', cleanCategory);
   
   // Verificar se contém apenas caracteres válidos (letras, números, espaços, acentos, emojis)
   // Incluindo suporte para emojis unicode
   const validPattern = /^[a-zA-ZÀ-ÿ0-9\s\-_\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F000}-\u{1F2FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2700}-\u{27BF}]+$/u;
   
-  return validPattern.test(cleanCategory) ? cleanCategory : null;
+  const isValid = validPattern.test(cleanCategory);
+  console.log('[DIAGNOSTIC] validateSpecificationCategory - Teste de padrão:', {
+    input: cleanCategory,
+    pattern: validPattern.toString(),
+    isValid,
+    result: isValid ? cleanCategory : null
+  });
+  
+  return isValid ? cleanCategory : null;
 }
 
 // Função para validar ícone de especificação

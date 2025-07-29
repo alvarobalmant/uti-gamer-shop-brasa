@@ -56,19 +56,33 @@ export const useProductSpecifications = (productId: string) => {
   };
 
   const groupSpecificationsByCategory = (specs: ProductSpecification[]): SpecificationCategory[] => {
+    console.log('[DIAGNOSTIC] groupSpecificationsByCategory - Input specs:', specs);
+    
     const categoryMap = new Map<string, ProductSpecification[]>();
     
-    specs.forEach(spec => {
+    specs.forEach((spec, index) => {
+      console.log(`[DIAGNOSTIC] groupSpecificationsByCategory - Spec ${index}:`, {
+        category: spec.category,
+        label: spec.label,
+        value: spec.value,
+        icon: spec.icon,
+        highlight: spec.highlight
+      });
+      
       if (!categoryMap.has(spec.category)) {
         categoryMap.set(spec.category, []);
+        console.log(`[DIAGNOSTIC] groupSpecificationsByCategory - Nova categoria criada: ${spec.category}`);
       }
       categoryMap.get(spec.category)!.push(spec);
     });
 
-    return Array.from(categoryMap.entries()).map(([category, items]) => ({
+    const result = Array.from(categoryMap.entries()).map(([category, items]) => ({
       category,
       items: items.sort((a, b) => a.order_index - b.order_index)
     }));
+    
+    console.log('[DIAGNOSTIC] groupSpecificationsByCategory - Resultado final:', result);
+    return result;
   };
 
   const addSpecification = async (spec: Omit<ProductSpecification, 'id'>) => {
