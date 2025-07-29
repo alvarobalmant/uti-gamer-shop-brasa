@@ -10,6 +10,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useProductSpecifications, ProductSpecification, SpecificationCategory } from '@/hooks/useProductSpecifications';
 import { Plus, Trash2, Edit, Save, X, Settings, Wrench, HardDrive, Globe, Package as PackageIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { 
+  getAllSpecificationCodes, 
+  getSpecificationByCode, 
+  formatCategoryWithCode 
+} from '@/utils/specificationCodes';
 
 interface SpecificationCategoryManagerProps {
   productId: string;
@@ -33,41 +38,44 @@ const SpecificationCategoryManager: React.FC<SpecificationCategoryManagerProps> 
   const [editingSpec, setEditingSpec] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<ProductSpecification>>({});
 
-  const predefinedCategories = [
-    { value: 'general', label: 'Informações Gerais', icon: '📋' },
-    { value: 'technical', label: 'Especificações Técnicas', icon: '⚙️' },
-    { value: 'storage', label: 'Armazenamento e Instalação', icon: '💾' },
-    { value: 'multiplayer', label: 'Recursos Online', icon: '🌐' },
-    { value: 'physical', label: 'Informações Físicas', icon: '📦' },
-    { value: 'compatibility', label: 'Compatibilidade', icon: '🔗' },
-    { value: 'features', label: 'Recursos e Funcionalidades', icon: '✨' },
-  ];
+  const predefinedCategories = getAllSpecificationCodes().map(spec => ({
+    value: spec.code,
+    label: spec.categoryName,
+    icon: spec.emoji,
+    code: spec.code
+  }));
 
-  const specTemplates = {
-    general: [
-      { label: 'Marca/Editora', value: 'A definir' },
-      { label: 'Desenvolvedora', value: 'A definir' },
-      { label: 'Gênero', value: 'Ação/Aventura' },
-      { label: 'Classificação Etária', value: 'M (17+)' },
-      { label: 'Data de Lançamento', value: '2024' },
+  const specTemplates: Record<string, Array<{label: string, value: string, highlight?: boolean}>> = {
+    TECH: [
+      { label: 'Processador', value: 'AMD Ryzen 7', highlight: true },
+      { label: 'Memória RAM', value: '16GB DDR4', highlight: true },
+      { label: 'Arquitetura', value: '64-bit' }
     ],
-    technical: [
-      { label: 'Resolução Máxima', value: '4K (3840x2160)' },
-      { label: 'Taxa de Quadros', value: 'Até 60 FPS' },
-      { label: 'Ray Tracing', value: 'Sim' },
-      { label: 'HDR', value: 'HDR10' },
-      { label: 'Audio', value: '3D Audio' },
+    PERF: [
+      { label: 'Resolução Máxima', value: '4K Ultra HD', highlight: true },
+      { label: 'Taxa de Quadros', value: '60 FPS', highlight: true },
+      { label: 'Ray Tracing', value: 'Suportado' }
     ],
-    storage: [
-      { label: 'Tamanho do Download', value: '50 GB' },
-      { label: 'Espaço Livre Necessário', value: '60 GB' },
-      { label: 'Instalação Obrigatória', value: 'Sim' },
+    STORAGE: [
+      { label: 'Armazenamento Principal', value: '1TB SSD', highlight: true },
+      { label: 'Tipo de Storage', value: 'NVMe PCIe 4.0' },
+      { label: 'Capacidade Expansível', value: 'Sim' }
     ],
-    multiplayer: [
-      { label: 'Multijogador Online', value: 'Sim' },
-      { label: 'Máximo de Jogadores', value: '4 jogadores' },
-      { label: 'Crossplay', value: 'Não' },
-      { label: 'Assinatura Online Necessária', value: 'Sim' },
+    CONNECT: [
+      { label: 'Wi-Fi', value: '802.11ac' },
+      { label: 'Bluetooth', value: '5.0' },
+      { label: 'Portas USB', value: '4x USB 3.0' },
+      { label: 'HDMI', value: '2.1' }
+    ],
+    DISPLAY: [
+      { label: 'Resolução', value: '3840x2160', highlight: true },
+      { label: 'Taxa de Atualização', value: '120Hz' },
+      { label: 'HDR', value: 'HDR10 / Dolby Vision' }
+    ],
+    AUDIO: [
+      { label: 'Sistema de Áudio', value: 'Dolby Atmos', highlight: true },
+      { label: 'Canais', value: '7.1 Surround' },
+      { label: 'Áudio 3D', value: 'Suportado' }
     ]
   };
 
@@ -138,23 +146,28 @@ const SpecificationCategoryManager: React.FC<SpecificationCategoryManagerProps> 
     }
   };
 
-  const handleApplyTemplate = async (category: string) => {
-    const templates = specTemplates[category as keyof typeof specTemplates];
-    if (!templates) return;
-
+  const handleApplyTemplate = async (templateCategory: string) => {
+    const template = specTemplates[templateCategory];
+    if (!template) return;
+    
+    const specMapping = getSpecificationByCode(templateCategory);
+    if (!specMapping) return;
+    
     try {
-      for (const template of templates) {
+      for (const spec of template) {
         await addSpecification({
           product_id: productId,
-          category,
-          label: template.label,
-          value: template.value,
-          highlight: false,
+          category: specMapping.categoryName,
+          label: spec.label,
+          value: spec.value,
+          highlight: spec.highlight || false,
+          icon: specMapping.emoji,
           order_index: 0
         });
       }
-      toast.success(`Template "${predefinedCategories.find(c => c.value === category)?.label}" aplicado com sucesso!`);
+      
       onSpecificationsChange();
+      toast.success(`Template "${specMapping.categoryName}" aplicado com sucesso!`);
     } catch (error) {
       console.error('Erro ao aplicar template:', error);
       toast.error('Erro ao aplicar template');
@@ -186,8 +199,10 @@ const SpecificationCategoryManager: React.FC<SpecificationCategoryManagerProps> 
       return emoji;
     }
     
-    // Se não tem emoji, tentar mapear por categorias predefinidas
-    const categoryConfig = predefinedCategories.find(c => c.value === category);
+    // Tentar encontrar por código de especificação
+    const categoryConfig = predefinedCategories.find(c => 
+      c.value === category || c.label === category
+    );
     return categoryConfig?.icon || '📄';
   };
 
@@ -197,7 +212,9 @@ const SpecificationCategoryManager: React.FC<SpecificationCategoryManagerProps> 
     
     // Se não conseguiu extrair texto limpo, tentar mapear por categorias predefinidas
     if (cleanText === category) {
-      const categoryConfig = predefinedCategories.find(c => c.value === category);
+      const categoryConfig = predefinedCategories.find(c => 
+        c.value === category || c.label === category
+      );
       return categoryConfig?.label || category;
     }
     
@@ -215,19 +232,24 @@ const SpecificationCategoryManager: React.FC<SpecificationCategoryManagerProps> 
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {Object.keys(specTemplates).map((category) => (
-              <Button
-                key={category}
-                variant="outline"
-                size="sm"
-                onClick={() => handleApplyTemplate(category)}
-                className="justify-start"
-              >
-                <span className="mr-2">{getCategoryIcon(category)}</span>
-                {getCategoryLabel(category)}
-              </Button>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {Object.keys(specTemplates).map((templateKey) => {
+              const specMapping = getSpecificationByCode(templateKey);
+              if (!specMapping) return null;
+              
+              return (
+                <Button
+                  key={templateKey}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleApplyTemplate(templateKey)}
+                  className="flex items-center gap-2 h-auto py-2 px-3"
+                >
+                  <span>{specMapping.emoji}</span>
+                  <span className="text-xs">{specMapping.categoryName}</span>
+                </Button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -250,9 +272,12 @@ const SpecificationCategoryManager: React.FC<SpecificationCategoryManagerProps> 
                 </SelectTrigger>
                 <SelectContent>
                   {predefinedCategories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      <span className="mr-2">{category.icon}</span>
-                      {category.label}
+                    <SelectItem key={category.code} value={category.label}>
+                      <span className="flex items-center gap-2">
+                        <span>{category.icon}</span>
+                        <span>{category.label}</span>
+                        <span className="text-xs text-muted-foreground ml-2">[{category.code}]</span>
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

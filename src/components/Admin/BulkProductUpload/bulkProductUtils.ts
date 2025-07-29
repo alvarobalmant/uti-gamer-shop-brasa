@@ -1,5 +1,12 @@
 import type { ImportedProduct, ValidationError, ImportResult, ProductTemplate, TemplateColumn } from './types';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  SPECIFICATION_CODES, 
+  getSpecificationByCode, 
+  formatCategoryWithCode,
+  extractCodeFromCategory,
+  isValidSpecificationCode
+} from '@/utils/specificationCodes';
 
 // Definição das colunas do template
 const TEMPLATE_COLUMNS: TemplateColumn[] = [
@@ -171,9 +178,9 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
   {
     key: 'custom_specifications',
     label: 'Especificações Personalizadas',
-    instructions: 'JSON com especificações categorizadas. Ex: [{"category":"Gameplay","label":"Modo Historia","value":"40+ horas","icon":"🎮","highlight":false},{"category":"Multiplayer","label":"Jogadores Online","value":"Até 16","icon":"👥"}]',
+    instructions: 'JSON com especificações categorizadas. Use códigos para categorias consistentes: [TECH], [PERF], [STORAGE], etc. Ex: [{"category":"[TECH] Especificações Técnicas","label":"Processador","value":"AMD Ryzen","icon":"⚙️","highlight":true}]',
     type: 'json',
-    example: '[{"category":"Gameplay","label":"Modo História","value":"40+ horas","icon":"🎮","highlight":false},{"category":"Multiplayer","label":"Jogadores Online","value":"Até 16","icon":"👥","highlight":true}]',
+    example: '[{"category":"[TECH] Especificações Técnicas","label":"Processador","value":"AMD Ryzen","icon":"⚙️","highlight":true},{"category":"[PERF] Performance","label":"FPS","value":"60 FPS","icon":"⚡","highlight":true}]',
     width: 70
   },
   {
@@ -1161,25 +1168,29 @@ async function processProductSpecifications(productId: string, product: Imported
 
     // Processar especificações personalizadas (novo formato)
     if (customSpecifications && Array.isArray(customSpecifications)) {
-      console.log('[DIAGNOSTIC] processProductSpecifications - custom_specifications encontradas:', {
-        count: customSpecifications.length,
-        data: customSpecifications
-      });
-      
       customSpecifications.forEach((spec: any, index: number) => {
-        console.log(`[DIAGNOSTIC] processProductSpecifications - Processando spec ${index}:`, spec);
-        
         if (spec.label && spec.value) {
-          // Validar categoria personalizada
-          const originalCategory = spec.category;
-          const validatedCategory = validateSpecificationCategory(spec.category, true);
-          const finalCategory = validatedCategory;
+          // Extrair código da categoria se presente
+          const { code, cleanCategory } = extractCodeFromCategory(spec.category || '');
           
-          console.log(`[DIAGNOSTIC] processProductSpecifications - Categoria: ${originalCategory} -> ${validatedCategory} -> ${finalCategory}`);
+          let finalCategory = cleanCategory;
+          let finalIcon = spec.icon;
           
-          // Validar ícone
-          const icon = validateSpecificationIcon(spec.icon);
-          console.log(`[DIAGNOSTIC] processProductSpecifications - Ícone: ${spec.icon} -> ${icon}`);
+          // Se tem código válido, usar o mapeamento centralizado
+          if (code && isValidSpecificationCode(code)) {
+            const specMapping = getSpecificationByCode(code);
+            if (specMapping) {
+              finalCategory = specMapping.categoryName;
+              // Usar o emoji do código se não há ícone específico
+              if (!finalIcon) {
+                finalIcon = specMapping.emoji;
+              }
+            }
+          } else {
+            // Validar categoria e ícone normalmente
+            finalCategory = validateSpecificationCategory(finalCategory, true) || 'Informações Gerais';
+            finalIcon = validateSpecificationIcon(finalIcon);
+          }
           
           const specToInsert = {
             product_id: productId,
@@ -1187,18 +1198,13 @@ async function processProductSpecifications(productId: string, product: Imported
             label: spec.label,
             value: spec.value.toString(),
             highlight: Boolean(spec.highlight || false),
-            icon: icon,
+            icon: finalIcon,
             order_index: orderIndex++
           };
           
-          console.log('[DIAGNOSTIC] processProductSpecifications - Spec a ser inserida:', specToInsert);
           specsToInsert.push(specToInsert);
-        } else {
-          console.log(`[DIAGNOSTIC] processProductSpecifications - Spec ${index} ignorada (falta label ou value):`, spec);
         }
       });
-    } else {
-      console.log('[DIAGNOSTIC] processProductSpecifications - Nenhuma custom_specifications encontrada ou não é array');
     }
     
     // Processar especificações técnicas detalhadas (formato objeto)
