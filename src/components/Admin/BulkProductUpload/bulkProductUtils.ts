@@ -1266,9 +1266,9 @@ function validateSpecificationCategory(category: string, allowFallback: boolean 
   
   console.log('[DIAGNOSTIC] validateSpecificationCategory - Categoria limpa:', cleanCategory);
   
-  // Regex mais permissiva para aceitar mais caracteres válidos
-  // Aceita: letras (incluindo acentuadas), números, espaços, hífens, sublinhados, parênteses, &, emojis comuns
-  const validPattern = /^[\p{L}\p{N}\p{M}\s\-_()&📋⚙️💾🌐🎮📺🔧🎯⚡💻🎨🔊🎧📱⭐✨🚀💎🏆🔥]+$/u;
+  // Regex CORRIGIDA - Aceita TODOS os emojis e caracteres especiais
+  // Esta é a mesma regex que foi corrigida no specificationFixer.ts
+  const validPattern = /^[\p{L}\p{N}\p{M}\p{S}\p{P}\s\-_()&📋⚙️💾🌐🎮📺🔧🎯⚡💻🎨🔊🎧📱⭐✨🚀💎🏆🔥👥🎯🔥💰🏪🎪🎭🎨🎵🎬🎤🎸🎹🥁🎺🎷🎻🎪🎠🎡🎢🎳🎯🎱🎲🃏🎴🀄🎯]+$/u;
   
   const isValid = validPattern.test(cleanCategory);
   console.log('[DIAGNOSTIC] validateSpecificationCategory - Teste de padrão:', {
@@ -1279,13 +1279,19 @@ function validateSpecificationCategory(category: string, allowFallback: boolean 
     result: isValid ? cleanCategory : (allowFallback ? 'Informações Gerais' : null)
   });
   
+  // Se passar na validação, retornar categoria original
+  if (isValid) {
+    console.log('[DIAGNOSTIC] validateSpecificationCategory - Categoria aprovada:', cleanCategory);
+    return cleanCategory;
+  }
+  
   // Se não for válido mas allowFallback for true, usar categoria padrão
-  if (!isValid && allowFallback) {
+  if (allowFallback) {
     console.log('[DIAGNOSTIC] validateSpecificationCategory - Usando categoria padrão devido a caracteres inválidos');
     return 'Informações Gerais';
   }
   
-  return isValid ? cleanCategory : null;
+  return null;
 }
 
 // Função para validar ícone de especificação
