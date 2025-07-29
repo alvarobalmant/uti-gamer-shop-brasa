@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import useSKUs from '@/hooks/useSKUs';
-import { useProducts } from '@/hooks/useProducts';
+import { useProductsAdmin } from '@/hooks/useProductsEnhanced';
 import { MasterProduct, Product } from '@/hooks/useProducts/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,7 @@ import SKUManager from './SKUManager';
 const MasterProductManager: React.FC = () => {
   const { toast } = useToast();
   const { createMasterProduct, fetchSKUsForMaster } = useSKUs();
-  const { products, deleteProduct } = useProducts();
+  const { products, deleteProduct } = useProductsAdmin();
   
   const [masterProducts, setMasterProducts] = useState<MasterProduct[]>([]);
   const [selectedMaster, setSelectedMaster] = useState<MasterProduct | null>(null);
