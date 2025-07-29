@@ -356,6 +356,8 @@ const useSKUs = () => {
     try {
       setLoading(true);
       await deleteProduct(id);
+      
+      // Retornar true para indicar sucesso
       return true;
     } catch (error) {
       console.error('Erro ao deletar SKU:', error);
@@ -364,6 +366,33 @@ const useSKUs = () => {
       setLoading(false);
     }
   }, [deleteProduct]);
+
+  // Deletar produto mestre e seus SKUs em cascata
+  const deleteMasterProductCascade = useCallback(async (masterProductId: string): Promise<{ success: boolean; message: string; deletedSkusCount?: number }> => {
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase.rpc('delete_master_product_cascade', {
+        p_master_product_id: masterProductId
+      });
+
+      if (error) {
+        console.error('Erro ao deletar produto mestre:', error);
+        return { success: false, message: 'Erro ao deletar produto mestre' };
+      }
+
+      return {
+        success: (data as any).success,
+        message: (data as any).message,
+        deletedSkusCount: (data as any).deleted_skus_count
+      };
+    } catch (error) {
+      console.error('Erro ao deletar produto mestre:', error);
+      return { success: false, message: 'Erro interno' };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Buscar navegação de SKUs
   const fetchSKUNavigation = useCallback(async (productId: string): Promise<SKUNavigation | null> => {
@@ -493,6 +522,7 @@ const useSKUs = () => {
     createSKU,
     updateSKU,
     deleteSKU,
+    deleteMasterProductCascade,
     fetchSKUNavigation,
     PLATFORM_CONFIG
   };

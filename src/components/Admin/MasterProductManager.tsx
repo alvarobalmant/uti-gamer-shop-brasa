@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import useSKUs from '@/hooks/useSKUs';
 import { useProductsAdmin } from '@/hooks/useProductsEnhanced';
+import { useProductRefresh } from '@/hooks/useProductRefresh';
 import { MasterProduct, Product } from '@/hooks/useProducts/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,8 +19,9 @@ import SKUManager from './SKUManager';
 
 const MasterProductManager: React.FC = () => {
   const { toast } = useToast();
-  const { createMasterProduct, fetchSKUsForMaster } = useSKUs();
+  const { createMasterProduct, fetchSKUsForMaster, deleteMasterProductCascade } = useSKUs();
   const { products, deleteProduct } = useProductsAdmin();
+  const { refreshAfterOperation } = useProductRefresh();
   
   const [masterProducts, setMasterProducts] = useState<MasterProduct[]>([]);
   const [selectedMaster, setSelectedMaster] = useState<MasterProduct | null>(null);
@@ -126,18 +128,36 @@ const MasterProductManager: React.FC = () => {
 
   const handleDeleteMaster = async (master: MasterProduct) => {
     try {
-      await deleteProduct(master.id);
+      // Usar a função de exclusão em cascata
+      const result = await deleteMasterProductCascade(master.id);
       
-      // Se o produto deletado estava selecionado, limpar seleção
-      if (selectedMaster?.id === master.id) {
-        setSelectedMaster(null);
-        setActiveTab('list');
+      if (result.success) {
+        // Recarregar produtos para atualizar a lista
+        loadMasterProducts();
+        // Atualizar contexto global de produtos
+        await refreshAfterOperation('exclusão de produto mestre');
+        
+        // Se o produto deletado estava selecionado, limpar seleção
+        if (selectedMaster?.id === master.id) {
+          setSelectedMaster(null);
+          setActiveTab('list');
+        }
+        
+        const skuMessage = result.deletedSkusCount && result.deletedSkusCount > 0 
+          ? ` e ${result.deletedSkusCount} SKU(s) relacionado(s)`
+          : '';
+        
+        toast({
+          title: "Produto mestre removido com sucesso!",
+          description: `${master.name}${skuMessage} foi removido do sistema.`,
+        });
+      } else {
+        toast({
+          title: "Erro ao remover produto mestre",
+          description: result.message || "Tente novamente em alguns instantes.",
+          variant: "destructive",
+        });
       }
-      
-      toast({
-        title: "Produto mestre removido com sucesso!",
-        description: `${master.name} foi removido do sistema.`,
-      });
     } catch (error) {
       console.error('Erro ao deletar produto mestre:', error);
       toast({
