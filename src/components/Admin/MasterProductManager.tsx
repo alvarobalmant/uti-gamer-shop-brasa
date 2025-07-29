@@ -41,15 +41,23 @@ const MasterProductManager: React.FC = () => {
     }
   });
 
-  // Carregar produtos mestre quando o componente montar
+  // Carregar produtos mestre quando o componente montar ou produtos mudarem
   useEffect(() => {
     loadMasterProducts();
   }, [products]);
 
+  // Listener adicional para garantir sincronização após operações
+  useEffect(() => {
+    console.log('[MasterProductManager] Produtos atualizados:', products.length);
+    loadMasterProducts();
+  }, [products.length]);
+
   const loadMasterProducts = () => {
     try {
+      console.log('[MasterProductManager] Carregando produtos mestre...');
       // Filtrar apenas produtos mestre dos produtos já carregados
       const masters = products.filter(p => p.product_type === 'master') as MasterProduct[];
+      console.log('[MasterProductManager] Masters encontrados:', masters.length);
       setMasterProducts(masters);
     } catch (error) {
       console.error('Erro ao carregar produtos mestre:', error);
@@ -128,20 +136,30 @@ const MasterProductManager: React.FC = () => {
 
   const handleDeleteMaster = async (master: MasterProduct) => {
     try {
+      console.log('[MasterProductManager] Iniciando exclusão do produto mestre:', master.id);
+      
       // Usar a função de exclusão em cascata
       const result = await deleteMasterProductCascade(master.id);
+      console.log('[MasterProductManager] Resultado da exclusão:', result);
       
       if (result.success) {
-        // Recarregar produtos para atualizar a lista
-        loadMasterProducts();
-        // Atualizar contexto global de produtos
-        await refreshAfterOperation('exclusão de produto mestre');
+        console.log('[MasterProductManager] Exclusão bem sucedida, produtos antes:', masterProducts.length);
         
-        // Se o produto deletado estava selecionado, limpar seleção
+        // Se o produto deletado estava selecionado, limpar seleção imediatamente
         if (selectedMaster?.id === master.id) {
           setSelectedMaster(null);
           setActiveTab('list');
         }
+        
+        // Remover imediatamente da lista local para feedback visual rápido
+        const filteredMasters = masterProducts.filter(m => m.id !== master.id);
+        console.log('[MasterProductManager] Atualizando lista local, produtos após filtro:', filteredMasters.length);
+        setMasterProducts(filteredMasters);
+        
+        // Em paralelo, atualizar o contexto global
+        refreshAfterOperation('exclusão de produto mestre').catch(error => {
+          console.error('Erro ao atualizar contexto (não crítico):', error);
+        });
         
         const skuMessage = result.deletedSkusCount && result.deletedSkusCount > 0 
           ? ` e ${result.deletedSkusCount} SKU(s) relacionado(s)`
@@ -152,6 +170,7 @@ const MasterProductManager: React.FC = () => {
           description: `${master.name}${skuMessage} foi removido do sistema.`,
         });
       } else {
+        console.error('[MasterProductManager] Falha na exclusão:', result.message);
         toast({
           title: "Erro ao remover produto mestre",
           description: result.message || "Tente novamente em alguns instantes.",
