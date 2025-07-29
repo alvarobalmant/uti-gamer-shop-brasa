@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useProductSpecifications } from '@/hooks/useProductSpecifications';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
+import { getSpecificationByCode, extractCodeFromCategory, SPECIFICATION_CODES } from '@/utils/specificationCodes';
 
 interface ProductSpecificationsTableProps {
   product: Product;
@@ -13,7 +14,34 @@ interface ProductSpecificationsTableProps {
 }
 
 const getCategoryConfig = (category: string) => {
-  const configs: Record<string, { title: string; icon: string }> = {
+  // First try to extract code from category (e.g., "[CTRL] 🎮 Controles" or "CTRL")
+  const { code, cleanCategory } = extractCodeFromCategory(category);
+  
+  if (code) {
+    const spec = getSpecificationByCode(code);
+    if (spec) {
+      return { title: spec.categoryName, icon: spec.emoji };
+    }
+  }
+  
+  // Try to match by code directly
+  const directSpec = getSpecificationByCode(category);
+  if (directSpec) {
+    return { title: directSpec.categoryName, icon: directSpec.emoji };
+  }
+  
+  // Try to match by category name
+  const specByName = Object.values(SPECIFICATION_CODES).find(spec => 
+    spec.categoryName.toLowerCase() === cleanCategory.toLowerCase() ||
+    spec.categoryName.toLowerCase() === category.toLowerCase()
+  );
+  
+  if (specByName) {
+    return { title: specByName.categoryName, icon: specByName.emoji };
+  }
+  
+  // Fallback to legacy mapping for compatibility
+  const legacyConfigs: Record<string, { title: string; icon: string }> = {
     general: { title: 'Informações Gerais', icon: '📋' },
     technical: { title: 'Especificações Técnicas', icon: '⚙️' },
     storage: { title: 'Armazenamento e Instalação', icon: '💾' },
@@ -21,7 +49,7 @@ const getCategoryConfig = (category: string) => {
     physical: { title: 'Informações Físicas', icon: '📦' },
   };
   
-  return configs[category] || { title: category.charAt(0).toUpperCase() + category.slice(1), icon: '📄' };
+  return legacyConfigs[category] || { title: cleanCategory || category.charAt(0).toUpperCase() + category.slice(1), icon: '📄' };
 };
 
 const ProductSpecificationsTable: React.FC<ProductSpecificationsTableProps> = ({

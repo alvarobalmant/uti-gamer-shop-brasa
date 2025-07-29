@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { HelpCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useProductSpecifications } from '@/hooks/useProductSpecifications';
 
 interface ProductTabsEnhancedProps {
   product: any;
@@ -13,6 +14,7 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
   const [activeTab, setActiveTab] = useState('description');
   const [jsonbData, setJsonbData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { categorizedSpecs, loading: specsLoading } = useProductSpecifications(product?.id);
 
   // Buscar campos JSONB diretamente da tabela products
   useEffect(() => {
@@ -41,9 +43,24 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
     fetchJsonbData();
   }, [product?.id]);
 
-  // Processar especificações estruturadas
+  // Processar especificações estruturadas - usando o hook que já aplica o sistema de códigos
   const getSpecifications = () => {
-    console.log('[ProductTabsEnhanced] Processando especificações:', product.specifications);
+    console.log('[ProductTabsEnhanced] Processando especificações com hook:', categorizedSpecs);
+    
+    // Se temos especificações categorizadas do hook, use-as (já com emojis e nomes corretos)
+    if (categorizedSpecs && categorizedSpecs.length > 0) {
+      return categorizedSpecs.map(categoryGroup => ({
+        name: categoryGroup.category, // Já vem formatado com emoji e nome correto
+        specs: categoryGroup.items.map(item => ({
+          label: item.label,
+          value: item.value,
+          highlight: item.highlight || false
+        }))
+      }));
+    }
+    
+    // Fallback para especificações do produto (legacy)
+    console.log('[ProductTabsEnhanced] Usando fallback para especificações:', product.specifications);
     
     if (product.specifications) {
       // Se é um array de objetos simples [{name: "x", value: "y"}]
