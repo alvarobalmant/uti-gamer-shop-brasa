@@ -2623,6 +2623,10 @@ export type Database = {
         Args: { duration_minutes: number }
         Returns: Json
       }
+      delete_master_product_cascade: {
+        Args: { p_master_product_id: string }
+        Returns: Json
+      }
       earn_coins: {
         Args: {
           p_user_id: string
