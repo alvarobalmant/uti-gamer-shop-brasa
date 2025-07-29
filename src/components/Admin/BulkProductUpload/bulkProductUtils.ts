@@ -1060,7 +1060,34 @@ function convertImportedProductToDatabase(product: ImportedProduct): any {
     uti_pro_enabled: parseBooleanField(product.uti_pro_enabled),
     uti_pro_value: product.uti_pro_value ? Number(product.uti_pro_value) : null,
     uti_pro_custom_price: product.uti_pro_custom_price ? Number(product.uti_pro_custom_price) : null,
-    uti_pro_type: product.uti_pro_type || 'percentage',
+    uti_pro_type: (() => {
+      const rawValue = product.uti_pro_type;
+      console.log('[DEBUG] uti_pro_type processing:', { rawValue, product: product.name });
+      
+      // Normalizar valores que podem vir incorretamente
+      if (!rawValue || typeof rawValue !== 'string') {
+        console.log('[DEBUG] uti_pro_type defaulting to percentage (empty/invalid)');
+        return 'percentage';
+      }
+      
+      const normalizedValue = rawValue.toLowerCase().trim();
+      
+      if (normalizedValue === 'discount' || normalizedValue === 'desconto') {
+        console.log('[DEBUG] uti_pro_type converting DISCOUNT to percentage');
+        return 'percentage';
+      }
+      
+      if (normalizedValue === 'percentage' || normalizedValue === 'percentual') {
+        return 'percentage';
+      }
+      
+      if (normalizedValue === 'fixed' || normalizedValue === 'fixo') {
+        return 'fixed';
+      }
+      
+      console.warn('[DEBUG] uti_pro_type valor não reconhecido, usando percentage:', rawValue);
+      return 'percentage';
+    })(),
     
     // Mídia e conteúdo
     product_videos: parseJsonField(product.product_videos) || [],

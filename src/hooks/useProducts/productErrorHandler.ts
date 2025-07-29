@@ -12,6 +12,10 @@ export const handleProductError = (error: any, context: string) => {
     }, 2000);
   } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
     errorMessage = 'Erro de conexão. Verifique sua internet.';
+  } else if (error.message?.includes('products_uti_pro_type_check')) {
+    errorMessage = 'Erro de validação: O campo "uti_pro_type" deve ser "percentage" ou "fixed". Verifique os dados no Excel.';
+  } else if (error.message?.includes('check constraint')) {
+    errorMessage = 'Erro de validação nos dados do produto. Verifique os valores no Excel.';
   } else if (error.message) {
     errorMessage = error.message;
   }
