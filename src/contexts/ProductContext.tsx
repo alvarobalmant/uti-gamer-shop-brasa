@@ -16,7 +16,7 @@ interface ProductContextType {
   lastUpdated: Date | null;
   
   // Funções CRUD
-  fetchProducts: () => Promise<void>;
+  fetchProducts: (includeAdmin?: boolean) => Promise<void>;
   addProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<Product | null>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<Product | null>;
   deleteProduct: (id: string) => Promise<boolean>;
@@ -55,12 +55,12 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
   }, [subscribers]);
 
   // Função principal para buscar produtos
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (includeAdmin: boolean = false) => {
     try {
       setLoading(true);
-      console.log('[ProductContext] Buscando produtos do banco de dados...');
+      console.log('[ProductContext] Buscando produtos do banco de dados...', includeAdmin ? 'incluindo master products' : 'sem master products');
       
-      const productsData = await fetchProductsFromDatabase();
+      const productsData = await fetchProductsFromDatabase(includeAdmin);
       setProducts(productsData);
       setLastUpdated(new Date());
       

@@ -93,12 +93,18 @@ const mapRowToProduct = (row: any): Product => ({
   updated_at: row.updated_at || new Date().toISOString()
 });
 
-export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
+export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): Promise<Product[]> => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('view_product_with_tags')
-      .select('*')
-      .neq('product_type', 'master'); // Filtrar produtos master
+      .select('*');
+    
+    // Só filtrar produtos master se não for para admin
+    if (!includeAdmin) {
+      query = query.neq('product_type', 'master');
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching products:', error);
@@ -138,11 +144,15 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
   }
 };
 
-export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<Product[]> => {
+export const fetchProductsByCriteria = async (config: CarouselConfig, includeAdmin: boolean = false): Promise<Product[]> => {
   try {
     let query = supabase.from('view_product_with_tags')
-      .select('*')
-      .neq('product_type', 'master'); // Filtrar produtos master
+      .select('*');
+    
+    // Só filtrar produtos master se não for para admin
+    if (!includeAdmin) {
+      query = query.neq('product_type', 'master');
+    }
     
     // Filter by product IDs if specified
     if (config.product_ids && config.product_ids.length > 0) {
