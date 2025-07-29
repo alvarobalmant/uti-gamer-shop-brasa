@@ -321,12 +321,54 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
   
   // === CATEGORIZAÇÃO ===
   {
+    key: 'brand',
+    label: 'Marca',
+    instructions: 'Marca do produto',
+    type: 'text',
+    example: 'Sony',
+    width: 15
+  },
+  {
+    key: 'category',
+    label: 'Categoria',
+    instructions: 'Categoria do produto',
+    type: 'text',
+    example: 'Console',
+    width: 15
+  },
+  {
+    key: 'platform',
+    label: 'Plataforma',
+    instructions: 'Plataforma do produto (Xbox, PlayStation, PC, etc.)',
+    type: 'text',
+    example: 'PlayStation 5',
+    width: 20
+  },
+  {
+    key: 'condition',
+    label: 'Condição',
+    instructions: 'Condição do produto (novo, usado, etc.)',
+    type: 'text',
+    example: 'Novo',
+    width: 15
+  },
+  {
     key: 'tags',
     label: 'Tags',
     instructions: 'Nomes das tags separados por vírgula',
     type: 'array',
     example: 'console,playstation,next-gen,4k',
     width: 30
+  },
+  
+  // === PRODUTOS RELACIONADOS ===
+  {
+    key: 'manual_related_products',
+    label: 'Produtos Relacionados',
+    instructions: 'JSON com produtos relacionados. Ex: [{"product_id":"123","relationship_type":"accessory","order":1}]',
+    type: 'json',
+    example: '[{"product_id":"abc123","relationship_type":"accessory","order":1}]',
+    width: 50
   },
   
   // === STATUS ===

@@ -9,6 +9,7 @@ export interface ProductSpecification {
   value: string;
   highlight: boolean;
   order_index: number;
+  icon?: string; // Emoji, Lucide icon name, ou URL
 }
 
 export interface SpecificationCategory {

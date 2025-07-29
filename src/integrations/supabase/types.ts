@@ -1091,6 +1091,7 @@ export type Database = {
           category: string
           created_at: string | null
           highlight: boolean | null
+          icon: string | null
           id: string
           label: string
           order_index: number | null
@@ -1102,6 +1103,7 @@ export type Database = {
           category: string
           created_at?: string | null
           highlight?: boolean | null
+          icon?: string | null
           id?: string
           label: string
           order_index?: number | null
@@ -1113,6 +1115,7 @@ export type Database = {
           category?: string
           created_at?: string | null
           highlight?: boolean | null
+          icon?: string | null
           id?: string
           label?: string
           order_index?: number | null

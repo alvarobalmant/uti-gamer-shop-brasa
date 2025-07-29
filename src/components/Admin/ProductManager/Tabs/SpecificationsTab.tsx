@@ -38,14 +38,16 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
     value: string;
     highlight: boolean;
     order_index: number;
+    icon?: string;
   }>>([]);
   
-  const [newSpec, setNewSpec] = useState({ 
+  const [newSpec, setNewSpec] = useState({
     category: '',
-    label: '', 
-    value: '', 
+    label: '',
+    value: '',
     highlight: false,
-    order_index: 0
+    order_index: 0,
+    icon: ''
   });
   const [editingSpec, setEditingSpec] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -89,47 +91,47 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
 
   // Templates de especificações por categoria
   const predefinedCategories = [
-    { value: 'general', label: 'Informações Gerais' },
-    { value: 'technical', label: 'Especificações Técnicas' },
-    { value: 'storage', label: 'Armazenamento e Instalação' },
-    { value: 'multiplayer', label: 'Recursos Online' },
-    { value: 'physical', label: 'Informações Físicas' },
-    { value: 'compatibility', label: 'Compatibilidade' },
-    { value: 'performance', label: 'Performance' },
-    { value: 'audio', label: 'Áudio e Vídeo' }
+    { value: 'general', label: 'Informações Gerais', defaultIcon: '📋' },
+    { value: 'technical', label: 'Especificações Técnicas', defaultIcon: '⚙️' },
+    { value: 'storage', label: 'Armazenamento e Instalação', defaultIcon: '💾' },
+    { value: 'multiplayer', label: 'Recursos Online', defaultIcon: '🌐' },
+    { value: 'physical', label: 'Informações Físicas', defaultIcon: '📏' },
+    { value: 'compatibility', label: 'Compatibilidade', defaultIcon: '🔗' },
+    { value: 'performance', label: 'Performance', defaultIcon: '⚡' },
+    { value: 'audio', label: 'Áudio e Vídeo', defaultIcon: '🎵' }
   ];
 
   const specTemplates = {
     console: [
-      { category: 'general', label: 'Plataforma', value: '', highlight: true },
-      { category: 'general', label: 'Modelo', value: '', highlight: true },
-      { category: 'general', label: 'Cor', value: '', highlight: false },
-      { category: 'general', label: 'Condição', value: 'Novo', highlight: false },
-      { category: 'technical', label: 'Processador', value: '', highlight: false },
-      { category: 'technical', label: 'Memória RAM', value: '', highlight: false },
-      { category: 'technical', label: 'Armazenamento', value: '', highlight: true },
-      { category: 'technical', label: 'Resolução Máxima', value: '4K', highlight: false }
+      { category: 'general', label: 'Plataforma', value: '', highlight: true, icon: '📋' },
+      { category: 'general', label: 'Modelo', value: '', highlight: true, icon: '📋' },
+      { category: 'general', label: 'Cor', value: '', highlight: false, icon: '📋' },
+      { category: 'general', label: 'Condição', value: 'Novo', highlight: false, icon: '📋' },
+      { category: 'technical', label: 'Processador', value: '', highlight: false, icon: '⚙️' },
+      { category: 'technical', label: 'Memória RAM', value: '', highlight: false, icon: '⚙️' },
+      { category: 'storage', label: 'Armazenamento', value: '', highlight: true, icon: '💾' },
+      { category: 'technical', label: 'Resolução Máxima', value: '4K', highlight: false, icon: '⚙️' }
     ],
     game: [
-      { category: 'general', label: 'Plataforma', value: '', highlight: true },
-      { category: 'general', label: 'Gênero', value: '', highlight: true },
-      { category: 'general', label: 'Classificação', value: '', highlight: false },
-      { category: 'general', label: 'Desenvolvedor', value: '', highlight: false },
-      { category: 'general', label: 'Data de Lançamento', value: '', highlight: false },
-      { category: 'storage', label: 'Idiomas', value: '', highlight: false },
-      { category: 'multiplayer', label: 'Modos de Jogo', value: '', highlight: false },
-      { category: 'storage', label: 'Espaço Necessário', value: '', highlight: true },
-      { category: 'multiplayer', label: 'Jogadores Online', value: '', highlight: false }
+      { category: 'general', label: 'Plataforma', value: '', highlight: true, icon: '📋' },
+      { category: 'general', label: 'Gênero', value: '', highlight: true, icon: '📋' },
+      { category: 'general', label: 'Classificação', value: '', highlight: false, icon: '📋' },
+      { category: 'general', label: 'Desenvolvedor', value: '', highlight: false, icon: '📋' },
+      { category: 'general', label: 'Data de Lançamento', value: '', highlight: false, icon: '📋' },
+      { category: 'storage', label: 'Idiomas', value: '', highlight: false, icon: '💾' },
+      { category: 'multiplayer', label: 'Modos de Jogo', value: '', highlight: false, icon: '🌐' },
+      { category: 'storage', label: 'Espaço Necessário', value: '', highlight: true, icon: '💾' },
+      { category: 'multiplayer', label: 'Jogadores Online', value: '', highlight: false, icon: '🌐' }
     ],
     accessory: [
-      { category: 'general', label: 'Tipo', value: '', highlight: true },
-      { category: 'compatibility', label: 'Compatibilidade', value: '', highlight: true },
-      { category: 'general', label: 'Cor', value: '', highlight: false },
-      { category: 'physical', label: 'Material', value: '', highlight: false },
-      { category: 'technical', label: 'Conectividade', value: '', highlight: false },
-      { category: 'physical', label: 'Dimensões', value: '', highlight: false },
-      { category: 'physical', label: 'Peso', value: '', highlight: false },
-      { category: 'general', label: 'Garantia', value: '1 ano', highlight: false }
+      { category: 'general', label: 'Tipo', value: '', highlight: true, icon: '📋' },
+      { category: 'compatibility', label: 'Compatibilidade', value: '', highlight: true, icon: '🔗' },
+      { category: 'general', label: 'Cor', value: '', highlight: false, icon: '📋' },
+      { category: 'physical', label: 'Material', value: '', highlight: false, icon: '📏' },
+      { category: 'technical', label: 'Conectividade', value: '', highlight: false, icon: '⚙️' },
+      { category: 'physical', label: 'Dimensões', value: '', highlight: false, icon: '📏' },
+      { category: 'physical', label: 'Peso', value: '', highlight: false, icon: '📏' },
+      { category: 'general', label: 'Garantia', value: '1 ano', highlight: false, icon: '📋' }
     ]
   };
 
@@ -142,14 +144,15 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
         // Product exists, save to database
         for (let i = 0; i < template.length; i++) {
           const spec = template[i];
-          await addSpecification({
-            product_id: productId!,
-            category: spec.category,
-            label: spec.label,
-            value: spec.value,
-            highlight: spec.highlight,
-            order_index: i + 1
-          });
+        await addSpecification({
+          product_id: productId!,
+          category: spec.category,
+          label: spec.label,
+          value: spec.value,
+          highlight: spec.highlight,
+          order_index: i + 1,
+          icon: spec.icon || ''
+        });
         }
         await refreshSpecifications();
       } else {
@@ -160,7 +163,8 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
           label: spec.label,
           value: spec.value,
           highlight: spec.highlight,
-          order_index: i + 1
+          order_index: i + 1,
+          icon: spec.icon || ''
         }));
         setLocalSpecs(prev => [...prev, ...templateSpecs]);
       }
@@ -197,7 +201,8 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
           label: newSpec.label,
           value: newSpec.value,
           highlight: newSpec.highlight,
-          order_index: nextOrderIndex
+          order_index: nextOrderIndex,
+          icon: newSpec.icon
         });
       } else {
         // Product doesn't exist, save to local state
@@ -207,7 +212,8 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
           label: newSpec.label,
           value: newSpec.value,
           highlight: newSpec.highlight,
-          order_index: nextOrderIndex
+          order_index: nextOrderIndex,
+          icon: newSpec.icon
         };
         setLocalSpecs(prev => [...prev, newSpecWithId]);
       }
@@ -217,7 +223,8 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
         label: '', 
         value: '', 
         highlight: false,
-        order_index: 0
+        order_index: 0,
+        icon: ''
       });
       
       toast({
@@ -348,12 +355,19 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <Label>Categoria</Label>
               <Select
                 value={newSpec.category}
-                onValueChange={(value) => setNewSpec(prev => ({ ...prev, category: value }))}
+                onValueChange={(value) => {
+                  const categoryData = predefinedCategories.find(cat => cat.value === value);
+                  setNewSpec(prev => ({ 
+                    ...prev, 
+                    category: value,
+                    icon: prev.icon || categoryData?.defaultIcon || ''
+                  }));
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a categoria" />
@@ -361,11 +375,21 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
                 <SelectContent>
                   {predefinedCategories.map(cat => (
                     <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
+                      {cat.defaultIcon} {cat.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            
+            <div>
+              <Label>Ícone</Label>
+              <Input
+                value={newSpec.icon}
+                onChange={(e) => setNewSpec(prev => ({ ...prev, icon: e.target.value }))}
+                placeholder="Ex: 🎮"
+                className="text-center"
+              />
             </div>
             
             <div>
@@ -419,8 +443,12 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                {predefinedCategories.find(cat => cat.value === category.category)?.label || category.category}
+                {category.items[0]?.icon ? (
+                  <span className="text-xl">{category.items[0].icon}</span>
+                ) : (
+                  <FileText className="w-5 h-5" />
+                )}
+                {category.category}
               </CardTitle>
               <Badge variant="outline">
                 {category.items.length} {category.items.length === 1 ? 'item' : 'itens'}
@@ -430,7 +458,16 @@ const SpecificationsTab: React.FC<SpecificationsTabProps> = ({ formData, onChang
           <CardContent className="space-y-3">
             {category.items.map((spec) => (
               <div key={spec.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <Input
+                      value={spec.icon || ''}
+                      onChange={(e) => handleUpdateSpec(spec.id, 'icon', e.target.value)}
+                      placeholder="Ícone"
+                      disabled={saving}
+                      className="text-center w-16"
+                    />
+                  </div>
                   <div>
                     <Input
                       value={spec.label}

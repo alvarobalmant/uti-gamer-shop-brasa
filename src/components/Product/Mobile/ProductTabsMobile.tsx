@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { ChevronDown, ChevronUp, Info, Package, Shield, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useProductSpecifications } from '@/hooks/useProductSpecifications';
 
 interface ProductTabsMobileProps {
   product: Product;
@@ -11,6 +12,9 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
   const [activeTab, setActiveTab] = useState<string | null>('description');
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  
+  // Buscar especificações reais do produto
+  const { categorizedSpecs, loading: specsLoading } = useProductSpecifications(product.id);
 
   // Função para fazer scroll preciso alinhando com o cabeçalho
   const scrollToContent = (tabId: string) => {
@@ -98,23 +102,44 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
       icon: Package,
       content: (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-3">
-            {[
-              { label: 'Plataforma', value: product.platform || 'PlayStation 5' },
-              { label: 'Gênero', value: product.genre || 'Ação/Aventura' },
-              { label: 'Classificação', value: product.rating || '18 anos' },
-              { label: 'Desenvolvedor', value: product.developer || 'Capcom' },
-              { label: 'Idiomas', value: 'Português, Inglês, Espanhol' },
-              { label: 'Modo de Jogo', value: 'Single Player / Multiplayer' }
-            ].map((spec, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl p-4">
-                <div className="space-y-1">
-                  <div className="font-medium text-gray-900 text-sm">{spec.label}</div>
-                  <div className="text-gray-700 text-sm">{spec.value}</div>
+          {specsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full"></div>
+            </div>
+          ) : categorizedSpecs.length > 0 ? (
+            <div className="space-y-6">
+              {categorizedSpecs.map((category) => (
+                <div key={category.category} className="space-y-3">
+                  <h4 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+                    {category.items[0]?.icon && (
+                      <span className="text-xl">{category.items[0].icon}</span>
+                    )}
+                    {category.category}
+                  </h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    {category.items.map((spec) => (
+                      <div key={spec.id} className={`rounded-xl p-4 ${spec.highlight ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}>
+                        <div className="space-y-1">
+                          <div className="font-medium text-gray-900 text-sm flex items-center gap-2">
+                            {spec.icon && spec.icon !== category.items[0]?.icon && (
+                              <span className="text-lg">{spec.icon}</span>
+                            )}
+                            {spec.label}
+                          </div>
+                          <div className="text-gray-700 text-sm">{spec.value}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p>Nenhuma especificação disponível</p>
+            </div>
+          )}
         </div>
       )
     },
