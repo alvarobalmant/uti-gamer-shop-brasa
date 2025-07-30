@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
 import { ProductProvider } from '@/contexts/ProductContext';
+import { ProductProviderOptimized } from '@/contexts/ProductContextOptimized';
 import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
@@ -152,10 +153,11 @@ const App = () => {
       <AuthProvider>
         <SecurityProvider>
           <SecurityHeaders />
-          <UTICoinsProvider>
-            <CartProvider>
-            <ProductProvider>
-              <LoadingProvider>
+            <UTICoinsProvider>
+              <CartProvider>
+              <ProductProvider>
+                <ProductProviderOptimized>
+                  <LoadingProvider>
                 <TooltipProvider>
                 <Toaster />
                 <Sonner />
@@ -248,10 +250,11 @@ const App = () => {
           </GlobalNavigationProvider>
         </BrowserRouter>
       </TooltipProvider>
-    </LoadingProvider>
-  </ProductProvider>
-</CartProvider>
-</UTICoinsProvider>
+        </LoadingProvider>
+                </ProductProviderOptimized>
+      </ProductProvider>
+    </CartProvider>
+  </UTICoinsProvider>
         </SecurityProvider>
       </AuthProvider>
     </QueryClientProvider>
