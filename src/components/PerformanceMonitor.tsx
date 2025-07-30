@@ -20,8 +20,8 @@ export const PerformanceMonitor: React.FC = () => {
         const memory = (performance as any).memory;
         
         setPerformanceMetrics({
-          loadTime: navigation?.loadEventEnd - navigation?.navigationStart,
-          domContentLoaded: navigation?.domContentLoadedEventEnd - navigation?.navigationStart,
+          loadTime: navigation?.loadEventEnd ? Math.round(navigation.loadEventEnd - navigation.fetchStart) : 0,
+          domContentLoaded: navigation?.domContentLoadedEventEnd ? Math.round(navigation.domContentLoadedEventEnd - navigation.fetchStart) : 0,
           memoryUsed: memory ? Math.round(memory.usedJSHeapSize / 1024 / 1024) : null,
           memoryTotal: memory ? Math.round(memory.totalJSHeapSize / 1024 / 1024) : null,
           connectionType: (navigator as any).connection?.effectiveType || 'unknown'
