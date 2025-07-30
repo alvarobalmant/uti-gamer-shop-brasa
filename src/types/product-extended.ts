@@ -150,7 +150,39 @@ export interface ExtendedProduct {
 }
 
 // Tipos para formulários de edição
-export interface ProductFormData extends Omit<ExtendedProduct, 'id' | 'created_at' | 'updated_at'> {
+export interface ProductFormData {
+  id?: string; // ID opcional para produtos em edição
+  name: string;
+  description?: string;
+  price: number;
+  stock?: number;
+  image?: string;
+  additional_images?: string[];
+  sizes?: string[];
+  colors?: string[];
+  badge_text?: string;
+  badge_color?: string;
+  badge_visible?: boolean;
+  specifications?: TechnicalSpecs;
+  product_features?: ProductFeatures[];
+  meta_title?: string;
+  meta_description?: string;
+  slug?: string;
+  is_active?: boolean;
+  is_featured?: boolean;
+  
+  // Novos campos expandidos
+  product_videos?: ProductVideo[];
+  product_faqs?: ProductFAQ[];
+  product_highlights?: ProductHighlight[];
+  reviews_config?: ReviewsConfig;
+  trust_indicators?: TrustIndicator[];
+  manual_related_products?: ManualRelatedProduct[];
+  breadcrumb_config?: BreadcrumbConfig;
+  product_descriptions?: ProductDescriptions;
+  delivery_config?: DeliveryConfig;
+  display_config?: DisplayConfig;
+  
   tagIds?: string[];
   list_price?: number;
   pro_price?: number;

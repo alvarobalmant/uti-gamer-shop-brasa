@@ -8,7 +8,6 @@ import ProductCard from '@/components/ProductCard';
 import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
-import ProductModal from '@/components/ProductModal';
 
 const CategoryPage = () => {
   const { category } = useParams();
@@ -130,13 +129,6 @@ const CategoryPage = () => {
           )}
         </div>
       </section>
-
-      {/* Product Modal */}
-      <ProductModal
-        product={products.find(p => p.id === selectedProductId) || null}
-        isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      />
     </div>
   );
 };

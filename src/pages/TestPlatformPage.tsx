@@ -6,7 +6,6 @@ import Footer from '@/components/Footer';
 import { Skeleton } from '@/components/ui/skeleton';
 import HeroBanner from '@/components/HeroBanner';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
-import ProductModal from '@/components/ProductModal';
 
 // Componente para testar a funcionalidade das páginas de plataforma
 const TestPlatformPage: React.FC = () => {
@@ -130,7 +129,6 @@ const TestPlatformPage: React.FC = () => {
       <Footer />
       
       {/* Modal de produto */}
-      <ProductModal
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}

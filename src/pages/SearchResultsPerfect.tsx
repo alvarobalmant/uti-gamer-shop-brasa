@@ -6,7 +6,6 @@ import { useProducts, Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { smartSearchProducts } from '@/utils/smartSearch';
-import ProductModal from '@/components/ProductModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -374,7 +373,6 @@ const SearchResultsPerfect = () => {
 
       {/* Modal do produto */}
       {isModalOpen && selectedProductId && (
-        <ProductModal
           product={products.find(p => p.id === selectedProductId) || null}
           isOpen={isModalOpen}
           onOpenChange={setIsModalOpen}

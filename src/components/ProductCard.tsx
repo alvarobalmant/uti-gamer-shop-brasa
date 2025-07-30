@@ -4,6 +4,7 @@ import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import FavoriteButton from '@/components/FavoriteButton';
+import { useProductHover } from '@/hooks/useProductPrefetch';
 
 import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
@@ -20,6 +21,7 @@ interface ProductCardProps {
 
 const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { handleMouseEnter: handlePrefetchMouseEnter, handleMouseLeave: handlePrefetchMouseLeave } = useProductHover(product.id);
 
   const handleCardClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -31,11 +33,15 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
 
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);
-  }, []);
+    // Iniciar prefetch do produto
+    handlePrefetchMouseEnter();
+  }, [handlePrefetchMouseEnter]);
 
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false);
-  }, []);
+    // Cancelar prefetch se ainda não completou
+    handlePrefetchMouseLeave();
+  }, [handlePrefetchMouseLeave]);
 
   return (
     <Card

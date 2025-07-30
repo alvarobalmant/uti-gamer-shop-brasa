@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import useSKUs from '@/hooks/useSKUs';
 import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
+import { useProductRefresh } from '@/hooks/useProductRefresh';
 import { Product, ProductSKU, MasterProduct, Platform } from '@/hooks/useProducts/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,7 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
   } = useSKUs();
   
   const { platformConfig, loading: platformsLoading } = useDynamicPlatforms();
+  const { refreshAfterOperation } = useProductRefresh();
 
   const [skus, setSKUs] = useState<ProductSKU[]>([]);
   const [selectedSKU, setSelectedSKU] = useState<ProductSKU | null>(null);
@@ -103,6 +105,8 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
       const newSKUId = await createSKU(skuData);
       if (newSKUId) {
         await loadSKUs();
+        // Atualizar contexto global de produtos
+        await refreshAfterOperation('criação de SKU');
         setShowCreateDialog(false);
         resetForm();
         
@@ -142,9 +146,16 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
       const success = await updateSKU(selectedSKU.id, updates);
       if (success) {
         await loadSKUs();
+        // Atualizar contexto global de produtos
+        await refreshAfterOperation('edição de SKU');
         setShowEditDialog(false);
         setSelectedSKU(null);
         resetForm();
+        
+        toast({
+          title: "SKU atualizado com sucesso!",
+          description: `${selectedSKU.name} foi atualizado.`,
+        });
       }
     } catch (error) {
       console.error('Erro ao atualizar SKU:', error);
@@ -155,10 +166,29 @@ const SKUManager: React.FC<SKUManagerProps> = ({ masterProduct, onClose }) => {
     try {
       const success = await deleteSKU(sku.id);
       if (success) {
+        // Recarregar a lista de SKUs após a exclusão
         await loadSKUs();
+        // Atualizar contexto global de produtos
+        await refreshAfterOperation('exclusão de SKU');
+        
+        toast({
+          title: "SKU excluído com sucesso!",
+          description: `${sku.name} foi removido.`,
+        });
+      } else {
+        toast({
+          title: "Erro ao excluir SKU",
+          description: "Tente novamente em alguns instantes.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Erro ao deletar SKU:', error);
+      toast({
+        title: "Erro ao excluir SKU",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
     }
   };
 

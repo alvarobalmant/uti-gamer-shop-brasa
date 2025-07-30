@@ -9,7 +9,6 @@ import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { searchProducts } from '@/utils/fuzzySearch';
-import ProductModal from '@/components/ProductModal';
 
 const SearchResults = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -113,7 +112,6 @@ const SearchResults = () => {
       </section>
 
       {/* Product Modal */}
-      <ProductModal
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}

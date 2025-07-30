@@ -1,300 +1,226 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useCallback, useMemo } from 'react';
+import { useOptimizedCache, useCacheWithFallback, CacheKeys } from './useOptimizedCache';
+import { fetchProductsFromDatabase, fetchSingleProductFromDatabase } from './useProducts/productApi';
 import { Product } from './useProducts/types';
-import { toast } from 'sonner';
+import { CarouselConfig } from '@/types/specialSections';
 
-interface UseOptimizedProductsOptions {
-  category?: string;
-  limit?: number;
-  enableInfiniteScroll?: boolean;
-  enableVirtualization?: boolean;
-  prefetchNext?: boolean;
-  staleTime?: number;
-  cacheTime?: number;
-}
+// Hook otimizado para todos os produtos
+export const useOptimizedProducts = (includeAdmin: boolean = false) => {
+  const queryKey = useMemo(() => 
+    CacheKeys.products({ includeAdmin }), 
+    [includeAdmin]
+  );
+  
+  const queryFn = useCallback(() => 
+    fetchProductsFromDatabase(includeAdmin), 
+    [includeAdmin]
+  );
+  
+  return useCacheWithFallback(
+    queryKey,
+    queryFn,
+    [] as Product[], // fallback vazio
+    'products'
+  );
+};
 
-interface OptimizedProduct extends Product {
-  formattedPrice: string;
-  formattedPromotionalPrice?: string;
-  formattedUtiProPrice?: string;
-  discountPercentage?: number;
-  hasDiscount: boolean;
-}
-
-export const useOptimizedProducts = (options: UseOptimizedProductsOptions = {}) => {
-  const {
-    category,
-    limit = 12,
-    enableInfiniteScroll = false,
-    enableVirtualization = false,
-    prefetchNext = true,
-    staleTime = 5 * 60 * 1000, // 5 minutos
-    cacheTime = 10 * 60 * 1000, // 10 minutos
-  } = options;
-
-  const [page, setPage] = useState(0);
-  const [allProducts, setAllProducts] = useState<OptimizedProduct[]>([]);
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const queryClient = useQueryClient();
-  const observerRef = useRef<IntersectionObserver>();
-
-  // Função para formatar preços
-  const formatPrice = useCallback((price: number): string => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(price);
-  }, []);
-
-  // Função para calcular desconto
-  const calculateDiscount = useCallback((originalPrice: number, promotionalPrice?: number): number => {
-    if (!promotionalPrice || promotionalPrice >= originalPrice) return 0;
-    return Math.round(((originalPrice - promotionalPrice) / originalPrice) * 100);
-  }, []);
-
-  // Função para otimizar dados do produto
-  const optimizeProduct = useCallback((product: Product): OptimizedProduct => {
-    const formattedPrice = formatPrice(product.price);
-    const formattedPromotionalPrice = product.promotional_price 
-      ? formatPrice(product.promotional_price) 
-      : undefined;
-    const formattedUtiProPrice = product.uti_pro_price 
-      ? formatPrice(product.uti_pro_price) 
-      : undefined;
-    
-    const discountPercentage = calculateDiscount(product.price, product.promotional_price);
-    const hasDiscount = discountPercentage > 0;
-
-    return {
-      ...product,
-      formattedPrice,
-      formattedPromotionalPrice,
-      formattedUtiProPrice,
-      discountPercentage,
-      hasDiscount,
-    };
-  }, [formatPrice, calculateDiscount]);
-
-  // Query para buscar produtos
-  const {
-    data: rawProducts = [],
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ['optimized-products', category, page, limit],
-    queryFn: async () => {
-      let query = supabase
-        .from('products')
-        .select(`
-          id,
-          name,
-          price,
-          promotional_price,
-          uti_pro_price,
-          image,
-          slug,
-          description,
-          category,
-          platform,
-          is_featured,
-          stock,
-          created_at
-        `)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (category) {
-        query = query.eq('category', category);
-      }
-
-      if (enableInfiniteScroll) {
-        query = query.range(page * limit, (page + 1) * limit - 1);
-      } else {
-        query = query.limit(limit);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Erro ao buscar produtos:', error);
-        throw error;
-      }
-
-      return (data || []) as Product[];
-    },
-    staleTime,
-    gcTime: cacheTime,
-    refetchOnWindowFocus: false,
-    retry: 2,
-    select: useCallback((data: Product[]) => {
-      return data.map(optimizeProduct);
-    }, [optimizeProduct]),
-  });
-
-  // Produtos otimizados
-  const optimizedProducts = useMemo(() => {
-    if (enableInfiniteScroll) {
-      return allProducts;
+// Hook otimizado para produto único
+export const useOptimizedProduct = (productId: string) => {
+  const queryKey = useMemo(() => 
+    CacheKeys.product(productId), 
+    [productId]
+  );
+  
+  const queryFn = useCallback(() => 
+    fetchSingleProductFromDatabase(productId), 
+    [productId]
+  );
+  
+  return useOptimizedCache(
+    queryKey,
+    queryFn,
+    'products',
+    {
+      enabled: !!productId,
+      staleTime: 10 * 60 * 1000, // 10 minutos para produto individual
     }
-    return rawProducts;
-  }, [enableInfiniteScroll, allProducts, rawProducts]);
+  );
+};
 
-  // Atualizar lista para infinite scroll
-  useEffect(() => {
-    if (enableInfiniteScroll && rawProducts.length > 0) {
-      if (page === 0) {
-        setAllProducts(rawProducts);
-      } else {
-        setAllProducts(prev => [...prev, ...rawProducts]);
-      }
-      
-      setHasNextPage(rawProducts.length === limit);
-    }
-  }, [rawProducts, page, limit, enableInfiniteScroll]);
-
-  // Prefetch da próxima página
-  useEffect(() => {
-    if (prefetchNext && !enableInfiniteScroll && rawProducts.length > 0) {
-      const nextPage = page + 1;
-      queryClient.prefetchQuery({
-        queryKey: ['optimized-products', category, nextPage, limit],
-        queryFn: async () => {
-          let query = supabase
-            .from('products')
-            .select('*')
-            .eq('is_active', true)
-            .order('created_at', { ascending: false })
-            .range(nextPage * limit, (nextPage + 1) * limit - 1);
-
-          if (category) {
-            query = query.eq('category', category);
-          }
-
-          const { data } = await query;
-          return data as Product[];
-        },
-        staleTime: staleTime / 2, // Prefetch com stale time menor
-      });
-    }
-  }, [rawProducts, page, limit, category, prefetchNext, enableInfiniteScroll, queryClient, staleTime]);
-
-  // Função para carregar mais produtos (infinite scroll)
-  const loadMore = useCallback(() => {
-    if (enableInfiniteScroll && hasNextPage && !isLoading) {
-      setPage(prev => prev + 1);
-    }
-  }, [enableInfiniteScroll, hasNextPage, isLoading]);
-
-  // Ref callback para infinite scroll
-  const lastProductElementRef = useCallback((node: HTMLElement | null) => {
-    if (isLoading) return;
-    
-    if (observerRef.current) observerRef.current.disconnect();
-    
-    observerRef.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasNextPage) {
-        loadMore();
-      }
-    }, {
-      threshold: 0.1,
-      rootMargin: '100px', // Começar a carregar 100px antes
-    });
-    
-    if (node) observerRef.current.observe(node);
-  }, [isLoading, hasNextPage, loadMore]);
-
-  // Função para buscar produto específico
-  const getProduct = useCallback(async (id: string): Promise<OptimizedProduct | null> => {
-    try {
-      // Primeiro tentar no cache
-      const cachedProduct = optimizedProducts.find(p => p.id === id);
-      if (cachedProduct) return cachedProduct;
-
-      // Buscar no banco se não estiver no cache
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', id)
-        .eq('is_active', true)
-        .single();
-
-      if (error || !data) return null;
-
-      return optimizeProduct(data as Product);
-    } catch (error) {
-      console.error('Erro ao buscar produto:', error);
-      return null;
-    }
-  }, [optimizedProducts, optimizeProduct]);
-
-  // Função para buscar produtos relacionados
-  const getRelatedProducts = useCallback(async (productId: string, count: number = 4): Promise<OptimizedProduct[]> => {
-    try {
-      const currentProduct = await getProduct(productId);
-      if (!currentProduct) return [];
-
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('is_active', true)
-        .eq('category', currentProduct.category)
-        .neq('id', productId)
-        .limit(count);
-
-      if (error || !data) return [];
-
-      return (data || []).map(product => optimizeProduct(product as Product));
-    } catch (error) {
-      console.error('Erro ao buscar produtos relacionados:', error);
-      return [];
-    }
-  }, [getProduct, optimizeProduct]);
-
-  // Função para invalidar cache
-  const invalidateCache = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['optimized-products'] });
-  }, [queryClient]);
-
-  // Função para reset
-  const reset = useCallback(() => {
-    setPage(0);
-    setAllProducts([]);
-    setHasNextPage(true);
-  }, []);
-
-  // Cleanup do observer
-  useEffect(() => {
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, []);
-
-  // Tratamento de erro
-  useEffect(() => {
-    if (error) {
-      toast.error('Erro ao carregar produtos. Tente novamente.');
-    }
-  }, [error]);
-
+// Hook otimizado para produtos por categoria
+export const useOptimizedProductsByCategory = (category: string) => {
+  const { data: allProducts, isLoading, error } = useOptimizedProducts();
+  
+  const filteredProducts = useMemo(() => {
+    if (!allProducts) return [];
+    return allProducts.filter(product => 
+      product.category?.toLowerCase() === category.toLowerCase()
+    );
+  }, [allProducts, category]);
+  
   return {
-    products: optimizedProducts,
+    data: filteredProducts,
     isLoading,
     error,
-    hasNextPage,
-    loadMore,
-    lastProductElementRef,
-    getProduct,
-    getRelatedProducts,
-    invalidateCache,
-    reset,
-    refetch,
-    // Estatísticas úteis
-    totalLoaded: optimizedProducts.length,
-    currentPage: page,
+    isEmpty: filteredProducts.length === 0 && !isLoading
   };
 };
+
+// Hook otimizado para produtos em destaque
+export const useOptimizedFeaturedProducts = (limit: number = 10) => {
+  const { data: allProducts, isLoading, error } = useOptimizedProducts();
+  
+  const featuredProducts = useMemo(() => {
+    if (!allProducts) return [];
+    return allProducts
+      .filter(product => product.is_featured)
+      .slice(0, limit);
+  }, [allProducts, limit]);
+  
+  return {
+    data: featuredProducts,
+    isLoading,
+    error,
+    isEmpty: featuredProducts.length === 0 && !isLoading
+  };
+};
+
+// Hook otimizado para busca de produtos
+export const useOptimizedProductSearch = (
+  searchTerm: string,
+  filters?: Record<string, any>
+) => {
+  const { data: allProducts, isLoading, error } = useOptimizedProducts();
+  
+  const searchResults = useMemo(() => {
+    if (!allProducts || !searchTerm.trim()) return [];
+    
+    const term = searchTerm.toLowerCase();
+    let results = allProducts.filter(product => 
+      product.name.toLowerCase().includes(term) ||
+      product.description?.toLowerCase().includes(term) ||
+      product.brand?.toLowerCase().includes(term) ||
+      product.category?.toLowerCase().includes(term)
+    );
+    
+    // Aplicar filtros adicionais se fornecidos
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          results = results.filter(product => {
+            const productValue = (product as any)[key];
+            if (Array.isArray(value)) {
+              return value.includes(productValue);
+            }
+            return productValue === value;
+          });
+        }
+      });
+    }
+    
+    return results;
+  }, [allProducts, searchTerm, filters]);
+  
+  return {
+    data: searchResults,
+    isLoading,
+    error,
+    isEmpty: searchResults.length === 0 && !isLoading,
+    hasSearchTerm: searchTerm.trim().length > 0
+  };
+};
+
+// Hook otimizado para produtos relacionados
+export const useOptimizedRelatedProducts = (
+  currentProductId: string,
+  category?: string,
+  limit: number = 5
+) => {
+  const { data: allProducts, isLoading, error } = useOptimizedProducts();
+  
+  const relatedProducts = useMemo(() => {
+    if (!allProducts || !currentProductId) return [];
+    
+    return allProducts
+      .filter(product => 
+        product.id !== currentProductId && // Excluir produto atual
+        (!category || product.category === category) // Mesma categoria se especificada
+      )
+      .slice(0, limit);
+  }, [allProducts, currentProductId, category, limit]);
+  
+  return {
+    data: relatedProducts,
+    isLoading,
+    error,
+    isEmpty: relatedProducts.length === 0 && !isLoading
+  };
+};
+
+// Hook otimizado para produtos por configuração de carrossel
+export const useOptimizedProductsByConfig = (config: CarouselConfig) => {
+  const queryKey = useMemo(() => 
+    CacheKeys.products({ config: JSON.stringify(config) }), 
+    [config]
+  );
+  
+  const queryFn = useCallback(async () => {
+    // Aqui você pode implementar lógica específica baseada na config
+    // Por enquanto, vamos usar a função existente
+    const { fetchProductsByCriteria } = await import('./useProducts/productApi');
+    return fetchProductsByCriteria(config);
+  }, [config]);
+  
+  return useOptimizedCache(
+    queryKey,
+    queryFn,
+    'products',
+    {
+      enabled: !!config,
+      staleTime: 3 * 60 * 1000, // 3 minutos para configurações específicas
+    }
+  );
+};
+
+// Hook para prefetch inteligente de produtos
+export const useProductPrefetch = () => {
+  const { prefetchData } = useCacheInvalidation();
+  
+  const prefetchProduct = useCallback(async (productId: string) => {
+    await prefetchData(
+      CacheKeys.product(productId),
+      () => fetchSingleProductFromDatabase(productId),
+      'products'
+    );
+  }, [prefetchData]);
+  
+  const prefetchCategory = useCallback(async (category: string) => {
+    await prefetchData(
+      CacheKeys.products({ category }),
+      () => fetchProductsFromDatabase().then(products => 
+        products.filter(p => p.category === category)
+      ),
+      'products'
+    );
+  }, [prefetchData]);
+  
+  const prefetchFeatured = useCallback(async () => {
+    await prefetchData(
+      CacheKeys.products({ featured: true }),
+      () => fetchProductsFromDatabase().then(products => 
+        products.filter(p => p.is_featured)
+      ),
+      'products'
+    );
+  }, [prefetchData]);
+  
+  return {
+    prefetchProduct,
+    prefetchCategory,
+    prefetchFeatured
+  };
+};
+
+// Importar hook de invalidação
+import { useCacheInvalidation } from './useOptimizedCache';
 

@@ -6,7 +6,6 @@ import { useProducts, Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { searchProducts } from '@/utils/fuzzySearch';
-import ProductModal from '@/components/ProductModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -355,7 +354,6 @@ const SearchResultsEnhanced = () => {
       </section>
 
       {/* Product Modal */}
-      <ProductModal
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}

@@ -7,7 +7,6 @@ import ProductCard from '@/components/ProductCard';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FixedContentFormData, CarouselConfig } from '@/types/specialSections'; // Assuming types are centralized
-import ProductModal from '@/components/ProductModal';
 
 const SpecialSectionCarouselPage: React.FC = () => {
   const { sectionId, carouselIndex } = useParams<{ sectionId: string; carouselIndex: string }>();
@@ -114,15 +113,6 @@ const SpecialSectionCarouselPage: React.FC = () => {
         </div>
       ) : (
         <p className="text-center text-gray-500">Nenhum produto encontrado para este carrossel.</p>
-      )}
-
-      {/* Product Modal */}
-      {selectedProductId && (
-        <ProductModal
-          product={products.find(p => p.id === selectedProductId) || null}
-          isOpen={isModalOpen}
-          onOpenChange={setIsModalOpen}
-        />
       )}
     </div>
   );

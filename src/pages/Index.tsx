@@ -5,6 +5,7 @@ import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
+import ProductSkeleton from '@/components/ProductSkeleton';
 
 import Footer from '@/components/Footer';
 import { useIndexPage } from '@/hooks/useIndexPage';
@@ -171,7 +172,18 @@ const Index = React.memo(() => {
                     />
                   );
                 } else if (specialSectionsLoading) {
-                  return <div key={sectionKey} className="text-center py-10 text-gray-400">Carregando seção especial...</div>;
+                  return (
+                    <div key={sectionKey} className="py-8 bg-background">
+                      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="h-8 bg-gray-200 rounded w-48 animate-pulse relative overflow-hidden mb-6">
+                          <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer"></div>
+                        </div>
+                        <div className="overflow-hidden">
+                          <ProductSkeleton count={4} />
+                        </div>
+                      </div>
+                    </div>
+                  );
                 } else {
                   console.warn(`Special section data not found for key: ${sectionKey}`);
                   return null;

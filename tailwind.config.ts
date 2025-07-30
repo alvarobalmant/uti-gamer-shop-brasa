@@ -121,9 +121,10 @@ const config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        // Added animations from plan
         "fade-in": "fadeIn 0.5s ease-out forwards",
         "fade-in-up": "fadeInUp 0.6s ease-out forwards",
+        "shimmer": "shimmer 2s linear infinite",
+        "wave": "wave 1.5s ease-in-out infinite",
       },
       keyframes: {
         "accordion-down": {
@@ -134,7 +135,14 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        // Added keyframes from plan
+        "shimmer": {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        "wave": {
+          "0%, 60%, 100%": { transform: "initial" },
+          "30%": { transform: "scaleY(0.8)" },
+        },
         fadeIn: {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },

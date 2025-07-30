@@ -7,7 +7,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { smartSearchProducts } from '@/utils/smartSearch';
 import { getAdvancedSpellCorrection, autoCorrectAdvanced } from '@/utils/advancedSpellCorrector';
-import ProductModal from '@/components/ProductModal';
 import SearchResultProductCard from '@/components/SearchResultProductCard';
 import Header from '@/components/Header';
 import Cart from '@/components/Cart';
@@ -235,10 +234,6 @@ const SearchResultsFinal = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   
-  // State for managing the product modal
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-
   // Estados para modais de carrinho e auth
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -332,8 +327,7 @@ const SearchResultsFinal = () => {
   };
 
   const handleProductClick = (productId: string) => {
-    setSelectedProductId(productId);
-    setIsModalOpen(true);
+    navigate(`/produto/${productId}`);
   };
 
   const handleCartOpen = () => {
@@ -573,15 +567,6 @@ const SearchResultsFinal = () => {
           </div>
         )}
       </main>
-
-      {/* Modal do produto */}
-      {isModalOpen && selectedProductId && (
-        <ProductModal
-          product={products.find(p => p.id === selectedProductId) || null}
-          isOpen={isModalOpen}
-          onOpenChange={setIsModalOpen}
-        />
-      )}
 
       {/* Modal do carrinho */}
       <Cart

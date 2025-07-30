@@ -1,4 +1,5 @@
 import React, { Suspense, lazy } from "react";
+import './utils/categoryTestSimple';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,11 +14,16 @@ import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
+import IndexWithBackendOptimizations from "./pages/IndexWithBackendOptimizations";
+import IndexOptimized from "./pages/IndexOptimized";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { useEffect } from "react";
+
+// Componentes de preloading inteligente
+import { AppWithPreloader } from "@/components/AppWithPreloader";
 
 // Hook minimalista para prevenir layout shift sem interferir no scroll
 const usePreventLayoutShift = () => {
@@ -61,7 +67,6 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const UTIPro = lazy(() => import("./pages/UTIPro"));
 
 // Lazy loading para páginas de plataforma
-const XboxPage = lazy(() => import("./pages/platforms/XboxPage"));
 const PlayStationPageProfessionalV2 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV2"));
 const PlayStationPageProfessionalV3 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV3"));
 const PlayStationPageProfessionalV4 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV4"));
@@ -71,11 +76,8 @@ const PCGamingPage = lazy(() => import("./pages/platforms/PCGamingPage"));
 const RetroGamingPage = lazy(() => import("./pages/platforms/RetroGamingPage"));
 const AreaGeekPage = lazy(() => import("./pages/platforms/AreaGeekPage"));
 
-// Lazy loading para versões Xbox
-const XboxPage3 = lazy(() => import("./pages/platforms/XboxPage3"));
+// Lazy loading para Xbox4 (única versão mantida)
 const XboxPage4 = lazy(() => import("./pages/platforms/XboxPage4"));
-const XboxPage5 = lazy(() => import("./pages/platforms/XboxPage5"));
-const XboxPage6 = lazy(() => import("./pages/platforms/XboxPage6"));
 
 // Lazy loading para admin
 const AdminPanel = lazy(() => import("@/components/Admin/AdminPanel").then(module => ({ default: module.AdminPanel })));
@@ -219,11 +221,7 @@ const App = () => {
                   />
                   
                   {/* Páginas de plataforma específicas - MUST come before dynamic routes */}
-                  <Route path="/xbox" element={<XboxPage />} />
-                  <Route path="/xbox3" element={<XboxPage3 />} />
                   <Route path="/xbox4" element={<XboxPage4 />} />
-                  <Route path="/xbox5" element={<XboxPage5 />} />
-                  <Route path="/xbox6" element={<XboxPage6 />} />
                   <Route path="/playstation" element={<PlayStationPageProfessionalV5 />} />
                   <Route path="/playstation-v2" element={<PlayStationPageProfessionalV2 />} />
                   <Route path="/playstation-v3" element={<PlayStationPageProfessionalV3 />} />

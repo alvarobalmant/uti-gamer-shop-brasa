@@ -46,7 +46,7 @@ export const useIndexPage = () => {
     }
   }, [products.length, productsLoading, retryCount, refetchProducts]);
 
-  // Memoizar estados computados
+  // Loading state - mostrar loading se qualquer um estiver carregando
   const isLoading = useMemo(() => 
     layoutLoading || sectionsLoading || specialSectionsLoading, 
     [layoutLoading, sectionsLoading, specialSectionsLoading]

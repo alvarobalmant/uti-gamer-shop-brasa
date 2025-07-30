@@ -6,6 +6,7 @@ import { useUTICoinsSettings } from '@/hooks/useUTICoinsSettings';
 
 interface UTICoinsContextType {
   coins: UTICoins;
+  balance: number;
   transactions: CoinTransaction[];
   rules: CoinRule[];
   loading: boolean;
@@ -359,6 +360,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
 
   const value: UTICoinsContextType = {
     coins,
+    balance: coins.balance,
     transactions,
     rules,
     loading,

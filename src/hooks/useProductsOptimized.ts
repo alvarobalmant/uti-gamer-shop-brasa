@@ -1,316 +1,258 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from './useProducts/types';
 import { 
   fetchProductsFromDatabase, 
-  fetchProductsByCriteria,
-  fetchSingleProductFromDatabase 
+  fetchSingleProductFromDatabase,
+  fetchProductsByCriteria
 } from './useProducts/productApi';
 import { handleProductError } from './useProducts/productErrorHandler';
 import { CarouselConfig } from '@/types/specialSections';
 
-export type { Product } from './useProducts/types';
-
-interface UseProductsOptimizedOptions {
-  limit?: number;
-  enablePrefetch?: boolean;
-  cacheTime?: number;
-  staleTime?: number;
-  config?: CarouselConfig;
-}
-
-interface ProductCache {
-  data: Product[];
-  timestamp: number;
-  isStale: boolean;
-}
-
 // Cache global para produtos
-const productCache = new Map<string, ProductCache>();
+const productCache = new Map<string, { data: Product[], timestamp: number }>();
+const singleProductCache = new Map<string, { data: Product, timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+// Prefetch queue para produtos
 const prefetchQueue = new Set<string>();
+const prefetchPromises = new Map<string, Promise<any>>();
 
-export const useProductsOptimized = (options: UseProductsOptimizedOptions = {}) => {
-  const {
-    limit = 50,
-    enablePrefetch = true,
-    cacheTime = 10 * 60 * 1000, // 10 minutos
-    staleTime = 5 * 60 * 1000,  // 5 minutos
-    config
-  } = options;
-
+export const useProductsOptimized = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  
   const abortControllerRef = useRef<AbortController | null>(null);
-  const lastFetchRef = useRef<number>(0);
 
-  // Gerar chave de cache baseada nas opções
-  const cacheKey = useMemo(() => {
-    const key = config 
-      ? `config_${JSON.stringify(config)}_${limit}`
-      : `all_${limit}`;
-    return key;
-  }, [config, limit]);
+  // Função para verificar se cache é válido
+  const isCacheValid = (timestamp: number) => {
+    return Date.now() - timestamp < CACHE_DURATION;
+  };
 
-  // Verificar se dados estão em cache e são válidos
-  const getCachedData = useCallback((key: string): ProductCache | null => {
-    const cached = productCache.get(key);
-    if (!cached) return null;
-
-    const now = Date.now();
-    const isExpired = now - cached.timestamp > cacheTime;
-    
-    if (isExpired) {
-      productCache.delete(key);
-      return null;
-    }
-
-    // Marcar como stale se passou do staleTime
-    cached.isStale = now - cached.timestamp > staleTime;
-    return cached;
-  }, [cacheTime, staleTime]);
-
-  // Salvar dados no cache
-  const setCachedData = useCallback((key: string, data: Product[]) => {
-    productCache.set(key, {
-      data: [...data], // Clone para evitar mutações
-      timestamp: Date.now(),
-      isStale: false
-    });
-  }, []);
-
-  // Função otimizada para buscar produtos
-  const fetchProductsOptimized = useCallback(async (forceRefresh = false) => {
-    // Cancelar requisição anterior se existir
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
+  // Função para buscar produtos com cache
+  const fetchProductsWithCache = useCallback(async (cacheKey: string = 'all') => {
     // Verificar cache primeiro
-    if (!forceRefresh) {
-      const cached = getCachedData(cacheKey);
-      if (cached) {
-        setProducts(cached.data);
-        setLoading(false);
-        setError(null);
-        
-        // Se dados estão stale, buscar em background
-        if (cached.isStale && enablePrefetch) {
-          fetchProductsOptimized(true);
-        }
-        return cached.data;
-      }
+    const cached = productCache.get(cacheKey);
+    if (cached && isCacheValid(cached.timestamp)) {
+      setProducts(cached.data);
+      setLoading(false);
+      return cached.data;
     }
 
     try {
       setLoading(true);
-      setError(null);
-
-      // Criar novo AbortController
+      
+      // Cancelar requisição anterior se existir
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      
       abortControllerRef.current = new AbortController();
-      const fetchTime = Date.now();
-      lastFetchRef.current = fetchTime;
-
-      let productsData: Product[];
-
-      if (config) {
-        productsData = await fetchProductsByCriteria(config);
-      } else {
-        productsData = await fetchProductsFromDatabase();
-      }
-
-      // Verificar se esta ainda é a requisição mais recente
-      if (lastFetchRef.current !== fetchTime) {
-        return; // Requisição mais recente já foi feita
-      }
-
-      // Aplicar limite se especificado
-      if (limit && productsData.length > limit) {
-        productsData = productsData.slice(0, limit);
-      }
-
-      // Pré-processar dados para melhor performance
-      const processedProducts = productsData.map(product => ({
-        ...product,
-        // Calcular campos derivados uma vez
-        formattedPrice: product.price ? `R$ ${product.price.toFixed(2).replace('.', ',')}` : 'Preço não disponível',
-        formattedPromotionalPrice: product.promotional_price ? `R$ ${product.promotional_price.toFixed(2).replace('.', ',')}` : null,
-        formattedUtiProPrice: product.uti_pro_price ? `R$ ${product.uti_pro_price.toFixed(2).replace('.', ',')}` : null,
-        hasDiscount: product.promotional_price && product.promotional_price < product.price,
-        discountPercentage: product.promotional_price && product.price 
-          ? Math.round(((product.price - product.promotional_price) / product.price) * 100)
-          : 0,
-      }));
-
-      setProducts(processedProducts);
-      setCachedData(cacheKey, processedProducts);
       
-      return processedProducts;
+      const productsData = await fetchProductsFromDatabase();
+      
+      // Salvar no cache
+      productCache.set(cacheKey, {
+        data: productsData,
+        timestamp: Date.now()
+      });
+      
+      setProducts(productsData);
+      return productsData;
     } catch (error: any) {
-      // Ignorar erros de abort
-      if (error.name === 'AbortError') {
-        return;
-      }
-
-      const errorMessage = handleProductError(error, 'ao carregar produtos');
-      setError(errorMessage);
+      if (error.name === 'AbortError') return;
       
-      // Não mostrar toast se temos dados em cache
-      const cached = getCachedData(cacheKey);
-      if (!cached) {
-        toast({
-          title: "Erro ao carregar produtos",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
+      const errorMessage = handleProductError(error, 'ao carregar produtos');
+      
+      toast({
+        title: "Erro ao carregar produtos",
+        description: errorMessage,
+        variant: "destructive",
+      });
       
       setProducts([]);
+      return [];
     } finally {
       setLoading(false);
     }
-  }, [cacheKey, config, limit, enablePrefetch, getCachedData, setCachedData, toast]);
+  }, [toast]);
 
-  // Prefetch de produtos relacionados
-  const prefetchRelatedProducts = useCallback(async (relatedConfig?: CarouselConfig) => {
-    if (!enablePrefetch || !relatedConfig) return;
-
-    const prefetchKey = `config_${JSON.stringify(relatedConfig)}_${limit}`;
-    
-    // Evitar prefetch duplicado
-    if (prefetchQueue.has(prefetchKey)) return;
-    
-    // Verificar se já está em cache
-    const cached = getCachedData(prefetchKey);
-    if (cached && !cached.isStale) return;
-
-    prefetchQueue.add(prefetchKey);
-
-    try {
-      const productsData = await fetchProductsByCriteria(relatedConfig);
-      const limitedData = limit ? productsData.slice(0, limit) : productsData;
-      setCachedData(prefetchKey, limitedData);
-    } catch (error) {
-      // Ignorar erros de prefetch silenciosamente
-      console.warn('Prefetch failed:', error);
-    } finally {
-      prefetchQueue.delete(prefetchKey);
-    }
-  }, [enablePrefetch, limit, getCachedData, setCachedData]);
-
-  // Buscar produto individual com cache
-  const fetchSingleProductOptimized = useCallback(async (id: string): Promise<Product | null> => {
-    const singleCacheKey = `single_${id}`;
-    
-    // Verificar cache primeiro
-    const cached = getCachedData(singleCacheKey);
-    if (cached && cached.data.length > 0) {
-      return cached.data[0];
+  // Função para prefetch de produto individual
+  const prefetchProduct = useCallback(async (productId: string) => {
+    if (prefetchQueue.has(productId) || singleProductCache.has(productId)) {
+      return;
     }
 
+    prefetchQueue.add(productId);
+
     try {
-      const product = await fetchSingleProductFromDatabase(id);
-      if (product) {
-        setCachedData(singleCacheKey, [product]);
+      // Evitar múltiplas requisições para o mesmo produto
+      if (prefetchPromises.has(productId)) {
+        return prefetchPromises.get(productId);
       }
+
+      const promise = fetchSingleProductFromDatabase(productId);
+      prefetchPromises.set(productId, promise);
+
+      const product = await promise;
+      
+      // Salvar no cache
+      singleProductCache.set(productId, {
+        data: product,
+        timestamp: Date.now()
+      });
+
+      prefetchPromises.delete(productId);
+    } catch (error) {
+      console.warn('Prefetch failed for product:', productId, error);
+      prefetchPromises.delete(productId);
+    } finally {
+      prefetchQueue.delete(productId);
+    }
+  }, []);
+
+  // Função para buscar produto individual com cache
+  const fetchSingleProduct = useCallback(async (productId: string) => {
+    // Verificar cache primeiro
+    const cached = singleProductCache.get(productId);
+    if (cached && isCacheValid(cached.timestamp)) {
+      return cached.data;
+    }
+
+    try {
+      const product = await fetchSingleProductFromDatabase(productId);
+      
+      // Salvar no cache
+      singleProductCache.set(productId, {
+        data: product,
+        timestamp: Date.now()
+      });
+      
       return product;
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produto');
+      
       toast({
         title: "Erro ao carregar produto",
         description: errorMessage,
         variant: "destructive",
       });
-      return null;
+      
+      throw error;
     }
-  }, [getCachedData, setCachedData, toast]);
+  }, [toast]);
 
-  // Invalidar cache
-  const invalidateCache = useCallback((pattern?: string) => {
-    if (pattern) {
-      // Invalidar caches que correspondem ao padrão
-      for (const key of productCache.keys()) {
-        if (key.includes(pattern)) {
-          productCache.delete(key);
+  // Função para prefetch de produtos relacionados
+  const prefetchRelatedProducts = useCallback(async (productIds: string[]) => {
+    const promises = productIds.map(id => prefetchProduct(id));
+    await Promise.allSettled(promises);
+  }, [prefetchProduct]);
+
+  // Função para buscar produtos por critério com cache
+  const fetchProductsByConfig = useCallback(async (config: CarouselConfig) => {
+    if (!config) return [];
+
+    const cacheKey = `config_${JSON.stringify(config)}`;
+    
+    // Verificar cache primeiro
+    const cached = productCache.get(cacheKey);
+    if (cached && isCacheValid(cached.timestamp)) {
+      return cached.data;
+    }
+
+    try {
+      const productsData = await fetchProductsByCriteria(config);
+      
+      // Salvar no cache
+      productCache.set(cacheKey, {
+        data: productsData,
+        timestamp: Date.now()
+      });
+      
+      return productsData;
+    } catch (error: any) {
+      const errorMessage = handleProductError(error, 'ao carregar produtos por critério');
+      
+      toast({
+        title: "Erro ao carregar produtos",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      return [];
+    }
+  }, [toast]);
+
+  // Função para limpar cache
+  const clearCache = useCallback(() => {
+    productCache.clear();
+    singleProductCache.clear();
+    prefetchPromises.clear();
+    prefetchQueue.clear();
+  }, []);
+
+  // Função para preload de recursos críticos
+  const preloadCriticalResources = useCallback(() => {
+    // Preload das primeiras imagens de produtos
+    if (products.length > 0) {
+      products.slice(0, 6).forEach(product => {
+        if (product.image_url) {
+          const img = new Image();
+          img.src = product.image_url;
         }
-      }
-    } else {
-      // Limpar todo o cache
-      productCache.clear();
+      });
     }
-  }, []);
+  }, [products]);
 
-  // Refresh manual
-  const refresh = useCallback(() => {
-    invalidateCache(cacheKey);
-    return fetchProductsOptimized(true);
-  }, [cacheKey, invalidateCache, fetchProductsOptimized]);
-
-  // Efeito principal
+  // Carregar produtos iniciais
   useEffect(() => {
-    fetchProductsOptimized();
-
-    // Cleanup
+    fetchProductsWithCache();
+    
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [fetchProductsOptimized]);
+  }, [fetchProductsWithCache]);
 
-  // Cleanup no unmount
+  // Preload de recursos críticos quando produtos carregam
   useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
-
-  // Estatísticas do cache (para debugging)
-  const getCacheStats = useCallback(() => {
-    return {
-      totalCached: productCache.size,
-      cacheKeys: Array.from(productCache.keys()),
-      currentKey: cacheKey,
-      isCurrentCached: productCache.has(cacheKey),
-    };
-  }, [cacheKey]);
+    if (products.length > 0) {
+      preloadCriticalResources();
+    }
+  }, [products, preloadCriticalResources]);
 
   return {
     products,
     loading,
-    error,
-    refresh,
+    fetchProducts: fetchProductsWithCache,
+    fetchSingleProduct,
+    fetchProductsByConfig,
+    prefetchProduct,
     prefetchRelatedProducts,
-    fetchSingleProduct: fetchSingleProductOptimized,
-    invalidateCache,
-    getCacheStats,
-    
-    // Compatibilidade com hook original
-    refetch: refresh,
-    fetchProductsByConfig: fetchProductsOptimized,
+    clearCache,
+    // Estatísticas do cache para debug
+    getCacheStats: () => ({
+      productCacheSize: productCache.size,
+      singleProductCacheSize: singleProductCache.size,
+      prefetchQueueSize: prefetchQueue.size
+    })
   };
 };
 
-// Hook para limpar cache periodicamente
-export const useCacheCleanup = (intervalMs = 30 * 60 * 1000) => { // 30 minutos
-  useEffect(() => {
-    const cleanup = () => {
-      const now = Date.now();
-      const maxAge = 60 * 60 * 1000; // 1 hora
-      
-      for (const [key, cache] of productCache.entries()) {
-        if (now - cache.timestamp > maxAge) {
-          productCache.delete(key);
-        }
-      }
-    };
+// Hook para prefetch baseado em hover
+export const useProductPrefetch = () => {
+  const { prefetchProduct } = useProductsOptimized();
 
-    const interval = setInterval(cleanup, intervalMs);
-    return () => clearInterval(interval);
-  }, [intervalMs]);
+  const handleProductHover = useCallback((productId: string) => {
+    // Delay pequeno para evitar prefetch desnecessário
+    const timeoutId = setTimeout(() => {
+      prefetchProduct(productId);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [prefetchProduct]);
+
+  return { handleProductHover };
 };
 

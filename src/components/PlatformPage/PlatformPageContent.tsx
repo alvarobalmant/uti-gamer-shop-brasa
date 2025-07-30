@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Page, PageLayoutItem } from '@/hooks/usePages';
 import { Product } from '@/hooks/useProducts';
 import PlatformSectionRenderer from './PlatformSectionRenderer';
-import ProductModal from '@/components/ProductModal';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 
 interface PlatformPageContentProps {
@@ -71,13 +70,6 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
           />
         ))}
       </main>
-
-      {/* Product Modal */}
-      <ProductModal
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      />
 
       {/* Cart Modal - You may need to implement this component */}
       {isCartOpen && (

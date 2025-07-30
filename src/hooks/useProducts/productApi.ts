@@ -5,6 +5,8 @@ import { CarouselConfig } from '@/types/specialSections';
 const mapRowToProduct = (row: any): Product => ({
   id: row.product_id,
   name: row.product_name || '',
+  brand: row.brand || '',
+  category: row.category || '',
   description: row.product_description || '',
   price: Number(row.product_price) || 0,
   pro_price: row.pro_price ? Number(row.pro_price) : undefined,
@@ -91,12 +93,18 @@ const mapRowToProduct = (row: any): Product => ({
   updated_at: row.updated_at || new Date().toISOString()
 });
 
-export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
+export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): Promise<Product[]> => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('view_product_with_tags')
-      .select('*')
-      .neq('product_type', 'master'); // Filtrar produtos master
+      .select('*');
+    
+    // Só filtrar produtos master se não for para admin
+    if (!includeAdmin) {
+      query = query.neq('product_type', 'master');
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching products:', error);
@@ -136,11 +144,15 @@ export const fetchProductsFromDatabase = async (): Promise<Product[]> => {
   }
 };
 
-export const fetchProductsByCriteria = async (config: CarouselConfig): Promise<Product[]> => {
+export const fetchProductsByCriteria = async (config: CarouselConfig, includeAdmin: boolean = false): Promise<Product[]> => {
   try {
     let query = supabase.from('view_product_with_tags')
-      .select('*')
-      .neq('product_type', 'master'); // Filtrar produtos master
+      .select('*');
+    
+    // Só filtrar produtos master se não for para admin
+    if (!includeAdmin) {
+      query = query.neq('product_type', 'master');
+    }
     
     // Filter by product IDs if specified
     if (config.product_ids && config.product_ids.length > 0) {
@@ -221,6 +233,8 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
       const product = mapRowToProduct({
         product_id: directData.id,
         product_name: directData.name,
+        brand: directData.brand,
+        category: directData.category,
         product_description: directData.description,
         product_price: directData.price,
         pro_price: directData.pro_price,

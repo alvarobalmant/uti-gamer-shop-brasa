@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { HelpCircle, Plus, X } from 'lucide-react';
 import { ProductFormData, ProductFAQ } from '@/types/product-extended';
+import { useProductFAQs } from '@/hooks/useProductFAQs';
 
 interface FAQTabProps {
   formData: ProductFormData;
@@ -14,12 +15,52 @@ interface FAQTabProps {
 }
 
 const FAQTab: React.FC<FAQTabProps> = ({ formData, onChange }) => {
+  const productId = formData.id;
+  const { 
+    categorizedFaqs, 
+    loading, 
+    addFAQ, 
+    updateFAQ, 
+    deleteFAQ,
+    refreshFAQs 
+  } = useProductFAQs(productId || '');
+  
+  // Local state for unsaved products
+  const [localFAQs, setLocalFAQs] = useState<Array<{
+    id: string;
+    question: string;
+    answer: string;
+    category: string;
+    is_visible: boolean;
+    order: number;
+  }>>([]);
+  
   const [newFAQ, setNewFAQ] = useState({
     question: '',
     answer: '',
     category: 'geral',
     is_visible: true
   });
+
+  // Get FAQs from database if product exists, otherwise use local state
+  const hasProductId = Boolean(productId);
+  const displayFAQs = hasProductId 
+    ? categorizedFaqs.flatMap(cat => cat.faqs.map(faq => ({
+        id: faq.id,
+        question: faq.question,
+        answer: faq.answer,
+        category: faq.category || 'geral',
+        is_visible: faq.active,
+        order: faq.order_index
+      })))
+    : localFAQs;
+
+  // Sync local FAQs changes to parent form
+  React.useEffect(() => {
+    if (!hasProductId) {
+      onChange('localFAQs', localFAQs);
+    }
+  }, [localFAQs, hasProductId, onChange]);
 
   const categories = [
     { value: 'geral', label: 'Geral' },
@@ -29,40 +70,77 @@ const FAQTab: React.FC<FAQTabProps> = ({ formData, onChange }) => {
     { value: 'entrega', label: 'Entrega' }
   ];
 
-  const handleAddFAQ = () => {
-    if (newFAQ.question.trim() && newFAQ.answer.trim()) {
-      const currentFAQs = formData.product_faqs || [];
-      const faqToAdd: ProductFAQ = {
-        id: `faq-${Date.now()}`,
-        question: newFAQ.question.trim(),
-        answer: newFAQ.answer.trim(),
-        order: currentFAQs.length + 1,
-        is_visible: newFAQ.is_visible,
-        category: newFAQ.category
-      };
+  const handleAddFAQ = async () => {
+    if (!newFAQ.question.trim() || !newFAQ.answer.trim()) return;
+    
+    try {
+      const nextOrderIndex = displayFAQs.length + 1;
       
-      onChange('product_faqs', [...currentFAQs, faqToAdd]);
+      if (hasProductId) {
+        // Product exists, save to database
+        await addFAQ({
+          product_id: productId!,
+          question: newFAQ.question.trim(),
+          answer: newFAQ.answer.trim(),
+          category: newFAQ.category,
+          tags: [],
+          helpful_count: 0,
+          active: newFAQ.is_visible,
+          order_index: nextOrderIndex
+        });
+        await refreshFAQs();
+      } else {
+        // Product doesn't exist, save to local state
+        const faqToAdd = {
+          id: `temp-${Date.now()}`,
+          question: newFAQ.question.trim(),
+          answer: newFAQ.answer.trim(),
+          category: newFAQ.category,
+          is_visible: newFAQ.is_visible,
+          order: nextOrderIndex
+        };
+        setLocalFAQs(prev => [...prev, faqToAdd]);
+      }
+      
       setNewFAQ({
         question: '',
         answer: '',
         category: 'geral',
         is_visible: true
       });
+    } catch (error) {
+      console.error('Erro ao adicionar FAQ:', error);
     }
   };
 
-  const handleRemoveFAQ = (faqId: string) => {
-    const currentFAQs = formData.product_faqs || [];
-    const newFAQs = currentFAQs.filter(f => f.id !== faqId);
-    onChange('product_faqs', newFAQs);
+  const handleRemoveFAQ = async (faqId: string) => {
+    try {
+      if (hasProductId) {
+        // Product exists, delete from database
+        await deleteFAQ(faqId);
+      } else {
+        // Product doesn't exist, delete from local state
+        setLocalFAQs(prev => prev.filter(f => f.id !== faqId));
+      }
+    } catch (error) {
+      console.error('Erro ao remover FAQ:', error);
+    }
   };
 
-  const handleUpdateFAQ = (faqId: string, field: string, value: any) => {
-    const currentFAQs = formData.product_faqs || [];
-    const newFAQs = currentFAQs.map(f => 
-      f.id === faqId ? { ...f, [field]: value } : f
-    );
-    onChange('product_faqs', newFAQs);
+  const handleUpdateFAQ = async (faqId: string, field: string, value: any) => {
+    try {
+      if (hasProductId) {
+        // Product exists, update in database
+        await updateFAQ(faqId, { [field]: value });
+      } else {
+        // Product doesn't exist, update in local state
+        setLocalFAQs(prev => prev.map(faq => 
+          faq.id === faqId ? { ...faq, [field]: value } : faq
+        ));
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar FAQ:', error);
+    }
   };
 
   return (
@@ -144,9 +222,9 @@ const FAQTab: React.FC<FAQTabProps> = ({ formData, onChange }) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {formData.product_faqs && formData.product_faqs.length > 0 ? (
+          {displayFAQs && displayFAQs.length > 0 ? (
             <div className="space-y-4">
-              {formData.product_faqs.map((faq) => (
+              {displayFAQs.map((faq) => (
                 <div key={faq.id} className="border rounded-lg p-4">
                   <div className="space-y-3">
                     <div>

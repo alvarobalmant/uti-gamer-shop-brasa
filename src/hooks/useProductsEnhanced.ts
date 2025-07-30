@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useProductContext } from '@/contexts/ProductContext';
 import { Product } from './useProducts/types';
 import { CarouselConfig } from '@/types/specialSections';
@@ -112,6 +112,12 @@ export const useProductsEnhanced = () => {
 export const useProductsAdmin = () => {
   const enhanced = useProductsEnhanced();
   const { emit } = useProductSyncEvents();
+  
+  // Carregar produtos incluindo master products no admin
+  useEffect(() => {
+    console.log('[useProductsAdmin] Carregando produtos para admin incluindo master products');
+    enhanced.fetchProducts(true); // includeAdmin = true
+  }, [enhanced.fetchProducts]);
   
   // Função para adicionar produto com refresh automático e eventos
   const addProductWithRefresh = useCallback(async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
