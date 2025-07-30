@@ -1,12 +1,16 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useProducts } from '@/hooks/useProducts';
+import { useProductsOptimized } from '@/contexts/ProductContextOptimized';
 import { useHomepageLayout } from '@/hooks/useHomepageLayout';
 import { useProductSections } from '@/hooks/useProductSections';
 import { useSpecialSections } from '@/hooks/useSpecialSections';
+import { adaptProductLightArrayToProductArray } from '@/hooks/useProducts/productAdapter';
 
 export const useIndexPage = () => {
-  const { products, loading: productsLoading, refetch: refetchProducts } = useProducts();
+  const { productsLight, loadingLight: productsLoading, refreshProducts: refetchProducts } = useProductsOptimized();
+  
+  // Adaptar produtos light para produtos completos
+  const products = useMemo(() => adaptProductLightArrayToProductArray(productsLight), [productsLight]);
   const { layoutItems, loading: layoutLoading } = useHomepageLayout();
   const { sections, loading: sectionsLoading } = useProductSections();
   const { sections: specialSections, loading: specialSectionsLoading } = useSpecialSections();
