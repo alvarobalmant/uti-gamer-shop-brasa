@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { FixedSizeList as List } from 'react-window';
-import { ProductCard } from '@/components/ProductCard';
+import ProductCard from '@/components/ProductCard';
 import { ProductCardSkeleton } from '@/components/ProductCardSkeleton';
-import { Product } from '@/types/product';
+import { Product } from '@/hooks/useProducts/types';
 import { useIntelligentLazyLoading } from '@/hooks/usePerformanceOptimizer';
 
 interface VirtualizedProductGridProps {
@@ -45,7 +45,6 @@ export const VirtualizedProductGrid: React.FC<VirtualizedProductGridProps> = ({
               product={product}
               onAddToCart={onAddToCart}
               onCardClick={onProductClick}
-              lazy={shouldLazyLoad}
             />
           </div>
         ))}
@@ -102,7 +101,6 @@ export const VirtualizedProductGrid: React.FC<VirtualizedProductGridProps> = ({
           product={product}
           onAddToCart={onAddToCart}
           onCardClick={onProductClick}
-          lazy={shouldLazyLoad}
         />
       ))}
     </div>
