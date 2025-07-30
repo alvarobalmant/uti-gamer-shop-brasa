@@ -1,20 +1,17 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { useToast } from '@/hooks/use-toast';
 import { Product } from './useProducts/types';
 import { 
-  fetchProductsFromDatabaseCached, 
-  fetchProductsByCriteriaOptimized,
-  fetchProductDetails 
-} from './useProducts/productApiOptimized';
-import { 
+  fetchProductsFromDatabase, 
   addProductToDatabase, 
   updateProductInDatabase, 
   deleteProductFromDatabase,
-  fetchSingleProductFromDatabase
+  fetchProductsByCriteria, // Import the new API function
+  fetchSingleProductFromDatabase // Import the single product function
 } from './useProducts/productApi';
 import { handleProductError } from './useProducts/productErrorHandler';
-import { CarouselConfig } from '@/types/specialSections';
+import { CarouselConfig } from '@/types/specialSections'; // Import CarouselConfig type
 
 export type { Product } from './useProducts/types';
 
@@ -23,10 +20,10 @@ export const useProducts = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async () => { // Wrap in useCallback
     try {
       setLoading(true);
-      const productsData = await fetchProductsFromDatabaseCached();
+      const productsData = await fetchProductsFromDatabase();
       setProducts(productsData);
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produtos');
@@ -37,95 +34,20 @@ export const useProducts = () => {
         variant: "destructive",
       });
       
+      // Em caso de erro, definir produtos como array vazio para não quebrar a interface
       setProducts([]);
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast]); // Add dependencies
 
   // New function to fetch products based on carousel config
   const fetchProductsByConfig = useCallback(async (config: CarouselConfig) => {
     if (!config) return;
     setLoading(true);
     try {
-      // Converter CarouselConfig para ProductCriteriaConfig
-      const criteriaConfig = {
-        product_ids: config.product_ids,
-        filter_featured: false,
-        sort_by: 'created_at' as const,
-        sort_order: 'desc' as const
-      };
-      const productsData = await fetchProductsByCriteriaOptimized(criteriaConfig);
-      // Converter ProductLight para Product (temporário)
-      const fullProducts = productsData.map(light => ({
-        ...light,
-        description: '',
-        brand: '',
-        category: '',
-        additional_images: [],
-        sizes: [],
-        colors: [],
-        stock: 0,
-        specifications: [],
-        technical_specs: {},
-        product_features: {},
-        shipping_weight: undefined,
-        free_shipping: false,
-        meta_title: '',
-        meta_description: '',
-        parent_product_id: undefined,
-        is_master_product: false,
-        product_type: 'simple' as const,
-        sku_code: undefined,
-        variant_attributes: {},
-        sort_order: 0,
-        available_variants: {},
-        master_slug: undefined,
-        inherit_from_master: {},
-        product_videos: [],
-        product_faqs: [],
-        product_highlights: [],
-        reviews_config: {
-          enabled: true,
-          show_rating: true,
-          show_count: true,
-          allow_reviews: true,
-          custom_rating: { value: 0, count: 0, use_custom: false }
-        },
-        trust_indicators: [],
-        manual_related_products: [],
-        breadcrumb_config: {
-          custom_path: [],
-          use_custom: false,
-          show_breadcrumb: true
-        },
-        product_descriptions: {
-          short: '',
-          detailed: '',
-          technical: '',
-          marketing: ''
-        },
-        delivery_config: {
-          custom_shipping_time: '',
-          shipping_regions: [],
-          express_available: false,
-          pickup_locations: [],
-          shipping_notes: ''
-        },
-        display_config: {
-          show_stock_counter: true,
-          show_view_counter: false,
-          custom_view_count: 0,
-          show_urgency_banner: false,
-          urgency_text: '',
-          show_social_proof: false,
-          social_proof_text: ''
-        },
-        tags: [],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })) as Product[];
-      setProducts(fullProducts);
+      const productsData = await fetchProductsByCriteria(config);
+      setProducts(productsData);
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produtos do carrossel');
       toast({
@@ -137,7 +59,7 @@ export const useProducts = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast]); // Add dependencies
 
   const addProduct = async (productData: Omit<Product, 'id' | 'tags'> & { tagIds: string[] }) => {
     try {
@@ -198,7 +120,7 @@ export const useProducts = () => {
   const fetchSingleProduct = async (id: string): Promise<Product | null> => {
     try {
       console.log('useProducts: fetchSingleProduct called with ID:', id);
-      const product = await fetchProductDetails(id);
+      const product = await fetchSingleProductFromDatabase(id);
       console.log('useProducts: fetchSingleProduct result:', product);
       return product;
     } catch (error: any) {
