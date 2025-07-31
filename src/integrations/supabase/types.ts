@@ -193,7 +193,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -1011,7 +1011,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -1136,7 +1136,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -1172,7 +1172,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "fk_product_tags_tag_id"
@@ -1180,6 +1180,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tags"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_product_tags_tag_id"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["tag_id"]
           },
         ]
       }
@@ -1431,7 +1438,7 @@ export type Database = {
             columns: ["parent_product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -2286,7 +2293,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "user_favorites_user_id_fkey"
@@ -2344,7 +2351,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "user_savings_user_id_fkey"
@@ -2555,14 +2562,11 @@ export type Database = {
           condition: string | null
           created_at: string | null
           delivery_config: Json | null
-          description: string | null
           digital_price: number | null
           discount_percentage: number | null
           discount_price: number | null
           display_config: Json | null
           free_shipping: boolean | null
-          id: string | null
-          image: string | null
           images: string[] | null
           inherit_from_master: Json | null
           installment_options: number | null
@@ -2574,18 +2578,22 @@ export type Database = {
           master_slug: string | null
           meta_description: string | null
           meta_title: string | null
-          name: string | null
           new_price: number | null
           parent_product_id: string | null
           pix_discount_percentage: number | null
           platform: string | null
-          price: number | null
           pro_discount_percent: number | null
           pro_price: number | null
+          product_description: string | null
           product_descriptions: Json | null
           product_faqs: Json | null
           product_features: Json | null
           product_highlights: Json | null
+          product_id: string | null
+          product_image: string | null
+          product_name: string | null
+          product_price: number | null
+          product_stock: number | null
           product_type: string | null
           product_videos: Json | null
           promotional_price: number | null
@@ -2607,8 +2615,9 @@ export type Database = {
           slug: string | null
           sort_order: number | null
           specifications: Json | null
-          stock: number | null
           store_pickup_available: boolean | null
+          tag_id: string | null
+          tag_name: string | null
           tags: Json | null
           technical_specs: Json | null
           title: string | null
@@ -2634,7 +2643,7 @@ export type Database = {
             columns: ["parent_product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
         ]
       }
