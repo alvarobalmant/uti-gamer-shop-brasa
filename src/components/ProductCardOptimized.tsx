@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProductImage } from './OptimizedImage';
-// import { useProductPrefetch } from '@/hooks/useProductsOptimized';
+import { useProductPrefetch } from '@/hooks/useProductsOptimized';
 import { Product } from '@/hooks/useProducts/types';
 
 interface ProductCardOptimizedProps {
@@ -22,7 +22,7 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
   isFavorite = false,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  // const { handleProductHover } = useProductPrefetch();
+  const { handleProductHover } = useProductPrefetch();
 
   // Memoizar cálculos de preço
   const priceInfo = useMemo(() => {
@@ -55,10 +55,11 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
   // Handler para hover com prefetch
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);
-    // const cleanup = handleProductHover(product.id);
+    const cleanup = handleProductHover(product.id);
+    
     // Cleanup será chamado automaticamente pelo timeout interno
-    // return cleanup;
-  }, [product.id]);
+    return cleanup;
+  }, [product.id, handleProductHover]);
 
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false);

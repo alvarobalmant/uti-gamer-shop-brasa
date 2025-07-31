@@ -3,7 +3,12 @@ import { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { useToast } from '@/hooks/use-toast';
 import { Product } from './useProducts/types';
 import { 
-  productApi,
+  fetchProductsFromDatabase, 
+  addProductToDatabase, 
+  updateProductInDatabase, 
+  deleteProductFromDatabase,
+  fetchProductsByCriteria, // Import the new API function
+  fetchSingleProductFromDatabase // Import the single product function
 } from './useProducts/productApi';
 import { handleProductError } from './useProducts/productErrorHandler';
 import { CarouselConfig } from '@/types/specialSections'; // Import CarouselConfig type
@@ -18,8 +23,7 @@ export const useProducts = () => {
   const fetchProducts = useCallback(async () => { // Wrap in useCallback
     try {
       setLoading(true);
-      const result = await productApi.getProducts();
-      const productsData = result.data;
+      const productsData = await fetchProductsFromDatabase();
       setProducts(productsData);
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produtos');
@@ -44,8 +48,7 @@ export const useProducts = () => {
     if (!config) return;
     setLoading(true);
     try {
-      const result = await productApi.getProducts();
-      const productsData = result.data;
+      const productsData = await fetchProductsByCriteria(config);
       setProducts(productsData);
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produtos do carrossel');
@@ -64,13 +67,12 @@ export const useProducts = () => {
 
   const addProduct = async (productData: Omit<Product, 'id' | 'tags'> & { tagIds: string[] }) => {
     try {
-      // const result = await addProductToDatabase(productData);
-      console.log('Add product:', productData);
+      const result = await addProductToDatabase(productData);
       await fetchProducts(); // Recarregar para obter as tags
       toast({
         title: "Produto adicionado com sucesso!",
       });
-      // return result;
+      return result;
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao adicionar produto');
       if (errorMessage) {
@@ -86,13 +88,12 @@ export const useProducts = () => {
 
   const updateProduct = async (id: string, updates: Partial<Product> & { tagIds?: string[] }) => {
     try {
-      // const result = await updateProductInDatabase(id, updates);
-      console.log('Update product:', id, updates);
+      const result = await updateProductInDatabase(id, updates);
       await fetchProducts(); // Recarregar para obter as tags atualizadas
       toast({
         title: "Produto atualizado com sucesso!",
       });
-      // return result;
+      return result;
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao atualizar produto');
       if (errorMessage) {
@@ -108,8 +109,7 @@ export const useProducts = () => {
 
   const deleteProduct = async (id: string) => {
     try {
-      // await deleteProductFromDatabase(id);
-      console.log('Delete product:', id);
+      await deleteProductFromDatabase(id);
       setProducts(prev => prev.filter(p => p.id !== id));
       toast({
         title: "Produto removido com sucesso!",
@@ -130,8 +130,7 @@ export const useProducts = () => {
   const fetchSingleProduct = async (id: string): Promise<Product | null> => {
     try {
       console.log('useProducts: fetchSingleProduct called with ID:', id);
-      const result = await productApi.getProduct(id);
-      const product = result.data;
+      const product = await fetchSingleProductFromDatabase(id);
       console.log('useProducts: fetchSingleProduct result:', product);
       return product;
     } catch (error: any) {
