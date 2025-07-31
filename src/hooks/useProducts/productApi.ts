@@ -171,10 +171,10 @@ const fetchProductsDirectly = async (includeAdmin: boolean = false): Promise<Pro
 
 export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): Promise<Product[]> => {
   // Iniciar monitoramento de erros na primeira chamada
-  if (typeof window !== 'undefined' && !window.__errorMonitoringStarted) {
+  if (typeof window !== 'undefined' && !(window as any).__errorMonitoringStarted) {
     startErrorMonitoring();
     installSilentErrorInterceptor();
-    window.__errorMonitoringStarted = true;
+    (window as any).__errorMonitoringStarted = true;
   }
 
   // Usar o wrapper de fallback silencioso

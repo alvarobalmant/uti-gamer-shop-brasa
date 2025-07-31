@@ -3,6 +3,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ProductModal from '@/components/ProductModal';
 import { Skeleton } from '@/components/ui/skeleton';
 import HeroBanner from '@/components/HeroBanner';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
@@ -129,6 +130,7 @@ const TestPlatformPage: React.FC = () => {
       <Footer />
       
       {/* Modal de produto */}
+      <ProductModal
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
