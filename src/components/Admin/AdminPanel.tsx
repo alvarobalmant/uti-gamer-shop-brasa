@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProductManager from './ProductManagerNew';
+// import ProductManager from './ProductManagerNew'; // Removed - component deleted
 import { BannerManagerNew } from './BannerManagerNew';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
@@ -13,12 +13,12 @@ import { QuickLinkManager } from './QuickLinkManager';
 import SpecialSectionManager from './SpecialSectionManager';
 import Xbox4AdminPage from './Xbox4AdminPage';
 import { NavigationManager } from './NavigationManager';
-import MasterProductManager from './MasterProductManager';
+// import MasterProductManager from './MasterProductManager'; // Removed - component deleted
 import PlatformManager from './PlatformManager';
 import BulkProductUpload from './BulkProductUpload';
-import ProductImageManager from '@/pages/Admin/ProductImageManager';
+// import ProductImageManager from '@/pages/Admin/ProductImageManager'; // Removed - component deleted
 import StorageManager from './StorageManager';
-import { SettingsManager } from './SettingsManager';
+// import { SettingsManager } from './SettingsManager'; // Removed - component deleted
 import PrimePagesAdmin from './PrimePagesAdmin';
 import UTICoinsManager from './UTICoinsManager';
 import { EmailManager } from './EmailManager/EmailManager';
@@ -183,7 +183,8 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="products" className="mt-0">
-                <ProductManager />
+                {/* ProductManager temporarily disabled - component deleted */}
+                <div className="text-white">Product Manager temporarily unavailable</div>
               </TabsContent>
 
               <TabsContent value="desktop_products" className="mt-0">
@@ -195,7 +196,8 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="image_upload" className="mt-0">
-                <ProductImageManager />
+                {/* ProductImageManager temporarily disabled - component deleted */}
+                <div className="text-white">Image Upload Manager temporarily unavailable</div>
               </TabsContent>
 
               <TabsContent value="storage" className="mt-0">
@@ -203,7 +205,8 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="skus" className="mt-0">
-                <MasterProductManager />
+                {/* MasterProductManager temporarily disabled - component deleted */}
+                <div className="text-white">SKU Manager temporarily unavailable</div>
               </TabsContent>
 
               <TabsContent value="platforms" className="mt-0">
@@ -243,7 +246,8 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="settings" className="mt-0">
-                <SettingsManager />
+                {/* SettingsManager temporarily disabled - component deleted */}
+                <div className="text-white">Settings Manager temporarily unavailable</div>
               </TabsContent>
             </Tabs>
           </div>
