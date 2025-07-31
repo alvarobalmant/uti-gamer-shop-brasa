@@ -111,11 +111,14 @@ const SearchResults = () => {
         </div>
       </section>
 
-      {/* Product Modal */}
+      {/* Product Modal - Commented out until ProductModal component is created */}
+      {/* 
+      <ProductModal
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
       />
+      */}
     </div>
   );
 };

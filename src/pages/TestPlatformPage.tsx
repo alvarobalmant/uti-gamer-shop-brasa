@@ -128,11 +128,14 @@ const TestPlatformPage: React.FC = () => {
       </main>
       <Footer />
       
-      {/* Modal de produto */}
+      {/* Modal de produto - Commented out until ProductModal component is created */}
+      {/* 
+      <ProductModal
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
       />
+      */}
     </>
   );
 };

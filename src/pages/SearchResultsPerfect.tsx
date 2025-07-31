@@ -371,13 +371,16 @@ const SearchResultsPerfect = () => {
         )}
       </main>
 
-      {/* Modal do produto */}
+      {/* Modal do produto - Commented out until ProductModal component is created */}
+      {/* 
       {isModalOpen && selectedProductId && (
+        <ProductModal
           product={products.find(p => p.id === selectedProductId) || null}
           isOpen={isModalOpen}
           onOpenChange={setIsModalOpen}
         />
       )}
+      */}
     </div>
   );
 };
