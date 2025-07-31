@@ -2557,6 +2557,7 @@ export type Database = {
           product_price: number | null
           product_specifications: Json | null
           product_stock: number | null
+          product_type: string | null
           tag_id: string | null
           tag_name: string | null
           updated_at: string | null
