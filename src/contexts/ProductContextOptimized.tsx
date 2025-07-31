@@ -102,7 +102,9 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
     } catch (error) {
       console.error('Error loading more products:', error);
       const errorMessage = handleProductError(error, 'ao carregar produtos');
-      toast.error(errorMessage);
+      if (errorMessage) {
+        toast.error(errorMessage);
+      }
     } finally {
       setLoadingLight(false);
     }
@@ -120,7 +122,9 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
     } catch (error) {
       console.error('Error refreshing products:', error);
       const errorMessage = handleProductError(error, 'ao atualizar produtos');
-      toast.error(errorMessage);
+      if (errorMessage) {
+        toast.error(errorMessage);
+      }
     }
   }, [loadMoreProducts]);
 
@@ -161,7 +165,9 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
     } catch (error) {
       console.error('Error loading product details:', error);
       const errorMessage = handleProductError(error, 'ao carregar detalhes do produto');
-      toast.error(errorMessage);
+      if (errorMessage) {
+        toast.error(errorMessage);
+      }
       return null;
     } finally {
       // Remover do loading
@@ -185,7 +191,9 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
     } catch (error) {
       console.error('Error loading products for section:', error);
       const errorMessage = handleProductError(error, 'ao carregar produtos da seção');
-      toast.error(errorMessage);
+      if (errorMessage) {
+        toast.error(errorMessage);
+      }
       return [];
     }
   }, []);

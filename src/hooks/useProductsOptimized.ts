@@ -64,11 +64,13 @@ export const useProductsOptimized = () => {
       
       const errorMessage = handleProductError(error, 'ao carregar produtos');
       
-      toast({
-        title: "Erro ao carregar produtos",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao carregar produtos",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       
       setProducts([]);
       return [];
@@ -132,11 +134,13 @@ export const useProductsOptimized = () => {
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produto');
       
-      toast({
-        title: "Erro ao carregar produto",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao carregar produto",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       
       throw error;
     }
@@ -173,11 +177,13 @@ export const useProductsOptimized = () => {
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produtos por critério');
       
-      toast({
-        title: "Erro ao carregar produtos",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao carregar produtos",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       
       return [];
     }
