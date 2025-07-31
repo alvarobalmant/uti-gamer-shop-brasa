@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Product } from './types';
 import { CarouselConfig } from '@/types/specialSections';
 import { handleSupabaseRetry, invalidateSupabaseCache, startErrorMonitoring } from '@/utils/supabaseErrorHandler';
+import { withSilentFallback, installSilentErrorInterceptor } from './silentErrorHandler';
 
 const mapRowToProduct = (row: any): Product => ({
   id: row.product_id,
@@ -94,33 +95,105 @@ const mapRowToProduct = (row: any): Product => ({
   updated_at: row.updated_at || new Date().toISOString()
 });
 
+// Função auxiliar para buscar produtos diretamente da tabela products
+const fetchProductsDirectly = async (includeAdmin: boolean = false): Promise<Product[]> => {
+  let query = supabase
+    .from('products')
+    .select('*');
+  
+  if (!includeAdmin) {
+    query = query.neq('product_type', 'master');
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  // Mapear produtos sem tags (fallback)
+  const products = data?.map((row: any) => mapRowToProduct({
+    product_id: row.id,
+    product_name: row.name,
+    brand: row.brand,
+    category: row.category,
+    product_description: row.description,
+    product_price: row.price,
+    pro_price: row.pro_price,
+    list_price: row.list_price,
+    product_image: row.image,
+    additional_images: row.additional_images,
+    sizes: row.sizes,
+    colors: row.colors,
+    product_stock: row.stock,
+    badge_text: row.badge_text,
+    badge_color: row.badge_color,
+    badge_visible: row.badge_visible,
+    specifications: row.specifications,
+    technical_specs: row.technical_specs,
+    product_features: row.product_features,
+    shipping_weight: row.shipping_weight,
+    free_shipping: row.free_shipping,
+    meta_title: row.meta_title,
+    meta_description: row.meta_description,
+    slug: row.slug,
+    is_active: row.is_active,
+    is_featured: row.is_featured,
+    uti_pro_enabled: row.uti_pro_enabled,
+    uti_pro_value: row.uti_pro_value,
+    uti_pro_custom_price: row.uti_pro_custom_price,
+    uti_pro_type: row.uti_pro_type,
+    parent_product_id: row.parent_product_id,
+    is_master_product: row.is_master_product,
+    product_type: row.product_type,
+    sku_code: row.sku_code,
+    variant_attributes: row.variant_attributes,
+    sort_order: row.sort_order,
+    available_variants: row.available_variants,
+    master_slug: row.master_slug,
+    inherit_from_master: row.inherit_from_master,
+    product_videos: row.product_videos,
+    product_faqs: row.product_faqs,
+    product_highlights: row.product_highlights,
+    reviews_config: row.reviews_config,
+    trust_indicators: row.trust_indicators,
+    manual_related_products: row.manual_related_products,
+    breadcrumb_config: row.breadcrumb_config,
+    product_descriptions: row.product_descriptions,
+    delivery_config: row.delivery_config,
+    display_config: row.display_config,
+    created_at: row.created_at,
+    updated_at: row.updated_at
+  })) || [];
+
+  return products;
+};
+
 export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): Promise<Product[]> => {
   // Iniciar monitoramento de erros na primeira chamada
   if (typeof window !== 'undefined' && !window.__errorMonitoringStarted) {
     startErrorMonitoring();
+    installSilentErrorInterceptor();
     window.__errorMonitoringStarted = true;
   }
 
-  return handleSupabaseRetry(async () => {
-    let query = supabase
-      .from('view_product_with_tags')
-      .select('*');
-    
-    // Só filtrar produtos master se não for para admin
-    if (!includeAdmin) {
-      query = query.neq('product_type', 'master');
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      // Se for o erro específico, invalidar cache antes de lançar erro
-      if (error.message?.includes('idasproduct_id')) {
-        console.warn('🔧 Erro idasproduct_id detectado - invalidando cache...');
-        invalidateSupabaseCache();
+  // Usar o wrapper de fallback silencioso
+  return withSilentFallback(
+    async () => {
+      let query = supabase
+        .from('view_product_with_tags')
+        .select('*');
+      
+      // Só filtrar produtos master se não for para admin
+      if (!includeAdmin) {
+        query = query.neq('product_type', 'master');
       }
-      throw error;
-    }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
 
     // Agrupar produtos por ID para evitar duplicatas devido às tags
     const productsMap = new Map<string, Product>();
@@ -147,9 +220,12 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
       }
     });
 
-    console.log(`[fetchProductsFromDatabase] Carregados ${productsMap.size} produtos únicos`);
-    return Array.from(productsMap.values());
-  }, 'fetchProductsFromDatabase', 3);
+      console.log(`[fetchProductsFromDatabase] Carregados ${productsMap.size} produtos únicos`);
+      return Array.from(productsMap.values());
+    },
+    // Fallback: buscar diretamente da tabela products
+    () => fetchProductsDirectly(includeAdmin)
+  );
 };
 
 export const fetchProductsByCriteria = async (config: CarouselConfig, includeAdmin: boolean = false): Promise<Product[]> => {
@@ -173,6 +249,28 @@ export const fetchProductsByCriteria = async (config: CarouselConfig, includeAdm
     }
 
     const { data, error } = await query;
+
+    // Se for o erro específico do idasproduct_id, fazer fallback silencioso
+    if (error && (error.message?.includes('idasproduct_id') || error.message?.includes('column products.idasproduct_id does not exist'))) {
+      // Fallback: buscar diretamente da tabela products
+      let fallbackQuery = supabase.from('products').select('*');
+      
+      if (!includeAdmin) {
+        fallbackQuery = fallbackQuery.neq('product_type', 'master');
+      }
+      
+      if (config.product_ids && config.product_ids.length > 0) {
+        fallbackQuery = fallbackQuery.in('id', config.product_ids);
+      }
+
+      const { data: fallbackData, error: fallbackError } = await fallbackQuery;
+      
+      if (fallbackError) {
+        throw fallbackError;
+      }
+
+      return await fetchProductsDirectly(includeAdmin);
+    }
 
     if (error) {
       console.error('Error fetching products by criteria:', error);
@@ -219,6 +317,73 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
       .from('view_product_with_tags')
       .select('*')
       .eq('product_id', id);
+
+    // Se for o erro específico do idasproduct_id, fazer fallback silencioso
+    if (error && (error.message?.includes('idasproduct_id') || error.message?.includes('column products.idasproduct_id does not exist'))) {
+      const { data: directData, error: directError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (directError || !directData) {
+        return null;
+      }
+
+      return mapRowToProduct({
+        product_id: directData.id,
+        product_name: directData.name,
+        brand: directData.brand,
+        category: directData.category,
+        product_description: directData.description,
+        product_price: directData.price,
+        pro_price: directData.pro_price,
+        list_price: directData.list_price,
+        product_image: directData.image,
+        additional_images: directData.additional_images,
+        sizes: directData.sizes,
+        colors: directData.colors,
+        product_stock: directData.stock,
+        badge_text: directData.badge_text,
+        badge_color: directData.badge_color,
+        badge_visible: directData.badge_visible,
+        specifications: directData.specifications,
+        technical_specs: directData.technical_specs,
+        product_features: directData.product_features,
+        shipping_weight: directData.shipping_weight,
+        free_shipping: directData.free_shipping,
+        meta_title: directData.meta_title,
+        meta_description: directData.meta_description,
+        slug: directData.slug,
+        is_active: directData.is_active,
+        is_featured: directData.is_featured,
+        uti_pro_enabled: directData.uti_pro_enabled,
+        uti_pro_value: directData.uti_pro_value,
+        uti_pro_custom_price: directData.uti_pro_custom_price,
+        uti_pro_type: directData.uti_pro_type,
+        parent_product_id: directData.parent_product_id,
+        is_master_product: directData.is_master_product,
+        product_type: directData.product_type,
+        sku_code: directData.sku_code,
+        variant_attributes: directData.variant_attributes,
+        sort_order: directData.sort_order,
+        available_variants: directData.available_variants,
+        master_slug: directData.master_slug,
+        inherit_from_master: directData.inherit_from_master,
+        product_videos: directData.product_videos,
+        product_faqs: directData.product_faqs,
+        product_highlights: directData.product_highlights,
+        reviews_config: directData.reviews_config,
+        trust_indicators: directData.trust_indicators,
+        manual_related_products: directData.manual_related_products,
+        breadcrumb_config: directData.breadcrumb_config,
+        product_descriptions: directData.product_descriptions,
+        delivery_config: directData.delivery_config,
+        display_config: directData.display_config,
+        created_at: directData.created_at,
+        updated_at: directData.updated_at
+      });
+    }
 
     // Se não encontrar na view, buscar diretamente na tabela products (para produtos SKUs)
     if (!data || data.length === 0) {

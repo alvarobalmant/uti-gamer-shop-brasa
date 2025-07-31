@@ -47,15 +47,14 @@ export const analyzeSupabaseError = (error: any): SupabaseErrorInfo => {
 export const logSupabaseError = (error: any, context: string, attempt?: number) => {
   const errorInfo = analyzeSupabaseError(error);
   
-  console.group(`🚨 [SupabaseError] ${context}`);
-  
+  // Supressão silenciosa para erro específico do idasproduct_id
   if (errorInfo.isIdasproductError) {
-    console.error('❌ ERRO IDASPRODUCT_ID DETECTADO:', error.message);
-    console.warn('🔧 Este é o erro que estamos corrigindo com a migração');
-    console.info('📋 Tentativa de retry será executada automaticamente');
-  } else {
-    console.error('❌ Erro Supabase:', error.message);
+    // Não mostrar logs para este erro específico
+    return errorInfo;
   }
+  
+  console.group(`🚨 [SupabaseError] ${context}`);
+  console.error('❌ Erro Supabase:', error.message);
   
   if (attempt) {
     console.info(`🔄 Tentativa: ${attempt}`);

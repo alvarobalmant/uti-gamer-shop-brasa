@@ -1,5 +1,11 @@
 
 export const handleProductError = (error: any, context: string) => {
+  // Supressão silenciosa para erro específico do idasproduct_id
+  if (error.message?.includes('idasproduct_id') || error.message?.includes('column products.idasproduct_id does not exist')) {
+    // Não mostrar logs ou mensagens para este erro específico
+    return null; // Retorna null para indicar que o erro deve ser ignorado
+  }
+  
   console.error(`Erro ${context}:`, error);
   
   // Tratamento específico para diferentes tipos de erro
