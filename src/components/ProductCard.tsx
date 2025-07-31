@@ -17,10 +17,9 @@ interface ProductCardProps {
   product: Product;
   onCardClick: (productId: string) => void;
   onAddToCart?: (product: Product) => void;
-  isCritical?: boolean; // Para marcar produtos críticos que devem carregar imediatamente
 }
 
-const ProductCard = React.memo(({ product, onCardClick, onAddToCart, isCritical = false }: ProductCardProps) => {
+const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const { handleMouseEnter: handlePrefetchMouseEnter, handleMouseLeave: handlePrefetchMouseLeave } = useProductHover(product.id);
 
@@ -74,7 +73,7 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart, isCritical 
         <FavoriteButton productId={product.id} size="sm" />
       </div>
       
-      <ProductCardImage product={product} isHovered={isHovered} isCritical={isCritical} />
+      <ProductCardImage product={product} isHovered={isHovered} />
 
       <div className="flex flex-1 flex-col justify-between p-3">
         <div className="space-y-2">
