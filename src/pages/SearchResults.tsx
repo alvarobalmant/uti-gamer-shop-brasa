@@ -5,7 +5,6 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
-import ProductModal from '@/components/ProductModal';
 import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
@@ -111,9 +110,8 @@ const SearchResults = () => {
           )}
         </div>
       </section>
-      
+
       {/* Product Modal */}
-      <ProductModal
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}

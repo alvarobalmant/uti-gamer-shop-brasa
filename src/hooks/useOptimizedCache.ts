@@ -61,12 +61,11 @@ export const useOptimizedCache = <T>(
   return useQuery({
     queryKey,
     queryFn,
-    staleTime: config.staleTime,
-    gcTime: config.cacheTime, // Usando gcTime em vez de cacheTime
-    refetchOnWindowFocus: config.refetchOnWindowFocus,
-    refetchOnMount: config.refetchOnMount,
-    retry: config.retry,
+    ...config,
     ...customOptions,
+    // Configurações específicas para performance
+    structuralSharing: true,
+    keepPreviousData: true,
   });
 };
 
@@ -101,7 +100,7 @@ export const useCacheInvalidation = () => {
       queryKey,
       queryFn,
       staleTime: config.staleTime,
-      gcTime: config.cacheTime, // Usando gcTime em vez de cacheTime
+      cacheTime: config.cacheTime,
     });
     
     console.log(`⚡ Dados prefetch: ${queryKey.join('/')}`);
@@ -182,7 +181,14 @@ export const useCacheWithFallback = <T>(
   const query = useOptimizedCache(
     queryKey,
     queryFn,
-    type
+    type,
+    {
+      onSuccess: () => trackCacheHit(queryKey),
+      onError: (error) => {
+        console.warn(`⚠️ Query error for ${queryKey.join('/')}:`, error);
+        trackCacheHit(queryKey);
+      }
+    }
   );
   
   // Retornar fallback se dados não estão disponíveis

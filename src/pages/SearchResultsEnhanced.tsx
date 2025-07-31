@@ -3,7 +3,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Filter, ChevronDown, Grid3X3, List, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProducts, Product } from '@/hooks/useProducts';
-import ProductModal from '@/components/ProductModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { searchProducts } from '@/utils/fuzzySearch';
@@ -355,7 +354,6 @@ const SearchResultsEnhanced = () => {
       </section>
 
       {/* Product Modal */}
-      <ProductModal
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
