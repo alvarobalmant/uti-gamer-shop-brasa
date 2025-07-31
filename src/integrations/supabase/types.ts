@@ -193,7 +193,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1011,7 +1011,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1136,7 +1136,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1172,7 +1172,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_product_tags_tag_id"
@@ -1431,7 +1431,7 @@ export type Database = {
             columns: ["parent_product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2286,7 +2286,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_favorites_user_id_fkey"
@@ -2344,7 +2344,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_savings_user_id_fkey"
@@ -2546,31 +2546,47 @@ export type Database = {
           badge_color: string | null
           badge_text: string | null
           badge_visible: boolean | null
+          brand: string | null
+          category: string | null
+          condition: string | null
           created_at: string | null
+          description: string | null
+          digital_price: number | null
+          discount_percentage: number | null
+          discount_price: number | null
+          id: string | null
+          image: string | null
+          images: string[] | null
+          installment_options: number | null
           is_active: boolean | null
           is_featured: boolean | null
-          product_description: string | null
-          product_id: string | null
-          product_image: string | null
-          product_images: string[] | null
-          product_name: string | null
-          product_price: number | null
-          product_specifications: Json | null
-          product_stock: number | null
+          list_price: number | null
+          meta_description: string | null
+          meta_title: string | null
+          name: string | null
+          new_price: number | null
+          pix_discount_percentage: number | null
+          platform: string | null
+          price: number | null
+          pro_discount_percent: number | null
+          pro_price: number | null
           product_type: string | null
-          tag_id: string | null
-          tag_name: string | null
+          promotional_price: number | null
+          rating_average: number | null
+          rating_count: number | null
+          slug: string | null
+          specifications: Json | null
+          stock: number | null
+          tag_ids: string[] | null
+          tags: string[] | null
           updated_at: string | null
+          uti_pro_custom_price: number | null
+          uti_pro_enabled: boolean | null
+          uti_pro_price: number | null
+          uti_pro_type: string | null
+          uti_pro_value: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_product_tags_tag_id"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {

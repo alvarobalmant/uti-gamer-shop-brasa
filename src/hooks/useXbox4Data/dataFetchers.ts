@@ -39,7 +39,17 @@ export const fetchAllProducts = async () => {
 
   if (productsError) {
     console.error('Erro ao carregar produtos:', productsError);
-    throw new Error('Erro ao carregar produtos');
+    // Fallback to products table if view fails
+    const { data: fallbackProducts, error: fallbackError } = await supabase
+      .from('products')
+      .select('*')
+      .eq('is_active', true);
+    
+    if (fallbackError) {
+      throw new Error('Erro ao carregar produtos');
+    }
+    
+    return fallbackProducts;
   }
 
   return allProducts;
