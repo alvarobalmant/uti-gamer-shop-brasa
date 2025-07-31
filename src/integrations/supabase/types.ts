@@ -1181,13 +1181,6 @@ export type Database = {
             referencedRelation: "tags"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_product_tags_tag_id"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["tag_id"]
-          },
         ]
       }
       products: {
@@ -2524,76 +2517,57 @@ export type Database = {
       }
     }
     Views: {
+      view_homepage_layout_complete: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: number | null
+          is_visible: boolean | null
+          product_section_title: string | null
+          product_section_title_color1: string | null
+          product_section_title_color2: string | null
+          product_section_title_part1: string | null
+          product_section_title_part2: string | null
+          product_section_view_all_link: string | null
+          section_key: string | null
+          special_section_background_color: string | null
+          special_section_content_config: Json | null
+          special_section_display_order: number | null
+          special_section_is_active: boolean | null
+          special_section_title: string | null
+          special_section_title_color1: string | null
+          special_section_title_color2: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
       view_product_with_tags: {
         Row: {
-          additional_images: string[] | null
-          available_variants: Json | null
           badge_color: string | null
           badge_text: string | null
           badge_visible: boolean | null
-          brand: string | null
-          breadcrumb_config: Json | null
-          category: string | null
-          colors: string[] | null
           created_at: string | null
-          delivery_config: Json | null
-          display_config: Json | null
-          free_shipping: boolean | null
-          inherit_from_master: Json | null
           is_active: boolean | null
           is_featured: boolean | null
-          is_master_product: boolean | null
-          list_price: number | null
-          manual_related_products: Json | null
-          master_slug: string | null
-          meta_description: string | null
-          meta_title: string | null
-          parent_product_id: string | null
-          pro_price: number | null
           product_description: string | null
-          product_descriptions: Json | null
-          product_faqs: Json | null
-          product_features: Json | null
-          product_highlights: Json | null
           product_id: string | null
           product_image: string | null
+          product_images: string[] | null
           product_name: string | null
           product_price: number | null
+          product_specifications: Json | null
           product_stock: number | null
-          product_type: string | null
-          product_videos: Json | null
-          reviews_config: Json | null
-          shipping_weight: number | null
-          sizes: string[] | null
-          sku_code: string | null
-          slug: string | null
-          sort_order: number | null
-          specifications: Json | null
           tag_id: string | null
           tag_name: string | null
-          technical_specs: Json | null
-          trust_indicators: Json | null
           updated_at: string | null
-          uti_pro_custom_price: number | null
-          uti_pro_enabled: boolean | null
-          uti_pro_type: string | null
-          uti_pro_value: number | null
-          variant_attributes: Json | null
         }
         Relationships: [
           {
-            foreignKeyName: "products_parent_product_id_fkey"
-            columns: ["parent_product_id"]
+            foreignKeyName: "fk_product_tags_tag_id"
+            columns: ["tag_id"]
             isOneToOne: false
-            referencedRelation: "products"
+            referencedRelation: "tags"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_parent_product_id_fkey"
-            columns: ["parent_product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -2603,9 +2577,23 @@ export type Database = {
         Args: { user_id: string; meses: number }
         Returns: boolean
       }
+      analyze_index_usage: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          table_name: string
+          index_name: string
+          index_scans: number
+          tuples_read: number
+          tuples_fetched: number
+        }[]
+      }
       cancelar_assinatura: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      cleanup_old_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       cleanup_old_invalidated_sessions: {
         Args: Record<PropertyKey, never>
@@ -2622,6 +2610,14 @@ export type Database = {
       create_admin_link_secure: {
         Args: { duration_minutes: number }
         Returns: Json
+      }
+      debug_column_references: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          source_type: string
+          source_name: string
+          has_problematic_ref: boolean
+        }[]
       }
       delete_master_product_cascade: {
         Args: { p_master_product_id: string }
@@ -2709,6 +2705,15 @@ export type Database = {
       log_security_event: {
         Args: { event_type: string; user_id?: string; details?: Json }
         Returns: undefined
+      }
+      monitor_query_performance: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          query_type: string
+          avg_duration_ms: number
+          total_calls: number
+          table_name: string
+        }[]
       }
       process_daily_login: {
         Args: { p_user_id: string }
