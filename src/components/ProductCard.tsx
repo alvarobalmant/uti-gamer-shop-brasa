@@ -21,7 +21,7 @@ interface ProductCardProps {
 
 const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { handleMouseEnter: handlePrefetchMouseEnter, handleMouseLeave: handlePrefetchMouseLeave } = useProductHover(product.id);
+  const { handleMouseEnter: handlePrefetchMouseEnter, handleMouseLeave: handlePrefetchMouseLeave } = useProductHover();
 
   const handleCardClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
