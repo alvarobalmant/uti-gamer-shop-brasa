@@ -5,7 +5,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ProductCard from '@/components/ProductCard';
+import { ProductCardOptimized } from '@/components/ProductCardOptimized';
 import SectionTitle from '@/components/SectionTitle';
 import { cn } from '@/lib/utils';
 
@@ -183,10 +183,10 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
                   transitionDelay: animateProducts ? `${index * 75}ms` : "0ms"
                 }}
               >
-                <ProductCard
+                <ProductCardOptimized
                   product={relatedProduct}
-                  onCardClick={handleProductClick}
-                  onAddToCart={handleAddToCart}
+                  onFavoriteClick={() => {}}
+                  isFavorite={false}
                 />
               </div>
             ))}
