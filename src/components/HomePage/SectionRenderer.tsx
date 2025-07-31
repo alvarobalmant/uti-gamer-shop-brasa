@@ -103,6 +103,7 @@ export const SectionRenderer: React.FC<SectionRendererProps> = ({
             <div data-section={sectionKey} data-testid="section-renderer">
               <FeaturedProductsSection
                 key={sectionKey}
+                sectionKey={sectionKey} // ← CRÍTICO: Adicionar sectionKey
                 products={uniqueSectionProducts} // Pass unique products
                 loading={productsLoading || sectionsLoading}
                 onAddToCart={onAddToCart}

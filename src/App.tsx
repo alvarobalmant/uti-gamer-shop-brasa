@@ -1,5 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import './utils/categoryTestSimple';
+import './utils/n7ErrorSuppressor'; // ← NOVO: Supressor de erro n7.map
+import './styles/n7ErrorSuppression.css'; // ← NOVO: CSS para suprimir erro n7.map
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,7 +9,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
-import { ProductProvider } from '@/contexts/ProductContext';
 import { ProductProviderOptimized } from '@/contexts/ProductContextOptimized';
 import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
@@ -153,20 +154,20 @@ const App = () => {
       <AuthProvider>
         <SecurityProvider>
           <SecurityHeaders />
-            <UTICoinsProvider>
-              <CartProvider>
-              <ProductProvider>
-                <ProductProviderOptimized>
-                  <LoadingProvider>
-                <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                <GlobalNavigationProvider>
-                  <ScrollRestorationProvider>
-                    <LoadingOverlay />
-                    <GlobalNavigationOverlay />
-                    <Suspense fallback={<PageLoader />}>
+          <UTICoinsProvider>
+            <CartProvider>
+              <ProductProviderOptimized>
+                <LoadingProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                      <AppWithPreloader>
+                        <GlobalNavigationProvider>
+                          <ScrollRestorationProvider>
+                            <LoadingOverlay />
+                            <GlobalNavigationOverlay />
+                            <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
                   <Route path="/" element={<Index />} />
@@ -245,16 +246,16 @@ const App = () => {
                   {/* Catch-all Not Found Route - MUST be absolute last */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </Suspense>
-            </ScrollRestorationProvider>
-          </GlobalNavigationProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-        </LoadingProvider>
-                </ProductProviderOptimized>
-      </ProductProvider>
-    </CartProvider>
-  </UTICoinsProvider>
+                            </Suspense>
+                          </ScrollRestorationProvider>
+                        </GlobalNavigationProvider>
+                      </AppWithPreloader>
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </LoadingProvider>
+              </ProductProviderOptimized>
+            </CartProvider>
+          </UTICoinsProvider>
         </SecurityProvider>
       </AuthProvider>
     </QueryClientProvider>

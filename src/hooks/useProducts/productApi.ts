@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from './types';
 import { CarouselConfig } from '@/types/specialSections';
+import { handleSupabaseRetry, invalidateSupabaseCache, startErrorMonitoring } from '@/utils/supabaseErrorHandler';
 
 const mapRowToProduct = (row: any): Product => ({
   id: row.product_id,
@@ -94,7 +95,13 @@ const mapRowToProduct = (row: any): Product => ({
 });
 
 export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): Promise<Product[]> => {
-  try {
+  // Iniciar monitoramento de erros na primeira chamada
+  if (typeof window !== 'undefined' && !window.__errorMonitoringStarted) {
+    startErrorMonitoring();
+    window.__errorMonitoringStarted = true;
+  }
+
+  return handleSupabaseRetry(async () => {
     let query = supabase
       .from('view_product_with_tags')
       .select('*');
@@ -107,7 +114,11 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error fetching products:', error);
+      // Se for o erro específico, invalidar cache antes de lançar erro
+      if (error.message?.includes('idasproduct_id')) {
+        console.warn('🔧 Erro idasproduct_id detectado - invalidando cache...');
+        invalidateSupabaseCache();
+      }
       throw error;
     }
 
@@ -138,10 +149,7 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
 
     console.log(`[fetchProductsFromDatabase] Carregados ${productsMap.size} produtos únicos`);
     return Array.from(productsMap.values());
-  } catch (error) {
-    console.error('Error in fetchProductsFromDatabase:', error);
-    throw error;
-  }
+  }, 'fetchProductsFromDatabase', 3);
 };
 
 export const fetchProductsByCriteria = async (config: CarouselConfig, includeAdmin: boolean = false): Promise<Product[]> => {

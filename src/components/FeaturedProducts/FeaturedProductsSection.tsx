@@ -17,6 +17,7 @@ interface FeaturedProductsSectionProps {
   title: string;
   viewAllLink?: string;
   reduceTopSpacing?: boolean;
+  sectionKey?: string; // ← CRÍTICO: Adicionar sectionKey
 }
 
 const FeaturedProductsSection = ({
@@ -26,6 +27,7 @@ const FeaturedProductsSection = ({
   title,
   viewAllLink = "/categoria/inicio",
   reduceTopSpacing = false,
+  sectionKey = "", // ← CRÍTICO: Adicionar sectionKey
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const location = useLocation();

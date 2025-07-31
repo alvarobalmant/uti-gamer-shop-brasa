@@ -34,21 +34,33 @@ export const useSimpleScrollRestoration = () => {
     // Lógica baseada no tipo de navegação
     if (navigationType === NavigationType.Pop) {
       // VOLTAR - restaura posições obrigatoriamente (vertical + horizontal)
-      console.log(`[SimpleScrollRestoration] ⬅️ VOLTAR detectado - restaurando posições vertical e horizontal`);
+      console.log(`[SimpleScrollRestoration] ⬅️ VOLTAR detectado - restaurando posições RAPIDAMENTE`);
       
-      // Restaura ambos os tipos de scroll
+      // Restauração imediata para melhor UX
+      const savedPosition = simpleScrollManager.getPagePosition(currentPath);
+      if (savedPosition) {
+        // Restauração instantânea primeiro
+        window.scrollTo({
+          left: 0,
+          top: savedPosition.y,
+          behavior: 'auto'
+        });
+        console.log(`[SimpleScrollRestoration] ⚡ Restauração instantânea para ${savedPosition.y}px`);
+      }
+      
+      // Depois executa a restauração robusta em paralelo
       Promise.all([
         simpleScrollManager.restoreCurrentPagePosition(),
         horizontalScrollManager.restoreCurrentPageHorizontalPositions()
       ]).then(() => {
-        console.log(`[SimpleScrollRestoration] ✅ Restauração completa finalizada para ${currentPath}`);
+        console.log(`[SimpleScrollRestoration] ✅ Restauração robusta finalizada para ${currentPath}`);
       });
       
     } else {
-      // NOVA NAVEGAÇÃO - limpa posições e vai para topo/esquerda
-      console.log(`[SimpleScrollRestoration] ➡️ NOVA navegação - limpando posições e indo para topo`);
-      simpleScrollManager.clearPagePosition(currentPath);
-      horizontalScrollManager.clearPageHorizontalPositions(currentPath);
+      // NOVA NAVEGAÇÃO - vai para topo/esquerda mas NÃO limpa posições salvas
+      console.log(`[SimpleScrollRestoration] ➡️ NOVA navegação - indo para topo (mantendo posições salvas)`);
+      // REMOVIDO: simpleScrollManager.clearPagePosition(currentPath);
+      // REMOVIDO: horizontalScrollManager.clearPageHorizontalPositions(currentPath);
       window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
     

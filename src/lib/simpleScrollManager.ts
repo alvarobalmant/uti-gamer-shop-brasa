@@ -45,6 +45,11 @@ class SimpleScrollManager {
     this.currentPath = path;
   }
 
+  // Obtém a posição salva de uma página (para restauração instantânea)
+  getPagePosition(path: string): PageScrollData | undefined {
+    return this.scrollPositions.get(path);
+  }
+
   // Restaura a posição da página atual com delay obrigatório
   async restoreCurrentPagePosition(): Promise<void> {
     const savedData = this.scrollPositions.get(this.currentPath);
@@ -57,37 +62,46 @@ class SimpleScrollManager {
 
     console.log(`[SimpleScrollManager] 🎯 RESTAURANDO posição para ${this.currentPath}: ${savedData.y}px`);
     
-    // Aguarda 500ms OBRIGATÓRIO após carregamento
+    // Aguarda carregamento adequado
     await this.waitForPageLoad();
     
     this.isRestoring = true;
     
-    // Restaura a posição
-    window.scrollTo({
-      left: 0,
-      top: savedData.y,
-      behavior: 'auto'
-    });
-    
-    // Aguarda um pouco e verifica se funcionou
-    setTimeout(() => {
+    // Múltiplas tentativas rápidas de restauração
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      console.log(`[SimpleScrollManager] 🔄 Tentativa ${attempt}/3 de restauração`);
+      
+      // Restaura a posição
+      window.scrollTo({
+        left: 0,
+        top: savedData.y,
+        behavior: 'auto'
+      });
+      
+      // Aguarda menos tempo para ser mais responsivo
+      await new Promise(resolve => setTimeout(resolve, 100 * attempt)); // Delay mais rápido: 100ms, 200ms, 300ms
+      
       const currentY = window.scrollY;
-      const success = Math.abs(currentY - savedData.y) <= 10;
+      const tolerance = 50; // Tolerância reduzida
+      const success = Math.abs(currentY - savedData.y) <= tolerance;
+      
+      console.log(`[SimpleScrollManager] 📊 Tentativa ${attempt}: Target=${savedData.y}px, Atual=${currentY}px, Sucesso=${success}`);
       
       if (success) {
-        console.log(`[SimpleScrollManager] ✅ SUCESSO! Posição restaurada: ${currentY}px`);
-      } else {
-        console.log(`[SimpleScrollManager] ❌ FALHA na restauração. Target: ${savedData.y}px, Atual: ${currentY}px`);
-        // Tenta mais uma vez
+        console.log(`[SimpleScrollManager] ✅ SUCESSO na tentativa ${attempt}!`);
+        break;
+      } else if (attempt === 3) {
+        console.log(`[SimpleScrollManager] ❌ FALHA após 3 tentativas. Diferença: ${Math.abs(currentY - savedData.y)}px`);
+        // Tentativa final com scroll suave
         window.scrollTo({
           left: 0,
           top: savedData.y,
-          behavior: 'auto'
+          behavior: 'smooth'
         });
       }
-      
-      this.isRestoring = false;
-    }, 100);
+    }
+    
+    this.isRestoring = false;
   }
 
   // Vai para o topo
@@ -99,26 +113,34 @@ class SimpleScrollManager {
     });
   }
 
-  // Aguarda 500ms + verifica se página carregou
+  // Aguarda tempo mínimo + verifica se elementos essenciais carregaram
   private async waitForPageLoad(): Promise<void> {
     return new Promise((resolve) => {
-      // Sempre aguarda 500ms mínimo
+      // Restauração rápida: apenas 200ms + verificação de elementos essenciais
       setTimeout(() => {
-        // Verifica se documento está pronto
-        if (document.readyState === 'complete') {
+        // Verifica se elementos essenciais existem (header, main content)
+        const hasEssentialElements = document.querySelector('header') || 
+                                   document.querySelector('main') || 
+                                   document.querySelector('[data-testid="main-content"]') ||
+                                   document.body.children.length > 0;
+        
+        if (hasEssentialElements) {
+          console.log('[SimpleScrollManager] ⚡ Restauração rápida - elementos essenciais detectados');
           resolve();
         } else {
-          // Se não estiver pronto, aguarda mais um pouco
-          const checkReady = () => {
-            if (document.readyState === 'complete') {
+          // Fallback: aguarda mais um pouco se não encontrou elementos
+          const checkElements = () => {
+            const hasElements = document.body.children.length > 0;
+            if (hasElements || document.readyState === 'complete') {
+              console.log('[SimpleScrollManager] ⚡ Restauração fallback - elementos encontrados');
               resolve();
             } else {
-              setTimeout(checkReady, 50);
+              setTimeout(checkElements, 50);
             }
           };
-          checkReady();
+          checkElements();
         }
-      }, 500); // 500ms obrigatório
+      }, 200); // Apenas 200ms para restauração rápida
     });
   }
 

@@ -2524,30 +2524,6 @@ export type Database = {
       }
     }
     Views: {
-      view_homepage_layout_complete: {
-        Row: {
-          created_at: string | null
-          display_order: number | null
-          id: number | null
-          is_visible: boolean | null
-          product_section_title: string | null
-          product_section_title_color1: string | null
-          product_section_title_color2: string | null
-          product_section_title_part1: string | null
-          product_section_title_part2: string | null
-          product_section_view_all_link: string | null
-          section_key: string | null
-          special_section_background_color: string | null
-          special_section_content_config: Json | null
-          special_section_display_order: number | null
-          special_section_is_active: boolean | null
-          special_section_title: string | null
-          special_section_title_color1: string | null
-          special_section_title_color2: string | null
-          updated_at: string | null
-        }
-        Relationships: []
-      }
       view_product_with_tags: {
         Row: {
           additional_images: string[] | null
@@ -2627,23 +2603,9 @@ export type Database = {
         Args: { user_id: string; meses: number }
         Returns: boolean
       }
-      analyze_index_usage: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          table_name: string
-          index_name: string
-          index_scans: number
-          tuples_read: number
-          tuples_fetched: number
-        }[]
-      }
       cancelar_assinatura: {
         Args: { user_id: string }
         Returns: boolean
-      }
-      cleanup_old_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
       }
       cleanup_old_invalidated_sessions: {
         Args: Record<PropertyKey, never>
@@ -2747,15 +2709,6 @@ export type Database = {
       log_security_event: {
         Args: { event_type: string; user_id?: string; details?: Json }
         Returns: undefined
-      }
-      monitor_query_performance: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          query_type: string
-          avg_duration_ms: number
-          total_calls: number
-          table_name: string
-        }[]
       }
       process_daily_login: {
         Args: { p_user_id: string }
