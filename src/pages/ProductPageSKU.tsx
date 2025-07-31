@@ -41,7 +41,6 @@ const ProductPageSKU = () => {
   const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const { toast } = useToast();
   
-  const [viewingCount, setViewingCount] = useState(0);
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -53,19 +52,7 @@ const ProductPageSKU = () => {
     };
   }, [location.pathname]);
 
-  useEffect(() => {
-    // Simular contador de pessoas visualizando
-    setViewingCount(Math.floor(Math.random() * 15) + 3);
-    
-    const interval = setInterval(() => {
-      setViewingCount(prev => {
-        const change = Math.floor(Math.random() * 3) - 1;
-        return Math.max(1, Math.min(20, prev + change));
-      });
-    }, 30000);
 
-    return () => clearInterval(interval);
-  }, []);
 
   const handleBack = async () => {
     console.log('[ProductPageSKU] Botão voltar clicado');
@@ -171,7 +158,6 @@ const ProductPageSKU = () => {
             <ProductLayout
               product={product}
               skuNavigation={skuNavigation}
-              viewingCount={viewingCount}
               onAddToCart={handleAddToCart}
             />
           </div>
@@ -181,7 +167,6 @@ const ProductPageSKU = () => {
             {/* Mobile Hero */}
             <ProductHeroMobile 
               product={product}
-              viewingCount={viewingCount}
               onAddToCart={handleAddToCart}
             />
 

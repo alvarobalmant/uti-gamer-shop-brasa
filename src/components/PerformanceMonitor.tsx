@@ -156,33 +156,7 @@ export const usePerformanceThrottling = () => {
 
 // Componente para mostrar indicador de preloading
 export const PreloadingIndicator: React.FC = () => {
-  const { getStats } = useIntelligentPreloader();
-  const [stats, setStats] = useState<any>(null);
-  const [showIndicator, setShowIndicator] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentStats = getStats();
-      setStats(currentStats);
-      
-      // Mostrar indicador apenas quando preloading está ativo
-      setShowIndicator(currentStats?.isActive || false);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [getStats]);
-
-  if (!showIndicator || !stats) {
-    return null;
-  }
-
-  const progress = stats.total > 0 ? (stats.preloaded / stats.total) * 100 : 0;
-
-  return (
-    <div className="fixed top-4 right-4 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm z-40 flex items-center space-x-2">
-      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-      <span>Otimizando experiência... {Math.round(progress)}%</span>
-    </div>
-  );
+  // Componente desabilitado - não mostrar mais o indicador
+  return null;
 };
 

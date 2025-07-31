@@ -8,7 +8,6 @@ import ProductSidebar from './ProductSidebar';
 interface ProductLayoutProps {
   product: Product;
   skuNavigation?: SKUNavigation;
-  viewingCount: number;
   onAddToCart: (product: Product) => void;
   className?: string;
 }
@@ -16,7 +15,6 @@ interface ProductLayoutProps {
 const ProductLayout: React.FC<ProductLayoutProps> = ({
   product,
   skuNavigation,
-  viewingCount,
   onAddToCart,
   className
 }) => {
@@ -37,7 +35,6 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
           <ProductSidebar
             product={product}
             skuNavigation={skuNavigation}
-            viewingCount={viewingCount}
             onAddToCart={onAddToCart}
           />
         </div>

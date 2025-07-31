@@ -8,13 +8,11 @@ import FavoriteButton from '@/components/FavoriteButton';
 
 interface ProductHeroMobileProps {
   product: Product;
-  viewingCount: number;
   onAddToCart: (product: Product) => void;
 }
 
 const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({ 
   product, 
-  viewingCount, 
   onAddToCart 
 }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -85,10 +83,7 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
 
           {/* Social Proof Badge - Melhor Design */}
           <div className="absolute bottom-6 left-6">
-            <div className="bg-black/80 text-white px-4 py-2 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="font-medium">{viewingCount} pessoas vendo</span>
-            </div>
+
           </div>
         </div>
 

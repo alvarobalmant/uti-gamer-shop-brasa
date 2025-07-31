@@ -2,14 +2,15 @@ import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { SKUNavigation } from '@/hooks/useProducts/types';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { ShoppingCart, Zap, Check } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
 
 // Importar componentes especializados da MainContent
 import ProductGalleryEnhanced from '../MainContent/ProductGalleryEnhanced';
-import PlatformSelectorExpanded from '../MainContent/PlatformSelectorExpanded';
-import RelatedProductsSection from '../RelatedProductsSection';
+import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
 import ProductSpecificationsTable from '../MainContent/ProductSpecificationsTable';
 import ProductDescriptionExpandable from '../MainContent/ProductDescriptionExpandable';
-import ProductReviewsWithPhotos from '../MainContent/ProductReviewsWithPhotos';
 import ProductFAQSection from '../MainContent/ProductFAQSection';
 
 interface ProductMainContentProps {
@@ -23,58 +24,115 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
   skuNavigation,
   className
 }) => {
+  const { addToCart, sendToWhatsApp } = useCart();
+
+  const handleAddToCart = () => {
+    // Usar a funcionalidade real do carrinho
+    addToCart(product);
+    console.log('Produto adicionado ao carrinho:', product.name);
+  };
+
+  const handleBuyNow = () => {
+    // Adicionar ao carrinho e abrir WhatsApp para finalização
+    addToCart(product);
+    
+    // Pequeno delay para garantir que o item foi adicionado ao carrinho
+    setTimeout(() => {
+      sendToWhatsApp();
+    }, 100);
+    
+    console.log('Compra imediata via WhatsApp:', product.name);
+  };
+
   return (
     <div className={cn("space-y-8", className)}>
       {/* 1. Galeria de Imagens - Destaque Principal */}
       <ProductGalleryEnhanced product={product} />
 
-      {/* 2. Seletor de Plataformas Expandido (se aplicável) */}
-      {skuNavigation && (
-        <PlatformSelectorExpanded skuNavigation={skuNavigation} />
-      )}
-
-      {/* 3. Produtos Relacionados */}
-      <RelatedProductsSection 
-        product={product}
+      {/* 2. Produtos Relacionados */}
+      <RelatedProductsCarousel 
+        currentProduct={product}
+        // relatedProducts={[]} // Pode ser passado via props quando disponível
       />
 
-      {/* 4. Especificações Técnicas */}
+      {/* 3. Especificações Técnicas */}
       <ProductSpecificationsTable product={product} />
 
-      {/* 5. Descrição Expandível */}
+      {/* 4. Descrição Expandível */}
       <ProductDescriptionExpandable product={product} />
 
-      {/* 6. Avaliações com Fotos */}
-      <ProductReviewsWithPhotos product={product} />
-
-      {/* 7. Perguntas Frequentes */}
+      {/* 5. Perguntas Frequentes */}
       <ProductFAQSection product={product} />
 
-      {/* 8. Seção Final - Produtos Relacionados Adicional */}
+      {/* 6. Seção Final - Produtos Relacionados Adicional */}
       <div className="border-t border-gray-200 pt-8">
-        <RelatedProductsSection 
-          product={product}
+        <RelatedProductsCarousel 
+          currentProduct={product}
+          // relatedProducts={[]} // Segunda seção com produtos diferentes
         />
       </div>
 
-      {/* 9. Call-to-Action Final */}
-      <div className="bg-gradient-to-r from-red-50 to-blue-50 border-2 border-red-200 rounded-lg p-6 text-center">
-        <h4 className="text-xl font-bold text-gray-900 mb-2">
-          🎮 Gostou deste produto?
-        </h4>
-        <p className="text-gray-700 mb-4">
-          Adicione ao carrinho agora e aproveite nossas condições especiais!
-        </p>
-        <div className="flex gap-3 justify-center">
-          <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
-            🛒 Adicionar ao Carrinho
-          </button>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
-            ⚡ Comprar Agora
-          </button>
-        </div>
-        <div className="text-sm text-gray-600 mt-3">
-          ✅ Frete grátis • ✅ Garantia • ✅ UTI Coins • ✅ Suporte especializado
+      {/* 7. Call-to-Action Final - Com Funcionalidade Real */}
+      <div className="bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-200 rounded-xl p-8 text-center shadow-sm">
+        <div className="max-w-md mx-auto">
+          <div className="flex justify-center mb-4">
+            <div className="bg-blue-100 p-3 rounded-full">
+              <ShoppingCart className="w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+          
+          <h4 className="text-2xl font-bold text-slate-900 mb-3">
+            Gostou deste produto?
+          </h4>
+          
+          <p className="text-slate-600 mb-6 leading-relaxed">
+            Adicione ao carrinho agora e aproveite nossas condições especiais!
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+            <Button 
+              onClick={handleAddToCart}
+              className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg"
+              size="lg"
+            >
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              Adicionar ao Carrinho
+            </Button>
+            
+            <Button 
+              onClick={handleBuyNow}
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg"
+              size="lg"
+            >
+              <Zap className="w-5 h-5 mr-2" />
+              Comprar pelo WhatsApp
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-slate-600">
+            <div className="flex items-center justify-center gap-2">
+              <Check className="w-4 h-4 text-green-600" />
+              <span>Frete grátis</span>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <Check className="w-4 h-4 text-green-600" />
+              <span>Garantia</span>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <Check className="w-4 h-4 text-green-600" />
+              <span>UTI Coins</span>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <Check className="w-4 h-4 text-green-600" />
+              <span>Suporte</span>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-800 font-medium">
+              💬 Finalizamos todas as vendas pelo WhatsApp para melhor atendimento!
+            </p>
+          </div>
         </div>
       </div>
     </div>

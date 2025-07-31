@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Product } from '@/hooks/useProducts';
-import { Star, Heart, Share2, Eye, Clock, Shield, Truck } from 'lucide-react';
+import { Star, Heart, Share2, Clock, Shield, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProductGallery from './ProductGallery';
@@ -11,11 +11,10 @@ import FavoriteButton from '@/components/FavoriteButton';
 
 interface ProductHeroProps {
   product: Product;
-  viewingCount: number;
   onAddToCart: (product: Product) => void;
 }
 
-const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddToCart }) => {
+const ProductHero: React.FC<ProductHeroProps> = ({ product, onAddToCart }) => {
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('new');
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -60,10 +59,7 @@ const ProductHero: React.FC<ProductHeroProps> = ({ product, viewingCount, onAddT
                   <Shield className="w-3 h-3 mr-1" />
                   Em estoque
                 </Badge>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Eye className="w-4 h-4 mr-1" />
-                  {viewingCount} pessoas visualizando
-                </div>
+
               </div>
               <div className="flex items-center gap-2">
                 <FavoriteButton productId={product.id} size="sm" />

@@ -1,11 +1,10 @@
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-<<<<<<< HEAD
 import { Card } from '@/components/ui/card';
 import SectionTitle from '@/components/SectionTitle';
 import { cn } from '@/lib/utils';
@@ -15,11 +14,6 @@ import ProductCardImage from '@/components/ProductCard/ProductCardImage';
 import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
 import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
-=======
-import { ProductCardOptimized } from '@/components/ProductCardOptimized';
-import SectionTitle from '@/components/SectionTitle';
-import { cn } from '@/lib/utils';
->>>>>>> bcff5293fc382e6fb40a7d4caaf51555e939f67a
 
 interface RelatedProductsSectionProps {
   product: Product;
@@ -32,23 +26,9 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const location = useLocation();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [animateProducts, setAnimateProducts] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [itemsPerView, setItemsPerView] = useState(5);
-
-  // Calcular itens por visualização baseado no tamanho da tela
-  useEffect(() => {
-    const updateItemsPerView = () => {
-      const width = window.innerWidth;
-      if (width < 640) setItemsPerView(2);
-      else if (width < 768) setItemsPerView(3);
-      else if (width < 1024) setItemsPerView(4);
-      else setItemsPerView(5);
-    };
-
-    updateItemsPerView();
-    window.addEventListener('resize', updateItemsPerView);
-    return () => window.removeEventListener('resize', updateItemsPerView);
-  }, []);
+  const scrollContainerRef = useHorizontalScrollTracking('related-products', true);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
     if (allProducts.length > 0 && product) {
@@ -59,18 +39,17 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
           p.id !== product.id && 
           p.tags?.some(tag => currentProductTags.includes(tag.id))
         )
-        .slice(0, 12);
+        .slice(0, 8);
       
       // Se não houver produtos relacionados por tag, pegar produtos aleatórios
       if (related.length < 4) {
         const others = allProducts
           .filter(p => p.id !== product.id && !related.some(r => r.id === p.id))
-          .slice(0, 12 - related.length);
+          .slice(0, 8 - related.length);
         related.push(...others);
       }
 
       setRelatedProducts(related);
-      setCurrentIndex(0); // Reset index when products change
     }
   }, [allProducts, product]);
 
@@ -90,29 +69,59 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
     navigate('/categoria/inicio');
   };
 
-  // Navigation functions similar to ProductCarouselOptimized
-  const canNavigateLeft = currentIndex > 0;
-  const canNavigateRight = currentIndex < relatedProducts.length - itemsPerView;
-
-  const scrollLeft = useCallback(() => {
-    if (canNavigateLeft) {
-      setCurrentIndex(prev => Math.max(0, prev - itemsPerView));
+  // Check scroll position and update button states
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
     }
-  }, [canNavigateLeft, itemsPerView]);
+  };
 
-  const scrollRight = useCallback(() => {
-    if (canNavigateRight) {
-      setCurrentIndex(prev => Math.min(relatedProducts.length - itemsPerView, prev + itemsPerView));
+  // Scroll functions
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollBy({
+        left: -containerWidth,
+        behavior: 'smooth'
+      });
     }
-  }, [canNavigateRight, itemsPerView, relatedProducts.length]);
+  };
 
-  // Get visible products based on current index
-  const visibleProducts = relatedProducts.slice(currentIndex, currentIndex + itemsPerView);
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollBy({
+        left: containerWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   useEffect(() => {
     setAnimateProducts(false);
     const timer = setTimeout(() => setAnimateProducts(true), 50);
     return () => clearTimeout(timer);
+  }, [relatedProducts]);
+
+  // Check scroll buttons when products change or component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      checkScrollButtons();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [relatedProducts]);
+
+  // Add scroll event listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollButtons);
+      // Initial check
+      checkScrollButtons();
+      return () => container.removeEventListener('scroll', checkScrollButtons);
+    }
   }, [relatedProducts]);
 
   if (loading) {
@@ -148,78 +157,65 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
           </Button>
         </div>
 
-        {/* Carousel */}
-        <div className="relative">
-          {/* Navigation Buttons */}
-          {relatedProducts.length > itemsPerView && (
-            <>
-              <Button
-                onClick={scrollLeft}
-                disabled={!canNavigateLeft}
-                variant="outline"
-                size="icon"
-                className={cn(
-                  "absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg",
-                  !canNavigateLeft && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Button
-                onClick={scrollRight}
-                disabled={!canNavigateRight}
-                variant="outline"
-                size="icon"
-                className={cn(
-                  "absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg",
-                  !canNavigateRight && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </>
+        {/* Products Grid / Scroll Container */}
+        <div className="relative group">
+          {/* Left Navigation Button */}
+          {canScrollLeft && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+              onClick={scrollLeft}
+              aria-label="Produtos anteriores"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
           )}
 
-          {/* Products Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 px-12">
-            {visibleProducts.map((relatedProduct, index) => (
-              <div
-                key={relatedProduct.id}
-                className={cn(
-                  "transition-all duration-300 ease-in-out",
-                  animateProducts
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4"
-                )}
-                style={{
-                  transitionDelay: animateProducts ? `${index * 75}ms` : "0ms"
-                }}
-              >
-                <ProductCardOptimized
-                  product={relatedProduct}
-                  onFavoriteClick={() => {}}
-                  isFavorite={false}
-                />
-              </div>
-            ))}
-          </div>
+          {/* Right Navigation Button */}
+          {canScrollRight && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+              onClick={scrollRight}
+              aria-label="Próximos produtos"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          )}
 
-          {/* Indicators */}
-          {relatedProducts.length > itemsPerView && (
-            <div className="flex justify-center mt-6 space-x-2">
-              {Array.from({ 
-                length: Math.ceil(relatedProducts.length / itemsPerView) 
-              }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index * itemsPerView)}
+          <div
+            ref={scrollContainerRef}
+            className={cn(
+              "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2",
+              "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
+              "overscroll-behavior-x-contain"
+            )}
+            style={{
+              scrollbarWidth: "thin",
+              WebkitOverflowScrolling: "touch",
+              scrollBehavior: "smooth",
+              touchAction: "pan-x pan-y"
+            } as React.CSSProperties}
+          >
+            <div 
+              className="flex gap-3 min-w-max px-1 py-1"
+              style={{
+                width: 'calc(100% + 100px)',
+                paddingRight: '120px'
+              }}
+            >
+              {relatedProducts.map((relatedProduct, index) => (
+                <div
+                  key={relatedProduct.id}
                   className={cn(
-                    "w-2 h-2 rounded-full transition-colors",
-                    Math.floor(currentIndex / itemsPerView) === index
-                      ? "bg-red-600"
-                      : "bg-gray-300"
+                    "flex-shrink-0",
+                    "transition-all duration-300 ease-in-out",
+                    animateProducts
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4"
                   )}
-<<<<<<< HEAD
                   style={{
                     transitionDelay: animateProducts ? `${index * 75}ms` : "0ms",
                     width: "200px",
@@ -264,12 +260,9 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
                     </div>
                   </Card>
                 </div>
-=======
-                />
->>>>>>> bcff5293fc382e6fb40a7d4caaf51555e939f67a
               ))}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </section>
