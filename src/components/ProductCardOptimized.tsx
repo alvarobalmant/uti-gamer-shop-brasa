@@ -27,7 +27,11 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
   // Memoizar cálculos de preço
   const priceInfo = useMemo(() => {
     const currentPrice = product.price || 0;
+<<<<<<< HEAD
     const originalPrice = product.original_price || currentPrice;
+=======
+    const originalPrice = product.list_price || currentPrice;
+>>>>>>> bcff5293fc382e6fb40a7d4caaf51555e939f67a
     const discount = originalPrice > currentPrice 
       ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
       : 0;
@@ -38,19 +42,31 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
       discount,
       hasDiscount: discount > 0,
     };
+<<<<<<< HEAD
   }, [product.price, product.original_price]);
+=======
+  }, [product.price, product.list_price]);
+>>>>>>> bcff5293fc382e6fb40a7d4caaf51555e939f67a
 
   // Memoizar rating
   const ratingInfo = useMemo(() => {
     const rating = product.rating || 0;
+<<<<<<< HEAD
     const reviewCount = product.review_count || 0;
+=======
+    const reviewCount = product.rating_count || 0;
+>>>>>>> bcff5293fc382e6fb40a7d4caaf51555e939f67a
     
     return {
       rating,
       reviewCount,
       stars: Math.round(rating),
     };
+<<<<<<< HEAD
   }, [product.rating, product.review_count]);
+=======
+  }, [product.rating, product.rating_count]);
+>>>>>>> bcff5293fc382e6fb40a7d4caaf51555e939f67a
 
   // Handler para hover com prefetch
   const handleMouseEnter = useCallback(() => {
@@ -95,7 +111,11 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
       {/* Container da imagem */}
       <div className="relative aspect-square overflow-hidden">
         <ProductImage
+<<<<<<< HEAD
           src={product.image_url || ''}
+=======
+          src={product.image_url || product.image || ''}
+>>>>>>> bcff5293fc382e6fb40a7d4caaf51555e939f67a
           alt={product.name || 'Produto'}
           priority={priority}
           variant="card"
@@ -110,9 +130,15 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
         )}
         
         {/* Badge de estoque */}
+<<<<<<< HEAD
         {product.stock_quantity !== undefined && product.stock_quantity < 5 && (
           <div className="absolute top-2 right-12 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
             Últimas {product.stock_quantity}
+=======
+        {product.stock !== undefined && product.stock < 5 && (
+          <div className="absolute top-2 right-12 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            Últimas {product.stock}
+>>>>>>> bcff5293fc382e6fb40a7d4caaf51555e939f67a
           </div>
         )}
         
@@ -186,15 +212,22 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
           <div className="text-lg font-bold text-gray-900">
             {formatPrice(priceInfo.currentPrice)}
           </div>
+<<<<<<< HEAD
           {product.installments && (
             <div className="text-xs text-gray-600">
               ou {product.installments.count}x de {formatPrice(product.installments.value)} sem juros
+=======
+          {product.installment_options && (
+            <div className="text-xs text-gray-600">
+              ou {product.installment_options}x de {formatPrice(priceInfo.currentPrice / product.installment_options)} sem juros
+>>>>>>> bcff5293fc382e6fb40a7d4caaf51555e939f67a
             </div>
           )}
         </div>
         
         {/* Badges de pagamento */}
         <div className="flex flex-wrap gap-1">
+<<<<<<< HEAD
           {product.payment_methods?.includes('pix') && (
             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
               PIX
@@ -205,6 +238,14 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
               12x
             </span>
           )}
+=======
+          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+            PIX
+          </span>
+          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+            12x
+          </span>
+>>>>>>> bcff5293fc382e6fb40a7d4caaf51555e939f67a
           {product.free_shipping && (
             <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">
               Frete Grátis

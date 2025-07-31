@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 // Importar componentes especializados da MainContent
 import ProductGalleryEnhanced from '../MainContent/ProductGalleryEnhanced';
 import PlatformSelectorExpanded from '../MainContent/PlatformSelectorExpanded';
-import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
+import RelatedProductsSection from '../RelatedProductsSection';
 import ProductSpecificationsTable from '../MainContent/ProductSpecificationsTable';
 import ProductDescriptionExpandable from '../MainContent/ProductDescriptionExpandable';
 import ProductReviewsWithPhotos from '../MainContent/ProductReviewsWithPhotos';
@@ -34,9 +34,8 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
       )}
 
       {/* 3. Produtos Relacionados */}
-      <RelatedProductsCarousel 
-        currentProduct={product}
-        // relatedProducts={[]} // Pode ser passado via props quando disponível
+      <RelatedProductsSection 
+        product={product}
       />
 
       {/* 4. Especificações Técnicas */}
@@ -53,9 +52,8 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
 
       {/* 8. Seção Final - Produtos Relacionados Adicional */}
       <div className="border-t border-gray-200 pt-8">
-        <RelatedProductsCarousel 
-          currentProduct={product}
-          // relatedProducts={[]} // Segunda seção com produtos diferentes
+        <RelatedProductsSection 
+          product={product}
         />
       </div>
 
