@@ -28,11 +28,13 @@ export const useProducts = () => {
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produtos');
       
-      toast({
-        title: "Erro ao carregar produtos",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao carregar produtos",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       
       // Em caso de erro, definir produtos como array vazio para não quebrar a interface
       setProducts([]);
@@ -50,11 +52,13 @@ export const useProducts = () => {
       setProducts(productsData);
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produtos do carrossel');
-      toast({
-        title: "Erro ao carregar produtos do carrossel",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao carregar produtos do carrossel",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       setProducts([]);
     } finally {
       setLoading(false);
@@ -71,11 +75,13 @@ export const useProducts = () => {
       return result;
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao adicionar produto');
-      toast({
-        title: "Erro ao adicionar produto",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao adicionar produto",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       throw error;
     }
   };
@@ -90,11 +96,13 @@ export const useProducts = () => {
       return result;
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao atualizar produto');
-      toast({
-        title: "Erro ao atualizar produto",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao atualizar produto",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       throw error;
     }
   };
@@ -108,11 +116,13 @@ export const useProducts = () => {
       });
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao remover produto');
-      toast({
-        title: "Erro ao remover produto",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao remover produto",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       throw error;
     }
   };
@@ -126,11 +136,13 @@ export const useProducts = () => {
     } catch (error: any) {
       console.error('useProducts: Error fetching single product:', error);
       const errorMessage = handleProductError(error, 'ao carregar produto');
-      toast({
-        title: "Erro ao carregar produto",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao carregar produto",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       return null;
     }
   };

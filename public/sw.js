@@ -1,227 +1,347 @@
-// Service Worker para cache agressivo e performance extrema
-const CACHE_NAME = 'uti-gamer-v1';
-const CRITICAL_CACHE = 'uti-critical-v1';
-const IMAGES_CACHE = 'uti-images-v1';
-const API_CACHE = 'uti-api-v1';
+// Service Worker para UTI Gamer Shop
+// Versão: 1.0.0
 
-// Recursos críticos para cache imediato
-const CRITICAL_RESOURCES = [
+const CACHE_NAME = 'uti-gamer-shop-v1';
+const STATIC_CACHE_NAME = 'uti-static-v1';
+const DYNAMIC_CACHE_NAME = 'uti-dynamic-v1';
+const IMAGE_CACHE_NAME = 'uti-images-v1';
+const API_CACHE_NAME = 'uti-api-v1';
+
+// Assets estáticos para cache
+const STATIC_ASSETS = [
   '/',
-  '/src/main.tsx',
-  '/src/index.css',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  '/manifest.json',
+  '/offline.html',
+  // CSS e JS serão adicionados automaticamente pelo Vite
 ];
 
-// Estratégia de cache por tipo de recurso
+// Padrões de URL para diferentes estratégias de cache
 const CACHE_STRATEGIES = {
-  // Cache First para assets estáticos
-  static: ['js', 'css', 'woff2', 'woff', 'ttf'],
-  // Network First para API calls
-  api: ['/api/', 'supabase.co'],
-  // Stale While Revalidate para imagens
-  images: ['jpg', 'jpeg', 'png', 'webp', 'avif', 'svg'],
-  // Cache First para fontes
-  fonts: ['fonts.googleapis.com', 'fonts.gstatic.com']
+  // Cache First - Assets estáticos
+  CACHE_FIRST: [
+    /\.(js|css|woff|woff2|ttf|eot)$/,
+    /\/assets\//,
+    /\/static\//,
+  ],
+  
+  // Network First - HTML e dados dinâmicos
+  NETWORK_FIRST: [
+    /\/api\//,
+    /\.html$/,
+    /\/$/,
+  ],
+  
+  // Stale While Revalidate - Imagens e recursos
+  STALE_WHILE_REVALIDATE: [
+    /\.(png|jpg|jpeg|gif|webp|avif|svg|ico)$/,
+    /lovable-uploads/,
+    /supabase/,
+  ],
+  
+  // Network Only - Autenticação e operações críticas
+  NETWORK_ONLY: [
+    /\/auth\//,
+    /\/login/,
+    /\/logout/,
+    /\/admin/,
+  ],
 };
 
+// Configurações de cache
+const CACHE_CONFIG = {
+  maxAge: {
+    static: 30 * 24 * 60 * 60 * 1000, // 30 dias
+    dynamic: 7 * 24 * 60 * 60 * 1000,  // 7 dias
+    images: 14 * 24 * 60 * 60 * 1000,  // 14 dias
+    api: 5 * 60 * 1000,                // 5 minutos
+  },
+  maxEntries: {
+    dynamic: 50,
+    images: 100,
+    api: 30,
+  },
+};
+
+// Instalar Service Worker
 self.addEventListener('install', (event) => {
-  console.log('🔧 Service Worker: Installing...');
+  console.log('[SW] Installing...');
   
   event.waitUntil(
     Promise.all([
-      // Cache recursos críticos
-      caches.open(CRITICAL_CACHE).then(cache => {
-        console.log('💾 Caching critical resources');
-        return cache.addAll(CRITICAL_RESOURCES);
+      // Cache assets estáticos
+      caches.open(STATIC_CACHE_NAME).then((cache) => {
+        console.log('[SW] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
       }),
       
-      // Pular espera para ativar imediatamente
-      self.skipWaiting()
+      // Pular waiting para ativar imediatamente
+      self.skipWaiting(),
     ])
   );
 });
 
+// Ativar Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('✅ Service Worker: Activated');
+  console.log('[SW] Activating...');
   
   event.waitUntil(
     Promise.all([
       // Limpar caches antigos
-      caches.keys().then(cacheNames => {
+      caches.keys().then((cacheNames) => {
         return Promise.all(
-          cacheNames
-            .filter(cacheName => 
-              cacheName.startsWith('uti-') && 
-              ![CACHE_NAME, CRITICAL_CACHE, IMAGES_CACHE, API_CACHE].includes(cacheName)
-            )
-            .map(cacheName => {
-              console.log('🗑️ Removing old cache:', cacheName);
+          cacheNames.map((cacheName) => {
+            if (
+              cacheName !== STATIC_CACHE_NAME &&
+              cacheName !== DYNAMIC_CACHE_NAME &&
+              cacheName !== IMAGE_CACHE_NAME &&
+              cacheName !== API_CACHE_NAME
+            ) {
+              console.log('[SW] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
-            })
+            }
+          })
         );
       }),
       
-      // Assumir controle de todas as abas
-      self.clients.claim()
+      // Tomar controle de todas as abas
+      self.clients.claim(),
     ])
   );
 });
 
+// Interceptar requisições
 self.addEventListener('fetch', (event) => {
-  const request = event.request;
+  const { request } = event;
   const url = new URL(request.url);
   
-  // Ignorar non-GET requests
-  if (request.method !== 'GET') return;
+  // Ignorar requisições não-HTTP
+  if (!request.url.startsWith('http')) {
+    return;
+  }
   
-  // Ignorar chrome-extension e outras URLs especiais
-  if (!url.protocol.startsWith('http')) return;
+  // Determinar estratégia de cache
+  const strategy = determineStrategy(request.url);
   
-  event.respondWith(handleRequest(request));
+  switch (strategy) {
+    case 'CACHE_FIRST':
+      event.respondWith(cacheFirst(request));
+      break;
+      
+    case 'NETWORK_FIRST':
+      event.respondWith(networkFirst(request));
+      break;
+      
+    case 'STALE_WHILE_REVALIDATE':
+      event.respondWith(staleWhileRevalidate(request));
+      break;
+      
+    case 'NETWORK_ONLY':
+      event.respondWith(networkOnly(request));
+      break;
+      
+    default:
+      event.respondWith(networkFirst(request));
+  }
 });
 
-async function handleRequest(request) {
-  const url = new URL(request.url);
-  const pathname = url.pathname;
-  const extension = pathname.split('.').pop()?.toLowerCase();
-  
+// Determinar estratégia baseada na URL
+function determineStrategy(url) {
+  for (const [strategy, patterns] of Object.entries(CACHE_STRATEGIES)) {
+    if (patterns.some(pattern => pattern.test(url))) {
+      return strategy;
+    }
+  }
+  return 'NETWORK_FIRST';
+}
+
+// Cache First - Busca no cache primeiro, rede como fallback
+async function cacheFirst(request) {
   try {
-    // Estratégia para recursos críticos
-    if (CRITICAL_RESOURCES.some(resource => url.href.includes(resource))) {
-      return await cacheFirst(request, CRITICAL_CACHE);
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
     }
     
-    // Estratégia para fontes
-    if (CACHE_STRATEGIES.fonts.some(domain => url.href.includes(domain))) {
-      return await cacheFirst(request, CACHE_NAME);
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      const cache = await caches.open(STATIC_CACHE_NAME);
+      cache.put(request, networkResponse.clone());
     }
     
-    // Estratégia para assets estáticos
-    if (extension && CACHE_STRATEGIES.static.includes(extension)) {
-      return await cacheFirst(request, CACHE_NAME);
-    }
-    
-    // Estratégia para imagens
-    if (extension && CACHE_STRATEGIES.images.includes(extension)) {
-      return await staleWhileRevalidate(request, IMAGES_CACHE);
-    }
-    
-    // Estratégia para APIs
-    if (CACHE_STRATEGIES.api.some(pattern => url.href.includes(pattern))) {
-      return await networkFirst(request, API_CACHE);
-    }
-    
-    // Estratégia padrão para outras requisições
-    if (pathname === '/' || pathname.includes('/produto/') || pathname.includes('/busca')) {
-      return await networkFirst(request, CACHE_NAME);
-    }
-    
-    // Fallback para network
-    return await fetch(request);
-    
+    return networkResponse;
   } catch (error) {
-    console.warn('❌ Service Worker fetch error:', error);
-    return await handleOffline(request);
+    console.error('[SW] Cache First failed:', error);
+    return new Response('Offline', { status: 503 });
   }
 }
 
-// Cache First - para assets estáticos
-async function cacheFirst(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  
-  if (cached) {
-    // Revalidar em background se for antigo
-    const cacheTime = new Date(cached.headers.get('date') || Date.now());
-    const isStale = Date.now() - cacheTime.getTime() > 24 * 60 * 60 * 1000; // 24h
-    
-    if (isStale) {
-      fetch(request).then(response => {
-        if (response.ok) cache.put(request, response.clone());
-      }).catch(() => {}); // Silenciar erros de background
-    }
-    
-    return cached;
-  }
-  
-  const response = await fetch(request);
-  if (response.ok) {
-    cache.put(request, response.clone());
-  }
-  return response;
-}
-
-// Network First - para conteúdo dinâmico
-async function networkFirst(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  
+// Network First - Busca na rede primeiro, cache como fallback
+async function networkFirst(request) {
   try {
-    const response = await fetch(request);
-    if (response.ok) {
-      cache.put(request, response.clone());
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      const cache = await caches.open(DYNAMIC_CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+      
+      // Limpar cache antigo
+      cleanupCache(DYNAMIC_CACHE_NAME, CACHE_CONFIG.maxEntries.dynamic);
     }
-    return response;
+    
+    return networkResponse;
   } catch (error) {
-    const cached = await cache.match(request);
-    if (cached) {
-      console.log('📱 Serving from cache (offline):', request.url);
-      return cached;
+    console.log('[SW] Network failed, trying cache:', request.url);
+    
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
     }
-    throw error;
+    
+    // Fallback para página offline
+    if (request.destination === 'document') {
+      return caches.match('/offline.html');
+    }
+    
+    return new Response('Offline', { status: 503 });
   }
 }
 
-// Stale While Revalidate - para imagens
-async function staleWhileRevalidate(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
+// Stale While Revalidate - Retorna cache e atualiza em background
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(IMAGE_CACHE_NAME);
+  const cachedResponse = await cache.match(request);
   
-  // Sempre tentar revalidar em background
-  const fetchPromise = fetch(request).then(response => {
-    if (response.ok) {
-      cache.put(request, response.clone());
+  // Buscar na rede em background
+  const networkPromise = fetch(request).then((networkResponse) => {
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+      cleanupCache(IMAGE_CACHE_NAME, CACHE_CONFIG.maxEntries.images);
     }
-    return response;
-  }).catch(() => cached); // Fallback para cache em caso de erro
+    return networkResponse;
+  }).catch(() => {
+    // Ignorar erros de rede silenciosamente
+  });
   
   // Retornar cache imediatamente se disponível
-  if (cached) {
-    return cached;
+  if (cachedResponse) {
+    return cachedResponse;
   }
   
-  // Senão, aguardar network
-  return await fetchPromise;
+  // Se não há cache, aguardar rede
+  try {
+    return await networkPromise;
+  } catch (error) {
+    return new Response('Image not available', { status: 503 });
+  }
 }
 
-// Manipular requisições offline
-async function handleOffline(request) {
-  const url = new URL(request.url);
-  
-  // Para páginas HTML, retornar página offline ou homepage em cache
-  if (request.headers.get('accept')?.includes('text/html')) {
-    const cache = await caches.open(CACHE_NAME);
-    const homepage = await cache.match('/');
-    if (homepage) return homepage;
-  }
-  
-  // Para imagens, retornar placeholder
-  if (request.headers.get('accept')?.includes('image/')) {
-    return new Response(
-      `<svg width="200" height="160" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="200" height="160" fill="#F3F4F6"/>
-        <text x="100" y="85" text-anchor="middle" fill="#9CA3AF" font-family="Arial" font-size="12">
-          Offline
-        </text>
-      </svg>`,
-      {
-        headers: { 'content-type': 'image/svg+xml' }
-      }
-    );
-  }
-  
-  // Para outros recursos, retornar erro 503
-  return new Response('Service Unavailable', { 
-    status: 503,
-    statusText: 'Service Unavailable (Offline)'
-  });
+// Network Only - Sempre buscar na rede
+async function networkOnly(request) {
+  return fetch(request);
 }
+
+// Limpar cache antigo baseado no número máximo de entradas
+async function cleanupCache(cacheName, maxEntries) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  
+  if (keys.length > maxEntries) {
+    const keysToDelete = keys.slice(0, keys.length - maxEntries);
+    await Promise.all(keysToDelete.map(key => cache.delete(key)));
+  }
+}
+
+// Limpar cache baseado na idade
+async function cleanupExpiredCache() {
+  const cacheConfigs = [
+    { name: STATIC_CACHE_NAME, maxAge: CACHE_CONFIG.maxAge.static },
+    { name: DYNAMIC_CACHE_NAME, maxAge: CACHE_CONFIG.maxAge.dynamic },
+    { name: IMAGE_CACHE_NAME, maxAge: CACHE_CONFIG.maxAge.images },
+    { name: API_CACHE_NAME, maxAge: CACHE_CONFIG.maxAge.api },
+  ];
+  
+  for (const config of cacheConfigs) {
+    try {
+      const cache = await caches.open(config.name);
+      const keys = await cache.keys();
+      const now = Date.now();
+      
+      for (const request of keys) {
+        const response = await cache.match(request);
+        if (response) {
+          const dateHeader = response.headers.get('date');
+          if (dateHeader) {
+            const responseDate = new Date(dateHeader).getTime();
+            if (now - responseDate > config.maxAge) {
+              await cache.delete(request);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[SW] Error cleaning cache:', config.name, error);
+    }
+  }
+}
+
+// Executar limpeza periodicamente
+setInterval(cleanupExpiredCache, 60 * 60 * 1000); // A cada hora
+
+// Mensagens do cliente
+self.addEventListener('message', (event) => {
+  const { type, payload } = event.data;
+  
+  switch (type) {
+    case 'SKIP_WAITING':
+      self.skipWaiting();
+      break;
+      
+    case 'CLEAR_CACHE':
+      clearAllCaches().then(() => {
+        event.ports[0].postMessage({ success: true });
+      });
+      break;
+      
+    case 'CACHE_STATS':
+      getCacheStats().then((stats) => {
+        event.ports[0].postMessage(stats);
+      });
+      break;
+      
+    default:
+      console.log('[SW] Unknown message type:', type);
+  }
+});
+
+// Limpar todos os caches
+async function clearAllCaches() {
+  const cacheNames = await caches.keys();
+  await Promise.all(cacheNames.map(name => caches.delete(name)));
+}
+
+// Obter estatísticas do cache
+async function getCacheStats() {
+  const stats = {};
+  const cacheNames = await caches.keys();
+  
+  for (const name of cacheNames) {
+    const cache = await caches.open(name);
+    const keys = await cache.keys();
+    stats[name] = keys.length;
+  }
+  
+  return stats;
+}
+
+// Notificar sobre atualizações
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'CHECK_UPDATE') {
+    // Verificar se há uma nova versão
+    self.registration.update().then(() => {
+      event.ports[0].postMessage({ hasUpdate: true });
+    });
+  }
+});
+
+console.log('[SW] Service Worker loaded successfully');
+

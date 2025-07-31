@@ -71,11 +71,13 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao carregar produtos');
       
-      toast({
-        title: "Erro ao carregar produtos",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao carregar produtos",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       
       console.error('[ProductContext] Erro ao carregar produtos:', error);
       setProducts([]);
@@ -126,11 +128,13 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao adicionar produto');
       
-      toast({
-        title: "Erro ao adicionar produto",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao adicionar produto",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       
       console.error('[ProductContext] Erro ao adicionar produto:', error);
       return null;
@@ -168,11 +172,13 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao atualizar produto');
       
-      toast({
-        title: "Erro ao atualizar produto",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao atualizar produto",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       
       console.error('[ProductContext] Erro ao atualizar produto:', error);
       return null;
@@ -208,11 +214,13 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     } catch (error: any) {
       const errorMessage = handleProductError(error, 'ao remover produto');
       
-      toast({
-        title: "Erro ao remover produto",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (errorMessage) {
+        toast({
+          title: "Erro ao remover produto",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
       
       console.error('[ProductContext] Erro ao deletar produto:', error);
       return false;

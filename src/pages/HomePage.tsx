@@ -4,15 +4,9 @@ import { useHomepageLayout } from '@/hooks/useHomepageLayout';
 import { SectionRenderer } from '@/components/HomePage/SectionRenderer';
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
-import { useAppInitialLoad } from '@/hooks/useHomepageProductPreload';
-import { useCriticalResourcePriority } from '@/hooks/useCriticalResourcePriority';
 
 const HomePage = () => {
   const { layoutItems: layout, loading, error } = useHomepageLayout();
-  
-  // 🚀 OTIMIZAÇÕES CRÍTICAS - PRELOAD AGRESSIVO
-  useAppInitialLoad(); // Preload imediato de produtos
-  useCriticalResourcePriority(); // Priorizar recursos críticos
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState message={error} />;

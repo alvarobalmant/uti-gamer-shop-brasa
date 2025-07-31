@@ -1,11 +1,14 @@
-import React, { useState, useRef } from 'react';
-import { Product } from '@/hooks/useProducts';
-import { ChevronLeft, ChevronRight, Star, Heart } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Product, useProducts } from '@/hooks/useProducts';
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { formatPrice } from '@/utils/formatPrice';
+import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import FavoriteButton from '@/components/FavoriteButton';
+import ProductCardImage from '@/components/ProductCard/ProductCardImage';
+import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
+import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
+import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
 
 interface RelatedProductsCarouselProps {
   currentProduct: Product;
@@ -18,265 +21,200 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
   relatedProducts = [],
   className
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const { products: allProducts } = useProducts();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Mock de produtos relacionados se não fornecidos
-  const mockRelatedProducts: Product[] = [
-    {
-      id: '1',
-      name: 'Horizon Forbidden West - PlayStation 5',
-      price: 299.99,
-      list_price: 349.99,
-      image: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400',
-      category: 'games',
-      stock: 15,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: '2', 
-      name: 'FIFA 25 - PlayStation 5',
-      price: 259.99,
-      list_price: 299.99,
-      image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400',
-      category: 'games',
-      stock: 8,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: '3',
-      name: 'Spider-Man 2 - PlayStation 5',
-      price: 279.99,
-      list_price: 329.99,
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400',
-      category: 'games',
-      stock: 12,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: '4',
-      name: 'God of War Ragnarök - PlayStation 5',
-      price: 249.99,
-      list_price: 299.99,
-      image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400',
-      category: 'games',
-      stock: 20,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: '5',
-      name: 'The Last of Us Part I - PlayStation 5',
-      price: 199.99,
-      list_price: 249.99,
-      image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400',
-      category: 'games',
-      stock: 6,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: '6',
-      name: 'Ratchet & Clank: Rift Apart - PlayStation 5',
-      price: 179.99,
-      list_price: 229.99,
-      image: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400',
-      category: 'games',
-      stock: 25,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+  useEffect(() => {
+    if (allProducts.length > 0 && currentProduct) {
+      // Lógica para produtos relacionados baseada em tags
+      const currentProductTags = currentProduct.tags?.map(t => t.id) || [];
+      const related = allProducts
+        .filter(p => 
+          p.id !== currentProduct.id && 
+          p.tags?.some(tag => currentProductTags.includes(tag.id))
+        )
+        .slice(0, 8);
+      
+      // Se não houver produtos relacionados por tag, pegar produtos aleatórios
+      if (related.length < 4) {
+        const others = allProducts
+          .filter(p => p.id !== currentProduct.id && !related.some(r => r.id === p.id))
+          .slice(0, 8 - related.length);
+        related.push(...others);
+      }
+
+      setProducts(related);
     }
-  ];
-
-  const products = relatedProducts.length > 0 ? relatedProducts : mockRelatedProducts;
-  const itemsPerView = 4;
-  const maxIndex = Math.max(0, products.length - itemsPerView);
-
-  const scrollLeft = () => {
-    setCurrentIndex(Math.max(0, currentIndex - 1));
-  };
-
-  const scrollRight = () => {
-    setCurrentIndex(Math.min(maxIndex, currentIndex + 1));
-  };
+  }, [allProducts, currentProduct]);
 
   const handleProductClick = (product: Product) => {
     window.location.href = `/produto/${product.id}`;
   };
 
+  // Check scroll position and update button states
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  // Scroll functions
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollBy({
+        left: -containerWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollBy({
+        left: containerWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Add scroll event listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollButtons);
+      // Initial check
+      checkScrollButtons();
+      return () => container.removeEventListener('scroll', checkScrollButtons);
+    }
+  }, [products]);
+
+  if (products.length === 0) {
+    return null;
+  }
+
   return (
     <div className={cn("space-y-6", className)}>
-      {/* Título */}
-      <div className="flex items-center justify-between">
+      {/* Section Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h3 className="text-xl font-bold text-gray-900">
           Produtos Relacionados
         </h3>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={scrollLeft}
-            disabled={currentIndex === 0}
-            className="h-8 w-8 p-0"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={scrollRight}
-            disabled={currentIndex >= maxIndex}
-            className="h-8 w-8 p-0"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
+        <Button
+          variant="default"
+          size="sm"
+          className="bg-red-600 hover:bg-red-700 text-white border-0 flex-shrink-0 w-full sm:w-auto font-medium"
+        >
+          Ver Todos
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
       </div>
 
-      {/* Carousel Container */}
-      <div className="relative overflow-hidden">
+      {/* Products Grid / Scroll Container */}
+      <div className="relative group">
+        {/* Left Navigation Button */}
+        {canScrollLeft && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+            onClick={scrollLeft}
+            aria-label="Produtos anteriores"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+        )}
+
+        {/* Right Navigation Button */}
+        {canScrollRight && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+            onClick={scrollRight}
+            aria-label="Próximos produtos"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        )}
+
         <div
           ref={scrollContainerRef}
-          className="flex transition-transform duration-300 ease-in-out gap-4"
+          className={cn(
+            "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2",
+            "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
+            "overscroll-behavior-x-contain"
+          )}
           style={{
-            transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`
-          }}
+            scrollbarWidth: "thin",
+            WebkitOverflowScrolling: "touch",
+            scrollBehavior: "smooth",
+            touchAction: "pan-x pan-y"
+          } as React.CSSProperties}
         >
-          {products.map((product, index) => {
-            const discountPercentage = product.list_price 
-              ? Math.round(((product.list_price - product.price) / product.list_price) * 100)
-              : 0;
-
-            return (
+          <div 
+            className="flex gap-3 min-w-max px-1 py-1"
+            style={{
+              width: 'calc(100% + 100px)',
+              paddingRight: '120px'
+            }}
+          >
+            {products.map((product, index) => (
               <div
                 key={product.id}
-                className="flex-shrink-0 w-1/4 group cursor-pointer"
-                onClick={() => handleProductClick(product)}
+                className="flex-shrink-0"
+                style={{
+                  width: "200px",
+                  flexShrink: 0
+                }}
               >
-                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-red-300">
-                  {/* Imagem do Produto */}
-                  <div className="relative aspect-square bg-gray-50 overflow-hidden">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                    />
-                    
-                    {/* Badges */}
-                    <div className="absolute top-2 left-2 flex flex-col gap-1">
-                      {discountPercentage > 0 && (
-                        <Badge className="bg-red-600 text-white font-bold text-xs">
-                          -{discountPercentage}%
-                        </Badge>
-                      )}
-                      {product.stock <= 5 && (
-                        <Badge className="bg-orange-500 text-white font-bold text-xs">
-                          Últimas unidades
-                        </Badge>
-                      )}
-                    </div>
+                {/* Card no padrão da homepage */}
+                <Card
+                  className={cn(
+                    "relative flex flex-col bg-white overflow-hidden",
+                    "border border-gray-200",
+                    "rounded-lg",
+                    "shadow-none",
+                    "transition-all duration-200 ease-in-out",
+                    "cursor-pointer",
+                    "w-[200px] h-[320px]",
+                    "p-0",
+                    "product-card",
+                    "hover:shadow-md hover:-translate-y-1"
+                  )}
+                  onClick={() => handleProductClick(product)}
+                  data-testid="product-card"
+                >
+                  <ProductCardBadge 
+                    text={product.badge_text || ''} 
+                    color={product.badge_color || '#22c55e'} 
+                    isVisible={product.badge_visible || false} 
+                  />
 
-                    {/* Botão Favorito */}
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <FavoriteButton 
-                        productId={product.id} 
-                        size="sm"
-                      />
-                    </div>
-
-                    {/* Overlay de Hover */}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300" />
+                  {/* Favorite Button */}
+                  <div className="absolute top-2 right-2 z-10">
+                    <FavoriteButton productId={product.id} size="sm" />
                   </div>
+                  
+                  <ProductCardImage product={product} isHovered={false} />
 
-                  {/* Informações do Produto */}
-                  <div className="p-4 space-y-3">
-                    {/* Nome */}
-                    <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 group-hover:text-red-600 transition-colors">
-                      {product.name}
-                    </h4>
-
-                    {/* Rating Mock */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-3 h-3 ${
-                              i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-xs text-gray-600">(4.2)</span>
+                  <div className="flex flex-1 flex-col justify-between p-3">
+                    <div className="space-y-2">
+                      <ProductCardInfo product={product} />
+                      <ProductCardPrice product={product} />
                     </div>
-
-                    {/* Preços */}
-                    <div className="space-y-1">
-                      {product.list_price && product.list_price > product.price && (
-                        <div className="text-xs text-gray-500 line-through">
-                          {formatPrice(product.list_price)}
-                        </div>
-                      )}
-                      <div className="text-lg font-bold text-gray-900">
-                        {formatPrice(product.price)}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        12x de {formatPrice(product.price / 12)} sem juros
-                      </div>
-                    </div>
-
-                    {/* UTI Coins */}
-                    <div className="flex items-center gap-1 text-xs text-yellow-600">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-bold text-white">C</span>
-                      </div>
-                      <span>+{Math.floor(product.price * 0.02)} coins</span>
-                    </div>
-
-                    {/* Botão de Ação */}
-                    <Button
-                      size="sm"
-                      className="w-full bg-red-600 hover:bg-red-700 text-white font-medium text-xs"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Adicionar ao carrinho
-                      }}
-                    >
-                      Adicionar ao carrinho
-                    </Button>
                   </div>
-                </div>
+                </Card>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
-
-      {/* Indicadores */}
-      <div className="flex justify-center gap-2">
-        {Array.from({ length: maxIndex + 1 }).map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={cn(
-              "w-2 h-2 rounded-full transition-all",
-              currentIndex === index ? "bg-red-600" : "bg-gray-300"
-            )}
-          />
-        ))}
-      </div>
-
-      {/* Link Ver Mais */}
-      <div className="text-center">
-        <Button
-          variant="outline"
-          className="border-red-500 text-red-600 hover:bg-red-50"
-        >
-          Ver todos os produtos similares
-        </Button>
       </div>
 
       {/* Informações Adicionais */}

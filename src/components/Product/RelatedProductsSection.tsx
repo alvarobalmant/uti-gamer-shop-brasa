@@ -5,10 +5,15 @@ import { useCart } from '@/contexts/CartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ProductCard from '@/components/ProductCard';
+import { Card } from '@/components/ui/card';
 import SectionTitle from '@/components/SectionTitle';
 import { cn } from '@/lib/utils';
 import { useHorizontalScrollTracking } from '@/hooks/useHorizontalScrollTracking';
+import FavoriteButton from '@/components/FavoriteButton';
+import ProductCardImage from '@/components/ProductCard/ProductCardImage';
+import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
+import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
+import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
 
 interface RelatedProductsSectionProps {
   product: Product;
@@ -217,11 +222,43 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
                     flexShrink: 0
                   }}
                 >
-                  <ProductCard
-                    product={relatedProduct}
-                    onCardClick={handleProductClick}
-                    onAddToCart={handleAddToCart}
-                  />
+                  {/* Card no padrão da homepage */}
+                  <Card
+                    className={cn(
+                      "relative flex flex-col bg-white overflow-hidden",
+                      "border border-gray-200",
+                      "rounded-lg",
+                      "shadow-none",
+                      "transition-all duration-200 ease-in-out",
+                      "cursor-pointer",
+                      "w-[200px] h-[320px]",
+                      "p-0",
+                      "product-card",
+                      "hover:shadow-md hover:-translate-y-1"
+                    )}
+                    onClick={() => handleProductClick(relatedProduct.id)}
+                    data-testid="product-card"
+                  >
+                    <ProductCardBadge 
+                      text={relatedProduct.badge_text || ''} 
+                      color={relatedProduct.badge_color || '#22c55e'} 
+                      isVisible={relatedProduct.badge_visible || false} 
+                    />
+
+                    {/* Favorite Button */}
+                    <div className="absolute top-2 right-2 z-10">
+                      <FavoriteButton productId={relatedProduct.id} size="sm" />
+                    </div>
+                    
+                    <ProductCardImage product={relatedProduct} isHovered={false} />
+
+                    <div className="flex flex-1 flex-col justify-between p-3">
+                      <div className="space-y-2">
+                        <ProductCardInfo product={relatedProduct} />
+                        <ProductCardPrice product={relatedProduct} />
+                      </div>
+                    </div>
+                  </Card>
                 </div>
               ))}
             </div>

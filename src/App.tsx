@@ -9,17 +9,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
-<<<<<<< HEAD
 import { ProductProviderOptimized } from '@/contexts/ProductContextOptimized';
-=======
 import { ProductProvider } from '@/contexts/ProductContext';
->>>>>>> 149a4c060e7fe167b6dc88c6cb7fc7b100853637
 import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
+import IndexWithBackendOptimizations from "./pages/IndexWithBackendOptimizations";
+import IndexOptimized from "./pages/IndexOptimized";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
@@ -158,7 +157,6 @@ const App = () => {
           <SecurityHeaders />
           <UTICoinsProvider>
             <CartProvider>
-<<<<<<< HEAD
               <ProductProviderOptimized>
                 <LoadingProvider>
                   <TooltipProvider>
@@ -171,19 +169,6 @@ const App = () => {
                             <LoadingOverlay />
                             <GlobalNavigationOverlay />
                             <Suspense fallback={<PageLoader />}>
-=======
-            <ProductProvider>
-              <LoadingProvider>
-                <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                <GlobalNavigationProvider>
-                  <ScrollRestorationProvider>
-                    <LoadingOverlay />
-                    <GlobalNavigationOverlay />
-                    <Suspense fallback={<PageLoader />}>
->>>>>>> 149a4c060e7fe167b6dc88c6cb7fc7b100853637
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
                   <Route path="/" element={<Index />} />
@@ -215,7 +200,9 @@ const App = () => {
                     path="/admin" 
                     element={
                       <ProtectedAdminRoute>
-                        <AdminPanel /> 
+                        <ProductProvider>
+                          <AdminPanel /> 
+                        </ProductProvider>
                       </ProtectedAdminRoute>
                     }
                   />
@@ -262,7 +249,6 @@ const App = () => {
                   {/* Catch-all Not Found Route - MUST be absolute last */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-<<<<<<< HEAD
                             </Suspense>
                           </ScrollRestorationProvider>
                         </GlobalNavigationProvider>
@@ -273,17 +259,6 @@ const App = () => {
               </ProductProviderOptimized>
             </CartProvider>
           </UTICoinsProvider>
-=======
-              </Suspense>
-            </ScrollRestorationProvider>
-          </GlobalNavigationProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </LoadingProvider>
-  </ProductProvider>
-</CartProvider>
-</UTICoinsProvider>
->>>>>>> 149a4c060e7fe167b6dc88c6cb7fc7b100853637
         </SecurityProvider>
       </AuthProvider>
     </QueryClientProvider>

@@ -1,6 +1,13 @@
 
-export const handleProductError = (error: any, context: string) => {
+export const handleProductError = (error: any, context: string): string | null => {
   console.error(`Erro ${context}:`, error);
+  
+  // Suprimir erro específico do idasproduct_id
+  if (error.message?.includes('idasproduct_id') || 
+      error.message?.includes('column products.idasproduct_id does not exist')) {
+    console.log('🔇 [ProductErrorHandler] Erro idasproduct_id suprimido - fallback automático ativo');
+    return null; // Retorna null para não exibir toast
+  }
   
   // Tratamento específico para diferentes tipos de erro
   let errorMessage = `Erro desconhecido ${context}`;

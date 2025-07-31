@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 // Tipos para configuração de cache
 interface CacheConfig {
   staleTime: number;
-  gcTime: number; // Renamed from cacheTime in TanStack Query v5
+  gcTime: number;
   refetchOnWindowFocus: boolean;
   refetchOnMount: boolean;
   retry: number | boolean;
@@ -12,12 +12,12 @@ interface CacheConfig {
 
 // Configurações de cache por tipo de dados
 const CACHE_CONFIGS: Record<string, CacheConfig> = {
-  // Cache ULTRA agressivo para dados da homepage
+  // Cache agressivo para dados estáticos
   products: {
-    staleTime: 30 * 1000, // 30 segundos - MUITO AGRESSIVO
-    gcTime: 5 * 60 * 1000, // 5 minutos
-    refetchOnWindowFocus: false, // Não refetch ao focar janela
-    refetchOnMount: false, // Não refetch ao montar
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 15 * 60 * 1000, // 15 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     retry: 3
   },
   
@@ -100,7 +100,7 @@ export const useCacheInvalidation = () => {
       queryKey,
       queryFn,
       staleTime: config.staleTime,
-      gcTime: config.gcTime,
+      cacheTime: config.cacheTime,
     });
     
     console.log(`⚡ Dados prefetch: ${queryKey.join('/')}`);
@@ -183,12 +183,10 @@ export const useCacheWithFallback = <T>(
     queryFn,
     type,
     {
-      meta: {
-        onSuccess: () => trackCacheHit(queryKey),
-        onError: (error: Error) => {
-          console.warn(`⚠️ Query error for ${queryKey.join('/')}:`, error);
-          trackCacheHit(queryKey);
-        }
+      onSuccess: () => trackCacheHit(queryKey),
+      onError: (error) => {
+        console.warn(`⚠️ Query error for ${queryKey.join('/')}:`, error);
+        trackCacheHit(queryKey);
       }
     }
   );

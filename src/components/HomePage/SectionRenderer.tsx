@@ -110,7 +110,6 @@ export const SectionRenderer: React.FC<SectionRendererProps> = ({
                 title={section.title}
                 viewAllLink={section.view_all_link || `/secao/${sectionKey}`}
                 reduceTopSpacing={reduceTopSpacing}
-                sectionKey={sectionKey} // 🚀 OTIMIZAÇÃO: Passar sectionKey para detectar seções críticas
               />
             </div>
           );
