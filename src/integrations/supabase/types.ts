@@ -193,7 +193,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -1011,7 +1011,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -1136,7 +1136,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -1172,7 +1172,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "fk_product_tags_tag_id"
@@ -1180,6 +1180,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tags"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_product_tags_tag_id"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["tag_id"]
           },
         ]
       }
@@ -1431,7 +1438,7 @@ export type Database = {
             columns: ["parent_product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
         ]
       }
@@ -2286,7 +2293,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "user_favorites_user_id_fkey"
@@ -2344,7 +2351,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "user_savings_user_id_fkey"
@@ -2543,50 +2550,89 @@ export type Database = {
       }
       view_product_with_tags: {
         Row: {
+          additional_images: string[] | null
+          available_variants: Json | null
           badge_color: string | null
           badge_text: string | null
           badge_visible: boolean | null
           brand: string | null
+          breadcrumb_config: Json | null
           category: string | null
+          colors: string[] | null
           condition: string | null
           created_at: string | null
-          description: string | null
+          delivery_config: Json | null
           digital_price: number | null
           discount_percentage: number | null
           discount_price: number | null
-          id: string | null
-          image: string | null
-          images: string[] | null
+          display_config: Json | null
+          free_shipping: boolean | null
+          inherit_from_master: Json | null
           installment_options: number | null
           is_active: boolean | null
           is_featured: boolean | null
+          is_master_product: boolean | null
           list_price: number | null
+          manual_related_products: Json | null
+          master_slug: string | null
           meta_description: string | null
           meta_title: string | null
-          name: string | null
           new_price: number | null
+          parent_product_id: string | null
           pix_discount_percentage: number | null
           platform: string | null
-          price: number | null
           pro_discount_percent: number | null
           pro_price: number | null
+          product_description: string | null
+          product_descriptions: Json | null
+          product_faqs: Json | null
+          product_features: Json | null
+          product_highlights: Json | null
+          product_id: string | null
+          product_image: string | null
+          product_name: string | null
+          product_price: number | null
+          product_stock: number | null
           product_type: string | null
+          product_videos: Json | null
           promotional_price: number | null
           rating_average: number | null
           rating_count: number | null
+          reviews_config: Json | null
+          shipping_weight: number | null
+          sizes: string[] | null
+          sku_code: string | null
           slug: string | null
+          sort_order: number | null
           specifications: Json | null
-          stock: number | null
-          tag_ids: string[] | null
-          tags: string[] | null
+          tag_id: string | null
+          tag_name: string | null
+          technical_specs: Json | null
+          trust_indicators: Json | null
           updated_at: string | null
           uti_pro_custom_price: number | null
           uti_pro_enabled: boolean | null
           uti_pro_price: number | null
           uti_pro_type: string | null
           uti_pro_value: number | null
+          variant_attributes: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_parent_product_id_fkey"
+            columns: ["parent_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_parent_product_id_fkey"
+            columns: ["parent_product_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["product_id"]
+          },
+        ]
       }
     }
     Functions: {
