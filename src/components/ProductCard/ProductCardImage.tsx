@@ -6,9 +6,10 @@ import { cn } from '@/lib/utils';
 interface ProductCardImageProps {
   product: Product;
   isHovered: boolean;
+  isCritical?: boolean; // Para produtos críticos que devem carregar imediatamente
 }
 
-const ProductCardImage: React.FC<ProductCardImageProps> = React.memo(({ product, isHovered }) => {
+const ProductCardImage: React.FC<ProductCardImageProps> = React.memo(({ product, isHovered, isCritical = false }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -43,7 +44,8 @@ const ProductCardImage: React.FC<ProductCardImageProps> = React.memo(({ product,
           imageLoaded ? "opacity-100" : "opacity-0",
           isHovered ? "scale-105" : "scale-100"
         )}
-        loading="lazy"
+        loading={isCritical ? "eager" : "lazy"} // 🚀 OTIMIZAÇÃO: Produtos críticos carregam eager
+        fetchPriority={isCritical ? "high" : "auto"} // Prioridade alta para produtos críticos
         decoding="async"
         onLoad={handleImageLoad}
         onError={handleImageError}

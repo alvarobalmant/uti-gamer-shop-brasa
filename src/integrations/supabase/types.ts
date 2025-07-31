@@ -2535,11 +2535,17 @@ export type Database = {
           breadcrumb_config: Json | null
           category: string | null
           colors: string[] | null
+          condition: string | null
           created_at: string | null
           delivery_config: Json | null
+          digital_price: number | null
+          discount_percentage: number | null
+          discount_price: number | null
           display_config: Json | null
           free_shipping: boolean | null
+          images: string[] | null
           inherit_from_master: Json | null
+          installment_options: number | null
           is_active: boolean | null
           is_featured: boolean | null
           is_master_product: boolean | null
@@ -2548,7 +2554,11 @@ export type Database = {
           master_slug: string | null
           meta_description: string | null
           meta_title: string | null
+          new_price: number | null
           parent_product_id: string | null
+          pix_discount_percentage: number | null
+          platform: string | null
+          pro_discount_percent: number | null
           pro_price: number | null
           product_description: string | null
           product_descriptions: Json | null
@@ -2562,20 +2572,36 @@ export type Database = {
           product_stock: number | null
           product_type: string | null
           product_videos: Json | null
+          promotional_price: number | null
+          rating: number | null
+          rating_average: number | null
+          rating_count: number | null
+          related_products: Json | null
+          related_products_auto: boolean | null
           reviews_config: Json | null
+          reviews_enabled: boolean | null
+          shipping_dimensions: Json | null
+          shipping_time_max: number | null
+          shipping_time_min: number | null
           shipping_weight: number | null
+          show_rating: boolean | null
+          show_stock: boolean | null
           sizes: string[] | null
           sku_code: string | null
           slug: string | null
           sort_order: number | null
           specifications: Json | null
+          store_pickup_available: boolean | null
           tag_id: string | null
           tag_name: string | null
+          tags: Json | null
           technical_specs: Json | null
+          title: string | null
           trust_indicators: Json | null
           updated_at: string | null
           uti_pro_custom_price: number | null
           uti_pro_enabled: boolean | null
+          uti_pro_price: number | null
           uti_pro_type: string | null
           uti_pro_value: number | null
           variant_attributes: Json | null
@@ -2622,6 +2648,14 @@ export type Database = {
       create_admin_link_secure: {
         Args: { duration_minutes: number }
         Returns: Json
+      }
+      debug_column_references: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          source_type: string
+          source_name: string
+          has_problematic_ref: boolean
+        }[]
       }
       delete_master_product_cascade: {
         Args: { p_master_product_id: string }
