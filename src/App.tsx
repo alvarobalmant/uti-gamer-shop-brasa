@@ -16,8 +16,8 @@ import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
-// import IndexWithBackendOptimizations from "./pages/IndexWithBackendOptimizations"; // Removed - component deleted
-// import IndexOptimized from "./pages/IndexOptimized"; // Removed - component deleted
+import IndexWithBackendOptimizations from "./pages/IndexWithBackendOptimizations";
+import IndexOptimized from "./pages/IndexOptimized";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
@@ -25,7 +25,7 @@ import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { useEffect } from "react";
 
 // Componentes de preloading inteligente
-// import { AppWithPreloader } from "@/components/AppWithPreloader"; // Removed - component deleted
+import { AppWithPreloader } from "@/components/AppWithPreloader";
 
 // Hook minimalista para prevenir layout shift sem interferir no scroll
 const usePreventLayoutShift = () => {
@@ -88,7 +88,7 @@ const SpecialSectionCarouselPage = lazy(() => import("./pages/SpecialSectionCaro
 const PlatformPage = lazy(() => import("./components/PlatformPage"));
 
 // Lazy loading para páginas de produto
-// const ProductPageSKU = lazy(() => import("./pages/ProductPageSKU")); // Removed - component deleted
+const ProductPageSKU = lazy(() => import("./pages/ProductPageSKU"));
 const TestProduct = lazy(() => import("./pages/TestProduct"));
 
 // Lazy loading para páginas de cliente
@@ -162,8 +162,7 @@ const App = () => {
                     <Toaster />
                     <Sonner />
                     <BrowserRouter>
-                      {/* AppWithPreloader wrapper temporarily disabled - component deleted */}
-                      <div> {/* Simple wrapper to replace AppWithPreloader */}
+                      <AppWithPreloader>
                         <GlobalNavigationProvider>
                           <ScrollRestorationProvider>
                             <LoadingOverlay />
@@ -174,7 +173,7 @@ const App = () => {
                   <Route path="/" element={<Index />} />
                   
                   {/* Product Page Routes - MUST come before dynamic routes */}
-                  {/* <Route path="/produto/:id" element={<ProductPageSKU />} /> */} {/* Removed - component deleted */}
+                  <Route path="/produto/:id" element={<ProductPageSKU />} />
                   <Route path="/teste-produto/:id" element={<TestProduct />} />
 
                    {/* Client Area Routes */}
@@ -250,7 +249,7 @@ const App = () => {
                             </Suspense>
                           </ScrollRestorationProvider>
                         </GlobalNavigationProvider>
-                      </div> {/* End simple wrapper replacement for AppWithPreloader */}
+                      </AppWithPreloader>
                     </BrowserRouter>
                   </TooltipProvider>
                 </LoadingProvider>
