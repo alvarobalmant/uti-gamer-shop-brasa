@@ -1,12 +1,12 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useProducts } from '@/hooks/useProducts';
+import { useHomepageProducts } from '@/hooks/useHomepageProducts';
 import { useHomepageLayout } from '@/hooks/useHomepageLayout';
 import { useProductSections } from '@/hooks/useProductSections';
 import { useSpecialSections } from '@/hooks/useSpecialSections';
 
 export const useIndexPage = () => {
-  const { products, loading: productsLoading, refetch: refetchProducts } = useProducts();
+  const { data: products, isLoading: productsLoading, refetch } = useHomepageProducts();
   const { layoutItems, loading: layoutLoading } = useHomepageLayout();
   const { sections, loading: sectionsLoading } = useProductSections();
   const { sections: specialSections, loading: specialSectionsLoading } = useSpecialSections();
@@ -28,23 +28,23 @@ export const useIndexPage = () => {
   // Memoizar função de retry
   const handleRetryProducts = useCallback(() => {
     setRetryCount(0);
-    refetchProducts();
-  }, [refetchProducts]);
+    refetch();
+  }, [refetch]);
 
   useEffect(() => {
     // Otimizar retry - apenas se necessário e com limite
-    if (products.length === 0 && !productsLoading && retryCount < MAX_RETRIES) {
+    if (products?.length === 0 && !productsLoading && retryCount < MAX_RETRIES) {
       const timer = setTimeout(() => {
         if (process.env.NODE_ENV === 'development') {
           console.log(`Attempt ${retryCount + 1} of ${MAX_RETRIES} to load products`);
         }
         setRetryCount(prev => prev + 1);
-        refetchProducts();
+        refetch();
       }, 2000 * (retryCount + 1));
 
       return () => clearTimeout(timer);
     }
-  }, [products.length, productsLoading, retryCount, refetchProducts]);
+  }, [products?.length, productsLoading, retryCount, refetch]);
 
   // Loading state - mostrar loading se qualquer um estiver carregando
   const isLoading = useMemo(() => 
@@ -53,8 +53,8 @@ export const useIndexPage = () => {
   );
 
   const showErrorState = useMemo(() => 
-    !productsLoading && products.length === 0 && retryCount >= MAX_RETRIES,
-    [productsLoading, products.length, retryCount]
+    !productsLoading && (products?.length === 0) && retryCount >= MAX_RETRIES,
+    [productsLoading, products?.length, retryCount]
   );
 
   // Memoizar retorno do hook

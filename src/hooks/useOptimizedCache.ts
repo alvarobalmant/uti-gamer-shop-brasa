@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 // Tipos para configuração de cache
 interface CacheConfig {
   staleTime: number;
-  cacheTime: number;
+  gcTime: number;
   refetchOnWindowFocus: boolean;
   refetchOnMount: boolean;
   retry: number | boolean;
@@ -15,7 +15,7 @@ const CACHE_CONFIGS: Record<string, CacheConfig> = {
   // Cache agressivo para dados estáticos
   products: {
     staleTime: 5 * 60 * 1000, // 5 minutos
-    cacheTime: 15 * 60 * 1000, // 15 minutos
+    gcTime: 15 * 60 * 1000, // 15 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     retry: 3
@@ -24,7 +24,7 @@ const CACHE_CONFIGS: Record<string, CacheConfig> = {
   // Cache médio para layout dinâmico
   layout: {
     staleTime: 2 * 60 * 1000, // 2 minutos
-    cacheTime: 10 * 60 * 1000, // 10 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     retry: 2
@@ -33,7 +33,7 @@ const CACHE_CONFIGS: Record<string, CacheConfig> = {
   // Cache rápido para seções especiais
   sections: {
     staleTime: 1 * 60 * 1000, // 1 minuto
-    cacheTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     retry: 2
@@ -42,7 +42,7 @@ const CACHE_CONFIGS: Record<string, CacheConfig> = {
   // Cache mínimo para dados do usuário
   user: {
     staleTime: 30 * 1000, // 30 segundos
-    cacheTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 2 * 60 * 1000, // 2 minutos
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     retry: 1
@@ -65,7 +65,7 @@ export const useOptimizedCache = <T>(
     ...customOptions,
     // Configurações específicas para performance
     structuralSharing: true,
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 };
 

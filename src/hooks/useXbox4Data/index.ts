@@ -1,11 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { Xbox4Data } from './types';
-import { fetchXbox4Page, fetchXbox4Sections, fetchAllProducts } from './dataFetchers';
-import { processProductsFromRows } from './productFilters';
+import { fetchXbox4Page, fetchXbox4Sections } from './dataFetchers';
 import { processSections } from './sectionProcessor';
+import { useHomepageProducts } from '../useHomepageProducts';
 
 export const useXbox4Data = (): Xbox4Data => {
+  // Usar produtos otimizados com cache
+  const { data: products, isLoading: productsLoading, error: productsError } = useHomepageProducts();
+  
   const [data, setData] = useState<Xbox4Data>({
     consoles: [],
     games: [],
@@ -19,6 +22,27 @@ export const useXbox4Data = (): Xbox4Data => {
   useEffect(() => {
     const loadXbox4Data = async () => {
       try {
+        // Se ainda carregando produtos, aguardar
+        if (productsLoading) {
+          return;
+        }
+
+        // Se houve erro nos produtos
+        if (productsError) {
+          setData(prev => ({ 
+            ...prev, 
+            loading: false, 
+            error: 'Erro ao carregar produtos' 
+          }));
+          return;
+        }
+
+        // Se não há produtos
+        if (!products || products.length === 0) {
+          setData(prev => ({ ...prev, loading: false }));
+          return;
+        }
+
         // Buscar a página Xbox4 e suas seções
         const page = await fetchXbox4Page();
         
@@ -30,13 +54,7 @@ export const useXbox4Data = (): Xbox4Data => {
         // Buscar seções da página
         const sections = await fetchXbox4Sections(page.id);
 
-        // Buscar todos os produtos
-        const allProductsRows = await fetchAllProducts();
-
-        // Processar produtos (remover duplicatas e converter formato)
-        const products = processProductsFromRows(allProductsRows);
-
-        // Processar cada seção para extrair produtos específicos
+        // Usar produtos otimizados diretamente (já processados)
         const sectionData = processSections(sections, products);
 
         setData({
@@ -56,7 +74,7 @@ export const useXbox4Data = (): Xbox4Data => {
     };
 
     loadXbox4Data();
-  }, []);
+  }, [products, productsLoading, productsError]);
 
   return data;
 };
