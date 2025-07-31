@@ -12,12 +12,12 @@ interface CacheConfig {
 
 // Configurações de cache por tipo de dados
 const CACHE_CONFIGS: Record<string, CacheConfig> = {
-  // Cache agressivo para dados estáticos
+  // Cache ULTRA agressivo para dados da homepage
   products: {
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 15 * 60 * 1000, // 15 minutos
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    staleTime: 30 * 1000, // 30 segundos - MUITO AGRESSIVO
+    gcTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false, // Não refetch ao focar janela
+    refetchOnMount: false, // Não refetch ao montar
     retry: 3
   },
   

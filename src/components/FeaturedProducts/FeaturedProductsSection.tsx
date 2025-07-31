@@ -9,6 +9,8 @@ import { Product } from "@/hooks/useProducts";
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
 import { useHorizontalScrollTracking } from "@/hooks/useHorizontalScrollTracking";
+import { OptimizedProductCarouselSkeleton } from "@/components/OptimizedProductSkeleton";
+import { useCriticalSectionDetection } from "@/hooks/useOptimizedIntersection";
 
 interface FeaturedProductsSectionProps {
   products: Product[];
@@ -17,6 +19,7 @@ interface FeaturedProductsSectionProps {
   title: string;
   viewAllLink?: string;
   reduceTopSpacing?: boolean;
+  sectionKey?: string; // Para determinar se é seção crítica
 }
 
 const FeaturedProductsSection = ({
@@ -26,12 +29,26 @@ const FeaturedProductsSection = ({
   title,
   viewAllLink = "/categoria/inicio",
   reduceTopSpacing = false,
+  sectionKey = "",
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const scrollContainerRef = useHorizontalScrollTracking('featured-products', true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  
+  // 🚀 OTIMIZAÇÃO CRÍTICA: Detectar se é seção crítica
+  const { isCritical } = useCriticalSectionDetection(sectionKey);
+  
+  // Performance timer para desenvolvimento
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.time(`featured-products-section-${sectionKey}`);
+      return () => {
+        console.timeEnd(`featured-products-section-${sectionKey}`);
+      };
+    }
+  }, [sectionKey]);
 
   // Estados para controle dos gradientes com níveis de intensidade (sistema adaptativo)
   const [leftGradientLevel, setLeftGradientLevel] = useState<'none' | 'subtle' | 'intense'>('none');
@@ -293,13 +310,33 @@ const FeaturedProductsSection = ({
   }, [checkForCutOffCards]);
 
   if (loading) {
-    // Render loading state if needed
+    // 🚀 SKELETON OTIMIZADO - Timeout máximo de 2 segundos
     return (
-      <section className={reduceTopSpacing ? "py-4 md:py-6 bg-background" : "py-12 md:py-16 bg-background"}>
+      <section className={reduceTopSpacing ? "py-4 md:py-6 bg-background" : "py-8 md:py-12 bg-background"}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-16 text-muted-foreground">
-            Carregando produtos...
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
+            <SectionTitle title={title} className="mb-0" />
+            <Button
+              onClick={handleViewAllClick}
+              variant="default"
+              size="sm"
+              className="bg-red-600 hover:bg-red-700 text-white border-0 flex-shrink-0 w-full sm:w-auto font-medium"
+              disabled
+            >
+              Ver Todos
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
+          
+          {/* Skeleton otimizado com timeout */}
+          <OptimizedProductCarouselSkeleton 
+            count={5} 
+            maxTimeout={isCritical ? 1500 : 2000} // Seções críticas: 1.5s, outras: 2s
+            onForceHide={() => {
+              console.log(`⏰ Forced hide skeleton for ${title} after timeout`);
+            }}
+          />
         </div>
       </section>
     );
@@ -426,6 +463,7 @@ const FeaturedProductsSection = ({
                       product={product}
                       onCardClick={handleProductCardClick}
                       onAddToCart={onAddToCart}
+                      isCritical={isCritical && index < 5} // 🚀 OTIMIZAÇÃO: Primeiros 5 produtos de seções críticas
                     />
                   </div>
                 ))}
