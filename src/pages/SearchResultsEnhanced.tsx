@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import ProductModal from '@/components/ProductModal';
 import { cn } from '@/lib/utils';
 
 // Componente de Card de Produto Melhorado (estilo GameStop)
@@ -354,6 +355,7 @@ const SearchResultsEnhanced = () => {
       </section>
 
       {/* Product Modal */}
+      <ProductModal
         product={products.find(p => p.id === selectedProductId) || null}
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
