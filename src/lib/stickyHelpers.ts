@@ -71,42 +71,89 @@ export class StickyManager {
 
   private updateElements() {
     this.elements.forEach((stickyElement) => {
-      const { element, bounds, naturalOffset, originalWidth, originalHeight } = stickyElement;
+      const { element, bounds, naturalOffset, originalWidth, originalHeight, id } = stickyElement;
+      
+      // Debug logging only in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[STICKY DEBUG] ${id}: scrollY=${this.scrollY}, bounds=`, bounds, `dimensions=${originalWidth}x${originalHeight}`);
+      }
       
       // Posição fixa desejada na tela (header + offset natural)
       const fixedPosition = this.headerHeight + naturalOffset;
       
-      // Calcular se devemos usar position fixed ou absolute
+      // Get parent container for proper absolute positioning context
+      const parentElement = element.parentElement;
+      if (!parentElement) {
+        console.warn(`[STICKY] Parent element not found for ${id}`);
+        return;
+      }
+      
+      // Calcular limites mais precisos
       const scrolledPastStart = this.scrollY > bounds.containerTop - fixedPosition;
       const scrolledPastEnd = this.scrollY > bounds.referenceBottom - fixedPosition - originalHeight;
       
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[STICKY DEBUG] ${id}: scrolledPastStart=${scrolledPastStart}, scrolledPastEnd=${scrolledPastEnd}`);
+      }
+      
       if (!scrolledPastStart) {
         // Antes do início: posição relativa normal
-        element.style.position = 'relative';
-        element.style.top = '';
-        element.style.left = '';
-        element.style.width = '';
-        element.style.transform = '';
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[STICKY DEBUG] ${id}: Setting relative position`);
+        }
+        this.resetElementToRelative(element);
       } else if (scrolledPastEnd) {
-        // Depois do fim: posição absoluta no container pai usando dimensões originais
-        const maxTop = bounds.referenceBottom - bounds.containerTop - originalHeight;
+        // Depois do fim: posição absoluta no container pai
+        // Melhorar cálculo da posição final considerando o contexto correto
+        const containerHeight = bounds.containerBottom - bounds.containerTop;
+        const availableSpace = bounds.referenceBottom - bounds.containerTop;
+        const maxTop = Math.max(0, availableSpace - originalHeight);
         
-        element.style.position = 'absolute';
-        element.style.top = `${Math.max(0, maxTop)}px`;
-        element.style.left = '0';
-        element.style.width = `${originalWidth}px`;
-        element.style.transform = '';
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[STICKY DEBUG] ${id}: Setting absolute position at top=${maxTop}px`);
+        }
+        this.setElementToAbsolute(element, maxTop, originalWidth, originalHeight);
       } else {
-        // No meio: posição fixa na tela usando dimensões originais
-        const parentRect = element.parentElement?.getBoundingClientRect();
+        // No meio: posição fixa na tela com melhor cálculo de posição
+        const parentRect = parentElement.getBoundingClientRect();
         
-        element.style.position = 'fixed';
-        element.style.top = `${fixedPosition}px`;
-        element.style.left = parentRect ? `${parentRect.left}px` : '0';
-        element.style.width = `${originalWidth}px`;
-        element.style.transform = '';
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[STICKY DEBUG] ${id}: Setting fixed position at top=${fixedPosition}px, left=${parentRect.left}px`);
+        }
+        this.setElementToFixed(element, fixedPosition, parentRect.left, originalWidth, originalHeight);
       }
     });
+  }
+
+  // Helper methods for cleaner positioning logic
+  private resetElementToRelative(element: HTMLElement) {
+    element.style.position = 'relative';
+    element.style.top = '';
+    element.style.left = '';
+    element.style.width = '';
+    element.style.height = '';
+    element.style.transform = '';
+    element.style.zIndex = '10';
+  }
+
+  private setElementToAbsolute(element: HTMLElement, top: number, width: number, height: number) {
+    element.style.position = 'absolute';
+    element.style.top = `${top}px`;
+    element.style.left = '0';
+    element.style.width = `${width}px`;
+    element.style.height = `${height}px`;
+    element.style.transform = '';
+    element.style.zIndex = '10';
+  }
+
+  private setElementToFixed(element: HTMLElement, top: number, left: number, width: number, height: number) {
+    element.style.position = 'fixed';
+    element.style.top = `${top}px`;
+    element.style.left = `${left}px`;
+    element.style.width = `${width}px`;
+    element.style.height = `${height}px`;
+    element.style.transform = '';
+    element.style.zIndex = '10';
   }
 
   private updateHeaderHeight() {
@@ -117,14 +164,25 @@ export class StickyManager {
   }
 
   calculateBounds(containerElement: HTMLElement, referenceElement: HTMLElement): StickyBounds {
+    // Use more precise measurements to avoid layout issues
     const containerRect = containerElement.getBoundingClientRect();
     const referenceRect = referenceElement.getBoundingClientRect();
     
-    return {
-      containerTop: containerRect.top + window.scrollY,
-      containerBottom: containerRect.bottom + window.scrollY,
-      referenceBottom: referenceRect.bottom + window.scrollY
+    // Get the current scroll position for accurate calculations
+    const currentScrollY = window.scrollY;
+    
+    // Calculate bounds with better precision
+    const bounds = {
+      containerTop: containerRect.top + currentScrollY,
+      containerBottom: containerRect.bottom + currentScrollY,
+      referenceBottom: referenceRect.bottom + currentScrollY
     };
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[STICKY DEBUG] Calculated bounds:', bounds, 'Current scroll:', currentScrollY);
+    }
+    
+    return bounds;
   }
 
   refreshHeaderHeight() {
