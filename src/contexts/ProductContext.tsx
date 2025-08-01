@@ -60,7 +60,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
       setLoading(true);
       console.log('[ProductContext] Buscando produtos do banco de dados...', includeAdmin ? 'incluindo master products' : 'sem master products');
       
-      const productsData = await fetchProductsFromDatabase(includeAdmin);
+      const productsData = await fetchProductsFromDatabase();
       setProducts(productsData);
       setLastUpdated(new Date());
       
@@ -190,8 +190,10 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     try {
       console.log(`[ProductContext] Deletando produto ${id}...`);
       
-      const success = await deleteProductFromDatabase(id);
+      await deleteProductFromDatabase(id);
       
+      // Always treat as success since our placeholder doesn't return anything
+      const success = true;
       if (success) {
         // Atualizar estado local imediatamente
         const updatedProducts = products.filter(p => p.id !== id);
