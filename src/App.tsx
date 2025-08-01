@@ -10,17 +10,23 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
 import { ProductProviderOptimized } from '@/contexts/ProductContextOptimized';
+import { ProductProvider } from '@/contexts/ProductContext';
 import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
+import IndexWithBackendOptimizations from "./pages/IndexWithBackendOptimizations";
+import IndexOptimized from "./pages/IndexOptimized";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { useEffect } from "react";
+
+// Componentes de preloading inteligente
+import { AppWithPreloader } from "@/components/AppWithPreloader";
 
 // Hook minimalista para prevenir layout shift sem interferir no scroll
 const usePreventLayoutShift = () => {
@@ -157,92 +163,96 @@ const App = () => {
                     <Toaster />
                     <Sonner />
                     <BrowserRouter>
-                      <GlobalNavigationProvider>
-                        <ScrollRestorationProvider>
-                          <LoadingOverlay />
-                          <GlobalNavigationOverlay />
-                          <Suspense fallback={<PageLoader />}>
-                            <Routes>
-                              {/* Public Routes - Index sem lazy loading por ser crítica */}
-                              <Route path="/" element={<Index />} />
-                              
-                              {/* Product Page Routes - MUST come before dynamic routes */}
-                              <Route path="/produto/:id" element={<ProductPageSKU />} />
-                              <Route path="/teste-produto/:id" element={<TestProduct />} />
+                      <AppWithPreloader>
+                        <GlobalNavigationProvider>
+                          <ScrollRestorationProvider>
+                            <LoadingOverlay />
+                            <GlobalNavigationOverlay />
+                            <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Public Routes - Index sem lazy loading por ser crítica */}
+                  <Route path="/" element={<Index />} />
+                  
+                  {/* Product Page Routes - MUST come before dynamic routes */}
+                  <Route path="/produto/:id" element={<ProductPageSKU />} />
+                  <Route path="/teste-produto/:id" element={<TestProduct />} />
 
-                               {/* Client Area Routes */}
-                              <Route path="/area-cliente" element={<ClientArea />} />
-                              <Route path="/lista-desejos" element={<WishlistPage />} />
-                              <Route path="/meus-coins" element={<MeusCoins />} />
-                              
-                              {/* Email Confirmation Route */}
-                              <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
-                              
-                              {/* Registration Route */}
-                              <Route path="/cadastro" element={<RegisterPage />} />
-                              
-                              {/* UTI Coins Routes */}
-                              <Route path="/coins/loja" element={<CoinsShop />} />
-                              <Route path="/coins/historico" element={<CoinsHistory />} />
+                   {/* Client Area Routes */}
+                  <Route path="/area-cliente" element={<ClientArea />} />
+                  <Route path="/lista-desejos" element={<WishlistPage />} />
+                  <Route path="/meus-coins" element={<MeusCoins />} />
+                  
+                  {/* Email Confirmation Route */}
+                  <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
+                  
+                  {/* Registration Route */}
+                  <Route path="/cadastro" element={<RegisterPage />} />
+                  
+                  {/* UTI Coins Routes */}
+                  <Route path="/coins/loja" element={<CoinsShop />} />
+                  <Route path="/coins/historico" element={<CoinsHistory />} />
 
-                              {/* Admin Auto Login Route - MUST come before admin routes */}
-                              <Route path="/admin-login/:token" element={<AdminAutoLogin />} />
+                  {/* Admin Auto Login Route - MUST come before admin routes */}
+                  <Route path="/admin-login/:token" element={<AdminAutoLogin />} />
 
-                              {/* Admin Routes - Protected - MUST come before dynamic routes */}
-                              <Route 
-                                path="/admin" 
-                                element={
-                                  <ProtectedAdminRoute>
-                                    <AdminPanel /> 
-                                  </ProtectedAdminRoute>
-                                }
-                              />
-                              <Route 
-                                path="/admin/xbox4" 
-                                element={
-                                  <ProtectedAdminRoute>
-                                    <Xbox4AdminPage /> 
-                                  </ProtectedAdminRoute>
-                                }
-                              />
+                  {/* Admin Routes - Protected - MUST come before dynamic routes */}
+                  <Route 
+                    path="/admin" 
+                    element={
+                      <ProtectedAdminRoute>
+                        <ProductProvider>
+                          <AdminPanel /> 
+                        </ProductProvider>
+                      </ProtectedAdminRoute>
+                    }
+                  />
+                  <Route 
+                    path="/admin/xbox4" 
+                    element={
+                      <ProtectedAdminRoute>
+                        <Xbox4AdminPage /> 
+                      </ProtectedAdminRoute>
+                    }
+                  />
 
-                              {/* Special routes - MUST come before dynamic routes */}
-                              <Route path="/busca" element={<SearchResults />} />
-                              <Route path="/secao/:sectionKey" element={<SectionPage />} />
-                              <Route path="/categoria/:category" element={<CategoryPage />} />
-                              
-                              {/* Dynamic Carousel Page Route */}
-                              <Route 
-                                path="/secao-especial/:sectionId/carrossel/:carouselIndex" 
-                                element={<SpecialSectionCarouselPage />} 
-                              />
-                              
-                              {/* Páginas de plataforma específicas - MUST come before dynamic routes */}
-                              <Route path="/xbox4" element={<XboxPage4 />} />
-                              <Route path="/playstation" element={<PlayStationPageProfessionalV5 />} />
-                              <Route path="/playstation-v2" element={<PlayStationPageProfessionalV2 />} />
-                              <Route path="/playstation-v3" element={<PlayStationPageProfessionalV3 />} />
-                              <Route path="/playstation-v4" element={<PlayStationPageProfessionalV4 />} />
-                              <Route path="/nintendo" element={<NintendoPage />} />
-                              <Route path="/pc-gaming" element={<PCGamingPage />} />
-                              <Route path="/retro-gaming" element={<RetroGamingPage />} />
-                              <Route path="/area-geek" element={<AreaGeekPage />} />
+                  {/* Special routes - MUST come before dynamic routes */}
+                  <Route path="/busca" element={<SearchResults />} />
+                  <Route path="/secao/:sectionKey" element={<SectionPage />} />
+                  <Route path="/categoria/:category" element={<CategoryPage />} />
+                  
+                  {/* Dynamic Carousel Page Route */}
+                  <Route 
+                    path="/secao-especial/:sectionId/carrossel/:carouselIndex" 
+                    element={<SpecialSectionCarouselPage />} 
+                  />
+                  
+                  {/* Páginas de plataforma específicas - MUST come before dynamic routes */}
+                  <Route path="/xbox4" element={<XboxPage4 />} />
+                  <Route path="/playstation" element={<PlayStationPageProfessionalV5 />} />
+                  <Route path="/playstation-v2" element={<PlayStationPageProfessionalV2 />} />
+                  <Route path="/playstation-v3" element={<PlayStationPageProfessionalV3 />} />
+                  <Route path="/playstation-v4" element={<PlayStationPageProfessionalV4 />} />
+                  <Route path="/nintendo" element={<NintendoPage />} />
+                  <Route path="/pc-gaming" element={<PCGamingPage />} />
+                  <Route path="/retro-gaming" element={<RetroGamingPage />} />
+                  <Route path="/area-geek" element={<AreaGeekPage />} />
 
-                              {/* Prime Pages Route - MUST come before dynamic routes */}
-                              <Route path="/prime/:slug" element={<PrimePage />} />
+                  {/* Prime Pages Route - MUST come before dynamic routes */}
+                  <Route path="/prime/:slug" element={<PrimePage />} />
 
-                              {/* Dynamic Page Route - MUST be last before catch-all */}
-                              <Route 
-                                path="/:slug" 
-                                element={<PlatformPage slug={window.location.pathname.substring(1)} />} 
-                              />
+                  {/* Dynamic Page Route - MUST be last before catch-all */}
+                  <Route 
+                    path="/:slug" 
+                    element={<PlatformPage slug={window.location.pathname.substring(1)} />} 
+                  />
 
-                              {/* Catch-all Not Found Route - MUST be absolute last */}
-                              <Route path="*" element={<NotFound />} />
-                            </Routes>
-                          </Suspense>
-                        </ScrollRestorationProvider>
-                      </GlobalNavigationProvider>
+                  {/* Catch-all Not Found Route - MUST be absolute last */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                            </Suspense>
+                          </ScrollRestorationProvider>
+                        </GlobalNavigationProvider>
+                      </AppWithPreloader>
                     </BrowserRouter>
                   </TooltipProvider>
                 </LoadingProvider>
