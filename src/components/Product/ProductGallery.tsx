@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
@@ -6,11 +5,13 @@ import { Badge } from '@/components/ui/badge';
 
 interface ProductGalleryProps {
   product: Product;
+  layout?: 'vertical' | 'main';
 }
 
-const ProductGallery: React.FC<ProductGalleryProps> = ({ product }) => {
+const ProductGallery: React.FC<ProductGalleryProps> = ({ product, layout = 'main' }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   
   // Combinar imagem principal com imagens adicionais
   const allImages = [product.image, ...(product.additional_images || [])].filter(Boolean);
@@ -27,6 +28,48 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ product }) => {
     setCurrentImageIndex(index);
   };
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomPosition({ x, y });
+  };
+
+  // Layout Vertical (Coluna 1 - Miniaturas)
+  if (layout === 'vertical') {
+    return (
+      <div className="hidden lg:block space-y-2">
+        {allImages.map((image, index) => (
+          <button
+            key={index}
+            onClick={() => handleImageClick(index)}
+            className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all block ${
+              currentImageIndex === index
+                ? 'border-red-600 ring-2 ring-red-200'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <img
+              src={image}
+              alt={`${product.name} ${index + 1}`}
+              className="w-full h-full object-contain bg-white"
+            />
+          </button>
+        ))}
+        
+        {/* Indicador de mais imagens */}
+        {allImages.length > 6 && (
+          <div className="w-16 h-16 rounded-lg border-2 border-gray-200 flex items-center justify-center bg-gray-50">
+            <span className="text-xs font-medium text-gray-600">
+              +{allImages.length - 6}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Layout Main (Coluna 2 - Imagem Principal)
   return (
     <div className="space-y-4">
       {/* Imagem Principal */}
@@ -35,11 +78,23 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ product }) => {
           <img
             src={allImages[currentImageIndex]}
             alt={product.name}
-            className={`w-full h-full object-contain transition-transform duration-300 ${
-              isZoomed ? 'scale-150 cursor-zoom-out' : 'cursor-zoom-in'
-            }`}
-            onClick={() => setIsZoomed(!isZoomed)}
+            className="w-full h-full object-contain transition-transform duration-200 cursor-zoom-in"
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => setIsZoomed(true)}
+            onMouseLeave={() => setIsZoomed(false)}
           />
+          
+          {/* Zoom Overlay - Hover Effect como ML */}
+          {isZoomed && (
+            <div 
+              className="absolute inset-0 bg-no-repeat pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              style={{
+                backgroundImage: `url(${allImages[currentImageIndex]})`,
+                backgroundSize: '200%',
+                backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`
+              }}
+            />
+          )}
           
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -85,9 +140,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ product }) => {
         </div>
       </div>
 
-      {/* Thumbnails */}
+      {/* Thumbnails para Mobile */}
       {allImages.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="lg:hidden flex gap-2 overflow-x-auto pb-2">
           {allImages.map((image, index) => (
             <button
               key={index}
@@ -108,9 +163,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ product }) => {
         </div>
       )}
 
-      {/* Indicador de Imagens */}
+      {/* Indicador de Imagens para Mobile */}
       {allImages.length > 1 && (
-        <div className="flex justify-center gap-2">
+        <div className="lg:hidden flex justify-center gap-2">
           {allImages.map((_, index) => (
             <button
               key={index}
@@ -129,3 +184,4 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ product }) => {
 };
 
 export default ProductGallery;
+

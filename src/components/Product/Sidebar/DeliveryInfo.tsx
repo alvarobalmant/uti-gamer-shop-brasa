@@ -33,16 +33,71 @@ const DeliveryInfo: React.FC<DeliveryInfoProps> = ({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Frete Grátis - Destaque Principal */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-        <div className="flex items-center gap-2 text-green-800 mb-2">
-          <Truck className="w-5 h-5" />
-          <span className="font-bold text-lg">FRETE GRÁTIS</span>
+      {/* Frete Grátis - Design Clean e Minimalista */}
+      <div className="bg-white border border-green-200 rounded-xl p-5 shadow-sm">
+        {/* Header clean */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg">
+            <Truck className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-lg text-gray-900">
+                Frete Grátis
+              </span>
+              <div className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-md">
+                Garantido
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">
+              Entrega sem custo adicional
+            </p>
+          </div>
         </div>
-        <div className="text-sm text-green-700 space-y-1">
-          <div>✅ Acima de {formatPrice(storeSettings.free_shipping_minimum)}</div>
-          <div>✅ Para {storeSettings.free_shipping_regions.join(', ')}</div>
-          <div>✅ Entrega em {storeSettings.standard_delivery_days} dias úteis</div>
+
+        {/* Benefícios clean */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-900">
+                Acima de {formatPrice(storeSettings.free_shipping_minimum)}
+              </span>
+            </div>
+            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-900">
+                Para {storeSettings.free_shipping_regions.join(', ')}
+              </span>
+            </div>
+            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-900">
+                Entrega em {storeSettings.standard_delivery_days} dias úteis
+              </span>
+            </div>
+            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
