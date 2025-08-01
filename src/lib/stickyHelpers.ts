@@ -77,7 +77,7 @@ export class StickyManager {
 
   private updateElements() {
     this.elements.forEach((stickyElement) => {
-      const { element, bounds, naturalOffset, originalWidth, originalHeight, id, isFrozen, frozenTop, frozenLeft } = stickyElement;
+      const { element, bounds, naturalOffset, originalWidth, originalHeight, id } = stickyElement;
       
       // Posição fixa desejada na tela (header + offset natural)
       const fixedPosition = this.headerHeight + naturalOffset;
@@ -86,10 +86,10 @@ export class StickyManager {
       const elementTop = bounds.containerTop;
       const startStickyAt = elementTop - fixedPosition;
       
-      // Nova lógica: usar a altura da coluna 3 como limite
+      // Nova lógica: usar a altura da coluna 3 como limite com margem de segurança
       const column3Bottom = bounds.column3Bottom;
-      const freezeThreshold = 1; // 1px antes do fim da coluna 3
-      const shouldFreeze = (this.scrollY + fixedPosition + originalHeight) >= (column3Bottom - freezeThreshold);
+      const safetyMargin = 10; // Margem de segurança para evitar bugs de posicionamento
+      const shouldFreeze = (this.scrollY + fixedPosition + originalHeight) >= (column3Bottom - safetyMargin);
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`[STICKY DEBUG] ${id}:`, {
@@ -98,9 +98,10 @@ export class StickyManager {
           startStickyAt,
           column3Bottom,
           shouldFreeze,
-          isFrozen,
+          isFrozen: stickyElement.isFrozen,
           fixedPosition,
-          originalHeight
+          originalHeight,
+          safetyMargin
         });
       }
       
@@ -111,31 +112,28 @@ export class StickyManager {
         }
         stickyElement.isFrozen = false;
         this.resetElementToRelative(element);
-      } else if (shouldFreeze && !isFrozen) {
-        // Congelar: salvar posição atual e travar
+      } else if (shouldFreeze && !stickyElement.isFrozen) {
+        // Congelar: calcular posição absoluta precisa
         const parentElement = element.parentElement;
         if (!parentElement) {
           console.warn(`[STICKY] Parent element not found for ${id}`);
           return;
         }
         
-        const currentRect = element.getBoundingClientRect();
-        const parentRect = parentElement.getBoundingClientRect();
-        
-        // Calcular posição absoluta dentro do container pai
-        const absoluteTop = column3Bottom - bounds.containerTop - originalHeight;
-        const absoluteLeft = 0; // Relativo ao container pai
+        // Calcular a posição absoluta final de forma mais precisa
+        // A posição deve ser relativa ao container pai, não à página
+        const absoluteTop = column3Bottom - bounds.containerTop - originalHeight - safetyMargin;
         
         stickyElement.isFrozen = true;
-        stickyElement.frozenTop = absoluteTop;
-        stickyElement.frozenLeft = absoluteLeft;
+        stickyElement.frozenTop = Math.max(0, absoluteTop); // Evitar valores negativos
+        stickyElement.frozenLeft = 0; // Sempre relativo ao container pai
         
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[STICKY DEBUG] ${id}: FREEZING at top=${absoluteTop}px, left=${absoluteLeft}px`);
+          console.log(`[STICKY DEBUG] ${id}: FREEZING at top=${stickyElement.frozenTop}px, left=0px`);
         }
         
-        this.setElementToAbsolute(element, absoluteTop, originalWidth, originalHeight);
-      } else if (isFrozen && !shouldFreeze) {
+        this.setElementToAbsolute(element, stickyElement.frozenTop, originalWidth, originalHeight);
+      } else if (stickyElement.isFrozen && !shouldFreeze) {
         // Descongelar: voltar ao modo fixed
         stickyElement.isFrozen = false;
         
@@ -145,20 +143,22 @@ export class StickyManager {
           return;
         }
         
+        // Calcular posição left do parent de forma mais precisa
         const parentRect = parentElement.getBoundingClientRect();
         const parentAbsoluteLeft = parentRect.left + window.scrollX;
         
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[STICKY DEBUG] ${id}: UNFREEZING - back to fixed mode`);
+          console.log(`[STICKY DEBUG] ${id}: UNFREEZING - back to fixed mode at left=${parentAbsoluteLeft}px`);
         }
         
         this.setElementToFixed(element, fixedPosition, parentAbsoluteLeft, originalWidth, originalHeight);
-      } else if (isFrozen) {
-        // Manter congelado na posição salva
+      } else if (stickyElement.isFrozen) {
+        // Manter congelado: usar posição salva sem recalcular
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[STICKY DEBUG] ${id}: STAYING FROZEN at top=${frozenTop}px`);
+          console.log(`[STICKY DEBUG] ${id}: STAYING FROZEN at top=${stickyElement.frozenTop}px`);
         }
-        this.setElementToAbsolute(element, frozenTop, originalWidth, originalHeight);
+        // Não recalcular, apenas manter a posição congelada
+        this.setElementToAbsolute(element, stickyElement.frozenTop, originalWidth, originalHeight);
       } else {
         // Modo sticky normal: posição fixa na tela
         const parentElement = element.parentElement;
@@ -167,6 +167,7 @@ export class StickyManager {
           return;
         }
         
+        // Usar getBoundingClientRect para posicionamento mais preciso
         const parentRect = parentElement.getBoundingClientRect();
         const parentAbsoluteLeft = parentRect.left + window.scrollX;
         
@@ -178,7 +179,7 @@ export class StickyManager {
     });
   }
 
-  // Helper methods for cleaner positioning logic
+  // Helper methods com posicionamento mais preciso
   private resetElementToRelative(element: HTMLElement) {
     element.style.position = 'relative';
     element.style.top = '';
@@ -192,10 +193,10 @@ export class StickyManager {
   private setElementToAbsolute(element: HTMLElement, top: number, width: number, height: number) {
     element.style.position = 'absolute';
     element.style.top = `${top}px`;
-    element.style.left = '0';
+    element.style.left = '0px'; // Sempre 0 para manter alinhamento com o container pai
     element.style.width = `${width}px`;
     element.style.height = `${height}px`;
-    element.style.transform = '';
+    element.style.transform = ''; // Limpar qualquer transform
     element.style.zIndex = '10';
   }
 
@@ -205,7 +206,7 @@ export class StickyManager {
     element.style.left = `${left}px`;
     element.style.width = `${width}px`;
     element.style.height = `${height}px`;
-    element.style.transform = '';
+    element.style.transform = ''; // Limpar qualquer transform
     element.style.zIndex = '10';
   }
 
@@ -217,14 +218,16 @@ export class StickyManager {
   }
 
   calculateBounds(containerElement: HTMLElement, referenceElement: HTMLElement): StickyBounds {
-    // Use more precise measurements to avoid layout issues
+    // Forçar recálculo do layout antes de medir
+    containerElement.offsetHeight; // Trigger layout
+    referenceElement.offsetHeight; // Trigger layout
+    
     const containerRect = containerElement.getBoundingClientRect();
     const referenceRect = referenceElement.getBoundingClientRect();
     
-    // Get the current scroll position for accurate calculations
     const currentScrollY = window.scrollY;
     
-    // Calculate bounds with better precision, usando referenceElement como coluna 3
+    // Calcular bounds com mais precisão
     const bounds = {
       containerTop: containerRect.top + currentScrollY,
       containerBottom: containerRect.bottom + currentScrollY,
