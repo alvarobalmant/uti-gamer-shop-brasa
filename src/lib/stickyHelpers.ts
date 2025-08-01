@@ -9,6 +9,8 @@ export interface StickyElement {
   element: HTMLElement;
   bounds: StickyBounds;
   naturalOffset: number; // Offset natural do elemento para não grudar no topo
+  originalWidth: number; // Largura original preservada
+  originalHeight: number; // Altura original preservada
 }
 
 export class StickyManager {
@@ -22,11 +24,18 @@ export class StickyManager {
   }
 
   addElement(id: string, element: HTMLElement, bounds: StickyBounds, naturalOffset: number = 100) {
+    // Capturar dimensões originais antes de qualquer modificação
+    const computedStyle = window.getComputedStyle(element);
+    const originalWidth = element.offsetWidth;
+    const originalHeight = element.offsetHeight;
+    
     this.elements.set(id, {
       id,
       element,
       bounds,
-      naturalOffset
+      naturalOffset,
+      originalWidth,
+      originalHeight
     });
     
     // Setup inicial do elemento
@@ -62,14 +71,14 @@ export class StickyManager {
 
   private updateElements() {
     this.elements.forEach((stickyElement) => {
-      const { element, bounds, naturalOffset } = stickyElement;
+      const { element, bounds, naturalOffset, originalWidth, originalHeight } = stickyElement;
       
       // Posição fixa desejada na tela (header + offset natural)
       const fixedPosition = this.headerHeight + naturalOffset;
       
       // Calcular se devemos usar position fixed ou absolute
       const scrolledPastStart = this.scrollY > bounds.containerTop - fixedPosition;
-      const scrolledPastEnd = this.scrollY > bounds.referenceBottom - fixedPosition - element.offsetHeight;
+      const scrolledPastEnd = this.scrollY > bounds.referenceBottom - fixedPosition - originalHeight;
       
       if (!scrolledPastStart) {
         // Antes do início: posição relativa normal
@@ -79,23 +88,22 @@ export class StickyManager {
         element.style.width = '';
         element.style.transform = '';
       } else if (scrolledPastEnd) {
-        // Depois do fim: posição absoluta no container pai, não na tela
-        const parentRect = element.parentElement?.getBoundingClientRect();
-        const maxTop = bounds.referenceBottom - bounds.containerTop - element.offsetHeight;
+        // Depois do fim: posição absoluta no container pai usando dimensões originais
+        const maxTop = bounds.referenceBottom - bounds.containerTop - originalHeight;
         
         element.style.position = 'absolute';
         element.style.top = `${Math.max(0, maxTop)}px`;
         element.style.left = '0';
-        element.style.width = '100%';
+        element.style.width = `${originalWidth}px`;
         element.style.transform = '';
       } else {
-        // No meio: posição fixa na tela
+        // No meio: posição fixa na tela usando dimensões originais
         const parentRect = element.parentElement?.getBoundingClientRect();
         
         element.style.position = 'fixed';
         element.style.top = `${fixedPosition}px`;
         element.style.left = parentRect ? `${parentRect.left}px` : '0';
-        element.style.width = parentRect ? `${parentRect.width}px` : '100%';
+        element.style.width = `${originalWidth}px`;
         element.style.transform = '';
       }
     });
