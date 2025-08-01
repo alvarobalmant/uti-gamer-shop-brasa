@@ -179,7 +179,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
   // COLUNA 3: Título, Preço, Avaliações, Condições, Plataformas
   if (layout === 'product-info') {
     return (
-      <div className="space-y-6 min-h-[150vh]">
+      <div className="space-y-6">
         {/* Status e Social Proof */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
