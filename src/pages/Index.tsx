@@ -21,20 +21,13 @@ const AdminPanel = lazy(() => import('./Admin'));
 
 const Index = React.memo(() => {
   const navigate = useNavigate();
+  
+  // ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY CONDITIONAL LOGIC
   const { user, isAdmin, signOut, loading: authLoading } = useAuth();
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-
-  // Show loading screen while auth is initializing
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
-
+  
   const {
     products,
     productsLoading,
@@ -51,6 +44,16 @@ const Index = React.memo(() => {
 
   // Ativar sistema de ganho de moedas por scroll
   useScrollCoins();
+
+  // NOW we can have conditional returns AFTER all hooks are called
+  // Show loading screen while auth is initializing
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   const handleAddToCart = useCallback((product: any, size?: string, color?: string) => {
     addToCart(product, size, color);
