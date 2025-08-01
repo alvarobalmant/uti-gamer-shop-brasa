@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductLight } from '@/hooks/useProducts/productApiOptimized';
-import ProductCardOptimized from '../ProductCardOptimized';
+import { ProductCardOptimized } from '../ProductCardOptimized';
 import { cn } from '@/lib/utils';
 
 interface ProductGridOptimizedProps {

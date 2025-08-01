@@ -96,9 +96,9 @@ const mapRowToProduct = (row: any): Product => ({
 
 export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): Promise<Product[]> => {
   // Iniciar monitoramento de erros na primeira chamada
-  if (typeof window !== 'undefined' && !window.__errorMonitoringStarted) {
+  if (typeof window !== 'undefined' && !(window as any).__errorMonitoringStarted) {
     startErrorMonitoring();
-    window.__errorMonitoringStarted = true;
+    (window as any).__errorMonitoringStarted = true;
   }
 
   return handleSupabaseRetry(async () => {
