@@ -21,7 +21,7 @@ interface ProductCardProps {
 
 const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { handleMouseEnter: handlePrefetchMouseEnter, handleMouseLeave: handlePrefetchMouseLeave } = useProductHover();
+  const { handleMouseEnter: handlePrefetchMouseEnter, handleMouseLeave: handlePrefetchMouseLeave } = useProductHover(product.id);
 
   const handleCardClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -34,7 +34,7 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);
     // Iniciar prefetch do produto
-    handlePrefetchMouseEnter(product.id);
+    handlePrefetchMouseEnter();
   }, [handlePrefetchMouseEnter]);
 
   const handleMouseLeave = useCallback(() => {

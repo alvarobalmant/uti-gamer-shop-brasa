@@ -25,7 +25,7 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
   // Initialize sticky behavior com offset natural para não grudar no header
   const { registerStickyElement, unregisterStickyElement, refreshBounds } = useStickyWithBounds({
     enabled: true,
-    referenceElementId: 'product-content-bounds', // Now using the complete container
+    referenceElementId: 'product-info-column',
     naturalOffset: 120 // 120px de offset natural do header
   });
 
@@ -59,69 +59,66 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
         
         {/* Container das 3 primeiras colunas + seções inferiores */}
         <div className="flex-1 lg:pr-6">
-          {/* Container completo que engloba tudo para referência dos bounds */}
-          <div id="product-content-bounds" className="relative">
-            {/* Top: Layout das 3 colunas superiores */}
-            <div className="flex flex-col lg:flex-row gap-6">
-              
-              {/* COLUNA 1: Container da Galeria Vertical */}
-              <div className="w-full lg:w-20 order-2 lg:order-1">
-                {/* ELEMENTO sticky da galeria */}
-                <div ref={galleryRef} className="h-fit z-20">
-                  <ProductMainContent 
-                    product={product}
-                    skuNavigation={skuNavigation}
-                    layout="gallery-vertical"
-                  />
-                </div>
-              </div>
-
-              {/* COLUNA 2: Container da Imagem Principal */}
-              <div className="w-full lg:w-96 order-1 lg:order-2">
-                {/* ELEMENTO sticky da imagem */}
-                <div ref={mainImageRef} className="h-fit z-20">
-                  <ProductMainContent 
-                    product={product}
-                    skuNavigation={skuNavigation}
-                    layout="main-image"
-                  />
-                </div>
-              </div>
-
-              {/* COLUNA 3: Informações do Produto - ALTURA NATURAL */}
-              <div className="flex-1 order-3">
+          {/* Top: Layout das 3 colunas superiores */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            
+            {/* COLUNA 1: Container da Galeria Vertical */}
+            <div className="w-full lg:w-20 order-2 lg:order-1">
+              {/* ELEMENTO sticky da galeria */}
+              <div ref={galleryRef} className="h-fit z-10">
                 <ProductMainContent 
                   product={product}
                   skuNavigation={skuNavigation}
-                  layout="product-info"
+                  layout="gallery-vertical"
                 />
               </div>
             </div>
 
-            {/* Seções inferiores - PARTE DO CONTAINER DE BOUNDS */}
-            <div className="mt-12">
-              {/* Desktop: mantém o alinhamento com as colunas acima */}
-              <div className="hidden lg:flex lg:gap-6">
-                {/* Espaço alinhado com coluna 1 */}
-                <div className="w-20"></div>
-                {/* Espaço alinhado com colunas 2+3 */}
-                <div className="w-96 flex-1">
-                  <ProductMainContent 
-                    product={product}
-                    skuNavigation={skuNavigation}
-                    layout="bottom-sections"
-                  />
-                </div>
+            {/* COLUNA 2: Container da Imagem Principal */}
+            <div className="w-full lg:w-96 order-1 lg:order-2">
+              {/* ELEMENTO sticky da imagem */}
+              <div ref={mainImageRef} className="h-fit z-10">
+                <ProductMainContent 
+                  product={product}
+                  skuNavigation={skuNavigation}
+                  layout="main-image"
+                />
               </div>
-              
-              {/* Mobile: largura total */}
-              <div className="block lg:hidden">
+            </div>
+
+            {/* COLUNA 3: Informações do Produto - ALTURA NATURAL */}
+            <div className="flex-1 order-3" id="product-info-column">
+              <ProductMainContent 
+                product={product}
+                skuNavigation={skuNavigation}
+                layout="product-info"
+              />
+            </div>
+          </div>
+
+          {/* Seções inferiores - COMEÇAM IMEDIATAMENTE APÓS COLUNA 3 */}
+          <div className="mt-12">
+            {/* Desktop: mantém o alinhamento com as colunas acima */}
+            <div className="hidden lg:flex lg:gap-6">
+              {/* Espaço alinhado com coluna 1 */}
+              <div className="w-20"></div>
+              {/* Espaço alinhado com colunas 2+3 */}
+              <div className="w-96 flex-1">
                 <ProductMainContent 
                   product={product}
                   skuNavigation={skuNavigation}
                   layout="bottom-sections"
                 />
               </div>
+            </div>
+            
+            {/* Mobile: largura total */}
+            <div className="block lg:hidden">
+              <ProductMainContent 
+                product={product}
+                skuNavigation={skuNavigation}
+                layout="bottom-sections"
+              />
             </div>
           </div>
         </div>
