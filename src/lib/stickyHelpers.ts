@@ -37,12 +37,14 @@ export class StickyManager {
   removeElement(id: string) {
     const stickyElement = this.elements.get(id);
     if (stickyElement) {
-      // Reset element styles
-      stickyElement.element.style.position = '';
-      stickyElement.element.style.top = '';
-      stickyElement.element.style.left = '';
-      stickyElement.element.style.width = '';
-      stickyElement.element.style.zIndex = '';
+      // Reset element styles completely
+      const element = stickyElement.element;
+      element.style.position = '';
+      element.style.top = '';
+      element.style.left = '';
+      element.style.width = '';
+      element.style.zIndex = '';
+      element.style.transform = '';
     }
     this.elements.delete(id);
   }
@@ -75,19 +77,26 @@ export class StickyManager {
         element.style.top = '';
         element.style.left = '';
         element.style.width = '';
+        element.style.transform = '';
       } else if (scrolledPastEnd) {
-        // Depois do fim: grudado no final da área de referência
+        // Depois do fim: posição absoluta no container pai, não na tela
+        const parentRect = element.parentElement?.getBoundingClientRect();
+        const maxTop = bounds.referenceBottom - bounds.containerTop - element.offsetHeight;
+        
         element.style.position = 'absolute';
-        element.style.top = `${bounds.referenceBottom - bounds.containerTop - element.offsetHeight}px`;
+        element.style.top = `${Math.max(0, maxTop)}px`;
         element.style.left = '0';
         element.style.width = '100%';
+        element.style.transform = '';
       } else {
         // No meio: posição fixa na tela
-        const rect = element.parentElement?.getBoundingClientRect();
+        const parentRect = element.parentElement?.getBoundingClientRect();
+        
         element.style.position = 'fixed';
         element.style.top = `${fixedPosition}px`;
-        element.style.left = rect ? `${rect.left}px` : '0';
-        element.style.width = rect ? `${rect.width}px` : '100%';
+        element.style.left = parentRect ? `${parentRect.left}px` : '0';
+        element.style.width = parentRect ? `${parentRect.width}px` : '100%';
+        element.style.transform = '';
       }
     });
   }
