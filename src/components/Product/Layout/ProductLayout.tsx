@@ -25,8 +25,8 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
         
         {/* COLUNA 1: Container da Galeria Vertical */}
         <div className="w-full lg:w-20 order-2 lg:order-1">
-          {/* ELEMENTO sticky da galeria */}
-          <div className="sticky top-4 z-10">
+          {/* ELEMENTO sticky da galeria com altura limitada pela coluna 3 */}
+          <div className="sticky top-4 z-10 h-fit">
             <ProductMainContent 
               product={product}
               skuNavigation={skuNavigation}
@@ -37,8 +37,8 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
 
         {/* COLUNA 2: Container da Imagem Principal */}
         <div className="w-full lg:w-96 order-1 lg:order-2">
-          {/* ELEMENTO sticky da imagem */}
-          <div className="sticky top-4 z-10">
+          {/* ELEMENTO sticky da imagem com altura limitada pela coluna 3 */}
+          <div className="sticky top-4 z-10 h-fit">
             <ProductMainContent 
               product={product}
               skuNavigation={skuNavigation}
@@ -48,7 +48,7 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
         </div>
 
         {/* COLUNA 3: Informações do Produto - ALTURA NATURAL */}
-        <div className="flex-1 order-3">
+        <div className="flex-1 order-3" id="product-info-column">
           <ProductMainContent 
             product={product}
             skuNavigation={skuNavigation}
@@ -68,13 +68,26 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
         </div>
       </div>
 
-      {/* Seções inferiores */}
+      {/* Seções inferiores - LIMITADAS às larguras das colunas 1+2+3 */}
       <div className="mt-12">
-        <ProductMainContent 
-          product={product}
-          skuNavigation={skuNavigation}
-          layout="bottom-sections"
-        />
+        <div className="lg:flex">
+          {/* Container que replica o layout das primeiras 3 colunas */}
+          <div className="lg:flex lg:gap-6 lg:flex-1 lg:mr-80 lg:pr-6">
+            {/* Espaço da coluna 1 - visível apenas desktop */}
+            <div className="hidden lg:block lg:w-20"></div>
+            {/* Espaço da coluna 2 - visível apenas desktop */}
+            <div className="hidden lg:block lg:w-96"></div>
+            {/* Container para as seções inferiores ocupando o espaço da coluna 3 */}
+            <div className="flex-1">
+              <ProductMainContent 
+                product={product}
+                skuNavigation={skuNavigation}
+                layout="bottom-sections"
+              />
+            </div>
+          </div>
+          {/* Espaço reservado para coluna 4 - invisível no desktop, ocupa espaço */}
+        </div>
       </div>
     </div>
   );

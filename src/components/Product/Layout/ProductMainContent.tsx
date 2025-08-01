@@ -308,42 +308,6 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
     );
   }
 
-  if (layout === 'gallery-vertical') {
-    return (
-      <div className={cn("w-20 flex flex-col gap-2", className)}>
-        {/* Galeria vertical de miniaturas */}
-        <div className="space-y-2">
-          {[1, 2, 3].map((index) => (
-            <button
-              key={index}
-              className="w-full aspect-square border-2 border-blue-500 rounded-lg overflow-hidden hover:border-blue-600 transition-colors"
-            >
-              <img
-                src={product.images?.[index - 1] || '/placeholder-game.jpg'}
-                alt={`${product.name} - Imagem ${index}`}
-                className="w-full h-full object-cover"
-              />
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (layout === 'main-image') {
-    return (
-      <div className={cn("w-96 relative", className)}>
-        {/* Imagem principal */}
-        <div className="aspect-square bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-          <img
-            src={product.images?.[0] || '/placeholder-game.jpg'}
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      </div>
-    );
-  }
 
   // SEÇÕES INFERIORES (layout padrão) - Restaurar elementos removidos
   return (
