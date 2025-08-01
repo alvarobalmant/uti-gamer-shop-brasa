@@ -1,7 +1,7 @@
 export interface StickyBounds {
   containerTop: number;
   containerBottom: number;
-  column3Bottom: number; // Altura real da coluna 3
+  referenceBottom: number;
 }
 
 export interface StickyElement {
@@ -11,9 +11,6 @@ export interface StickyElement {
   naturalOffset: number; // Offset natural do elemento para não grudar no topo
   originalWidth: number; // Largura original preservada
   originalHeight: number; // Altura original preservada
-  isFrozen: boolean; // Se está congelado na posição final
-  frozenTop: number; // Posição congelada
-  frozenLeft: number; // Posição horizontal congelada
 }
 
 export class StickyManager {
@@ -38,10 +35,7 @@ export class StickyManager {
       bounds,
       naturalOffset,
       originalWidth,
-      originalHeight,
-      isFrozen: false,
-      frozenTop: 0,
-      frozenLeft: 0
+      originalHeight
     });
     
     // Setup inicial do elemento
@@ -77,7 +71,7 @@ export class StickyManager {
 
   private updateElements() {
     this.elements.forEach((stickyElement) => {
-      const { element, bounds, naturalOffset, originalWidth, originalHeight, id, isFrozen, frozenTop, frozenLeft } = stickyElement;
+      const { element, bounds, naturalOffset, originalWidth, originalHeight, id } = stickyElement;
       
       // Posição fixa desejada na tela (header + offset natural)
       const fixedPosition = this.headerHeight + naturalOffset;
@@ -86,19 +80,17 @@ export class StickyManager {
       const elementTop = bounds.containerTop;
       const startStickyAt = elementTop - fixedPosition;
       
-      // Nova lógica: usar a altura da coluna 3 como limite
-      const column3Bottom = bounds.column3Bottom;
-      const freezeThreshold = 1; // 1px antes do fim da coluna 3
-      const shouldFreeze = (this.scrollY + fixedPosition + originalHeight) >= (column3Bottom - freezeThreshold);
+      // Calcular quando o elemento deve parar de ser sticky (chegar no fim da referência)
+      const referenceEndPosition = bounds.referenceBottom;
+      const stopStickyAt = referenceEndPosition - fixedPosition - originalHeight;
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`[STICKY DEBUG] ${id}:`, {
           scrollY: this.scrollY,
           elementTop,
           startStickyAt,
-          column3Bottom,
-          shouldFreeze,
-          isFrozen,
+          stopStickyAt,
+          referenceEndPosition,
           fixedPosition,
           originalHeight
         });
@@ -109,58 +101,17 @@ export class StickyManager {
         if (process.env.NODE_ENV === 'development') {
           console.log(`[STICKY DEBUG] ${id}: RELATIVE - before sticky start`);
         }
-        stickyElement.isFrozen = false;
         this.resetElementToRelative(element);
-      } else if (shouldFreeze && !isFrozen) {
-        // Congelar: salvar posição atual e travar
-        const parentElement = element.parentElement;
-        if (!parentElement) {
-          console.warn(`[STICKY] Parent element not found for ${id}`);
-          return;
-        }
-        
-        const currentRect = element.getBoundingClientRect();
-        const parentRect = parentElement.getBoundingClientRect();
-        
-        // Calcular posição absoluta dentro do container pai
-        const absoluteTop = column3Bottom - bounds.containerTop - originalHeight;
-        const absoluteLeft = 0; // Relativo ao container pai
-        
-        stickyElement.isFrozen = true;
-        stickyElement.frozenTop = absoluteTop;
-        stickyElement.frozenLeft = absoluteLeft;
+      } else if (this.scrollY >= stopStickyAt) {
+        // Depois do fim: posição absoluta travada no fim
+        const distanceFromContainerTop = referenceEndPosition - bounds.containerTop - originalHeight;
         
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[STICKY DEBUG] ${id}: FREEZING at top=${absoluteTop}px, left=${absoluteLeft}px`);
+          console.log(`[STICKY DEBUG] ${id}: ABSOLUTE - past sticky end, top=${distanceFromContainerTop}px`);
         }
-        
-        this.setElementToAbsolute(element, absoluteTop, originalWidth, originalHeight);
-      } else if (isFrozen && !shouldFreeze) {
-        // Descongelar: voltar ao modo fixed
-        stickyElement.isFrozen = false;
-        
-        const parentElement = element.parentElement;
-        if (!parentElement) {
-          console.warn(`[STICKY] Parent element not found for ${id}`);
-          return;
-        }
-        
-        const parentRect = parentElement.getBoundingClientRect();
-        const parentAbsoluteLeft = parentRect.left + window.scrollX;
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[STICKY DEBUG] ${id}: UNFREEZING - back to fixed mode`);
-        }
-        
-        this.setElementToFixed(element, fixedPosition, parentAbsoluteLeft, originalWidth, originalHeight);
-      } else if (isFrozen) {
-        // Manter congelado na posição salva
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[STICKY DEBUG] ${id}: STAYING FROZEN at top=${frozenTop}px`);
-        }
-        this.setElementToAbsolute(element, frozenTop, originalWidth, originalHeight);
+        this.setElementToAbsolute(element, distanceFromContainerTop, originalWidth, originalHeight);
       } else {
-        // Modo sticky normal: posição fixa na tela
+        // No meio: posição fixa na tela
         const parentElement = element.parentElement;
         if (!parentElement) {
           console.warn(`[STICKY] Parent element not found for ${id}`);
@@ -224,11 +175,11 @@ export class StickyManager {
     // Get the current scroll position for accurate calculations
     const currentScrollY = window.scrollY;
     
-    // Calculate bounds with better precision, usando referenceElement como coluna 3
+    // Calculate bounds with better precision
     const bounds = {
       containerTop: containerRect.top + currentScrollY,
       containerBottom: containerRect.bottom + currentScrollY,
-      column3Bottom: referenceRect.bottom + currentScrollY // A coluna 3 é a referência
+      referenceBottom: referenceRect.bottom + currentScrollY
     };
     
     if (process.env.NODE_ENV === 'development') {
