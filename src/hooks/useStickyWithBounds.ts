@@ -4,13 +4,13 @@ import { StickyManager, throttle, debounce } from '@/lib/stickyHelpers';
 interface UseStickyWithBoundsProps {
   enabled?: boolean;
   referenceElementId: string; // ID of the element that defines the bottom boundary
-  offset?: number; // Additional offset from the top
+  naturalOffset?: number; // Offset natural do elemento para não grudar no header
 }
 
 export const useStickyWithBounds = ({ 
   enabled = true, 
   referenceElementId,
-  offset = 0 
+  naturalOffset = 100 // Offset padrão de 100px do header
 }: UseStickyWithBoundsProps) => {
   const managerRef = useRef<StickyManager | null>(null);
   const elementsRef = useRef<Map<string, HTMLElement>>(new Map());
@@ -60,13 +60,11 @@ export const useStickyWithBounds = ({
 
     elementsRef.current.forEach((element, id) => {
       const bounds = managerRef.current!.calculateBounds(element, referenceElement);
-      bounds.start += offset;
-      bounds.end += offset;
       
       managerRef.current!.removeElement(id);
-      managerRef.current!.addElement(id, element, bounds);
+      managerRef.current!.addElement(id, element, bounds, naturalOffset);
     });
-  }, [referenceElementId, offset]);
+  }, [referenceElementId, naturalOffset]);
 
   // Register a sticky element
   const registerStickyElement = useCallback((id: string, element: HTMLElement | null) => {
@@ -83,15 +81,13 @@ export const useStickyWithBounds = ({
 
     // Calculate bounds
     const bounds = managerRef.current.calculateBounds(element, referenceElement);
-    bounds.start += offset;
-    bounds.end += offset;
 
     // Add to manager
-    managerRef.current.addElement(id, element, bounds);
+    managerRef.current.addElement(id, element, bounds, naturalOffset);
 
     // Initial position update
     managerRef.current.updateScroll(window.scrollY);
-  }, [enabled, referenceElementId, offset]);
+  }, [enabled, referenceElementId, naturalOffset]);
 
   // Unregister a sticky element
   const unregisterStickyElement = useCallback((id: string) => {
