@@ -73,54 +73,58 @@ export class StickyManager {
     this.elements.forEach((stickyElement) => {
       const { element, bounds, naturalOffset, originalWidth, originalHeight, id } = stickyElement;
       
-      // Debug logging only in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[STICKY DEBUG] ${id}: scrollY=${this.scrollY}, bounds=`, bounds, `dimensions=${originalWidth}x${originalHeight}`);
-      }
-      
       // Posição fixa desejada na tela (header + offset natural)
       const fixedPosition = this.headerHeight + naturalOffset;
       
-      // Get parent container for proper absolute positioning context
-      const parentElement = element.parentElement;
-      if (!parentElement) {
-        console.warn(`[STICKY] Parent element not found for ${id}`);
-        return;
-      }
+      // Calcular quando o elemento deve começar a ser sticky
+      const elementTop = bounds.containerTop;
+      const startStickyAt = elementTop - fixedPosition;
       
-      // Calcular limites mais precisos
-      const scrolledPastStart = this.scrollY > bounds.containerTop - fixedPosition;
-      const scrolledPastEnd = this.scrollY > bounds.referenceBottom - fixedPosition - originalHeight;
+      // Calcular quando o elemento deve parar de ser sticky (chegar no fim da referência)
+      const referenceEndPosition = bounds.referenceBottom;
+      const stopStickyAt = referenceEndPosition - fixedPosition - originalHeight;
       
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[STICKY DEBUG] ${id}: scrolledPastStart=${scrolledPastStart}, scrolledPastEnd=${scrolledPastEnd}`);
+        console.log(`[STICKY DEBUG] ${id}:`, {
+          scrollY: this.scrollY,
+          elementTop,
+          startStickyAt,
+          stopStickyAt,
+          referenceEndPosition,
+          fixedPosition,
+          originalHeight
+        });
       }
       
-      if (!scrolledPastStart) {
+      if (this.scrollY <= startStickyAt) {
         // Antes do início: posição relativa normal
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[STICKY DEBUG] ${id}: Setting relative position`);
+          console.log(`[STICKY DEBUG] ${id}: RELATIVE - before sticky start`);
         }
         this.resetElementToRelative(element);
-      } else if (scrolledPastEnd) {
-        // Depois do fim: posição absoluta no container pai
-        // Melhorar cálculo da posição final considerando o contexto correto
-        const containerHeight = bounds.containerBottom - bounds.containerTop;
-        const availableSpace = bounds.referenceBottom - bounds.containerTop;
-        const maxTop = Math.max(0, availableSpace - originalHeight);
+      } else if (this.scrollY >= stopStickyAt) {
+        // Depois do fim: posição absoluta travada no fim
+        const distanceFromContainerTop = referenceEndPosition - bounds.containerTop - originalHeight;
         
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[STICKY DEBUG] ${id}: Setting absolute position at top=${maxTop}px`);
+          console.log(`[STICKY DEBUG] ${id}: ABSOLUTE - past sticky end, top=${distanceFromContainerTop}px`);
         }
-        this.setElementToAbsolute(element, maxTop, originalWidth, originalHeight);
+        this.setElementToAbsolute(element, distanceFromContainerTop, originalWidth, originalHeight);
       } else {
-        // No meio: posição fixa na tela com melhor cálculo de posição
+        // No meio: posição fixa na tela
+        const parentElement = element.parentElement;
+        if (!parentElement) {
+          console.warn(`[STICKY] Parent element not found for ${id}`);
+          return;
+        }
+        
         const parentRect = parentElement.getBoundingClientRect();
+        const parentAbsoluteLeft = parentRect.left + window.scrollX;
         
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[STICKY DEBUG] ${id}: Setting fixed position at top=${fixedPosition}px, left=${parentRect.left}px`);
+          console.log(`[STICKY DEBUG] ${id}: FIXED - sticky mode, top=${fixedPosition}px, left=${parentAbsoluteLeft}px`);
         }
-        this.setElementToFixed(element, fixedPosition, parentRect.left, originalWidth, originalHeight);
+        this.setElementToFixed(element, fixedPosition, parentAbsoluteLeft, originalWidth, originalHeight);
       }
     });
   }
