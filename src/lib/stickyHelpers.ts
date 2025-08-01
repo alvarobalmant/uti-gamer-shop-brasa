@@ -80,7 +80,7 @@ export class StickyManager {
       const elementTop = bounds.containerTop;
       const startStickyAt = elementTop - fixedPosition;
       
-      // Calcular quando o elemento deve parar de ser sticky (chegar no fim da referência)
+      // FIXED: Calcular corretamente o ponto de parada usando a altura da referência completa
       const referenceEndPosition = bounds.referenceBottom;
       const stopStickyAt = referenceEndPosition - fixedPosition - originalHeight;
       
@@ -92,7 +92,8 @@ export class StickyManager {
           stopStickyAt,
           referenceEndPosition,
           fixedPosition,
-          originalHeight
+          originalHeight,
+          bounds
         });
       }
       
@@ -102,14 +103,16 @@ export class StickyManager {
           console.log(`[STICKY DEBUG] ${id}: RELATIVE - before sticky start`);
         }
         this.resetElementToRelative(element);
-      } else if (this.scrollY >= stopStickyAt) {
+      } else if (this.scrollY >= stopStickyAt && stopStickyAt > startStickyAt) {
         // Depois do fim: posição absoluta travada no fim
-        const distanceFromContainerTop = referenceEndPosition - bounds.containerTop - originalHeight;
+        // FIXED: Calcular a posição absoluta correta em relação ao container do elemento
+        const referenceHeight = referenceEndPosition - bounds.containerTop;
+        const absoluteTop = Math.max(0, referenceHeight - originalHeight);
         
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[STICKY DEBUG] ${id}: ABSOLUTE - past sticky end, top=${distanceFromContainerTop}px`);
+          console.log(`[STICKY DEBUG] ${id}: ABSOLUTE - past sticky end, top=${absoluteTop}px`);
         }
-        this.setElementToAbsolute(element, distanceFromContainerTop, originalWidth, originalHeight);
+        this.setElementToAbsolute(element, absoluteTop, originalWidth, originalHeight);
       } else {
         // No meio: posição fixa na tela
         const parentElement = element.parentElement;
