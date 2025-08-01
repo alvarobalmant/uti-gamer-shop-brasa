@@ -98,19 +98,14 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
 
           {/* Seções inferiores - COMEÇAM IMEDIATAMENTE APÓS COLUNA 3 */}
           <div className="mt-12">
-            {/* Desktop: mantém o alinhamento com as colunas acima */}
-            <div className="hidden lg:flex lg:gap-6">
-              {/* Espaço alinhado com coluna 1 */}
-              <div className="w-20"></div>
-              {/* Espaço alinhado com colunas 2+3 */}
-              <div className="w-96 flex-1">
-                <ProductMainContent 
-                  product={product}
-                  skuNavigation={skuNavigation}
-                  layout="bottom-sections"
-                />
-              </div>
-            </div>
+          {/* Desktop: ocupa toda a largura das 3 colunas (coluna 1 + coluna 2 + coluna 3) */}
+          <div className="hidden lg:block">
+            <ProductMainContent 
+              product={product}
+              skuNavigation={skuNavigation}
+              layout="bottom-sections"
+            />
+          </div>
             
             {/* Mobile: largura total */}
             <div className="block lg:hidden">
