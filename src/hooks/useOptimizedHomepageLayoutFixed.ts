@@ -99,17 +99,17 @@ export const useOptimizedHomepageLayoutFixed = () => {
 
         if (!title) {
           if (item.section_key.startsWith('product_section_')) {
-            // Usar dados da view se disponível
-            if (item.product_section_data && item.product_section_data.title) {
-              title = `Seção Produtos: ${item.product_section_data.title}`;
+            // Usar dados diretamente dos campos específicos
+            if (item.product_section_title) {
+              title = `Seção Produtos: ${item.product_section_title}`;
             } else {
               const sectionId = item.section_key.replace('product_section_', '');
               title = `Seção Produtos: ${sectionId.substring(0, 8)}...`;
             }
           } else if (item.section_key.startsWith('special_section_')) {
-            // Usar dados da view se disponível
-            if (item.special_section_data && item.special_section_data.title) {
-              title = `Seção Especial: ${item.special_section_data.title}`;
+            // Usar dados diretamente dos campos específicos
+            if (item.special_section_title) {
+              title = `Seção Especial: ${item.special_section_title}`;
             } else {
               const sectionId = item.section_key.replace('special_section_', '');
               title = `Seção Especial: ${sectionId.substring(0, 8)}...`;
