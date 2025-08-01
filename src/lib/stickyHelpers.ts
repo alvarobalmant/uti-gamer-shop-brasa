@@ -44,19 +44,30 @@ export class StickyManager {
     this.elements.forEach((stickyElement) => {
       const { element, originalTop, bounds } = stickyElement;
       
+      // Calculate header height dynamically
+      const headerHeight = this.getHeaderHeight();
+      
       // Calculate the position based on scroll and bounds
       let translateY = 0;
       
       if (this.scrollY > bounds.start) {
-        const maxScroll = bounds.end - bounds.start;
+        const maxScroll = bounds.end - bounds.start - headerHeight;
         const currentScroll = Math.min(this.scrollY - bounds.start, maxScroll);
-        translateY = currentScroll;
+        translateY = Math.max(0, currentScroll);
       }
 
-      // Apply the transform
-      element.style.transform = `translateY(${translateY}px)`;
+      // Apply smooth transform with CSS transition
+      element.style.transform = `translate3d(0, ${translateY}px, 0)`;
+      element.style.transition = 'transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
       element.style.willChange = 'transform';
     });
+  }
+
+  private getHeaderHeight(): number {
+    const header = document.querySelector('header') || 
+                  document.querySelector('[role="banner"]') || 
+                  document.querySelector('nav');
+    return header ? header.offsetHeight + 16 : 80; // fallback to 80px + 16px margin
   }
 
   calculateBounds(containerElement: HTMLElement, referenceElement: HTMLElement): StickyBounds {
@@ -65,10 +76,11 @@ export class StickyManager {
     
     const containerTop = containerRect.top + window.scrollY;
     const referenceBottom = referenceRect.bottom + window.scrollY;
+    const headerHeight = this.getHeaderHeight();
     
     return {
-      start: containerTop,
-      end: referenceBottom - containerRect.height
+      start: Math.max(0, containerTop - headerHeight),
+      end: referenceBottom - containerRect.height - headerHeight
     };
   }
 
@@ -77,7 +89,7 @@ export class StickyManager {
   }
 }
 
-// Throttle utility for performance
+// Smooth throttle for better performance and fluidity
 export const throttle = (func: Function, delay: number) => {
   let timeoutId: NodeJS.Timeout | null = null;
   let lastExecTime = 0;
@@ -93,7 +105,7 @@ export const throttle = (func: Function, delay: number) => {
       timeoutId = setTimeout(() => {
         func(...args);
         lastExecTime = Date.now();
-      }, delay - (currentTime - lastExecTime));
+      }, Math.max(0, delay - (currentTime - lastExecTime)));
     }
   };
 };

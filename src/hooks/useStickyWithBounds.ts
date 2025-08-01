@@ -36,13 +36,13 @@ export const useStickyWithBounds = ({
       if (managerRef.current) {
         managerRef.current.updateScroll(window.scrollY);
       }
-    }, 16); // ~60fps
+    }, 8); // ~120fps for ultra smooth scrolling
 
     const handleResize = debounce(() => {
       if (managerRef.current) {
         updateAllBounds();
       }
-    }, 250);
+    }, 150);
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);

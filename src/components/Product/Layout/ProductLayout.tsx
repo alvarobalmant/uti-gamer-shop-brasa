@@ -22,11 +22,11 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
   const galleryRef = useRef<HTMLDivElement>(null);
   const mainImageRef = useRef<HTMLDivElement>(null);
   
-  // Initialize sticky behavior
+  // Initialize sticky behavior with proper header offset
   const { registerStickyElement, unregisterStickyElement, refreshBounds } = useStickyWithBounds({
     enabled: true,
     referenceElementId: 'product-info-column',
-    offset: 16 // 1rem offset from top
+    offset: 0 // No additional offset, header height calculated dynamically
   });
 
   // Register sticky elements when they mount
@@ -64,8 +64,8 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
             
             {/* COLUNA 1: Container da Galeria Vertical */}
             <div className="w-full lg:w-20 order-2 lg:order-1">
-              {/* ELEMENTO sticky da galeria */}
-              <div ref={galleryRef} className="h-fit z-10">
+              {/* ELEMENTO sticky da galeria com transição suave */}
+              <div ref={galleryRef} className="h-fit z-10 transition-transform duration-100 ease-out">
                 <ProductMainContent 
                   product={product}
                   skuNavigation={skuNavigation}
@@ -76,8 +76,8 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
 
             {/* COLUNA 2: Container da Imagem Principal */}
             <div className="w-full lg:w-96 order-1 lg:order-2">
-              {/* ELEMENTO sticky da imagem */}
-              <div ref={mainImageRef} className="h-fit z-10">
+              {/* ELEMENTO sticky da imagem com transição suave */}
+              <div ref={mainImageRef} className="h-fit z-10 transition-transform duration-100 ease-out">
                 <ProductMainContent 
                   product={product}
                   skuNavigation={skuNavigation}
