@@ -81,16 +81,19 @@ export const useSubscriptions = () => {
     try {
       console.log('Buscando dados do usuário:', user.id);
       
-      // Buscar dados do usuário na tabela usuarios
+      // Buscar dados do usuário na tabela usuarios (com tratamento melhorado)
       const { data: usuarioData, error: usuarioError } = await supabase
         .from('usuarios')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle(); // Usar maybeSingle para evitar erro quando não encontra
 
-      if (usuarioError && usuarioError.code !== 'PGRST116') {
-        console.error('Erro ao buscar usuário:', usuarioError);
-        throw usuarioError;
+      if (usuarioError) {
+        console.warn('Aviso ao buscar usuário na tabela usuarios:', usuarioError);
+        // Não fazer throw - apenas definir como null e continuar
+        setUsuario(null);
+        setUserSubscription(null);
+        return;
       }
 
       if (usuarioData) {
