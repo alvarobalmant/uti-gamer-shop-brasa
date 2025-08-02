@@ -3,7 +3,7 @@ import './utils/categoryTestSimple';
 import './utils/n7ErrorSuppressor'; // ← NOVO: Supressor de erro n7.map
 import './styles/n7ErrorSuppression.css'; // ← NOVO: CSS para suprimir erro n7.map
 import { Toaster } from "@/components/ui/toaster";
-import SessionRecoveryToast from "@/components/ErrorMonitor/SessionRecoveryToast";
+import SessionManager from "@/components/SessionManager";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -167,9 +167,10 @@ const App = () => {
                       <AppWithPreloader>
                         <GlobalNavigationProvider>
                           <ScrollRestorationProvider>
-                             <LoadingOverlay />
-                             <GlobalNavigationOverlay />
-                             <JWTErrorMonitor />
+                              <LoadingOverlay />
+                              <GlobalNavigationOverlay />
+                              <JWTErrorMonitor />
+                              <SessionManager />
                              <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}

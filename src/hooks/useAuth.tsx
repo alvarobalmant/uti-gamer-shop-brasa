@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { securityMonitor } from '@/lib/security';
 import { sessionMonitor } from '@/utils/sessionMonitor';
 import { jwtErrorInterceptor } from '@/utils/jwtErrorInterceptor';
+import { offlineTokenDetector } from '@/utils/offlineTokenDetector';
 
 
 interface AuthContextType {
@@ -183,6 +184,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       subscription.unsubscribe();
       sessionMonitor.stopMonitoring();
       jwtErrorInterceptor.destroy();
+      // Note: offlineTokenDetector cleanup is handled automatically
     };
   }, [handleSessionRecovery]);
 

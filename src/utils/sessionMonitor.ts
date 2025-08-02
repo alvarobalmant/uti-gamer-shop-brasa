@@ -153,6 +153,11 @@ class SessionMonitor {
     
     console.warn(`🔥 [SessionMonitor] JWT expired in ${context} at ${this.metrics.lastExpiration}`);
     
+    // Different handling for offline-related expirations
+    if (context.includes('offline') || context.includes('focus')) {
+      console.log(`🔄 [SessionMonitor] Offline/focus JWT expiration detected, handling accordingly`);
+    }
+    
     // Immediately attempt refresh
     this.attemptForceRefresh();
   }
@@ -174,6 +179,20 @@ class SessionMonitor {
     return !this.sessionHealth.isHealthy || 
            this.sessionHealth.consecutiveFailures >= 3 ||
            this.metrics.ghostStateDetections > 0;
+  }
+
+  // Get specific attention reason for better UX
+  getAttentionReason(): string {
+    if (this.metrics.ghostStateDetections > 0) {
+      return 'ghost-state';
+    }
+    if (this.sessionHealth.consecutiveFailures >= 3) {
+      return 'multiple-failures';
+    }
+    if (!this.sessionHealth.isHealthy) {
+      return 'unhealthy';
+    }
+    return 'none';
   }
 
   getMetrics(): SessionMetrics {
