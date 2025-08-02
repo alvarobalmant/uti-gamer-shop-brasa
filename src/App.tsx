@@ -24,7 +24,6 @@ import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { JWTErrorMonitor } from "@/components/ErrorMonitor/JWTErrorMonitor";
-import SmartAuthProvider from "@/components/SmartAuthProvider";
 import { useEffect } from "react";
 
 // Componentes de preloading inteligente
@@ -172,7 +171,6 @@ const App = () => {
                               <GlobalNavigationOverlay />
                               <JWTErrorMonitor />
                               <SessionManager />
-                              <SmartAuthProvider>
                              <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
@@ -255,7 +253,6 @@ const App = () => {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                             </Suspense>
-                              </SmartAuthProvider>
                           </ScrollRestorationProvider>
                         </GlobalNavigationProvider>
                       </AppWithPreloader>

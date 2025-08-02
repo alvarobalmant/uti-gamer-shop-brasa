@@ -89,17 +89,7 @@ class JWTErrorInterceptor {
     // Log to session monitor
     sessionMonitor.logJWTExpiration(source);
 
-    // Check if this might be an offline-related issue
-    const isOfflineRelated = source.includes('offline') || source.includes('focus') || 
-                           !navigator.onLine || document.hidden;
-    
-    if (isOfflineRelated) {
-      console.warn('🚨 [JWTInterceptor] Offline-related JWT error detected - forcing application reset');
-      this.forceApplicationReset(`offline-jwt-error-${source}`);
-      return;
-    }
-
-    // Attempt immediate session recovery for online issues
+    // Attempt immediate session recovery
     await this.attemptSessionRecovery();
   }
 
@@ -159,27 +149,6 @@ class JWTErrorInterceptor {
       console.log('🔄 [JWTInterceptor] Reloading page to reset application state');
       window.location.reload();
     }
-  }
-
-  // Force application reset for offline-related session issues
-  private forceApplicationReset(reason: string) {
-    console.warn(`🔄 [JWTInterceptor] Forcing application reset due to: ${reason}`);
-    
-    // Clear all session storage
-    localStorage.removeItem('supabase.auth.token');
-    sessionStorage.clear();
-    
-    // Clear Supabase client cache
-    try {
-      supabase.auth.signOut({ scope: 'local' });
-    } catch (error) {
-      console.warn('Failed to sign out locally:', error);
-    }
-    
-    // Force page reload to reset application state
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
   }
 
   // Handle complete session loss
