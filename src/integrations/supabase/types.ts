@@ -1349,36 +1349,6 @@ export type Database = {
           },
         ]
       }
-      profiles: {
-        Row: {
-          created_at: string
-          email: string | null
-          id: string
-          is_pro_member: boolean | null
-          name: string | null
-          pro_expires_at: string | null
-          role: string
-        }
-        Insert: {
-          created_at?: string
-          email?: string | null
-          id: string
-          is_pro_member?: boolean | null
-          name?: string | null
-          pro_expires_at?: string | null
-          role?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string | null
-          id?: string
-          is_pro_member?: boolean | null
-          name?: string | null
-          pro_expires_at?: string | null
-          role?: string
-        }
-        Relationships: []
-      }
       promotional_ribbon_config: {
         Row: {
           background_color: string | null
@@ -1497,13 +1467,6 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "coin_products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "redemption_codes_redeemed_by_admin_fkey"
-            columns: ["redeemed_by_admin"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2169,13 +2132,6 @@ export type Database = {
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
           },
-          {
-            foreignKeyName: "user_favorites_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_profiles: {
@@ -2254,13 +2210,6 @@ export type Database = {
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
           },
-          {
-            foreignKeyName: "user_savings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_streaks: {
@@ -2333,13 +2282,6 @@ export type Database = {
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "subscription_plans"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_user_subscriptions_user_id"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {

@@ -167,7 +167,7 @@ const UTICoinsManager = () => {
         // Buscar dados dos usuários separadamente
         const userIds = data.map(u => u.user_id);
         const { data: profilesData } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .select('id, email, name')
           .in('id', userIds);
 
