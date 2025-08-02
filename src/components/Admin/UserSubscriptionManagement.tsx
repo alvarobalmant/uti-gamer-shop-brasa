@@ -51,9 +51,9 @@ const UserSubscriptionManagement = () => {
       console.log('Carregando usuários da tabela usuarios...');
       
       const { data, error } = await supabase
-        .from('usuarios')
+        .from('profiles')
         .select('*')
-        .order('data_cadastro', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Erro ao buscar usuários:', error);
