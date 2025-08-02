@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
@@ -11,6 +9,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { LogIn, UserPlus, X } from 'lucide-react';
+import { LoginForm } from './LoginForm';
+import { SignUpForm } from './SignUpForm';
 
 interface SimpleAuthModalProps {
   isOpen: boolean;
@@ -18,9 +18,6 @@ interface SimpleAuthModalProps {
 }
 
 export const SimpleAuthModal = ({ isOpen, onClose }: SimpleAuthModalProps) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
 
@@ -32,14 +29,11 @@ export const SimpleAuthModal = ({ isOpen, onClose }: SimpleAuthModalProps) => {
     }
   }, [user, isOpen, onClose]);
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSignIn = async (email: string, password: string) => {
     setLoading(true);
     
     try {
       await signIn(email, password);
-      setEmail('');
-      setPassword('');
       onClose();
     } catch (error) {
       console.error('[AUTH MODAL] Login failed:', error);
@@ -48,15 +42,11 @@ export const SimpleAuthModal = ({ isOpen, onClose }: SimpleAuthModalProps) => {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSignUp = async (email: string, password: string, name: string) => {
     setLoading(true);
     
     try {
       await signUp(email, password, name);
-      setEmail('');
-      setPassword('');
-      setName('');
       onClose();
     } catch (error) {
       console.error('[AUTH MODAL] Signup failed:', error);
@@ -111,93 +101,11 @@ export const SimpleAuthModal = ({ isOpen, onClose }: SimpleAuthModalProps) => {
           </TabsList>
           
           <TabsContent value="login" className="mt-6">
-            <form onSubmit={handleSignIn} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="login-email" className="text-foreground font-medium">Email</Label>
-                <Input
-                  id="login-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="border-border focus:border-primary rounded-lg h-12"
-                  placeholder="seu@email.com"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="login-password" className="text-foreground font-medium">Senha</Label>
-                <Input
-                  id="login-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="border-border focus:border-primary rounded-lg h-12"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-              
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 h-12 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                {loading ? "Entrando..." : "Entrar"}
-              </Button>
-            </form>
+            <LoginForm onSubmit={handleSignIn} loading={loading} />
           </TabsContent>
           
           <TabsContent value="signup" className="mt-6">
-            <form onSubmit={handleSignUp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signup-name" className="text-foreground font-medium">Nome completo</Label>
-                <Input
-                  id="signup-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="border-border focus:border-primary rounded-lg h-12"
-                  placeholder="Seu nome completo"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="signup-email" className="text-foreground font-medium">Email</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="border-border focus:border-primary rounded-lg h-12"
-                  placeholder="seu@email.com"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="signup-password" className="text-foreground font-medium">Senha</Label>
-                <Input
-                  id="signup-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="border-border focus:border-primary rounded-lg h-12"
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                />
-              </div>
-              
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 h-12 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                {loading ? "Criando conta..." : "Criar conta"}
-              </Button>
-            </form>
+            <SignUpForm onSubmit={handleSignUp} loading={loading} />
           </TabsContent>
         </Tabs>
         
