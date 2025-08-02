@@ -3,7 +3,6 @@ import './utils/categoryTestSimple';
 import './utils/n7ErrorSuppressor'; // ← NOVO: Supressor de erro n7.map
 import './styles/n7ErrorSuppression.css'; // ← NOVO: CSS para suprimir erro n7.map
 import { Toaster } from "@/components/ui/toaster";
-import SessionManager from "@/components/SessionManager";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -23,7 +22,6 @@ import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
-import { JWTErrorMonitor } from "@/components/ErrorMonitor/JWTErrorMonitor";
 import { useEffect } from "react";
 
 // Componentes de preloading inteligente
@@ -99,6 +97,7 @@ const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const MeusCoins = lazy(() => import("./pages/MeusCoins"));
 // Import direto para páginas críticas de auth
 import ConfirmarConta from "./pages/ConfirmarConta";
+import { AuthPage } from "./pages/AuthPage";
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module => ({ default: module.AdminAutoLogin })));
 
@@ -169,8 +168,9 @@ const App = () => {
                           <ScrollRestorationProvider>
                               <LoadingOverlay />
                               <GlobalNavigationOverlay />
+                              {/* Removed problematic monitoring components:
                               <JWTErrorMonitor />
-                              <SessionManager />
+                              <SessionManager /> */}
                              <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
@@ -187,6 +187,9 @@ const App = () => {
                   
                   {/* Email Confirmation Route */}
                   <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
+                  
+                  {/* Authentication Route */}
+                  <Route path="/auth" element={<AuthPage />} />
                   
                   {/* Registration Route */}
                   <Route path="/cadastro" element={<RegisterPage />} />

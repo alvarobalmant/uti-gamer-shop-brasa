@@ -1,8 +1,6 @@
-
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { securityMonitor } from '@/lib/security';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -10,16 +8,6 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
-
-  useEffect(() => {
-    if (user) {
-      securityMonitor.logEvent({
-        type: 'privilege_escalation',
-        message: 'User accessed protected route',
-        details: { userId: user.id, path: window.location.pathname }
-      });
-    }
-  }, [user]);
 
   if (loading) {
     return (
@@ -30,12 +18,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!user) {
-    securityMonitor.logEvent({
-      type: 'auth_failure',
-      message: 'Unauthorized access attempt to protected route',
-      details: { path: window.location.pathname }
-    });
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth" replace />;
   }
 
   return <>{children}</>;
