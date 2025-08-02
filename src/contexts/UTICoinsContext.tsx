@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { UTICoins, CoinTransaction, CoinRule } from '@/types/retention';
 import { supabase } from '@/integrations/supabase/client';
 import { useUTICoinsSettings } from '@/hooks/useUTICoinsSettings';
+import { retrySupabaseQuery, retryWithAuth } from '@/utils/retryWithAuth';
 
 interface UTICoinsContextType {
   coins: UTICoins;
@@ -47,11 +48,16 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     setLoading(true);
     try {
       // Carregar saldo de moedas com tratamento de erro
-      const { data: coinsData, error: coinsError } = await supabase
-        .from('uti_coins')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      const { data: coinsData, error: coinsError } = await retrySupabaseQuery(
+        async () => {
+          return await supabase
+            .from('uti_coins')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+        },
+        'loadUTICoinsBalance'
+      );
 
       if (coinsError) {
         console.warn('Erro ao carregar moedas:', coinsError);
@@ -84,12 +90,17 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       }
 
       // Carregar transações com tratamento de erro
-      const { data: transactionsData, error: transactionsError } = await supabase
-        .from('coin_transactions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const { data: transactionsData, error: transactionsError } = await retrySupabaseQuery(
+        async () => {
+          return await supabase
+            .from('coin_transactions')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(50);
+        },
+        'loadCoinTransactions'
+      );
 
       if (transactionsError) {
         console.warn('Erro ao carregar transações:', transactionsError);
@@ -125,11 +136,16 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
   // Carregar regras de moedas de forma segura
   const loadRules = useCallback(async () => {
     try {
-      const { data: rulesData, error: rulesError } = await supabase
-        .from('coin_rules')
-        .select('*')
-        .eq('is_active', true)
-        .order('action');
+      const { data: rulesData, error: rulesError } = await retrySupabaseQuery(
+        async () => {
+          return await supabase
+            .from('coin_rules')
+            .select('*')
+            .eq('is_active', true)
+            .order('action');
+        },
+        'loadCoinRules'
+      );
 
       if (rulesError) {
         console.warn('Erro ao carregar regras:', rulesError);
@@ -228,30 +244,42 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     try {
       console.log('[SECURE] Processing daily login');
       
-      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-        body: {
-          action: 'daily_login',
-          metadata: {
-            timestamp: new Date().toISOString(),
-            source: 'daily_login_process'
-          }
-        }
-      });
+      const result = await retryWithAuth(
+        async () => {
+          return await supabase.functions.invoke('secure-coin-actions', {
+            body: {
+              action: 'daily_login',
+              metadata: {
+                timestamp: new Date().toISOString(),
+                source: 'daily_login_process'
+              }
+            }
+          });
+        },
+        { context: 'processDailyLogin' }
+      );
+
+      if (!result.success) {
+        console.warn('Erro ao processar login diário (edge function):', result.error);
+        return { success: false, message: result.error?.message || 'Erro de conexão com o servidor' };
+      }
+
+      const { data, error } = result.data;
 
       if (error) {
         console.warn('Erro ao processar login diário (edge function):', error);
         return { success: false, message: error.message || 'Erro de conexão com o servidor' };
       }
 
-      const result = data as any;
-      if (result?.success) {
+      const apiResult = data as any;
+      if (apiResult?.success) {
         // Recarregar dados após login
         await loadUserData();
-        return result;
+        return apiResult;
       }
 
       // Retornar a mensagem específica do backend em vez de uma mensagem genérica
-      return result || { success: false, message: 'Erro desconhecido do servidor' };
+      return apiResult || { success: false, message: 'Erro desconhecido do servidor' };
     } catch (error) {
       console.error('Erro ao processar login diário:', error);
       return { success: false, message: 'Erro interno do sistema' };
@@ -271,30 +299,42 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     try {
       console.log(`[SECURE] Earning coins for action: ${action}`);
       
-      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-        body: {
-          action,
-          metadata: {
-            amount,
-            description,
-            ...metadata,
-            timestamp: new Date().toISOString()
-          }
-        }
-      });
+      const result = await retryWithAuth(
+        async () => {
+          return await supabase.functions.invoke('secure-coin-actions', {
+            body: {
+              action,
+              metadata: {
+                amount,
+                description,
+                ...metadata,
+                timestamp: new Date().toISOString()
+              }
+            }
+          });
+        },
+        { context: 'earnCoins' }
+      );
+
+      if (!result.success) {
+        console.warn('Erro ao ganhar moedas (edge function):', result.error);
+        return { success: false, message: result.error?.message || 'Erro de conexão com o servidor' };
+      }
+
+      const { data, error } = result.data;
 
       if (error) {
         console.warn('Erro ao ganhar moedas (edge function):', error);
         return { success: false, message: error.message || 'Erro de conexão com o servidor' };
       }
 
-      const result = data as any;
-      if (result?.success) {
+      const earnResult = data as any;
+      if (earnResult?.success) {
         // Recarregar dados após ganho
         await loadUserData();
       }
 
-      return result || { success: false, message: 'Erro desconhecido do servidor' };
+      return earnResult || { success: false, message: 'Erro desconhecido do servidor' };
     } catch (error) {
       console.error('Erro ao ganhar moedas:', error);
       return { success: false, message: 'Erro interno do sistema' };
