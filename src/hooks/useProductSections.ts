@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { PostgrestError } from '@supabase/supabase-js';
+import { retrySupabaseQuery } from '@/utils/retryWithAuth';
 
 // Types matching DB structure
 export type SectionItemType = 'product' | 'tag';
@@ -50,11 +51,14 @@ export const useProductSections = () => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch sections
-      const { data: sectionsData, error: sectionsError } = await supabase
-        .from('product_sections')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Fetch sections with retry mechanism
+      const { data: sectionsData, error: sectionsError } = await retrySupabaseQuery(
+        async () => await supabase
+          .from('product_sections')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        'fetchProductSections'
+      );
 
       if (sectionsError) throw sectionsError;
       console.log('[useProductSections] Raw sections data:', sectionsData); // Log raw sections
@@ -64,11 +68,14 @@ export const useProductSections = () => {
       let allItems: ProductSectionItem[] = [];
       if (sectionIds.length > 0) {
         console.log('[useProductSections] Fetching items for section IDs:', sectionIds);
-        const { data: itemsData, error: itemsError } = await supabase
-          .from('product_section_items')
-          .select('*')
-          .in('section_id', sectionIds)
-          .order('display_order', { ascending: true });
+        const { data: itemsData, error: itemsError } = await retrySupabaseQuery(
+          async () => await supabase
+            .from('product_section_items')
+            .select('*')
+            .in('section_id', sectionIds)
+            .order('display_order', { ascending: true }),
+          'fetchProductSectionItems'
+        );
         if (itemsError) throw itemsError;
         allItems = itemsData || [];
         console.log('[useProductSections] Fetched items data:', allItems); // Log fetched items

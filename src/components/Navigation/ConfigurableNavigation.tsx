@@ -34,9 +34,18 @@ export const ConfigurableNavigation: React.FC<ConfigurableNavigationProps> = ({
 
   if (error) {
     console.error('Erro na navegação:', error);
+    // Try to reload navigation after error
+    setTimeout(() => {
+      if (showOnlyVisible) {
+        fetchVisibleItems();
+      } else {
+        fetchItems();
+      }
+    }, 5000); // Retry after 5 seconds
+    
     return (
-      <div className={`text-red-500 text-sm ${className}`}>
-        Erro ao carregar navegação
+      <div className={`text-destructive text-sm ${className}`}>
+        Erro ao carregar navegação - tentando novamente...
       </div>
     );
   }

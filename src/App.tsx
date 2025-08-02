@@ -22,6 +22,7 @@ import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
+import { JWTErrorMonitor } from "@/components/ErrorMonitor/JWTErrorMonitor";
 import { useEffect } from "react";
 
 // Componentes de preloading inteligente
@@ -165,9 +166,10 @@ const App = () => {
                       <AppWithPreloader>
                         <GlobalNavigationProvider>
                           <ScrollRestorationProvider>
-                            <LoadingOverlay />
-                            <GlobalNavigationOverlay />
-                            <Suspense fallback={<PageLoader />}>
+                             <LoadingOverlay />
+                             <GlobalNavigationOverlay />
+                             <JWTErrorMonitor />
+                             <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
                   <Route path="/" element={<Index />} />
