@@ -34,28 +34,40 @@ const usePreventLayoutShift = () => {
     document.body.style.overflowX = 'hidden';
     
     // Observer mais específico - apenas para mudanças críticas
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-          const target = mutation.target as HTMLElement;
-          if (target === document.body) {
-            // Apenas remove padding/margin que causam layout shift, SEM tocar no overflow-y
-            if (target.style.paddingRight || target.style.marginRight) {
-              target.style.paddingRight = '';
-              target.style.marginRight = '';
+    let observer: MutationObserver | null = null;
+    
+    try {
+      observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+            const target = mutation.target as HTMLElement;
+            if (target === document.body) {
+              // Apenas remove padding/margin que causam layout shift, SEM tocar no overflow-y
+              if (target.style.paddingRight || target.style.marginRight) {
+                target.style.paddingRight = '';
+                target.style.marginRight = '';
+              }
             }
           }
-        }
+        });
       });
-    });
 
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ['style']
-    });
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['style']
+      });
+    } catch (error) {
+      console.warn('MutationObserver setup failed:', error);
+    }
 
     return () => {
-      observer.disconnect();
+      if (observer) {
+        try {
+          observer.disconnect();
+        } catch (error) {
+          console.warn('MutationObserver cleanup failed:', error);
+        }
+      }
     };
   }, []);
 };

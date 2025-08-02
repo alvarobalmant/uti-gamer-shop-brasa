@@ -40,35 +40,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Check admin role if user is logged in
         if (session?.user) {
+          console.log('🔐 [AuthProvider] Checking admin role for user:', session.user.email);
           try {
-            const { data: profile } = await supabase
+            const { data: profile, error } = await supabase
               .from('profiles')
               .select('role')
               .eq('id', session.user.id)
               .maybeSingle();
             
-            setIsAdmin(profile?.role === 'admin' || false);
+            if (error) {
+              console.error('🔐 [AuthProvider] Error checking admin role:', error);
+              setIsAdmin(false);
+            } else {
+              const adminStatus = profile?.role === 'admin';
+              console.log('🔐 [AuthProvider] Admin status:', adminStatus, 'for role:', profile?.role);
+              setIsAdmin(adminStatus);
+            }
           } catch (error) {
             console.warn('🔐 [AuthProvider] Could not check admin role:', error);
             setIsAdmin(false);
           }
         } else {
+          console.log('🔐 [AuthProvider] No user session, setting admin to false');
           setIsAdmin(false);
         }
         
+        console.log('🔐 [AuthProvider] Setting loading to false');
         setLoading(false);
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
       console.log('🔐 [AuthProvider] Initial session check:', { 
         session: !!session, 
-        user: session?.user?.email 
+        user: session?.user?.email,
+        error: !!error
       });
+      
+      if (error) {
+        console.error('🔐 [AuthProvider] Error getting initial session:', error);
+        setLoading(false);
+        return;
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      
+      // If no session, set loading to false immediately
+      if (!session) {
+        console.log('🔐 [AuthProvider] No initial session, setting loading to false');
+        setLoading(false);
+      }
     });
 
     return () => {
