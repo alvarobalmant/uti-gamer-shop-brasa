@@ -226,7 +226,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     if (!isEnabled) return { success: false, message: 'Sistema UTI Coins desabilitado' };
 
     try {
-      console.log('[SECURE] Processing daily login');
+      console.log('[SECURE] Processing daily login for user:', user.id);
       
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
         body: {
@@ -240,7 +240,28 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
 
       if (error) {
         console.warn('Erro ao processar login diário (edge function):', error);
-        return { success: false, message: error.message || 'Erro de conexão com o servidor' };
+        
+        // Fallback: try database function directly
+        console.log('[FALLBACK] Trying database function directly');
+        try {
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .rpc('process_daily_login', { p_user_id: user.id });
+          
+          if (fallbackError) {
+            console.warn('Fallback also failed:', fallbackError);
+            return { success: false, message: 'Erro de conexão com o servidor' };
+          }
+          
+          if ((fallbackData as any)?.success) {
+            await loadUserData();
+            return fallbackData;
+          }
+          
+          return fallbackData || { success: false, message: 'Erro desconhecido' };
+        } catch (fallbackErr) {
+          console.error('Fallback error:', fallbackErr);
+          return { success: false, message: 'Erro interno do sistema' };
+        }
       }
 
       const result = data as any;
@@ -250,7 +271,6 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
         return result;
       }
 
-      // Retornar a mensagem específica do backend em vez de uma mensagem genérica
       return result || { success: false, message: 'Erro desconhecido do servidor' };
     } catch (error) {
       console.error('Erro ao processar login diário:', error);
@@ -269,7 +289,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     if (!isEnabled) return { success: false, message: 'Sistema UTI Coins desabilitado' };
 
     try {
-      console.log(`[SECURE] Earning coins for action: ${action}`);
+      console.log(`[SECURE] Earning coins for action: ${action}, user: ${user.id}`);
       
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
         body: {
@@ -285,7 +305,34 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
 
       if (error) {
         console.warn('Erro ao ganhar moedas (edge function):', error);
-        return { success: false, message: error.message || 'Erro de conexão com o servidor' };
+        
+        // Fallback: try database function directly
+        console.log('[FALLBACK] Trying database function for earn_coins');
+        try {
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .rpc('earn_coins', {
+              p_user_id: user.id,
+              p_action: action,
+              p_amount: amount,
+              p_description: description,
+              p_metadata: metadata || {}
+            });
+          
+          if (fallbackError) {
+            console.warn('Fallback earn_coins failed:', fallbackError);
+            return { success: false, message: 'Erro de conexão com o servidor' };
+          }
+          
+          if ((fallbackData as any)?.success) {
+            await loadUserData();
+            return fallbackData;
+          }
+          
+          return fallbackData || { success: false, message: 'Erro desconhecido' };
+        } catch (fallbackErr) {
+          console.error('Fallback error:', fallbackErr);
+          return { success: false, message: 'Erro interno do sistema' };
+        }
       }
 
       const result = data as any;

@@ -26,19 +26,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    let sessionCheckInProgress = false;
+    console.log('[AUTH] Setting up auth listeners');
     
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // Prevent race conditions during session checks
-        if (sessionCheckInProgress) return;
-        sessionCheckInProgress = true;
+        console.log('[AUTH] Auth state change:', event, session?.user?.email);
         
-        // Handle session invalidation check
-        if (session?.access_token) {
+        // Update basic session state immediately
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Handle admin role check with proper error handling
+        if (session?.user) {
+          // Use setTimeout to avoid blocking the auth state change
           setTimeout(async () => {
             try {
+              // Check for invalidated sessions first
               const { data: invalidatedSession } = await supabase
                 .from('invalidated_sessions')
                 .select('id')
@@ -46,67 +50,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 .maybeSingle();
               
               if (invalidatedSession) {
-                // Session was manually invalidated, force local logout
+                console.log('[AUTH] Session was invalidated, logging out');
                 setSession(null);
                 setUser(null);
                 setIsAdmin(false);
                 setLoading(false);
-                sessionCheckInProgress = false;
                 return;
               }
+
+              // Check admin role
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              
+              const isUserAdmin = profile?.role === 'admin';
+              console.log('[AUTH] Admin check result:', isUserAdmin);
+              setIsAdmin(isUserAdmin);
+              
             } catch (error) {
-              console.log('Error checking invalidated session:', error);
-              // Continue with normal flow even if check fails
-            }
-            
-            // Update session state
-            setSession(session);
-            setUser(session?.user ?? null);
-            
-            // Check admin role
-            if (session?.user) {
-              try {
-                const { data: profile } = await supabase
-                  .from('profiles')
-                  .select('role')
-                  .eq('id', session.user.id)
-                  .maybeSingle();
-                
-                setIsAdmin(profile?.role === 'admin');
-              } catch (error) {
-                console.log('Error checking admin role:', error);
-                setIsAdmin(false);
-              }
-            } else {
+              console.warn('[AUTH] Error in admin role check:', error);
               setIsAdmin(false);
+            } finally {
+              setLoading(false);
             }
-            
-            setLoading(false);
-            sessionCheckInProgress = false;
           }, 0);
         } else {
-          // No session
-          setSession(null);
-          setUser(null);
+          // No session - clear everything
           setIsAdmin(false);
           setLoading(false);
-          sessionCheckInProgress = false;
         }
       }
     );
 
-    // Then check for existing session
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!sessionCheckInProgress) {
-        setSession(session);
-        setUser(session?.user ?? null);
+      console.log('[AUTH] Initial session:', session?.user?.email);
+      if (!session) {
         setLoading(false);
       }
     });
 
     return () => {
+      console.log('[AUTH] Cleaning up auth listeners');
       subscription.unsubscribe();
-      sessionCheckInProgress = false;
     };
   }, []);
 
