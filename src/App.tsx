@@ -1,12 +1,10 @@
-import React, { Suspense, lazy } from "react";
-import './utils/categoryTestSimple';
-import './utils/n7ErrorSuppressor'; // ← NOVO: Supressor de erro n7.map
-import './styles/n7ErrorSuppression.css'; // ← NOVO: CSS para suprimir erro n7.map
+
+import { Helmet } from "react-helmet";
 import { Toaster } from "@/components/ui/toaster";
-import SessionManager from "@/components/SessionManager";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+<<<<<<< HEAD
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/contexts/CartContext";
@@ -26,134 +24,46 @@ import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { JWTErrorMonitor } from "@/components/ErrorMonitor/JWTErrorMonitor";
 import SmartAuthProvider from "@/components/SmartAuthProvider";
 import { useEffect } from "react";
+=======
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SessionProvider } from '@supabase/auth-helpers-react';
+import { supabase } from "@/integrations/supabase/client";
+>>>>>>> 80947bebedca2ff3c2faf1993fe4d001d405e519
 
-// Componentes de preloading inteligente
+// Providers otimizados
+import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import { AppWithPreloader } from "@/components/AppWithPreloader";
 
-// Hook minimalista para prevenir layout shift sem interferir no scroll
-const usePreventLayoutShift = () => {
-  useEffect(() => {
-    // Apenas configuração básica, sem interferir no scroll restoration
-    document.body.style.overflowX = 'hidden';
-    
-    // Observer mais específico - apenas para mudanças críticas
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-          const target = mutation.target as HTMLElement;
-          if (target === document.body) {
-            // Apenas remove padding/margin que causam layout shift, SEM tocar no overflow-y
-            if (target.style.paddingRight || target.style.marginRight) {
-              target.style.paddingRight = '';
-              target.style.marginRight = '';
-            }
-          }
-        }
-      });
-    });
+// Pages com lazy loading
+import { lazy, Suspense } from "react";
+import { HomepageSkeleton } from "@/components/skeletons/AdvancedSkeletons";
 
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ['style']
-    });
+// Lazy load das páginas para otimizar bundle splitting
+const IndexWithPreloader = lazy(() => import("./pages/IndexWithPreloader"));
+const ProductPage = lazy(() => import("./pages/Product"));
+const CategoryPage = lazy(() => import("./pages/Category"));
 
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-};
-
-// Lazy loading para páginas menos críticas
-const SearchResults = lazy(() => import("./pages/SearchResultsFinal"));
-const SectionPage = lazy(() => import("./pages/SectionPage"));
-const PrimePage = lazy(() => import("./pages/PrimePage"));
-const CategoryPage = lazy(() => import("./pages/CategoryPage"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const UTIPro = lazy(() => import("./pages/UTIPro"));
-
-// Lazy loading para páginas de plataforma
-const PlayStationPageProfessionalV2 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV2"));
-const PlayStationPageProfessionalV3 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV3"));
-const PlayStationPageProfessionalV4 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV4"));
-const PlayStationPageProfessionalV5 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV5"));
-const NintendoPage = lazy(() => import("./pages/platforms/NintendoPage"));
-const PCGamingPage = lazy(() => import("./pages/platforms/PCGamingPage"));
-const RetroGamingPage = lazy(() => import("./pages/platforms/RetroGamingPage"));
-const AreaGeekPage = lazy(() => import("./pages/platforms/AreaGeekPage"));
-
-// Lazy loading para Xbox4 (única versão mantida)
-const XboxPage4 = lazy(() => import("./pages/platforms/XboxPage4"));
-
-// Lazy loading para admin
-const AdminPanel = lazy(() => import("@/components/Admin/AdminPanel").then(module => ({ default: module.AdminPanel })));
-const Xbox4AdminPage = lazy(() => import("./components/Admin/Xbox4AdminPage"));
-const SpecialSectionCarouselPage = lazy(() => import("./pages/SpecialSectionCarouselPage"));
-const PlatformPage = lazy(() => import("./components/PlatformPage"));
-
-// Lazy loading para páginas de produto
-const ProductPageSKU = lazy(() => import("./pages/ProductPageSKU"));
-const TestProduct = lazy(() => import("./pages/TestProduct"));
-
-// Lazy loading para páginas de cliente
-const ClientArea = lazy(() => import("./pages/ClientArea"));
-const WishlistPage = lazy(() => import("./pages/WishlistPage"));
-const MeusCoins = lazy(() => import("./pages/MeusCoins"));
-// Import direto para páginas críticas de auth
-import ConfirmarConta from "./pages/ConfirmarConta";
-const RegisterPage = lazy(() => import("./pages/RegisterPage"));
-const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module => ({ default: module.AdminAutoLogin })));
-
-// Lazy loading para páginas de UTI Coins
-const CoinsShop = lazy(() => import("./pages/CoinsShop"));
-const CoinsHistory = lazy(() => import("./pages/CoinsHistory"));
-
-// Otimizar QueryClient
+// Configuração otimizada do QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      // Cache mais agressivo para melhor performance
       staleTime: 5 * 60 * 1000, // 5 minutos
-      gcTime: 10 * 60 * 1000, // 10 minutos (antes era cacheTime)
+      gcTime: 15 * 60 * 1000, // 15 minutos (antiga cacheTime)
+      retry: 1, // Menos tentativas para falhar mais rápido
       refetchOnWindowFocus: false,
+    },
+    mutations: {
       retry: 1,
     },
   },
 });
 
-// Loading component otimizado
-const PageLoader = React.memo(() => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-  </div>
-));
-PageLoader.displayName = 'PageLoader';
-
-// Protected Route Component otimizado
-const ProtectedAdminRoute = React.memo(({ children }: { children: React.ReactNode }) => {
-  const { user, isAdmin, loading } = useAuth();
-
-  if (loading) {
-    return <PageLoader />;
-  }
-
-  if (!user || !isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
-});
-ProtectedAdminRoute.displayName = 'ProtectedAdminRoute';
-
-const App = () => {
-  // Hook para prevenir layout shift globalmente
-  usePreventLayoutShift();
-  
-  // Setup de interceptação de erros 404
-  React.useEffect(() => {
-    setupErrorInterception();
-  }, []);
-  
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
+<<<<<<< HEAD
       <AuthProvider>
         <SecurityProvider>
           <SecurityHeaders />
@@ -177,98 +87,50 @@ const App = () => {
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
                   <Route path="/" element={<Index />} />
+=======
+      <SessionProvider supabaseClient={supabase}>
+        <AuthProvider>
+          <CartProvider>
+            <AppWithPreloader>
+              <TooltipProvider>
+                <BrowserRouter>
+                  <Helmet>
+                    <title>UTI dos Games - Sua loja de games favorita</title>
+                    <meta name="description" content="A melhor loja de games do Brasil. Consoles, jogos e acessórios com os melhores preços." />
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                    
+                    {/* Preload de recursos críticos */}
+                    <link rel="preload" href="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" as="image" />
+                    <link rel="preconnect" href="https://pmxnfpnnvtuuiedoxuxc.supabase.co" />
+                    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+                    
+                    {/* PWA e performance hints */}
+                    <meta name="theme-color" content="#1f2937" />
+                    <meta name="apple-mobile-web-app-capable" content="yes" />
+                  </Helmet>
+>>>>>>> 80947bebedca2ff3c2faf1993fe4d001d405e519
                   
-                  {/* Product Page Routes - MUST come before dynamic routes */}
-                  <Route path="/produto/:id" element={<ProductPageSKU />} />
-                  <Route path="/teste-produto/:id" element={<TestProduct />} />
-
-                   {/* Client Area Routes */}
-                  <Route path="/area-cliente" element={<ClientArea />} />
-                  <Route path="/lista-desejos" element={<WishlistPage />} />
-                  <Route path="/meus-coins" element={<MeusCoins />} />
+                  <div className="min-h-screen bg-background text-foreground">
+                    <Suspense fallback={<HomepageSkeleton />}>
+                      <Routes>
+                        <Route path="/" element={<IndexWithPreloader />} />
+                        <Route path="/produto/:id" element={<ProductPage />} />
+                        <Route path="/categoria/:category" element={<CategoryPage />} />
+                        {/* Outras rotas podem ser adicionadas aqui */}
+                      </Routes>
+                    </Suspense>
+                  </div>
                   
-                  {/* Email Confirmation Route */}
-                  <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
-                  
-                  {/* Registration Route */}
-                  <Route path="/cadastro" element={<RegisterPage />} />
-                  
-                  {/* UTI Coins Routes */}
-                  <Route path="/coins/loja" element={<CoinsShop />} />
-                  <Route path="/coins/historico" element={<CoinsHistory />} />
-
-                  {/* Admin Auto Login Route - MUST come before admin routes */}
-                  <Route path="/admin-login/:token" element={<AdminAutoLogin />} />
-
-                  {/* Admin Routes - Protected - MUST come before dynamic routes */}
-                  <Route 
-                    path="/admin" 
-                    element={
-                      <ProtectedAdminRoute>
-                        <ProductProvider>
-                          <AdminPanel /> 
-                        </ProductProvider>
-                      </ProtectedAdminRoute>
-                    }
-                  />
-                  <Route 
-                    path="/admin/xbox4" 
-                    element={
-                      <ProtectedAdminRoute>
-                        <Xbox4AdminPage /> 
-                      </ProtectedAdminRoute>
-                    }
-                  />
-
-                  {/* Special routes - MUST come before dynamic routes */}
-                  <Route path="/busca" element={<SearchResults />} />
-                  <Route path="/secao/:sectionKey" element={<SectionPage />} />
-                  <Route path="/categoria/:category" element={<CategoryPage />} />
-                  
-                  {/* Dynamic Carousel Page Route */}
-                  <Route 
-                    path="/secao-especial/:sectionId/carrossel/:carouselIndex" 
-                    element={<SpecialSectionCarouselPage />} 
-                  />
-                  
-                  {/* Páginas de plataforma específicas - MUST come before dynamic routes */}
-                  <Route path="/xbox4" element={<XboxPage4 />} />
-                  <Route path="/playstation" element={<PlayStationPageProfessionalV5 />} />
-                  <Route path="/playstation-v2" element={<PlayStationPageProfessionalV2 />} />
-                  <Route path="/playstation-v3" element={<PlayStationPageProfessionalV3 />} />
-                  <Route path="/playstation-v4" element={<PlayStationPageProfessionalV4 />} />
-                  <Route path="/nintendo" element={<NintendoPage />} />
-                  <Route path="/pc-gaming" element={<PCGamingPage />} />
-                  <Route path="/retro-gaming" element={<RetroGamingPage />} />
-                  <Route path="/area-geek" element={<AreaGeekPage />} />
-
-                  {/* Prime Pages Route - MUST come before dynamic routes */}
-                  <Route path="/prime/:slug" element={<PrimePage />} />
-
-                  {/* Dynamic Page Route - MUST be last before catch-all */}
-                  <Route 
-                    path="/:slug" 
-                    element={<PlatformPage slug={window.location.pathname.substring(1)} />} 
-                  />
-
-                  {/* Catch-all Not Found Route - MUST be absolute last */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-                            </Suspense>
-                              </SmartAuthProvider>
-                          </ScrollRestorationProvider>
-                        </GlobalNavigationProvider>
-                      </AppWithPreloader>
-                    </BrowserRouter>
-                  </TooltipProvider>
-                </LoadingProvider>
-              </ProductProviderOptimized>
-            </CartProvider>
-          </UTICoinsProvider>
-        </SecurityProvider>
-      </AuthProvider>
+                  <Toaster />
+                  <Sonner />
+                </BrowserRouter>
+              </TooltipProvider>
+            </AppWithPreloader>
+          </CartProvider>
+        </AuthProvider>
+      </SessionProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
