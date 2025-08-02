@@ -19,8 +19,7 @@ import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
-import { SecurityProvider } from "@/contexts/SecurityContext";
-import { SecurityHeaders } from "@/components/SecurityHeaders";
+// Security system removed - using simplified auth
 import { useEffect } from "react";
 
 // Componentes de preloading inteligente
@@ -151,8 +150,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SecurityProvider>
-          <SecurityHeaders />
+        {/* Security system removed */}
           <UTICoinsProvider>
             <CartProvider>
               <ProductProviderOptimized>
@@ -257,7 +255,7 @@ const App = () => {
               </ProductProviderOptimized>
             </CartProvider>
           </UTICoinsProvider>
-        </SecurityProvider>
+        {/* Security system removed */}
       </AuthProvider>
     </QueryClientProvider>
   );

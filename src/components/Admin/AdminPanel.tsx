@@ -5,7 +5,7 @@ import ProductManager from './ProductManagerNew';
 import { BannerManagerNew } from './BannerManagerNew';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
-import UserSubscriptionManagement from './UserSubscriptionManagement';
+import { SimpleUserManager } from './SimpleUserManager';
 import HomepageLayoutManager from '@/pages/Admin/HomepageLayoutManager';
 import ProductSectionManagerUltraSimple from './ProductSectionManagerUltraSimple';
 import PageManager from './PageManager';
@@ -22,7 +22,7 @@ import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
 import UTICoinsManager from './UTICoinsManager';
 import { EmailManager } from './EmailManager/EmailManager';
-import { AdminLoginManager } from './AdminLoginManager';
+// Admin login system removed
 import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
 import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,7 @@ export const AdminPanel = () => {
     { id: 'tags', label: 'Tags', icon: Tag },
     { id: 'uti_coins', label: 'UTI Coins', icon: Coins },
     { id: 'emails', label: 'Emails', icon: Mail },
-    { id: 'admin_login', label: 'LOGIN ADM', icon: Shield },
+    // Admin login removed
     { id: 'users', label: 'Usuários/PRO', icon: Users },
     { id: 'settings', label: 'Configurações', icon: Cog },
   ];
@@ -234,12 +234,10 @@ export const AdminPanel = () => {
                 <EmailManager />
               </TabsContent>
 
-              <TabsContent value="admin_login" className="mt-0">
-                <AdminLoginManager />
-              </TabsContent>
+              {/* Admin login removed */}
 
               <TabsContent value="users" className="mt-0">
-                <UserSubscriptionManagement />
+                <SimpleUserManager />
               </TabsContent>
 
               <TabsContent value="settings" className="mt-0">
