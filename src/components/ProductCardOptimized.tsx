@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Star } from 'lucide-react';
@@ -13,28 +12,22 @@ interface ProductCardOptimizedProps {
   className?: string;
   onFavoriteClick?: (productId: string) => void;
   isFavorite?: boolean;
-  onCardClick?: (productId: string) => void;
-  onAddToCart?: (product: Product) => void;
-  index?: number;
 }
 
-const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
+export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
   product,
   priority = false,
   className,
   onFavoriteClick,
   isFavorite = false,
-  onCardClick,
-  onAddToCart,
-  index
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { handleProductHover } = useProductPrefetch ? useProductPrefetch() : { handleProductHover: () => {} };
+  const { handleProductHover } = useProductPrefetch();
 
   // Memoizar cálculos de preço
   const priceInfo = useMemo(() => {
     const currentPrice = product.price || 0;
-    const originalPrice = product.list_price || product.discount_price || currentPrice;
+    const originalPrice = product.original_price || currentPrice;
     const discount = originalPrice > currentPrice 
       ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
       : 0;
@@ -45,26 +38,27 @@ const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
       discount,
       hasDiscount: discount > 0,
     };
-  }, [product.price, product.list_price, product.discount_price]);
+  }, [product.price, product.original_price]);
 
   // Memoizar rating
   const ratingInfo = useMemo(() => {
-    const rating = product.rating || product.rating_average || 0;
-    const reviewCount = product.rating_count || 0;
+    const rating = product.rating || 0;
+    const reviewCount = product.review_count || 0;
     
     return {
       rating,
       reviewCount,
       stars: Math.round(rating),
     };
-  }, [product.rating, product.rating_average, product.rating_count]);
+  }, [product.rating, product.review_count]);
 
   // Handler para hover com prefetch
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);
-    if (handleProductHover) {
-      handleProductHover(product.id);
-    }
+    const cleanup = handleProductHover(product.id);
+    
+    // Cleanup será chamado automaticamente pelo timeout interno
+    return cleanup;
   }, [product.id, handleProductHover]);
 
   const handleMouseLeave = useCallback(() => {
@@ -78,14 +72,6 @@ const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
     onFavoriteClick?.(product.id);
   }, [product.id, onFavoriteClick]);
 
-  // Handler para click no card
-  const handleCardClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    if (onCardClick) {
-      onCardClick(product.id);
-    }
-  }, [product.id, onCardClick]);
-
   // Formatação de preço
   const formatPrice = useCallback((price: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -94,12 +80,22 @@ const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
     }).format(price);
   }, []);
 
-  const cardContent = (
-    <>
+  return (
+    <Link
+      to={`/produto/${product.id}`}
+      className={cn(
+        'group block bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden',
+        'hover:shadow-md hover:border-gray-200 transition-all duration-200',
+        'transform hover:-translate-y-1',
+        className
+      )}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {/* Container da imagem */}
       <div className="relative aspect-square overflow-hidden">
         <ProductImage
-          src={product.image_url || product.image || ''}
+          src={product.image_url || ''}
           alt={product.name || 'Produto'}
           priority={priority}
           variant="card"
@@ -114,9 +110,9 @@ const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
         )}
         
         {/* Badge de estoque */}
-        {product.stock !== undefined && product.stock < 5 && (
+        {product.stock_quantity !== undefined && product.stock_quantity < 5 && (
           <div className="absolute top-2 right-12 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-            Últimas {product.stock}
+            Últimas {product.stock_quantity}
           </div>
         )}
         
@@ -190,16 +186,25 @@ const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
           <div className="text-lg font-bold text-gray-900">
             {formatPrice(priceInfo.currentPrice)}
           </div>
+          {product.installments && (
+            <div className="text-xs text-gray-600">
+              ou {product.installments.count}x de {formatPrice(product.installments.value)} sem juros
+            </div>
+          )}
         </div>
         
         {/* Badges de pagamento */}
         <div className="flex flex-wrap gap-1">
-          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-            PIX
-          </span>
-          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-            12x
-          </span>
+          {product.payment_methods?.includes('pix') && (
+            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+              PIX
+            </span>
+          )}
+          {product.payment_methods?.includes('credit') && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+              12x
+            </span>
+          )}
           {product.free_shipping && (
             <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">
               Frete Grátis
@@ -207,42 +212,59 @@ const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
           )}
         </div>
       </div>
-    </>
+    </Link>
   );
+};
 
-  if (onCardClick) {
+// Componente para grid de produtos otimizado
+export const ProductGridOptimized: React.FC<{
+  products: Product[];
+  loading?: boolean;
+  className?: string;
+  onFavoriteClick?: (productId: string) => void;
+  favoriteIds?: Set<string>;
+}> = ({
+  products,
+  loading = false,
+  className,
+  onFavoriteClick,
+  favoriteIds = new Set(),
+}) => {
+  if (loading) {
     return (
-      <div
-        className={cn(
-          'group block bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden cursor-pointer',
-          'hover:shadow-md hover:border-gray-200 transition-all duration-200',
-          'transform hover:-translate-y-1',
-          className
-        )}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onClick={handleCardClick}
-      >
-        {cardContent}
+      <div className={cn(
+        'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4',
+        className
+      )}>
+        {Array.from({ length: 10 }).map((_, index) => (
+          <div key={index} className="animate-pulse">
+            <div className="aspect-square bg-gray-200 rounded-lg mb-3" />
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="h-4 bg-gray-200 rounded w-1/2" />
+              <div className="h-5 bg-gray-200 rounded w-2/3" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
 
   return (
-    <Link
-      to={`/produto/${product.slug || product.id}`}
-      className={cn(
-        'group block bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden',
-        'hover:shadow-md hover:border-gray-200 transition-all duration-200',
-        'transform hover:-translate-y-1',
-        className
-      )}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {cardContent}
-    </Link>
+    <div className={cn(
+      'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4',
+      className
+    )}>
+      {products.map((product, index) => (
+        <ProductCardOptimized
+          key={product.id}
+          product={product}
+          priority={index < 4} // Primeiros 4 produtos são priority
+          onFavoriteClick={onFavoriteClick}
+          isFavorite={favoriteIds.has(product.id)}
+        />
+      ))}
+    </div>
   );
 };
 
-export default ProductCardOptimized;

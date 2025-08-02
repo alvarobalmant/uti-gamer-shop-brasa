@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useCallback, useMemo } from 'react';
 import { useOptimizedCache, useCacheWithFallback, CacheKeys } from './useOptimizedCache';
 import { fetchProductsFromDatabase, fetchSingleProductFromDatabase } from './useProducts/productApi';
@@ -225,18 +224,3 @@ export const useProductPrefetch = () => {
 // Importar hook de invalidação
 import { useCacheInvalidation } from './useOptimizedCache';
 
-=======
-
-import { useProducts } from './useProducts';
-
-// Stub hook that falls back to regular useProducts
-export const useOptimizedProducts = () => {
-  const { data: products, isLoading, error } = useProducts();
-  
-  return {
-    data: products || [],
-    isLoading,
-    error
-  };
-};
->>>>>>> cb1569049fc8a465e458ce75be03956db9ef697e
