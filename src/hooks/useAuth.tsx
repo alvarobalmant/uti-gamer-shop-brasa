@@ -25,53 +25,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     console.log('🔐 [AuthProvider] Initializing simplified auth system...');
+    let mounted = true;
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        if (!mounted) return;
+        
         console.log(`🔐 [AuthProvider] Auth event: ${event}`, { 
           session: !!session, 
           user: session?.user?.email 
         });
         
-        // Only synchronous state updates here
+        // ONLY synchronous updates here to prevent loops
         setSession(session);
         setUser(session?.user ?? null);
+        setLoading(false);
         
-        // Check admin role if user is logged in
+        // Handle admin check separately without blocking
         if (session?.user) {
-          console.log('🔐 [AuthProvider] Checking admin role for user:', session.user.email);
-          try {
-            const { data: profile, error } = await supabase
+          setTimeout(() => {
+            if (!mounted) return;
+            console.log('🔐 [AuthProvider] Checking admin role for:', session.user.email);
+            
+            supabase
               .from('profiles')
               .select('role')
               .eq('id', session.user.id)
-              .maybeSingle();
-            
-            if (error) {
-              console.error('🔐 [AuthProvider] Error checking admin role:', error);
-              setIsAdmin(false);
-            } else {
-              const adminStatus = profile?.role === 'admin';
-              console.log('🔐 [AuthProvider] Admin status:', adminStatus, 'for role:', profile?.role);
-              setIsAdmin(adminStatus);
-            }
-          } catch (error) {
-            console.warn('🔐 [AuthProvider] Could not check admin role:', error);
-            setIsAdmin(false);
-          }
+              .maybeSingle()
+              .then(({ data: profile, error }) => {
+                if (!mounted) return;
+                
+                if (error) {
+                  console.error('🔐 [AuthProvider] Error checking admin role:', error);
+                  setIsAdmin(false);
+                } else {
+                  const adminStatus = profile?.role === 'admin';
+                  console.log('🔐 [AuthProvider] Admin status:', adminStatus);
+                  setIsAdmin(adminStatus);
+                }
+              });
+          }, 100);
         } else {
-          console.log('🔐 [AuthProvider] No user session, setting admin to false');
           setIsAdmin(false);
         }
-        
-        console.log('🔐 [AuthProvider] Setting loading to false');
-        setLoading(false);
       }
     );
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return;
+      
       console.log('🔐 [AuthProvider] Initial session check:', { 
         session: !!session, 
         user: session?.user?.email,
@@ -86,15 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       setSession(session);
       setUser(session?.user ?? null);
-      
-      // If no session, set loading to false immediately
-      if (!session) {
-        console.log('🔐 [AuthProvider] No initial session, setting loading to false');
-        setLoading(false);
-      }
+      setLoading(false);
     });
 
     return () => {
+      mounted = false;
       console.log('🔐 [AuthProvider] Cleaning up auth subscription');
       subscription.unsubscribe();
     };
