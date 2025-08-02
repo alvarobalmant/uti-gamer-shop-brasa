@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { retrySupabaseQuery } from '@/utils/retryWithAuth';
 
 interface UTICoinsSettings {
   enabled: boolean;
@@ -24,21 +23,15 @@ export const useUTICoinsSettings = () => {
     }
 
     try {
-      const { data, error } = await retrySupabaseQuery(
-        async () => {
-          return await supabase
-            .from('site_settings')
-            .select('setting_value')
-            .eq('setting_key', 'uti_coins_settings')
-            .maybeSingle();
-        },
-        'loadUTICoinsSettings'
-      );
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('setting_value')
+        .eq('setting_key', 'uti_coins_settings')
+        .single();
 
       if (error) {
         console.warn('Erro ao carregar configurações UTI Coins:', error);
         setIsEnabled(false);
-        setLoading(false);
         return;
       }
 
@@ -51,7 +44,7 @@ export const useUTICoinsSettings = () => {
         isEnabled: newIsEnabled,
         timestamp: Date.now()
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao carregar configurações UTI Coins:', error);
       setIsEnabled(false);
     } finally {

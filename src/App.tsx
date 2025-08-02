@@ -17,7 +17,8 @@ import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
-// Removed optimized components
+import IndexWithBackendOptimizations from "./pages/IndexWithBackendOptimizations";
+import IndexOptimized from "./pages/IndexOptimized";
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
@@ -34,40 +35,28 @@ const usePreventLayoutShift = () => {
     document.body.style.overflowX = 'hidden';
     
     // Observer mais específico - apenas para mudanças críticas
-    let observer: MutationObserver | null = null;
-    
-    try {
-      observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-            const target = mutation.target as HTMLElement;
-            if (target === document.body) {
-              // Apenas remove padding/margin que causam layout shift, SEM tocar no overflow-y
-              if (target.style.paddingRight || target.style.marginRight) {
-                target.style.paddingRight = '';
-                target.style.marginRight = '';
-              }
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          const target = mutation.target as HTMLElement;
+          if (target === document.body) {
+            // Apenas remove padding/margin que causam layout shift, SEM tocar no overflow-y
+            if (target.style.paddingRight || target.style.marginRight) {
+              target.style.paddingRight = '';
+              target.style.marginRight = '';
             }
           }
-        });
+        }
       });
+    });
 
-      observer.observe(document.body, {
-        attributes: true,
-        attributeFilter: ['style']
-      });
-    } catch (error) {
-      console.warn('MutationObserver setup failed:', error);
-    }
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
 
     return () => {
-      if (observer) {
-        try {
-          observer.disconnect();
-        } catch (error) {
-          console.warn('MutationObserver cleanup failed:', error);
-        }
-      }
+      observer.disconnect();
     };
   }, []);
 };
@@ -109,7 +98,6 @@ const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const MeusCoins = lazy(() => import("./pages/MeusCoins"));
 // Import direto para páginas críticas de auth
 import ConfirmarConta from "./pages/ConfirmarConta";
-import { AuthPage } from "./pages/AuthPage";
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module => ({ default: module.AdminAutoLogin })));
 
@@ -178,12 +166,9 @@ const App = () => {
                       <AppWithPreloader>
                         <GlobalNavigationProvider>
                           <ScrollRestorationProvider>
-                              <LoadingOverlay />
-                              <GlobalNavigationOverlay />
-                              {/* Removed problematic monitoring components:
-                              <JWTErrorMonitor />
-                              <SessionManager /> */}
-                             <Suspense fallback={<PageLoader />}>
+                            <LoadingOverlay />
+                            <GlobalNavigationOverlay />
+                            <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
                   <Route path="/" element={<Index />} />
@@ -199,9 +184,6 @@ const App = () => {
                   
                   {/* Email Confirmation Route */}
                   <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
-                  
-                  {/* Authentication Route */}
-                  <Route path="/auth" element={<AuthPage />} />
                   
                   {/* Registration Route */}
                   <Route path="/cadastro" element={<RegisterPage />} />

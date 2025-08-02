@@ -96,24 +96,16 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
             </div>
           </div>
 
-          {/* Seções inferiores - EXPANSÃO CIRÚRGICA APENAS DOS ELEMENTOS */}
+          {/* Seções inferiores - COMEÇAM IMEDIATAMENTE APÓS COLUNA 3 */}
           <div className="mt-12">
-            {/* Desktop: mantém o alinhamento com as colunas acima */}
-            <div className="hidden lg:flex lg:gap-6">
-              {/* Espaço alinhado com coluna 1 */}
-              <div className="w-20"></div>
-              {/* Container dos elementos inferiores com expansão cirúrgica */}
-              <div className="w-96 flex-1">
-                {/* EXPANSÃO CIRÚRGICA: margin negativo para ocupar espaço da coluna 1 */}
-                <div className="-ml-[104px]"> {/* 80px (w-20) + 24px (gap-6) = 104px */}
-                  <ProductMainContent 
-                    product={product}
-                    skuNavigation={skuNavigation}
-                    layout="bottom-sections"
-                  />
-                </div>
-              </div>
-            </div>
+          {/* Desktop: ocupa toda a largura das 3 colunas (coluna 1 + coluna 2 + coluna 3) */}
+          <div className="hidden lg:block">
+            <ProductMainContent 
+              product={product}
+              skuNavigation={skuNavigation}
+              layout="bottom-sections"
+            />
+          </div>
             
             {/* Mobile: largura total */}
             <div className="block lg:hidden">

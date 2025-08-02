@@ -1,328 +1,282 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+
+import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { securityMonitor } from '@/lib/security';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  loading: boolean;
   isAdmin: boolean;
-  isPro: boolean;
-  profile: any;
-  signIn: (email: string, password: string) => Promise<{ error?: any }>;
-  signUp: (email: string, password: string, name?: string) => Promise<{ error?: any }>;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  isAuthenticated: boolean;
-  refreshProfile: () => Promise<void>;
+  invalidateSession: (sessionId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isPro, setIsPro] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const refreshProfile = async () => {
-    if (!user?.id) return;
-    
-    try {
-      // Buscar dados do profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) {
-        console.error('Erro ao buscar profile:', profileError);
-        return;
-      }
-
-      setProfile(profileData);
-      setIsAdmin(profileData?.role === 'admin');
-
-      // Verificar status PRO
-      const { data: subscriptionData } = await supabase
-        .from('user_subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      const hasActivePro = subscriptionData && 
-        subscriptionData.subscription_type !== 'free' && 
-        (!subscriptionData.expires_at || new Date(subscriptionData.expires_at) > new Date());
-
-      setIsPro(hasActivePro);
-    } catch (error) {
-      console.error('Erro ao atualizar profile:', error);
-    }
-  };
-
   useEffect(() => {
-    console.log('🔐 [AuthProvider] Inicializando novo sistema de autenticação...');
-    let mounted = true;
+    let sessionCheckInProgress = false;
     
-    // Configurar listener de auth state PRIMEIRO
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
+      (event, session) => {
+        // Prevent race conditions during session checks
+        if (sessionCheckInProgress) return;
+        sessionCheckInProgress = true;
         
-        console.log(`🔐 [AuthProvider] Evento auth: ${event}`, { 
-          session: !!session, 
-          user: session?.user?.email 
-        });
-        
-        // Atualizações síncronas apenas
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        
-        // Buscar dados do profile se houver usuário
-        if (session?.user) {
-          // Usar setTimeout para evitar problemas de recursão
-          setTimeout(() => {
-            if (!mounted) return;
-            refreshProfile();
-          }, 100);
+        // Handle session invalidation check
+        if (session?.access_token) {
+          setTimeout(async () => {
+            try {
+              const { data: invalidatedSession } = await supabase
+                .from('invalidated_sessions')
+                .select('id')
+                .eq('session_id', session.access_token)
+                .maybeSingle();
+              
+              if (invalidatedSession) {
+                // Session was manually invalidated, force local logout
+                setSession(null);
+                setUser(null);
+                setIsAdmin(false);
+                setLoading(false);
+                sessionCheckInProgress = false;
+                return;
+              }
+            } catch (error) {
+              console.log('Error checking invalidated session:', error);
+              // Continue with normal flow even if check fails
+            }
+            
+            // Update session state
+            setSession(session);
+            setUser(session?.user ?? null);
+            
+            // Check admin role
+            if (session?.user) {
+              try {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('role')
+                  .eq('id', session.user.id)
+                  .maybeSingle();
+                
+                setIsAdmin(profile?.role === 'admin');
+              } catch (error) {
+                console.log('Error checking admin role:', error);
+                setIsAdmin(false);
+              }
+            } else {
+              setIsAdmin(false);
+            }
+            
+            setLoading(false);
+            sessionCheckInProgress = false;
+          }, 0);
         } else {
+          // No session
+          setSession(null);
+          setUser(null);
           setIsAdmin(false);
-          setIsPro(false);
-          setProfile(null);
+          setLoading(false);
+          sessionCheckInProgress = false;
         }
       }
     );
 
-    // DEPOIS verificar sessão existente
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (!mounted) return;
-      
-      console.log('🔐 [AuthProvider] Verificação inicial de sessão:', { 
-        session: !!session, 
-        user: session?.user?.email,
-        error: !!error
-      });
-      
-      if (error) {
-        console.error('🔐 [AuthProvider] Erro ao obter sessão inicial:', error);
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!sessionCheckInProgress) {
+        setSession(session);
+        setUser(session?.user ?? null);
         setLoading(false);
-        return;
-      }
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-
-      // Se há usuário, buscar profile
-      if (session?.user) {
-        refreshProfile();
       }
     });
 
     return () => {
-      mounted = false;
-      console.log('🔐 [AuthProvider] Limpando subscription de auth');
       subscription.unsubscribe();
+      sessionCheckInProgress = false;
     };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('🔐 [AuthProvider] Tentando fazer login para:', email);
-      setLoading(true);
+      // Check rate limiting before attempting login
+      if (!securityMonitor.checkRateLimit(`login_${email}`, 5, 900000)) { // 5 attempts per 15 minutes
+        throw new Error('Too many login attempts. Please try again later.');
+      }
 
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
-      if (error) {
-        console.error('🔐 [AuthProvider] Erro no login:', error);
-        let errorMessage = 'Erro ao fazer login';
-        
-        if (error.message?.includes('Invalid login credentials')) {
-          errorMessage = 'Email ou senha incorretos';
-        } else if (error.message?.includes('Email not confirmed')) {
-          errorMessage = 'Por favor, confirme seu email antes de fazer login';
-        } else if (error.message?.includes('Email rate limit exceeded')) {
-          errorMessage = 'Muitas tentativas de login. Tente novamente em alguns minutos.';
-        }
-        
-        toast({
-          title: "Erro no Login",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        
-        return { error };
-      }
-
-      console.log('✅ [AuthProvider] Login realizado com sucesso:', data.user?.email);
       
-      // Atualizar última atividade de login
-      if (data.user) {
-        supabase
-          .from('user_accounts')
-          .update({ last_login_at: new Date().toISOString() })
-          .eq('id', data.user.id)
-          .then(({ error: updateError }) => {
-            if (updateError) {
-              console.warn('Aviso: Não foi possível atualizar último login:', updateError);
-            }
-          });
+      if (error) {
+        securityMonitor.logEvent({
+          type: 'auth_failure',
+          message: 'Login failed',
+          details: { email, error: error.message }
+        });
+        throw error;
       }
-
+      
+      securityMonitor.logEvent({
+        type: 'auth_failure', // Using existing type for consistency
+        message: 'User logged in successfully',
+        details: { email }
+      });
+      
       toast({
         title: "Login realizado com sucesso!",
-        description: `Bem-vindo de volta!`,
+        description: "Bem-vindo de volta!",
       });
-
-      return { error: null };
-    } catch (error) {
-      console.error('🔐 [AuthProvider] Erro inesperado no login:', error);
+    } catch (error: any) {
       toast({
-        title: "Erro inesperado",
-        description: "Algo deu errado. Tente novamente.",
+        title: "Erro no login",
+        description: error.message,
         variant: "destructive",
       });
-      return { error };
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
-  const signUp = async (email: string, password: string, name?: string) => {
-    try {
-      console.log('🔐 [AuthProvider] Tentando criar conta para:', email);
-      setLoading(true);
-
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            name: name || email.split('@')[0],
-          },
+  const signUp = async (email: string, password: string, name: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
         },
-      });
-
-      if (error) {
-        console.error('🔐 [AuthProvider] Erro no cadastro:', error);
-        let errorMessage = 'Erro ao criar conta';
-        
-        if (error.message?.includes('User already registered')) {
-          errorMessage = 'Este email já está cadastrado. Tente fazer login.';
-        } else if (error.message?.includes('Password')) {
-          errorMessage = 'A senha deve ter pelo menos 6 caracteres';
-        } else if (error.message?.includes('Signup is disabled')) {
-          errorMessage = 'Cadastro temporariamente desabilitado. Tente novamente mais tarde.';
-        }
-        
-        toast({
-          title: "Erro no Cadastro",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        
-        return { error };
-      }
-
-      console.log('✅ [AuthProvider] Cadastro realizado com sucesso:', data.user?.email);
-      
-      if (data.user && !data.session) {
-        toast({
-          title: "Conta criada com sucesso!",
-          description: "Verifique seu email para confirmar a conta.",
-        });
-      } else {
-        toast({
-          title: "Conta criada e login realizado!",
-          description: "Bem-vindo ao UTI dos Games!",
-        });
-      }
-
-      return { error: null };
-    } catch (error) {
-      console.error('🔐 [AuthProvider] Erro inesperado no cadastro:', error);
-      toast({
-        title: "Erro inesperado",
-        description: "Algo deu errado. Tente novamente.",
-        variant: "destructive",
-      });
-      return { error };
-    } finally {
-      setLoading(false);
+        emailRedirectTo: `${window.location.origin}/`
+      },
+    });
+    
+    if (error) {
+      throw error;
     }
+    
+    return { error: null };
   };
 
   const signOut = async () => {
     try {
-      console.log('🔐 [AuthProvider] Fazendo logout do usuário:', user?.email);
-      setLoading(true);
-
-      // Limpar dados locais imediatamente
-      setUser(null);
-      setSession(null);
-      setProfile(null);
-      setIsAdmin(false);
-      setIsPro(false);
-
-      const { error } = await supabase.auth.signOut();
+      const currentSession = session;
+      const isAutoLoginSession = localStorage.getItem('admin_auto_login_session') === 'true';
       
-      if (error) {
-        console.error('🔐 [AuthProvider] Erro no logout:', error);
-        toast({
-          title: "Erro ao sair",
-          description: "Não foi possível fazer logout completamente. Tente novamente.",
-          variant: "destructive",
-        });
-      } else {
-        console.log('✅ [AuthProvider] Logout realizado com sucesso');
-        toast({
-          title: "Logout realizado",
-          description: "Você foi desconectado com sucesso.",
-        });
+      // Log security event
+      securityMonitor.logEvent({
+        type: 'auth_failure',
+        message: 'User signed out',
+        details: { userId: currentSession?.user?.id, isAutoLogin: isAutoLoginSession }
+      });
+      
+      // Se há uma sessão válida e usuário autenticado, marcar como invalidada
+      if (currentSession?.access_token && currentSession?.user?.id) {
+        try {
+          await supabase
+            .from('invalidated_sessions')
+            .insert({
+              session_id: currentSession.access_token,
+              user_id: currentSession.user.id
+            });
+        } catch (invalidateError: any) {
+          console.log('Erro ao invalidar sessão:', invalidateError.message);
+          // Continua com o logout mesmo se falhar ao invalidar
+        }
       }
-    } catch (error) {
-      console.error('🔐 [AuthProvider] Erro inesperado no logout:', error);
-    } finally {
-      setLoading(false);
+      
+      // Clear any cached admin status
+      sessionStorage.removeItem('isAdmin');
+      
+      // Limpar flag de auto-login se existir
+      if (isAutoLoginSession) {
+        localStorage.removeItem('admin_auto_login_session');
+      }
+      
+      // Tentar logout no servidor, mas não falhar se a sessão não existir
+      try {
+        await supabase.auth.signOut();
+      } catch (serverError: any) {
+        // Para sessões de auto-login ou sessões inválidas, o servidor pode não reconhecer
+        console.log('Logout do servidor falhou (esperado para auto-login):', serverError.message);
+      }
+      
+      // Sempre limpar estado local independentemente do resultado do servidor
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
+      
+      toast({
+        title: "Logout realizado com sucesso!",
+      });
+    } catch (error: any) {
+      // Em caso de erro geral, ainda fazer limpeza local
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
+      
+      toast({
+        title: "Logout realizado com sucesso!",
+      });
     }
   };
 
-  const value = {
-    user,
-    session,
-    loading,
-    isAdmin,
-    isPro,
-    profile,
-    signIn,
-    signUp,
-    signOut,
-    isAuthenticated: !!user,
-    refreshProfile,
+  const invalidateSession = async (sessionId: string) => {
+    try {
+      if (!session) return;
+      
+      await supabase.from('invalidated_sessions').insert({
+        user_id: session.user.id,
+        session_id: sessionId
+      });
+      
+      securityMonitor.logEvent({
+        type: 'privilege_escalation',
+        message: 'Session manually invalidated',
+        details: { sessionId }
+      });
+      
+      // Force sign out if it's the current session
+      if (session.access_token === sessionId) {
+        await signOut();
+      }
+    } catch (error: any) {
+      console.error('Error invalidating session:', error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      session,
+      isAdmin,
+      loading,
+      signIn,
+      signUp,
+      signOut,
+      invalidateSession,
+    }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
+};

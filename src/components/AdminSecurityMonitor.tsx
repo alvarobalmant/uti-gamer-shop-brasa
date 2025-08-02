@@ -27,7 +27,7 @@ interface ActiveSession {
 }
 
 export const AdminSecurityMonitor: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, invalidateSession } = useAuth();
   const [securityLogs, setSecurityLogs] = useState<SecurityLog[]>([]);
   const [activeSessions, setActiveSessions] = useState<ActiveSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +84,26 @@ export const AdminSecurityMonitor: React.FC = () => {
     };
   }, [isAdmin]);
 
+  const handleInvalidateSession = async (sessionId: string) => {
+    try {
+      await invalidateSession(sessionId);
+      toast.success('Session invalidated successfully');
+      
+      // Refresh sessions list
+      const { data: sessions } = await supabase
+        .from('invalidated_sessions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (sessions) {
+        setActiveSessions(sessions);
+      }
+    } catch (error) {
+      console.error('Error invalidating session:', error);
+      toast.error('Failed to invalidate session');
+    }
+  };
 
   const getActionIcon = (actionType: string) => {
     switch (actionType) {

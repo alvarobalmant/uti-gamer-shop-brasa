@@ -14,7 +14,6 @@ import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
 import ProductSpecificationsTable from '../MainContent/ProductSpecificationsTable';
 import ProductDescriptionExpandable from '../MainContent/ProductDescriptionExpandable';
 import ProductFAQSection from '../MainContent/ProductFAQSection';
-import StorePickupBadge from '../MainContent/StorePickupBadge';
 
 interface ProductMainContentProps {
   product: Product;
@@ -36,6 +35,10 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
 
   // Combinar imagem principal com imagens adicionais
   const allImages = [product.image, ...(product.additional_images || [])].filter(Boolean);
+
+  // Mock de avaliações
+  const rating = 4.8;
+  const reviewCount = 127;
 
   const handleImageClick = (index: number) => {
     setCurrentImageIndex(index);
@@ -99,7 +102,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
       <div className="space-y-4">
         {/* Imagem Principal */}
         <div className="relative group">
-          <div className="aspect-square bg-white rounded-lg overflow-hidden relative">
+          <div className="aspect-square bg-white rounded-lg overflow-hidden border border-gray-200 relative">
             <img
               src={allImages[currentImageIndex]}
               alt={product.name}
@@ -177,9 +180,13 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
   if (layout === 'product-info') {
     return (
       <div className="space-y-6">
-        {/* Retirada na Loja e Social Proof */}
+        {/* Status e Social Proof */}
         <div className="flex items-center justify-between">
-          <StorePickupBadge />
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary" className="bg-green-100 text-green-800 font-medium">
+              Em estoque
+            </Badge>
+          </div>
           <div className="flex items-center gap-2">
             <FavoriteButton productId={product.id} size="sm" />
             <Button variant="outline" size="sm" onClick={handleShare}>
@@ -193,6 +200,26 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
           <h1 className="text-3xl font-bold text-gray-900 leading-tight mb-3">
             {product.name}
           </h1>
+          
+          {/* Avaliações */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-5 h-5 ${
+                    i < Math.floor(rating) 
+                      ? 'text-yellow-400 fill-current' 
+                      : 'text-gray-300'
+                  }`}
+                />
+              ))}
+              <span className="ml-2 text-lg font-semibold text-gray-900">{rating}</span>
+            </div>
+            <button className="text-sm text-blue-600 hover:underline">
+              ({reviewCount} avaliações)
+            </button>
+          </div>
         </div>
 
         {/* PREÇOS - ÚNICO E CORRETO */}
@@ -201,7 +228,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
             <span className="text-sm text-gray-500 line-through">
               R$ {(product.price * 1.2).toFixed(2).replace('.', ',')}
             </span>
-            <span className="text-3xl font-semibold text-gray-900">
+            <span className="text-3xl font-bold text-gray-900">
               R$ {product.price.toFixed(2).replace('.', ',')}
             </span>
             <Badge className="bg-red-600 text-white">

@@ -1444,31 +1444,31 @@ export type Database = {
       }
       profiles: {
         Row: {
-          avatar_url: string | null
           created_at: string
           email: string | null
           id: string
+          is_pro_member: boolean | null
           name: string | null
+          pro_expires_at: string | null
           role: string
-          updated_at: string
         }
         Insert: {
-          avatar_url?: string | null
           created_at?: string
           email?: string | null
           id: string
+          is_pro_member?: boolean | null
           name?: string | null
+          pro_expires_at?: string | null
           role?: string
-          updated_at?: string
         }
         Update: {
-          avatar_url?: string | null
           created_at?: string
           email?: string | null
           id?: string
+          is_pro_member?: boolean | null
           name?: string | null
+          pro_expires_at?: string | null
           role?: string
-          updated_at?: string
         }
         Relationships: []
       }
@@ -1590,6 +1590,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "coin_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redemption_codes_redeemed_by_admin_fkey"
+            columns: ["redeemed_by_admin"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2120,6 +2127,42 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          discount_percentage: number
+          duration_months: number
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number
+          duration_months: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number
+          duration_months?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           created_at: string
@@ -2218,90 +2261,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_accounts: {
-        Row: {
-          account_status: string | null
-          address: Json | null
-          birth_date: string | null
-          created_at: string
-          email_verified: boolean | null
-          id: string
-          last_login_at: string | null
-          phone: string | null
-          phone_verified: boolean | null
-          preferences: Json | null
-          updated_at: string
-          username: string | null
-        }
-        Insert: {
-          account_status?: string | null
-          address?: Json | null
-          birth_date?: string | null
-          created_at?: string
-          email_verified?: boolean | null
-          id: string
-          last_login_at?: string | null
-          phone?: string | null
-          phone_verified?: boolean | null
-          preferences?: Json | null
-          updated_at?: string
-          username?: string | null
-        }
-        Update: {
-          account_status?: string | null
-          address?: Json | null
-          birth_date?: string | null
-          created_at?: string
-          email_verified?: boolean | null
-          id?: string
-          last_login_at?: string | null
-          phone?: string | null
-          phone_verified?: boolean | null
-          preferences?: Json | null
-          updated_at?: string
-          username?: string | null
-        }
-        Relationships: []
-      }
-      user_coins: {
-        Row: {
-          balance: number
-          created_at: string
-          id: string
-          last_daily_login: string | null
-          login_streak: number | null
-          streak_multiplier: number | null
-          total_earned: number
-          total_spent: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          balance?: number
-          created_at?: string
-          id?: string
-          last_daily_login?: string | null
-          login_streak?: number | null
-          streak_multiplier?: number | null
-          total_earned?: number
-          total_spent?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          balance?: number
-          created_at?: string
-          id?: string
-          last_daily_login?: string | null
-          login_streak?: number | null
-          streak_multiplier?: number | null
-          total_earned?: number
-          total_spent?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_favorites: {
         Row: {
           created_at: string | null
@@ -2336,81 +2295,228 @@ export type Database = {
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
           },
+          {
+            foreignKeyName: "user_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      user_sessions: {
+      user_savings: {
+        Row: {
+          created_at: string | null
+          id: string
+          original_price: number
+          paid_price: number
+          product_id: string
+          purchase_date: string | null
+          savings_amount: number
+          savings_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          original_price: number
+          paid_price: number
+          product_id: string
+          purchase_date?: string | null
+          savings_amount: number
+          savings_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          original_price?: number
+          paid_price?: number
+          product_id?: string
+          purchase_date?: string | null
+          savings_amount?: number
+          savings_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_savings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_savings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_product_with_tags"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "user_savings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_streaks: {
         Row: {
           created_at: string
-          device_info: Json | null
-          expires_at: string | null
+          current_streak: number
           id: string
-          ip_address: unknown | null
-          is_active: boolean | null
-          last_activity_at: string | null
-          session_token: string
-          user_agent: string | null
+          last_login_date: string | null
+          longest_streak: number
+          streak_multiplier: number
+          updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
-          device_info?: Json | null
-          expires_at?: string | null
+          current_streak?: number
           id?: string
-          ip_address?: unknown | null
-          is_active?: boolean | null
-          last_activity_at?: string | null
-          session_token: string
-          user_agent?: string | null
+          last_login_date?: string | null
+          longest_streak?: number
+          streak_multiplier?: number
+          updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
-          device_info?: Json | null
-          expires_at?: string | null
+          current_streak?: number
           id?: string
-          ip_address?: unknown | null
-          is_active?: boolean | null
-          last_activity_at?: string | null
-          session_token?: string
-          user_agent?: string | null
+          last_login_date?: string | null
+          longest_streak?: number
+          streak_multiplier?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
       }
       user_subscriptions: {
         Row: {
-          auto_renew: boolean | null
           created_at: string
-          expires_at: string | null
+          end_date: string
           id: string
-          payment_method: string | null
-          starts_at: string | null
-          subscription_metadata: Json | null
-          subscription_type: string
+          plan_id: string
+          start_date: string
+          status: string
           updated_at: string
           user_id: string
         }
         Insert: {
-          auto_renew?: boolean | null
           created_at?: string
-          expires_at?: string | null
+          end_date: string
           id?: string
-          payment_method?: string | null
-          starts_at?: string | null
-          subscription_metadata?: Json | null
-          subscription_type?: string
+          plan_id: string
+          start_date?: string
+          status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
-          auto_renew?: boolean | null
           created_at?: string
-          expires_at?: string | null
+          end_date?: string
           id?: string
-          payment_method?: string | null
-          starts_at?: string | null
-          subscription_metadata?: Json | null
-          subscription_type?: string
+          plan_id?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_subscriptions_plan_id"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_user_subscriptions_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usuarios: {
+        Row: {
+          created_at: string
+          data_cadastro: string
+          data_expiracao: string | null
+          desconto: number | null
+          email: string
+          id: string
+          nome: string | null
+          papel: string
+          plano: string | null
+          status_assinatura: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_cadastro?: string
+          data_expiracao?: string | null
+          desconto?: number | null
+          email: string
+          id?: string
+          nome?: string | null
+          papel?: string
+          plano?: string | null
+          status_assinatura?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_cadastro?: string
+          data_expiracao?: string | null
+          desconto?: number | null
+          email?: string
+          id?: string
+          nome?: string | null
+          papel?: string
+          plano?: string | null
+          status_assinatura?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      uti_coins: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_earned: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_spent?: number
           updated_at?: string
           user_id?: string
         }
@@ -2568,15 +2674,6 @@ export type Database = {
         Args: { duration_minutes: number }
         Returns: Json
       }
-      create_user_account: {
-        Args: {
-          p_user_id: string
-          p_name: string
-          p_email: string
-          p_username?: string
-        }
-        Returns: undefined
-      }
       debug_column_references: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -2647,10 +2744,6 @@ export type Database = {
       }
       is_email_confirmed: {
         Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_pro_active: {
-        Args: { p_user_id?: string }
         Returns: boolean
       }
       is_user_admin: {
