@@ -51,7 +51,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       const { data: coinsData, error: coinsError } = await retrySupabaseQuery(
         async () => {
           return await supabase
-            .from('uti_coins')
+            .from('user_coins')
             .select('*')
             .eq('user_id', user.id)
             .single();
@@ -189,7 +189,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
         {
           event: '*',
           schema: 'public',
-          table: 'uti_coins',
+          table: 'user_coins',
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {

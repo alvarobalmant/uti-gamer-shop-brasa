@@ -42,7 +42,8 @@ const staggerContainer = {
 const UTIPro = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { plans, userSubscription, usuario, loading, createSubscription, cancelSubscription, hasActiveSubscription } = useSubscriptions();
+  const subscriptionData = useSubscriptions();
+  const { plans, userSubscription, usuario, loading, createSubscription, cancelSubscription, hasActiveSubscription } = subscriptionData;
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
 
@@ -52,20 +53,14 @@ const UTIPro = () => {
       return;
     }
     setProcessingPlan(planId);
-    const success = await createSubscription(planId);
+    await createSubscription();
     setTimeout(() => {
         setProcessingPlan(null);
-        if (!success) {
-             console.error("Subscription failed");
-        }
-    }, 1500); 
+    }, 1500);
   };
 
   const handleCancel = async () => {
-    const success = await cancelSubscription();
-    if (success) {
-      // Handle success
-    }
+    await cancelSubscription();
   };
 
   const formatPrice = (price: number) => {

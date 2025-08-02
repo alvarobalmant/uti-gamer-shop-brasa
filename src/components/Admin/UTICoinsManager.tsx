@@ -42,8 +42,7 @@ export const UTICoinsManager = () => {
       // Buscar dados de moedas dos usuários
       const { data: coinsData, error: coinsError } = await supabase
         .from('user_coins')
-        .select('*')
-        .order('balance', { ascending: false });
+        .select('*');
 
       if (coinsError) {
         console.error('Erro ao carregar dados de moedas:', coinsError);
@@ -59,6 +58,12 @@ export const UTICoinsManager = () => {
 
       const formattedUsers = coinsData?.map(coin => ({
         ...coin,
+        balance: coin.balance || 0,
+        total_earned: coin.total_earned || 0,
+        total_spent: coin.total_spent || 0,
+        login_streak: coin.login_streak || 0,
+        streak_multiplier: coin.streak_multiplier || 1,
+        last_daily_login: coin.last_daily_login,
         profile: profilesData?.find(profile => profile.id === coin.user_id) || {
           name: 'Usuário sem nome',
           email: 'Email não encontrado'
@@ -287,7 +292,7 @@ export const UTICoinsManager = () => {
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:bg-muted/50'
                   }`}
-                  onClick={() => setSelectedUser(user.user_id)}
+                   onClick={() => setSelectedUser(user.user_id)}
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">

@@ -20,7 +20,7 @@ import ProductImageManager from '@/pages/Admin/ProductImageManager';
 import StorageManager from './StorageManager';
 import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
-import UTICoinsManager from './UTICoinsManager';
+import { UTICoinsManager } from './UTICoinsManager';
 import { EmailManager } from './EmailManager/EmailManager';
 import { AdminLoginManager } from './AdminLoginManager';
 import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';

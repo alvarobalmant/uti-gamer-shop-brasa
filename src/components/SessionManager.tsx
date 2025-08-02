@@ -1,37 +1,37 @@
 import { useEffect } from 'react';
-import { offlineTokenDetector } from '@/utils/offlineTokenDetector';
-import { sessionMonitor } from '@/utils/sessionMonitor';
-import { jwtErrorInterceptor } from '@/utils/jwtErrorInterceptor';
+import { 
+  startOfflineTokenDetection, 
+  stopOfflineTokenDetection 
+} from '@/utils/offlineTokenDetector';
+import { 
+  startSessionMonitoring, 
+  stopSessionMonitoring 
+} from '@/utils/sessionMonitor';
+import { 
+  setupJWTErrorInterceptor, 
+  removeJWTErrorInterceptor 
+} from '@/utils/jwtErrorInterceptor';
 import SessionRecoveryToast from './ErrorMonitor/SessionRecoveryToast';
 
 /**
- * SessionManager: Coordena todos os sistemas de monitoramento de sessão
- * - Detector de tokens expirados offline
- * - Monitor de saúde da sessão
- * - Interceptador de erros JWT
- * - Toast de recuperação de sessão
+ * SessionManager: Coordena todos os sistemas de monitoramento de sessão (stub implementation)
  */
 const SessionManager: React.FC = () => {
   useEffect(() => {
-    console.log('🔧 [SessionManager] Initializing comprehensive session management');
+    console.log('🔧 [SessionManager] Initializing stub session management');
     
-    // O offlineTokenDetector já é inicializado automaticamente no construtor
-    // O sessionMonitor é inicializado no useAuth
-    // O jwtErrorInterceptor é inicializado no useAuth
+    // Initialize stub implementations
+    startOfflineTokenDetection();
+    startSessionMonitoring();
+    setupJWTErrorInterceptor();
     
-    // Log do status inicial
-    const offlineStatus = offlineTokenDetector.getOfflineStatus();
-    const sessionHealth = sessionMonitor.getHealth();
-    
-    console.log('📊 [SessionManager] Initial status:', {
-      online: offlineStatus.isOnline,
-      sessionHealthy: sessionHealth.isHealthy,
-      interceptorActive: jwtErrorInterceptor.isActive()
-    });
+    console.log('📊 [SessionManager] Stub session management initialized');
 
     return () => {
       console.log('🔧 [SessionManager] Session management cleanup');
-      // Cleanup é feito pelos próprios componentes
+      stopOfflineTokenDetection();
+      stopSessionMonitoring();
+      removeJWTErrorInterceptor();
     };
   }, []);
 

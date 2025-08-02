@@ -2,119 +2,63 @@ import React, { useEffect, useState } from 'react';
 import { AlertTriangle, RefreshCw, X, WifiOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { sessionMonitor } from '@/utils/sessionMonitor';
-import { jwtErrorInterceptor } from '@/utils/jwtErrorInterceptor';
-import { offlineTokenDetector } from '@/utils/offlineTokenDetector';
+import { 
+  startSessionMonitoring, 
+  stopSessionMonitoring, 
+  isSessionValid 
+} from '@/utils/sessionMonitor';
+import { 
+  setupJWTErrorInterceptor, 
+  removeJWTErrorInterceptor 
+} from '@/utils/jwtErrorInterceptor';
+import { 
+  startOfflineTokenDetection, 
+  stopOfflineTokenDetection, 
+  isTokenValid 
+} from '@/utils/offlineTokenDetector';
 
-// Toast-like component for session recovery notifications
+// Toast-like component for session recovery notifications (stub implementation)
 const SessionRecoveryToast: React.FC = () => {
   const [show, setShow] = useState(false);
   const [recovering, setRecovering] = useState(false);
-  const [sessionHealth, setSessionHealth] = useState(sessionMonitor.getHealth());
-  const [offlineStatus, setOfflineStatus] = useState(offlineTokenDetector.getOfflineStatus());
 
   useEffect(() => {
-    // Check session health periodically
-    const checkHealth = () => {
-      const health = sessionMonitor.getHealth();
-      const offline = offlineTokenDetector.getOfflineStatus();
-      
-      setSessionHealth(health);
-      setOfflineStatus(offline);
-      
-      // Show toast if session needs attention
-      const needsAttention = sessionMonitor.needsAttention();
-      if (needsAttention && !show) {
-        setShow(true);
-      }
+    // Initialize stub monitoring
+    startSessionMonitoring();
+    setupJWTErrorInterceptor();
+    startOfflineTokenDetection();
+
+    return () => {
+      stopSessionMonitoring();
+      removeJWTErrorInterceptor();
+      stopOfflineTokenDetection();
     };
-
-    // Initial check
-    checkHealth();
-
-    // Check every 10 seconds
-    const interval = setInterval(checkHealth, 10000);
-
-    return () => clearInterval(interval);
-  }, [show]);
+  }, []);
 
   const handleManualRecovery = async () => {
     setRecovering(true);
     
     try {
-      console.log('🔄 [SessionRecoveryToast] Manual recovery initiated');
+      console.log('🔄 [SessionRecoveryToast] Manual recovery initiated (stub)');
       
-      // Try offline token validation first
-      const validationSuccess = await offlineTokenDetector.forceValidation();
+      // Simulate recovery process
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (!validationSuccess) {
-        console.log('🔄 [SessionRecoveryToast] Validation failed, reloading page');
-        // Force a page reload to reset the entire application state
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      } else {
-        console.log('✅ [SessionRecoveryToast] Session validated successfully');
-        setRecovering(false);
-        setShow(false);
-        sessionMonitor.resetMetrics();
-      }
+      setRecovering(false);
+      setShow(false);
       
     } catch (error) {
       console.error('❌ [SessionRecoveryToast] Manual recovery failed:', error);
-      // Fallback to page reload
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      setRecovering(false);
     }
   };
 
   const handleDismiss = () => {
     setShow(false);
-    sessionMonitor.resetMetrics();
   };
 
-  // Helper functions for dynamic content
-  const getToastTitle = (): string => {
-    const reason = sessionMonitor.getAttentionReason();
-    if (reason === 'ghost-state') {
-      return 'Sessão Inválida Detectada';
-    }
-    if (offlineStatus.wasOffline) {
-      return 'Sessão Expirou Offline';
-    }
-    return 'Problema de Sessão Detectado';
-  };
-
-  const getToastMessage = (): string => {
-    const reason = sessionMonitor.getAttentionReason();
-    if (reason === 'ghost-state') {
-      return 'Você aparenta estar logado mas não tem permissões válidas.';
-    }
-    if (offlineStatus.wasOffline) {
-      return `Sua sessão expirou enquanto você estava offline por ${Math.round(offlineStatus.offlineDuration / 60000)} minutos.`;
-    }
-    if (sessionHealth.consecutiveFailures >= 3) {
-      return 'Múltiplas falhas de autenticação detectadas.';
-    }
-    return 'Sua sessão pode estar expirada ou com problemas.';
-  };
-
-  const getActionIcon = () => {
-    if (offlineStatus.wasOffline) {
-      return <WifiOff className="h-3 w-3 mr-1" />;
-    }
-    return <RefreshCw className="h-3 w-3 mr-1" />;
-  };
-
-  const getActionText = (): string => {
-    if (offlineStatus.wasOffline) {
-      return 'Validar Sessão';
-    }
-    return 'Recuperar Sessão';
-  };
-
-  if (!show || !sessionMonitor.needsAttention()) {
+  // Don't show toast in stub implementation
+  if (!show) {
     return null;
   }
 
@@ -126,10 +70,10 @@ const SessionRecoveryToast: React.FC = () => {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <p className="font-medium mb-2">
-                {getToastTitle()}
+                Sessão em Manutenção
               </p>
               <p className="text-sm text-amber-700 mb-3">
-                {getToastMessage()}
+                Sistema de autenticação sendo reconstruído.
               </p>
               
               <div className="flex gap-2">
@@ -147,8 +91,8 @@ const SessionRecoveryToast: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      {getActionIcon()}
-                      {getActionText()}
+                      <RefreshCw className="h-3 w-3 mr-1" />
+                      Validar
                     </>
                   )}
                 </Button>
@@ -174,23 +118,6 @@ const SessionRecoveryToast: React.FC = () => {
           </div>
         </AlertDescription>
       </Alert>
-      
-      {/* Session health details for debugging */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-600">
-          <div>Falhas consecutivas: {sessionHealth.consecutiveFailures}</div>
-          <div>Última verificação: {new Date(sessionHealth.lastChecked).toLocaleTimeString()}</div>
-          <div>Interceptor ativo: {jwtErrorInterceptor.isActive() ? 'Sim' : 'Não'}</div>
-          <div>Motivo: {sessionMonitor.getAttentionReason()}</div>
-          <div>Online: {offlineStatus.isOnline ? 'Sim' : 'Não'}</div>
-          {offlineStatus.wasOffline && (
-            <div>Offline por: {Math.round(offlineStatus.offlineDuration / 1000)}s</div>
-          )}
-          {sessionHealth.expiresIn !== undefined && (
-            <div>Token expira em: {Math.round(sessionHealth.expiresIn / 60)}min</div>
-          )}
-        </div>
-      )}
     </div>
   );
 };

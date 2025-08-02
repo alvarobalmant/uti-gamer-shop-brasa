@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { sessionMonitor } from './sessionMonitor';
+import { startSessionMonitoring } from './sessionMonitor';
 
 export interface RetryConfig {
   maxRetries?: number;
@@ -101,7 +101,6 @@ export async function retryWithAuth<T>(
       
       if (attempt > 0) {
         console.log(`✅ [RetryAuth:${context}] Success after ${attempt} retries`);
-        sessionMonitor.logRetrySuccess(context, attempt);
       }
       
       return {
@@ -116,16 +115,8 @@ export async function retryWithAuth<T>(
       
       const isJWTError = isJWTExpiredError(error);
       
-      // Log JWT expiration to session monitor
-      if (isJWTError) {
-        sessionMonitor.logJWTExpiration(context);
-      }
-      
       // If it's not a JWT error or we're on the last attempt, don't retry
       if (!isJWTError || attempt === maxRetries) {
-        if (isJWTError) {
-          sessionMonitor.logRetryFailure(context);
-        }
         break;
       }
       
@@ -136,7 +127,6 @@ export async function retryWithAuth<T>(
       
       if (!refreshSuccess) {
         console.error(`❌ [RetryAuth:${context}] Token refresh failed, aborting retries`);
-        sessionMonitor.logRetryFailure(context);
         break;
       }
       
