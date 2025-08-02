@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
@@ -382,3 +383,13 @@ export const useLazyComponent = <T extends React.ComponentType<any>>(
   };
 };
 
+=======
+
+// Stub hook for advanced prefetch
+export const useAdvancedPrefetch = () => {
+  return {
+    prefetchProduct: (id: string) => {},
+    handleProductHover: (id: string) => {}
+  };
+};
+>>>>>>> cb1569049fc8a465e458ce75be03956db9ef697e

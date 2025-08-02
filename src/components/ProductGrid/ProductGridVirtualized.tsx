@@ -244,4 +244,3 @@ const ProductGridVirtualized: React.FC<ProductGridVirtualizedProps> = ({
 };
 
 export default ProductGridVirtualized;
-

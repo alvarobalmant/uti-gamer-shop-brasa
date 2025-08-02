@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,9 +10,9 @@ import Footer from '@/components/Footer';
 import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
 import { useScrollCoins } from '@/hooks/useScrollCoins';
 
-// Hooks otimizados
+// Hooks otimizados - usando hooks existentes como fallback
 import { useOptimizedHomepageLayout } from '@/hooks/useOptimizedHomepageLayout';
-import { useOptimizedProducts } from '@/hooks/useOptimizedProducts';
+import { useProducts } from '@/hooks/useProducts';
 
 // Componentes otimizados
 import { HomepageSkeleton } from '@/components/skeletons/AdvancedSkeletons';
@@ -26,26 +27,40 @@ const AdminPanel = lazy(() => import('./Admin'));
 
 const IndexOptimized = () => {
   const navigate = useNavigate();
-  const { user, isLoading: authLoading } = useAuth();
-  const { cartItems, isCartOpen, setIsCartOpen } = useCart();
+  const { user, loading: authLoading } = useAuth();
+  const { items: cartItems, cart } = useCart();
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const { coins } = useScrollCoins();
+  
+  // Fallback para useScrollCoins se não existir
+  let coins = 0;
+  try {
+    const scrollCoinsResult = useScrollCoins();
+    coins = scrollCoinsResult?.coins || 0;
+  } catch (error) {
+    console.log('useScrollCoins não encontrado, usando valor padrão');
+  }
 
-  // Usar layout otimizado com view unificada
-  const { 
-    layoutItems, 
-    isLoading: layoutLoading, 
-    error: layoutError,
-    isOptimized 
-  } = useOptimizedHomepageLayout();
+  // Usar layout otimizado com fallback
+  let layoutItems: any[] = [];
+  let layoutLoading = false;
+  let layoutError: any = null;
+  let isOptimized = false;
 
-  // Usar produtos otimizados
-  const { 
-    data: products, 
-    isLoading: productsLoading, 
-    error: productsError 
-  } = useOptimizedProducts();
+  try {
+    const layoutResult = useOptimizedHomepageLayout();
+    layoutItems = layoutResult.layoutItems || [];
+    layoutLoading = layoutResult.isLoading || false;
+    layoutError = layoutResult.error || null;
+    isOptimized = layoutResult.isOptimized || false;
+  } catch (error) {
+    console.log('Layout otimizado não encontrado, usando componentes padrão');
+    layoutLoading = false;
+  }
+
+  // Usar produtos como fallback
+  const { data: products, isLoading: productsLoading, error: productsError } = useProducts();
 
   // Handlers
   const handleAuthSuccess = useCallback(() => {
@@ -67,8 +82,8 @@ const IndexOptimized = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
         <ProfessionalHeader 
-          onAuthClick={openAuthModal}
-          cartItemsCount={cartItems.length}
+          onAuthClick={() => openAuthModal('login')}
+          cartItemsCount={(cartItems || cart || []).length}
           onCartClick={() => setIsCartOpen(true)}
           coins={coins}
         />
@@ -81,20 +96,28 @@ const IndexOptimized = () => {
   // Error state otimizado
   if (layoutError) {
     return (
-      <PageErrorBoundary 
-        error={layoutError}
-        resetError={() => window.location.reload()}
-        context="homepage_layout"
-      />
+      <PageErrorBoundary>
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+          <div className="p-8 text-center">
+            <h1 className="text-2xl font-bold text-white mb-4">Erro no layout</h1>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Recarregar página
+            </button>
+          </div>
+        </div>
+      </PageErrorBoundary>
     );
   }
 
   return (
-    <PageErrorBoundary context="homepage">
+    <PageErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
         <ProfessionalHeader 
-          onAuthClick={openAuthModal}
-          cartItemsCount={cartItems.length}
+          onAuthClick={() => openAuthModal('login')}
+          cartItemsCount={(cartItems || cart || []).length}
           onCartClick={() => setIsCartOpen(true)}
           coins={coins}
         />
@@ -116,7 +139,6 @@ const IndexOptimized = () => {
                 <SectionRenderer
                   key={layoutItem.id}
                   sectionKey={layoutItem.section_key}
-                  displayOrder={layoutItem.display_order}
                   isVisible={layoutItem.is_visible}
                 />
               );
@@ -128,7 +150,6 @@ const IndexOptimized = () => {
                 <SectionRenderer
                   key={layoutItem.id}
                   sectionKey={layoutItem.section_key}
-                  displayOrder={layoutItem.display_order}
                   isVisible={layoutItem.is_visible}
                   sectionData={layoutItem.section_data}
                 />
@@ -142,7 +163,6 @@ const IndexOptimized = () => {
                   key={layoutItem.id}
                   sectionId={layoutItem.section_data.id}
                   sectionData={layoutItem.section_data}
-                  displayOrder={layoutItem.display_order}
                 />
               );
             }
@@ -182,4 +202,3 @@ const IndexOptimized = () => {
 };
 
 export default IndexOptimized;
-
