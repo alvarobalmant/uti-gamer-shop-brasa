@@ -100,7 +100,7 @@ export const useCacheInvalidation = () => {
       queryKey,
       queryFn,
       staleTime: config.staleTime,
-      gcTime: config.gcTime,
+      cacheTime: config.cacheTime,
     });
     
     console.log(`⚡ Dados prefetch: ${queryKey.join('/')}`);
@@ -183,12 +183,10 @@ export const useCacheWithFallback = <T>(
     queryFn,
     type,
     {
-      meta: {
-        onSuccess: () => trackCacheHit(queryKey),
-        onError: (error: Error) => {
-          console.warn(`⚠️ Query error for ${queryKey.join('/')}:`, error);
-          trackCacheHit(queryKey);
-        }
+      onSuccess: () => trackCacheHit(queryKey),
+      onError: (error) => {
+        console.warn(`⚠️ Query error for ${queryKey.join('/')}:`, error);
+        trackCacheHit(queryKey);
       }
     }
   );

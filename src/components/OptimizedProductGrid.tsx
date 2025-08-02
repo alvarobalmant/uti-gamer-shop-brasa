@@ -2,7 +2,7 @@ import React, { memo, useMemo, useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { useOptimizedProducts } from '@/hooks/useOptimizedProducts';
 import { ProductGridSkeleton, ProductSectionSkeleton } from '@/components/SkeletonLoading';
-import { OptimizedImage } from '@/components/OptimizedImage';
+import OptimizedImage from '@/components/OptimizedImage';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart, ShoppingCart, Eye } from 'lucide-react';
@@ -191,8 +191,19 @@ const OptimizedProductGrid: React.FC<OptimizedProductGridProps> = ({
   const { addToCart } = useCart();
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
-  // Use the basic optimized products hook
-  const { data: products, isLoading, error } = useOptimizedProducts();
+  const {
+    products,
+    isLoading,
+    hasNextPage,
+    lastProductElementRef,
+    loadMore,
+  } = useOptimizedProducts({
+    category,
+    limit,
+    enableInfiniteScroll,
+    enableVirtualization,
+    prefetchNext: true,
+  });
 
   // Grid classes baseado no número de colunas
   const gridClasses = useMemo(() => {
@@ -231,15 +242,8 @@ const OptimizedProductGrid: React.FC<OptimizedProductGridProps> = ({
     });
   }, [user]);
 
-  // Filter products by category if specified
-  const filteredProducts = useMemo(() => {
-    if (!products) return [];
-    if (!category) return products.slice(0, limit);
-    return products.filter(p => p.category === category).slice(0, limit);
-  }, [products, category, limit]);
-
   // Loading state
-  if (isLoading && (!products || products.length === 0)) {
+  if (isLoading && products.length === 0) {
     return (
       <div className={className}>
         {showTitle && (
@@ -253,7 +257,7 @@ const OptimizedProductGrid: React.FC<OptimizedProductGridProps> = ({
   }
 
   // Empty state
-  if (!isLoading && filteredProducts.length === 0) {
+  if (!isLoading && products.length === 0) {
     return (
       <div className={cn('text-center py-12', className)}>
         <div className="text-gray-500">
@@ -284,22 +288,51 @@ const OptimizedProductGrid: React.FC<OptimizedProductGridProps> = ({
 
       {/* Grid de produtos */}
       <div className={gridClasses}>
-        {filteredProducts.map((product, index) => (
-          <OptimizedProductCard
-            key={product.id}
-            product={product}
-            onProductClick={onProductClick}
-            onAddToCart={handleAddToCart}
-            onToggleFavorite={handleToggleFavorite}
-            isFavorite={favorites.has(product.id)}
-          />
-        ))}
+        {products.map((product, index) => {
+          const isLast = index === products.length - 1;
+          
+          return (
+            <div
+              key={product.id}
+              ref={enableInfiniteScroll && isLast ? lastProductElementRef : undefined}
+            >
+              <OptimizedProductCard
+                product={product}
+                onProductClick={onProductClick}
+                onAddToCart={handleAddToCart}
+                onToggleFavorite={handleToggleFavorite}
+                isFavorite={favorites.has(product.id)}
+              />
+            </div>
+          );
+        })}
       </div>
 
-      {/* Loading mais produtos */}
-      {isLoading && filteredProducts.length > 0 && (
+      {/* Loading mais produtos (infinite scroll) */}
+      {enableInfiniteScroll && isLoading && products.length > 0 && (
         <div className="mt-8">
           <ProductGridSkeleton count={4} columns={columns} />
+        </div>
+      )}
+
+      {/* Botão carregar mais (se não for infinite scroll) */}
+      {!enableInfiniteScroll && hasNextPage && !isLoading && (
+        <div className="text-center mt-8">
+          <Button
+            onClick={loadMore}
+            variant="outline"
+            size="lg"
+            className="min-w-[200px]"
+          >
+            Carregar Mais Produtos
+          </Button>
+        </div>
+      )}
+
+      {/* Indicador de fim */}
+      {!hasNextPage && products.length > 0 && (
+        <div className="text-center mt-8 text-gray-500 text-sm">
+          Todos os produtos foram carregados
         </div>
       )}
     </div>

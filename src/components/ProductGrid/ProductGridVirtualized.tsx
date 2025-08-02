@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useProductsOptimized } from '@/contexts/ProductContextOptimized';
 import { ProductLight } from '@/hooks/useProducts/productApiOptimized';
-import { ProductCardOptimized } from '../ProductCardOptimized';
+import ProductCardOptimized from '../ProductCardOptimized';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';

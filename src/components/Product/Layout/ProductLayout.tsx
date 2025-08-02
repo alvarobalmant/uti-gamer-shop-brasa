@@ -98,7 +98,6 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
 
           {/* Seções inferiores - EXPANSÃO CIRÚRGICA APENAS DOS ELEMENTOS */}
           <div className="mt-12">
-<<<<<<< HEAD
             {/* Desktop: mantém o alinhamento com as colunas acima */}
             <div className="hidden lg:flex lg:gap-6">
               {/* Espaço alinhado com coluna 1 */}
@@ -115,16 +114,6 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
                 </div>
               </div>
             </div>
-=======
-          {/* Desktop: ocupa toda a largura das 3 colunas (coluna 1 + coluna 2 + coluna 3) */}
-          <div className="hidden lg:block">
-            <ProductMainContent 
-              product={product}
-              skuNavigation={skuNavigation}
-              layout="bottom-sections"
-            />
-          </div>
->>>>>>> 9efee4098109cf610aef4a8b1875ac5903775b5c
             
             {/* Mobile: largura total */}
             <div className="block lg:hidden">

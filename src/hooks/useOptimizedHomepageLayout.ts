@@ -60,7 +60,7 @@ export const useOptimizedHomepageLayout = () => {
     'layout', // 2 minutos de cache
     {
       staleTime: 2 * 60 * 1000, // 2 minutos
-      gcTime: 10 * 60 * 1000, // 10 minutos
+      cacheTime: 10 * 60 * 1000, // 10 minutos
     }
   );
 

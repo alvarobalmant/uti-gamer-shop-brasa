@@ -26,13 +26,11 @@ const AdminPanel = lazy(() => import('./Admin'));
 
 const IndexOptimized = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
-  const { cart, loading: cartLoading } = useCart();
+  const { user, isLoading: authLoading } = useAuth();
+  const { cartItems, isCartOpen, setIsCartOpen } = useCart();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  // Remove coins for now as useScrollCoins returns void
-  const coins = 0;
+  const { coins } = useScrollCoins();
 
   // Usar layout otimizado com view unificada
   const { 
@@ -69,9 +67,10 @@ const IndexOptimized = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
         <ProfessionalHeader 
-          onAuthClick={() => openAuthModal('login')}
-          cartItemsCount={cart.length}
+          onAuthClick={openAuthModal}
+          cartItemsCount={cartItems.length}
           onCartClick={() => setIsCartOpen(true)}
+          coins={coins}
         />
         <HomepageSkeleton />
         <Footer />
@@ -82,28 +81,22 @@ const IndexOptimized = () => {
   // Error state otimizado
   if (layoutError) {
     return (
-      <PageErrorBoundary>
-        <div className="p-8 text-center">
-          <h1 className="text-xl font-bold text-red-600 mb-4">Erro no Layout</h1>
-          <p className="text-gray-600 mb-4">Houve um problema ao carregar o layout da página.</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Recarregar Página
-          </button>
-        </div>
-      </PageErrorBoundary>
+      <PageErrorBoundary 
+        error={layoutError}
+        resetError={() => window.location.reload()}
+        context="homepage_layout"
+      />
     );
   }
 
   return (
-    <PageErrorBoundary>
+    <PageErrorBoundary context="homepage">
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
         <ProfessionalHeader 
-          onAuthClick={() => openAuthModal('login')}
-          cartItemsCount={cart.length}
+          onAuthClick={openAuthModal}
+          cartItemsCount={cartItems.length}
           onCartClick={() => setIsCartOpen(true)}
+          coins={coins}
         />
 
         {/* Indicador de otimização (apenas em dev) */}
@@ -123,6 +116,8 @@ const IndexOptimized = () => {
                 <SectionRenderer
                   key={layoutItem.id}
                   sectionKey={layoutItem.section_key}
+                  displayOrder={layoutItem.display_order}
+                  isVisible={layoutItem.is_visible}
                 />
               );
             }
@@ -133,6 +128,8 @@ const IndexOptimized = () => {
                 <SectionRenderer
                   key={layoutItem.id}
                   sectionKey={layoutItem.section_key}
+                  displayOrder={layoutItem.display_order}
+                  isVisible={layoutItem.is_visible}
                   sectionData={layoutItem.section_data}
                 />
               );
@@ -143,7 +140,9 @@ const IndexOptimized = () => {
               return (
                 <SpecialSectionRenderer
                   key={layoutItem.id}
-                  section={layoutItem.section_data}
+                  sectionId={layoutItem.section_data.id}
+                  sectionData={layoutItem.section_data}
+                  displayOrder={layoutItem.display_order}
                 />
               );
             }
@@ -169,6 +168,8 @@ const IndexOptimized = () => {
         <AuthModal
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
+          mode={authMode}
+          onSuccess={handleAuthSuccess}
         />
 
         <Cart 

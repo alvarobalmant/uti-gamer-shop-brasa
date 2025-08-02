@@ -303,6 +303,7 @@ export const OptimizedProductCard = memo((props: OptimizedProductCardProps) => (
   <ComponentErrorBoundary
     fallback={ProductErrorFallback}
     maxRetries={2}
+    level="component"
   >
     <OptimizedProductCardComponent {...props} />
   </ComponentErrorBoundary>

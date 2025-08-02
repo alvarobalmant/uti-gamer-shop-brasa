@@ -27,7 +27,7 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
   // Memoizar cálculos de preço
   const priceInfo = useMemo(() => {
     const currentPrice = product.price || 0;
-    const originalPrice = product.list_price || product.digital_price || currentPrice;
+    const originalPrice = product.original_price || currentPrice;
     const discount = originalPrice > currentPrice 
       ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
       : 0;
@@ -38,19 +38,19 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
       discount,
       hasDiscount: discount > 0,
     };
-  }, [product.price, product.list_price, product.digital_price]);
+  }, [product.price, product.original_price]);
 
   // Memoizar rating
   const ratingInfo = useMemo(() => {
     const rating = product.rating || 0;
-    const reviewCount = product.rating_count || 0;
+    const reviewCount = product.review_count || 0;
     
     return {
       rating,
       reviewCount,
       stars: Math.round(rating),
     };
-  }, [product.rating, product.rating_count]);
+  }, [product.rating, product.review_count]);
 
   // Handler para hover com prefetch
   const handleMouseEnter = useCallback(() => {
@@ -110,9 +110,9 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
         )}
         
         {/* Badge de estoque */}
-        {product.stock !== undefined && product.stock < 5 && product.stock > 0 && (
+        {product.stock_quantity !== undefined && product.stock_quantity < 5 && (
           <div className="absolute top-2 right-12 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-            Últimas {product.stock}
+            Últimas {product.stock_quantity}
           </div>
         )}
         
@@ -186,23 +186,23 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
           <div className="text-lg font-bold text-gray-900">
             {formatPrice(priceInfo.currentPrice)}
           </div>
-          {product.installment_options && (
+          {product.installments && (
             <div className="text-xs text-gray-600">
-              ou {product.installment_options}x sem juros
+              ou {product.installments.count}x de {formatPrice(product.installments.value)} sem juros
             </div>
           )}
         </div>
         
         {/* Badges de pagamento */}
         <div className="flex flex-wrap gap-1">
-          {product.pix_discount_percentage && (
+          {product.payment_methods?.includes('pix') && (
             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-              PIX -{product.pix_discount_percentage}%
+              PIX
             </span>
           )}
-          {product.installment_options && (
+          {product.payment_methods?.includes('credit') && (
             <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-              {product.installment_options}x
+              12x
             </span>
           )}
           {product.free_shipping && (
