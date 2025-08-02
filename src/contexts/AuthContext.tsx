@@ -5,9 +5,9 @@ import { useAuth as useSupabaseAuth } from '@/hooks/useAuth';
 interface AuthContextType {
   user: any;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  signIn?: (email: string, password: string) => Promise<void>;
+  signUp?: (email: string, password: string) => Promise<void>;
+  signOut?: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,17 +16,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const auth = useSupabaseAuth();
 
   const value: AuthContextType = {
-    user: auth.user,
-    loading: auth.loading,
-    signIn: async (email: string, password: string) => {
-      // Implementation would go here
-    },
-    signUp: async (email: string, password: string) => {
-      // Implementation would go here
-    },
-    signOut: async () => {
-      // Implementation would go here
-    }
+    user: auth.user || null,
+    loading: auth.loading || false,
   };
 
   return (

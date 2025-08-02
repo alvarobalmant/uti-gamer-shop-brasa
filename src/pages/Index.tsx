@@ -1,226 +1,113 @@
-import React, { useState, useCallback, useMemo, Suspense, lazy } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthModal } from '@/components/Auth/AuthModal';
-import Cart from '@/components/Cart';
-import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
-import ProductSkeleton from '@/components/ProductSkeleton';
-
+import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useIndexPage } from '@/hooks/useIndexPage';
-import SectionRenderer from '@/components/HomePage/SectionRenderer';
-import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
-import LoadingState from '@/components/HomePage/LoadingState';
-import ErrorState from '@/components/HomePage/ErrorState';
-import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
-import { useScrollCoins } from '@/hooks/useScrollCoins';
 
-// Lazy load AdminPanel para reduzir bundle inicial
-const AdminPanel = lazy(() => import('./Admin'));
+const Index = () => {
+  const { user, loading: authLoading } = useAuth();
+  const { items: cartItems = [] } = useCart();
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
-const Index = React.memo(() => {
-  const navigate = useNavigate();
-  const { user, isAdmin, signOut } = useAuth();
-  const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
-  const [showCart, setShowCart] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-
-  const {
-    products,
-    productsLoading,
-    layoutItems,
-    sections,
-    specialSections,
-    bannerData,
-    isLoading,
-    showErrorState,
-    sectionsLoading,
-    specialSectionsLoading,
-    handleRetryProducts
-  } = useIndexPage();
-
-  // Ativar sistema de ganho de moedas por scroll
-  useScrollCoins();
-
-  const handleAddToCart = useCallback((product: any, size?: string, color?: string) => {
-    addToCart(product, size, color);
-  }, [addToCart]);
-
-  const findSpecialSection = useCallback((key: string) => {
-    if (!key.startsWith('special_section_')) return null;
-    const id = key.replace('special_section_', '');
-    return specialSections.find(s => s.id === id);
-  }, [specialSections]);
-
-  const handleProductCardClick = useCallback(async (productId: string) => {
-    // Salvar posição atual antes de navegar
-    console.log('[Index] Salvando posição antes de navegar para produto:', productId);
-    const currentScrollY = window.scrollY;
-    console.log('[Index] Posição atual do scroll:', currentScrollY);
-    
-    // Salvar usando o manager diretamente para garantir que seja salvo
-    const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
-    scrollManager.savePosition('/', 'product-navigation');
-    
-    // Encontrar o produto clicado para verificar se é SKU
-    const clickedProduct = products.find(p => p.id === productId);
-    
-    if (clickedProduct) {
-      // Se é um produto SKU, navegar para a página de produto SKU
-      if (clickedProduct.product_type === 'sku' || clickedProduct.parent_product_id) {
-        navigate(`/produto/${productId}`);
-      }
-      // Se é um produto mestre, navegar para o primeiro SKU disponível ou para a página do mestre
-      else if (clickedProduct.product_type === 'master' || clickedProduct.is_master_product) {
-        navigate(`/produto/${productId}`);
-      }
-      // Produto simples (padrão)
-      else {
-        navigate(`/produto/${productId}`);
-      }
-    } else {
-      // Fallback para produtos não encontrados
-      navigate(`/produto/${productId}`);
-    }
-  }, [navigate, products]);
-
-  const handleCartOpen = useCallback(() => setShowCart(true), []);
-  const handleAuthOpen = useCallback(() => setShowAuthModal(true), []);
-  const handleAuthClose = useCallback(() => setShowAuthModal(false), []);
-
-  // Memoizar filtro de layout items visíveis
-  const visibleLayoutItems = useMemo(() => 
-    layoutItems.filter(item => item.is_visible), 
-    [layoutItems]
-  );
-
-  // Função para verificar se uma seção especial tem fundo desabilitado
-  const isSpecialSectionWithoutBackground = useCallback((sectionKey: string) => {
-    if (!sectionKey.startsWith('special_section_')) return false;
-    const specialSectionData = findSpecialSection(sectionKey);
-    if (!specialSectionData) return false;
-    
-    const config = specialSectionData.content_config as any;
-    const layoutSettings = config?.layout_settings || { show_background: true };
-    
-    return !layoutSettings.show_background;
-  }, [findSpecialSection]);
-
-  // Função para determinar se deve aplicar espaçamento reduzido
-  const shouldReduceSpacing = useCallback((currentIndex: number, items: typeof visibleLayoutItems) => {
-    if (currentIndex === 0) return false; // Primeira seção nunca reduz espaçamento superior
-    
-    const currentItem = items[currentIndex];
-    const previousItem = items[currentIndex - 1];
-    
-    if (!currentItem || !previousItem) return false;
-    
-    const currentIsSpecialWithoutBg = isSpecialSectionWithoutBackground(currentItem.section_key);
-    const previousIsSpecialWithoutBg = isSpecialSectionWithoutBackground(previousItem.section_key);
-    
-    // Aplicar espaçamento reduzido quando:
-    // 1. Seção atual é normal E anterior é seção especial sem fundo
-    // 2. Seção atual é seção especial sem fundo E anterior é seção especial sem fundo
-    // 3. Seção atual é seção especial sem fundo E anterior é seção normal
-    
-    if (!currentIsSpecialWithoutBg && previousIsSpecialWithoutBg) {
-      // Seção normal após seção especial sem fundo
-      return true;
-    }
-    
-    if (currentIsSpecialWithoutBg && previousIsSpecialWithoutBg) {
-      // Seção especial sem fundo após outra seção especial sem fundo
-      return true;
-    }
-    
-    if (currentIsSpecialWithoutBg && !previousIsSpecialWithoutBg) {
-      // Seção especial sem fundo após seção normal
-      return true;
-    }
-    
-    return false;
-  }, [isSpecialSectionWithoutBackground]);
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
+        <div className="text-white text-xl">Carregando...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background w-full overflow-x-hidden flex flex-col">
-      <ProfessionalHeader
-        onCartOpen={handleCartOpen}
-        onAuthOpen={handleAuthOpen}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+      {/* Header simples */}
+      <Header />
 
-      <main className="flex-grow">
-        {isLoading ? (
-          <LoadingState />
-        ) : showErrorState ? (
-          <ErrorState onRetry={handleRetryProducts} />
-        ) : (
-          visibleLayoutItems
-            .map((item, index) => {
-              const sectionKey = item.section_key;
-              const reduceSpacing = shouldReduceSpacing(index, visibleLayoutItems);
+      {/* Conteúdo principal */}
+      <main className="relative pt-20">
+        {/* Hero Section */}
+        <section className="py-20 text-center text-white">
+          <div className="container mx-auto px-4">
+            <h1 className="text-5xl font-bold mb-6">UTI dos Games</h1>
+            <p className="text-xl mb-8 opacity-90">
+              A loja de games mais tradicional de Colatina
+            </p>
+            <div className="text-lg text-gray-300">
+              Mais de 10 anos oferecendo os melhores produtos em games
+            </div>
+          </div>
+        </section>
 
-              if (sectionKey.startsWith('special_section_')) {
-                const specialSectionData = findSpecialSection(sectionKey);
-                if (specialSectionData && !specialSectionsLoading) {
-                  return (
-                    <SpecialSectionRenderer 
-                      key={sectionKey} 
-                      section={specialSectionData as any} 
-                      onProductCardClick={handleProductCardClick}
-                      reduceTopSpacing={reduceSpacing}
-                    />
-                  );
-                } else if (specialSectionsLoading) {
-                  return (
-                    <div key={sectionKey} className="py-8 bg-background">
-                      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="h-8 bg-gray-200 rounded w-48 animate-pulse relative overflow-hidden mb-6">
-                          <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer"></div>
-                        </div>
-                        <div className="overflow-hidden">
-                          <ProductSkeleton count={4} />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                } else {
-                  console.warn(`Special section data not found for key: ${sectionKey}`);
-                  return null;
-                }
-              }
-              
-              return (
-                <SectionRenderer
-                  key={sectionKey}
-                  sectionKey={sectionKey}
-                  bannerData={bannerData}
-                  products={products}
-                  sections={sections}
-                  productsLoading={productsLoading}
-                  sectionsLoading={sectionsLoading}
-                  onAddToCart={handleAddToCart}
-                  reduceTopSpacing={reduceSpacing}
-                />
-              );
-            })
-            .filter(Boolean)
-        )}
+        {/* Seção de categorias */}
+        <section className="py-16 bg-gray-800/50">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-white text-center mb-12">
+              Nossas Categorias
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[
+                { name: 'PlayStation', icon: '🎮' },
+                { name: 'Xbox', icon: '🎯' },
+                { name: 'Nintendo', icon: '🍄' },
+                { name: 'PC Gaming', icon: '💻' },
+                { name: 'Acessórios', icon: '🎧' },
+                { name: 'Ofertas', icon: '🏷️' },
+              ].map((category) => (
+                <div
+                  key={category.name}
+                  className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center hover:bg-white/20 transition-colors cursor-pointer"
+                >
+                  <div className="text-4xl mb-3">{category.icon}</div>
+                  <h3 className="text-white font-medium">{category.name}</h3>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Seção de informações */}
+        <section className="py-16">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold text-white mb-8">
+              Por que escolher a UTI dos Games?
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8 text-white">
+              <div className="space-y-4">
+                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-2xl">🏆</span>
+                </div>
+                <h3 className="text-xl font-semibold">Tradição</h3>
+                <p className="text-gray-300">
+                  Mais de 10 anos no mercado atendendo Colatina e região
+                </p>
+              </div>
+              <div className="space-y-4">
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-2xl">⚡</span>
+                </div>
+                <h3 className="text-xl font-semibold">Agilidade</h3>
+                <p className="text-gray-300">
+                  Entrega rápida e atendimento especializado
+                </p>
+              </div>
+              <div className="space-y-4">
+                <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-2xl">💎</span>
+                </div>
+                <h3 className="text-xl font-semibold">Qualidade</h3>
+                <p className="text-gray-300">
+                  Produtos originais e garantia em todas as compras
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
+      {/* Footer */}
       <Footer />
-
-      {/* Floating Action Button */}
-      <FloatingActionButton />
-
-      <Cart
-        showCart={showCart}
-        setShowCart={setShowCart}
-      />
-
-      <AuthModal isOpen={showAuthModal} onClose={handleAuthClose} />
     </div>
   );
-});
+};
 
 export default Index;
