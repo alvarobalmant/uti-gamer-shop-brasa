@@ -14,75 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      admin_login_links: {
-        Row: {
-          created_at: string | null
-          created_by: string
-          expires_at: string
-          id: string
-          is_active: boolean | null
-          token: string
-          used_at: string | null
-          used_by_ip: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by: string
-          expires_at: string
-          id?: string
-          is_active?: boolean | null
-          token: string
-          used_at?: string | null
-          used_by_ip?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string
-          expires_at?: string
-          id?: string
-          is_active?: boolean | null
-          token?: string
-          used_at?: string | null
-          used_by_ip?: string | null
-        }
-        Relationships: []
-      }
-      admin_security_logs: {
-        Row: {
-          action_type: string
-          admin_user_id: string
-          created_at: string | null
-          details: Json | null
-          id: string
-          ip_address: unknown | null
-          resource_id: string | null
-          resource_type: string | null
-          user_agent: string | null
-        }
-        Insert: {
-          action_type: string
-          admin_user_id: string
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          ip_address?: unknown | null
-          resource_id?: string | null
-          resource_type?: string | null
-          user_agent?: string | null
-        }
-        Update: {
-          action_type?: string
-          admin_user_id?: string
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          ip_address?: unknown | null
-          resource_id?: string | null
-          resource_type?: string | null
-          user_agent?: string | null
-        }
-        Relationships: []
-      }
       banners: {
         Row: {
           background_type: string | null
@@ -511,30 +442,6 @@ export type Database = {
           is_visible?: boolean
           section_key?: string
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      invalidated_sessions: {
-        Row: {
-          created_at: string
-          id: string
-          invalidated_at: string
-          session_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          invalidated_at?: string
-          session_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          invalidated_at?: string
-          session_id?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -1601,39 +1508,6 @@ export type Database = {
           },
         ]
       }
-      security_flags: {
-        Row: {
-          created_at: string
-          flag_type: string
-          id: string
-          metadata: Json | null
-          resolved: boolean | null
-          resolved_at: string | null
-          resolved_by: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          flag_type: string
-          id?: string
-          metadata?: Json | null
-          resolved?: boolean | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          flag_type?: string
-          id?: string
-          metadata?: Json | null
-          resolved?: boolean | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       security_logs: {
         Row: {
           action: string
@@ -2304,6 +2178,33 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string | null
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          name?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_savings: {
         Row: {
           created_at: string | null
@@ -2452,43 +2353,25 @@ export type Database = {
       }
       usuarios: {
         Row: {
-          created_at: string
-          data_cadastro: string
-          data_expiracao: string | null
-          desconto: number | null
+          created_at: string | null
           email: string
           id: string
           nome: string | null
-          papel: string
-          plano: string | null
-          status_assinatura: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
-          data_cadastro?: string
-          data_expiracao?: string | null
-          desconto?: number | null
+          created_at?: string | null
           email: string
-          id?: string
+          id: string
           nome?: string | null
-          papel?: string
-          plano?: string | null
-          status_assinatura?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
-          data_cadastro?: string
-          data_expiracao?: string | null
-          desconto?: number | null
+          created_at?: string | null
           email?: string
           id?: string
           nome?: string | null
-          papel?: string
-          plano?: string | null
-          status_assinatura?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
