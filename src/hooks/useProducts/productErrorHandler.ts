@@ -13,10 +13,9 @@ export const handleProductError = (error: any, context: string): string | null =
   let errorMessage = `Erro desconhecido ${context}`;
   
   if (error.message?.includes('JWT') || error.message?.includes('expired')) {
-    errorMessage = 'Sessão expirada. A página será recarregada.';
-    setTimeout(() => {
-      window.location.reload();
-    }, 2000);
+    console.log('🔄 [ProductErrorHandler] Token expirado detectado - tentando renovação silenciosa');
+    // Não força reload - deixa o sistema tentar renovar automaticamente
+    return null; // Retorna null para não exibir toast de erro
   } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
     errorMessage = 'Erro de conexão. Verifique sua internet.';
   } else if (error.message?.includes('products_uti_pro_type_check')) {

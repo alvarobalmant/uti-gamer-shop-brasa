@@ -4,6 +4,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { securityMonitor } from '@/lib/security';
+import { useSessionRenewal } from '@/hooks/useSessionRenewal';
 
 interface AuthContextType {
   user: User | null;
@@ -24,89 +25,100 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  // Initialize session renewal
+  useSessionRenewal();
 
   useEffect(() => {
-    let sessionCheckInProgress = false;
+    let mounted = true;
     
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // Prevent race conditions during session checks
-        if (sessionCheckInProgress) return;
-        sessionCheckInProgress = true;
+        if (!mounted) return;
         
-        // Handle session invalidation check
-        if (session?.access_token) {
+        console.log('🔄 [Auth] State change:', event, session?.user?.email);
+        
+        // Handle different auth events
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
+          setIsAdmin(false);
+          setLoading(false);
+          return;
+        }
+        
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('✅ [Auth] Token refreshed successfully');
+        }
+        
+        // Update session state immediately (synchronous)
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Defer async operations
+        if (session?.user) {
           setTimeout(async () => {
+            if (!mounted) return;
+            
             try {
+              // Check if session was manually invalidated
               const { data: invalidatedSession } = await supabase
                 .from('invalidated_sessions')
                 .select('id')
                 .eq('session_id', session.access_token)
                 .maybeSingle();
               
-              if (invalidatedSession) {
-                // Session was manually invalidated, force local logout
+              if (invalidatedSession && mounted) {
+                console.log('🚫 [Auth] Session was manually invalidated');
                 setSession(null);
                 setUser(null);
                 setIsAdmin(false);
                 setLoading(false);
-                sessionCheckInProgress = false;
                 return;
               }
-            } catch (error) {
-              console.log('Error checking invalidated session:', error);
-              // Continue with normal flow even if check fails
-            }
-            
-            // Update session state
-            setSession(session);
-            setUser(session?.user ?? null);
-            
-            // Check admin role
-            if (session?.user) {
-              try {
-                const { data: profile } = await supabase
-                  .from('profiles')
-                  .select('role')
-                  .eq('id', session.user.id)
-                  .maybeSingle();
-                
+              
+              // Check admin role
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              
+              if (mounted) {
                 setIsAdmin(profile?.role === 'admin');
-              } catch (error) {
-                console.log('Error checking admin role:', error);
-                setIsAdmin(false);
+                setLoading(false);
               }
-            } else {
-              setIsAdmin(false);
+            } catch (error) {
+              console.log('🔄 [Auth] Error in async checks (will retry):', error);
+              if (mounted) {
+                setIsAdmin(false);
+                setLoading(false);
+              }
             }
-            
-            setLoading(false);
-            sessionCheckInProgress = false;
           }, 0);
         } else {
-          // No session
-          setSession(null);
-          setUser(null);
           setIsAdmin(false);
           setLoading(false);
-          sessionCheckInProgress = false;
         }
       }
     );
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!sessionCheckInProgress) {
+      if (mounted) {
+        console.log('🔍 [Auth] Initial session check:', session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
+        if (!session) {
+          setLoading(false);
+        }
       }
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
-      sessionCheckInProgress = false;
     };
   }, []);
 

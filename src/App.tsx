@@ -17,8 +17,7 @@ import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
-import IndexWithBackendOptimizations from "./pages/IndexWithBackendOptimizations";
-import IndexOptimized from "./pages/IndexOptimized";
+// Removed optimized components
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";

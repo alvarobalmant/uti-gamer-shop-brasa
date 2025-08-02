@@ -1,6 +1,6 @@
 import React from 'react';
 import { useIntelligentPreloader } from '@/hooks/useIntelligentPreloader';
-import { PerformanceMonitor } from '@/components/PerformanceMonitor';
+// Performance monitoring removed
 
 // Error Boundary para o AppWithPreloader
 class PreloaderErrorBoundary extends React.Component<
@@ -44,8 +44,7 @@ export const AppWithPreloader: React.FC<{ children: React.ReactNode }> = ({ chil
     <PreloaderErrorBoundary>
       {children}
       
-      {/* Monitor de performance (apenas em dev ou com ?debug=performance) */}
-      <PerformanceMonitor />
+      {/* Performance monitoring removed */}
     </PreloaderErrorBoundary>
   );
 };
