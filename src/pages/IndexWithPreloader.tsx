@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useIntelligentPreloader } from '@/hooks/useIntelligentPreloader';
-// Performance monitoring removed
+import { PerformanceMonitor } from '@/components/PerformanceMonitor';
 
 // Importar componente Index original
 import Index from './Index';
@@ -28,9 +28,10 @@ const IndexWithPreloader: React.FC = () => {
   return (
     <>
       {/* Componente Index original */}
-        <Index />
+      <Index />
       
-      {/* Performance monitoring removed */}
+      {/* Monitor de performance (apenas em dev ou com ?debug=performance) */}
+      <PerformanceMonitor />
     </>
   );
 };

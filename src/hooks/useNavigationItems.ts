@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { retrySupabaseQuery } from '@/utils/retryWithAuth';
 import { 
   NavigationItem, 
   CreateNavigationItemData, 
@@ -20,16 +19,11 @@ export const useNavigationItems = () => {
       setLoading(true);
       setError(null);
       
-      const { data, error } = await retrySupabaseQuery(
-        async () => {
-          return await supabase
-            .from('navigation_items')
-            .select('*')
-            .eq('is_active', true)
-            .order('display_order', { ascending: true });
-        },
-        'fetchNavigationItems'
-      );
+      const { data, error } = await supabase
+        .from('navigation_items')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
 
       if (error) throw error;
       
@@ -58,17 +52,12 @@ export const useNavigationItems = () => {
       setLoading(true);
       setError(null);
       
-      const { data, error } = await retrySupabaseQuery(
-        async () => {
-          return await supabase
-            .from('navigation_items')
-            .select('*')
-            .eq('is_visible', true)
-            .eq('is_active', true)
-            .order('display_order', { ascending: true });
-        },
-        'fetchVisibleNavigationItems'
-      );
+      const { data, error } = await supabase
+        .from('navigation_items')
+        .select('*')
+        .eq('is_visible', true)
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
 
       if (error) throw error;
       
