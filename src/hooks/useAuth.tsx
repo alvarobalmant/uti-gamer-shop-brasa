@@ -4,7 +4,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { securityMonitor } from '@/lib/security';
-import { useSessionRenewal } from '@/hooks/useSessionRenewal';
+
 
 interface AuthContextType {
   user: User | null;
@@ -26,8 +26,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
-  // Initialize session renewal
-  useSessionRenewal();
 
   useEffect(() => {
     let mounted = true;

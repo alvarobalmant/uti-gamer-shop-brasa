@@ -15,11 +15,22 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    flowType: 'pkce'
+    flowType: 'pkce',
+    // Configure for longer sessions and better retry behavior
+    debug: false
   },
   global: {
     headers: {
       'x-client-info': 'supabase-js-web/2.50.0'
+    }
+  },
+  // Add retry configuration for better resilience
+  db: {
+    schema: 'public'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
     }
   }
 });

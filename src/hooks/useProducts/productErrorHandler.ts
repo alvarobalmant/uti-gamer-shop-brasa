@@ -12,11 +12,7 @@ export const handleProductError = (error: any, context: string): string | null =
   // Tratamento específico para diferentes tipos de erro
   let errorMessage = `Erro desconhecido ${context}`;
   
-  if (error.message?.includes('JWT') || error.message?.includes('expired')) {
-    console.log('🔄 [ProductErrorHandler] Token expirado detectado - tentando renovação silenciosa');
-    // Não força reload - deixa o sistema tentar renovar automaticamente
-    return null; // Retorna null para não exibir toast de erro
-  } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+  if (error.message?.includes('network') || error.message?.includes('fetch')) {
     errorMessage = 'Erro de conexão. Verifique sua internet.';
   } else if (error.message?.includes('products_uti_pro_type_check')) {
     errorMessage = 'Erro de validação: O campo "uti_pro_type" deve ser "percentage" ou "fixed". Verifique os dados no Excel.';
@@ -29,6 +25,3 @@ export const handleProductError = (error: any, context: string): string | null =
   return errorMessage;
 };
 
-export const shouldReloadOnError = (error: any): boolean => {
-  return error.message?.includes('JWT') || error.message?.includes('expired');
-};

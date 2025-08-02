@@ -29,15 +29,8 @@ export const useUTICoinsSettings = () => {
         .eq('setting_key', 'uti_coins_settings')
         .maybeSingle();
 
-      if (error && !error.message?.includes('JWT')) {
+      if (error) {
         console.warn('Erro ao carregar configurações UTI Coins:', error);
-        setIsEnabled(false);
-        return;
-      }
-
-      // Se JWT expirado, usar valor padrão sem mostrar erro
-      if (error?.message?.includes('JWT')) {
-        console.log('🔄 [UTI Coins] JWT expired, using default settings');
         setIsEnabled(false);
         setLoading(false);
         return;
@@ -53,15 +46,8 @@ export const useUTICoinsSettings = () => {
         timestamp: Date.now()
       };
     } catch (error: any) {
-      // Se JWT expirado, não mostrar como erro
-      if (error?.message?.includes('JWT')) {
-        console.log('🔄 [UTI Coins] JWT expired, using default settings');
-        setIsEnabled(false);
-      } else {
-        console.error('Erro ao carregar configurações UTI Coins:', error);
-        setIsEnabled(false);
-      }
-    } finally {
+      console.error('Erro ao carregar configurações UTI Coins:', error);
+      setIsEnabled(false);
       setLoading(false);
     }
   };
