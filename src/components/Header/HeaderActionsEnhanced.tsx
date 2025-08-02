@@ -25,6 +25,9 @@ const HeaderActionsEnhanced = ({
 }: HeaderActionsProps) => {
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  
+  // Debug log to track auth state changes
+  console.log('[HEADER] Auth state - User:', user?.email, 'isAdmin:', isAdmin, 'User exists:', !!user);
 
   const handleLoginClick = () => {
     if (user && isAdmin) {
