@@ -1,9 +1,13 @@
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { securityMonitor } from '@/lib/security';
+import { sessionMonitor } from '@/utils/sessionMonitor';
+import { jwtErrorInterceptor } from '@/utils/jwtErrorInterceptor';
+import { offlineTokenDetector } from '@/utils/offlineTokenDetector';
+
 
 interface AuthContextType {
   user: User | null;
@@ -23,92 +27,166 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sessionRecovering, setSessionRecovering] = useState(false);
   const { toast } = useToast();
 
+  // Session recovery callback
+  const handleSessionRecovery = useCallback(() => {
+    console.log('🔄 [AuthProvider] Session recovery initiated');
+    setSessionRecovering(true);
+    
+    // Clear recovery state after a short delay
+    setTimeout(() => {
+      setSessionRecovering(false);
+      toast({
+        title: "Sessão recuperada",
+        description: "Sua sessão foi restaurada automaticamente.",
+      });
+    }, 2000);
+  }, [toast]);
+  
+
   useEffect(() => {
-    let sessionCheckInProgress = false;
+    let mounted = true;
+    
+    // Initialize JWT error interceptor
+    jwtErrorInterceptor.initialize(handleSessionRecovery);
+    
+    // Start session monitoring with ghost state detection
+    sessionMonitor.startMonitoring(() => {
+      console.warn('👻 [AuthProvider] Ghost state detected, initiating recovery');
+      handleSessionRecovery();
+    });
     
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // Prevent race conditions during session checks
-        if (sessionCheckInProgress) return;
-        sessionCheckInProgress = true;
+        if (!mounted) return;
         
-        // Handle session invalidation check
-        if (session?.access_token) {
+        console.log('🔄 [Auth] State change:', event, session?.user?.email);
+        
+        // Handle different auth events
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
+          setIsAdmin(false);
+          setLoading(false);
+          sessionMonitor.stopMonitoring();
+          return;
+        }
+        
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('✅ [Auth] Token refreshed successfully');
+          setSessionRecovering(false); // Clear recovery state if it was active
+        } else if (event === 'SIGNED_IN' && session) {
+          // Restart monitoring when user signs in
+          sessionMonitor.startMonitoring(() => {
+            console.warn('👻 [AuthProvider] Ghost state detected, initiating recovery');
+            handleSessionRecovery();
+          });
+        }
+        
+        // Update session state immediately (synchronous)
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Defer async operations
+        if (session?.user) {
           setTimeout(async () => {
+            if (!mounted) return;
+            
             try {
+              // Check if session was manually invalidated
               const { data: invalidatedSession } = await supabase
                 .from('invalidated_sessions')
                 .select('id')
                 .eq('session_id', session.access_token)
                 .maybeSingle();
               
-              if (invalidatedSession) {
-                // Session was manually invalidated, force local logout
+              if (invalidatedSession && mounted) {
+                console.log('🚫 [Auth] Session was manually invalidated');
                 setSession(null);
                 setUser(null);
                 setIsAdmin(false);
                 setLoading(false);
-                sessionCheckInProgress = false;
                 return;
               }
-            } catch (error) {
-              console.log('Error checking invalidated session:', error);
-              // Continue with normal flow even if check fails
-            }
-            
-            // Update session state
-            setSession(session);
-            setUser(session?.user ?? null);
-            
-            // Check admin role
-            if (session?.user) {
-              try {
-                const { data: profile } = await supabase
-                  .from('profiles')
-                  .select('role')
-                  .eq('id', session.user.id)
-                  .maybeSingle();
+              
+              // Check admin role with enhanced error handling
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              
+              if (profileError) {
+                console.error('🔄 [Auth] Error checking profile:', profileError);
                 
-                setIsAdmin(profile?.role === 'admin');
-              } catch (error) {
-                console.log('Error checking admin role:', error);
-                setIsAdmin(false);
+                // If it's a JWT error, trigger recovery
+                if (profileError?.message?.toLowerCase().includes('jwt') || 
+                    profileError?.message?.toLowerCase().includes('unauthorized')) {
+                  handleSessionRecovery();
+                }
               }
-            } else {
-              setIsAdmin(false);
+              
+              if (mounted) {
+                setIsAdmin(profile?.role === 'admin');
+                setLoading(false);
+              }
+            } catch (error) {
+              console.log('🔄 [Auth] Error in async checks (will retry):', error);
+              if (mounted) {
+                setIsAdmin(false);
+                setLoading(false);
+              }
             }
-            
-            setLoading(false);
-            sessionCheckInProgress = false;
           }, 0);
         } else {
-          // No session
-          setSession(null);
-          setUser(null);
           setIsAdmin(false);
           setLoading(false);
-          sessionCheckInProgress = false;
         }
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!sessionCheckInProgress) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+    // Then check for existing session with enhanced error handling
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('🔄 [Auth] Error getting initial session:', error);
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
+        }
+        
+        if (mounted) {
+          console.log('🔍 [Auth] Initial session check:', session?.user?.email);
+          setSession(session);
+          setUser(session?.user ?? null);
+          if (!session) {
+            setLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error('🔄 [Auth] Unexpected error getting initial session:', error);
+        if (mounted) {
+          setLoading(false);
+        }
       }
-    });
+    };
+
+    getInitialSession();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
-      sessionCheckInProgress = false;
+      sessionMonitor.stopMonitoring();
+      jwtErrorInterceptor.destroy();
+      // Note: offlineTokenDetector cleanup is handled automatically
     };
-  }, []);
+  }, [handleSessionRecovery]);
 
   const signIn = async (email: string, password: string) => {
     try {
