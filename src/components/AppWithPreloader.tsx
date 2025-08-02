@@ -1,45 +1,40 @@
+<<<<<<< HEAD
 import React from 'react';
 import { useIntelligentPreloader } from '@/hooks/useIntelligentPreloader';
 // Performance monitoring removed
+=======
 
-// Error Boundary para o AppWithPreloader
-class PreloaderErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
+import React, { useState, useEffect } from 'react';
+>>>>>>> 8ac11ad84c1e98226db7b79b65dd7a096c758b6e
 
-  static getDerivedStateFromError(error: Error) {
-    console.warn('Erro no AppWithPreloader:', error);
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.warn('AppWithPreloader Error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      // Renderizar children normalmente se houver erro no preloader
-      return this.props.children;
-    }
-
-    return this.props.children;
-  }
+interface AppWithPreloaderProps {
+  children: React.ReactNode;
 }
 
-// Componente wrapper que adiciona preloading inteligente
-export const AppWithPreloader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Inicializar preloader inteligente com error handling
-  try {
-    useIntelligentPreloader();
-  } catch (error) {
-    console.warn('Erro ao inicializar preloader:', error);
+export const AppWithPreloader: React.FC<AppWithPreloaderProps> = ({ children }) => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simple preloader - just show for a brief moment
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Carregando UTI dos Games...</p>
+        </div>
+      </div>
+    );
   }
 
+<<<<<<< HEAD
   return (
     <PreloaderErrorBoundary>
       {children}
@@ -47,5 +42,8 @@ export const AppWithPreloader: React.FC<{ children: React.ReactNode }> = ({ chil
       {/* Performance monitoring removed */}
     </PreloaderErrorBoundary>
   );
+=======
+  return <>{children}</>;
+>>>>>>> 8ac11ad84c1e98226db7b79b65dd7a096c758b6e
 };
 
