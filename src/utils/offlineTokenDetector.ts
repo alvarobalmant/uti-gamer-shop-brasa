@@ -80,9 +80,9 @@ class OfflineTokenDetector {
       const tokenExp = session.expires_at || 0;
       
       if (tokenExp <= now) {
-        console.warn('⚠️ [OfflineDetector] Token expired, triggering refresh');
+        console.warn('⚠️ [OfflineDetector] Token expired on focus - forcing application reset');
         sessionMonitor.logJWTExpiration('focus-validation');
-        await this.attemptTokenRefresh();
+        this.forceApplicationReset('token-expired-on-focus');
         return;
       }
 
@@ -90,15 +90,16 @@ class OfflineTokenDetector {
       const { error: testError } = await supabase.auth.getUser();
       
       if (testError) {
-        console.warn('🚨 [OfflineDetector] Token validation failed on focus', testError);
+        console.warn('🚨 [OfflineDetector] Token validation failed on focus - forcing application reset');
         sessionMonitor.logJWTExpiration('focus-test');
-        await this.attemptTokenRefresh();
+        this.forceApplicationReset('token-validation-failed-on-focus');
       } else {
         console.log('✅ [OfflineDetector] Session validated successfully on focus');
       }
 
     } catch (error) {
       console.error('❌ [OfflineDetector] Error during focus validation:', error);
+      this.forceApplicationReset('focus-validation-error');
     } finally {
       this.tokenValidationPending = false;
     }
@@ -110,6 +111,7 @@ class OfflineTokenDetector {
       
       if (error) {
         console.error('❌ [OfflineDetector] Error getting session:', error);
+        this.forceApplicationReset('session-error-after-offline');
         return false;
       }
 
@@ -128,18 +130,20 @@ class OfflineTokenDetector {
       console.log(`🔍 [OfflineDetector] Offline duration: ${Math.round(offlineDuration / 1000)}s`);
 
       if (tokenExp <= now) {
-        console.warn('⏰ [OfflineDetector] Token expired while offline');
+        console.warn('⏰ [OfflineDetector] Token expired while offline - forcing application reset');
         sessionMonitor.logJWTExpiration('offline-expiration');
-        return await this.attemptTokenRefresh();
+        this.forceApplicationReset('token-expired-offline');
+        return false;
       }
 
       // Test if token actually works (ghost state detection)
       const { error: testError } = await supabase.auth.getUser();
       
       if (testError) {
-        console.warn('👻 [OfflineDetector] Ghost state detected after offline period');
+        console.warn('👻 [OfflineDetector] Ghost state detected after offline period - forcing application reset');
         sessionMonitor.logJWTExpiration('offline-ghost-state');
-        return await this.attemptTokenRefresh();
+        this.forceApplicationReset('ghost-state-offline');
+        return false;
       }
 
       console.log('✅ [OfflineDetector] Token is valid after offline period');
@@ -147,6 +151,7 @@ class OfflineTokenDetector {
 
     } catch (error) {
       console.error('❌ [OfflineDetector] Error validating token after offline:', error);
+      this.forceApplicationReset('validation-error-offline');
       return false;
     }
   }
@@ -186,6 +191,27 @@ class OfflineTokenDetector {
       lastOnlineTime: this.lastOnlineTime,
       offlineDuration: this.wasOffline ? Date.now() - this.lastOnlineTime : 0
     };
+  }
+
+  // Force application reset for offline-related session issues
+  private forceApplicationReset(reason: string) {
+    console.warn(`🔄 [OfflineDetector] Forcing application reset due to: ${reason}`);
+    
+    // Clear all session storage
+    localStorage.removeItem('supabase.auth.token');
+    sessionStorage.clear();
+    
+    // Clear Supabase client cache
+    try {
+      supabase.auth.signOut({ scope: 'local' });
+    } catch (error) {
+      console.warn('Failed to sign out locally:', error);
+    }
+    
+    // Force page reload to reset application state
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   }
 
   // Force validation (useful for manual triggers)
