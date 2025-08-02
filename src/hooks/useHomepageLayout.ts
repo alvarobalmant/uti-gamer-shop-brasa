@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { retrySupabaseQuery } from '@/utils/retryWithAuth';
 
 // Define the structure for a layout item from the DB
 export interface HomepageLayoutItem {
@@ -44,11 +45,14 @@ export const useHomepageLayout = () => {
     setLoading(true);
     setError(null);
     try {
-      // 1. Fetch layout order
-      const { data: layoutData, error: layoutError } = await supabase
-        .from('homepage_layout')
-        .select('*')
-        .order('display_order', { ascending: true });
+      // 1. Fetch layout order with retry mechanism
+      const { data: layoutData, error: layoutError } = await retrySupabaseQuery(
+        async () => await supabase
+          .from('homepage_layout')
+          .select('*')
+          .order('display_order', { ascending: true }),
+        'fetchHomepageLayout'
+      );
 
       if (layoutError) throw layoutError;
       if (!layoutData) throw new Error('No layout data received');
@@ -73,34 +77,38 @@ export const useHomepageLayout = () => {
       if (productSectionKeys.length > 0) {
         const sectionIds = productSectionKeys.map(key => key.replace('product_section_', ''));
         fetchPromises.push(
-          supabase
-            .from('product_sections')
-            .select('id, title')
-            .in('id', sectionIds)
-            .then(({ data, error }) => {
-              if (error) console.warn('[useHomepageLayout] Could not fetch product section titles:', error.message);
-              else {
-                productSectionsData = data || [];
-                console.log('[useHomepageLayout] Fetched Product Section Titles:', productSectionsData); // Log fetched titles
-              }
-            })
+          retrySupabaseQuery(
+            async () => await supabase
+              .from('product_sections')
+              .select('id, title')
+              .in('id', sectionIds),
+            'fetchProductSectionTitles'
+          ).then(({ data, error }) => {
+            if (error) console.warn('[useHomepageLayout] Could not fetch product section titles:', error.message);
+            else {
+              productSectionsData = data || [];
+              console.log('[useHomepageLayout] Fetched Product Section Titles:', productSectionsData); // Log fetched titles
+            }
+          })
         );
       }
 
       if (specialSectionKeys.length > 0) {
         const sectionIds = specialSectionKeys.map(key => key.replace('special_section_', ''));
         fetchPromises.push(
-          supabase
-            .from('special_sections') // Fetch from special_sections table
-            .select('id, title')
-            .in('id', sectionIds)
-            .then(({ data, error }) => {
-              if (error) console.warn('[useHomepageLayout] Could not fetch special section titles:', error.message);
-              else {
-                specialSectionsData = data || [];
-                console.log('[useHomepageLayout] Fetched Special Section Titles:', specialSectionsData); // Log fetched titles
-              }
-            })
+          retrySupabaseQuery(
+            async () => await supabase
+              .from('special_sections') // Fetch from special_sections table
+              .select('id, title')
+              .in('id', sectionIds),
+            'fetchSpecialSectionTitles'
+          ).then(({ data, error }) => {
+            if (error) console.warn('[useHomepageLayout] Could not fetch special section titles:', error.message);
+            else {
+              specialSectionsData = data || [];
+              console.log('[useHomepageLayout] Fetched Special Section Titles:', specialSectionsData); // Log fetched titles
+            }
+          })
         );
       }
 
@@ -143,9 +151,12 @@ export const useHomepageLayout = () => {
     setLoading(true);
     setError(null);
     try {
-      const { error: updateError } = await supabase
-        .from('homepage_layout')
-        .upsert(updates, { onConflict: 'id' });
+      const { error: updateError } = await retrySupabaseQuery(
+        async () => await supabase
+          .from('homepage_layout')
+          .upsert(updates, { onConflict: 'id' }),
+        'updateHomepageLayout'
+      );
 
       if (updateError) throw updateError;
 

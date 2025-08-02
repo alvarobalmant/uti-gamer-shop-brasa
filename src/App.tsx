@@ -3,6 +3,7 @@ import './utils/categoryTestSimple';
 import './utils/n7ErrorSuppressor'; // ← NOVO: Supressor de erro n7.map
 import './styles/n7ErrorSuppression.css'; // ← NOVO: CSS para suprimir erro n7.map
 import { Toaster } from "@/components/ui/toaster";
+import SessionManager from "@/components/SessionManager";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -17,12 +18,12 @@ import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
-import IndexWithBackendOptimizations from "./pages/IndexWithBackendOptimizations";
-import IndexOptimized from "./pages/IndexOptimized";
+// Removed optimized components
 import Index from "./pages/Index";
 import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 import { SecurityProvider } from "@/contexts/SecurityContext";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
+import { JWTErrorMonitor } from "@/components/ErrorMonitor/JWTErrorMonitor";
 import { useEffect } from "react";
 
 // Componentes de preloading inteligente
@@ -166,9 +167,11 @@ const App = () => {
                       <AppWithPreloader>
                         <GlobalNavigationProvider>
                           <ScrollRestorationProvider>
-                            <LoadingOverlay />
-                            <GlobalNavigationOverlay />
-                            <Suspense fallback={<PageLoader />}>
+                              <LoadingOverlay />
+                              <GlobalNavigationOverlay />
+                              <JWTErrorMonitor />
+                              <SessionManager />
+                             <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
                   <Route path="/" element={<Index />} />
