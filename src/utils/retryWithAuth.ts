@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { sessionMonitor } from './sessionMonitor';
 
 export interface RetryConfig {
   maxRetries?: number;
@@ -21,20 +22,31 @@ const DEFAULT_CONFIG: Required<RetryConfig> = {
   context: 'unknown'
 };
 
-// Detect JWT expiration errors
+// Enhanced JWT expiration error detection
 const isJWTExpiredError = (error: any): boolean => {
   if (!error) return false;
   
   const message = error.message?.toLowerCase() || '';
   const code = error.code?.toLowerCase() || '';
+  const details = error.details?.toLowerCase() || '';
   
-  return (
-    message.includes('jwt') && message.includes('expired') ||
-    message.includes('token') && message.includes('expired') ||
-    message.includes('unauthorized') ||
-    code === 'pgrst301' || // PostgREST JWT expired
-    code === '401'
+  // Check for various JWT expiration patterns
+  const jwtExpiredPatterns = [
+    'jwt', 'token', 'unauthorized', 'invalid claim',
+    'missing sub claim', 'bad_jwt', 'expired', 'invalid signature',
+    'token has expired', 'authentication required'
+  ];
+  
+  const isJWTError = jwtExpiredPatterns.some(pattern => 
+    message.includes(pattern) || details.includes(pattern)
   );
+  
+  const isExpiredCode = [
+    'pgrst301', // PostgREST JWT expired
+    '401', 'unauthorized', 'bad_jwt'
+  ].includes(code);
+  
+  return isJWTError || isExpiredCode;
 };
 
 // Wait for token refresh with timeout
@@ -89,6 +101,7 @@ export async function retryWithAuth<T>(
       
       if (attempt > 0) {
         console.log(`✅ [RetryAuth:${context}] Success after ${attempt} retries`);
+        sessionMonitor.logRetrySuccess(context, attempt);
       }
       
       return {
@@ -101,8 +114,18 @@ export async function retryWithAuth<T>(
       lastError = error;
       console.error(`❌ [RetryAuth:${context}] Attempt ${attempt + 1} failed:`, error);
       
+      const isJWTError = isJWTExpiredError(error);
+      
+      // Log JWT expiration to session monitor
+      if (isJWTError) {
+        sessionMonitor.logJWTExpiration(context);
+      }
+      
       // If it's not a JWT error or we're on the last attempt, don't retry
-      if (!isJWTExpiredError(error) || attempt === maxRetries) {
+      if (!isJWTError || attempt === maxRetries) {
+        if (isJWTError) {
+          sessionMonitor.logRetryFailure(context);
+        }
         break;
       }
       
@@ -113,11 +136,12 @@ export async function retryWithAuth<T>(
       
       if (!refreshSuccess) {
         console.error(`❌ [RetryAuth:${context}] Token refresh failed, aborting retries`);
+        sessionMonitor.logRetryFailure(context);
         break;
       }
       
-      // Calculate delay with exponential backoff
-      const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
+      // Calculate delay with exponential backoff (reduced for faster recovery)
+      const delay = Math.min(baseDelay * Math.pow(1.5, attempt), maxDelay);
       console.log(`⏳ [RetryAuth:${context}] Waiting ${delay}ms before retry...`);
       
       await new Promise(resolve => setTimeout(resolve, delay));

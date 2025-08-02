@@ -1,9 +1,11 @@
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { securityMonitor } from '@/lib/security';
+import { sessionMonitor } from '@/utils/sessionMonitor';
+import { jwtErrorInterceptor } from '@/utils/jwtErrorInterceptor';
 
 
 interface AuthContextType {
@@ -24,11 +26,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sessionRecovering, setSessionRecovering] = useState(false);
   const { toast } = useToast();
+
+  // Session recovery callback
+  const handleSessionRecovery = useCallback(() => {
+    console.log('🔄 [AuthProvider] Session recovery initiated');
+    setSessionRecovering(true);
+    
+    // Clear recovery state after a short delay
+    setTimeout(() => {
+      setSessionRecovering(false);
+      toast({
+        title: "Sessão recuperada",
+        description: "Sua sessão foi restaurada automaticamente.",
+      });
+    }, 2000);
+  }, [toast]);
   
 
   useEffect(() => {
     let mounted = true;
+    
+    // Initialize JWT error interceptor
+    jwtErrorInterceptor.initialize(handleSessionRecovery);
+    
+    // Start session monitoring with ghost state detection
+    sessionMonitor.startMonitoring(() => {
+      console.warn('👻 [AuthProvider] Ghost state detected, initiating recovery');
+      handleSessionRecovery();
+    });
     
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -43,11 +70,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null);
           setIsAdmin(false);
           setLoading(false);
+          sessionMonitor.stopMonitoring();
           return;
         }
         
         if (event === 'TOKEN_REFRESHED') {
           console.log('✅ [Auth] Token refreshed successfully');
+          setSessionRecovering(false); // Clear recovery state if it was active
+        } else if (event === 'SIGNED_IN' && session) {
+          // Restart monitoring when user signs in
+          sessionMonitor.startMonitoring(() => {
+            console.warn('👻 [AuthProvider] Ghost state detected, initiating recovery');
+            handleSessionRecovery();
+          });
         }
         
         // Update session state immediately (synchronous)
@@ -76,12 +111,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 return;
               }
               
-              // Check admin role
-              const { data: profile } = await supabase
+              // Check admin role with enhanced error handling
+              const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('role')
                 .eq('id', session.user.id)
                 .maybeSingle();
+              
+              if (profileError) {
+                console.error('🔄 [Auth] Error checking profile:', profileError);
+                
+                // If it's a JWT error, trigger recovery
+                if (profileError?.message?.toLowerCase().includes('jwt') || 
+                    profileError?.message?.toLowerCase().includes('unauthorized')) {
+                  handleSessionRecovery();
+                }
+              }
               
               if (mounted) {
                 setIsAdmin(profile?.role === 'admin');
@@ -102,23 +147,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted) {
-        console.log('🔍 [Auth] Initial session check:', session?.user?.email);
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (!session) {
+    // Then check for existing session with enhanced error handling
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('🔄 [Auth] Error getting initial session:', error);
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
+        }
+        
+        if (mounted) {
+          console.log('🔍 [Auth] Initial session check:', session?.user?.email);
+          setSession(session);
+          setUser(session?.user ?? null);
+          if (!session) {
+            setLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error('🔄 [Auth] Unexpected error getting initial session:', error);
+        if (mounted) {
           setLoading(false);
         }
       }
-    });
+    };
+
+    getInitialSession();
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      sessionMonitor.stopMonitoring();
+      jwtErrorInterceptor.destroy();
     };
-  }, []);
+  }, [handleSessionRecovery]);
 
   const signIn = async (email: string, password: string) => {
     try {
