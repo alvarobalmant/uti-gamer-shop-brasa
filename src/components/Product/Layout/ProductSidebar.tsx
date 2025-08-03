@@ -12,6 +12,7 @@ import QuantitySelector from '../Sidebar/QuantitySelector';
 import ActionButtons from '../Sidebar/ActionButtons';
 import UTICoinsInfo from '../Sidebar/UTICoinsInfo';
 import TrustBadges from '../Sidebar/TrustBadges';
+import DynamicDelivery from '../Sidebar/DynamicDelivery';
 
 interface ProductSidebarProps {
   product: Product;
@@ -43,28 +44,10 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
       "space-y-6 bg-white p-6 rounded-lg border border-gray-200",
       className
     )}>
-      {/* SEÇÃO DE ENTREGA */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <Truck className="w-5 h-5 text-green-600" />
-          Entrega
-        </h3>
-        
-        {/* Componente de informações de entrega limpo */}
-        <DeliveryInfo product={product} />
-        
-        {/* Informações adicionais de entrega */}
-        <div className="space-y-2 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-blue-600" />
-            <span>Entrega em 3-5 dias úteis</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-green-600" />
-            <span>Produto original e lacrado</span>
-          </div>
-        </div>
-      </div>
+      {/* ===== SEÇÃO PRIORITÁRIA NO TOPO ===== */}
+      
+      {/* ENTREGA DINÂMICA */}
+      <DynamicDelivery productPrice={product.price} />
 
       {/* SELETOR DE QUANTIDADE */}
       <div className="space-y-3">
@@ -99,6 +82,8 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
           Adicionar ao Carrinho
         </Button>
       </div>
+
+      {/* ===== SEÇÃO SECUNDÁRIA ABAIXO ===== */}
 
       {/* UTI COINS */}
       <UTICoinsInfo 
