@@ -19,7 +19,6 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
   onAddToCart,
   className
 }) => {
-  const galleryRef = useRef<HTMLDivElement>(null);
   const mainImageRef = useRef<HTMLDivElement>(null);
   
   // Initialize sticky behavior com offset natural para não grudar no header
@@ -29,17 +28,13 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
     naturalOffset: 120 // 120px de offset natural do header
   });
 
-  // Register sticky elements when they mount
+  // Register sticky elements when they mount - apenas imagem principal
   useEffect(() => {
-    if (galleryRef.current) {
-      registerStickyElement('gallery-sticky', galleryRef.current);
-    }
     if (mainImageRef.current) {
       registerStickyElement('main-image-sticky', mainImageRef.current);
     }
 
     return () => {
-      unregisterStickyElement('gallery-sticky');
       unregisterStickyElement('main-image-sticky');
     };
   }, [registerStickyElement, unregisterStickyElement]);
@@ -73,15 +68,13 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
                 />
               </div>
               
-              {/* Galeria Horizontal abaixo da imagem */}
-              <div className="mt-4">
-                <div ref={galleryRef} className="h-fit z-10">
-                  <ProductMainContent 
-                    product={product}
-                    skuNavigation={skuNavigation}
-                    layout="gallery-horizontal"
-                  />
-                </div>
+              {/* Galeria Horizontal centralizada abaixo da imagem */}
+              <div className="mt-4 flex justify-center">
+                <ProductMainContent 
+                  product={product}
+                  skuNavigation={skuNavigation}
+                  layout="gallery-horizontal"
+                />
               </div>
             </div>
 
