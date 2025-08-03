@@ -23,7 +23,9 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface DailyBonusData {
   canClaim: boolean;
-  streak: number;
+  currentStreak: number;
+  nextBonusAmount: number;
+  secondsUntilNextClaim: number;
   multiplier: number;
   nextReset: string;
   lastClaim?: string;
@@ -37,13 +39,62 @@ const Coins: React.FC = () => {
   const [dailyBonusData, setDailyBonusData] = useState<DailyBonusData | null>(null);
   const [claimingBonus, setClaimingBonus] = useState(false);
   const [bonusLoading, setBonusLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Redirecionar se não estiver logado
+  // Carregar dados do daily bonus
+  const loadDailyBonusData = async () => {
+    if (!user) {
+      setBonusLoading(false);
+      return;
+    }
+    
+    try {
+      setBonusLoading(true);
+      setError(null);
+      console.log('[COINS] Loading daily bonus data for user:', user.id);
+      
+      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
+        body: { action: 'can_claim_daily_bonus_brasilia' }
+      });
+
+      if (error) {
+        console.error('[COINS] Error loading daily bonus data:', error);
+        setError('Failed to load daily bonus data');
+        return;
+      }
+
+      if (data?.success) {
+        console.log('[COINS] Daily bonus data loaded:', data);
+        setDailyBonusData({
+          canClaim: data.canClaim,
+          currentStreak: data.currentStreak || 1,
+          nextBonusAmount: data.nextBonusAmount || 10,
+          secondsUntilNextClaim: data.secondsUntilNextClaim || 0,
+          multiplier: data.multiplier || 1.0,
+          nextReset: data.nextReset,
+          lastClaim: data.lastClaim
+        });
+      } else {
+        console.warn('[COINS] Daily bonus data load failed:', data?.message);
+        setError(data?.message || 'Failed to load daily bonus data');
+      }
+    } catch (error) {
+      console.error('[COINS] Exception loading daily bonus data:', error);
+      setError('Network error occurred');
+    } finally {
+      setBonusLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDailyBonusData();
+  }, [user, loading]);
+
+  // Early returns AFTER all hooks are defined
   if (!user) {
     return <Navigate to="/" replace />;
   }
 
-  // Aguardar carregamento das configurações
   if (routeLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -99,68 +150,43 @@ const Coins: React.FC = () => {
   const levelData = calculateLevel(coins.totalEarned);
   const progressPercentage = levelData.nextThreshold > 0 ? (levelData.progress / levelData.nextThreshold) * 100 : 100;
 
-  // Carregar dados do daily bonus
-  useEffect(() => {
-    const loadDailyBonusData = async () => {
-      if (!user || loading) return;
-      
-      try {
-        setBonusLoading(true);
-        const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-          body: { action: 'get_daily_timer' }
-        });
-
-        if (error) {
-          console.error('Error loading daily bonus data:', error);
-          return;
-        }
-
-        if (data?.success) {
-          setDailyBonusData({
-            canClaim: data.canClaim,
-            streak: data.streak || 1,
-            multiplier: data.multiplier || 1.0,
-            nextReset: data.nextReset,
-            lastClaim: data.lastClaim
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados do daily bonus:', error);
-      } finally {
-        setBonusLoading(false);
-      }
-    };
-
-    loadDailyBonusData();
-  }, [user, loading]);
-
   // Função para resgatar daily bonus
   const claimDailyBonus = async () => {
     if (!dailyBonusData?.canClaim || claimingBonus) return;
     
     try {
       setClaimingBonus(true);
+      console.log('[COINS] Claiming daily bonus for user:', user.id);
+      
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
         body: { action: 'process_daily_login_brasilia' }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[COINS] Error claiming daily bonus:', error);
+        return;
+      }
 
       if (data?.success) {
+        console.log('[COINS] Daily bonus claimed:', data);
         // Atualizar dados locais
         setDailyBonusData(prev => prev ? {
           ...prev,
           canClaim: false,
-          streak: data.streak,
-          multiplier: data.multiplier,
+          currentStreak: data.streak || prev.currentStreak,
+          multiplier: data.multiplier || prev.multiplier,
           lastClaim: new Date().toISOString()
         } : null);
         
         // Refresh dos dados de coins
         await refreshData();
+        // Recarregar dados do bonus após o claim
+        await loadDailyBonusData();
+      } else {
+        console.warn('[COINS] Daily bonus claim failed:', data?.message);
       }
     } catch (error) {
-      console.error('Erro ao resgatar daily bonus:', error);
+      console.error('[COINS] Exception claiming daily bonus:', error);
     } finally {
       setClaimingBonus(false);
     }
@@ -368,7 +394,7 @@ const Coins: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1">
                           <Flame className="w-4 h-4 text-orange-500" />
-                          <span className="text-sm font-medium">{dailyBonusData.streak} dias seguidos</span>
+                          <span className="text-sm font-medium">{dailyBonusData.currentStreak} dias seguidos</span>
                         </div>
                         <div className="text-sm text-gray-600">
                           Multiplicador: {dailyBonusData.multiplier.toFixed(1)}x
@@ -489,7 +515,7 @@ const Coins: React.FC = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="text-center">
                           <div className="text-3xl font-bold text-orange-500 mb-1">
-                            {dailyBonusData.streak}
+                            {dailyBonusData.currentStreak}
                           </div>
                           <div className="text-sm text-gray-600">Dias Seguidos</div>
                         </div>

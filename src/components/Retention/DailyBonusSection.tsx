@@ -6,7 +6,9 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface DailyBonusData {
   canClaim: boolean;
-  streak: number;
+  currentStreak: number;
+  nextBonusAmount: number;
+  secondsUntilNextClaim: number;
   multiplier: number;
   nextReset: string;
   lastClaim?: string;
@@ -22,6 +24,7 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Always define the function first, then use useEffect
   const loadDailyBonusData = async () => {
@@ -35,19 +38,22 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
       setError(null);
       
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-        body: { action: 'get_daily_timer' }
+        body: { action: 'can_claim_daily_bonus_brasilia' }
       });
 
       if (error) {
-        console.error('Error loading daily bonus data:', error);
+        console.error('[DAILY_BONUS_WIDGET] Error loading daily bonus data:', error);
         setError('Failed to load daily bonus data');
         return;
       }
 
       if (data?.success) {
+        console.log('[DAILY_BONUS_WIDGET] Daily bonus data loaded:', data);
         setDailyBonusData({
           canClaim: data.canClaim,
-          streak: data.streak || 1,
+          currentStreak: data.currentStreak || 1,
+          nextBonusAmount: data.nextBonusAmount || 10,
+          secondsUntilNextClaim: data.secondsUntilNextClaim || 0,
           multiplier: data.multiplier || 1.0,
           nextReset: data.nextReset,
           lastClaim: data.lastClaim
@@ -68,6 +74,21 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
     loadDailyBonusData();
   }, [user]);
 
+  // Timer em tempo real para atualizar segundos restantes
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+      if (dailyBonusData && dailyBonusData.secondsUntilNextClaim > 0) {
+        setDailyBonusData(prev => prev ? {
+          ...prev,
+          secondsUntilNextClaim: Math.max(0, prev.secondsUntilNextClaim - 1)
+        } : null);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [dailyBonusData?.secondsUntilNextClaim]);
+
   // Função para resgatar daily bonus
   const claimDailyBonus = async () => {
     if (!dailyBonusData?.canClaim || claiming) return;
@@ -81,23 +102,41 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
       if (error) throw error;
 
       if (data?.success) {
+        console.log('[DAILY_BONUS_WIDGET] Daily bonus claimed:', data);
         // Atualizar dados locais
         setDailyBonusData(prev => prev ? {
           ...prev,
           canClaim: false,
-          streak: data.streak,
-          multiplier: data.multiplier,
+          currentStreak: data.streak || prev.currentStreak,
+          multiplier: data.multiplier || prev.multiplier,
           lastClaim: new Date().toISOString()
         } : null);
         
         // Callback para atualizar dados do parent
         onBonusClaimed?.();
+        // Recarregar dados após o claim
+        setTimeout(() => loadDailyBonusData(), 1000);
       }
     } catch (error) {
-      console.error('Erro ao resgatar daily bonus:', error);
+      console.error('[DAILY_BONUS_WIDGET] Error claiming daily bonus:', error);
     } finally {
       setClaiming(false);
     }
+  };
+
+  const formatSecondsToTime = (seconds: number) => {
+    if (seconds <= 0) return 'Disponível agora';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    } else if (minutes > 0) {
+      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    return `${remainingSeconds}s`;
   };
 
   const formatTimeUntilReset = (resetTime: string) => {
@@ -158,7 +197,7 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
         <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center gap-1">
             <Flame className="w-3 h-3 text-orange-500" />
-            <span className="font-medium">{dailyBonusData.streak}</span>
+            <span className="font-medium">{dailyBonusData.currentStreak}</span>
           </div>
           <span className="text-gray-500">•</span>
           <span className="text-gray-600">{dailyBonusData.multiplier.toFixed(1)}x</span>
@@ -166,19 +205,31 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
       </div>
       
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {dailyBonusData.canClaim ? (
-            <>
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-sm font-medium text-green-700">Disponível!</span>
-            </>
-          ) : (
-            <>
-              <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-600">
-                Próximo em {formatTimeUntilReset(dailyBonusData.nextReset)}
-              </span>
-            </>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            {dailyBonusData.canClaim ? (
+              <>
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm font-medium text-green-700">
+                  Disponível! +{dailyBonusData.nextBonusAmount} UTI Coins
+                </span>
+              </>
+            ) : (
+              <>
+                <Clock className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">
+                  Próximo em {dailyBonusData.secondsUntilNextClaim > 0 
+                    ? formatSecondsToTime(dailyBonusData.secondsUntilNextClaim)
+                    : formatTimeUntilReset(dailyBonusData.nextReset)
+                  }
+                </span>
+              </>
+            )}
+          </div>
+          {!dailyBonusData.canClaim && (
+            <span className="text-xs text-gray-500">
+              Próximo bônus: +{dailyBonusData.nextBonusAmount} UTI Coins
+            </span>
           )}
         </div>
         

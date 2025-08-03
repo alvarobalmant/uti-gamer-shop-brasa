@@ -150,64 +150,127 @@ Deno.serve(async (req) => {
       }
       
     } else if (action === 'can_claim_daily_bonus_brasilia') {
-      console.log(`[BRASILIA_TIMER] Checking if user ${user.id} can claim daily bonus`);
+      console.log(`[DAILY_BONUS] Checking bonus status for user ${user.id}`);
       
-      // Use the same function as get_daily_timer but with different action name for compatibility
-      const { data: bonusResult, error: bonusError } = await supabase
-        .rpc('can_claim_daily_bonus_brasilia', { p_user_id: user.id });
+      try {
+        // Get current bonus period and claim status
+        const { data: bonusResult, error: bonusError } = await supabase
+          .rpc('can_claim_daily_bonus_brasilia', { p_user_id: user.id });
 
-      if (bonusError) {
-        console.error('Error checking daily bonus (Brasilia):', bonusError);
+        if (bonusError) {
+          console.error('[DAILY_BONUS] Error checking bonus status:', bonusError);
+          return new Response(
+            JSON.stringify({ success: false, message: 'Failed to check bonus status' }),
+            { 
+              status: 500, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+
+        if (bonusResult && bonusResult.length > 0) {
+          const bonusData = bonusResult[0];
+          
+          // Get user streak information
+          const { data: streakData } = await supabase
+            .from('user_streaks')
+            .select('current_streak, streak_multiplier')
+            .eq('user_id', user.id)
+            .single();
+
+          // Get daily bonus configuration
+          const { data: configData } = await supabase
+            .from('daily_bonus_config')
+            .select('setting_key, setting_value')
+            .eq('is_active', true);
+
+          const config = configData?.reduce((acc, item) => {
+            acc[item.setting_key] = item.setting_value;
+            return acc;
+          }, {} as Record<string, any>) || {};
+
+          const baseAmount = parseInt(config.base_bonus_amount || '10');
+          const currentStreak = streakData?.current_streak || 0;
+          const multiplier = streakData?.streak_multiplier || 1.0;
+          const nextBonusAmount = Math.round(baseAmount * multiplier);
+
+          // Calculate seconds until next claim
+          let secondsUntilNextClaim = 0;
+          if (bonusData.next_reset) {
+            const nextReset = new Date(bonusData.next_reset);
+            const now = new Date();
+            secondsUntilNextClaim = Math.max(0, Math.floor((nextReset.getTime() - now.getTime()) / 1000));
+          }
+
+          console.log(`[DAILY_BONUS] User ${user.id} status:`, {
+            canClaim: bonusData.can_claim,
+            currentStreak,
+            nextBonusAmount,
+            secondsUntilNextClaim
+          });
+
+          result = {
+            success: true,
+            canClaim: bonusData.can_claim,
+            secondsUntilNextClaim,
+            currentStreak,
+            nextBonusAmount,
+            multiplier,
+            nextReset: bonusData.next_reset,
+            lastClaim: bonusData.last_claim
+          };
+        } else {
+          result = {
+            success: false,
+            message: 'Failed to get bonus data'
+          };
+        }
+      } catch (error) {
+        console.error('[DAILY_BONUS] Exception checking bonus status:', error);
         return new Response(
-          JSON.stringify({ success: false, message: 'Failed to check bonus status' }),
+          JSON.stringify({ success: false, message: 'Internal server error' }),
           { 
             status: 500, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
           }
         );
-      }
-
-      if (bonusResult && bonusResult.length > 0) {
-        const bonusData = bonusResult[0];
-        result = {
-          success: true,
-          canClaim: bonusData.can_claim,
-          streak: bonusData.streak || 0,
-          multiplier: bonusData.multiplier || 1.0,
-          nextReset: bonusData.next_reset,
-          lastClaim: bonusData.last_claim
-        };
-      } else {
-        result = {
-          success: false,
-          message: 'Failed to get bonus data'
-        };
       }
       
     } else if (action === 'process_daily_login_brasilia') {
-      console.log(`[BRASILIA_TIMER] Processing daily login for user ${user.id}`);
+      console.log(`[DAILY_LOGIN] Processing daily login for user ${user.id}`);
       
-      // Use the Brasilia login processing function
-      const { data: loginResult, error: loginError } = await supabase
-        .rpc('process_daily_login_brasilia', { p_user_id: user.id });
+      try {
+        // Use the Brasilia login processing function
+        const { data: loginResult, error: loginError } = await supabase
+          .rpc('process_daily_login_brasilia', { p_user_id: user.id });
 
-      if (loginError) {
-        console.error('Error processing daily login (Brasilia):', loginError);
+        if (loginError) {
+          console.error('[DAILY_LOGIN] Error processing daily login:', loginError);
+          return new Response(
+            JSON.stringify({ success: false, message: 'Failed to process daily login' }),
+            { 
+              status: 500, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+
+        result = loginResult;
+        
+        if (result && result.success) {
+          console.log(`[DAILY_LOGIN] SUCCESS: User ${user.id} earned ${result.coins_earned} coins. New streak: ${result.streak}`);
+        } else {
+          console.log(`[DAILY_LOGIN] BLOCKED: User ${user.id} login blocked: ${result?.message || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('[DAILY_LOGIN] Exception processing daily login:', error);
         return new Response(
-          JSON.stringify({ success: false, message: 'Failed to process daily login' }),
+          JSON.stringify({ success: false, message: 'Internal server error' }),
           { 
             status: 500, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
           }
         );
-      }
-
-      result = loginResult;
-      
-      if (result && result.success) {
-        console.log(`[SUCCESS] User ${user.id} earned coins for daily login (Brasilia timer)`);
-      } else {
-        console.log(`[RATE_LIMITED] User ${user.id} daily login blocked: ${result?.message || 'Unknown error'}`);
       }
       
     } else {
