@@ -115,8 +115,9 @@ export const useDailyBonusBrasilia = () => {
       let secondsUntilNext = 0;
 
       if (nextReset && !data.canClaim) {
-        const now = new Date();
-        const timeDiff = nextReset.getTime() - now.getTime();
+        // Use UTC time to match backend's UTC timestamps
+        const nowUTC = new Date();
+        const timeDiff = nextReset.getTime() - nowUTC.getTime();
         
         if (timeDiff > 0) {
           hoursUntilNext = Math.floor(timeDiff / (1000 * 60 * 60));
