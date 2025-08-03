@@ -57,24 +57,24 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
           {/* Top: Layout das 2 colunas superiores */}
           <div className="flex flex-col lg:flex-row gap-6">
             
-            {/* COLUNA 1: Container da Imagem Principal EXPANDIDA */}
+            {/* COLUNA 1: Container da Imagem Principal + Galeria UNIFICADOS */}
             <div className="w-full lg:w-[480px] order-1 lg:order-1">
-              {/* ELEMENTO sticky da imagem */}
+              {/* ELEMENTO sticky unificado - imagem + galeria juntos */}
               <div ref={mainImageRef} className="h-fit z-10">
                 <ProductMainContent 
                   product={product}
                   skuNavigation={skuNavigation}
                   layout="main-image"
                 />
-              </div>
-              
-              {/* Galeria Horizontal centralizada abaixo da imagem */}
-              <div className="mt-4 flex justify-center">
-                <ProductMainContent 
-                  product={product}
-                  skuNavigation={skuNavigation}
-                  layout="gallery-horizontal"
-                />
+                
+                {/* Galeria Horizontal centralizada - sempre abaixo da imagem */}
+                <div className="mt-4 flex justify-center">
+                  <ProductMainContent 
+                    product={product}
+                    skuNavigation={skuNavigation}
+                    layout="gallery-horizontal"
+                  />
+                </div>
               </div>
             </div>
 
