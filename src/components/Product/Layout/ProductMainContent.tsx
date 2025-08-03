@@ -19,7 +19,7 @@ import StorePickupBadge from '../MainContent/StorePickupBadge';
 interface ProductMainContentProps {
   product: Product;
   skuNavigation?: SKUNavigation;
-  layout?: 'gallery-vertical' | 'main-image' | 'product-info' | 'bottom-sections';
+  layout?: 'gallery-vertical' | 'gallery-horizontal' | 'main-image' | 'product-info' | 'bottom-sections';
   className?: string;
 }
 
@@ -89,6 +89,31 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
             </span>
           </div>
         )}
+      </div>
+    );
+  }
+
+  // Galeria Horizontal
+  if (layout === 'gallery-horizontal') {
+    return (
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {allImages.map((image, index) => (
+          <button
+            key={index}
+            onClick={() => handleImageClick(index)}
+            className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+              currentImageIndex === index
+                ? 'border-red-600 ring-2 ring-red-200'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <img
+              src={image}
+              alt={`${product.name} ${index + 1}`}
+              className="w-full h-full object-contain bg-white"
+            />
+          </button>
+        ))}
       </div>
     );
   }
