@@ -3,7 +3,7 @@ import { Coins, TrendingUp, Gift, Star } from 'lucide-react';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DailyLoginSection } from './DailyLoginSection';
+
 import { UTICoinsConditional } from './UTICoinsConditional';
 
 interface UTICoinsWidgetProps {
@@ -19,7 +19,7 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
   const [showPopover, setShowPopover] = useState(false);
   const [coinAnimations, setCoinAnimations] = useState<CoinAnimation[]>([]);
   const { user } = useAuth();
-  const { coins, transactions, loading, processDailyLogin } = useUTICoins();
+  const { coins, transactions, loading } = useUTICoins();
   const previousBalance = useRef(coins.balance);
 
   // Detectar mudança no saldo para animar moedas
@@ -38,12 +38,6 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
     previousBalance.current = coins.balance;
   }, [coins.balance]);
 
-  // Processar login diário ao montar o componente
-  useEffect(() => {
-    if (user) {
-      processDailyLogin();
-    }
-  }, [user, processDailyLogin]);
   
   // Calcular nível baseado no total de moedas ganhas
   const calculateLevel = (totalEarned: number) => {
@@ -195,10 +189,6 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
               )}
             </div>
 
-            {/* Seção de Login Diário */}
-            <div className="p-4 border-t border-gray-200">
-              <DailyLoginSection showTitle={false} />
-            </div>
 
             {/* Ganhos recentes */}
             <div className="p-4">

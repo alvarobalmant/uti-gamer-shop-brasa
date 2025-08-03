@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
-import { DailyLoginSection } from './DailyLoginSection';
+
 import { UTICoinsConditional } from './UTICoinsConditional';
 
 interface UTICoinsWidgetProps {
@@ -15,13 +15,8 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
   const [showPopover, setShowPopover] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { coins, transactions, loading, balanceChanged, processDailyLogin } = useUTICoins();
+  const { coins, transactions, loading, balanceChanged } = useUTICoins();
   const [previousBalance, setPreviousBalance] = useState(coins.balance);
-  useEffect(() => {
-    if (user) {
-      processDailyLogin();
-    }
-  }, [user, processDailyLogin]);
 
   // Detectar mudança no saldo para animação local
   useEffect(() => {
@@ -177,10 +172,6 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
               )}
             </div>
 
-            {/* Seção de Login Diário */}
-            <div className="p-4 border-t border-gray-200">
-              <DailyLoginSection showTitle={false} />
-            </div>
 
             {/* Ganhos recentes */}
             <div className="p-4">{/* Added border-t border-gray-200 to separate sections */}

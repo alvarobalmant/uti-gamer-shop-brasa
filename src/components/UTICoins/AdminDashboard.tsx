@@ -30,7 +30,7 @@ interface SystemStats {
 
 interface SystemConfig {
   system_enabled: boolean;
-  daily_login_amount: number;
+  
   scroll_amount: number;
   max_scroll_per_day: number;
   scroll_cooldown_minutes: number;
@@ -53,7 +53,7 @@ const AdminDashboard: React.FC = () => {
   });
   const [config, setConfig] = useState<SystemConfig>({
     system_enabled: true,
-    daily_login_amount: 50,
+    
     scroll_amount: 2,
     max_scroll_per_day: 50,
     scroll_cooldown_minutes: 1,
@@ -348,17 +348,6 @@ const AdminDashboard: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="daily-login">Moedas por Login Diário</Label>
-                  <Input
-                    id="daily-login"
-                    type="number"
-                    value={config.daily_login_amount}
-                    onChange={(e) => 
-                      setConfig(prev => ({ ...prev, daily_login_amount: parseInt(e.target.value) || 0 }))
-                    }
-                  />
-                </div>
 
                 <div>
                   <Label htmlFor="scroll-amount">Moedas por Scroll</Label>

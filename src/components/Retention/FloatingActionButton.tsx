@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useToast } from '@/hooks/use-toast';
-import { DailyLoginSection } from './DailyLoginSection';
+
 import { UTICoinsConditional } from './UTICoinsConditional';
 
 export const FloatingActionButton: React.FC = () => {
@@ -50,10 +50,6 @@ export const FloatingActionButton: React.FC = () => {
               </div>
             </div>
 
-            {/* Seção de Login Diário */}
-            <div className="mb-4">
-              <DailyLoginSection showTitle={true} />
-            </div>
 
             {/* Ações rápidas */}
             <div className="space-y-2">
