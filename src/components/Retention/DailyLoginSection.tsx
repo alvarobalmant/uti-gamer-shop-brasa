@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Coins, Clock, TrendingUp, Calendar, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useUTICoins } from '@/hooks/useUTICoins';
-import { useUserStreak } from '@/hooks/useUserStreak';
+import { useDailyBonusBrasilia } from '@/hooks/useDailyBonusBrasilia';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
@@ -14,7 +14,7 @@ interface DailyLoginSectionProps {
 export const DailyLoginSection: React.FC<DailyLoginSectionProps> = ({ showTitle = true }) => {
   const [isClaimingDaily, setIsClaimingDaily] = useState(false);
   const { processDailyLogin } = useUTICoins();
-  const { streak, timer, calculateNextMultiplier, calculateMultiplierPercentage, refreshStreak } = useUserStreak();
+  const { streak, timer, calculateNextMultiplier, calculateMultiplierPercentage, refreshStreak } = useDailyBonusBrasilia();
   const { toast } = useToast();
 
   const currentMultiplier = streak?.streak_multiplier || 1.0;
@@ -157,8 +157,13 @@ export const DailyLoginSection: React.FC<DailyLoginSectionProps> = ({ showTitle 
               {formatTime(timer.hoursUntilNext, timer.minutesUntilNext, timer.secondsUntilNext)}
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              Volte amanhã para continuar sua sequência!
+              Renovação às 20h (Horário de Brasília)
             </div>
+            {timer.lastClaim && (
+              <div className="text-xs text-gray-400 mt-1">
+                Último resgate: {new Date(timer.lastClaim).toLocaleString('pt-BR')}
+              </div>
+            )}
           </div>
         </div>
       )}

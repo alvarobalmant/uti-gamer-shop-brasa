@@ -3,11 +3,8 @@ import { useState, useEffect, createContext, useContext, useCallback } from 'rea
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { securityMonitor } from '@/lib/security';
-import { sessionMonitor } from '@/utils/sessionMonitor';
-import { jwtErrorInterceptor } from '@/utils/jwtErrorInterceptor';
-import { offlineTokenDetector } from '@/utils/offlineTokenDetector';
-
+import { handleSupabaseRetry, logSupabaseError, invalidateSupabaseCache } from '@/utils/supabaseErrorHandler';
+import { sessionMonitor, logSessionDiagnostics } from '@/utils/sessionMonitor';
 
 interface AuthContextType {
   user: User | null;
@@ -15,9 +12,10 @@ interface AuthContextType {
   isAdmin: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
-  invalidateSession: (sessionId: string) => Promise<void>;
+  refreshSession: () => Promise<Session | null>;
+  clearAuthCache: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,120 +25,119 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [sessionRecovering, setSessionRecovering] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const { toast } = useToast();
 
-  // Session recovery callback
-  const handleSessionRecovery = useCallback(() => {
-    console.log('🔄 [AuthProvider] Session recovery initiated');
-    setSessionRecovering(true);
+  // Improved admin role checking with retry logic
+  const checkAdminRole = useCallback(async (userId: string) => {
+    return handleSupabaseRetry(
+      async () => {
+        const { data: profile, error } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', userId)
+          .single();
+        
+        if (error) throw error;
+        return profile?.role === 'admin';
+      },
+      'Admin Role Check',
+      2
+    );
+  }, []);
+
+  // Session validation function
+  const validateSession = useCallback(async (currentSession: Session | null) => {
+    if (!currentSession) return false;
     
-    // Clear recovery state after a short delay
-    setTimeout(() => {
-      setSessionRecovering(false);
-      toast({
-        title: "Sessão recuperada",
-        description: "Sua sessão foi restaurada automaticamente.",
-      });
-    }, 2000);
-  }, [toast]);
-  
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        console.warn('[AUTH] Session validation failed:', error);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.warn('[AUTH] Session validation error:', error);
+      return false;
+    }
+  }, []);
+
+  // Session refresh function
+  const refreshSession = useCallback(async () => {
+    try {
+      console.log('[AUTH] Refreshing session...');
+      const { data, error } = await supabase.auth.refreshSession();
+      
+      if (error) {
+        logSupabaseError(error, 'Session Refresh');
+        throw error;
+      }
+      
+      console.log('[AUTH] Session refreshed successfully');
+      return data.session;
+    } catch (error) {
+      console.error('[AUTH] Failed to refresh session:', error);
+      // Clear invalid session
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
+      throw error;
+    }
+  }, []);
+
+  // Clear auth cache function
+  const clearAuthCache = useCallback(() => {
+    console.log('[AUTH] Clearing auth cache...');
+    invalidateSupabaseCache();
+    setSession(null);
+    setUser(null);
+    setIsAdmin(false);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
     
-    // Initialize JWT error interceptor
-    jwtErrorInterceptor.initialize(handleSessionRecovery);
-    
-    // Start session monitoring with ghost state detection
-    sessionMonitor.startMonitoring(() => {
-      console.warn('👻 [AuthProvider] Ghost state detected, initiating recovery');
-      handleSessionRecovery();
-    });
-    
-    // Set up auth state listener first
+    // Enhanced auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, newSession) => {
         if (!mounted) return;
         
-        console.log('🔄 [Auth] State change:', event, session?.user?.email);
+        console.log(`[AUTH] Auth state change: ${event}`, {
+          hasSession: !!newSession,
+          userId: newSession?.user?.id
+        });
         
-        // Handle different auth events
-        if (event === 'SIGNED_OUT') {
-          setSession(null);
-          setUser(null);
-          setIsAdmin(false);
-          setLoading(false);
-          sessionMonitor.stopMonitoring();
-          return;
+        // Handle specific events
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          console.log(`[AUTH] Handling ${event}`);
         }
         
-        if (event === 'TOKEN_REFRESHED') {
-          console.log('✅ [Auth] Token refreshed successfully');
-          setSessionRecovering(false); // Clear recovery state if it was active
-        } else if (event === 'SIGNED_IN' && session) {
-          // Restart monitoring when user signs in
-          sessionMonitor.startMonitoring(() => {
-            console.warn('👻 [AuthProvider] Ghost state detected, initiating recovery');
-            handleSessionRecovery();
-          });
-        }
+        // Update session and user state immediately (synchronous only)
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        setSessionChecked(true);
         
-        // Update session state immediately (synchronous)
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Defer async operations
-        if (session?.user) {
+        if (newSession?.user) {
+          // Defer admin role check to avoid auth deadlock
           setTimeout(async () => {
             if (!mounted) return;
             
             try {
-              // Check if session was manually invalidated
-              const { data: invalidatedSession } = await supabase
-                .from('invalidated_sessions')
-                .select('id')
-                .eq('session_id', session.access_token)
-                .maybeSingle();
-              
-              if (invalidatedSession && mounted) {
-                console.log('🚫 [Auth] Session was manually invalidated');
-                setSession(null);
-                setUser(null);
-                setIsAdmin(false);
-                setLoading(false);
-                return;
-              }
-              
-              // Check admin role with enhanced error handling
-              const { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', session.user.id)
-                .maybeSingle();
-              
-              if (profileError) {
-                console.error('🔄 [Auth] Error checking profile:', profileError);
-                
-                // If it's a JWT error, trigger recovery
-                if (profileError?.message?.toLowerCase().includes('jwt') || 
-                    profileError?.message?.toLowerCase().includes('unauthorized')) {
-                  handleSessionRecovery();
-                }
-              }
-              
+              const isAdminUser = await checkAdminRole(newSession.user.id);
               if (mounted) {
-                setIsAdmin(profile?.role === 'admin');
+                setIsAdmin(isAdminUser);
                 setLoading(false);
               }
             } catch (error) {
-              console.log('🔄 [Auth] Error in async checks (will retry):', error);
+              logSupabaseError(error, 'Admin Role Check');
               if (mounted) {
                 setIsAdmin(false);
                 setLoading(false);
               }
             }
-          }, 0);
+          }, 100);
         } else {
           setIsAdmin(false);
           setLoading(false);
@@ -148,72 +145,74 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Then check for existing session with enhanced error handling
-    const getInitialSession = async () => {
+    // Initialize session with better error handling
+    const initializeSession = async () => {
       try {
+        console.log('[AUTH] Initializing session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('🔄 [Auth] Error getting initial session:', error);
+          logSupabaseError(error, 'Session Initialization');
+          throw error;
+        }
+        
+        if (!session) {
+          console.log('[AUTH] No initial session found');
           if (mounted) {
             setLoading(false);
+            setSessionChecked(true);
           }
           return;
         }
-        
-        if (mounted) {
-          console.log('🔍 [Auth] Initial session check:', session?.user?.email);
-          setSession(session);
-          setUser(session?.user ?? null);
-          if (!session) {
-            setLoading(false);
-          }
+
+        // Validate the session
+        const isValid = await validateSession(session);
+        if (!isValid) {
+          console.warn('[AUTH] Invalid session detected, clearing...');
+          clearAuthCache();
+          return;
         }
+
+        console.log('[AUTH] Valid session found');
+        // Session state will be set by onAuthStateChange
+        
       } catch (error) {
-        console.error('🔄 [Auth] Unexpected error getting initial session:', error);
+        console.error('[AUTH] Session initialization failed:', error);
         if (mounted) {
-          setLoading(false);
+          clearAuthCache();
         }
       }
     };
 
-    getInitialSession();
+    initializeSession();
+
+    // Start session monitoring in development or when debugging
+    if (process.env.NODE_ENV === 'development') {
+      setTimeout(() => {
+        sessionMonitor.startMonitoring(60000, (info) => {
+          if (!info.sessionValid && info.hasSession) {
+            console.warn('[AUTH] Session health issue detected:', info);
+            logSessionDiagnostics();
+          }
+        });
+      }, 5000);
+    }
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
       sessionMonitor.stopMonitoring();
-      jwtErrorInterceptor.destroy();
-      // Note: offlineTokenDetector cleanup is handled automatically
     };
-  }, [handleSessionRecovery]);
+  }, [checkAdminRole, validateSession, clearAuthCache]);
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Check rate limiting before attempting login
-      if (!securityMonitor.checkRateLimit(`login_${email}`, 5, 900000)) { // 5 attempts per 15 minutes
-        throw new Error('Too many login attempts. Please try again later.');
-      }
-
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (error) {
-        securityMonitor.logEvent({
-          type: 'auth_failure',
-          message: 'Login failed',
-          details: { email, error: error.message }
-        });
-        throw error;
-      }
-      
-      securityMonitor.logEvent({
-        type: 'auth_failure', // Using existing type for consistency
-        message: 'User logged in successfully',
-        details: { email }
-      });
+      if (error) throw error;
       
       toast({
         title: "Login realizado com sucesso!",
@@ -230,68 +229,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name,
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name },
+          emailRedirectTo: `${window.location.origin}/`
         },
-        emailRedirectTo: `${window.location.origin}/`
-      },
-    });
-    
-    if (error) {
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Verifique seu email para confirmar sua conta.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro no cadastro",
+        description: error.message,
+        variant: "destructive",
+      });
       throw error;
     }
-    
-    return { error: null };
   };
 
   const signOut = async () => {
     try {
-      const currentSession = session;
-      const isAutoLoginSession = localStorage.getItem('admin_auto_login_session') === 'true';
+      const { error } = await supabase.auth.signOut();
       
-      // Log security event
-      securityMonitor.logEvent({
-        type: 'auth_failure',
-        message: 'User signed out',
-        details: { userId: currentSession?.user?.id, isAutoLogin: isAutoLoginSession }
-      });
+      if (error) throw error;
       
-      // Se há uma sessão válida e usuário autenticado, marcar como invalidada
-      if (currentSession?.access_token && currentSession?.user?.id) {
-        try {
-          await supabase
-            .from('invalidated_sessions')
-            .insert({
-              session_id: currentSession.access_token,
-              user_id: currentSession.user.id
-            });
-        } catch (invalidateError: any) {
-          console.log('Erro ao invalidar sessão:', invalidateError.message);
-          // Continua com o logout mesmo se falhar ao invalidar
-        }
-      }
-      
-      // Clear any cached admin status
-      sessionStorage.removeItem('isAdmin');
-      
-      // Limpar flag de auto-login se existir
-      if (isAutoLoginSession) {
-        localStorage.removeItem('admin_auto_login_session');
-      }
-      
-      // Tentar logout no servidor, mas não falhar se a sessão não existir
-      try {
-        await supabase.auth.signOut();
-      } catch (serverError: any) {
-        // Para sessões de auto-login ou sessões inválidas, o servidor pode não reconhecer
-        console.log('Logout do servidor falhou (esperado para auto-login):', serverError.message);
-      }
-      
-      // Sempre limpar estado local independentemente do resultado do servidor
+      // Clear state immediately
       setSession(null);
       setUser(null);
       setIsAdmin(false);
@@ -300,7 +270,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         title: "Logout realizado com sucesso!",
       });
     } catch (error: any) {
-      // Em caso de erro geral, ainda fazer limpeza local
+      // Even if server logout fails, clear local state
       setSession(null);
       setUser(null);
       setIsAdmin(false);
@@ -308,30 +278,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       toast({
         title: "Logout realizado com sucesso!",
       });
-    }
-  };
-
-  const invalidateSession = async (sessionId: string) => {
-    try {
-      if (!session) return;
-      
-      await supabase.from('invalidated_sessions').insert({
-        user_id: session.user.id,
-        session_id: sessionId
-      });
-      
-      securityMonitor.logEvent({
-        type: 'privilege_escalation',
-        message: 'Session manually invalidated',
-        details: { sessionId }
-      });
-      
-      // Force sign out if it's the current session
-      if (session.access_token === sessionId) {
-        await signOut();
-      }
-    } catch (error: any) {
-      console.error('Error invalidating session:', error);
     }
   };
 
@@ -344,7 +290,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signIn,
       signUp,
       signOut,
-      invalidateSession,
+      refreshSession,
+      clearAuthCache,
     }}>
       {children}
     </AuthContext.Provider>

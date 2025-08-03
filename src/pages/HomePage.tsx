@@ -6,17 +6,10 @@ import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
 
 const HomePage = () => {
-  const { layoutItems: layout, loading, error, fetchLayout } = useHomepageLayout();
+  const { layoutItems: layout, loading, error } = useHomepageLayout();
 
   if (loading) return <LoadingState />;
-  if (error) return (
-    <ErrorState 
-      message={error} 
-      onRetry={fetchLayout}
-      autoRetry={true}
-      title="Erro ao carregar layout da página"
-    />
-  );
+  if (error) return <ErrorState message={error} />;
 
   return (
     <div className="min-h-screen bg-gray-50">

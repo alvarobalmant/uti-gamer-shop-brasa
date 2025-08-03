@@ -61,7 +61,7 @@ const UserSubscriptionManager = () => {
       console.log('Iniciando carregamento de usuários...');
       
       const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -465,7 +465,7 @@ const UserSubscriptionManager = () => {
   const fetchUpdatedUser = async (userId: string): Promise<UserWithSubscription | null> => {
     try {
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single();
@@ -914,7 +914,7 @@ const UserSubscriptionManager = () => {
       console.log('Iniciando carregamento de usuários...');
       
       const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -1318,7 +1318,7 @@ const UserSubscriptionManager = () => {
   const fetchUpdatedUser = async (userId: string): Promise<UserWithSubscription | null> => {
     try {
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single();

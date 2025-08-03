@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { retrySupabaseQuery } from '@/utils/retryWithAuth';
 
 interface UTICoinsSettings {
   enabled: boolean;
@@ -24,25 +23,20 @@ export const useUTICoinsSettings = () => {
     }
 
     try {
-      const { data, error } = await retrySupabaseQuery(
-        async () => {
-          return await supabase
-            .from('site_settings')
-            .select('setting_value')
-            .eq('setting_key', 'uti_coins_settings')
-            .maybeSingle();
-        },
-        'loadUTICoinsSettings'
-      );
+      // Usar nova arquitetura consolidada em coin_system_config
+      const { data, error } = await supabase
+        .from('coin_system_config')
+        .select('setting_value')
+        .eq('setting_key', 'system_enabled')
+        .single();
 
       if (error) {
         console.warn('Erro ao carregar configurações UTI Coins:', error);
         setIsEnabled(false);
-        setLoading(false);
         return;
       }
 
-      const newIsEnabled = (data?.setting_value as any)?.enabled || false;
+      const newIsEnabled = data?.setting_value === 'true' || data?.setting_value === true;
       console.log('[UTI COINS DEBUG] Settings loaded:', { data, newIsEnabled });
       setIsEnabled(newIsEnabled);
       
@@ -51,7 +45,7 @@ export const useUTICoinsSettings = () => {
         isEnabled: newIsEnabled,
         timestamp: Date.now()
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao carregar configurações UTI Coins:', error);
       setIsEnabled(false);
     } finally {
@@ -65,7 +59,7 @@ export const useUTICoinsSettings = () => {
     // Criar nome único para evitar conflitos de canal
     const channelName = `uti_coins_settings_${Math.random().toString(36).substring(7)}`;
     
-    // Listener para mudanças em tempo real
+    // Listener para mudanças em tempo real na nova tabela
     const channel = supabase
       .channel(channelName)
       .on(
@@ -73,12 +67,12 @@ export const useUTICoinsSettings = () => {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'site_settings',
-          filter: 'setting_key=eq.uti_coins_settings'
+          table: 'coin_system_config',
+          filter: 'setting_key=eq.system_enabled'
         },
         (payload) => {
           if (payload.new?.setting_value) {
-            const newIsEnabled = (payload.new.setting_value as any)?.enabled || false;
+            const newIsEnabled = payload.new.setting_value === 'true' || payload.new.setting_value === true;
             setIsEnabled(newIsEnabled);
             
             // Atualizar cache global

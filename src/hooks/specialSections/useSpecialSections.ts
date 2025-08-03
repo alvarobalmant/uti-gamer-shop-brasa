@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
-import { retrySupabaseQuery } from '@/utils/retryWithAuth';
 
 // Use the actual database types
 type SpecialSectionRow = Database["public"]["Tables"]["special_sections"]["Row"];
@@ -112,7 +111,7 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
       setLoading(true);
       setError(null);
 
-      let baseQuery = supabase
+      let query = supabase
         .from('special_sections')
         .select('*', { count: 'exact' })
         .order('display_order', { ascending: true })
@@ -120,24 +119,21 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
 
       // Aplicar filtros
       if (type) {
-        baseQuery = baseQuery.eq('background_type', type);
+        query = query.eq('background_type', type);
       }
       
       if (visibility) {
-        baseQuery = baseQuery.eq('is_active', visibility === 'visible');
+        query = query.eq('is_active', visibility === 'visible');
       }
 
-      const result = await retrySupabaseQuery(
-        async () => await baseQuery,
-        'fetchSpecialSections'
-      );
+      const { data, error: fetchError, count } = await query;
 
-      if (result.error) {
-        throw result.error;
+      if (fetchError) {
+        throw fetchError;
       }
 
-      setSections(result.data || []);
-      setTotal((result as any).count || 0);
+      setSections(data || []);
+      setTotal(count || 0);
     } catch (err) {
       console.error('Erro ao buscar seções:', err);
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
@@ -150,14 +146,11 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
   // Função para criar seção
   const createSection = useCallback(async (data: CreateSectionRequest): Promise<SpecialSection> => {
     try {
-      const { data: newSection, error: createError } = await retrySupabaseQuery(
-        async () => await supabase
-          .from('special_sections')
-          .insert([data])
-          .select()
-          .single(),
-        'createSpecialSection'
-      );
+      const { data: newSection, error: createError } = await supabase
+        .from('special_sections')
+        .insert([data])
+        .select()
+        .single();
 
       if (createError) throw createError;
       
@@ -175,15 +168,12 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
   const updateSection = useCallback(async (data: UpdateSectionRequest): Promise<SpecialSection> => {
     try {
       const { id, ...updateData } = data;
-      const { data: updatedSection, error: updateError } = await retrySupabaseQuery(
-        async () => await supabase
-          .from('special_sections')
-          .update(updateData)
-          .eq('id', id)
-          .select()
-          .single(),
-        'updateSpecialSection'
-      );
+      const { data: updatedSection, error: updateError } = await supabase
+        .from('special_sections')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
 
       if (updateError) throw updateError;
       
@@ -200,13 +190,10 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
   // Função para deletar seção
   const deleteSection = useCallback(async (id: string): Promise<void> => {
     try {
-      const { error: deleteError } = await retrySupabaseQuery(
-        async () => await supabase
-          .from('special_sections')
-          .delete()
-          .eq('id', id),
-        'deleteSpecialSection'
-      );
+      const { error: deleteError } = await supabase
+        .from('special_sections')
+        .delete()
+        .eq('id', id);
 
       if (deleteError) throw deleteError;
       
@@ -229,13 +216,10 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
       }));
 
       for (const update of updates) {
-        await retrySupabaseQuery(
-          async () => await supabase
-            .from('special_sections')
-            .update({ display_order: update.display_order })
-            .eq('id', update.id),
-          'reorderSpecialSection'
-        );
+        await supabase
+          .from('special_sections')
+          .update({ display_order: update.display_order })
+          .eq('id', update.id);
       }
       
       await fetchSections();

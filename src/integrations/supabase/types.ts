@@ -14,75 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      admin_login_links: {
-        Row: {
-          created_at: string | null
-          created_by: string
-          expires_at: string
-          id: string
-          is_active: boolean | null
-          token: string
-          used_at: string | null
-          used_by_ip: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by: string
-          expires_at: string
-          id?: string
-          is_active?: boolean | null
-          token: string
-          used_at?: string | null
-          used_by_ip?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string
-          expires_at?: string
-          id?: string
-          is_active?: boolean | null
-          token?: string
-          used_at?: string | null
-          used_by_ip?: string | null
-        }
-        Relationships: []
-      }
-      admin_security_logs: {
-        Row: {
-          action_type: string
-          admin_user_id: string
-          created_at: string | null
-          details: Json | null
-          id: string
-          ip_address: unknown | null
-          resource_id: string | null
-          resource_type: string | null
-          user_agent: string | null
-        }
-        Insert: {
-          action_type: string
-          admin_user_id: string
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          ip_address?: unknown | null
-          resource_id?: string | null
-          resource_type?: string | null
-          user_agent?: string | null
-        }
-        Update: {
-          action_type?: string
-          admin_user_id?: string
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          ip_address?: unknown | null
-          resource_id?: string | null
-          resource_type?: string | null
-          user_agent?: string | null
-        }
-        Relationships: []
-      }
       banners: {
         Row: {
           background_type: string | null
@@ -511,30 +442,6 @@ export type Database = {
           is_visible?: boolean
           section_key?: string
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      invalidated_sessions: {
-        Row: {
-          created_at: string
-          id: string
-          invalidated_at: string
-          session_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          invalidated_at?: string
-          session_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          invalidated_at?: string
-          session_id?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -1442,36 +1349,6 @@ export type Database = {
           },
         ]
       }
-      profiles: {
-        Row: {
-          created_at: string
-          email: string | null
-          id: string
-          is_pro_member: boolean | null
-          name: string | null
-          pro_expires_at: string | null
-          role: string
-        }
-        Insert: {
-          created_at?: string
-          email?: string | null
-          id: string
-          is_pro_member?: boolean | null
-          name?: string | null
-          pro_expires_at?: string | null
-          role?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string | null
-          id?: string
-          is_pro_member?: boolean | null
-          name?: string | null
-          pro_expires_at?: string | null
-          role?: string
-        }
-        Relationships: []
-      }
       promotional_ribbon_config: {
         Row: {
           background_color: string | null
@@ -1592,13 +1469,6 @@ export type Database = {
             referencedRelation: "coin_products"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "redemption_codes_redeemed_by_admin_fkey"
-            columns: ["redeemed_by_admin"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       security_flags: {
@@ -1607,30 +1477,36 @@ export type Database = {
           flag_type: string
           id: string
           metadata: Json | null
+          reason: string
           resolved: boolean | null
           resolved_at: string | null
           resolved_by: string | null
-          user_id: string | null
+          updated_at: string
+          user_id: string
         }
         Insert: {
           created_at?: string
           flag_type: string
           id?: string
           metadata?: Json | null
+          reason: string
           resolved?: boolean | null
           resolved_at?: string | null
           resolved_by?: string | null
-          user_id?: string | null
+          updated_at?: string
+          user_id: string
         }
         Update: {
           created_at?: string
           flag_type?: string
           id?: string
           metadata?: Json | null
+          reason?: string
           resolved?: boolean | null
           resolved_at?: string | null
           resolved_by?: string | null
-          user_id?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2295,14 +2171,34 @@ export type Database = {
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
           },
-          {
-            foreignKeyName: "user_favorites_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
+      }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string | null
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          name?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       user_savings: {
         Row: {
@@ -2352,13 +2248,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
-          },
-          {
-            foreignKeyName: "user_savings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -2435,13 +2324,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_user_subscriptions_user_id"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "user_subscriptions_plan_id_fkey"
             columns: ["plan_id"]
             isOneToOne: false
@@ -2452,43 +2334,25 @@ export type Database = {
       }
       usuarios: {
         Row: {
-          created_at: string
-          data_cadastro: string
-          data_expiracao: string | null
-          desconto: number | null
+          created_at: string | null
           email: string
           id: string
           nome: string | null
-          papel: string
-          plano: string | null
-          status_assinatura: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
-          data_cadastro?: string
-          data_expiracao?: string | null
-          desconto?: number | null
+          created_at?: string | null
           email: string
-          id?: string
+          id: string
           nome?: string | null
-          papel?: string
-          plano?: string | null
-          status_assinatura?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
-          data_cadastro?: string
-          data_expiracao?: string | null
-          desconto?: number | null
+          created_at?: string | null
           email?: string
           id?: string
           nome?: string | null
-          papel?: string
-          plano?: string | null
-          status_assinatura?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2650,8 +2514,22 @@ export type Database = {
           tuples_fetched: number
         }[]
       }
+      can_claim_daily_bonus_brasilia: {
+        Args: { p_user_id: string }
+        Returns: {
+          can_claim: boolean
+          period_start: string
+          period_end: string
+          next_reset: string
+          last_claim: string
+        }[]
+      }
       cancelar_assinatura: {
         Args: { user_id: string }
+        Returns: boolean
+      }
+      check_suspicious_activity: {
+        Args: { p_user_id: string; p_action: string }
         Returns: boolean
       }
       cleanup_old_data: {
@@ -2663,6 +2541,10 @@ export type Database = {
         Returns: undefined
       }
       cleanup_old_security_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_uti_coins_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
@@ -2711,6 +2593,15 @@ export type Database = {
           plan_name: string
           discount_percentage: number
           end_date: string
+        }[]
+      }
+      get_current_bonus_period_brasilia: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          period_start: string
+          period_end: string
+          can_claim: boolean
+          next_reset: string
         }[]
       }
       get_user_role: {
@@ -2779,6 +2670,10 @@ export type Database = {
         }[]
       }
       process_daily_login: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
+      process_daily_login_brasilia: {
         Args: { p_user_id: string }
         Returns: Json
       }

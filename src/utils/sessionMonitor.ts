@@ -1,223 +1,242 @@
+// Session monitoring and debugging utilities
 import { supabase } from '@/integrations/supabase/client';
+import { Session, User } from '@supabase/supabase-js';
 
-// Session expiration monitoring and JWT health management
-interface SessionMetrics {
-  jwtExpirations: number;
-  retrySuccesses: number;
-  retryFailures: number;
-  lastExpiration: string | null;
-  forceRefreshCount: number;
-  ghostStateDetections: number;
+export interface SessionInfo {
+  hasSession: boolean;
+  sessionValid: boolean;
+  tokenExpiry: Date | null;
+  refreshTokenExpiry: Date | null;
+  userId: string | null;
+  userEmail: string | null;
+  clockDrift: number;
+  timeChecked: Date;
 }
 
-interface SessionHealth {
-  isHealthy: boolean;
-  lastChecked: string;
-  consecutiveFailures: number;
-  tokenAge?: number;
-  expiresIn?: number;
-}
+export class SessionMonitor {
+  private static instance: SessionMonitor;
+  private monitoringInterval: NodeJS.Timeout | null = null;
+  private callbacks: Array<(info: SessionInfo) => void> = [];
 
-class SessionMonitor {
-  private metrics: SessionMetrics = {
-    jwtExpirations: 0,
-    retrySuccesses: 0,
-    retryFailures: 0,
-    lastExpiration: null,
-    forceRefreshCount: 0,
-    ghostStateDetections: 0
-  };
-
-  private sessionHealth: SessionHealth = {
-    isHealthy: true,
-    lastChecked: new Date().toISOString(),
-    consecutiveFailures: 0
-  };
-
-  private healthCheckInterval: NodeJS.Timeout | null = null;
-  private onGhostStateCallback: (() => void) | null = null;
-
-  // Start proactive session monitoring
-  startMonitoring(onGhostState?: () => void) {
-    this.onGhostStateCallback = onGhostState || null;
-    
-    // Check session health every 30 seconds
-    this.healthCheckInterval = setInterval(() => {
-      this.checkSessionHealth();
-    }, 30000);
-
-    console.log('🔍 [SessionMonitor] Proactive monitoring started');
-  }
-
-  stopMonitoring() {
-    if (this.healthCheckInterval) {
-      clearInterval(this.healthCheckInterval);
-      this.healthCheckInterval = null;
+  static getInstance(): SessionMonitor {
+    if (!SessionMonitor.instance) {
+      SessionMonitor.instance = new SessionMonitor();
     }
-    console.log('⏹️ [SessionMonitor] Monitoring stopped');
+    return SessionMonitor.instance;
   }
 
-  // Proactively check if session is in ghost state
-  private async checkSessionHealth() {
+  // Check current session status
+  async checkSessionStatus(): Promise<SessionInfo> {
+    const timeChecked = new Date();
+    
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       
-      if (!session) {
-        this.sessionHealth.isHealthy = true;
-        this.sessionHealth.consecutiveFailures = 0;
-        return;
+      if (error || !session) {
+        return {
+          hasSession: false,
+          sessionValid: false,
+          tokenExpiry: null,
+          refreshTokenExpiry: null,
+          userId: null,
+          userEmail: null,
+          clockDrift: 0,
+          timeChecked
+        };
       }
 
-      // Check if token is expired or about to expire
-      const now = Math.floor(Date.now() / 1000);
-      const tokenExp = session.expires_at || 0;
-      const timeUntilExpiry = tokenExp - now;
+      // Calculate clock drift
+      const serverTime = this.extractTokenTimestamp(session.access_token);
+      const clockDrift = serverTime ? Math.abs(Date.now() - serverTime) : 0;
 
-      this.sessionHealth.tokenAge = now - (session.user?.created_at ? Math.floor(new Date(session.user.created_at).getTime() / 1000) : now);
-      this.sessionHealth.expiresIn = timeUntilExpiry;
+      // Parse token expiry
+      const tokenExpiry = session.expires_at ? new Date(session.expires_at * 1000) : null;
+      const refreshTokenExpiry = session.refresh_token ? this.extractRefreshTokenExpiry(session.refresh_token) : null;
 
-      // Token expired or expiring soon (within 5 minutes)
-      if (timeUntilExpiry <= 300) {
-        console.warn(`⚠️ [SessionMonitor] Token expiring soon: ${timeUntilExpiry}s remaining`);
-        await this.attemptForceRefresh();
-        return;
-      }
+      // Validate session
+      const sessionValid = await this.validateSession(session);
 
-      // Test if token actually works by making a simple auth request
-      const { error: testError } = await supabase.auth.getUser();
-      
-      if (testError) {
-        this.detectGhostState();
-        await this.attemptForceRefresh();
-      } else {
-        this.sessionHealth.isHealthy = true;
-        this.sessionHealth.consecutiveFailures = 0;
-      }
-
+      return {
+        hasSession: true,
+        sessionValid,
+        tokenExpiry,
+        refreshTokenExpiry,
+        userId: session.user?.id || null,
+        userEmail: session.user?.email || null,
+        clockDrift,
+        timeChecked
+      };
     } catch (error) {
-      console.error('❌ [SessionMonitor] Health check failed:', error);
-      this.sessionHealth.consecutiveFailures++;
-    }
-
-    this.sessionHealth.lastChecked = new Date().toISOString();
-  }
-
-  // Detect ghost state (user appears logged in but has no valid permissions)
-  private detectGhostState() {
-    this.metrics.ghostStateDetections++;
-    this.sessionHealth.isHealthy = false;
-    this.sessionHealth.consecutiveFailures++;
-
-    console.error('👻 [SessionMonitor] Ghost state detected - user appears logged in but lacks permissions');
-
-    // Trigger callback to notify the application
-    if (this.onGhostStateCallback) {
-      this.onGhostStateCallback();
+      console.error('[SESSION_MONITOR] Error checking session:', error);
+      return {
+        hasSession: false,
+        sessionValid: false,
+        tokenExpiry: null,
+        refreshTokenExpiry: null,
+        userId: null,
+        userEmail: null,
+        clockDrift: 0,
+        timeChecked
+      };
     }
   }
 
-  // Force token refresh when issues are detected
-  private async attemptForceRefresh(): Promise<boolean> {
+  // Start monitoring session health
+  startMonitoring(intervalMs: number = 30000, callback?: (info: SessionInfo) => void) {
+    if (callback) {
+      this.callbacks.push(callback);
+    }
+
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+    }
+
+    this.monitoringInterval = setInterval(async () => {
+      const info = await this.checkSessionStatus();
+      console.log('[SESSION_MONITOR] Session status:', info);
+      
+      // Notify all callbacks
+      this.callbacks.forEach(cb => cb(info));
+      
+      // Auto-recovery logic
+      if (info.hasSession && !info.sessionValid) {
+        console.warn('[SESSION_MONITOR] Invalid session detected, attempting recovery...');
+        await this.attemptSessionRecovery();
+      }
+    }, intervalMs);
+
+    console.log('[SESSION_MONITOR] Started monitoring with interval:', intervalMs);
+  }
+
+  stopMonitoring() {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+    this.callbacks = [];
+    console.log('[SESSION_MONITOR] Stopped monitoring');
+  }
+
+  // Attempt to recover an invalid session
+  private async attemptSessionRecovery(): Promise<boolean> {
     try {
-      console.log('🔄 [SessionMonitor] Attempting force token refresh...');
-      this.metrics.forceRefreshCount++;
-
-      const { data: { session }, error } = await supabase.auth.refreshSession();
-
-      if (error) {
-        console.error('❌ [SessionMonitor] Force refresh failed:', error);
-        this.sessionHealth.consecutiveFailures++;
+      console.log('[SESSION_MONITOR] Attempting session recovery...');
+      
+      // Try to refresh the session
+      const { data, error } = await supabase.auth.refreshSession();
+      
+      if (error || !data.session) {
+        console.warn('[SESSION_MONITOR] Session refresh failed:', error);
+        
+        // Force sign out if refresh fails
+        await supabase.auth.signOut();
         return false;
       }
-
-      if (session) {
-        console.log('✅ [SessionMonitor] Force refresh successful');
-        this.sessionHealth.isHealthy = true;
-        this.sessionHealth.consecutiveFailures = 0;
-        return true;
-      }
-
-      return false;
+      
+      console.log('[SESSION_MONITOR] Session recovery successful');
+      return true;
     } catch (error) {
-      console.error('❌ [SessionMonitor] Force refresh error:', error);
-      this.sessionHealth.consecutiveFailures++;
+      console.error('[SESSION_MONITOR] Session recovery failed:', error);
       return false;
     }
   }
 
-  // Enhanced JWT expiration logging with proactive response
-  logJWTExpiration(context: string) {
-    this.metrics.jwtExpirations++;
-    this.metrics.lastExpiration = new Date().toISOString();
-    this.sessionHealth.isHealthy = false;
+  // Validate a session by making a test API call
+  private async validateSession(session: Session): Promise<boolean> {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        console.warn('[SESSION_MONITOR] Session validation failed:', error);
+        return false;
+      }
+      
+      // Additional validation: check if user ID matches
+      return user.id === session.user.id;
+    } catch (error) {
+      console.warn('[SESSION_MONITOR] Session validation error:', error);
+      return false;
+    }
+  }
+
+  // Extract timestamp from JWT token
+  private extractTokenTimestamp(token: string): number | null {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+      return decoded.iat ? decoded.iat * 1000 : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // Extract refresh token expiry (approximation)
+  private extractRefreshTokenExpiry(refreshToken: string): Date | null {
+    try {
+      // Refresh tokens typically last much longer, but we can't decode them
+      // Return an approximation based on typical Supabase settings
+      return new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)); // 30 days
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // Get diagnostic information for debugging
+  async getDiagnosticInfo(): Promise<any> {
+    const sessionInfo = await this.checkSessionStatus();
     
-    console.warn(`🔥 [SessionMonitor] JWT expired in ${context} at ${this.metrics.lastExpiration}`);
-    
-    // Different handling for offline-related expirations
-    if (context.includes('offline') || context.includes('focus')) {
-      console.log(`🔄 [SessionMonitor] Offline/focus JWT expiration detected, handling accordingly`);
-    }
-    
-    // Immediately attempt refresh
-    this.attemptForceRefresh();
-  }
-
-  logRetrySuccess(context: string, attempt: number) {
-    this.metrics.retrySuccesses++;
-    this.sessionHealth.consecutiveFailures = Math.max(0, this.sessionHealth.consecutiveFailures - 1);
-    console.log(`✅ [SessionMonitor] Retry succeeded in ${context} after ${attempt} attempts`);
-  }
-
-  logRetryFailure(context: string) {
-    this.metrics.retryFailures++;
-    this.sessionHealth.consecutiveFailures++;
-    console.error(`❌ [SessionMonitor] Retry failed in ${context}`);
-  }
-
-  // Check if session needs immediate attention
-  needsAttention(): boolean {
-    return !this.sessionHealth.isHealthy || 
-           this.sessionHealth.consecutiveFailures >= 3 ||
-           this.metrics.ghostStateDetections > 0;
-  }
-
-  // Get specific attention reason for better UX
-  getAttentionReason(): string {
-    if (this.metrics.ghostStateDetections > 0) {
-      return 'ghost-state';
-    }
-    if (this.sessionHealth.consecutiveFailures >= 3) {
-      return 'multiple-failures';
-    }
-    if (!this.sessionHealth.isHealthy) {
-      return 'unhealthy';
-    }
-    return 'none';
-  }
-
-  getMetrics(): SessionMetrics {
-    return { ...this.metrics };
-  }
-
-  getHealth(): SessionHealth {
-    return { ...this.sessionHealth };
-  }
-
-  resetMetrics() {
-    this.metrics = {
-      jwtExpirations: 0,
-      retrySuccesses: 0,
-      retryFailures: 0,
-      lastExpiration: null,
-      forceRefreshCount: 0,
-      ghostStateDetections: 0
+    return {
+      session: sessionInfo,
+      environment: {
+        userAgent: navigator.userAgent,
+        localStorage: !!window.localStorage,
+        sessionStorage: !!window.sessionStorage,
+        cookiesEnabled: navigator.cookieEnabled,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+      },
+      supabaseKeys: {
+        hasUrl: !!process.env.VITE_SUPABASE_URL,
+        hasAnonKey: !!process.env.VITE_SUPABASE_ANON_KEY,
+      },
+      storageData: this.getStorageData()
     };
-    this.sessionHealth = {
-      isHealthy: true,
-      lastChecked: new Date().toISOString(),
-      consecutiveFailures: 0
-    };
+  }
+
+  // Get relevant data from browser storage
+  private getStorageData() {
+    const data: any = {};
+    
+    try {
+      // Check localStorage for Supabase data
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('supabase') || key.includes('sb-')) {
+          data[`localStorage.${key}`] = localStorage.getItem(key)?.substring(0, 100) + '...';
+        }
+      });
+      
+      // Check sessionStorage for Supabase data
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.includes('supabase') || key.includes('sb-')) {
+          data[`sessionStorage.${key}`] = sessionStorage.getItem(key)?.substring(0, 100) + '...';
+        }
+      });
+    } catch (error) {
+      data.storageError = 'Unable to access storage';
+    }
+    
+    return data;
   }
 }
 
-export const sessionMonitor = new SessionMonitor();
+// Export singleton instance
+export const sessionMonitor = SessionMonitor.getInstance();
+
+// Helper function to log session diagnostics
+export const logSessionDiagnostics = async () => {
+  const diagnostics = await sessionMonitor.getDiagnosticInfo();
+  console.group('🔍 [SESSION_DIAGNOSTICS]');
+  console.log('Full diagnostic information:', diagnostics);
+  console.groupEnd();
+  return diagnostics;
+};

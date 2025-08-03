@@ -292,43 +292,11 @@ export class StickyManager {
     this.updateHeaderHeight();
   }
 
-  // CORREÇÃO DO BUG: Método para limpar todos os estados
-  clearAllStates() {
-    console.log('[STICKY FIX] Limpando todos os estados do manager...');
-    
-    // Limpar completamente os estados
-    this.elementStates.clear();
-    
-    // Reset mais agressivo dos elementos
-    this.elements.forEach((stickyElement) => {
-      const element = stickyElement.element;
-      
-      // Reset completo de todos os estilos possíveis
-      element.style.position = '';
-      element.style.top = '';
-      element.style.left = '';
-      element.style.width = '';
-      element.style.height = '';
-      element.style.transform = '';
-      element.style.zIndex = '';
-      element.style.willChange = '';
-      
-      // Forçar reflow
-      element.offsetHeight;
-    });
-    
-    // Reset do scroll interno
-    this.scrollY = window.scrollY;
-    
-    console.log('[STICKY FIX] Estados limpos, scroll resetado para:', this.scrollY);
-  }
-
   destroy() {
     this.elements.forEach((stickyElement) => {
       this.removeElement(stickyElement.id);
     });
     this.elements.clear();
-    this.elementStates.clear();
   }
 }
 

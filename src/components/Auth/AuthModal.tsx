@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,18 +23,36 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
+
+  // Close modal automatically when user becomes logged in
+  useEffect(() => {
+    if (user && isOpen) {
+      console.log('[AUTH MODAL] User detected, auto-closing modal');
+      onClose();
+    }
+  }, [user, isOpen, onClose]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
+      console.log('[AUTH MODAL] Attempting login...');
       await signIn(email, password);
-      onClose();
+      console.log('[AUTH MODAL] Login successful, closing modal');
+      
+      // Reset form fields
       setEmail('');
       setPassword('');
+      
+      // Close modal after successful login
+      setTimeout(() => {
+        onClose();
+      }, 100); // Small delay to ensure state updates
+      
     } catch (error) {
+      console.error('[AUTH MODAL] Login failed:', error);
       // Error already handled in useAuth
     } finally {
       setLoading(false);
@@ -46,12 +64,22 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     setLoading(true);
     
     try {
+      console.log('[AUTH MODAL] Attempting signup...');
       await signUp(email, password, name);
-      onClose();
+      console.log('[AUTH MODAL] Signup successful, closing modal');
+      
+      // Reset form fields
       setEmail('');
       setPassword('');
       setName('');
+      
+      // Close modal after successful signup
+      setTimeout(() => {
+        onClose();
+      }, 100); // Small delay to ensure state updates
+      
     } catch (error) {
+      console.error('[AUTH MODAL] Signup failed:', error);
       // Error already handled in useAuth
     } finally {
       setLoading(false);
