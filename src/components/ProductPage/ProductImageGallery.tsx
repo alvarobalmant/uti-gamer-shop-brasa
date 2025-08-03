@@ -74,7 +74,7 @@ const ProductImageGallery = ({ product }: ProductImageGalleryProps) => {
       </div>
 
       {/* Main Image Display */}
-      <div className="relative flex-1 aspect-square bg-white rounded-lg overflow-hidden flex items-center justify-center"> {/* Consistent aspect ratio */}
+      <div className="relative flex-1 aspect-square bg-white rounded-lg overflow-hidden border border-border/50 flex items-center justify-center"> {/* Consistent aspect ratio */}
         {isLoading && (
           <Skeleton className="absolute inset-0 w-full h-full" />
         )}
