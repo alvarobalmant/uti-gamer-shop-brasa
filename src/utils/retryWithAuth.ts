@@ -101,7 +101,6 @@ export async function retryWithAuth<T>(
       
       if (attempt > 0) {
         console.log(`✅ [RetryAuth:${context}] Success after ${attempt} retries`);
-        sessionMonitor.logRetrySuccess(context, attempt);
       }
       
       return {
@@ -116,15 +115,15 @@ export async function retryWithAuth<T>(
       
       const isJWTError = isJWTExpiredError(error);
       
-      // Log JWT expiration to session monitor
+      // Log JWT expiration
       if (isJWTError) {
-        sessionMonitor.logJWTExpiration(context);
+        console.log(`🔑 [RetryAuth:${context}] JWT token expired`);
       }
       
       // If it's not a JWT error or we're on the last attempt, don't retry
       if (!isJWTError || attempt === maxRetries) {
         if (isJWTError) {
-          sessionMonitor.logRetryFailure(context);
+          console.log(`❌ [RetryAuth:${context}] Retry failed after JWT expiration`);
         }
         break;
       }
@@ -136,7 +135,6 @@ export async function retryWithAuth<T>(
       
       if (!refreshSuccess) {
         console.error(`❌ [RetryAuth:${context}] Token refresh failed, aborting retries`);
-        sessionMonitor.logRetryFailure(context);
         break;
       }
       

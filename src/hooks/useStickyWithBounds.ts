@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { StickyManager, throttle, debounce } from '@/lib/stickyHelpers';
+import { ImprovedStickyManager } from '@/lib/improvedStickyManager';
+import { scrollCoordinator } from '@/lib/scrollCoordinator';
 
 interface UseStickyWithBoundsProps {
   enabled?: boolean;
@@ -12,7 +13,7 @@ export const useStickyWithBounds = ({
   referenceElementId,
   naturalOffset = 100 // Offset padrão de 100px do header
 }: UseStickyWithBoundsProps) => {
-  const managerRef = useRef<StickyManager | null>(null);
+  const managerRef = useRef<ImprovedStickyManager | null>(null);
   const elementsRef = useRef<Map<string, HTMLElement>>(new Map());
   const isInitializedRef = useRef(false);
 
@@ -20,7 +21,7 @@ export const useStickyWithBounds = ({
   useEffect(() => {
     if (!enabled) return;
 
-    managerRef.current = new StickyManager();
+    managerRef.current = new ImprovedStickyManager();
     
     return () => {
       managerRef.current?.destroy();
@@ -28,27 +29,22 @@ export const useStickyWithBounds = ({
     };
   }, [enabled]);
 
-  // Setup scroll and resize listeners
+  // Setup resize listener (scroll is handled by scrollCoordinator)
   useEffect(() => {
     if (!enabled || !managerRef.current) return;
 
-    const handleScroll = throttle(() => {
-      if (managerRef.current) {
-        managerRef.current.updateScroll(window.scrollY);
-      }
-    }, 8); // ~120fps for ultra smooth scrolling
+    const handleResize = () => {
+      // Debounce resize events
+      setTimeout(() => {
+        if (managerRef.current) {
+          updateAllBounds();
+        }
+      }, 150);
+    };
 
-    const handleResize = debounce(() => {
-      if (managerRef.current) {
-        updateAllBounds();
-      }
-    }, 150);
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
     };
   }, [enabled]);
@@ -64,6 +60,9 @@ export const useStickyWithBounds = ({
       managerRef.current!.removeElement(id);
       managerRef.current!.addElement(id, element, bounds, naturalOffset);
     });
+    
+    // Also refresh bounds in manager
+    managerRef.current!.refreshBounds();
   }, [referenceElementId, naturalOffset]);
 
   // Register a sticky element
@@ -84,9 +83,6 @@ export const useStickyWithBounds = ({
 
     // Add to manager
     managerRef.current.addElement(id, element, bounds, naturalOffset);
-
-    // Initial position update
-    managerRef.current.updateScroll(window.scrollY);
   }, [enabled, referenceElementId, naturalOffset]);
 
   // Unregister a sticky element
@@ -104,10 +100,25 @@ export const useStickyWithBounds = ({
 
   // Reset all transforms (useful for cleanup)
   const resetTransforms = useCallback(() => {
-    elementsRef.current.forEach((element) => {
-      element.style.transform = '';
-      element.style.willChange = '';
-    });
+    if (managerRef.current) {
+      managerRef.current.resetAllElements();
+    }
+  }, []);
+
+  // Emergency reset for debugging
+  const emergencyReset = useCallback(() => {
+    if (managerRef.current) {
+      managerRef.current.resetAllElements();
+      console.log('[StickyHook] Emergency reset performed');
+    }
+  }, []);
+
+  // Debug function
+  const debugSticky = useCallback(() => {
+    if (managerRef.current && process.env.NODE_ENV === 'development') {
+      managerRef.current.debugAllElements();
+      console.log('ScrollCoordinator stats:', scrollCoordinator.getPerformanceStats());
+    }
   }, []);
 
   return {
@@ -115,6 +126,8 @@ export const useStickyWithBounds = ({
     unregisterStickyElement,
     refreshBounds,
     resetTransforms,
+    emergencyReset,
+    debugSticky,
     isEnabled: enabled
   };
 };
