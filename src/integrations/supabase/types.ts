@@ -2514,6 +2514,16 @@ export type Database = {
           tuples_fetched: number
         }[]
       }
+      can_claim_daily_bonus_brasilia: {
+        Args: { p_user_id: string }
+        Returns: {
+          can_claim: boolean
+          period_start: string
+          period_end: string
+          next_reset: string
+          last_claim: string
+        }[]
+      }
       cancelar_assinatura: {
         Args: { user_id: string }
         Returns: boolean
@@ -2585,6 +2595,15 @@ export type Database = {
           end_date: string
         }[]
       }
+      get_current_bonus_period_brasilia: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          period_start: string
+          period_end: string
+          can_claim: boolean
+          next_reset: string
+        }[]
+      }
       get_user_role: {
         Args: { user_id: string }
         Returns: string
@@ -2651,6 +2670,10 @@ export type Database = {
         }[]
       }
       process_daily_login: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
+      process_daily_login_brasilia: {
         Args: { p_user_id: string }
         Returns: Json
       }

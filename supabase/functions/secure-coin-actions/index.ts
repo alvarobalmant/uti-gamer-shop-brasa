@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check UTI Coins system status usando nova arquitetura consolidada
+    // Check UTI Coins system status
     const { data: settings } = await supabase
       .from('coin_system_config')
       .select('setting_value')
@@ -84,73 +84,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verificar atividade suspeita usando nova função do backend
-    const { data: isSuspicious, error: suspiciousError } = await supabase
-      .rpc('check_suspicious_activity', { 
-        p_user_id: user.id, 
-        p_action: action 
-      });
-
-    if (suspiciousError) {
-      console.warn('Erro ao verificar atividade suspeita:', suspiciousError);
-    } else if (isSuspicious) {
-      console.log(`[SECURITY] Suspicious activity detected for user ${user.id}, action: ${action}`);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          suspicious: true,
-          message: 'Atividade suspeita detectada. Conta temporariamente restrita.' 
-        }),
-        { 
-          status: 429, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    // Handle different actions usando arquitetura consolidada
+    // Handle different actions
     let result;
     
     if (action === 'daily_login') {
-      console.log(`[BACKEND_CLOCK] Validating action "${action}" at ${new Date().toISOString()}`);
+      console.log(`[BRASILIA_TIMER] Processing daily login for user ${user.id} at ${new Date().toISOString()}`);
       
-      // Check if user already logged in today
-      const today = new Date().toISOString().split('T')[0];
-      const { data: existingLogin } = await supabase
-        .from('daily_actions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('action', 'daily_login')
-        .eq('action_date', today)
-        .single();
-
-      if (existingLogin) {
-        const lastLogin = new Date(existingLogin.last_performed_at);
-        console.log(`[BACKEND_CLOCK] Daily login already done today. Last: ${lastLogin.toISOString()}, Current: ${new Date().toISOString()}`);
-        
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            rateLimited: true,
-            message: 'Login diário já realizado hoje',
-            lastLogin: lastLogin.toISOString()
-          }),
-          { 
-            status: 429, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-
-      console.log(`[BACKEND_CLOCK] Daily limit check: 0/1 for action "${action}"`);
-      console.log(`[BACKEND_CLOCK] Action "${action}" validated successfully at ${new Date().toISOString()}`);
-
-      // Process daily login through database function
+      // Use new Brasilia-based function
       const { data: loginResult, error: loginError } = await supabase
-        .rpc('process_daily_login', { p_user_id: user.id });
+        .rpc('process_daily_login_brasilia', { p_user_id: user.id });
 
       if (loginError) {
-        console.error('Error processing daily login:', loginError);
+        console.error('Error processing daily login (Brasilia):', loginError);
         return new Response(
           JSON.stringify({ success: false, message: 'Failed to process daily login' }),
           { 
@@ -161,10 +106,44 @@ Deno.serve(async (req) => {
       }
 
       result = loginResult;
-      console.log(`[SUCCESS] User ${user.id} earned coins for action: ${action}`);
+      
+      if (result.success) {
+        console.log(`[SUCCESS] User ${user.id} earned coins for daily login (Brasilia timer)`);
+      } else {
+        console.log(`[RATE_LIMITED] User ${user.id} daily login blocked: ${result.message}`);
+      }
+      
+    } else if (action === 'get_daily_timer') {
+      console.log(`[BRASILIA_TIMER] Getting timer status for user ${user.id}`);
+      
+      // Get current daily bonus status
+      const { data: timerResult, error: timerError } = await supabase
+        .rpc('can_claim_daily_bonus_brasilia', { p_user_id: user.id });
+
+      if (timerError) {
+        console.error('Error getting daily timer (Brasilia):', timerError);
+        return new Response(
+          JSON.stringify({ success: false, message: 'Failed to get timer status' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      // Return timer data
+      const timerData = timerResult[0];
+      result = {
+        success: true,
+        canClaim: timerData.can_claim,
+        nextReset: timerData.next_reset,
+        periodStart: timerData.period_start,
+        periodEnd: timerData.period_end,
+        lastClaim: timerData.last_claim
+      };
       
     } else {
-      // Handle other coin earning actions usando nova arquitetura
+      // Handle other coin earning actions
       console.log(`[BACKEND_CLOCK] Validating action "${action}" at ${new Date().toISOString()}`);
       
       const { data: earnResult, error: earnError } = await supabase

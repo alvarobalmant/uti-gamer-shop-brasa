@@ -229,23 +229,17 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       console.log('[SECURE] Processing daily login for user:', user.id);
       
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-        body: {
-          action: 'daily_login',
-          metadata: {
-            timestamp: new Date().toISOString(),
-            source: 'daily_login_process'
-          }
-        }
+        body: { action: 'daily_login' }
       });
 
       if (error) {
         console.warn('Erro ao processar login diário (edge function):', error);
         
-        // Fallback: try database function directly
-        console.log('[FALLBACK] Trying database function directly');
+        // Fallback: try database function directly with Brasilia timer
+        console.log('[FALLBACK] Trying Brasilia database function directly');
         try {
           const { data: fallbackData, error: fallbackError } = await supabase
-            .rpc('process_daily_login', { p_user_id: user.id });
+            .rpc('process_daily_login_brasilia', { p_user_id: user.id });
           
           if (fallbackError) {
             console.warn('Fallback also failed:', fallbackError);
