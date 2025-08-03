@@ -198,17 +198,11 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
         {/* PREÇOS - ÚNICO E CORRETO */}
         <div className="space-y-4">
           <div className="flex items-baseline gap-3">
-<<<<<<< HEAD
             {product.list_price && product.list_price > product.price && (
               <span className="text-sm text-gray-500 line-through">
                 R$ {product.list_price.toFixed(2).replace('.', ',')}
               </span>
             )}
-=======
-            <span className="text-sm text-gray-500 line-through">
-              R$ {(product.price * 1.2).toFixed(2).replace('.', ',')}
-            </span>
->>>>>>> a14bf89bc02c21899828f715cf04e9ea7521825f
             <span className="text-3xl font-semibold text-gray-900">
               R$ {product.price.toFixed(2).replace('.', ',')}
             </span>
