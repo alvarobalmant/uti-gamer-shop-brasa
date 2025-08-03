@@ -21,36 +21,50 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
   const [dailyBonusData, setDailyBonusData] = useState<DailyBonusData | null>(null);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Always define the function first, then use useEffect
+  const loadDailyBonusData = async () => {
+    try {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
+        body: { action: 'get_daily_timer' }
+      });
+
+      if (error) {
+        console.error('Error loading daily bonus data:', error);
+        setError('Failed to load daily bonus data');
+        return;
+      }
+
+      if (data?.success) {
+        setDailyBonusData({
+          canClaim: data.canClaim,
+          streak: data.streak || 1,
+          multiplier: data.multiplier || 1.0,
+          nextReset: data.nextReset,
+          lastClaim: data.lastClaim
+        });
+      } else {
+        setError(data?.message || 'Failed to load daily bonus data');
+      }
+    } catch (error) {
+      console.error('Error loading daily bonus data:', error);
+      setError('Network error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Carregar dados do daily bonus
   useEffect(() => {
-    const loadDailyBonusData = async () => {
-      if (!user) return;
-      
-      try {
-        setLoading(true);
-        const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-          body: { action: 'can_claim_daily_bonus_brasilia' }
-        });
-
-        if (error) throw error;
-
-        if (data?.success) {
-          setDailyBonusData({
-            canClaim: data.can_claim,
-            streak: data.streak || 1,
-            multiplier: data.multiplier || 1.0,
-            nextReset: data.next_reset,
-            lastClaim: data.last_claim
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados do daily bonus:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadDailyBonusData();
   }, [user]);
 
@@ -112,8 +126,26 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
     );
   }
 
+  if (error) {
+    return (
+      <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-4 border border-red-200">
+        <div className="flex items-center gap-2 text-red-700">
+          <Calendar className="w-4 h-4" />
+          <span className="text-sm">Erro ao carregar bônus diário</span>
+        </div>
+      </div>
+    );
+  }
+
   if (!dailyBonusData) {
-    return null;
+    return (
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
+        <div className="flex items-center gap-2 text-gray-600">
+          <Calendar className="w-4 h-4" />
+          <span className="text-sm">Bônus diário não disponível</span>
+        </div>
+      </div>
+    );
   }
 
   return (

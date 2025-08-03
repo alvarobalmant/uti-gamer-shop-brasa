@@ -102,21 +102,26 @@ const Coins: React.FC = () => {
   // Carregar dados do daily bonus
   useEffect(() => {
     const loadDailyBonusData = async () => {
+      if (!user || loading) return;
+      
       try {
         setBonusLoading(true);
         const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-          body: { action: 'can_claim_daily_bonus_brasilia' }
+          body: { action: 'get_daily_timer' }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error loading daily bonus data:', error);
+          return;
+        }
 
         if (data?.success) {
           setDailyBonusData({
-            canClaim: data.can_claim,
+            canClaim: data.canClaim,
             streak: data.streak || 1,
             multiplier: data.multiplier || 1.0,
-            nextReset: data.next_reset,
-            lastClaim: data.last_claim
+            nextReset: data.nextReset,
+            lastClaim: data.lastClaim
           });
         }
       } catch (error) {
@@ -126,9 +131,7 @@ const Coins: React.FC = () => {
       }
     };
 
-    if (user && !loading) {
-      loadDailyBonusData();
-    }
+    loadDailyBonusData();
   }, [user, loading]);
 
   // Função para resgatar daily bonus

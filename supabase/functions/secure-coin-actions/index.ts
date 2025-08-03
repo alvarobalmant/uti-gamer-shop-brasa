@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     } else if (action === 'get_daily_timer') {
       console.log(`[BRASILIA_TIMER] Getting timer status for user ${user.id}`);
       
-      // Get current daily bonus status
+      // Get current daily bonus status using the Brasilia timezone function
       const { data: timerResult, error: timerError } = await supabase
         .rpc('can_claim_daily_bonus_brasilia', { p_user_id: user.id });
 
@@ -131,16 +131,84 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Return timer data
-      const timerData = timerResult[0];
-      result = {
-        success: true,
-        canClaim: timerData.can_claim,
-        nextReset: timerData.next_reset,
-        periodStart: timerData.period_start,
-        periodEnd: timerData.period_end,
-        lastClaim: timerData.last_claim
-      };
+      // Return timer data with proper structure
+      if (timerResult && timerResult.length > 0) {
+        const timerData = timerResult[0];
+        result = {
+          success: true,
+          canClaim: timerData.can_claim,
+          nextReset: timerData.next_reset,
+          periodStart: timerData.period_start,
+          periodEnd: timerData.period_end,
+          lastClaim: timerData.last_claim
+        };
+      } else {
+        result = {
+          success: false,
+          message: 'Failed to get daily bonus status'
+        };
+      }
+      
+    } else if (action === 'can_claim_daily_bonus_brasilia') {
+      console.log(`[BRASILIA_TIMER] Checking if user ${user.id} can claim daily bonus`);
+      
+      // Use the same function as get_daily_timer but with different action name for compatibility
+      const { data: bonusResult, error: bonusError } = await supabase
+        .rpc('can_claim_daily_bonus_brasilia', { p_user_id: user.id });
+
+      if (bonusError) {
+        console.error('Error checking daily bonus (Brasilia):', bonusError);
+        return new Response(
+          JSON.stringify({ success: false, message: 'Failed to check bonus status' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      if (bonusResult && bonusResult.length > 0) {
+        const bonusData = bonusResult[0];
+        result = {
+          success: true,
+          canClaim: bonusData.can_claim,
+          streak: bonusData.streak || 0,
+          multiplier: bonusData.multiplier || 1.0,
+          nextReset: bonusData.next_reset,
+          lastClaim: bonusData.last_claim
+        };
+      } else {
+        result = {
+          success: false,
+          message: 'Failed to get bonus data'
+        };
+      }
+      
+    } else if (action === 'process_daily_login_brasilia') {
+      console.log(`[BRASILIA_TIMER] Processing daily login for user ${user.id}`);
+      
+      // Use the Brasilia login processing function
+      const { data: loginResult, error: loginError } = await supabase
+        .rpc('process_daily_login_brasilia', { p_user_id: user.id });
+
+      if (loginError) {
+        console.error('Error processing daily login (Brasilia):', loginError);
+        return new Response(
+          JSON.stringify({ success: false, message: 'Failed to process daily login' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      result = loginResult;
+      
+      if (result && result.success) {
+        console.log(`[SUCCESS] User ${user.id} earned coins for daily login (Brasilia timer)`);
+      } else {
+        console.log(`[RATE_LIMITED] User ${user.id} daily login blocked: ${result?.message || 'Unknown error'}`);
+      }
       
     } else {
       // Handle other coin earning actions
