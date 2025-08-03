@@ -1,6 +1,6 @@
 /**
- * Improved Sticky Manager with Better Bounds Handling
- * Fixes the out-of-bounds issues during aggressive scrolling
+ * Advanced Sticky Manager with Smooth Transitions
+ * Eliminates teleportation through interpolation and transform-based positioning
  */
 
 import { scrollCoordinator } from './scrollCoordinator';
@@ -22,9 +22,20 @@ export interface StickyElement {
 }
 
 interface ElementState {
-  phase: 'before' | 'sticky' | 'bottom-limit' | 'after';
+  phase: 'before' | 'sticky' | 'transitioning' | 'bottom-limit' | 'after';
   lastValidPosition: number;
-  isStable: boolean; // Prevents flickering during rapid scroll
+  targetPosition: number;
+  currentTransform: number;
+  isStable: boolean;
+  interpolationFactor: number;
+  lastBoundaryCheck: number;
+}
+
+interface TransitionConfig {
+  smoothness: number; // 0-1, higher = smoother but slower
+  damping: number; // 0-1, higher = more damping
+  boundaryTolerance: number; // pixels of tolerance near boundaries
+  enableInterpolation: boolean;
 }
 
 export class ImprovedStickyManager {
@@ -34,10 +45,21 @@ export class ImprovedStickyManager {
   private boundariesCache: Map<string, StickyBounds> = new Map();
   private lastScrollY = 0;
   private scrollDirection: 'up' | 'down' | 'none' = 'none';
+  private scrollVelocity = 0;
+  private lastFrameTime = 0;
   
-  // Stability configuration
-  private readonly STABILITY_THRESHOLD = 5; // px tolerance for position changes
-  private readonly RAPID_SCROLL_THRESHOLD = 50; // px per frame to detect aggressive scrolling
+  // Advanced configuration
+  private config: TransitionConfig = {
+    smoothness: 0.15, // Smooth but responsive
+    damping: 0.8, // Good damping to prevent oscillation
+    boundaryTolerance: 10, // 10px tolerance at boundaries
+    enableInterpolation: true
+  };
+  
+  // Performance thresholds
+  private readonly RAPID_SCROLL_THRESHOLD = 30; // Reduced for better detection
+  private readonly STABILITY_THRESHOLD = 2; // Tighter stability check
+  private readonly CACHE_REFRESH_INTERVAL = 1000; // ms between boundary cache refreshes
   
   constructor() {
     this.updateHeaderHeight();
@@ -66,11 +88,15 @@ export class ImprovedStickyManager {
     
     this.elements.set(id, stickyElement);
     
-    // Initialize element state
+    // Initialize element state with advanced tracking
     this.elementStates.set(id, {
       phase: 'before',
       lastValidPosition: 0,
-      isStable: true
+      targetPosition: 0,
+      currentTransform: 0,
+      isStable: true,
+      interpolationFactor: 1,
+      lastBoundaryCheck: Date.now()
     });
     
     // Cache boundaries
@@ -80,7 +106,7 @@ export class ImprovedStickyManager {
     this.setupElementStyles(element);
     
     // Immediate position update
-    this.updateElementPosition(stickyElement);
+    this.updateElementPositionSmooth(stickyElement);
     
     console.log(`[ImprovedStickyManager] Added element: ${id}`);
   }
@@ -97,85 +123,119 @@ export class ImprovedStickyManager {
   }
 
   private updateScroll = (scrollY: number) => {
-    // Calculate scroll direction and speed
+    const currentTime = performance.now();
+    const deltaTime = currentTime - this.lastFrameTime;
     const scrollDelta = scrollY - this.lastScrollY;
-    const isRapidScroll = Math.abs(scrollDelta) > this.RAPID_SCROLL_THRESHOLD;
     
+    // Calculate scroll velocity and direction
+    this.scrollVelocity = deltaTime > 0 ? Math.abs(scrollDelta) / deltaTime : 0;
+    const isRapidScroll = this.scrollVelocity > this.RAPID_SCROLL_THRESHOLD;
     this.scrollDirection = scrollDelta > 0 ? 'down' : scrollDelta < 0 ? 'up' : 'none';
-    this.lastScrollY = scrollY;
     
-    // Update all active elements
+    this.lastScrollY = scrollY;
+    this.lastFrameTime = currentTime;
+    
+    // Update all active elements with smooth transitions
     this.elements.forEach(stickyElement => {
       if (stickyElement.isActive) {
-        this.updateElementPosition(stickyElement, isRapidScroll);
+        this.updateElementPositionSmooth(stickyElement, isRapidScroll, deltaTime);
       }
     });
   };
 
-  private updateElementPosition(stickyElement: StickyElement, isRapidScroll: boolean = false) {
+  private updateElementPositionSmooth(stickyElement: StickyElement, isRapidScroll: boolean = false, deltaTime: number = 16) {
     const { id, element, bounds, naturalOffset, originalWidth, originalHeight } = stickyElement;
     const state = this.elementStates.get(id)!;
     
     const scrollY = this.lastScrollY;
     const desiredPosition = this.headerHeight + naturalOffset;
     
-    // Calculate phase boundaries
-    const stickyStart = bounds.containerTop - desiredPosition;
+    // Enhanced boundary calculations with tolerance
+    const stickyStart = bounds.containerTop - desiredPosition - this.config.boundaryTolerance;
+    const stickyEnd = bounds.referenceBottom - originalHeight - desiredPosition + this.config.boundaryTolerance;
     const bottomLimit = bounds.referenceBottom - originalHeight;
     
-    // Determine current phase
+    // Determine target position and phase
     let newPhase: ElementState['phase'];
-    let calculatedPosition: number;
+    let targetPosition: number;
+    let shouldUseTransform = false;
     
     if (scrollY <= stickyStart) {
-      // PHASE 1: Before sticky zone
+      // PHASE 1: Before sticky zone - natural positioning
       newPhase = 'before';
-      calculatedPosition = 0; // Relative positioning
+      targetPosition = 0;
       
-    } else if (scrollY < (bottomLimit - desiredPosition)) {
-      // PHASE 2: Sticky zone
+    } else if (scrollY <= stickyEnd) {
+      // PHASE 2: Sticky zone - fixed at desired position
       newPhase = 'sticky';
-      calculatedPosition = desiredPosition;
+      targetPosition = desiredPosition;
+      shouldUseTransform = this.config.enableInterpolation;
       
-    } else if (scrollY <= bottomLimit) {
-      // PHASE 3: Approaching bottom limit
-      newPhase = 'bottom-limit';
-      calculatedPosition = bottomLimit - scrollY;
+    } else if (scrollY <= bottomLimit + this.config.boundaryTolerance) {
+      // PHASE 3: Transition zone - smooth movement toward bottom
+      newPhase = 'transitioning';
+      targetPosition = Math.max(0, bottomLimit - scrollY);
+      shouldUseTransform = true;
       
     } else {
       // PHASE 4: Past bottom limit
       newPhase = 'after';
-      calculatedPosition = bottomLimit - scrollY; // Allow negative positions
+      targetPosition = bottomLimit - scrollY;
+      shouldUseTransform = true;
     }
     
-    // Stability check during rapid scrolling
+    // Smooth interpolation for position changes
+    if (this.config.enableInterpolation && shouldUseTransform) {
+      const positionDelta = targetPosition - state.currentTransform;
+      const interpolationSpeed = this.config.smoothness * (deltaTime / 16); // Normalize to 60fps
+      
+      // Apply damping to reduce oscillation
+      state.currentTransform += positionDelta * interpolationSpeed * this.config.damping;
+      
+      // Snap to target if very close (prevents infinite interpolation)
+      if (Math.abs(positionDelta) < 0.1) {
+        state.currentTransform = targetPosition;
+      }
+    } else {
+      state.currentTransform = targetPosition;
+    }
+    
+    // Skip micro-updates during rapid scrolling for performance
     if (isRapidScroll && state.isStable) {
-      const positionDelta = Math.abs(calculatedPosition - state.lastValidPosition);
+      const positionDelta = Math.abs(state.currentTransform - state.lastValidPosition);
       if (positionDelta < this.STABILITY_THRESHOLD && newPhase === state.phase) {
-        // Skip update to prevent flickering
         return;
       }
     }
     
-    // Apply position based on phase
-    this.applyElementPosition(element, newPhase, calculatedPosition, originalWidth, originalHeight);
+    // Apply smooth positioning
+    this.applyElementPositionSmooth(element, newPhase, state.currentTransform, originalWidth, originalHeight, shouldUseTransform);
     
     // Update state
     state.phase = newPhase;
-    state.lastValidPosition = calculatedPosition;
+    state.targetPosition = targetPosition;
+    state.lastValidPosition = state.currentTransform;
     state.isStable = !isRapidScroll;
     
+    // Refresh boundary cache periodically
+    const now = Date.now();
+    if (now - state.lastBoundaryCheck > this.CACHE_REFRESH_INTERVAL) {
+      this.refreshElementBounds(id);
+      state.lastBoundaryCheck = now;
+    }
+    
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[StickyDebug] ${id}: phase=${newPhase}, pos=${calculatedPosition.toFixed(1)}, scroll=${scrollY}`);
+      console.log(`[StickySmooth] ${id}: phase=${newPhase}, target=${targetPosition.toFixed(1)}, current=${state.currentTransform.toFixed(1)}, scroll=${scrollY}`);
     }
   }
 
-  private applyElementPosition(
+  private applyElementPositionSmooth(
     element: HTMLElement, 
     phase: ElementState['phase'], 
     position: number, 
     width: number, 
-    height: number
+    height: number,
+    useTransform: boolean = false
   ) {
     // Get parent positioning context
     const parent = element.parentElement;
@@ -187,33 +247,54 @@ export class ImprovedStickyManager {
     const parentRect = parent.getBoundingClientRect();
     const leftPosition = parentRect.left + window.scrollX;
     
+    // Clear any existing transform if not using it
+    if (!useTransform) {
+      element.style.transform = '';
+    }
+    
     switch (phase) {
       case 'before':
-        // Natural relative positioning
+        // Natural relative positioning - no teleportation
         element.style.position = 'relative';
         element.style.top = '';
         element.style.left = '';
         element.style.width = '';
         element.style.height = '';
+        element.style.transform = '';
         break;
         
       case 'sticky':
-        // Fixed positioning at desired location
-        element.style.position = 'fixed';
-        element.style.top = `${position}px`;
-        element.style.left = `${Math.max(0, leftPosition)}px`;
-        element.style.width = `${Math.max(100, width)}px`;
-        element.style.height = `${Math.max(50, height)}px`;
+        if (useTransform) {
+          // Use transform for micro-adjustments within sticky phase
+          element.style.position = 'fixed';
+          element.style.top = `${position}px`;
+          element.style.left = `${Math.max(0, leftPosition)}px`;
+          element.style.width = `${Math.max(100, width)}px`;
+          element.style.height = `${Math.max(50, height)}px`;
+          element.style.transform = `translateY(0px)`; // Ready for smooth transitions
+        } else {
+          // Standard fixed positioning
+          element.style.position = 'fixed';
+          element.style.top = `${position}px`;
+          element.style.left = `${Math.max(0, leftPosition)}px`;
+          element.style.width = `${Math.max(100, width)}px`;
+          element.style.height = `${Math.max(50, height)}px`;
+          element.style.transform = '';
+        }
         break;
         
+      case 'transitioning':
       case 'bottom-limit':
       case 'after':
-        // Fixed positioning that can go negative (natural behavior)
+        // Use transform for smooth movement - prevents teleportation
+        const basePosition = this.headerHeight + (element.dataset.naturalOffset ? parseInt(element.dataset.naturalOffset) : 100);
         element.style.position = 'fixed';
-        element.style.top = `${position}px`; // Allow negative values
+        element.style.top = `${basePosition}px`;
         element.style.left = `${Math.max(0, leftPosition)}px`;
         element.style.width = `${Math.max(100, width)}px`;
         element.style.height = `${Math.max(50, height)}px`;
+        element.style.transform = `translateY(${position - basePosition}px)`;
+        element.style.transition = this.scrollVelocity > this.RAPID_SCROLL_THRESHOLD ? 'none' : 'transform 0.1s ease-out';
         break;
     }
     
@@ -260,25 +341,38 @@ export class ImprovedStickyManager {
   refreshBounds() {
     // Recalculate bounds for all elements
     this.elements.forEach((stickyElement, id) => {
-      const container = stickyElement.element.closest('[data-sticky-container]') as HTMLElement;
-      const reference = document.getElementById(stickyElement.bounds.referenceBottom.toString().split('.')[0]);
-      
-      if (container && reference) {
-        const newBounds = this.calculateBounds(container, reference);
-        stickyElement.bounds = newBounds;
-        this.boundariesCache.set(id, newBounds);
-      }
+      this.refreshElementBounds(id);
     });
     
     // Update header height
     this.updateHeaderHeight();
     
-    // Force update positions
+    // Force update positions with smooth transitions
     this.elements.forEach(stickyElement => {
       if (stickyElement.isActive) {
-        this.updateElementPosition(stickyElement);
+        this.updateElementPositionSmooth(stickyElement);
       }
     });
+  }
+
+  private refreshElementBounds(id: string) {
+    const stickyElement = this.elements.get(id);
+    if (!stickyElement) return;
+
+    const container = stickyElement.element.closest('[data-sticky-container]') as HTMLElement;
+    const reference = document.getElementById(stickyElement.bounds.referenceBottom.toString().split('.')[0]);
+    
+    if (container && reference) {
+      const newBounds = this.calculateBounds(container, reference);
+      stickyElement.bounds = newBounds;
+      this.boundariesCache.set(id, newBounds);
+      
+      // Reset last boundary check time
+      const state = this.elementStates.get(id);
+      if (state) {
+        state.lastBoundaryCheck = Date.now();
+      }
+    }
   }
 
   private updateHeaderHeight() {
@@ -294,12 +388,16 @@ export class ImprovedStickyManager {
     if (stickyElement) {
       this.resetElementStyles(stickyElement.element);
       
-      // Reset state
+      // Reset state with new properties
       const state = this.elementStates.get(id);
       if (state) {
         state.phase = 'before';
         state.isStable = true;
         state.lastValidPosition = 0;
+        state.targetPosition = 0;
+        state.currentTransform = 0;
+        state.interpolationFactor = 1;
+        state.lastBoundaryCheck = Date.now();
       }
       
       console.log(`[ImprovedStickyManager] Reset element: ${id}`);
@@ -312,21 +410,47 @@ export class ImprovedStickyManager {
     });
   }
 
-  // Debugging methods
+  // Configuration methods
+  updateConfig(newConfig: Partial<TransitionConfig>) {
+    this.config = { ...this.config, ...newConfig };
+    console.log('[ImprovedStickyManager] Configuration updated:', this.config);
+  }
+
+  // Advanced debugging methods
   getElementState(id: string) {
     return {
       element: this.elements.get(id),
       state: this.elementStates.get(id),
-      bounds: this.boundariesCache.get(id)
+      bounds: this.boundariesCache.get(id),
+      config: this.config
+    };
+  }
+
+  getPerformanceMetrics() {
+    return {
+      scrollVelocity: this.scrollVelocity,
+      scrollDirection: this.scrollDirection,
+      lastScrollY: this.lastScrollY,
+      activeElements: this.elements.size,
+      config: this.config
     };
   }
 
   debugAllElements() {
     console.group('[ImprovedStickyManager] Debug All Elements');
+    console.log('Performance:', this.getPerformanceMetrics());
     this.elements.forEach((element, id) => {
       console.log(`${id}:`, this.getElementState(id));
     });
     console.groupEnd();
+  }
+
+  // Emergency fallback for issues
+  emergencyReset() {
+    console.warn('[ImprovedStickyManager] Emergency reset triggered');
+    this.resetAllElements();
+    this.boundariesCache.clear();
+    this.refreshBounds();
   }
 
   destroy() {
