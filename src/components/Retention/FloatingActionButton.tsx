@@ -57,23 +57,12 @@ export const FloatingActionButton: React.FC = () => {
               <button
                 onClick={() => {
                   setIsExpanded(false);
-                  navigate('/coins/loja');
+                  navigate('/coins');
                 }}
                 className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <Gift className="w-4 h-4" />
-                Loja de Recompensas
-              </button>
-              
-              <button
-                onClick={() => {
-                  setIsExpanded(false);
-                  navigate('/coins/historico');
-                }}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                <TrendingUp className="w-4 h-4" />
-                Ver Histórico Completo
+                Ver Tudo & Recompensas
               </button>
             </div>
           </div>

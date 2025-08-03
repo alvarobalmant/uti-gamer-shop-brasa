@@ -217,7 +217,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   <Button
                     onClick={() => {
                       onClose();
-                      window.location.href = '/meus-coins';
+                      window.location.href = '/coins';
                     }}
                     className="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
                   >

@@ -6,6 +6,7 @@ import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
 
 import { UTICoinsConditional } from './UTICoinsConditional';
+import { DailyBonusSection } from './DailyBonusSection';
 
 interface UTICoinsWidgetProps {
   className?: string;
@@ -15,7 +16,7 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
   const [showPopover, setShowPopover] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { coins, transactions, loading, balanceChanged } = useUTICoins();
+  const { coins, transactions, loading, balanceChanged, refreshData } = useUTICoins();
   const [previousBalance, setPreviousBalance] = useState(coins.balance);
 
   // Detectar mudança no saldo para animação local
@@ -173,8 +174,13 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
             </div>
 
 
+            {/* Daily Bonus Section */}
+            <div className="p-4 border-t border-gray-200">
+              <DailyBonusSection onBonusClaimed={refreshData} />
+            </div>
+
             {/* Ganhos recentes */}
-            <div className="p-4">{/* Added border-t border-gray-200 to separate sections */}
+            <div className="p-4 border-t border-gray-200">
               <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-green-500" />
                 Transações Recentes
@@ -220,22 +226,12 @@ export const UTICoinsWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }
                 <button 
                   onClick={() => {
                     setShowPopover(false);
-                    navigate('/coins/loja');
+                    navigate('/coins');
                   }}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <Gift className="w-4 h-4" />
-                  Loja de Recompensas
-                </button>
-                
-                <button 
-                  onClick={() => {
-                    setShowPopover(false);
-                    navigate('/coins/historico');
-                  }}
-                  className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200"
-                >
-                  Ver Histórico Completo
+                  Ver Tudo & Recompensas
                 </button>
               </div>
             </div>

@@ -93,12 +93,13 @@ const TestProduct = lazy(() => import("./pages/TestProduct"));
 const ClientArea = lazy(() => import("./pages/ClientArea"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const MeusCoins = lazy(() => import("./pages/MeusCoins"));
+const Coins = lazy(() => import("./pages/Coins"));
 // Import direto para páginas críticas de auth
 import ConfirmarConta from "./pages/ConfirmarConta";
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module => ({ default: module.AdminAutoLogin })));
 
-// Lazy loading para páginas de UTI Coins
+// Lazy loading para páginas de UTI Coins (legacy)
 const CoinsShop = lazy(() => import("./pages/CoinsShop"));
 const CoinsHistory = lazy(() => import("./pages/CoinsHistory"));
 
@@ -176,17 +177,20 @@ const App = () => {
                    {/* Client Area Routes */}
                   <Route path="/area-cliente" element={<ClientArea />} />
                   <Route path="/lista-desejos" element={<WishlistPage />} />
-                  <Route path="/meus-coins" element={<MeusCoins />} />
+                  
+                  {/* UTI Coins Routes - New Unified System */}
+                  <Route path="/coins" element={<Coins />} />
+                  
+                  {/* Legacy UTI Coins Routes - Redirect to unified page */}
+                  <Route path="/meus-coins" element={<Navigate to="/coins" replace />} />
+                  <Route path="/coins/loja" element={<Navigate to="/coins" replace />} />
+                  <Route path="/coins/historico" element={<Navigate to="/coins" replace />} />
                   
                   {/* Email Confirmation Route */}
                   <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
                   
                   {/* Registration Route */}
                   <Route path="/cadastro" element={<RegisterPage />} />
-                  
-                  {/* UTI Coins Routes */}
-                  <Route path="/coins/loja" element={<CoinsShop />} />
-                  <Route path="/coins/historico" element={<CoinsHistory />} />
 
                   {/* Admin Auto Login Route - MUST come before admin routes */}
                   <Route path="/admin-login/:token" element={<AdminAutoLogin />} />
