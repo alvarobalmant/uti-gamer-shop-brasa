@@ -48,12 +48,12 @@ export class ImprovedStickyManager {
   private scrollVelocity = 0;
   private lastFrameTime = 0;
   
-  // Advanced configuration
+  // Advanced configuration - EMERGENCY: reduce complexity
   private config: TransitionConfig = {
-    smoothness: 0.15, // Smooth but responsive
-    damping: 0.8, // Good damping to prevent oscillation
-    boundaryTolerance: 10, // 10px tolerance at boundaries
-    enableInterpolation: true
+    smoothness: 0.3, // Increased for stability
+    damping: 0.95, // High damping to prevent oscillation
+    boundaryTolerance: 50, // Increased tolerance
+    enableInterpolation: false // DISABLED until stable
   };
   
   // Performance thresholds
@@ -72,6 +72,12 @@ export class ImprovedStickyManager {
   }
 
   addElement(id: string, element: HTMLElement, bounds: StickyBounds, naturalOffset: number = 100) {
+    // Add safety check for invalid bounds FIRST
+    if (!bounds || bounds.containerTop === undefined || bounds.containerBottom === undefined || bounds.referenceBottom === undefined) {
+      console.error(`[ImprovedStickyManager] Invalid bounds for element: ${id}`, bounds);
+      return;
+    }
+    
     // Store original dimensions before any modifications
     const rect = element.getBoundingClientRect();
     const computedStyle = window.getComputedStyle(element);
@@ -108,7 +114,7 @@ export class ImprovedStickyManager {
     // Immediate position update
     this.updateElementPositionSmooth(stickyElement);
     
-    console.log(`[ImprovedStickyManager] Added element: ${id}`);
+    console.log(`[ImprovedStickyManager] Added element: ${id}`, bounds);
   }
 
   removeElement(id: string) {
@@ -224,8 +230,9 @@ export class ImprovedStickyManager {
       state.lastBoundaryCheck = now;
     }
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[StickySmooth] ${id}: phase=${newPhase}, target=${targetPosition.toFixed(1)}, current=${state.currentTransform.toFixed(1)}, scroll=${scrollY}`);
+    // Reduce console spam - only log phase changes
+    if (process.env.NODE_ENV === 'development' && (state.phase !== newPhase || Math.abs(state.currentTransform - targetPosition) > 20)) {
+      console.log(`[StickySmooth] ${id}: phase=${newPhase}, target=${targetPosition.toFixed(1)}, current=${state.currentTransform.toFixed(1)}, scroll=${scrollY}, bounds=${JSON.stringify(bounds)}`);
     }
   }
 
@@ -243,6 +250,9 @@ export class ImprovedStickyManager {
       console.warn('[ImprovedStickyManager] Parent element not found');
       return;
     }
+    
+    // Prevent extreme negative values that cause visual glitches
+    const clampedPosition = Math.max(position, -height * 2);
     
     const parentRect = parent.getBoundingClientRect();
     const leftPosition = parentRect.left + window.scrollX;
@@ -288,13 +298,27 @@ export class ImprovedStickyManager {
       case 'after':
         // Use transform for smooth movement - prevents teleportation
         const basePosition = this.headerHeight + (element.dataset.naturalOffset ? parseInt(element.dataset.naturalOffset) : 100);
-        element.style.position = 'fixed';
-        element.style.top = `${basePosition}px`;
-        element.style.left = `${Math.max(0, leftPosition)}px`;
-        element.style.width = `${Math.max(100, width)}px`;
-        element.style.height = `${Math.max(50, height)}px`;
-        element.style.transform = `translateY(${position - basePosition}px)`;
-        element.style.transition = this.scrollVelocity > this.RAPID_SCROLL_THRESHOLD ? 'none' : 'transform 0.1s ease-out';
+        const transformValue = clampedPosition - basePosition;
+        
+        // Don't apply extreme negative transforms that cause visual issues
+        if (Math.abs(transformValue) > height * 3) {
+          // Element is too far out - hide it instead of extreme positioning
+          element.style.position = 'fixed';
+          element.style.top = `${basePosition}px`;
+          element.style.left = `${Math.max(0, leftPosition)}px`;
+          element.style.width = `${Math.max(100, width)}px`;
+          element.style.height = `${Math.max(50, height)}px`;
+          element.style.transform = `translateY(-${height + 50}px)`; // Move just out of view
+          element.style.transition = 'none';
+        } else {
+          element.style.position = 'fixed';
+          element.style.top = `${basePosition}px`;
+          element.style.left = `${Math.max(0, leftPosition)}px`;
+          element.style.width = `${Math.max(100, width)}px`;
+          element.style.height = `${Math.max(50, height)}px`;
+          element.style.transform = `translateY(${transformValue}px)`;
+          element.style.transition = this.scrollVelocity > this.RAPID_SCROLL_THRESHOLD ? 'none' : 'transform 0.1s ease-out';
+        }
         break;
     }
     
