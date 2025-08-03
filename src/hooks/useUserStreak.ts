@@ -50,26 +50,42 @@ export const useUserStreak = () => {
     return Math.round((currentMultiplier / config.max_multiplier) * 100);
   }, [config.max_multiplier]);
 
-  // Calcular tempo até próximo claim
-  const calculateNextClaimTime = useCallback((lastLoginDate: string | null): DailyLoginTimer => {
-    if (!lastLoginDate) {
-      return {
-        canClaim: true,
-        hoursUntilNext: 0,
-        minutesUntilNext: 0,
-        secondsUntilNext: 0,
-        nextClaimTime: null
-      };
-    }
+  // Calcular tempo até próximo claim (agora usando backend timer)
+  const calculateNextClaimTime = useCallback(async (userId: string): Promise<DailyLoginTimer> => {
+    try {
+      // Verificar no backend se pode fazer claim hoje
+      const { data, error } = await supabase
+        .from('daily_actions')
+        .select('last_performed_at')
+        .eq('user_id', userId)
+        .eq('action', 'daily_login')
+        .eq('action_date', new Date().toISOString().split('T')[0])
+        .single();
 
-    const lastLogin = new Date(lastLoginDate);
-    const today = new Date();
-    const todayString = today.toISOString().split('T')[0];
-    const lastLoginString = lastLogin.toISOString().split('T')[0];
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erro ao verificar timer:', error);
+        return {
+          canClaim: true,
+          hoursUntilNext: 0,
+          minutesUntilNext: 0,
+          secondsUntilNext: 0,
+          nextClaimTime: null
+        };
+      }
 
-    // Se o último login foi hoje, não pode fazer claim
-    if (lastLoginString === todayString) {
-      // Próximo claim será amanhã às 00:00
+      // Se não há registro hoje, pode fazer claim
+      if (!data) {
+        return {
+          canClaim: true,
+          hoursUntilNext: 0,
+          minutesUntilNext: 0,
+          secondsUntilNext: 0,
+          nextClaimTime: null
+        };
+      }
+
+      // Se já fez hoje, calcular tempo até amanhã
+      const today = new Date();
       const nextClaimDate = new Date(today);
       nextClaimDate.setDate(nextClaimDate.getDate() + 1);
       nextClaimDate.setHours(0, 0, 0, 0);
@@ -86,16 +102,16 @@ export const useUserStreak = () => {
         secondsUntilNext,
         nextClaimTime: nextClaimDate
       };
+    } catch (error) {
+      console.error('Erro ao calcular timer:', error);
+      return {
+        canClaim: true,
+        hoursUntilNext: 0,
+        minutesUntilNext: 0,
+        secondsUntilNext: 0,
+        nextClaimTime: null
+      };
     }
-
-    // Se o último login não foi hoje, pode fazer claim
-    return {
-      canClaim: true,
-      hoursUntilNext: 0,
-      minutesUntilNext: 0,
-      secondsUntilNext: 0,
-      nextClaimTime: null
-    };
   }, []);
 
   // Carregar dados de streak e configurações
@@ -115,7 +131,8 @@ export const useUserStreak = () => {
 
       if (!streakError && streakData) {
         setStreak(streakData);
-        const timerData = calculateNextClaimTime(streakData.last_login_date);
+        // Usar backend timer em vez de cálculo local
+        const timerData = await calculateNextClaimTime(user.id);
         setTimer(timerData);
       } else if (streakError.code === 'PGRST116') {
         // Usuário não tem streak ainda - pode fazer primeiro claim
@@ -154,17 +171,17 @@ export const useUserStreak = () => {
     }
   }, [user, calculateNextClaimTime]);
 
-  // Atualizar timer a cada segundo
+  // Atualizar timer a cada segundo usando backend timer
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (streak?.last_login_date) {
-        const newTimer = calculateNextClaimTime(streak.last_login_date);
+    const interval = setInterval(async () => {
+      if (user?.id) {
+        const newTimer = await calculateNextClaimTime(user.id);
         setTimer(newTimer);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [streak?.last_login_date, calculateNextClaimTime]);
+  }, [user?.id, calculateNextClaimTime]);
 
   // Carregar dados inicial
   useEffect(() => {

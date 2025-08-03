@@ -1471,6 +1471,45 @@ export type Database = {
           },
         ]
       }
+      security_flags: {
+        Row: {
+          created_at: string
+          flag_type: string
+          id: string
+          metadata: Json | null
+          reason: string
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          flag_type: string
+          id?: string
+          metadata?: Json | null
+          reason: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          flag_type?: string
+          id?: string
+          metadata?: Json | null
+          reason?: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       security_logs: {
         Row: {
           action: string
@@ -2479,6 +2518,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      check_suspicious_activity: {
+        Args: { p_user_id: string; p_action: string }
+        Returns: boolean
+      }
       cleanup_old_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2488,6 +2531,10 @@ export type Database = {
         Returns: undefined
       }
       cleanup_old_security_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_uti_coins_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }

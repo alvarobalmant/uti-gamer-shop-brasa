@@ -65,14 +65,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check UTI Coins system status
+    // Check UTI Coins system status usando nova arquitetura consolidada
     const { data: settings } = await supabase
       .from('coin_system_config')
       .select('setting_value')
       .eq('setting_key', 'system_enabled')
       .single();
 
-    const isSystemEnabled = settings?.setting_value === true || settings?.setting_value === 'true';
+    const isSystemEnabled = settings?.setting_value === 'true' || settings?.setting_value === true;
     
     if (!isSystemEnabled) {
       return new Response(
@@ -84,7 +84,31 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Handle different actions
+    // Verificar atividade suspeita usando nova função do backend
+    const { data: isSuspicious, error: suspiciousError } = await supabase
+      .rpc('check_suspicious_activity', { 
+        p_user_id: user.id, 
+        p_action: action 
+      });
+
+    if (suspiciousError) {
+      console.warn('Erro ao verificar atividade suspeita:', suspiciousError);
+    } else if (isSuspicious) {
+      console.log(`[SECURITY] Suspicious activity detected for user ${user.id}, action: ${action}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          suspicious: true,
+          message: 'Atividade suspeita detectada. Conta temporariamente restrita.' 
+        }),
+        { 
+          status: 429, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Handle different actions usando arquitetura consolidada
     let result;
     
     if (action === 'daily_login') {
@@ -103,16 +127,16 @@ Deno.serve(async (req) => {
       if (existingLogin) {
         const lastLogin = new Date(existingLogin.last_performed_at);
         console.log(`[BACKEND_CLOCK] Daily login already done today. Last: ${lastLogin.toISOString()}, Current: ${new Date().toISOString()}`);
-        console.error(`[SECURITY] Action rejected for user ${user.id}: Login diário já realizado hoje`);
         
         return new Response(
           JSON.stringify({ 
             success: false, 
+            rateLimited: true,
             message: 'Login diário já realizado hoje',
             lastLogin: lastLogin.toISOString()
           }),
           { 
-            status: 400, 
+            status: 429, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
           }
         );
@@ -140,7 +164,9 @@ Deno.serve(async (req) => {
       console.log(`[SUCCESS] User ${user.id} earned coins for action: ${action}`);
       
     } else {
-      // Handle other coin earning actions
+      // Handle other coin earning actions usando nova arquitetura
+      console.log(`[BACKEND_CLOCK] Validating action "${action}" at ${new Date().toISOString()}`);
+      
       const { data: earnResult, error: earnError } = await supabase
         .rpc('earn_coins', {
           p_user_id: user.id,
