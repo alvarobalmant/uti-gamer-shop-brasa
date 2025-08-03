@@ -59,46 +59,47 @@ const ProductActions: React.FC<ProductActionsProps> = ({
         </div>
       )}
 
-      {/* Botões de Ação */}
+      {/* Botões de Ação - Padrão Mercado Livre */}
       <div className="space-y-3">
-        {/* Adicionar ao Carrinho */}
+        {/* Comprar Agora - Botão Verde Sólido (Padrão Mercado Livre) */}
+        {!isOutOfStock && (
+          <Button
+            onClick={onAddToCart}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg h-12 transition-colors duration-200"
+          >
+            <Zap className="w-5 h-5 mr-2" />
+            Comprar Agora
+          </Button>
+        )}
+
+        {/* Adicionar ao Carrinho - Botão Branco com Borda Vermelha (Padrão Mercado Livre) */}
         <Button
           onClick={onAddToCart}
           disabled={isOutOfStock}
-          className={`w-full h-14 text-lg font-bold rounded-lg transition-all duration-300 ${
+          variant="outline"
+          className={`w-full font-semibold rounded-lg h-12 transition-colors duration-200 ${
             isOutOfStock
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]'
+              ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+              : 'bg-white border-2 border-red-600 text-red-600 hover:bg-red-50'
           }`}
         >
           {isOutOfStock ? (
             'Produto Esgotado'
           ) : (
             <>
-              <ShoppingCart className="w-6 h-6 mr-3" />
+              <ShoppingCart className="w-5 h-5 mr-2" />
               Adicionar ao Carrinho
             </>
           )}
         </Button>
 
-        {/* Comprar Agora */}
-        {!isOutOfStock && (
-          <Button
-            onClick={onAddToCart}
-            className="w-full h-14 text-lg font-bold bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-300 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <Zap className="w-6 h-6 mr-3" />
-            Comprar Agora
-          </Button>
-        )}
-
-        {/* WhatsApp */}
+        {/* WhatsApp - Botão Terciário */}
         <Button
           onClick={onWhatsAppContact}
-          variant="outline"
-          className="w-full h-12 text-base font-semibold border-green-500 text-green-600 hover:bg-green-50 rounded-lg transition-all duration-300"
+          variant="ghost"
+          className="w-full h-10 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-all duration-200"
         >
-          <MessageCircle className="w-5 h-5 mr-2" />
+          <MessageCircle className="w-4 h-4 mr-2" />
           Falar no WhatsApp
         </Button>
       </div>

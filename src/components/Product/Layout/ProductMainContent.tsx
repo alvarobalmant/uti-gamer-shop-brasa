@@ -14,6 +14,7 @@ import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
 import ProductSpecificationsTable from '../MainContent/ProductSpecificationsTable';
 import ProductDescriptionExpandable from '../MainContent/ProductDescriptionExpandable';
 import ProductFAQSection from '../MainContent/ProductFAQSection';
+import StorePickupBadge from '../MainContent/StorePickupBadge';
 
 interface ProductMainContentProps {
   product: Product;
@@ -35,10 +36,6 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
 
   // Combinar imagem principal com imagens adicionais
   const allImages = [product.image, ...(product.additional_images || [])].filter(Boolean);
-
-  // Mock de avaliações
-  const rating = 4.8;
-  const reviewCount = 127;
 
   const handleImageClick = (index: number) => {
     setCurrentImageIndex(index);
@@ -102,7 +99,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
       <div className="space-y-4">
         {/* Imagem Principal */}
         <div className="relative group">
-          <div className="aspect-square bg-white rounded-lg overflow-hidden border border-gray-200 relative">
+          <div className="aspect-square bg-white rounded-lg overflow-hidden relative">
             <img
               src={allImages[currentImageIndex]}
               alt={product.name}
@@ -180,13 +177,9 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
   if (layout === 'product-info') {
     return (
       <div className="space-y-6">
-        {/* Status e Social Proof */}
+        {/* Retirada na Loja e Social Proof */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="bg-green-100 text-green-800 font-medium">
-              Em estoque
-            </Badge>
-          </div>
+          <StorePickupBadge />
           <div className="flex items-center gap-2">
             <FavoriteButton productId={product.id} size="sm" />
             <Button variant="outline" size="sm" onClick={handleShare}>
@@ -200,40 +193,24 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
           <h1 className="text-3xl font-bold text-gray-900 leading-tight mb-3">
             {product.name}
           </h1>
-          
-          {/* Avaliações */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-5 h-5 ${
-                    i < Math.floor(rating) 
-                      ? 'text-yellow-400 fill-current' 
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
-              <span className="ml-2 text-lg font-semibold text-gray-900">{rating}</span>
-            </div>
-            <button className="text-sm text-blue-600 hover:underline">
-              ({reviewCount} avaliações)
-            </button>
-          </div>
         </div>
 
         {/* PREÇOS - ÚNICO E CORRETO */}
         <div className="space-y-4">
           <div className="flex items-baseline gap-3">
-            <span className="text-sm text-gray-500 line-through">
-              R$ {(product.price * 1.2).toFixed(2).replace('.', ',')}
-            </span>
-            <span className="text-3xl font-bold text-gray-900">
+            {product.list_price && product.list_price > product.price && (
+              <span className="text-sm text-gray-500 line-through">
+                R$ {product.list_price.toFixed(2).replace('.', ',')}
+              </span>
+            )}
+            <span className="text-3xl font-semibold text-gray-900">
               R$ {product.price.toFixed(2).replace('.', ',')}
             </span>
-            <Badge className="bg-red-600 text-white">
-              -12% OFF
-            </Badge>
+            {product.list_price && product.list_price > product.price && (
+              <Badge className="bg-red-600 text-white">
+                -{Math.round(((product.list_price - product.price) / product.list_price) * 100)}% OFF
+              </Badge>
+            )}
           </div>
           
           {/* Parcelamento */}
@@ -243,35 +220,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
           </div>
         </div>
 
-        {/* CONDIÇÕES - Novo/Usado/Digital */}
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-900">
-            Condição:
-          </label>
-          <div className="flex gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              Novo
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50"
-            >
-              Usado
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50"
-            >
-              Digital
-            </Button>
-          </div>
-        </div>
+
 
         {/* PLATAFORMAS */}
         <div className="space-y-3">
@@ -282,21 +231,13 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
             <Button
               variant="default"
               size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               🎮 PlayStation
             </Button>
           </div>
           <p className="text-xs text-gray-500">
             💡 Preços podem variar entre plataformas
-          </p>
-        </div>
-
-        {/* Descrição básica do produto */}
-        <div className="text-gray-600 mt-8">
-          <p className="text-sm leading-relaxed">
-            {product.description ? product.description.substring(0, 200) + '...' : 
-             'Produto original, lacrado e com garantia. Entrega rápida e segura.'}
           </p>
         </div>
 

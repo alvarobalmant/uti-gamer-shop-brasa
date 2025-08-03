@@ -12,6 +12,8 @@ import QuantitySelector from '../Sidebar/QuantitySelector';
 import ActionButtons from '../Sidebar/ActionButtons';
 import UTICoinsInfo from '../Sidebar/UTICoinsInfo';
 import TrustBadges from '../Sidebar/TrustBadges';
+import DynamicDelivery from '../Sidebar/DynamicDelivery';
+import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
 
 interface ProductSidebarProps {
   product: Product;
@@ -27,15 +29,15 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
   className
 }) => {
   const [quantity, setQuantity] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddToCart = () => {
     onAddToCart(product);
   };
 
   const handleBuyNow = () => {
-    // Lógica de compra imediata via WhatsApp
-    onAddToCart(product);
-    // Redirecionar para WhatsApp ou abrir modal
+    // Abrir modal de confirmação de compra
+    setIsModalOpen(true);
   };
 
   return (
@@ -43,28 +45,10 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
       "space-y-6 bg-white p-6 rounded-lg border border-gray-200",
       className
     )}>
-      {/* SEÇÃO DE ENTREGA */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <Truck className="w-5 h-5 text-green-600" />
-          Entrega
-        </h3>
-        
-        {/* Componente de informações de entrega limpo */}
-        <DeliveryInfo product={product} />
-        
-        {/* Informações adicionais de entrega */}
-        <div className="space-y-2 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-blue-600" />
-            <span>Entrega em 3-5 dias úteis</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-green-600" />
-            <span>Produto original e lacrado</span>
-          </div>
-        </div>
-      </div>
+      {/* ===== SEÇÃO PRIORITÁRIA NO TOPO ===== */}
+      
+      {/* ENTREGA DINÂMICA */}
+      <DynamicDelivery productPrice={product.price} />
 
       {/* SELETOR DE QUANTIDADE */}
       <div className="space-y-3">
@@ -78,27 +62,31 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
         />
       </div>
 
-      {/* BOTÕES DE AÇÃO PRINCIPAIS */}
-      <div className="space-y-3">
+      {/* BOTÕES DE AÇÃO PRINCIPAIS - DESIGN ULTRA PROFISSIONAL */}
+      <div className="space-y-4">
+        {/* Comprar Agora - Botão Primário Ultra Profissional */}
         <Button 
           onClick={handleBuyNow}
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 text-lg"
+          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold text-base rounded-lg h-12 border-0 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out tracking-wide"
           size="lg"
         >
-          <Zap className="w-5 h-5 mr-2" />
-          Comprar Agora
+          <Zap className="w-4 h-4 mr-2" />
+          Comprar agora
         </Button>
         
+        {/* Adicionar ao Carrinho - Botão Secundário Ultra Profissional */}
         <Button 
           onClick={handleAddToCart}
           variant="outline"
-          className="w-full border-red-600 text-red-600 hover:bg-red-50 font-semibold py-3 text-lg"
+          className="w-full bg-white hover:bg-red-50 border border-gray-300 hover:border-red-400 text-gray-800 hover:text-red-700 font-medium text-base rounded-lg h-12 shadow-sm hover:shadow-md transition-all duration-200 ease-in-out tracking-wide"
           size="lg"
         >
-          <ShoppingCart className="w-5 h-5 mr-2" />
-          Adicionar ao Carrinho
+          <ShoppingCart className="w-4 h-4 mr-2" />
+          Adicionar ao carrinho
         </Button>
       </div>
+
+      {/* ===== SEÇÃO SECUNDÁRIA ABAIXO ===== */}
 
       {/* UTI COINS */}
       <UTICoinsInfo 
@@ -132,15 +120,18 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
       {/* TRUST BADGES */}
       <TrustBadges />
 
-      {/* FINALIZAÇÃO WHATSAPP */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-        <div className="text-sm text-green-800 font-medium mb-2">
-          💬 Atendimento Personalizado
-        </div>
-        <p className="text-xs text-green-700">
-          Finalizamos todas as vendas pelo WhatsApp para melhor atendimento e suporte!
-        </p>
-      </div>
+      {/* MODAL DE CONFIRMAÇÃO DE COMPRA */}
+      <PurchaseConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        product={{
+          name: product.name,
+          price: product.price,
+          originalPrice: product.list_price,
+          image: product.images?.[0] || '/placeholder.svg'
+        }}
+        quantity={quantity}
+      />
     </div>
   );
 };

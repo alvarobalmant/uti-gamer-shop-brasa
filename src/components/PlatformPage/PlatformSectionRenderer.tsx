@@ -62,8 +62,8 @@ const PlatformSectionRenderer: React.FC<PlatformSectionRendererProps> = ({
       // Add mock discount data for featured products
       filteredProducts = filteredProducts.map(product => ({
         ...product,
-        originalPrice: product.price * 1.2, // Simulate 20% discount
-        discount: 20
+        originalPrice: product.list_price || product.price * 1.2, // Use list_price if available, fallback to simulation
+        discount: product.list_price ? Math.round(((product.list_price - product.price) / product.list_price) * 100) : 20
       }));
 
       console.log(`[PlatformSectionRenderer] Filtered ${filteredProducts.length} deals products`);

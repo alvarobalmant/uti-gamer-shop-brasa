@@ -312,22 +312,32 @@ const ProductPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-3">
-                  <Button 
-                    onClick={handleAddToCart}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                    size="lg"
-                  >
-                    <ShoppingCart className="w-5 h-5 mr-2" />
-                    Adicionar ao Carrinho
-                  </Button>
+                <div className="flex gap-4">
+                  {/* Comprar Agora - Botão Primário Premium (Estilo Mercado Livre Moderno) */}
                   <Button 
                     onClick={handleBuyNow}
-                    variant="outline" 
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-lg rounded-xl h-14 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 ease-out border-0 relative overflow-hidden group"
                     size="lg"
-                    className="flex-1"
                   >
-                    Comprar Agora
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative flex items-center justify-center">
+                      <ShoppingCart className="w-5 h-5 mr-3" />
+                      Comprar agora
+                    </div>
+                  </Button>
+                  
+                  {/* Adicionar ao Carrinho - Botão Secundário Premium */}
+                  <Button 
+                    onClick={handleAddToCart}
+                    variant="outline"
+                    className="flex-1 bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-blue-500 text-gray-700 hover:text-blue-600 font-semibold text-lg rounded-xl h-14 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 ease-out relative overflow-hidden group"
+                    size="lg"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-blue-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative flex items-center justify-center">
+                      <ShoppingCart className="w-5 h-5 mr-3" />
+                      Adicionar ao carrinho
+                    </div>
                   </Button>
                 </div>
               </div>
