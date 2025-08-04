@@ -210,8 +210,11 @@ Deno.serve(async (req) => {
 
           if (configData) {
             configData.forEach(config => {
-              // Os valores já vêm como números ou strings simples do JSONB
-              const value = config.setting_value;
+              // Extrair valor do JSONB - pode ser um número, string, ou string com aspas
+              let value = config.setting_value;
+              if (typeof value === 'string' && (value.startsWith('"') && value.endsWith('"'))) {
+                value = value.slice(1, -1); // Remove aspas duplas
+              }
                 
               switch (config.setting_key) {
                 case 'daily_bonus_base_amount':
