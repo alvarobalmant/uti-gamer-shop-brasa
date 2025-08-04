@@ -153,9 +153,21 @@ Deno.serve(async (req) => {
       console.log(`[DAILY_BONUS] Checking bonus status for user ${user.id}`);
       
       try {
+        // Check if test mode is enabled
+        const { data: testModeData } = await supabase
+          .from('coin_system_config')
+          .select('setting_value')
+          .eq('setting_key', 'test_mode_enabled')
+          .single();
+
+        const isTestMode = testModeData?.setting_value === 'true';
+        const rpcFunction = isTestMode ? 'can_claim_daily_bonus_test' : 'can_claim_daily_bonus_brasilia';
+        
+        console.log(`[DAILY_BONUS] Using ${isTestMode ? 'TEST' : 'PRODUCTION'} mode for user ${user.id}`);
+
         // Get current bonus period and claim status
         const { data: bonusResult, error: bonusError } = await supabase
-          .rpc('can_claim_daily_bonus_brasilia', { p_user_id: user.id });
+          .rpc(rpcFunction, { p_user_id: user.id });
 
         if (bonusError) {
           console.error('[DAILY_BONUS] Error checking bonus status:', bonusError);
@@ -208,7 +220,8 @@ Deno.serve(async (req) => {
             nextBonusAmount,
             secondsUntilNextClaim,
             nextReset: bonusData.next_reset,
-            lastClaim: bonusData.last_claim
+            lastClaim: bonusData.last_claim,
+            testMode: isTestMode
           });
 
           result = {
@@ -220,7 +233,8 @@ Deno.serve(async (req) => {
             multiplier: multiplier,
             nextReset: bonusData.next_reset,
             lastClaim: bonusData.last_claim,
-            message: bonusData.can_claim ? 'Bonus available' : 'Bonus already claimed today'
+            testMode: isTestMode,
+            message: bonusData.can_claim ? 'Bonus available' : (isTestMode ? 'Aguarde 60 segundos' : 'Bonus already claimed today')
           };
         } else {
           result = {
@@ -243,9 +257,21 @@ Deno.serve(async (req) => {
       console.log(`[DAILY_LOGIN] Processing daily login for user ${user.id}`);
       
       try {
-        // Use the Brasilia login processing function
+        // Check if test mode is enabled
+        const { data: testModeData } = await supabase
+          .from('coin_system_config')
+          .select('setting_value')
+          .eq('setting_key', 'test_mode_enabled')
+          .single();
+
+        const isTestMode = testModeData?.setting_value === 'true';
+        const rpcFunction = isTestMode ? 'process_daily_login_test' : 'process_daily_login_brasilia';
+        
+        console.log(`[DAILY_LOGIN] Using ${isTestMode ? 'TEST' : 'PRODUCTION'} mode for user ${user.id}`);
+
+        // Use the appropriate login processing function
         const { data: loginResult, error: loginError } = await supabase
-          .rpc('process_daily_login_brasilia', { p_user_id: user.id });
+          .rpc(rpcFunction, { p_user_id: user.id });
 
         if (loginError) {
           console.error('[DAILY_LOGIN] Error processing daily login:', loginError);
@@ -261,9 +287,9 @@ Deno.serve(async (req) => {
         result = loginResult;
         
         if (result && result.success) {
-          console.log(`[DAILY_LOGIN] SUCCESS: User ${user.id} earned ${result.coins_earned} coins. New streak: ${result.streak}`);
+          console.log(`[DAILY_LOGIN] SUCCESS: User ${user.id} earned ${result.coins_earned} coins. New streak: ${result.streak} (${isTestMode ? 'TEST' : 'PRODUCTION'} mode)`);
         } else {
-          console.log(`[DAILY_LOGIN] BLOCKED: User ${user.id} login blocked: ${result?.message || 'Unknown error'}`);
+          console.log(`[DAILY_LOGIN] BLOCKED: User ${user.id} login blocked: ${result?.message || 'Unknown error'} (${isTestMode ? 'TEST' : 'PRODUCTION'} mode)`);
         }
       } catch (error) {
         console.error('[DAILY_LOGIN] Exception processing daily login:', error);
