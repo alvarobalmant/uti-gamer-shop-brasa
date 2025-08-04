@@ -178,11 +178,11 @@ Deno.serve(async (req) => {
             .eq('user_id', user.id)
             .single();
 
-          // Get daily bonus configuration
+          // Get daily bonus configuration - use coin_system_config instead
           const { data: configData } = await supabase
-            .from('daily_bonus_config')
+            .from('coin_system_config')
             .select('setting_key, setting_value')
-            .eq('is_active', true);
+            .in('setting_key', ['base_bonus_amount']);
 
           const config = configData?.reduce((acc, item) => {
             acc[item.setting_key] = item.setting_value;
@@ -190,45 +190,48 @@ Deno.serve(async (req) => {
           }, {} as Record<string, any>) || {};
 
           const baseAmount = parseInt(config.base_bonus_amount || '10');
-          const currentStreak = streakData?.current_streak || 0;
+          const currentStreak = streakData?.current_streak || 1;
           const multiplier = streakData?.streak_multiplier || 1.0;
           const nextBonusAmount = Math.round(baseAmount * multiplier);
 
           // Calculate seconds until next claim
           let secondsUntilNextClaim = 0;
-          if (bonusData.next_reset) {
+          if (bonusData.next_reset && !bonusData.can_claim) {
             const nextReset = new Date(bonusData.next_reset);
             const now = new Date();
             secondsUntilNextClaim = Math.max(0, Math.floor((nextReset.getTime() - now.getTime()) / 1000));
           }
 
-          console.log(`[DAILY_BONUS] User ${user.id} status:`, {
+          console.log(`[DAILY_BONUS] User ${user.id} bonus status:`, {
             canClaim: bonusData.can_claim,
             currentStreak,
             nextBonusAmount,
-            secondsUntilNextClaim
+            secondsUntilNextClaim,
+            nextReset: bonusData.next_reset,
+            lastClaim: bonusData.last_claim
           });
 
           result = {
             success: true,
-            canClaim: bonusData.can_claim,
-            secondsUntilNextClaim,
-            currentStreak,
-            nextBonusAmount,
-            multiplier,
+            canClaim: bonusData.can_claim || false,
+            secondsUntilNextClaim: secondsUntilNextClaim || 0,
+            currentStreak: currentStreak,
+            nextBonusAmount: nextBonusAmount,
+            multiplier: multiplier,
             nextReset: bonusData.next_reset,
-            lastClaim: bonusData.last_claim
+            lastClaim: bonusData.last_claim,
+            message: bonusData.can_claim ? 'Bonus available' : 'Bonus already claimed today'
           };
         } else {
           result = {
             success: false,
-            message: 'Failed to get bonus data'
+            message: 'No bonus data available - database function may have failed'
           };
         }
       } catch (error) {
         console.error('[DAILY_BONUS] Exception checking bonus status:', error);
         return new Response(
-          JSON.stringify({ success: false, message: 'Internal server error' }),
+          JSON.stringify({ success: false, message: 'Internal server error checking bonus' }),
           { 
             status: 500, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -265,7 +268,7 @@ Deno.serve(async (req) => {
       } catch (error) {
         console.error('[DAILY_LOGIN] Exception processing daily login:', error);
         return new Response(
-          JSON.stringify({ success: false, message: 'Internal server error' }),
+          JSON.stringify({ success: false, message: 'Internal server error processing login' }),
           { 
             status: 500, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
