@@ -17,7 +17,7 @@ export interface SpecificationCategory {
   items: ProductSpecification[];
 }
 
-export const useProductSpecifications = (productId: string, viewType: 'mobile' | 'desktop' = 'desktop') => {
+export const useProductSpecifications = (productId: string, viewType: 'mobile' | 'desktop' = 'desktop', product?: any) => {
   const [specifications, setSpecifications] = useState<ProductSpecification[]>([]);
   const [categorizedSpecs, setCategorizedSpecs] = useState<SpecificationCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,19 +56,58 @@ export const useProductSpecifications = (productId: string, viewType: 'mobile' |
     }
   };
 
+  const detectTechnicalProduct = (product?: any): boolean => {
+    if (!product) return true; // Default para técnico se não há produto
+    
+    const technicalCategories = [
+      'games', 'jogos', 'consoles', 'periféricos', 
+      'eletrônicos', 'computadores', 'smartphones',
+      'acessórios gaming', 'hardware'
+    ];
+    
+    const technicalKeywords = [
+      'playstation', 'xbox', 'nintendo', 'pc', 'gamer', 
+      'gaming', 'console', 'mouse', 'teclado', 'headset',
+      'monitor', 'placa', 'processador', 'smartphone'
+    ];
+    
+    const category = (product.category || '').toLowerCase();
+    const name = (product.name || product.product_name || '').toLowerCase();
+    
+    // Verificar categoria
+    if (technicalCategories.some(cat => category.includes(cat))) {
+      return true;
+    }
+    
+    // Verificar palavras-chave no nome
+    if (technicalKeywords.some(keyword => name.includes(keyword))) {
+      return true;
+    }
+    
+    return false;
+  };
+
   const filterSpecificationsByViewType = (specs: ProductSpecification[], type: 'mobile' | 'desktop'): ProductSpecification[] => {
     if (type === 'mobile') {
       // Mobile: apenas especificações básicas (categoria "Informações Gerais")
       return specs.filter(spec => spec.category === 'Informações Gerais');
     } else {
-      // Desktop: apenas as 4 categorias técnicas principais
-      const desktopCategories = [
-        '⚙️ Especificações Técnicas',
-        '🚀 Performance', 
-        '💾 Armazenamento',
-        '🔌 Conectividade'
-      ];
-      return specs.filter(spec => desktopCategories.includes(spec.category));
+      // Desktop: detectar se é produto técnico
+      const isTechnicalProduct = detectTechnicalProduct(product);
+      
+      if (isTechnicalProduct) {
+        // Produtos técnicos: usar especificações técnicas específicas
+        const desktopCategories = [
+          '⚙️ Especificações Técnicas',
+          '🚀 Performance', 
+          '💾 Armazenamento',
+          '🔌 Conectividade'
+        ];
+        return specs.filter(spec => desktopCategories.includes(spec.category));
+      } else {
+        // Produtos não-técnicos: usar as mesmas especificações do mobile
+        return specs.filter(spec => spec.category === 'Informações Gerais');
+      }
     }
   };
 
