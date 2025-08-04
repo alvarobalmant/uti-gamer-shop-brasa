@@ -230,12 +230,16 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
             <span className="text-3xl font-semibold text-gray-900">
               R$ {product.price.toFixed(2).replace('.', ',')}
             </span>
-            {product.list_price && product.list_price > product.price && (
+          </div>
+          
+          {/* Badge de desconto */}
+          {product.list_price && product.list_price > product.price && (
+            <div>
               <Badge className="bg-red-600 text-white">
                 -{Math.round(((product.list_price - product.price) / product.list_price) * 100)}% OFF
               </Badge>
-            )}
-          </div>
+            </div>
+          )}
           
           {/* Parcelamento */}
           <div className="text-sm text-gray-600 space-y-1">
