@@ -3,6 +3,7 @@ import { Product } from '@/hooks/useProducts';
 import { ChevronDown, ChevronUp, Info, Package, Shield, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProductSpecifications } from '@/hooks/useProductSpecifications';
+import { useProductFAQs } from '@/hooks/useProductFAQs';
 
 interface ProductTabsMobileProps {
   product: Product;
@@ -15,6 +16,9 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
   
   // Buscar especificações reais do produto
   const { categorizedSpecs, loading: specsLoading } = useProductSpecifications(product.id);
+  
+  // Buscar FAQs reais do produto
+  const { categorizedFaqs, loading: faqsLoading } = useProductFAQs(product.id);
 
   // Função para fazer scroll preciso alinhando com o cabeçalho
   const scrollToContent = (tabId: string) => {
@@ -221,33 +225,60 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
       icon: HelpCircle,
       content: (
         <div className="space-y-4">
-          {[
-            {
-              question: 'O jogo é compatível com PlayStation 4?',
-              answer: 'Este produto é específico para PlayStation 5. Para PS4, temos uma versão separada disponível em nossa loja.'
-            },
-            {
-              question: 'Posso trocar por outro jogo?',
-              answer: 'Sim! Você tem 7 dias para trocar por qualquer outro produto de valor igual ou superior, pagando apenas a diferença.'
-            },
-            {
-              question: 'O jogo vem dublado em português?',
-              answer: 'Sim, o jogo inclui dublagem e legendas em português brasileiro, além de outros idiomas.'
-            },
-            {
-              question: 'Qual o prazo de entrega para minha região?',
-              answer: 'O prazo padrão é de 2 a 5 dias úteis. Você pode consultar o prazo específico inserindo seu CEP no checkout.'
-            },
-            {
-              question: 'Posso retirar na loja física?',
-              answer: 'Sim! Nossa loja fica em Colatina-ES. Você pode escolher a opção "Retirar na loja" no checkout.'
-            }
-          ].map((faq, index) => (
-            <div key={index} className="bg-gray-50 rounded-xl p-4 space-y-3">
-              <h5 className="font-semibold text-gray-900">{faq.question}</h5>
-              <p className="text-gray-700 text-sm leading-relaxed">{faq.answer}</p>
+          {faqsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full"></div>
             </div>
-          ))}
+          ) : categorizedFaqs.length > 0 ? (
+            <div className="space-y-6">
+              {categorizedFaqs.map((category) => (
+                <div key={category.category} className="space-y-4">
+                  {category.category !== 'Geral' && (
+                    <h4 className="font-semibold text-gray-900 text-lg">{category.category}</h4>
+                  )}
+                  <div className="space-y-3">
+                    {category.faqs.map((faq) => (
+                      <div key={faq.id} className="bg-gray-50 rounded-xl p-4 space-y-3">
+                        <h5 className="font-semibold text-gray-900">{faq.question}</h5>
+                        <p className="text-gray-700 text-sm leading-relaxed">{faq.answer}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Fallback FAQs quando não há FAQs no banco */}
+              {[
+                {
+                  question: 'O jogo é compatível com PlayStation 4?',
+                  answer: 'Este produto é específico para PlayStation 5. Para PS4, temos uma versão separada disponível em nossa loja.'
+                },
+                {
+                  question: 'Posso trocar por outro jogo?',
+                  answer: 'Sim! Você tem 7 dias para trocar por qualquer outro produto de valor igual ou superior, pagando apenas a diferença.'
+                },
+                {
+                  question: 'O jogo vem dublado em português?',
+                  answer: 'Sim, o jogo inclui dublagem e legendas em português brasileiro, além de outros idiomas.'
+                },
+                {
+                  question: 'Qual o prazo de entrega para minha região?',
+                  answer: 'O prazo padrão é de 2 a 5 dias úteis. Você pode consultar o prazo específico inserindo seu CEP no checkout.'
+                },
+                {
+                  question: 'Posso retirar na loja física?',
+                  answer: 'Sim! Nossa loja fica em Colatina-ES. Você pode escolher a opção "Retirar na loja" no checkout.'
+                }
+              ].map((faq, index) => (
+                <div key={index} className="bg-gray-50 rounded-xl p-4 space-y-3">
+                  <h5 className="font-semibold text-gray-900">{faq.question}</h5>
+                  <p className="text-gray-700 text-sm leading-relaxed">{faq.answer}</p>
+                </div>
+              ))}
+            </div>
+          )}
           
           <div className="bg-blue-50 rounded-xl p-4 text-center">
             <p className="text-gray-700 mb-3">Não encontrou sua resposta?</p>
