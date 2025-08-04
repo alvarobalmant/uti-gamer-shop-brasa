@@ -88,7 +88,7 @@ const Coins: React.FC = () => {
 
   useEffect(() => {
     loadDailyBonusData();
-  }, [user, loading]);
+  }, [user]);
 
   // Early returns AFTER all hooks are defined
   if (!user) {

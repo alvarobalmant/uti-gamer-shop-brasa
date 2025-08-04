@@ -37,6 +37,8 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
       setLoading(true);
       setError(null);
       
+      console.log('[DAILY_BONUS_WIDGET] Requesting daily bonus data for user:', user.id);
+      
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
         body: { action: 'can_claim_daily_bonus_brasilia' }
       });
@@ -47,10 +49,19 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
         return;
       }
 
+      console.log('[DAILY_BONUS_WIDGET] Raw response data:', data);
+
       if (data?.success) {
-        console.log('[DAILY_BONUS_WIDGET] Daily bonus data loaded:', data);
-        setDailyBonusData({
+        console.log('[DAILY_BONUS_WIDGET] Daily bonus data loaded successfully:', {
           canClaim: data.canClaim,
+          currentStreak: data.currentStreak,
+          nextBonusAmount: data.nextBonusAmount,
+          secondsUntilNextClaim: data.secondsUntilNextClaim,
+          multiplier: data.multiplier
+        });
+        
+        setDailyBonusData({
+          canClaim: data.canClaim || false,
           currentStreak: data.currentStreak || 1,
           nextBonusAmount: data.nextBonusAmount || 10,
           secondsUntilNextClaim: data.secondsUntilNextClaim || 0,
@@ -59,10 +70,11 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
           lastClaim: data.lastClaim
         });
       } else {
+        console.warn('[DAILY_BONUS_WIDGET] Daily bonus response not successful:', data);
         setError(data?.message || 'Failed to load daily bonus data');
       }
     } catch (error) {
-      console.error('Error loading daily bonus data:', error);
+      console.error('[DAILY_BONUS_WIDGET] Exception loading daily bonus data:', error);
       setError('Network error occurred');
     } finally {
       setLoading(false);
