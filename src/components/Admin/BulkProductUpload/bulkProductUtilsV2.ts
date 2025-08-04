@@ -1,5 +1,6 @@
 import type { ImportedProduct, ValidationError, ImportResult, ProductTemplate, TemplateColumn } from './types';
 import { supabase } from '@/integrations/supabase/client';
+import { generateClassificationTutorial } from '@/utils/productIdentification/manualClassificationTutorial';
 
 // Definição das colunas do template
 const TEMPLATE_COLUMNS: TemplateColumn[] = [
@@ -291,7 +292,14 @@ export async function generateImportTutorial(): Promise<string> {
 
     const uniquePlatforms = [...new Set(platforms?.map(p => p.platform).filter(Boolean))].sort();
 
-    const tutorial = `# TUTORIAL DE IMPORTAÇÃO EM MASSA DE PRODUTOS
+    // Gerar tutorial de classificação manual
+    const classificationTutorial = generateClassificationTutorial();
+
+    const tutorial = `${classificationTutorial}
+
+---
+
+# TUTORIAL DE IMPORTAÇÃO EM MASSA DE PRODUTOS
 Atualizado automaticamente em: ${new Date().toLocaleString('pt-BR')}
 
 ## 🚀 INTRODUÇÃO
