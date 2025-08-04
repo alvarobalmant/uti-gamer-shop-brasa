@@ -104,15 +104,17 @@ const DailyBonusTest: React.FC = () => {
 
   useEffect(() => {
     loadTestData();
-    
-    // Auto-refresh a cada 5 segundos se estiver em modo teste
-    const interval = setInterval(() => {
-      if (testData?.testMode) {
-        loadTestData();
-      }
-    }, 5000);
+  }, []);
 
-    return () => clearInterval(interval);
+  useEffect(() => {
+    // Auto-refresh a cada 5 segundos se estiver em modo teste
+    if (testData?.testMode) {
+      const interval = setInterval(() => {
+        loadTestData();
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
   }, [testData?.testMode]);
 
   const formatTime = (seconds: number): string => {
