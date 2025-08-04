@@ -54,84 +54,8 @@ const ProductFAQSection: React.FC<ProductFAQSectionProps> = ({
     }))
   );
 
-  // Fallback to mock data if no FAQs in database
-  const mockFAQs: FAQItem[] = [
-    {
-      id: '1',
-      question: 'Este jogo é compatível com PlayStation 4?',
-      answer: 'Não, este título é exclusivo para PlayStation 5. Foi desenvolvido especificamente para aproveitar as capacidades únicas do console next-gen, incluindo o SSD ultra-rápido, feedback háptico do DualSense e processamento gráfico avançado. Não há versão disponível para PlayStation 4.',
-      category: 'compatibilidade',
-      helpful: 45,
-      date: '2024-01-20',
-      tags: ['PS5', 'PS4', 'compatibilidade']
-    },
-    {
-      id: '2',
-      question: 'Preciso de PlayStation Plus para jogar?',
-      answer: 'Não, este é um jogo single-player que não requer PlayStation Plus para ser jogado. Você pode aproveitar toda a experiência offline. O PlayStation Plus só seria necessário se houvesse recursos online ou multiplayer, o que não é o caso deste título.',
-      category: 'requisitos',
-      helpful: 38,
-      date: '2024-01-18',
-      tags: ['PS Plus', 'online', 'single-player']
-    },
-    {
-      id: '3',
-      question: 'Quanto espaço de armazenamento é necessário?',
-      answer: 'O jogo requer aproximadamente 50 GB de espaço livre no SSD do PlayStation 5. Recomendamos ter pelo menos 60 GB disponíveis para acomodar futuras atualizações. O jogo utiliza a compressão avançada do PS5 para otimizar o uso do espaço.',
-      category: 'requisitos',
-      helpful: 52,
-      date: '2024-01-15',
-      tags: ['armazenamento', 'SSD', 'espaço']
-    },
-    {
-      id: '4',
-      question: 'O jogo tem legendas em português?',
-      answer: 'Sim! O jogo inclui legendas completas em português brasileiro, além de dublagem em português. Também oferece suporte a outros idiomas como inglês, espanhol e francês. As configurações de idioma podem ser alteradas no menu principal.',
-      category: 'idioma',
-      helpful: 29,
-      date: '2024-01-12',
-      tags: ['português', 'legendas', 'dublagem']
-    },
-    {
-      id: '5',
-      question: 'Posso jogar com controle de PS4?',
-      answer: 'Embora seja tecnicamente possível conectar um controle DualShock 4, recomendamos fortemente o uso do DualSense (controle do PS5). O jogo foi otimizado para aproveitar os recursos únicos do DualSense, como feedback háptico avançado e gatilhos adaptativos, que são essenciais para a experiência completa.',
-      category: 'controles',
-      helpful: 33,
-      date: '2024-01-10',
-      tags: ['DualSense', 'DualShock', 'controle']
-    },
-    {
-      id: '6',
-      question: 'Há DLCs ou conteúdo adicional disponível?',
-      answer: 'Atualmente, o jogo é vendido como uma experiência completa sem DLCs pagos. O desenvolvedor pode lançar atualizações gratuitas com conteúdo adicional no futuro. Recomendamos seguir os canais oficiais para ficar por dentro de novidades.',
-      category: 'conteudo',
-      helpful: 21,
-      date: '2024-01-08',
-      tags: ['DLC', 'conteúdo', 'atualizações']
-    },
-    {
-      id: '7',
-      question: 'O produto vem lacrado e com garantia?',
-      answer: 'Sim, todos os nossos produtos são originais, lacrados de fábrica e acompanham garantia de 90 dias contra defeitos de fabricação. Também oferecemos 7 dias para troca caso não fique satisfeito com a compra. O produto é enviado em embalagem segura para evitar danos durante o transporte.',
-      category: 'garantia',
-      helpful: 67,
-      date: '2024-01-05',
-      tags: ['garantia', 'lacrado', 'original']
-    },
-    {
-      id: '8',
-      question: 'Qual o prazo de entrega para minha região?',
-      answer: 'O prazo varia conforme sua localização. Para a região Sudeste, a entrega ocorre em 2-3 dias úteis. Para outras regiões, pode levar de 3-7 dias úteis. Oferecemos frete grátis para compras acima de R$ 99. Você pode calcular o prazo exato informando seu CEP na página do produto.',
-      category: 'entrega',
-      helpful: 41,
-      date: '2024-01-03',
-      tags: ['entrega', 'frete', 'prazo']
-    }
-  ];
-
-  // Use database FAQs if available, otherwise use mock data
-  const displayFAQs = faqItems.length > 0 ? faqItems : mockFAQs;
+  // Use only database FAQs (no fallback to mock data)
+  const displayFAQs = faqItems;
 
   const categories = [
     { id: 'all', label: 'Todas', count: displayFAQs.length },
