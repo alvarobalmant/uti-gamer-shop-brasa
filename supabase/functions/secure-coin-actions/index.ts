@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
           .eq('setting_key', 'test_mode_enabled')
           .single();
 
-        const isTestMode = testModeData?.setting_value === 'true';
+        const isTestMode = testModeData?.setting_value === 'true' || testModeData?.setting_value === true;
         const rpcFunction = isTestMode ? 'can_claim_daily_bonus_test' : 'can_claim_daily_bonus_brasilia';
         
         console.log(`[DAILY_BONUS] Using ${isTestMode ? 'TEST' : 'PRODUCTION'} mode for user ${user.id}`);
@@ -210,27 +210,38 @@ Deno.serve(async (req) => {
 
           if (configData) {
             configData.forEach(config => {
-              // Extrair valor do JSONB - pode ser um número, string, ou string com aspas
+              // Extrair valor do JSONB - tratamento mais robusto
               let value = config.setting_value;
-              if (typeof value === 'string' && (value.startsWith('"') && value.endsWith('"'))) {
-                value = value.slice(1, -1); // Remove aspas duplas
+              
+              // Se for um objeto JSONB, extrair o valor
+              if (typeof value === 'object' && value !== null) {
+                value = value;
+              } else if (typeof value === 'string') {
+                // Se for string com aspas, remover
+                if (value.startsWith('"') && value.endsWith('"')) {
+                  value = value.slice(1, -1);
+                }
+                // Tentar converter para número se for numérico
+                if (!isNaN(Number(value))) {
+                  value = Number(value);
+                }
               }
                 
               switch (config.setting_key) {
                 case 'daily_bonus_base_amount':
-                  baseAmount = parseInt(value);
+                  baseAmount = Number(value) || 10;
                   break;
                 case 'daily_bonus_max_amount':
-                  maxAmount = parseInt(value);
+                  maxAmount = Number(value) || 100;
                   break;
                 case 'daily_bonus_streak_days':
-                  streakDays = parseInt(value);
+                  streakDays = Number(value) || 7;
                   break;
                 case 'daily_bonus_increment_type':
-                  incrementType = value;
+                  incrementType = String(value) || 'calculated';
                   break;
                 case 'daily_bonus_fixed_increment':
-                  fixedIncrement = parseInt(value);
+                  fixedIncrement = Number(value) || 10;
                   break;
               }
             });
@@ -312,7 +323,7 @@ Deno.serve(async (req) => {
           .eq('setting_key', 'test_mode_enabled')
           .single();
 
-        const isTestMode = testModeData?.setting_value === 'true';
+        const isTestMode = testModeData?.setting_value === 'true' || testModeData?.setting_value === true;
         const rpcFunction = isTestMode ? 'process_daily_login_test' : 'process_daily_login_brasilia';
         
         console.log(`[DAILY_LOGIN] Using ${isTestMode ? 'TEST' : 'PRODUCTION'} mode for user ${user.id}`);

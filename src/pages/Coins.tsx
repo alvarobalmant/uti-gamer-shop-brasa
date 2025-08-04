@@ -13,6 +13,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import DailyBonusTest from '@/components/Admin/DailyBonusTest';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
@@ -556,8 +557,14 @@ const Coins: React.FC = () => {
                     <p className="text-gray-500">Erro ao carregar dados do bônus diário</p>
                   </div>
                 )}
-              </div>
-            )}
+                
+                {/* Componente de teste - remover em produção */}
+                <div className="border-t pt-8 mt-8">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800">Painel de Teste (Admin)</h3>
+                  <DailyBonusTest />
+                </div>
+               </div>
+             )}
 
             {activeTab === 'history' && (
               <div>
