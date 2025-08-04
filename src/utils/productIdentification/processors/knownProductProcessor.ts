@@ -1,43 +1,30 @@
-import { ProcessingResult, KnownProductData } from '../types';
-import { knownProductsDatabase } from '../knownProductsDatabase';
+import { ProcessingResult } from '../types';
 import { adaptiveSpecificationsSystem } from '../../adaptiveSpecifications';
 
 export class KnownProductProcessor {
-  private knownProducts: KnownProductData[] = knownProductsDatabase;
   
   async processKnownProduct(product: any): Promise<ProcessingResult> {
     try {
-      const knownProduct = this.findMatchingKnownProduct(product);
+      console.log(`Processando produto conhecido: ${product.name}`);
       
-      if (!knownProduct) {
-        return {
-          success: false,
-          errors: ['Produto não encontrado na base de dados conhecidos'],
-          warnings: [],
-          processingType: 'known',
-          confidence: 0.1
-        };
-      }
+      // Aplicar especificações adaptativas para produtos conhecidos
+      const adaptiveSpecs = await adaptiveSpecificationsSystem.processProduct(product);
       
-      // Merge user data with known product data
-      const enhancedProduct = this.mergeWithKnownData(product, knownProduct);
-      
-      // Apply adaptive specifications
-      const processedProduct = await this.applyAdaptiveSpecifications(enhancedProduct);
-      
-      // Validate and enrich
-      const validatedProduct = this.validateAndEnrich(processedProduct, knownProduct);
+      // Enriquecer dados baseado no conhecimento existente
+      const enrichedProduct = await this.enrichKnownProduct(product, adaptiveSpecs);
       
       return {
         success: true,
-        product: validatedProduct,
+        product: enrichedProduct,
         errors: [],
-        warnings: this.generateWarnings(product, knownProduct),
+        warnings: this.validateKnownProduct(enrichedProduct),
         processingType: 'known',
         confidence: 0.95
       };
       
     } catch (error) {
+      console.error('Erro no processamento de produto conhecido:', error);
+      
       return {
         success: false,
         errors: [`Erro no processamento: ${error.message}`],
@@ -48,182 +35,99 @@ export class KnownProductProcessor {
     }
   }
   
-  private findMatchingKnownProduct(product: any): KnownProductData | null {
-    const name = product.name?.toLowerCase() || '';
-    const brand = product.brand?.toLowerCase() || '';
-    
-    return this.knownProducts.find(known => {
-      // Direct name match
-      if (name.includes(known.name.toLowerCase())) {
-        return true;
+  private async enrichKnownProduct(product: any, adaptiveSpecs: any): Promise<any> {
+    const enriched = {
+      ...product,
+      specifications: adaptiveSpecs.specifications,
+      technical_specs: adaptiveSpecs.technical_specs,
+      category: adaptiveSpecs.category,
+      processing_metadata: {
+        ...adaptiveSpecs.metadata,
+        processing_type: 'known',
+        enrichment_applied: true
       }
-      
-      // Alias match
-      return known.aliases.some(alias => 
-        name.includes(alias.toLowerCase()) || alias.toLowerCase().includes(name)
-      );
-    }) || null;
-  }
-  
-  private mergeWithKnownData(userProduct: any, knownProduct: KnownProductData): any {
-    const merged = {
-      ...userProduct,
-      // Override with known data when user data is missing or incomplete
-      name: userProduct.name || knownProduct.name,
-      brand: userProduct.brand || knownProduct.brand,
-      category: userProduct.category || knownProduct.category,
-      
-      // Add standard specifications
-      standardSpecs: {
-        ...knownProduct.standardSpecs,
-        ...userProduct.standardSpecs
-      },
-      
-      // Mark as known product
-      isKnownProduct: true,
-      knownProductId: knownProduct.id,
-      dataSource: 'known_database'
     };
     
-    return merged;
-  }
-  
-  private async applyAdaptiveSpecifications(product: any): Promise<any> {
-    try {
-      const processedSpecs = await adaptiveSpecificationsSystem.processProduct(product);
-      
-      return {
-        ...product,
-        specifications: processedSpecs.specifications,
-        technical_specs: processedSpecs.technical_specs,
-        adaptiveCategory: processedSpecs.category,
-        processingMetadata: {
-          ...processedSpecs.metadata,
-          processingType: 'known_product'
-        }
-      };
-    } catch (error) {
-      console.warn('Erro ao aplicar especificações adaptativas:', error);
-      return product;
-    }
-  }
-  
-  private validateAndEnrich(product: any, knownProduct: KnownProductData): any {
-    const enriched = { ...product };
-    
-    // Add missing SEO data
-    if (!enriched.meta_title) {
-      enriched.meta_title = `${knownProduct.name} - ${knownProduct.brand} | UTI Games`;
+    // Normalizar campos essenciais
+    if (!enriched.brand && enriched.marca) {
+      enriched.brand = enriched.marca;
     }
     
-    if (!enriched.meta_description) {
-      enriched.meta_description = `${knownProduct.name} da ${knownProduct.brand}. Produto original com garantia. Compre na UTI Games com o melhor preço.`;
+    if (!enriched.model && enriched.modelo) {
+      enriched.model = enriched.modelo;
     }
     
-    // Generate slug if missing
-    if (!enriched.slug) {
-      enriched.slug = this.generateSlug(knownProduct.name, knownProduct.brand);
-    }
-    
-    // Add trust indicators for known products
-    enriched.trust_indicators = {
-      verified_product: true,
-      official_brand: true,
-      warranty_included: true,
-      fast_shipping: true
-    };
-    
-    // Add product highlights based on known data
-    enriched.product_highlights = this.generateHighlights(knownProduct);
-    
-    // Set appropriate badge
-    enriched.badge_text = 'Produto Oficial';
-    enriched.badge_color = '#22c55e';
-    enriched.badge_visible = true;
+    // Padronizar unidades de medida
+    enriched.specifications = this.standardizeUnits(enriched.specifications);
     
     return enriched;
   }
   
-  private generateWarnings(userProduct: any, knownProduct: KnownProductData): string[] {
+  private standardizeUnits(specs: any[]): any[] {
+    if (!Array.isArray(specs)) return specs;
+    
+    return specs.map(spec => ({
+      ...spec,
+      value: this.normalizeValue(spec.value, spec.unit),
+      unit: this.standardizeUnit(spec.unit)
+    }));
+  }
+  
+  private normalizeValue(value: any, unit: string): any {
+    if (typeof value !== 'string') return value;
+    
+    // Remover espaços e caracteres especiais desnecessários
+    return value.trim().replace(/\s+/g, ' ');
+  }
+  
+  private standardizeUnit(unit: string): string {
+    if (!unit || typeof unit !== 'string') return unit;
+    
+    const unitMap: Record<string, string> = {
+      'mm': 'mm',
+      'milímetros': 'mm',
+      'milimetros': 'mm',
+      'cm': 'cm',
+      'centímetros': 'cm',
+      'centimetros': 'cm',
+      'm': 'm',
+      'metros': 'm',
+      'kg': 'kg',
+      'quilogramas': 'kg',
+      'quilos': 'kg',
+      'g': 'g',
+      'gramas': 'g',
+      'v': 'V',
+      'volts': 'V',
+      'volt': 'V',
+      'w': 'W',
+      'watts': 'W',
+      'watt': 'W'
+    };
+    
+    return unitMap[unit.toLowerCase()] || unit;
+  }
+  
+  private validateKnownProduct(product: any): string[] {
     const warnings: string[] = [];
     
-    // Check for price discrepancies
-    if (userProduct.price && this.isPriceUnusual(userProduct.price, knownProduct)) {
-      warnings.push('Preço pode estar fora da faixa esperada para este produto');
+    if (!product.brand) {
+      warnings.push('Marca não identificada');
     }
     
-    // Check for missing important data
-    if (!userProduct.image && !userProduct.images) {
-      warnings.push('Produto conhecido sem imagem - considere adicionar imagens oficiais');
+    if (!product.model) {
+      warnings.push('Modelo não especificado');
     }
     
-    // Check for category mismatch
-    if (userProduct.category && 
-        userProduct.category.toLowerCase() !== knownProduct.category.toLowerCase()) {
-      warnings.push(`Categoria divergente: usuário informou "${userProduct.category}", base de dados indica "${knownProduct.category}"`);
+    if (!product.specifications || product.specifications.length === 0) {
+      warnings.push('Especificações técnicas não encontradas');
+    }
+    
+    if (!product.category || product.category === 'Geral') {
+      warnings.push('Categoria genérica - pode precisar de classificação mais específica');
     }
     
     return warnings;
-  }
-  
-  private isPriceUnusual(price: number, knownProduct: KnownProductData): boolean {
-    // Basic price validation based on product category
-    const categoryRanges = {
-      'Consoles': { min: 1000, max: 5000 },
-      'Games': { min: 50, max: 500 },
-      'Periféricos': { min: 30, max: 1000 },
-      'Colecionáveis': { min: 20, max: 300 },
-      'Smartphones': { min: 500, max: 8000 }
-    };
-    
-    const range = categoryRanges[knownProduct.category];
-    if (range) {
-      return price < range.min || price > range.max;
-    }
-    
-    return false;
-  }
-  
-  private generateSlug(name: string, brand: string): string {
-    return `${name} ${brand}`
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  }
-  
-  private generateHighlights(knownProduct: KnownProductData): string[] {
-    const highlights: string[] = [];
-    
-    // Category-specific highlights
-    switch (knownProduct.category) {
-      case 'Consoles':
-        highlights.push('Console de nova geração');
-        highlights.push('Garantia oficial do fabricante');
-        highlights.push('Suporte técnico especializado');
-        break;
-        
-      case 'Games':
-        highlights.push('Jogo original lacrado');
-        highlights.push('Compatível com console');
-        highlights.push('Entrega imediata');
-        break;
-        
-      case 'Periféricos':
-        highlights.push('Equipamento gamer profissional');
-        highlights.push('Alta precisão e desempenho');
-        highlights.push('Compatibilidade garantida');
-        break;
-        
-      case 'Colecionáveis':
-        highlights.push('Item de coleção autêntico');
-        highlights.push('Embalagem original');
-        highlights.push('Ideal para colecionadores');
-        break;
-    }
-    
-    return highlights;
   }
 }
 

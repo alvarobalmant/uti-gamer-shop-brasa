@@ -1,222 +1,185 @@
-import { ProcessingResult } from '../types';
+import { ProcessingResult, ProductIdentificationResult } from '../types';
+import { adaptiveSpecificationsSystem } from '../../adaptiveSpecifications';
 
 export class DoubtfulProductHandler {
   
-  handleDoubtfulProduct(product: any, identificationResult: any): ProcessingResult {
-    const errors: string[] = [];
-    const warnings: string[] = [];
+  handleDoubtfulProduct(product: any, identification: ProductIdentificationResult): ProcessingResult {
+    try {
+      console.log(`Produto duvidoso detectado: ${product.name}`, {
+        confidence: identification.confidence.overall,
+        flags: identification.flags
+      });
+      
+      // Aplicar processamento básico mesmo para produtos duvidosos
+      return this.processWithCaution(product, identification);
+      
+    } catch (error) {
+      console.error('Erro no processamento de produto duvidoso:', error);
+      
+      return {
+        success: false,
+        errors: [`Erro crítico no produto duvidoso: ${error.message}`],
+        warnings: [],
+        processingType: 'doubtful',
+        confidence: 0.0
+      };
+    }
+  }
+  
+  private processWithCaution(product: any, identification: ProductIdentificationResult): ProcessingResult {
+    const warnings: string[] = [
+      ...identification.flags,
+      'Produto marcado como duvidoso - revisar manualmente'
+    ];
     
-    // Analyze why the product is doubtful
-    const analysis = this.analyzeDoubtfulReasons(product, identificationResult);
+    // Aplicar especificações básicas mesmo para produtos duvidosos
+    const basicSpecs = this.extractBasicSpecifications(product);
     
-    // Generate detailed feedback
-    const feedback = this.generateDetailedFeedback(product, analysis);
+    const processedProduct = {
+      ...product,
+      specifications: basicSpecs.specifications,
+      technical_specs: basicSpecs.technical_specs,
+      category: 'Não Classificado',
+      processing_metadata: {
+        processedAt: new Date().toISOString(),
+        version: '1.0',
+        processing_type: 'doubtful',
+        confidence_factors: identification.confidence.factors,
+        flags: identification.flags,
+        requires_manual_review: true
+      }
+    };
     
-    // Determine if partial processing is possible
-    const partialProcessing = this.attemptPartialProcessing(product, analysis);
+    // Adicionar recomendações específicas
+    if (identification.recommendations) {
+      warnings.push(...identification.recommendations);
+    }
     
     return {
-      success: false,
-      errors: [
-        'Produto marcado como duvidoso - requer revisão manual',
-        ...analysis.criticalIssues,
-        ...feedback.errors
-      ],
-      warnings: [
-        ...analysis.warnings,
-        ...feedback.warnings,
-        ...this.generateActionableRecommendations(analysis)
-      ],
+      success: false, // Marcado como não bem-sucedido para revisão manual
+      product: processedProduct,
+      errors: this.generateDoubtfulErrors(identification),
+      warnings,
       processingType: 'doubtful',
-      confidence: identificationResult.confidence.overall,
-      product: partialProcessing.data || undefined
+      confidence: identification.confidence.overall
     };
   }
   
-  private analyzeDoubtfulReasons(product: any, identificationResult: any): any {
-    const analysis = {
-      criticalIssues: [],
-      warnings: [],
-      dataGaps: [],
-      inconsistencies: [],
-      suggestions: []
-    };
+  private extractBasicSpecifications(product: any): any {
+    const specs: any[] = [];
+    const techSpecs: any = {};
     
-    // Analyze confidence factors
-    const { factors } = identificationResult.confidence;
+    // Tentar extrair informações básicas mesmo de produtos duvidosos
+    const basicFields = ['name', 'brand', 'model', 'description'];
     
-    if (factors.brandRecognition < 0.5) {
-      analysis.criticalIssues.push('Marca não reconhecida ou desconhecida');
-      analysis.suggestions.push('Verificar se a marca está correta e é oficial');
-    }
-    
-    if (factors.dataCompleteness < 0.6) {
-      analysis.criticalIssues.push('Dados incompletos ou insuficientes');
-      analysis.dataGaps.push(...this.identifyDataGaps(product));
-    }
-    
-    if (factors.consistencyCheck < 0.7) {
-      analysis.warnings.push('Inconsistências detectadas nos dados');
-      analysis.inconsistencies.push(...this.identifyInconsistencies(product));
-    }
-    
-    if (factors.marketPresence < 0.4) {
-      analysis.warnings.push('Produto não encontrado em bases de dados conhecidas');
-      analysis.suggestions.push('Confirmar se o produto existe e está sendo comercializado');
-    }
-    
-    return analysis;
-  }
-  
-  private identifyDataGaps(product: any): string[] {
-    const gaps: string[] = [];
-    const requiredFields = ['name', 'price', 'description', 'brand', 'category'];
-    const recommendedFields = ['image', 'specifications', 'stock'];
-    
-    requiredFields.forEach(field => {
-      if (!product[field] || product[field].toString().trim().length === 0) {
-        gaps.push(`Campo obrigatório ausente: ${field}`);
+    basicFields.forEach(field => {
+      if (product[field] && typeof product[field] === 'string') {
+        specs.push({
+          name: field.charAt(0).toUpperCase() + field.slice(1),
+          value: product[field],
+          category: 'Informações Básicas',
+          confidence: 'low'
+        });
       }
     });
     
-    recommendedFields.forEach(field => {
-      if (!product[field]) {
-        gaps.push(`Campo recomendado ausente: ${field}`);
-      }
-    });
-    
-    return gaps;
-  }
-  
-  private identifyInconsistencies(product: any): string[] {
-    const inconsistencies: string[] = [];
-    
-    // Price consistency
-    if (product.price) {
-      const price = Number(product.price);
-      if (price <= 0) {
-        inconsistencies.push('Preço inválido ou zero');
-      }
-      if (price > 50000) {
-        inconsistencies.push('Preço extremamente alto - verificar se está correto');
-      }
+    // Procurar por padrões numéricos que possam ser especificações
+    if (product.description) {
+      const numericPatterns = this.extractNumericPatterns(product.description);
+      specs.push(...numericPatterns);
     }
     
-    // Name/description consistency
-    if (product.name && product.description) {
-      const nameWords = product.name.toLowerCase().split(' ').filter(w => w.length > 3);
-      const descriptionLower = product.description.toLowerCase();
-      
-      const commonWords = nameWords.filter(word => descriptionLower.includes(word));
-      if (commonWords.length < 2) {
-        inconsistencies.push('Nome e descrição parecem não estar relacionados');
-      }
-    }
+    techSpecs.extraction_method = 'basic_pattern_matching';
+    techSpecs.reliability = 'low';
+    techSpecs.requires_verification = true;
     
-    // Category/brand consistency
-    if (product.category && product.brand) {
-      const gamingBrands = ['sony', 'microsoft', 'nintendo', 'razer', 'logitech'];
-      const gamingCategories = ['games', 'consoles', 'periféricos', 'acessórios'];
-      
-      const isGamingBrand = gamingBrands.some(brand => 
-        product.brand.toLowerCase().includes(brand)
-      );
-      const isGamingCategory = gamingCategories.some(cat => 
-        product.category.toLowerCase().includes(cat)
-      );
-      
-      if (isGamingBrand && !isGamingCategory) {
-        inconsistencies.push('Marca de gaming em categoria não relacionada');
-      }
-    }
-    
-    return inconsistencies;
-  }
-  
-  private generateDetailedFeedback(product: any, analysis: any): any {
-    const feedback = {
-      errors: [],
-      warnings: [],
-      suggestions: []
+    return {
+      specifications: specs,
+      technical_specs: techSpecs
     };
-    
-    // Critical issues become errors
-    feedback.errors = [...analysis.criticalIssues];
-    
-    // Data gaps become actionable warnings
-    if (analysis.dataGaps.length > 0) {
-      feedback.warnings.push(`${analysis.dataGaps.length} campos importantes ausentes ou incompletos`);
-      feedback.suggestions.push('Completar todos os campos obrigatórios antes de reprocessar');
-    }
-    
-    // Inconsistencies become warnings with suggestions
-    if (analysis.inconsistencies.length > 0) {
-      feedback.warnings.push('Dados inconsistentes detectados');
-      feedback.suggestions.push('Revisar e corrigir inconsistências nos dados');
-    }
-    
-    return feedback;
   }
   
-  private attemptPartialProcessing(product: any, analysis: any): { success: boolean; data?: any } {
-    // If only minor issues, try to create a basic product structure
-    if (analysis.criticalIssues.length === 0 && analysis.dataGaps.length < 3) {
-      try {
-        const partialProduct = {
-          ...product,
-          processingStatus: 'partial',
-          requiresReview: true,
-          reviewNotes: analysis.suggestions,
+  private extractNumericPatterns(text: string): any[] {
+    const patterns: any[] = [];
+    
+    if (!text || typeof text !== 'string') return patterns;
+    
+    // Padrões comuns para especificações técnicas
+    const specPatterns = [
+      {
+        regex: /(\d+(?:\.\d+)?)\s*(v|volt|volts)/gi,
+        category: 'Alimentação',
+        unit: 'V',
+        name: 'Tensão'
+      },
+      {
+        regex: /(\d+(?:\.\d+)?)\s*(w|watt|watts)/gi,
+        category: 'Alimentação',
+        unit: 'W',
+        name: 'Potência'
+      },
+      {
+        regex: /(\d+(?:\.\d+)?)\s*(kg|quilos|quilogramas)/gi,
+        category: 'Físicas',
+        unit: 'kg',
+        name: 'Peso'
+      },
+      {
+        regex: /(\d+(?:\.\d+)?)\s*(mm|cm|m|metros|milímetros|centímetros)/gi,
+        category: 'Dimensões',
+        unit: 'mm',
+        name: 'Dimensão'
+      }
+    ];
+    
+    specPatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.regex.exec(text)) !== null) {
+        patterns.push({
+          name: pattern.name,
+          value: match[1],
+          unit: pattern.unit,
+          category: pattern.category,
           confidence: 'low',
-          
-          // Add default values for missing fields
-          badge_text: 'Requer Revisão',
-          badge_color: '#f59e0b',
-          badge_visible: true,
-          
-          // Mark for manual review
-          needsManualReview: true,
-          reviewFlags: analysis.warnings
-        };
-        
-        return { success: true, data: partialProduct };
-      } catch (error) {
-        return { success: false };
+          source: 'pattern_extraction'
+        });
       }
-    }
+    });
     
-    return { success: false };
+    return patterns;
   }
   
-  private generateActionableRecommendations(analysis: any): string[] {
-    const recommendations: string[] = [];
+  private generateDoubtfulErrors(identification: ProductIdentificationResult): string[] {
+    const errors: string[] = [];
     
-    // Specific recommendations based on issues found
-    if (analysis.dataGaps.some(gap => gap.includes('brand'))) {
-      recommendations.push('AÇÃO: Verificar e informar a marca oficial do produto');
+    // Converter flags em erros mais específicos
+    identification.flags.forEach(flag => {
+      switch (flag.toLowerCase()) {
+        case 'missing_brand':
+          errors.push('Marca do produto não identificada ou ausente');
+          break;
+        case 'incomplete_data':
+          errors.push('Dados do produto incompletos ou insuficientes');
+          break;
+        case 'inconsistent_specifications':
+          errors.push('Especificações técnicas inconsistentes ou contraditórias');
+          break;
+        case 'unknown_category':
+          errors.push('Categoria do produto não pode ser determinada');
+          break;
+        case 'low_confidence':
+          errors.push('Baixa confiança na identificação do produto');
+          break;
+        default:
+          errors.push(`Problema identificado: ${flag}`);
+      }
+    });
+    
+    if (errors.length === 0) {
+      errors.push('Produto não atende aos critérios de qualidade mínimos');
     }
     
-    if (analysis.dataGaps.some(gap => gap.includes('category'))) {
-      recommendations.push('AÇÃO: Definir categoria apropriada (Games, Consoles, Periféricos, etc.)');
-    }
-    
-    if (analysis.dataGaps.some(gap => gap.includes('image'))) {
-      recommendations.push('AÇÃO: Adicionar pelo menos uma imagem do produto');
-    }
-    
-    if (analysis.inconsistencies.some(inc => inc.includes('preço'))) {
-      recommendations.push('AÇÃO: Confirmar preço com fornecedor ou fonte oficial');
-    }
-    
-    if (analysis.criticalIssues.some(issue => issue.includes('marca'))) {
-      recommendations.push('AÇÃO: Pesquisar marca em bases oficiais ou verificar ortografia');
-    }
-    
-    // General recommendations
-    recommendations.push('SUGESTÃO: Comparar com produtos similares no catálogo');
-    recommendations.push('SUGESTÃO: Confirmar informações com fornecedor antes de publicar');
-    
-    return recommendations;
+    return errors;
   }
 }
 

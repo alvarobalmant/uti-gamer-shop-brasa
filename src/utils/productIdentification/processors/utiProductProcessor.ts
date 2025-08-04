@@ -5,34 +5,26 @@ export class UTIProductProcessor {
   
   async processUTIProduct(product: any): Promise<ProcessingResult> {
     try {
-      // Validate required UTI product data
-      const validation = this.validateUTIProduct(product);
-      if (!validation.isValid) {
-        return {
-          success: false,
-          errors: validation.errors,
-          warnings: validation.warnings,
-          processingType: 'uti_original',
-          confidence: 0.3
-        };
-      }
+      console.log(`Processando produto UTI original: ${product.name}`);
       
-      // Process with user-provided data only
-      const processedProduct = await this.processWithUserData(product);
+      // Aplicar especificações adaptativas para produtos UTI
+      const adaptiveSpecs = await adaptiveSpecificationsSystem.processProduct(product);
       
-      // Apply UTI-specific enhancements
-      const enhancedProduct = this.applyUTIEnhancements(processedProduct);
+      // Aplicar transformações específicas para produtos UTI
+      const transformedProduct = await this.transformUTIProduct(product, adaptiveSpecs);
       
       return {
         success: true,
-        product: enhancedProduct,
+        product: transformedProduct,
         errors: [],
-        warnings: validation.warnings,
+        warnings: this.validateUTIProduct(transformedProduct),
         processingType: 'uti_original',
-        confidence: 0.9
+        confidence: 0.85
       };
       
     } catch (error) {
+      console.error('Erro no processamento de produto UTI:', error);
+      
       return {
         success: false,
         errors: [`Erro no processamento UTI: ${error.message}`],
@@ -43,181 +35,190 @@ export class UTIProductProcessor {
     }
   }
   
-  private validateUTIProduct(product: any): { isValid: boolean; errors: string[]; warnings: string[] } {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-    
-    // Required fields for UTI products
-    const requiredFields = ['name', 'price', 'description'];
-    
-    for (const field of requiredFields) {
-      if (!product[field] || product[field].toString().trim().length === 0) {
-        errors.push(`Campo obrigatório ausente: ${field}`);
+  private async transformUTIProduct(product: any, adaptiveSpecs: any): Promise<any> {
+    const transformed = {
+      ...product,
+      specifications: adaptiveSpecs.specifications,
+      technical_specs: adaptiveSpecs.technical_specs,
+      category: this.categorizeUTIProduct(product),
+      processing_metadata: {
+        ...adaptiveSpecs.metadata,
+        processing_type: 'uti_original',
+        uti_transformations_applied: true
       }
-    }
+    };
     
-    // Validate price
-    if (product.price) {
-      const price = Number(product.price);
-      if (isNaN(price) || price <= 0) {
-        errors.push('Preço deve ser um número válido maior que zero');
-      }
-      if (price > 10000) {
-        warnings.push('Preço alto para produto UTI - verificar se está correto');
-      }
-    }
+    // Aplicar transformações específicas do domínio UTI
+    transformed.specifications = this.applyUTISpecificationTransforms(transformed.specifications);
+    transformed.technical_specs = this.enhanceUTITechnicalSpecs(transformed.technical_specs);
     
-    // Validate stock
-    if (product.stock !== undefined) {
-      const stock = Number(product.stock);
-      if (isNaN(stock) || stock < 0) {
-        errors.push('Estoque deve ser um número válido maior ou igual a zero');
-      }
-    }
+    // Normalizar nomenclatura UTI
+    transformed.name = this.normalizeUTIProductName(transformed.name);
     
-    // Check for UTI branding consistency
+    return transformed;
+  }
+  
+  private categorizeUTIProduct(product: any): string {
     const name = product.name?.toLowerCase() || '';
-    const brand = product.brand?.toLowerCase() || '';
-    const utiKeywords = ['uti', 'uti games'];
     
-    const hasUTIBranding = utiKeywords.some(keyword => 
-      name.includes(keyword) || brand.includes(keyword)
-    );
-    
-    if (!hasUTIBranding) {
-      warnings.push('Produto não contém branding UTI explícito');
-    }
-    
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings
-    };
-  }
-  
-  private async processWithUserData(product: any): Promise<any> {
-    try {
-      // Apply adaptive specifications with user data only
-      const processedSpecs = await adaptiveSpecificationsSystem.processProduct(product);
-      
-      return {
-        ...product,
-        specifications: processedSpecs.specifications,
-        technical_specs: processedSpecs.technical_specs,
-        adaptiveCategory: processedSpecs.category,
-        processingMetadata: {
-          ...processedSpecs.metadata,
-          processingType: 'uti_original',
-          dataSource: 'user_provided_only'
-        }
-      };
-    } catch (error) {
-      console.warn('Erro ao aplicar especificações adaptativas para produto UTI:', error);
-      return product;
-    }
-  }
-  
-  private applyUTIEnhancements(product: any): any {
-    const enhanced = { ...product };
-    
-    // Ensure UTI branding
-    if (!enhanced.brand || !enhanced.brand.toLowerCase().includes('uti')) {
-      enhanced.brand = enhanced.brand ? `UTI Games - ${enhanced.brand}` : 'UTI Games';
-    }
-    
-    // Generate UTI-specific SEO
-    if (!enhanced.meta_title) {
-      enhanced.meta_title = `${enhanced.name} - UTI Games Original | Loja Oficial`;
-    }
-    
-    if (!enhanced.meta_description) {
-      enhanced.meta_description = `${enhanced.name} - Produto exclusivo UTI Games. Qualidade garantida, entrega rápida. Compre direto da loja oficial.`;
-    }
-    
-    // Generate slug with UTI prefix
-    if (!enhanced.slug) {
-      enhanced.slug = this.generateUTISlug(enhanced.name);
-    }
-    
-    // Add UTI-specific trust indicators
-    enhanced.trust_indicators = {
-      uti_original: true,
-      exclusive_product: true,
-      quality_guaranteed: true,
-      fast_shipping: true,
-      official_store: true
+    // Mapeamento específico para produtos UTI
+    const utiCategories: Record<string, string> = {
+      'ventilador': 'Ventiladores Pulmonares',
+      'monitor': 'Monitores Multiparâmetros',
+      'bomba': 'Bombas de Infusão',
+      'desfibrilador': 'Desfibriladores',
+      'oximetro': 'Oxímetros',
+      'capnografo': 'Capnógrafos',
+      'eletrocardiografo': 'Eletrocardiógrafos',
+      'aspirador': 'Aspiradores',
+      'incubadora': 'Incubadoras',
+      'berco': 'Berços Aquecidos',
+      'fototerapia': 'Equipamentos de Fototerapia'
     };
     
-    // Set UTI product highlights
-    enhanced.product_highlights = [
-      'Produto exclusivo UTI Games',
-      'Qualidade premium garantida',
-      'Entrega rápida e segura',
-      'Suporte especializado',
-      'Satisfação garantida'
-    ];
-    
-    // Add UTI-specific badge
-    enhanced.badge_text = 'UTI Original';
-    enhanced.badge_color = '#3b82f6'; // UTI blue
-    enhanced.badge_visible = true;
-    
-    // Mark as UTI original
-    enhanced.isUTIOriginal = true;
-    enhanced.dataSource = 'uti_internal';
-    
-    // Add delivery configuration for UTI products
-    enhanced.delivery_config = {
-      free_shipping: true,
-      fast_delivery: true,
-      same_day_available: true,
-      delivery_time: '24-48 horas'
-    };
-    
-    // Set appropriate category if not provided
-    if (!enhanced.category) {
-      enhanced.category = this.determineUTICategory(enhanced);
-    }
-    
-    // Add UTI-specific tags
-    const utiTags = ['uti games', 'produto exclusivo', 'original'];
-    enhanced.tags = enhanced.tags ? 
-      [...new Set([...enhanced.tags.split(','), ...utiTags])].join(',') :
-      utiTags.join(',');
-    
-    return enhanced;
-  }
-  
-  private generateUTISlug(name: string): string {
-    return `uti-${name}`
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  }
-  
-  private determineUTICategory(product: any): string {
-    const name = product.name?.toLowerCase() || '';
-    const description = product.description?.toLowerCase() || '';
-    
-    // Category mapping based on keywords
-    const categoryMap = {
-      'Vestuário': ['camiseta', 'camisa', 't-shirt', 'blusa', 'moletom', 'vestuário'],
-      'Acessórios': ['chaveiro', 'adesivo', 'caneca', 'copo', 'squeeze'],
-      'Eletrônicos': ['headset', 'mouse', 'teclado', 'cabo', 'carregador'],
-      'Colecionáveis': ['action figure', 'boneco', 'miniatura', 'poster', 'quadro'],
-      'Livros': ['livro', 'revista', 'manual', 'guia'],
-      'Jogos': ['jogo', 'game', 'card game', 'tabuleiro']
-    };
-    
-    for (const [category, keywords] of Object.entries(categoryMap)) {
-      if (keywords.some(keyword => name.includes(keyword) || description.includes(keyword))) {
+    for (const [keyword, category] of Object.entries(utiCategories)) {
+      if (name.includes(keyword)) {
         return category;
       }
     }
     
-    return 'Produtos UTI'; // Default category
+    return 'Equipamentos Médicos';
+  }
+  
+  private applyUTISpecificationTransforms(specs: any[]): any[] {
+    if (!Array.isArray(specs)) return specs;
+    
+    return specs.map(spec => {
+      const transformed = { ...spec };
+      
+      // Transformações específicas para especificações UTI
+      if (spec.name?.toLowerCase().includes('fluxo')) {
+        transformed.category = 'Parâmetros Ventilatórios';
+        transformed.unit = this.standardizeFlowUnit(spec.unit);
+      }
+      
+      if (spec.name?.toLowerCase().includes('pressão') || spec.name?.toLowerCase().includes('pressao')) {
+        transformed.category = 'Parâmetros de Pressão';
+        transformed.unit = this.standardizePressureUnit(spec.unit);
+      }
+      
+      if (spec.name?.toLowerCase().includes('frequência') || spec.name?.toLowerCase().includes('frequencia')) {
+        transformed.category = 'Parâmetros de Frequência';
+        transformed.unit = this.standardizeFrequencyUnit(spec.unit);
+      }
+      
+      return transformed;
+    });
+  }
+  
+  private enhanceUTITechnicalSpecs(techSpecs: any): any {
+    const enhanced = { ...techSpecs };
+    
+    // Adicionar especificações técnicas padrão para equipamentos UTI
+    if (!enhanced.safety_standards) {
+      enhanced.safety_standards = [
+        'IEC 60601-1',
+        'ABNT NBR IEC 60601-1',
+        'ANVISA'
+      ];
+    }
+    
+    if (!enhanced.classifications) {
+      enhanced.classifications = {
+        anvisa_class: 'II ou III',
+        risk_level: 'Alto',
+        maintenance_level: 'Especializado'
+      };
+    }
+    
+    return enhanced;
+  }
+  
+  private normalizeUTIProductName(name: string): string {
+    if (!name) return name;
+    
+    // Normalizar nomes comuns de equipamentos UTI
+    const nameMap: Record<string, string> = {
+      'vent pulmonar': 'Ventilador Pulmonar',
+      'vent. pulmonar': 'Ventilador Pulmonar',
+      'mon multiparametros': 'Monitor Multiparâmetros',
+      'mon. multiparâmetros': 'Monitor Multiparâmetros',
+      'bomba inf': 'Bomba de Infusão',
+      'bomba infusao': 'Bomba de Infusão'
+    };
+    
+    const lowerName = name.toLowerCase();
+    for (const [pattern, replacement] of Object.entries(nameMap)) {
+      if (lowerName.includes(pattern)) {
+        return name.replace(new RegExp(pattern, 'gi'), replacement);
+      }
+    }
+    
+    return name;
+  }
+  
+  private standardizeFlowUnit(unit: string): string {
+    if (!unit) return 'L/min';
+    
+    const flowUnits: Record<string, string> = {
+      'l/min': 'L/min',
+      'lpm': 'L/min',
+      'ml/min': 'mL/min',
+      'ml/h': 'mL/h'
+    };
+    
+    return flowUnits[unit.toLowerCase()] || unit;
+  }
+  
+  private standardizePressureUnit(unit: string): string {
+    if (!unit) return 'cmH2O';
+    
+    const pressureUnits: Record<string, string> = {
+      'cmh2o': 'cmH2O',
+      'mmhg': 'mmHg',
+      'mbar': 'mbar',
+      'psi': 'PSI'
+    };
+    
+    return pressureUnits[unit.toLowerCase()] || unit;
+  }
+  
+  private standardizeFrequencyUnit(unit: string): string {
+    if (!unit) return 'Hz';
+    
+    const freqUnits: Record<string, string> = {
+      'hz': 'Hz',
+      'bpm': 'BPM',
+      'rpm': 'RPM',
+      '/min': '/min'
+    };
+    
+    return freqUnits[unit.toLowerCase()] || unit;
+  }
+  
+  private validateUTIProduct(product: any): string[] {
+    const warnings: string[] = [];
+    
+    if (!product.technical_specs?.safety_standards) {
+      warnings.push('Normas de segurança não especificadas');
+    }
+    
+    if (!product.technical_specs?.classifications?.anvisa_class) {
+      warnings.push('Classificação ANVISA não encontrada');
+    }
+    
+    const vitalSpecs = ['tensão', 'potência', 'corrente'];
+    const hasVitalSpecs = vitalSpecs.some(spec => 
+      product.specifications?.some((s: any) => 
+        s.name?.toLowerCase().includes(spec)
+      )
+    );
+    
+    if (!hasVitalSpecs) {
+      warnings.push('Especificações elétricas essenciais podem estar faltando');
+    }
+    
+    return warnings;
   }
 }
 

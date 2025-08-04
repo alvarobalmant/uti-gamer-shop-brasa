@@ -1,294 +1,310 @@
-import { ProductType, ConfidenceScore, ProductIdentificationResult, KnownProductData } from './types';
-import { knownProductsDatabase } from './knownProductsDatabase';
+import { ProductType, ProductIdentificationResult, ConfidenceScore } from './types';
 
 export class ProductIdentifier {
-  private knownProducts: KnownProductData[] = knownProductsDatabase;
-  private utiProductKeywords = ['uti games', 'uti', 'camiseta uti', 'produto uti'];
   
   identifyProductType(product: any): ProductIdentificationResult {
-    const brandRecognition = this.analyzeBrandRecognition(product);
-    const dataCompleteness = this.analyzeDataCompleteness(product);
-    const consistencyCheck = this.analyzeConsistency(product);
-    const marketPresence = this.analyzeMarketPresence(product);
+    const confidence = this.calculateConfidence(product);
+    const flags = this.identifyFlags(product);
+    const reasoning = this.generateReasoning(product, confidence, flags);
     
-    const confidence: ConfidenceScore = {
-      overall: (brandRecognition + dataCompleteness + consistencyCheck + marketPresence) / 4,
-      factors: {
-        brandRecognition,
-        dataCompleteness,
-        consistencyCheck,
-        marketPresence
-      }
-    };
-    
-    const { type, reasoning, flags, recommendations } = this.determineProductType(product, confidence);
+    const type = this.determineProductType(confidence, flags);
     
     return {
       type,
       confidence,
       reasoning,
       flags,
-      recommendations
+      recommendations: this.generateRecommendations(type, flags)
     };
   }
   
-  private analyzeBrandRecognition(product: any): number {
-    const brand = product.brand?.toLowerCase() || '';
-    const name = product.name?.toLowerCase() || '';
+  private calculateConfidence(product: any): ConfidenceScore {
+    const factors = {
+      brandRecognition: this.calculateBrandRecognition(product),
+      dataCompleteness: this.calculateDataCompleteness(product),
+      consistencyCheck: this.calculateConsistencyCheck(product),
+      marketPresence: this.calculateMarketPresence(product)
+    };
     
-    // Check if it's a UTI Games product
-    if (this.utiProductKeywords.some(keyword => 
-      brand.includes(keyword) || name.includes(keyword)
-    )) {
-      return 0.95; // High confidence for UTI products
-    }
+    // Calcular confiança geral (média ponderada)
+    const weights = {
+      brandRecognition: 0.3,
+      dataCompleteness: 0.35,
+      consistencyCheck: 0.25,
+      marketPresence: 0.1
+    };
     
-    // Check against known products database
-    const knownProduct = this.findKnownProduct(product);
-    if (knownProduct) {
-      return 0.9; // High confidence for known products
-    }
+    const overall = Object.entries(factors).reduce((sum, [key, value]) => {
+      return sum + (value * weights[key as keyof typeof weights]);
+    }, 0);
     
-    // Check for well-known brands
-    const majorBrands = [
-      'sony', 'microsoft', 'nintendo', 'playstation', 'xbox',
-      'logitech', 'razer', 'corsair', 'steelseries', 'hyperx',
-      'samsung', 'lg', 'apple', 'google', 'amazon',
-      'funko', 'bandai', 'hasbro', 'mattel'
+    return {
+      overall: Math.round(overall * 100) / 100,
+      factors
+    };
+  }
+  
+  private calculateBrandRecognition(product: any): number {
+    // Lista de marcas conhecidas no setor médico/UTI
+    const knownBrands = [
+      'philips', 'ge', 'siemens', 'mindray', 'dixtal', 'drager', 'maquet',
+      'hamilton', 'servo', 'newport', 'bird', 'bennett', 'puritan',
+      'oxylog', 'evita', 'galileo', 'fabius', 'primus', 'zeus',
+      'carescape', 'intellivue', 'mp', 'mx', 'avalon', 'cardiotocografo'
     ];
     
-    if (majorBrands.some(majorBrand => brand.includes(majorBrand))) {
+    const brand = product.brand?.toLowerCase() || product.marca?.toLowerCase() || '';
+    const name = product.name?.toLowerCase() || product.nome?.toLowerCase() || '';
+    
+    // Verificar marca exata
+    if (knownBrands.includes(brand)) {
+      return 1.0;
+    }
+    
+    // Verificar marca no nome do produto
+    const brandInName = knownBrands.some(knownBrand => 
+      name.includes(knownBrand)
+    );
+    
+    if (brandInName) {
       return 0.8;
     }
     
-    return 0.3; // Low confidence for unknown brands
+    // Verificar se tem alguma marca (mesmo que não conhecida)
+    if (brand && brand.length > 0) {
+      return 0.4;
+    }
+    
+    return 0.0;
   }
   
-  private analyzeDataCompleteness(product: any): number {
-    const requiredFields = ['name', 'price', 'description'];
-    const optionalFields = ['brand', 'category', 'image', 'specifications'];
+  private calculateDataCompleteness(product: any): number {
+    const essentialFields = ['name', 'nome'];
+    const importantFields = ['brand', 'marca', 'model', 'modelo', 'description', 'descricao'];
+    const technicalFields = ['specifications', 'especificacoes', 'technical_specs'];
     
-    const hasRequired = requiredFields.every(field => 
-      product[field] && product[field].toString().trim().length > 0
+    let score = 0;
+    let maxScore = 0;
+    
+    // Campos essenciais (peso 50%)
+    maxScore += 0.5;
+    const hasEssential = essentialFields.some(field => 
+      product[field] && typeof product[field] === 'string' && product[field].trim().length > 0
     );
+    if (hasEssential) score += 0.5;
     
-    if (!hasRequired) {
-      return 0.2; // Very low confidence for incomplete data
-    }
+    // Campos importantes (peso 30%)
+    maxScore += 0.3;
+    const importantFieldsPresent = importantFields.filter(field => 
+      product[field] && typeof product[field] === 'string' && product[field].trim().length > 0
+    ).length;
+    score += (importantFieldsPresent / importantFields.length) * 0.3;
     
-    const optionalScore = optionalFields.reduce((score, field) => {
-      return score + (product[field] ? 0.25 : 0);
-    }, 0);
+    // Campos técnicos (peso 20%)
+    maxScore += 0.2;
+    const hasTechnical = technicalFields.some(field => 
+      product[field] && (Array.isArray(product[field]) || typeof product[field] === 'object')
+    );
+    if (hasTechnical) score += 0.2;
     
-    return Math.min(0.6 + optionalScore, 1.0);
+    return Math.min(score / maxScore, 1.0);
   }
   
-  private analyzeConsistency(product: any): number {
-    const inconsistencies = [];
+  private calculateConsistencyCheck(product: any): number {
+    let consistencyScore = 1.0;
     
-    // Check price consistency
-    if (product.price && (product.price < 0 || product.price > 50000)) {
-      inconsistencies.push('price_range');
-    }
+    // Verificar consistência de dados
     
-    // Check name/description consistency
-    if (product.name && product.description) {
-      const nameWords = product.name.toLowerCase().split(' ');
-      const descWords = product.description.toLowerCase().split(' ');
-      const commonWords = nameWords.filter(word => descWords.includes(word));
-      
-      if (commonWords.length < 2) {
-        inconsistencies.push('name_description_mismatch');
+    // 1. Nome vs Marca
+    const name = product.name?.toLowerCase() || product.nome?.toLowerCase() || '';
+    const brand = product.brand?.toLowerCase() || product.marca?.toLowerCase() || '';
+    
+    if (brand && name && !name.includes(brand) && brand.length > 2) {
+      // Verificar se a marca deveria estar no nome
+      const commonBrands = ['philips', 'ge', 'siemens', 'mindray'];
+      if (commonBrands.includes(brand)) {
+        consistencyScore -= 0.2;
       }
     }
     
-    // Check category/brand consistency
-    if (product.category && product.brand) {
-      const gamingBrands = ['sony', 'microsoft', 'nintendo', 'razer', 'logitech'];
-      const gamingCategories = ['games', 'consoles', 'acessórios', 'periféricos'];
-      
-      const isGamingBrand = gamingBrands.some(brand => 
-        product.brand.toLowerCase().includes(brand)
-      );
-      const isGamingCategory = gamingCategories.some(cat => 
-        product.category.toLowerCase().includes(cat)
-      );
-      
-      if (isGamingBrand !== isGamingCategory) {
-        inconsistencies.push('category_brand_mismatch');
-      }
-    }
-    
-    return Math.max(0.1, 1.0 - (inconsistencies.length * 0.3));
-  }
-  
-  private analyzeMarketPresence(product: any): number {
-    const name = product.name?.toLowerCase() || '';
-    const brand = product.brand?.toLowerCase() || '';
-    
-    // Check for popular gaming products
-    const popularProducts = [
-      'playstation 5', 'ps5', 'xbox series', 'nintendo switch',
-      'fifa', 'call of duty', 'grand theft auto', 'minecraft',
-      'funko pop', 'pokemon', 'mario', 'zelda'
+    // 2. Verificar campos duplicados ou conflitantes
+    const duplicatedFields = [
+      ['name', 'nome'],
+      ['brand', 'marca'],
+      ['model', 'modelo'],
+      ['description', 'descricao']
     ];
     
-    const hasPopularKeywords = popularProducts.some(keyword => 
-      name.includes(keyword) || brand.includes(keyword)
-    );
+    duplicatedFields.forEach(([field1, field2]) => {
+      if (product[field1] && product[field2] && product[field1] !== product[field2]) {
+        consistencyScore -= 0.1;
+      }
+    });
     
-    if (hasPopularKeywords) {
-      return 0.9;
+    // 3. Verificar formato de especificações
+    if (product.specifications) {
+      if (!Array.isArray(product.specifications)) {
+        consistencyScore -= 0.2;
+      }
     }
     
-    // Check for gaming-related keywords
-    const gamingKeywords = ['gamer', 'gaming', 'console', 'jogo', 'game'];
-    const hasGamingKeywords = gamingKeywords.some(keyword => 
+    return Math.max(consistencyScore, 0.0);
+  }
+  
+  private calculateMarketPresence(product: any): number {
+    // Simulação de verificação de presença no mercado
+    // Em uma implementação real, isso poderia consultar APIs externas
+    
+    const name = product.name?.toLowerCase() || product.nome?.toLowerCase() || '';
+    const brand = product.brand?.toLowerCase() || product.marca?.toLowerCase() || '';
+    
+    // Palavras-chave que indicam produtos médicos conhecidos
+    const medicalKeywords = [
+      'ventilador', 'monitor', 'bomba', 'desfibrilador', 'oximetro',
+      'eletrocardiografo', 'aspirador', 'incubadora', 'berco'
+    ];
+    
+    const hasmedicalKeywords = medicalKeywords.some(keyword => 
       name.includes(keyword)
     );
     
-    if (hasGamingKeywords) {
-      return 0.7;
+    if (hasmedicalKeywords) {
+      return 0.7; // Produto médico reconhecível
     }
     
-    return 0.4; // Neutral for unknown products
+    if (brand) {
+      return 0.5; // Tem marca, pode ter presença no mercado
+    }
+    
+    return 0.3; // Presença no mercado incerta
   }
   
-  private determineProductType(product: any, confidence: ConfidenceScore) {
-    const reasoning: string[] = [];
+  private identifyFlags(product: any): string[] {
     const flags: string[] = [];
-    const recommendations: string[] = [];
     
-    const name = product.name?.toLowerCase() || '';
-    const brand = product.brand?.toLowerCase() || '';
-    
-    // Check for UTI Original Products
-    if (this.utiProductKeywords.some(keyword => 
-      brand.includes(keyword) || name.includes(keyword)
-    )) {
-      reasoning.push('Produto identificado como UTI Games original');
-      return {
-        type: 'uti_original' as ProductType,
-        reasoning,
-        flags,
-        recommendations: ['Processar apenas com dados fornecidos pelo usuário']
-      };
+    // Verificar marca ausente
+    const brand = product.brand || product.marca;
+    if (!brand || (typeof brand === 'string' && brand.trim().length === 0)) {
+      flags.push('missing_brand');
     }
     
-    // Check for Known Products
-    const knownProduct = this.findKnownProduct(product);
-    if (knownProduct && confidence.overall >= 0.7) {
-      reasoning.push(`Produto reconhecido: ${knownProduct.name}`);
-      reasoning.push('Alta confiança baseada em dados conhecidos');
-      return {
-        type: 'known' as ProductType,
-        reasoning,
-        flags,
-        recommendations: ['Processar automaticamente com dados conhecidos']
-      };
-    }
+    // Verificar dados incompletos
+    const essentialFields = ['name', 'nome'];
+    const hasEssentialData = essentialFields.some(field => 
+      product[field] && typeof product[field] === 'string' && product[field].trim().length > 0
+    );
     
-    // Determine if product is doubtful
-    if (confidence.overall < 0.6) {
-      reasoning.push('Baixa confiança na identificação do produto');
-      flags.push('low_confidence');
-    }
-    
-    if (confidence.factors.dataCompleteness < 0.5) {
-      reasoning.push('Dados incompletos ou inconsistentes');
+    if (!hasEssentialData) {
       flags.push('incomplete_data');
     }
     
-    if (confidence.factors.brandRecognition < 0.4) {
-      reasoning.push('Marca desconhecida ou não reconhecida');
-      flags.push('unknown_brand');
+    // Verificar especificações técnicas
+    if (!product.specifications && !product.especificacoes && !product.technical_specs) {
+      flags.push('missing_specifications');
     }
     
-    if (flags.length > 0 || confidence.overall < 0.6) {
-      recommendations.push('Revisar manualmente antes do processamento');
-      recommendations.push('Verificar informações com fornecedor');
-      
-      return {
-        type: 'doubtful' as ProductType,
-        reasoning,
-        flags,
-        recommendations
-      };
+    // Verificar inconsistências
+    const name = product.name?.toLowerCase() || product.nome?.toLowerCase() || '';
+    if (name.includes('undefined') || name.includes('null') || name.includes('n/a')) {
+      flags.push('data_quality_issues');
     }
     
-    // Default to known if no major issues found
-    return {
-      type: 'known' as ProductType,
-      reasoning: ['Produto aprovado para processamento automático'],
-      flags,
-      recommendations: ['Processar com dados disponíveis']
-    };
+    // Verificar se parece ser produto médico
+    const medicalTerms = ['ventilador', 'monitor', 'bomba', 'uti', 'hospital'];
+    const seemsMedical = medicalTerms.some(term => name.includes(term));
+    
+    if (!seemsMedical && !brand) {
+      flags.push('unknown_category');
+    }
+    
+    return flags;
   }
   
-  private findKnownProduct(product: any): KnownProductData | null {
-    const name = product.name?.toLowerCase() || '';
-    const brand = product.brand?.toLowerCase() || '';
+  private generateReasoning(product: any, confidence: ConfidenceScore, flags: string[]): string[] {
+    const reasoning: string[] = [];
     
-    return this.knownProducts.find(known => {
-      const knownName = known.name.toLowerCase();
-      const knownBrand = known.brand.toLowerCase();
-      
-      // Exact match
-      if (name === knownName && brand === knownBrand) {
-        return true;
-      }
-      
-      // Check aliases
-      if (known.aliases.some(alias => 
-        name.includes(alias.toLowerCase()) || alias.toLowerCase().includes(name)
-      )) {
-        return true;
-      }
-      
-      // Partial match with high similarity
-      const nameMatch = this.calculateSimilarity(name, knownName);
-      const brandMatch = brand && knownBrand ? this.calculateSimilarity(brand, knownBrand) : 0;
-      
-      return nameMatch > 0.8 && brandMatch > 0.7;
-    }) || null;
+    // Reasoning baseado na confiança
+    if (confidence.overall >= 0.8) {
+      reasoning.push('Alto nível de confiança baseado em dados completos e consistentes');
+    } else if (confidence.overall >= 0.6) {
+      reasoning.push('Confiança moderada - alguns dados podem estar incompletos');
+    } else {
+      reasoning.push('Baixa confiança - dados insuficientes ou inconsistentes');
+    }
+    
+    // Reasoning baseado em fatores específicos
+    if (confidence.factors.brandRecognition >= 0.8) {
+      reasoning.push('Marca reconhecida no setor médico');
+    } else if (confidence.factors.brandRecognition < 0.3) {
+      reasoning.push('Marca não identificada ou desconhecida');
+    }
+    
+    if (confidence.factors.dataCompleteness >= 0.8) {
+      reasoning.push('Dados do produto completos e bem estruturados');
+    } else if (confidence.factors.dataCompleteness < 0.5) {
+      reasoning.push('Dados do produto incompletos ou mal estruturados');
+    }
+    
+    // Reasoning baseado em flags
+    if (flags.includes('missing_brand')) {
+      reasoning.push('Marca do produto não foi especificada');
+    }
+    
+    if (flags.includes('missing_specifications')) {
+      reasoning.push('Especificações técnicas não foram fornecidas');
+    }
+    
+    return reasoning;
   }
   
-  private calculateSimilarity(str1: string, str2: string): number {
-    const longer = str1.length > str2.length ? str1 : str2;
-    const shorter = str1.length > str2.length ? str2 : str1;
+  private determineProductType(confidence: ConfidenceScore, flags: string[]): ProductType {
+    // Produto conhecido: alta confiança e poucos problemas
+    if (confidence.overall >= 0.75 && flags.length <= 1) {
+      return 'known';
+    }
     
-    if (longer.length === 0) return 1.0;
+    // Produto UTI original: confiança moderada/alta e características de produto médico
+    if (confidence.overall >= 0.6 && confidence.factors.brandRecognition >= 0.4) {
+      return 'uti_original';
+    }
     
-    const editDistance = this.levenshteinDistance(longer, shorter);
-    return (longer.length - editDistance) / longer.length;
+    // Caso contrário, produto duvidoso
+    return 'doubtful';
   }
   
-  private levenshteinDistance(str1: string, str2: string): number {
-    const matrix = [];
+  private generateRecommendations(type: ProductType, flags: string[]): string[] {
+    const recommendations: string[] = [];
     
-    for (let i = 0; i <= str2.length; i++) {
-      matrix[i] = [i];
-    }
-    
-    for (let j = 0; j <= str1.length; j++) {
-      matrix[0][j] = j;
-    }
-    
-    for (let i = 1; i <= str2.length; i++) {
-      for (let j = 1; j <= str1.length; j++) {
-        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1,
-            matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1
-          );
-        }
+    if (type === 'doubtful') {
+      recommendations.push('Produto requer revisão manual antes do processamento');
+      
+      if (flags.includes('missing_brand')) {
+        recommendations.push('Adicionar informações da marca do produto');
+      }
+      
+      if (flags.includes('missing_specifications')) {
+        recommendations.push('Incluir especificações técnicas detalhadas');
+      }
+      
+      if (flags.includes('incomplete_data')) {
+        recommendations.push('Completar dados básicos do produto');
+      }
+      
+      if (flags.includes('data_quality_issues')) {
+        recommendations.push('Verificar e corrigir problemas na qualidade dos dados');
       }
     }
     
-    return matrix[str2.length][str1.length];
+    if (type === 'uti_original') {
+      recommendations.push('Aplicar transformações específicas para produtos UTI');
+      recommendations.push('Validar especificações contra padrões médicos');
+    }
+    
+    if (type === 'known') {
+      recommendations.push('Aplicar enriquecimento de dados baseado em conhecimento existente');
+    }
+    
+    return recommendations;
   }
 }
 
