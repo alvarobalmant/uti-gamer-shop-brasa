@@ -35,8 +35,7 @@ export interface ImportedProduct {
   technical_specs?: string;
   product_features?: string;
   
-  // Reviews e FAQ
-  product_faqs?: string;
+  // Reviews
   product_highlights?: string;
   reviews_config?: string;
   
@@ -63,6 +62,9 @@ export interface ImportedProduct {
   breadcrumb_config?: string;
   
   // Categorização
+  brand?: string;
+  category?: string;
+  platform?: string;
   tags?: string;
   
   // Status

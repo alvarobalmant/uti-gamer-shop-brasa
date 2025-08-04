@@ -200,15 +200,6 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     width: 40
   },
   
-  // === FAQ ===
-  {
-    key: 'product_faqs',
-    label: 'Perguntas Frequentes',
-    instructions: 'JSON com FAQs. Ex: [{"question":"É compatível com jogos PS4?","answer":"Sim, a maioria dos jogos PS4 funciona no PS5"}]',
-    type: 'json',
-    example: '[{"question":"É compatível com jogos PS4?","answer":"Sim, a maioria dos jogos PS4 funciona no PS5"}]',
-    width: 60
-  },
   {
     key: 'product_highlights',
     label: 'Destaques do Produto',
@@ -696,7 +687,7 @@ export function validateProductData(products: ImportedProduct[]): ValidationErro
     const jsonFields = [
       'variant_attributes', 'product_videos', 'product_descriptions',
       'specifications', 'custom_specifications', 'technical_specs', 'product_features',
-      'product_faqs', 'product_highlights', 'reviews_config',
+      'product_highlights', 'reviews_config',
       'trust_indicators', 'delivery_config', 'display_config',
       'breadcrumb_config'
     ];
@@ -962,7 +953,8 @@ export async function processProductImport(
         productData.parent_product_id = realParentId;
         console.log(`[IMPORT] Mapeando parent ${product.parent_product_id} -> ${realParentId}`);
       } else {
-        console.warn(`[IMPORT] Parent product não encontrado: ${product.parent_product_id}`);
+        console.error(`[IMPORT] Parent product não encontrado: ${product.parent_product_id}`);
+        throw new Error(`Produto mestre não encontrado: ${product.parent_product_id}. Certifique-se de que o produto mestre existe.`);
       }
       
       const newProduct = await createProductInDatabase(productData);
@@ -1035,6 +1027,14 @@ function convertImportedProductToDatabase(product: ImportedProduct): any {
     productType = 'sku';
   }
 
+  // Validação para parent_product_id
+  let validatedParentId = null;
+  if (product.parent_product_id) {
+    const parentId = product.parent_product_id.toString().trim();
+    // Se não é um UUID válido, será mapeado depois
+    validatedParentId = parentId;
+  }
+
   return {
     name: product.name,
     description: product.description || '',
@@ -1046,7 +1046,7 @@ function convertImportedProductToDatabase(product: ImportedProduct): any {
     // Sistema SKU - CORRIGIDO
     product_type: productType,
     is_master_product: isMasterProduct,
-    parent_product_id: product.parent_product_id || null,
+    parent_product_id: validatedParentId,
     sku_code: product.sku_code || null,
     variant_attributes: parseJsonField(product.variant_attributes) || {},
     master_slug: product.master_slug || null,
@@ -1103,8 +1103,7 @@ function convertImportedProductToDatabase(product: ImportedProduct): any {
     technical_specs: parseJsonField(product.technical_specs) || {},
     product_features: parseJsonField(product.product_features) || {},
     
-    // Reviews e FAQ - CORRIGIDO
-    product_faqs: parseJsonField(product.product_faqs) || null,
+    // Reviews - CORRIGIDO
     product_highlights: parseJsonField(product.product_highlights) || [],
     reviews_config: parseJsonField(product.reviews_config) || {
       enabled: true,

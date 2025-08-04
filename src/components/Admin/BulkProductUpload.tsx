@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { generateProductTemplate, validateProductData, processProductImport } from './BulkProductUpload/bulkProductUtils';
+import { generateProductTemplate, validateProductData, processProductImport } from './BulkProductUpload/bulkProductUtilsV2';
 import type { ImportedProduct, ValidationError } from './BulkProductUpload/types';
 
 const BulkProductUpload: React.FC = () => {
