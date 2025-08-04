@@ -190,21 +190,66 @@ Deno.serve(async (req) => {
             .eq('user_id', user.id)
             .single();
 
-          // Get daily bonus configuration - use coin_system_config instead
+          // Get daily bonus configuration - buscar novas configurações
           const { data: configData } = await supabase
             .from('coin_system_config')
             .select('setting_key, setting_value')
-            .in('setting_key', ['base_bonus_amount']);
+            .in('setting_key', [
+              'daily_bonus_base_amount', 
+              'daily_bonus_max_amount', 
+              'daily_bonus_streak_days',
+              'daily_bonus_increment_type',
+              'daily_bonus_fixed_increment'
+            ]);
 
-          const config = configData?.reduce((acc, item) => {
-            acc[item.setting_key] = item.setting_value;
-            return acc;
-          }, {} as Record<string, any>) || {};
+          let baseAmount = 10;
+          let maxAmount = 100;
+          let streakDays = 7;
+          let incrementType = 'calculated';
+          let fixedIncrement = 10;
 
-          const baseAmount = parseInt(config.base_bonus_amount || '10');
+          if (configData) {
+            configData.forEach(config => {
+              const value = typeof config.setting_value === 'string' 
+                ? JSON.parse(config.setting_value) 
+                : config.setting_value;
+                
+              switch (config.setting_key) {
+                case 'daily_bonus_base_amount':
+                  baseAmount = parseInt(value);
+                  break;
+                case 'daily_bonus_max_amount':
+                  maxAmount = parseInt(value);
+                  break;
+                case 'daily_bonus_streak_days':
+                  streakDays = parseInt(value);
+                  break;
+                case 'daily_bonus_increment_type':
+                  incrementType = value;
+                  break;
+                case 'daily_bonus_fixed_increment':
+                  fixedIncrement = parseInt(value);
+                  break;
+              }
+            });
+          }
+
+          // Calcular próximo bônus baseado no streak atual e configuração
           const currentStreak = streakData?.current_streak || 1;
-          const multiplier = streakData?.streak_multiplier || 1.0;
-          const nextBonusAmount = Math.round(baseAmount * multiplier);
+          const currentStreakDay = currentStreak % streakDays || streakDays;
+          let nextBonusAmount;
+          
+          if (incrementType === 'fixed') {
+            nextBonusAmount = Math.min(baseAmount + ((currentStreakDay - 1) * fixedIncrement), maxAmount);
+          } else {
+            if (streakDays > 1) {
+              nextBonusAmount = baseAmount + Math.round(((maxAmount - baseAmount) * (currentStreakDay - 1)) / (streakDays - 1));
+            } else {
+              nextBonusAmount = baseAmount;
+            }
+          }
+          
+          nextBonusAmount = Math.min(nextBonusAmount, maxAmount);
 
           // Calculate seconds until next claim
           let secondsUntilNextClaim = 0;
@@ -228,12 +273,13 @@ Deno.serve(async (req) => {
             success: true,
             canClaim: bonusData.can_claim || false,
             secondsUntilNextClaim: secondsUntilNextClaim || 0,
-            currentStreak: currentStreak,
+            currentStreak: currentStreakDay,
             nextBonusAmount: nextBonusAmount,
-            multiplier: multiplier,
+            multiplier: 1.0, // Não usamos mais multiplicador com o novo sistema
             nextReset: bonusData.next_reset,
             lastClaim: bonusData.last_claim,
             testMode: isTestMode,
+            totalStreakDays: streakDays,
             message: bonusData.can_claim ? 'Bonus available' : (isTestMode ? 'Aguarde 60 segundos' : 'Bonus already claimed today')
           };
         } else {

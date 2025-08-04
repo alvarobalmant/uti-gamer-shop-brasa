@@ -13,6 +13,7 @@ interface DailyBonusData {
   nextReset: string;
   lastClaim?: string;
   testMode?: boolean;
+  totalStreakDays?: number;
 }
 
 interface DailyBonusSectionProps {
@@ -216,10 +217,13 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
         <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center gap-1">
             <Flame className="w-3 h-3 text-orange-500" />
-            <span className="font-medium">{dailyBonusData.currentStreak}</span>
+            <span className="font-medium">
+              Dia {dailyBonusData.currentStreak}
+              {dailyBonusData.totalStreakDays && (
+                <span className="text-gray-500">/{dailyBonusData.totalStreakDays}</span>
+              )}
+            </span>
           </div>
-          <span className="text-gray-500">•</span>
-          <span className="text-gray-600">{dailyBonusData.multiplier.toFixed(1)}x</span>
         </div>
       </div>
       
