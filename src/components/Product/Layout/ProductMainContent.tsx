@@ -13,13 +13,12 @@ import ProductGalleryEnhanced from '../MainContent/ProductGalleryEnhanced';
 import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
 import ProductSpecificationsTable from '../MainContent/ProductSpecificationsTable';
 import ProductDescriptionExpandable from '../MainContent/ProductDescriptionExpandable';
-import ProductFAQSection from '../MainContent/ProductFAQSection';
 import StorePickupBadge from '../MainContent/StorePickupBadge';
 
 interface ProductMainContentProps {
   product: Product;
   skuNavigation?: SKUNavigation;
-  layout?: 'gallery-vertical' | 'main-image' | 'product-info' | 'bottom-sections';
+  layout?: 'gallery-vertical' | 'gallery-horizontal' | 'main-image' | 'product-info' | 'bottom-sections';
   className?: string;
 }
 
@@ -89,6 +88,31 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
             </span>
           </div>
         )}
+      </div>
+    );
+  }
+
+  // Galeria Horizontal
+  if (layout === 'gallery-horizontal') {
+    return (
+      <div className="flex gap-3 justify-center max-w-md">
+        {allImages.map((image, index) => (
+          <button
+            key={index}
+            onClick={() => handleImageClick(index)}
+            className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+              currentImageIndex === index
+                ? 'border-red-600 ring-2 ring-red-200'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <img
+              src={image}
+              alt={`${product.name} ${index + 1}`}
+              className="w-full h-full object-contain bg-white"
+            />
+          </button>
+        ))}
       </div>
     );
   }
@@ -198,17 +222,11 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
         {/* PREÇOS - ÚNICO E CORRETO */}
         <div className="space-y-4">
           <div className="flex items-baseline gap-3">
-<<<<<<< HEAD
             {product.list_price && product.list_price > product.price && (
               <span className="text-sm text-gray-500 line-through">
                 R$ {product.list_price.toFixed(2).replace('.', ',')}
               </span>
             )}
-=======
-            <span className="text-sm text-gray-500 line-through">
-              R$ {(product.price * 1.2).toFixed(2).replace('.', ',')}
-            </span>
->>>>>>> a14bf89bc02c21899828f715cf04e9ea7521825f
             <span className="text-3xl font-semibold text-gray-900">
               R$ {product.price.toFixed(2).replace('.', ',')}
             </span>
@@ -262,10 +280,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
       {/* 1. Especificações Técnicas Dinâmicas */}
       <ProductSpecificationsTable product={product} />
 
-      {/* 2. Perguntas Frequentes */}
-      <ProductFAQSection product={product} />
-
-      {/* 3. Informações Importantes */}
+      {/* 2. Informações Importantes */}
       <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-lg p-4">
         <div className="flex items-start gap-3">
           <div className="bg-yellow-100 p-2 rounded-full flex-shrink-0">
@@ -284,7 +299,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
         </div>
       </div>
 
-      {/* 4. Comparação entre Plataformas */}
+      {/* 3. Comparação entre Plataformas */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="bg-blue-100 p-2 rounded-full">
@@ -345,12 +360,12 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
         </div>
       </div>
 
-      {/* 5. Produtos Relacionados */}
+      {/* 4. Produtos Relacionados */}
       <RelatedProductsCarousel 
         currentProduct={product}
       />
 
-      {/* 6. Call-to-Action Final */}
+      {/* 5. Call-to-Action Final */}
       <div className="bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-200 rounded-xl p-8 text-center shadow-sm">
         <div className="max-w-md mx-auto">
           <div className="flex justify-center mb-4">

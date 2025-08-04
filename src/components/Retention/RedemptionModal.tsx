@@ -113,7 +113,7 @@ export const RedemptionModal: React.FC<RedemptionModalProps> = ({
           {/* Botões */}
           <div className="flex gap-2 pt-2">
             <Button
-              onClick={() => window.location.href = '/coins/historico'}
+              onClick={() => window.location.href = '/coins'}
               variant="outline"
               className="flex-1"
             >

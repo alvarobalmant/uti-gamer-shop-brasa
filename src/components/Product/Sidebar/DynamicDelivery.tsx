@@ -93,7 +93,7 @@ const DynamicDelivery: React.FC<DynamicDeliveryProps> = ({
   if (!isEligible) {
     return (
       <div className={`space-y-3 ${className}`}>
-        <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-3 py-1.5">
+        <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-3 py-1.5 rounded-sm">
           {badgeText}
         </Badge>
         
@@ -118,9 +118,9 @@ const DynamicDelivery: React.FC<DynamicDeliveryProps> = ({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <Badge className="bg-green-500 hover:bg-green-600 text-white font-bold text-xs px-3 py-1.5">
-        {badgeText}
-      </Badge>
+        <Badge className="bg-green-500 hover:bg-green-600 text-white font-bold text-xs px-3 py-1.5 rounded-sm">
+          {badgeText}
+        </Badge>
       
       <div className="space-y-2 text-sm">
         <div className="text-green-600 font-semibold flex items-center gap-2">

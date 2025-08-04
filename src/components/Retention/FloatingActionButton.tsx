@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useToast } from '@/hooks/use-toast';
-import { DailyLoginSection } from './DailyLoginSection';
+
 import { UTICoinsConditional } from './UTICoinsConditional';
 
 export const FloatingActionButton: React.FC = () => {
@@ -50,10 +50,6 @@ export const FloatingActionButton: React.FC = () => {
               </div>
             </div>
 
-            {/* Seção de Login Diário */}
-            <div className="mb-4">
-              <DailyLoginSection showTitle={true} />
-            </div>
 
             {/* Ações rápidas */}
             <div className="space-y-2">
@@ -61,23 +57,12 @@ export const FloatingActionButton: React.FC = () => {
               <button
                 onClick={() => {
                   setIsExpanded(false);
-                  navigate('/coins/loja');
+                  navigate('/coins');
                 }}
                 className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <Gift className="w-4 h-4" />
-                Loja de Recompensas
-              </button>
-              
-              <button
-                onClick={() => {
-                  setIsExpanded(false);
-                  navigate('/coins/historico');
-                }}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                <TrendingUp className="w-4 h-4" />
-                Ver Histórico Completo
+                Ver Tudo & Recompensas
               </button>
             </div>
           </div>

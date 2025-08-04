@@ -337,6 +337,36 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_bonus_config: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_config: {
         Row: {
           company_address: string | null
@@ -2524,6 +2554,16 @@ export type Database = {
           last_claim: string
         }[]
       }
+      can_claim_daily_bonus_test: {
+        Args: { p_user_id: string }
+        Returns: {
+          can_claim: boolean
+          period_start: string
+          period_end: string
+          next_reset: string
+          last_claim: string
+        }[]
+      }
       cancelar_assinatura: {
         Args: { user_id: string }
         Returns: boolean
@@ -2674,6 +2714,10 @@ export type Database = {
         Returns: Json
       }
       process_daily_login_brasilia: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
+      process_daily_login_test: {
         Args: { p_user_id: string }
         Returns: Json
       }

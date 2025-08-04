@@ -108,7 +108,7 @@ const UTICoinsInfo: React.FC<UTICoinsInfoProps> = ({
           size="sm"
           variant="outline"
           className="w-full mt-3 border-blue-300 text-blue-600 hover:bg-blue-100 text-xs"
-          onClick={() => window.open('/meus-coins', '_blank')}
+          onClick={() => window.open('/coins', '_blank')}
         >
           Ver meus coins
         </Button>

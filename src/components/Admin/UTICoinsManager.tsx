@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CodeVerifier from './CodeVerifier';
+import DailyBonusConfig from './DailyBonusConfig';
 
 interface CoinRule {
   id: string;
@@ -393,6 +394,47 @@ const UTICoinsManager = () => {
           </TabsTrigger>
         </TabsList>
 
+        {/* Aba de Configuração do Sistema */}
+        <TabsContent value="config">
+          <div className="space-y-6">
+            {/* Configurações do Daily Bonus */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Gift className="w-5 h-5" />
+                  Configurações do Daily Bonus
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DailyBonusConfig configs={configs} onConfigUpdate={loadConfigs} />
+              </CardContent>
+            </Card>
+
+            {/* Outras Configurações */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Outras Configurações</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {configs.filter(config => !config.setting_key.startsWith('daily_bonus_')).map((config) => (
+                    <div key={config.setting_key} className="p-4 border rounded">
+                      <div className="font-medium">{config.setting_key}</div>
+                      <div className="text-sm text-muted-foreground mb-2">{config.description}</div>
+                      <div className="text-sm font-mono bg-muted p-2 rounded">
+                        {typeof config.setting_value === 'object' 
+                          ? JSON.stringify(config.setting_value)
+                          : String(config.setting_value)
+                        }
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
         {/* Aba de Regras */}
         <TabsContent value="rules">
           <Card>
@@ -428,7 +470,7 @@ const UTICoinsManager = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rules.map((rule) => (
+                  {rules.filter(rule => rule.action !== 'daily_login').map((rule) => (
                     <TableRow key={rule.id}>
                       <TableCell className="font-mono">{rule.action}</TableCell>
                       <TableCell>{rule.amount} coins</TableCell>
@@ -463,6 +505,12 @@ const UTICoinsManager = () => {
                   ))}
                 </TableBody>
               </Table>
+              
+              <div className="mt-4 p-4 bg-blue-50 rounded border border-blue-200">
+                <p className="text-sm text-blue-700">
+                  <strong>Nota:</strong> A regra do Daily Login agora é configurada através das "Configurações do Daily Bonus" na aba Sistema.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -634,117 +682,6 @@ const UTICoinsManager = () => {
           </div>
         </TabsContent>
 
-        {/* Aba de Configurações */}
-        <TabsContent value="config">
-          <div className="space-y-6">
-            {/* Sistema On/Off */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Power className="w-5 h-5" />
-                  Controle do Sistema
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-medium">Sistema UTI Coins</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Ativar ou desativar completamente o sistema de moedas
-                    </p>
-                  </div>
-                  <Switch
-                    checked={configs.find(c => c.setting_key === 'uti_coins_settings')?.setting_value?.enabled || false}
-                    onCheckedChange={async (checked) => {
-                       console.log('[ADMIN UTI COINS] Tentando atualizar:', { checked });
-                        try {
-                         const { data, error } = await supabase
-                           .from('site_settings')
-                           .update({ 
-                             setting_value: { enabled: checked }
-                           })
-                           .eq('setting_key', 'uti_coins_settings')
-                           .select();
-                         
-                         console.log('[ADMIN UTI COINS] Resultado da query:', { data, error });
-                         
-                         if (error) throw error;
-                         
-                         setConfigs(prev => prev.map(c => 
-                           c.setting_key === 'uti_coins_settings' 
-                             ? { ...c, setting_value: { enabled: checked } }
-                             : c
-                         ));
-                         
-                         console.log('[ADMIN UTI COINS] Configuração atualizada com sucesso');
-                         
-                         toast({ 
-                           title: 'Sucesso', 
-                           description: `Sistema UTI Coins ${checked ? 'ativado' : 'desativado'}!` 
-                         });
-                       } catch (error) {
-                         console.error('[ADMIN UTI COINS] Erro:', error);
-                         toast({ 
-                           title: 'Erro', 
-                           description: 'Erro ao atualizar configuração', 
-                           variant: 'destructive' 
-                         });
-                       }
-                    }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Outras Configurações */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurações Avançadas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {configs.filter(c => c.setting_key !== 'system_enabled').map((config) => (
-                    <div key={config.setting_key} className="border rounded-lg p-4">
-                      <Label className="font-medium capitalize">{config.setting_key.replace('_', ' ')}</Label>
-                      <Input
-                        value={config.setting_value}
-                        onChange={async (e) => {
-                          try {
-                            const { error } = await supabase
-                              .from('coin_system_config')
-                              .update({ setting_value: e.target.value })
-                              .eq('setting_key', config.setting_key);
-                            
-                            if (error) throw error;
-                            
-                            // Atualizar configuração localmente
-                            setConfigs(prev => prev.map(c => 
-                              c.setting_key === config.setting_key 
-                                ? { ...c, setting_value: e.target.value }
-                                : c
-                            ));
-                            
-                            toast({ title: 'Sucesso', description: 'Configuração salva!' });
-                          } catch (error) {
-                            toast({ 
-                              title: 'Erro', 
-                              description: 'Erro ao salvar configuração', 
-                              variant: 'destructive' 
-                            });
-                          }
-                        }}
-                        className="mt-2"
-                      />
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {config.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
 
         {/* Aba do Verificador de Códigos */}
         <TabsContent value="verifier">

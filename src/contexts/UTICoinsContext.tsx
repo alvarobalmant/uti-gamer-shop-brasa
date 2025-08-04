@@ -15,7 +15,7 @@ interface UTICoinsContextType {
   spendCoins: (productId: string) => Promise<any>;
   getCoinsForAction: (action: string) => number;
   canEarnCoins: (action: string) => Promise<boolean>;
-  processDailyLogin: () => Promise<any>;
+  
   earnScrollCoins: () => Promise<any>;
   refreshData: () => Promise<void>;
 }
@@ -220,57 +220,6 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     };
   }, [user?.id, isEnabled]);
 
-  // Processar login diário de forma segura (via edge function)
-  const processDailyLogin = useCallback(async () => {
-    if (!user) return { success: false, message: 'Usuário não logado' };
-    if (!isEnabled) return { success: false, message: 'Sistema UTI Coins desabilitado' };
-
-    try {
-      console.log('[SECURE] Processing daily login for user:', user.id);
-      
-      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-        body: { action: 'daily_login' }
-      });
-
-      if (error) {
-        console.warn('Erro ao processar login diário (edge function):', error);
-        
-        // Fallback: try database function directly with Brasilia timer
-        console.log('[FALLBACK] Trying Brasilia database function directly');
-        try {
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .rpc('process_daily_login_brasilia', { p_user_id: user.id });
-          
-          if (fallbackError) {
-            console.warn('Fallback also failed:', fallbackError);
-            return { success: false, message: 'Erro de conexão com o servidor' };
-          }
-          
-          if ((fallbackData as any)?.success) {
-            await loadUserData();
-            return fallbackData;
-          }
-          
-          return fallbackData || { success: false, message: 'Erro desconhecido' };
-        } catch (fallbackErr) {
-          console.error('Fallback error:', fallbackErr);
-          return { success: false, message: 'Erro interno do sistema' };
-        }
-      }
-
-      const result = data as any;
-      if (result?.success) {
-        // Recarregar dados após login
-        await loadUserData();
-        return result;
-      }
-
-      return result || { success: false, message: 'Erro desconhecido do servidor' };
-    } catch (error) {
-      console.error('Erro ao processar login diário:', error);
-      return { success: false, message: 'Erro interno do sistema' };
-    }
-  }, [user, loadUserData, isEnabled]);
 
   // Ganhar moedas por ação de forma segura (via edge function)
   const earnCoins = useCallback(async (
@@ -410,7 +359,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     spendCoins,
     getCoinsForAction,
     canEarnCoins,
-    processDailyLogin,
+    
     earnScrollCoins,
     refreshData: loadUserData
   };

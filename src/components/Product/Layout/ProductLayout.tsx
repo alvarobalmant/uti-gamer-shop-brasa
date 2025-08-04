@@ -19,7 +19,6 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
   onAddToCart,
   className
 }) => {
-  const galleryRef = useRef<HTMLDivElement>(null);
   const mainImageRef = useRef<HTMLDivElement>(null);
   
   // Initialize sticky behavior com offset natural para não grudar no header
@@ -29,17 +28,13 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
     naturalOffset: 120 // 120px de offset natural do header
   });
 
-  // Register sticky elements when they mount
+  // Register sticky elements when they mount - apenas imagem principal
   useEffect(() => {
-    if (galleryRef.current) {
-      registerStickyElement('gallery-sticky', galleryRef.current);
-    }
     if (mainImageRef.current) {
       registerStickyElement('main-image-sticky', mainImageRef.current);
     }
 
     return () => {
-      unregisterStickyElement('gallery-sticky');
       unregisterStickyElement('main-image-sticky');
     };
   }, [registerStickyElement, unregisterStickyElement]);
@@ -54,40 +49,37 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
   }, [product, refreshBounds]);
   return (
     <div className={cn("max-w-7xl mx-auto px-4 py-6", className)}>
-      {/* Layout principal: 3 colunas + sidebar separada */}
+      {/* Layout principal: 2 colunas + sidebar separada */}
       <div className="flex flex-col lg:flex-row gap-6">
         
-        {/* Container das 3 primeiras colunas + seções inferiores */}
+        {/* Container da imagem e galeria + seções inferiores */}
         <div className="flex-1 lg:pr-6">
-          {/* Top: Layout das 3 colunas superiores */}
+          {/* Top: Layout das 2 colunas superiores */}
           <div className="flex flex-col lg:flex-row gap-6">
             
-            {/* COLUNA 1: Container da Galeria Vertical */}
-            <div className="w-full lg:w-20 order-2 lg:order-1">
-              {/* ELEMENTO sticky da galeria */}
-              <div ref={galleryRef} className="h-fit z-10">
-                <ProductMainContent 
-                  product={product}
-                  skuNavigation={skuNavigation}
-                  layout="gallery-vertical"
-                />
-              </div>
-            </div>
-
-            {/* COLUNA 2: Container da Imagem Principal */}
-            <div className="w-full lg:w-96 order-1 lg:order-2">
-              {/* ELEMENTO sticky da imagem */}
+            {/* COLUNA 1: Container da Imagem Principal + Galeria UNIFICADOS */}
+            <div className="w-full lg:w-[480px] order-1 lg:order-1">
+              {/* ELEMENTO sticky unificado - imagem + galeria juntos */}
               <div ref={mainImageRef} className="h-fit z-10">
                 <ProductMainContent 
                   product={product}
                   skuNavigation={skuNavigation}
                   layout="main-image"
                 />
+                
+                {/* Galeria Horizontal centralizada - sempre abaixo da imagem */}
+                <div className="mt-4 flex justify-center">
+                  <ProductMainContent 
+                    product={product}
+                    skuNavigation={skuNavigation}
+                    layout="gallery-horizontal"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* COLUNA 3: Informações do Produto - ALTURA NATURAL */}
-            <div className="flex-1 order-3" id="product-info-column">
+            {/* COLUNA 2: Informações do Produto - ALTURA NATURAL */}
+            <div className="flex-1 order-2" id="product-info-column">
               <ProductMainContent 
                 product={product}
                 skuNavigation={skuNavigation}
@@ -96,22 +88,17 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
             </div>
           </div>
 
-          {/* Seções inferiores - EXPANSÃO CIRÚRGICA APENAS DOS ELEMENTOS */}
+          {/* Seções inferiores */}
           <div className="mt-12">
             {/* Desktop: mantém o alinhamento com as colunas acima */}
             <div className="hidden lg:flex lg:gap-6">
-              {/* Espaço alinhado com coluna 1 */}
-              <div className="w-20"></div>
-              {/* Container dos elementos inferiores com expansão cirúrgica */}
-              <div className="w-96 flex-1">
-                {/* EXPANSÃO CIRÚRGICA: margin negativo para ocupar espaço da coluna 1 */}
-                <div className="-ml-[104px]"> {/* 80px (w-20) + 24px (gap-6) = 104px */}
-                  <ProductMainContent 
-                    product={product}
-                    skuNavigation={skuNavigation}
-                    layout="bottom-sections"
-                  />
-                </div>
+              {/* Container dos elementos inferiores alinhado com a imagem */}
+              <div className="w-[480px] flex-1">
+                <ProductMainContent 
+                  product={product}
+                  skuNavigation={skuNavigation}
+                  layout="bottom-sections"
+                />
               </div>
             </div>
             

@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     } else if (action === 'get_daily_timer') {
       console.log(`[BRASILIA_TIMER] Getting timer status for user ${user.id}`);
       
-      // Get current daily bonus status
+      // Get current daily bonus status using the Brasilia timezone function
       const { data: timerResult, error: timerError } = await supabase
         .rpc('can_claim_daily_bonus_brasilia', { p_user_id: user.id });
 
@@ -131,16 +131,235 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Return timer data
-      const timerData = timerResult[0];
-      result = {
-        success: true,
-        canClaim: timerData.can_claim,
-        nextReset: timerData.next_reset,
-        periodStart: timerData.period_start,
-        periodEnd: timerData.period_end,
-        lastClaim: timerData.last_claim
-      };
+      // Return timer data with proper structure
+      if (timerResult && timerResult.length > 0) {
+        const timerData = timerResult[0];
+        result = {
+          success: true,
+          canClaim: timerData.can_claim,
+          nextReset: timerData.next_reset,
+          periodStart: timerData.period_start,
+          periodEnd: timerData.period_end,
+          lastClaim: timerData.last_claim
+        };
+      } else {
+        result = {
+          success: false,
+          message: 'Failed to get daily bonus status'
+        };
+      }
+      
+    } else if (action === 'can_claim_daily_bonus_brasilia') {
+      console.log(`[DAILY_BONUS] Checking bonus status for user ${user.id}`);
+      
+      try {
+        // Check if test mode is enabled
+        const { data: testModeData } = await supabase
+          .from('coin_system_config')
+          .select('setting_value')
+          .eq('setting_key', 'test_mode_enabled')
+          .single();
+
+        const isTestMode = testModeData?.setting_value === 'true' || testModeData?.setting_value === true;
+        const rpcFunction = isTestMode ? 'can_claim_daily_bonus_test' : 'can_claim_daily_bonus_brasilia';
+        
+        console.log(`[DAILY_BONUS] Using ${isTestMode ? 'TEST' : 'PRODUCTION'} mode for user ${user.id}`);
+
+        // Get current bonus period and claim status
+        const { data: bonusResult, error: bonusError } = await supabase
+          .rpc(rpcFunction, { p_user_id: user.id });
+
+        if (bonusError) {
+          console.error('[DAILY_BONUS] Error checking bonus status:', bonusError);
+          return new Response(
+            JSON.stringify({ success: false, message: 'Failed to check bonus status' }),
+            { 
+              status: 500, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+
+        if (bonusResult && bonusResult.length > 0) {
+          const bonusData = bonusResult[0];
+          
+          // Get user streak information
+          const { data: streakData } = await supabase
+            .from('user_streaks')
+            .select('current_streak, streak_multiplier')
+            .eq('user_id', user.id)
+            .single();
+
+          // Get daily bonus configuration - buscar novas configurações
+          const { data: configData } = await supabase
+            .from('coin_system_config')
+            .select('setting_key, setting_value')
+            .in('setting_key', [
+              'daily_bonus_base_amount', 
+              'daily_bonus_max_amount', 
+              'daily_bonus_streak_days',
+              'daily_bonus_increment_type',
+              'daily_bonus_fixed_increment'
+            ]);
+
+          let baseAmount = 10;
+          let maxAmount = 100;
+          let streakDays = 7;
+          let incrementType = 'calculated';
+          let fixedIncrement = 10;
+
+          if (configData) {
+            configData.forEach(config => {
+              // Extrair valor do JSONB - tratamento mais robusto
+              let value = config.setting_value;
+              
+              // Se for um objeto JSONB, extrair o valor
+              if (typeof value === 'object' && value !== null) {
+                value = value;
+              } else if (typeof value === 'string') {
+                // Se for string com aspas, remover
+                if (value.startsWith('"') && value.endsWith('"')) {
+                  value = value.slice(1, -1);
+                }
+                // Tentar converter para número se for numérico
+                if (!isNaN(Number(value))) {
+                  value = Number(value);
+                }
+              }
+                
+              switch (config.setting_key) {
+                case 'daily_bonus_base_amount':
+                  baseAmount = Number(value) || 10;
+                  break;
+                case 'daily_bonus_max_amount':
+                  maxAmount = Number(value) || 100;
+                  break;
+                case 'daily_bonus_streak_days':
+                  streakDays = Number(value) || 7;
+                  break;
+                case 'daily_bonus_increment_type':
+                  incrementType = String(value) || 'calculated';
+                  break;
+                case 'daily_bonus_fixed_increment':
+                  fixedIncrement = Number(value) || 10;
+                  break;
+              }
+            });
+          }
+
+          // Calcular próximo bônus baseado no streak atual e configuração
+          const currentStreak = streakData?.current_streak || 1;
+          const currentStreakDay = currentStreak % streakDays || streakDays;
+          let nextBonusAmount;
+          
+          if (incrementType === 'fixed') {
+            nextBonusAmount = Math.min(baseAmount + ((currentStreakDay - 1) * fixedIncrement), maxAmount);
+          } else {
+            if (streakDays > 1) {
+              nextBonusAmount = baseAmount + Math.round(((maxAmount - baseAmount) * (currentStreakDay - 1)) / (streakDays - 1));
+            } else {
+              nextBonusAmount = baseAmount;
+            }
+          }
+          
+          nextBonusAmount = Math.min(nextBonusAmount, maxAmount);
+
+          // Calculate seconds until next claim
+          let secondsUntilNextClaim = 0;
+          if (bonusData.next_reset && !bonusData.can_claim) {
+            const nextReset = new Date(bonusData.next_reset);
+            const now = new Date();
+            secondsUntilNextClaim = Math.max(0, Math.floor((nextReset.getTime() - now.getTime()) / 1000));
+          }
+
+          console.log(`[DAILY_BONUS] User ${user.id} bonus status:`, {
+            canClaim: bonusData.can_claim,
+            currentStreak,
+            nextBonusAmount,
+            secondsUntilNextClaim,
+            nextReset: bonusData.next_reset,
+            lastClaim: bonusData.last_claim,
+            testMode: isTestMode
+          });
+
+          result = {
+            success: true,
+            canClaim: bonusData.can_claim || false,
+            secondsUntilNextClaim: secondsUntilNextClaim || 0,
+            currentStreak: currentStreakDay,
+            nextBonusAmount: nextBonusAmount,
+            multiplier: 1.0, // Não usamos mais multiplicador com o novo sistema
+            nextReset: bonusData.next_reset,
+            lastClaim: bonusData.last_claim,
+            testMode: isTestMode,
+            totalStreakDays: streakDays,
+            message: bonusData.can_claim ? 'Bonus available' : (isTestMode ? 'Aguarde 60 segundos' : 'Bonus already claimed today')
+          };
+        } else {
+          result = {
+            success: false,
+            message: 'No bonus data available - database function may have failed'
+          };
+        }
+      } catch (error) {
+        console.error('[DAILY_BONUS] Exception checking bonus status:', error);
+        return new Response(
+          JSON.stringify({ success: false, message: 'Internal server error checking bonus' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
+    } else if (action === 'process_daily_login_brasilia') {
+      console.log(`[DAILY_LOGIN] Processing daily login for user ${user.id}`);
+      
+      try {
+        // Check if test mode is enabled
+        const { data: testModeData } = await supabase
+          .from('coin_system_config')
+          .select('setting_value')
+          .eq('setting_key', 'test_mode_enabled')
+          .single();
+
+        const isTestMode = testModeData?.setting_value === 'true' || testModeData?.setting_value === true;
+        const rpcFunction = isTestMode ? 'process_daily_login_test' : 'process_daily_login_brasilia';
+        
+        console.log(`[DAILY_LOGIN] Using ${isTestMode ? 'TEST' : 'PRODUCTION'} mode for user ${user.id}`);
+
+        // Use the appropriate login processing function
+        const { data: loginResult, error: loginError } = await supabase
+          .rpc(rpcFunction, { p_user_id: user.id });
+
+        if (loginError) {
+          console.error('[DAILY_LOGIN] Error processing daily login:', loginError);
+          return new Response(
+            JSON.stringify({ success: false, message: 'Failed to process daily login' }),
+            { 
+              status: 500, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+
+        result = loginResult;
+        
+        if (result && result.success) {
+          console.log(`[DAILY_LOGIN] SUCCESS: User ${user.id} earned ${result.coins_earned} coins. New streak: ${result.streak} (${isTestMode ? 'TEST' : 'PRODUCTION'} mode)`);
+        } else {
+          console.log(`[DAILY_LOGIN] BLOCKED: User ${user.id} login blocked: ${result?.message || 'Unknown error'} (${isTestMode ? 'TEST' : 'PRODUCTION'} mode)`);
+        }
+      } catch (error) {
+        console.error('[DAILY_LOGIN] Exception processing daily login:', error);
+        return new Response(
+          JSON.stringify({ success: false, message: 'Internal server error processing login' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
       
     } else {
       // Handle other coin earning actions

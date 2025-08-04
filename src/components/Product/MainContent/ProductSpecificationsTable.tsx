@@ -202,64 +202,6 @@ const ProductSpecificationsTable: React.FC<ProductSpecificationsTableProps> = ({
         </Button>
       </div>
 
-      {/* Informações Importantes */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-          <div className="space-y-2">
-            <h5 className="font-semibold text-yellow-800">
-              Informações Importantes
-            </h5>
-            <div className="text-sm text-yellow-700 space-y-1">
-              <div>• Especificações podem variar conforme atualizações do fabricante</div>
-              <div>• Recursos online dependem de conexão com a internet</div>
-              <div>• Algumas funcionalidades podem requerer assinatura de serviços</div>
-              <div>• Verifique compatibilidade com sua versão do console</div>
-              <div>• Garantia de {storeSettings.company_name || 'UTI dos Games'}: conforme legislação vigente</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Comparação com Outras Plataformas */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h5 className="font-semibold text-blue-800 mb-3">
-          🎮 Comparação entre Plataformas
-        </h5>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-blue-200">
-                <th className="text-left py-2 text-blue-800">Recurso</th>
-                <th className="text-center py-2 text-blue-800">PS5</th>
-                <th className="text-center py-2 text-blue-800">PS4</th>
-                <th className="text-center py-2 text-blue-800">Xbox Series X</th>
-              </tr>
-            </thead>
-            <tbody className="text-blue-700">
-              <tr className="border-b border-blue-100">
-                <td className="py-2">Resolução 4K</td>
-                <td className="text-center"><Check className="w-4 h-4 text-green-600 mx-auto" /></td>
-                <td className="text-center"><X className="w-4 h-4 text-red-600 mx-auto" /></td>
-                <td className="text-center"><Check className="w-4 h-4 text-green-600 mx-auto" /></td>
-              </tr>
-              <tr className="border-b border-blue-100">
-                <td className="py-2">Ray Tracing</td>
-                <td className="text-center"><Check className="w-4 h-4 text-green-600 mx-auto" /></td>
-                <td className="text-center"><X className="w-4 h-4 text-red-600 mx-auto" /></td>
-                <td className="text-center"><Check className="w-4 h-4 text-green-600 mx-auto" /></td>
-              </tr>
-              <tr>
-                <td className="py-2">Feedback Háptico</td>
-                <td className="text-center"><Check className="w-4 h-4 text-green-600 mx-auto" /></td>
-                <td className="text-center"><X className="w-4 h-4 text-red-600 mx-auto" /></td>
-                <td className="text-center"><X className="w-4 h-4 text-red-600 mx-auto" /></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
       {/* Link para Mais Informações */}
       <div className="text-center">
         <Button variant="outline" className="border-gray-300 text-gray-600">

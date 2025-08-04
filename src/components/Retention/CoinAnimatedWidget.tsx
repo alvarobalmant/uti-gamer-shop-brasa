@@ -3,7 +3,7 @@ import { Coins, TrendingUp, Gift, Star } from 'lucide-react';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DailyLoginSection } from './DailyLoginSection';
+
 import { UTICoinsConditional } from './UTICoinsConditional';
 
 interface UTICoinsWidgetProps {
@@ -19,7 +19,7 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
   const [showPopover, setShowPopover] = useState(false);
   const [coinAnimations, setCoinAnimations] = useState<CoinAnimation[]>([]);
   const { user } = useAuth();
-  const { coins, transactions, loading, processDailyLogin } = useUTICoins();
+  const { coins, transactions, loading } = useUTICoins();
   const previousBalance = useRef(coins.balance);
 
   // Detectar mudança no saldo para animar moedas
@@ -38,12 +38,6 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
     previousBalance.current = coins.balance;
   }, [coins.balance]);
 
-  // Processar login diário ao montar o componente
-  useEffect(() => {
-    if (user) {
-      processDailyLogin();
-    }
-  }, [user, processDailyLogin]);
   
   // Calcular nível baseado no total de moedas ganhas
   const calculateLevel = (totalEarned: number) => {
@@ -195,10 +189,6 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
               )}
             </div>
 
-            {/* Seção de Login Diário */}
-            <div className="p-4 border-t border-gray-200">
-              <DailyLoginSection showTitle={false} />
-            </div>
 
             {/* Ganhos recentes */}
             <div className="p-4">
@@ -243,26 +233,16 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
               </div>
 
               {/* Botões de ação */}
-              <div className="mt-4 space-y-2">
+              <div className="mt-4">
                 <button 
                   onClick={() => {
                     setShowPopover(false);
-                    window.location.href = '/coins/loja';
+                    window.location.href = '/coins';
                   }}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <Gift className="w-4 h-4" />
-                  Loja de Recompensas
-                </button>
-                
-                <button 
-                  onClick={() => {
-                    setShowPopover(false);
-                    window.location.href = '/coins/historico';
-                  }}
-                  className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200"
-                >
-                  Ver Histórico Completo
+                  Ver Tudo & Recompensas
                 </button>
               </div>
             </div>

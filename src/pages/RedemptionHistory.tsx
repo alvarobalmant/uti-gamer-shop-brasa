@@ -249,7 +249,7 @@ const RedemptionHistory = () => {
                       Você ainda não resgatou nenhum produto com seus UTI Coins.
                     </p>
                     <Button
-                      onClick={() => window.location.href = '/coins/loja'}
+                      onClick={() => window.location.href = '/coins'}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       Ir para Loja de Recompensas

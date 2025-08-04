@@ -12,7 +12,6 @@ import ProductHero from '@/components/Product/ProductHero';
 import ProductLayout from '@/components/Product/Layout/ProductLayout';
 import ProductTabsEnhanced from '@/components/Product/ProductTabsEnhanced';
 import RelatedProductsSection from '@/components/Product/RelatedProductsSection';
-import ProductFAQ from '@/components/Product/ProductFAQ';
 import ProductGuarantees from '@/components/Product/ProductGuarantees';
 import ProductCTABottom from '@/components/Product/ProductCTABottom';
 
