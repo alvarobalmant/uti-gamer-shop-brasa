@@ -377,7 +377,7 @@ brand: Logitech
 category: Periféricos
 platform: PC
 tags: mouse,gamer,rgb
-specifications: [{"name":"DPI","value":"25600","category":"Performance","icon":"🎯","highlight":true}]
+specifications: [{"label":"DPI","value":"25600","icon":"","highlight":true}]
 technical_specs: {"dpi":"25600","buttons":"11","weight":"85g","connectivity":"USB-A"}
 meta_title: Mouse Gamer RGB Logitech - Alta Performance | UTI Games
 meta_description: Mouse gamer Logitech com 25600 DPI e iluminação RGB. Ideal para jogos competitivos.
@@ -397,7 +397,7 @@ sku_code: CAMISA-UTI-MASTER
 brand: UTI Games
 category: Vestuário
 tags: camiseta,oficial
-specifications: [{"name":"Material","value":"100% Algodão","category":"Geral","icon":"👕","highlight":false}]
+specifications: [{"label":"Material","value":"100% Algodão","icon":"","highlight":false}]
 meta_title: Camiseta UTI Games Oficial - Vestuário Gamer | UTI Games
 meta_description: Camiseta oficial UTI Games 100% algodão. Disponível em vários tamanhos.
 is_active: TRUE
@@ -413,7 +413,7 @@ is_master_product: FALSE
 parent_product_id: CAMISA-UTI-MASTER
 sku_code: CAMISA-UTI-M
 variant_attributes: {"size":"M","color":"preto"}
-specifications: [{"name":"Tamanho","value":"M (Médio)","category":"Geral","icon":"📏","highlight":true}]
+specifications: [{"label":"Tamanho","value":"M (Médio)","icon":"","highlight":true}]
 meta_title: Camiseta UTI Games Tamanho M - Vestuário Gamer | UTI Games
 meta_description: Camiseta oficial UTI Games tamanho M, 100% algodão. Ideal para gamers.
 is_active: TRUE
@@ -429,7 +429,7 @@ is_master_product: FALSE
 parent_product_id: CAMISA-UTI-MASTER
 sku_code: CAMISA-UTI-G
 variant_attributes: {"size":"G","color":"preto"}
-specifications: [{"name":"Tamanho","value":"G (Grande)","category":"Geral","icon":"📏","highlight":true}]
+specifications: [{"label":"Tamanho","value":"G (Grande)","icon":"","highlight":true}]
 meta_title: Camiseta UTI Games Tamanho G - Vestuário Gamer | UTI Games
 meta_description: Camiseta oficial UTI Games tamanho G, 100% algodão. Ideal para gamers.
 is_active: TRUE
@@ -446,7 +446,7 @@ is_master_product: FALSE
 parent_product_id: CP2077-ULTIMATE-MASTER
 sku_code: CP2077-ULTIMATE-XBOX
 variant_attributes: {"platform":"Xbox Series X","edition":"Ultimate"}
-specifications: [{"name":"Plataforma","value":"Xbox Series X","category":"Compatibilidade","icon":"🎮","highlight":true}]
+specifications: [{"label":"Plataforma","value":"Xbox Series X","icon":"","highlight":true}]
 technical_specs: {"platform":"Xbox Series X","resolution":"4K","fps":"60","storage":"70GB"}
 meta_title: Cyberpunk 2077 Ultimate Xbox Series X - Jogo RPG | UTI Games
 meta_description: Cyberpunk 2077 Ultimate Edition para Xbox Series X. Versão completa com todas as DLCs.
@@ -460,6 +460,7 @@ is_active: TRUE
 Array de especificações básicas simples. Todas sempre aparecem na categoria "Informações Gerais".
 
 **Regras importantes:**
+- ✅ IMPORTANTE: Use "label" ao invés de "name" no campo specifications
 - ✅ Use apenas emojis simples (1-2 caracteres) no campo "icon", ou deixe vazio
 - ✅ O campo "category" é ignorado - sempre será "Informações Gerais"
 - ✅ Use para informações simples e resumidas
@@ -468,21 +469,21 @@ Array de especificações básicas simples. Todas sempre aparecem na categoria "
 \`\`\`json
 [
   {
-    "name": "Tipo", 
+    "label": "Tipo", 
     "value": "Console Next-Gen",
-    "icon": "🎮",
+    "icon": "",
     "highlight": true
   },
   {
-    "name": "Garantia",
+    "label": "Garantia",
     "value": "1 ano", 
-    "icon": "🛡️",
+    "icon": "",
     "highlight": false
   },
   {
-    "name": "Cor",
+    "label": "Cor",
     "value": "Branco",
-    "icon": "🎨",
+    "icon": "",
     "highlight": false
   }
 ]
