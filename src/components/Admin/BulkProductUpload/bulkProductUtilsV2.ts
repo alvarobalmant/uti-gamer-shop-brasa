@@ -112,18 +112,18 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
   // === ESPECIFICAÇÕES ===
   {
     key: 'specifications',
-    label: 'Especificações Básicas',
-    instructions: 'JSON com especificações básicas. Ex: [{"name":"Processador","value":"AMD Ryzen Zen 2","category":"technical","icon":"⚙️","highlight":true}]',
+    label: 'Especificações Básicas (Mobile)',
+    instructions: 'JSON com especificações básicas para visualização mobile. Ex: [{"name":"Processador","value":"AMD Ryzen Zen 2","category":"Informações Gerais","icon":"⚙️","highlight":true}]',
     type: 'json',
-    example: '[{"name":"Processador","value":"AMD Ryzen Zen 2","category":"technical","icon":"⚙️","highlight":true}]',
+    example: '[{"name":"Processador","value":"AMD Ryzen Zen 2","category":"Informações Gerais","icon":"⚙️","highlight":true}]',
     width: 60
   },
   {
     key: 'technical_specs',
-    label: 'Especificações Técnicas',
-    instructions: 'JSON com specs técnicas detalhadas. Ex: {"cpu":"AMD Zen 2","gpu":"RDNA 2","ram":"16GB","storage":"825GB SSD"}',
+    label: 'Especificações Técnicas (Desktop)',
+    instructions: 'JSON com specs técnicas detalhadas organizadas em 4 categorias: ⚙️ Especificações Técnicas, 🚀 Performance, 💾 Armazenamento, 🔌 Conectividade. Ex: {"cpu":"AMD Zen 2","gpu":"RDNA 2","ram":"16GB","storage":"825GB SSD","fps":"60 FPS","multiplayer":"Sim"}',
     type: 'json',
-    example: '{"cpu":"AMD Zen 2","gpu":"RDNA 2","ram":"16GB","storage":"825GB SSD"}',
+    example: '{"cpu":"AMD Zen 2","gpu":"RDNA 2","ram":"16GB","storage":"825GB SSD","fps":"60 FPS","multiplayer":"Sim"}',
     width: 50
   },
   
@@ -455,26 +455,44 @@ is_active: TRUE
 
 ## 🔧 CAMPOS JSON
 
-### specifications (Especificações Básicas)
+### specifications (Especificações Básicas - Mobile View)
+Array de especificações básicas que aparecem na visualização mobile:
 \`\`\`json
 [
   {
-    "name": "Processador",
+    "name": "Processador", 
     "value": "AMD Ryzen Zen 2",
-    "category": "technical",
+    "category": "Informações Gerais",
     "icon": "⚙️",
     "highlight": true
+  },
+  {
+    "name": "Memória",
+    "value": "16GB GDDR6", 
+    "category": "Informações Gerais",
+    "icon": "🧠",
+    "highlight": false
   }
 ]
 \`\`\`
 
-### technical_specs (Especificações Técnicas)
+### technical_specs (Especificações Técnicas - Desktop View)
+Objeto com especificações técnicas detalhadas organizadas automaticamente em 4 categorias:
+- **⚙️ Especificações Técnicas**: Hardware e sistema (cpu, gpu, ram, etc.)
+- **🚀 Performance**: Desempenho e gráficos (fps, resolution, etc.)
+- **💾 Armazenamento**: Espaço e instalação (storage, size, etc.)
+- **🔌 Conectividade**: Multiplayer e rede (multiplayer, online, etc.)
+
 \`\`\`json
 {
-  "cpu": "AMD Zen 2",
-  "gpu": "RDNA 2",
-  "ram": "16GB",
-  "storage": "825GB SSD"
+  "cpu": "AMD Zen 2 8-Core",
+  "gpu": "RDNA 2 Custom", 
+  "ram": "16GB GDDR6",
+  "storage": "825GB SSD NVMe",
+  "fps": "60 FPS",
+  "resolution": "4K Ultra HD",
+  "multiplayer": "Até 4 jogadores online",
+  "wifi": "Wi-Fi 6 (802.11ax)"
 }
 \`\`\`
 
@@ -582,8 +600,8 @@ export function generateProductTemplate(): ProductTemplate {
       'image': 'https://image.api.playstation.com/vulcan/ap/rnd/202101/0812/FkzwjnJknkrFlozkTdeQBMub.png',
       'is_master_product': false,
       'sku_code': 'PS5-DIGITAL',
-      'specifications': '[{"name":"Processador","value":"AMD Ryzen Zen 2","category":"Hardware","icon":"⚙️","highlight":true},{"name":"Placa de Vídeo","value":"RDNA 2 Custom","category":"Hardware","icon":"🎮","highlight":true}]',
-      'technical_specs': '{"cpu":"AMD Zen 2 8-Core","gpu":"RDNA 2 Custom","ram":"16GB GDDR6","storage":"825GB SSD NVMe","fps":"60 FPS","resolution":"4K Ultra HD"}',
+      'specifications': '[{"name":"Processador","value":"AMD Ryzen Zen 2","category":"Informações Gerais","icon":"⚙️","highlight":true},{"name":"Memória","value":"16GB GDDR6","category":"Informações Gerais","icon":"🧠","highlight":true}]',
+      'technical_specs': '{"cpu":"AMD Zen 2 8-Core","gpu":"RDNA 2 Custom","ram":"16GB GDDR6","storage":"825GB SSD NVMe","fps":"60 FPS","resolution":"4K Ultra HD","multiplayer":"Até 4 jogadores online","wifi":"Wi-Fi 6 (802.11ax)"}',
       'product_highlights': '["SSD ultra-rápido","Ray tracing","4K gaming","Compatibilidade PS4"]',
       'meta_title': 'PlayStation 5 Digital Edition - Console Next-Gen | UTI Games',
       'meta_description': 'Compre o PlayStation 5 Digital Edition com os melhores preços. Tecnologia revolucionária, jogos incríveis. Frete grátis!',
@@ -1126,14 +1144,16 @@ async function processProductSpecifications(productId: string, product: Imported
     const specsToInsert: any[] = [];
     let orderIndex = 1;
     
-    // Processar especificações básicas
+// Processar especificações básicas (para mobile)
     if (specifications && Array.isArray(specifications)) {
       specifications.forEach((spec: any) => {
-        if (spec.name && spec.value) {
+        // Aceitar tanto 'name' quanto 'label' como nome da especificação
+        const specName = spec.name || spec.label;
+        if (specName && spec.value) {
           specsToInsert.push({
             product_id: productId,
-            category: spec.category || 'Geral',
-            label: spec.name,
+            category: spec.category || 'Informações Gerais',
+            label: specName,
             value: String(spec.value),
             highlight: Boolean(spec.highlight || false),
             icon: spec.icon || null,
@@ -1188,44 +1208,63 @@ async function processProductSpecifications(productId: string, product: Imported
 function getCategoryAndIconFromKey(key: string): { category: string; icon: string | null } {
   const lowerKey = key.toLowerCase();
   
-  // Mapeamento de chaves para categorias e ícones
+  // Mapeamento para as 4 categorias principais (Desktop)
   const categoryMap: Record<string, { category: string; icon: string }> = {
-    // Hardware
-    'cpu': { category: 'Hardware', icon: '⚙️' },
-    'processor': { category: 'Hardware', icon: '⚙️' },
-    'processador': { category: 'Hardware', icon: '⚙️' },
-    'gpu': { category: 'Hardware', icon: '🎮' },
-    'graphics': { category: 'Hardware', icon: '🎮' },
-    'placa_video': { category: 'Hardware', icon: '🎮' },
-    'ram': { category: 'Hardware', icon: '💾' },
-    'memory': { category: 'Hardware', icon: '💾' },
-    'memoria': { category: 'Hardware', icon: '💾' },
+    // ⚙️ Especificações Técnicas - Hardware e Sistema
+    'cpu': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'processor': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'processador': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'gpu': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'graphics': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'placa_video': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'ram': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'memory': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'memoria': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'sistema': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'system': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'os': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'platform': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
+    'plataforma': { category: '⚙️ Especificações Técnicas', icon: '⚙️' },
     
-    // Armazenamento
-    'storage': { category: 'Armazenamento', icon: '💿' },
-    'armazenamento': { category: 'Armazenamento', icon: '💿' },
-    'disco': { category: 'Armazenamento', icon: '💿' },
-    'ssd': { category: 'Armazenamento', icon: '💿' },
-    'hdd': { category: 'Armazenamento', icon: '💿' },
+    // 🚀 Performance - Desempenho e Gráficos
+    'performance': { category: '🚀 Performance', icon: '🚀' },
+    'resolution': { category: '🚀 Performance', icon: '🚀' },
+    'fps': { category: '🚀 Performance', icon: '🚀' },
+    'resolução': { category: '🚀 Performance', icon: '🚀' },
+    'framerate': { category: '🚀 Performance', icon: '🚀' },
+    'graphics_quality': { category: '🚀 Performance', icon: '🚀' },
+    'qualidade_graficos': { category: '🚀 Performance', icon: '🚀' },
+    'optimization': { category: '🚀 Performance', icon: '🚀' },
+    'otimização': { category: '🚀 Performance', icon: '🚀' },
     
-    // Performance
-    'resolution': { category: 'Performance', icon: '📺' },
-    'fps': { category: 'Performance', icon: '⚡' },
-    'resolução': { category: 'Performance', icon: '📺' },
-    'performance': { category: 'Performance', icon: '⚡' },
+    // 💾 Armazenamento - Espaço e Instalação
+    'storage': { category: '💾 Armazenamento', icon: '💾' },
+    'armazenamento': { category: '💾 Armazenamento', icon: '💾' },
+    'disco': { category: '💾 Armazenamento', icon: '💾' },
+    'ssd': { category: '💾 Armazenamento', icon: '💾' },
+    'hdd': { category: '💾 Armazenamento', icon: '💾' },
+    'size': { category: '💾 Armazenamento', icon: '💾' },
+    'tamanho': { category: '💾 Armazenamento', icon: '💾' },
+    'installation': { category: '💾 Armazenamento', icon: '💾' },
+    'instalação': { category: '💾 Armazenamento', icon: '💾' },
+    'download': { category: '💾 Armazenamento', icon: '💾' },
+    'space': { category: '💾 Armazenamento', icon: '💾' },
+    'espaço': { category: '💾 Armazenamento', icon: '💾' },
     
-    // Conectividade
-    'multiplayer': { category: 'Conectividade', icon: '👥' },
-    'online': { category: 'Conectividade', icon: '🌐' },
-    'network': { category: 'Conectividade', icon: '🌐' },
-    'wifi': { category: 'Conectividade', icon: '📶' },
-    'bluetooth': { category: 'Conectividade', icon: '📶' },
-    
-    // Áudio/Vídeo
-    'audio': { category: 'Áudio/Vídeo', icon: '🔊' },
-    'video': { category: 'Áudio/Vídeo', icon: '📹' },
-    'sound': { category: 'Áudio/Vídeo', icon: '🔊' },
-    'som': { category: 'Áudio/Vídeo', icon: '🔊' }
+    // 🔌 Conectividade - Multiplayer e Rede
+    'multiplayer': { category: '🔌 Conectividade', icon: '🔌' },
+    'online': { category: '🔌 Conectividade', icon: '🔌' },
+    'network': { category: '🔌 Conectividade', icon: '🔌' },
+    'wifi': { category: '🔌 Conectividade', icon: '🔌' },
+    'bluetooth': { category: '🔌 Conectividade', icon: '🔌' },
+    'internet': { category: '🔌 Conectividade', icon: '🔌' },
+    'connection': { category: '🔌 Conectividade', icon: '🔌' },
+    'conexão': { category: '🔌 Conectividade', icon: '🔌' },
+    'cooperative': { category: '🔌 Conectividade', icon: '🔌' },
+    'cooperativo': { category: '🔌 Conectividade', icon: '🔌' },
+    'crossplay': { category: '🔌 Conectividade', icon: '🔌' },
+    'cloud': { category: '🔌 Conectividade', icon: '🔌' },
+    'nuvem': { category: '🔌 Conectividade', icon: '🔌' }
   };
   
   // Buscar correspondência exata
@@ -1240,8 +1279,8 @@ function getCategoryAndIconFromKey(key: string): { category: string; icon: strin
     }
   }
   
-  // Padrão
-  return { category: 'Especificações Técnicas', icon: '⚙️' };
+  // Padrão: primeira categoria
+  return { category: '⚙️ Especificações Técnicas', icon: '⚙️' };
 }
 
 // Função para formatar label de especificação
