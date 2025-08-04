@@ -377,6 +377,10 @@ brand: Logitech
 category: Periféricos
 platform: PC
 tags: mouse,gamer,rgb
+specifications: [{"name":"DPI","value":"25600","category":"Performance","icon":"🎯","highlight":true}]
+technical_specs: {"dpi":"25600","buttons":"11","weight":"85g","connectivity":"USB-A"}
+meta_title: Mouse Gamer RGB Logitech - Alta Performance | UTI Games
+meta_description: Mouse gamer Logitech com 25600 DPI e iluminação RGB. Ideal para jogos competitivos.
 is_master_product: FALSE
 is_active: TRUE
 \`\`\`
@@ -393,6 +397,9 @@ sku_code: CAMISA-UTI-MASTER
 brand: UTI Games
 category: Vestuário
 tags: camiseta,oficial
+specifications: [{"name":"Material","value":"100% Algodão","category":"Geral","icon":"👕","highlight":false}]
+meta_title: Camiseta UTI Games Oficial - Vestuário Gamer | UTI Games
+meta_description: Camiseta oficial UTI Games 100% algodão. Disponível em vários tamanhos.
 is_active: TRUE
 \`\`\`
 
@@ -406,6 +413,9 @@ is_master_product: FALSE
 parent_product_id: CAMISA-UTI-MASTER
 sku_code: CAMISA-UTI-M
 variant_attributes: {"size":"M","color":"preto"}
+specifications: [{"name":"Tamanho","value":"M (Médio)","category":"Geral","icon":"📏","highlight":true}]
+meta_title: Camiseta UTI Games Tamanho M - Vestuário Gamer | UTI Games
+meta_description: Camiseta oficial UTI Games tamanho M, 100% algodão. Ideal para gamers.
 is_active: TRUE
 \`\`\`
 
@@ -419,6 +429,9 @@ is_master_product: FALSE
 parent_product_id: CAMISA-UTI-MASTER
 sku_code: CAMISA-UTI-G
 variant_attributes: {"size":"G","color":"preto"}
+specifications: [{"name":"Tamanho","value":"G (Grande)","category":"Geral","icon":"📏","highlight":true}]
+meta_title: Camiseta UTI Games Tamanho G - Vestuário Gamer | UTI Games
+meta_description: Camiseta oficial UTI Games tamanho G, 100% algodão. Ideal para gamers.
 is_active: TRUE
 \`\`\`
 
@@ -433,6 +446,10 @@ is_master_product: FALSE
 parent_product_id: CP2077-ULTIMATE-MASTER
 sku_code: CP2077-ULTIMATE-XBOX
 variant_attributes: {"platform":"Xbox Series X","edition":"Ultimate"}
+specifications: [{"name":"Plataforma","value":"Xbox Series X","category":"Compatibilidade","icon":"🎮","highlight":true}]
+technical_specs: {"platform":"Xbox Series X","resolution":"4K","fps":"60","storage":"70GB"}
+meta_title: Cyberpunk 2077 Ultimate Xbox Series X - Jogo RPG | UTI Games
+meta_description: Cyberpunk 2077 Ultimate Edition para Xbox Series X. Versão completa com todas as DLCs.
 is_active: TRUE
 \`\`\`
 
@@ -565,9 +582,12 @@ export function generateProductTemplate(): ProductTemplate {
       'image': 'https://image.api.playstation.com/vulcan/ap/rnd/202101/0812/FkzwjnJknkrFlozkTdeQBMub.png',
       'is_master_product': false,
       'sku_code': 'PS5-DIGITAL',
-      'specifications': '[{"name":"Processador","value":"AMD Ryzen Zen 2","category":"technical","icon":"⚙️","highlight":true}]',
-      'technical_specs': '{"cpu":"AMD Zen 2","gpu":"RDNA 2","ram":"16GB","storage":"825GB SSD"}',
-      'product_highlights': '["SSD ultra-rápido","Ray tracing","4K gaming"]',
+      'specifications': '[{"name":"Processador","value":"AMD Ryzen Zen 2","category":"Hardware","icon":"⚙️","highlight":true},{"name":"Placa de Vídeo","value":"RDNA 2 Custom","category":"Hardware","icon":"🎮","highlight":true}]',
+      'technical_specs': '{"cpu":"AMD Zen 2 8-Core","gpu":"RDNA 2 Custom","ram":"16GB GDDR6","storage":"825GB SSD NVMe","fps":"60 FPS","resolution":"4K Ultra HD"}',
+      'product_highlights': '["SSD ultra-rápido","Ray tracing","4K gaming","Compatibilidade PS4"]',
+      'meta_title': 'PlayStation 5 Digital Edition - Console Next-Gen | UTI Games',
+      'meta_description': 'Compre o PlayStation 5 Digital Edition com os melhores preços. Tecnologia revolucionária, jogos incríveis. Frete grátis!',
+      'slug': 'playstation-5-digital-edition',
       'brand': 'Sony',
       'category': 'Console',
       'platform': 'PlayStation 5',
@@ -620,11 +640,33 @@ export function validateProductData(products: ImportedProduct[]): ValidationErro
     }
 
     if (!product.price || Number(product.price) <= 0) {
+      // Para produtos mestres, permitir preço 0
+      if (!parseBooleanField(product.is_master_product)) {
+        errors.push({
+          row,
+          field: 'price',
+          message: 'Preço deve ser maior que 0 para produtos normais',
+          severity: 'error'
+        });
+      }
+    }
+
+    // Avisos SEO (não obrigatórios, mas recomendados)
+    if (!product.meta_title || String(product.meta_title).trim() === '') {
       errors.push({
         row,
-        field: 'price',
-        message: 'Preço deve ser maior que 0',
-        severity: 'error'
+        field: 'meta_title',
+        message: 'Título SEO recomendado para melhor posicionamento',
+        severity: 'warning'
+      });
+    }
+
+    if (!product.meta_description || String(product.meta_description).trim() === '') {
+      errors.push({
+        row,
+        field: 'meta_description',
+        message: 'Descrição SEO recomendada para melhor posicionamento',
+        severity: 'warning'
       });
     }
 
@@ -793,6 +835,9 @@ export async function processProductImport(
         await createProductTags(newProduct.id, tagNames);
       }
       
+      // Processar especificações
+      await processProductSpecifications(newProduct.id, product);
+      
       created++;
       processed++;
       onProgress(Math.round((processed / total) * 100));
@@ -809,6 +854,9 @@ export async function processProductImport(
         const tagNames = parseArrayField(product.tags);
         await createProductTags(newProduct.id, tagNames);
       }
+      
+      // Processar especificações
+      await processProductSpecifications(newProduct.id, product);
       
       created++;
       processed++;
@@ -866,6 +914,9 @@ export async function processProductImport(
         const tagNames = parseArrayField(product.tags);
         await createProductTags(newProduct.id, tagNames);
       }
+      
+      // Processar especificações
+      await processProductSpecifications(newProduct.id, product);
       
       created++;
       processed++;
@@ -1062,4 +1113,166 @@ async function createProductTags(productId: string, tagNames: string[]): Promise
       throw linkError;
     }
   }
+}
+
+// Função para processar especificações técnicas do produto importado
+async function processProductSpecifications(productId: string, product: ImportedProduct): Promise<void> {
+  if (!productId) return;
+  
+  try {
+    const specifications = parseJsonField(product.specifications);
+    const technicalSpecs = parseJsonField(product.technical_specs);
+    
+    const specsToInsert: any[] = [];
+    let orderIndex = 1;
+    
+    // Processar especificações básicas
+    if (specifications && Array.isArray(specifications)) {
+      specifications.forEach((spec: any) => {
+        if (spec.name && spec.value) {
+          specsToInsert.push({
+            product_id: productId,
+            category: spec.category || 'Geral',
+            label: spec.name,
+            value: String(spec.value),
+            highlight: Boolean(spec.highlight || false),
+            icon: spec.icon || null,
+            order_index: orderIndex++
+          });
+        }
+      });
+    }
+    
+    // Processar especificações técnicas detalhadas (formato objeto)
+    if (technicalSpecs && typeof technicalSpecs === 'object') {
+      Object.entries(technicalSpecs).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          // Determinar categoria e ícone com base na chave
+          const { category, icon } = getCategoryAndIconFromKey(key);
+          
+          // Formatar o nome da especificação
+          const formattedLabel = formatSpecificationLabel(key);
+          
+          specsToInsert.push({
+            product_id: productId,
+            category: category,
+            label: formattedLabel,
+            value: String(value),
+            highlight: isHighlightField(key),
+            icon: icon,
+            order_index: orderIndex++
+          });
+        }
+      });
+    }
+    
+    // Inserir todas as especificações no banco
+    if (specsToInsert.length > 0) {
+      const { error } = await supabase
+        .from('product_specifications')
+        .insert(specsToInsert);
+      
+      if (error) {
+        console.error('Erro ao inserir especificações:', error);
+      } else {
+        console.log(`[IMPORT] ${specsToInsert.length} especificações adicionadas para produto ${productId}`);
+      }
+    }
+    
+  } catch (error) {
+    console.error('Erro ao processar especificações do produto:', error);
+  }
+}
+
+// Função para determinar categoria e ícone baseado na chave
+function getCategoryAndIconFromKey(key: string): { category: string; icon: string | null } {
+  const lowerKey = key.toLowerCase();
+  
+  // Mapeamento de chaves para categorias e ícones
+  const categoryMap: Record<string, { category: string; icon: string }> = {
+    // Hardware
+    'cpu': { category: 'Hardware', icon: '⚙️' },
+    'processor': { category: 'Hardware', icon: '⚙️' },
+    'processador': { category: 'Hardware', icon: '⚙️' },
+    'gpu': { category: 'Hardware', icon: '🎮' },
+    'graphics': { category: 'Hardware', icon: '🎮' },
+    'placa_video': { category: 'Hardware', icon: '🎮' },
+    'ram': { category: 'Hardware', icon: '💾' },
+    'memory': { category: 'Hardware', icon: '💾' },
+    'memoria': { category: 'Hardware', icon: '💾' },
+    
+    // Armazenamento
+    'storage': { category: 'Armazenamento', icon: '💿' },
+    'armazenamento': { category: 'Armazenamento', icon: '💿' },
+    'disco': { category: 'Armazenamento', icon: '💿' },
+    'ssd': { category: 'Armazenamento', icon: '💿' },
+    'hdd': { category: 'Armazenamento', icon: '💿' },
+    
+    // Performance
+    'resolution': { category: 'Performance', icon: '📺' },
+    'fps': { category: 'Performance', icon: '⚡' },
+    'resolução': { category: 'Performance', icon: '📺' },
+    'performance': { category: 'Performance', icon: '⚡' },
+    
+    // Conectividade
+    'multiplayer': { category: 'Conectividade', icon: '👥' },
+    'online': { category: 'Conectividade', icon: '🌐' },
+    'network': { category: 'Conectividade', icon: '🌐' },
+    'wifi': { category: 'Conectividade', icon: '📶' },
+    'bluetooth': { category: 'Conectividade', icon: '📶' },
+    
+    // Áudio/Vídeo
+    'audio': { category: 'Áudio/Vídeo', icon: '🔊' },
+    'video': { category: 'Áudio/Vídeo', icon: '📹' },
+    'sound': { category: 'Áudio/Vídeo', icon: '🔊' },
+    'som': { category: 'Áudio/Vídeo', icon: '🔊' }
+  };
+  
+  // Buscar correspondência exata
+  if (categoryMap[lowerKey]) {
+    return categoryMap[lowerKey];
+  }
+  
+  // Buscar correspondência parcial
+  for (const [mapKey, value] of Object.entries(categoryMap)) {
+    if (lowerKey.includes(mapKey) || mapKey.includes(lowerKey)) {
+      return value;
+    }
+  }
+  
+  // Padrão
+  return { category: 'Especificações Técnicas', icon: '⚙️' };
+}
+
+// Função para formatar label de especificação
+function formatSpecificationLabel(key: string): string {
+  const labelMap: Record<string, string> = {
+    'cpu': 'Processador',
+    'gpu': 'Placa de Vídeo',
+    'ram': 'Memória RAM',
+    'storage': 'Armazenamento',
+    'resolution': 'Resolução',
+    'fps': 'Taxa de Quadros',
+    'audio': 'Áudio',
+    'video': 'Vídeo',
+    'multiplayer': 'Multijogador',
+    'online': 'Online',
+    'wifi': 'Wi-Fi',
+    'bluetooth': 'Bluetooth',
+    'performance': 'Performance'
+  };
+  
+  const lowerKey = key.toLowerCase();
+  if (labelMap[lowerKey]) {
+    return labelMap[lowerKey];
+  }
+  
+  // Capitalizar primeira letra e substituir _ por espaço
+  return key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+}
+
+// Função para determinar se o campo deve ser destacado
+function isHighlightField(key: string): boolean {
+  const highlightFields = ['cpu', 'gpu', 'ram', 'storage', 'resolution', 'fps'];
+  return highlightFields.includes(key.toLowerCase());
 }
