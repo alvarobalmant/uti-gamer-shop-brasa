@@ -298,6 +298,82 @@ Atualizado automaticamente em: ${new Date().toLocaleString('pt-BR')}
 Este sistema permite importar múltiplos produtos de forma eficiente usando planilhas Excel.
 Você pode criar produtos simples, produtos com variações (sistema SKU) ou adicionar variações a produtos mestres existentes.
 
+## 🤖 DETECÇÃO AUTOMÁTICA DE TIPO
+
+O sistema detecta automaticamente o tipo de produto e aplica especificações adequadas:
+
+### 🎮 Produtos Técnicos (Desktop com especificações técnicas):
+- **Tipos**: Jogos, Consoles, Eletrônicos, Periféricos
+- **Categorias**: Console, Game, Periféricos, PC, Eletrônicos
+- **Desktop**: 4 categorias técnicas organizadas automaticamente
+- **Exemplo**: PlayStation 5, FIFA 25, Mouse Gamer
+
+### 👕 Produtos Não-Técnicos (Desktop = Mobile):
+- **Tipos**: Roupas, Pelúcias, Decoração, Colecionáveis, Casa
+- **Categorias**: Vestuário, Decoração, Colecionáveis, Casa
+- **Desktop**: Mesmas especificações do mobile ("📋 Informações Gerais")
+- **Exemplo**: Camiseta, Almofada, Funko, Pelúcia
+
+### 🔍 Como Funciona:
+- **Detecção automática** por categoria e palavras-chave
+- **Zero configuração** necessária no Excel
+- **Especificações relevantes** para cada tipo de produto
+- **Experiência consistente** mobile/desktop
+
+## 💰 ESTRATÉGIA DE PREÇOS MÚLTIPLOS
+
+Configure até 3 preços por produto para maximizar conversões:
+
+### 📊 Campos de Preço:
+- **price**: Preço principal de venda (obrigatório)
+- **list_price**: Preço original "de" para mostrar desconto (opcional)
+- **pro_price**: Preço especial para membros UTI Pro (opcional)
+
+### 💡 Exemplo Prático:
+\`\`\`
+list_price: 79.99    # Preço "de"
+price: 59.99         # Preço principal
+pro_price: 49.99     # Preço UTI Pro
+\`\`\`
+
+### 🎯 Resultado Visual:
+\`\`\`
+De: R$ 79,99
+Por: R$ 59,99 (economia de R$ 20,00)
+UTI Pro: R$ 49,99 (economia adicional de R$ 10,00)
+\`\`\`
+
+### ✅ Benefícios:
+- **Percepção de valor** com desconto visível
+- **Incentivo** ao programa UTI Pro
+- **Maior conversão** com estratégia de preços
+
+## 📊 CATEGORIZAÇÃO AUTOMÁTICA DESKTOP
+
+Para produtos técnicos, o sistema organiza automaticamente em 4 categorias:
+
+### ⚙️ Especificações Técnicas:
+**Palavras-chave**: cpu, gpu, ram, processor, memory, platform, system, engine, architecture
+**Exemplo**: "cpu": "AMD Zen 2", "ram": "16GB GDDR6"
+
+### 🚀 Performance:
+**Palavras-chave**: fps, framerate, resolution, performance, speed, boost, ray_tracing, hdr
+**Exemplo**: "fps": "60 FPS", "resolution": "4K Ultra HD"
+
+### 💾 Armazenamento:
+**Palavras-chave**: storage, size, ssd, hdd, disk, space, capacity, installation
+**Exemplo**: "storage": "1TB SSD", "size": "70GB"
+
+### 🔌 Conectividade:
+**Palavras-chave**: multiplayer, online, wifi, bluetooth, network, connection, usb, hdmi
+**Exemplo**: "multiplayer": "4 jogadores", "wifi": "Wi-Fi 6"
+
+### 🎯 Detecção Automática:
+- **Sistema analisa** nomes dos campos em technical_specs
+- **Mapeia automaticamente** para categoria apropriada
+- **Organiza visualmente** com ícones e agrupamento
+- **Fallback inteligente** para casos não mapeados
+
 ## 📋 TIPOS DE PRODUTOS SUPORTADOS
 
 ### 1. PRODUTO SIMPLES
@@ -349,10 +425,11 @@ ${uniquePlatforms.length > 0
 - **sku_code**: Código único do produto/variação
 - **variant_attributes**: JSON com atributos da variação
 
-### Preços
-- **price**: Preço principal (obrigatório)
-- **pro_price**: Preço para membros UTI Pro
-- **list_price**: Preço original (para mostrar desconto)
+### Preços (Estratégia de Preços Múltiplos)
+- **price**: Preço principal de venda (obrigatório)
+- **list_price**: Preço original "de" para mostrar desconto (opcional)
+- **pro_price**: Preço especial para membros UTI Pro (opcional)
+- **Benefícios**: Percepção de valor, incentivo UTI Pro, maior conversão
 
 ### Categorização
 - **brand**: Marca do produto
@@ -455,9 +532,13 @@ is_active: TRUE
 
 ## 🔧 CAMPOS JSON
 
-### specifications (Especificações Básicas - SOMENTE Mobile View)
-**IMPORTANTE**: Este campo é usado APENAS na visualização MOBILE do produto.
-Array de especificações básicas simples. Todas sempre aparecem na categoria "Informações Gerais".
+### specifications (Especificações Básicas - Mobile + Desktop Não-Técnico)
+**IMPORTANTE**: Este campo é usado para:
+- ✅ **Mobile**: TODOS os produtos (sempre categoria "Informações Gerais")
+- ✅ **Desktop**: APENAS produtos não-técnicos (categoria "Informações Gerais")
+- ❌ **Desktop**: Produtos técnicos usam technical_specs com 4 categorias automáticas
+
+Array de especificações básicas simples para informações gerais do produto.
 
 **Regras importantes:**
 - ✅ IMPORTANTE: Use "label" ao invés de "name" no campo specifications
@@ -489,11 +570,16 @@ Array de especificações básicas simples. Todas sempre aparecem na categoria "
 ]
 \`\`\`
 
-### technical_specs (Especificações Técnicas - SOMENTE Desktop View)
-**IMPORTANTE**: Este campo é usado APENAS na visualização DESKTOP do produto.
+### technical_specs (Especificações Técnicas - Desktop de Produtos Técnicos)
+**IMPORTANTE**: Este campo é usado APENAS para produtos TÉCNICOS na visualização DESKTOP.
 Objeto com especificações técnicas detalhadas, organizadas automaticamente em 4 categorias:
 
-**🏷️ As 4 categorias automáticas do Desktop:**
+**🤖 Detecção Automática de Produto Técnico:**
+O sistema detecta automaticamente se o produto é técnico baseado em:
+- **Categorias**: games, jogos, consoles, periféricos, eletrônicos, computadores, smartphones
+- **Palavras-chave**: playstation, xbox, nintendo, pc, gamer, gaming, console, mouse, teclado, etc.
+
+**🏷️ As 4 categorias automáticas do Desktop (APENAS produtos técnicos):**
 - **⚙️ Especificações Técnicas**: Hardware e sistema (cpu, gpu, ram, platform, etc.)
 - **🚀 Performance**: Desempenho e gráficos (fps, resolution, framerate, etc.)
 - **💾 Armazenamento**: Espaço e instalação (storage, size, ssd, hdd, etc.)
@@ -503,6 +589,7 @@ Objeto com especificações técnicas detalhadas, organizadas automaticamente em
 - ✅ Use nomes de campos técnicos em inglês ou português
 - ✅ O sistema detecta automaticamente a categoria pela palavra-chave
 - ✅ Use para especificações técnicas detalhadas
+- ✅ Para produtos não-técnicos, o desktop usará as mesmas specs do mobile
 - ❌ NÃO misture com especificações básicas
 
 \`\`\`json
@@ -615,25 +702,162 @@ export function generateProductTemplate(): ProductTemplate {
   ];
   
   const examples = [
+    // Exemplo 1: Produto Técnico (Console) - Desktop com 4 categorias técnicas
     {
-      'Tipo': 'PRODUTO SIMPLES',
+      'Tipo': 'PRODUTO TÉCNICO - CONSOLE',
       'name': 'PlayStation 5 Digital Edition',
       'description': 'Console de videogame da nova geração',
       'price': 3999.99,
+      'list_price': 4499.99,
+      'pro_price': 3799.99,
       'stock': 10,
       'image': 'https://image.api.playstation.com/vulcan/ap/rnd/202101/0812/FkzwjnJknkrFlozkTdeQBMub.png',
       'is_master_product': false,
       'sku_code': 'PS5-DIGITAL',
-      'specifications': '[{"name":"Processador","value":"AMD Ryzen Zen 2","category":"Informações Gerais","icon":"⚙️","highlight":true},{"name":"Memória","value":"16GB GDDR6","category":"Informações Gerais","icon":"🧠","highlight":true}]',
-      'technical_specs': '{"cpu":"AMD Zen 2 8-Core","gpu":"RDNA 2 Custom","ram":"16GB GDDR6","storage":"825GB SSD NVMe","fps":"60 FPS","resolution":"4K Ultra HD","multiplayer":"Até 4 jogadores online","wifi":"Wi-Fi 6 (802.11ax)"}',
+      'specifications': '[{"label":"Tipo","value":"Console Next-Gen","icon":"","highlight":true},{"label":"Garantia","value":"1 ano","icon":"","highlight":false}]',
+      'technical_specs': '{"cpu":"AMD Zen 2 8-Core 3.8GHz","gpu":"RDNA 2 Custom 12 TFLOPS","ram":"16GB GDDR6","platform":"PlayStation 5","storage":"825GB SSD NVMe","fps":"Até 120 FPS","resolution":"4K Ultra HD (2160p)","multiplayer":"Até 4 jogadores online","wifi":"Wi-Fi 6 (802.11ax)","bluetooth":"Bluetooth 5.1"}',
       'product_highlights': '["SSD ultra-rápido","Ray tracing","4K gaming","Compatibilidade PS4"]',
       'meta_title': 'PlayStation 5 Digital Edition - Console Next-Gen | UTI Games',
-      'meta_description': 'Compre o PlayStation 5 Digital Edition com os melhores preços. Tecnologia revolucionária, jogos incríveis. Frete grátis!',
+      'meta_description': 'PlayStation 5 Digital Edition com os melhores preços. Tecnologia revolucionária, jogos incríveis. Frete grátis!',
       'slug': 'playstation-5-digital-edition',
       'brand': 'Sony',
       'category': 'Console',
       'platform': 'PlayStation 5',
       'tags': 'console,playstation,next-gen,4k',
+      'is_active': true,
+      'is_featured': true
+    },
+    
+    // Exemplo 2: Produto Não-Técnico (Camiseta) - Desktop = Mobile
+    {
+      'Tipo': 'PRODUTO NÃO-TÉCNICO - CAMISETA',
+      'name': 'Camiseta Club Comix Anime Clássico',
+      'description': 'Camiseta oficial Club Comix com estampa de anime clássico',
+      'price': 59.99,
+      'list_price': 79.99,
+      'pro_price': 49.99,
+      'stock': 25,
+      'image': 'https://exemplo.com/camiseta-anime.jpg',
+      'is_master_product': false,
+      'sku_code': 'CLUB-ANIME-P',
+      'specifications': '[{"label":"Marca","value":"Club Comix","icon":"","highlight":true},{"label":"Material","value":"100% Algodão","icon":"","highlight":false},{"label":"Tamanho","value":"P (Pequeno)","icon":"","highlight":true},{"label":"Cor","value":"Preto","icon":"","highlight":false}]',
+      'technical_specs': '{"fabric":"100% algodão penteado","weight":"160g/m²","care":"Lavar 40°C","origin":"Brasil"}',
+      'product_highlights': '["100% algodão","Estampa exclusiva","Conforto premium"]',
+      'meta_title': 'Camiseta Club Comix Anime Clássico P - Vestuário Gamer | UTI Games',
+      'meta_description': 'Camiseta Club Comix com estampa de anime clássico. 100% algodão, conforto e estilo para gamers.',
+      'slug': 'camiseta-club-comix-anime-classico-p',
+      'brand': 'Club Comix',
+      'category': 'Vestuário',
+      'platform': 'Vestuário',
+      'tags': 'camiseta,anime,club-comix,vestuario',
+      'is_active': true,
+      'is_featured': false
+    },
+    
+    // Exemplo 3: Sistema SKU - Produto Mestre
+    {
+      'Tipo': 'SISTEMA SKU - MESTRE',
+      'name': 'Camiseta UTI Games',
+      'description': 'Camiseta oficial da UTI Games disponível em vários tamanhos',
+      'price': 0,
+      'list_price': 0,
+      'pro_price': 0,
+      'stock': 0,
+      'image': 'https://exemplo.com/camiseta-uti-games.jpg',
+      'is_master_product': true,
+      'sku_code': 'CAMISA-UTI-MASTER',
+      'specifications': '[{"label":"Marca","value":"UTI Games","icon":"","highlight":true},{"label":"Material","value":"100% Algodão","icon":"","highlight":false}]',
+      'technical_specs': '{"fabric":"100% algodão penteado","weight":"160g/m²","care":"Lavar 40°C"}',
+      'product_highlights': '["100% algodão","Logo UTI Games","Edição limitada"]',
+      'meta_title': 'Camiseta UTI Games Oficial - Vestuário Gamer | UTI Games',
+      'meta_description': 'Camiseta oficial UTI Games 100% algodão. Disponível em vários tamanhos.',
+      'slug': 'camiseta-uti-games',
+      'brand': 'UTI Games',
+      'category': 'Vestuário',
+      'platform': 'Vestuário',
+      'tags': 'camiseta,oficial,uti-games',
+      'is_active': true,
+      'is_featured': false
+    },
+    
+    // Exemplo 4: Sistema SKU - Variação M
+    {
+      'Tipo': 'SISTEMA SKU - VARIAÇÃO M',
+      'name': 'Camiseta UTI Games - Tamanho M',
+      'description': 'Camiseta oficial da UTI Games tamanho M',
+      'price': 59.99,
+      'list_price': 79.99,
+      'pro_price': 49.99,
+      'stock': 20,
+      'image': 'https://exemplo.com/camiseta-uti-games-m.jpg',
+      'is_master_product': false,
+      'parent_product_id': 'CAMISA-UTI-MASTER',
+      'sku_code': 'CAMISA-UTI-M',
+      'variant_attributes': '{"size":"M","color":"preto"}',
+      'specifications': '[{"label":"Tamanho","value":"M (Médio)","icon":"","highlight":true},{"label":"Cor","value":"Preto","icon":"","highlight":false}]',
+      'technical_specs': '{"fabric":"100% algodão penteado","weight":"160g/m²","care":"Lavar 40°C","size_chest":"100cm","size_length":"70cm"}',
+      'product_highlights': '["Tamanho M","100% algodão","Logo UTI Games"]',
+      'meta_title': 'Camiseta UTI Games Tamanho M - Vestuário Gamer | UTI Games',
+      'meta_description': 'Camiseta oficial UTI Games tamanho M, 100% algodão. Ideal para gamers.',
+      'slug': 'camiseta-uti-games-tamanho-m',
+      'brand': 'UTI Games',
+      'category': 'Vestuário',
+      'platform': 'Vestuário',
+      'tags': 'camiseta,oficial,uti-games,tamanho-m',
+      'is_active': true,
+      'is_featured': false
+    },
+    
+    // Exemplo 5: Sistema SKU - Variação G
+    {
+      'Tipo': 'SISTEMA SKU - VARIAÇÃO G',
+      'name': 'Camiseta UTI Games - Tamanho G',
+      'description': 'Camiseta oficial da UTI Games tamanho G',
+      'price': 59.99,
+      'list_price': 79.99,
+      'pro_price': 49.99,
+      'stock': 15,
+      'image': 'https://exemplo.com/camiseta-uti-games-g.jpg',
+      'is_master_product': false,
+      'parent_product_id': 'CAMISA-UTI-MASTER',
+      'sku_code': 'CAMISA-UTI-G',
+      'variant_attributes': '{"size":"G","color":"preto"}',
+      'specifications': '[{"label":"Tamanho","value":"G (Grande)","icon":"","highlight":true},{"label":"Cor","value":"Preto","icon":"","highlight":false}]',
+      'technical_specs': '{"fabric":"100% algodão penteado","weight":"160g/m²","care":"Lavar 40°C","size_chest":"110cm","size_length":"72cm"}',
+      'product_highlights': '["Tamanho G","100% algodão","Logo UTI Games"]',
+      'meta_title': 'Camiseta UTI Games Tamanho G - Vestuário Gamer | UTI Games',
+      'meta_description': 'Camiseta oficial UTI Games tamanho G, 100% algodão. Ideal para gamers.',
+      'slug': 'camiseta-uti-games-tamanho-g',
+      'brand': 'UTI Games',
+      'category': 'Vestuário',
+      'platform': 'Vestuário',
+      'tags': 'camiseta,oficial,uti-games,tamanho-g',
+      'is_active': true,
+      'is_featured': false
+    },
+    
+    // Exemplo 6: Produto com Preços Múltiplos (Estratégia comercial)
+    {
+      'Tipo': 'ESTRATÉGIA DE PREÇOS MÚLTIPLOS',
+      'name': 'Mouse Gamer RGB Pro',
+      'description': 'Mouse gamer profissional com iluminação RGB e alta precisão',
+      'price': 299.99,
+      'list_price': 399.99,
+      'pro_price': 249.99,
+      'stock': 50,
+      'image': 'https://exemplo.com/mouse-gamer-rgb.jpg',
+      'is_master_product': false,
+      'sku_code': 'MOUSE-RGB-PRO',
+      'specifications': '[{"label":"Tipo","value":"Mouse Gamer","icon":"","highlight":true},{"label":"DPI","value":"25600","icon":"","highlight":true},{"label":"Botões","value":"11","icon":"","highlight":false}]',
+      'technical_specs': '{"dpi":"25600 DPI","buttons":"11 botões programáveis","weight":"85g","connectivity":"USB-A","polling_rate":"1000Hz","sensor":"PixArt 3395","rgb":"RGB customizável"}',
+      'product_highlights': '["25600 DPI","RGB customizável","11 botões","Sensor PixArt"]',
+      'meta_title': 'Mouse Gamer RGB Pro 25600 DPI - Periféricos | UTI Games',
+      'meta_description': 'Mouse gamer RGB Pro com 25600 DPI, 11 botões programáveis e iluminação RGB. Performance profissional.',
+      'slug': 'mouse-gamer-rgb-pro',
+      'brand': 'Logitech',
+      'category': 'Periféricos',
+      'platform': 'PC',
+      'tags': 'mouse,gamer,rgb,logitech,perifericos',
       'is_active': true,
       'is_featured': true
     }
