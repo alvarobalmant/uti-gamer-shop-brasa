@@ -192,17 +192,37 @@ export const useDailyBonusBrasilia = () => {
     }
   }, [user, fetchBrasiliaTimer]);
 
-  // Atualizar timer a cada segundo usando backend
+  // Atualizar timer a cada segundo usando apenas dados do servidor inicial
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id || !timer.nextReset) return;
 
-    const interval = setInterval(async () => {
-      const newTimer = await fetchBrasiliaTimer();
-      setTimer(newTimer);
+    const interval = setInterval(() => {
+      const now = new Date();
+      const nextResetTime = new Date(timer.nextReset);
+      const timeDiff = nextResetTime.getTime() - now.getTime();
+      
+      if (timeDiff <= 0) {
+        // Timer expirou, buscar dados atualizados do backend
+        fetchBrasiliaTimer().then(newTimer => setTimer(newTimer));
+        return;
+      }
+      
+      // Usar apenas cálculo baseado no timestamp do servidor
+      const totalSecondsUntilNext = Math.floor(timeDiff / 1000);
+      const hoursUntilNext = Math.floor(totalSecondsUntilNext / 3600);
+      const minutesUntilNext = Math.floor((totalSecondsUntilNext % 3600) / 60);
+      const secondsUntilNext = totalSecondsUntilNext % 60;
+      
+      setTimer(prevTimer => ({
+        ...prevTimer,
+        hoursUntilNext,
+        minutesUntilNext,
+        secondsUntilNext
+      }));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [user?.id, fetchBrasiliaTimer]);
+  }, [user?.id, timer.nextReset, fetchBrasiliaTimer]);
 
   // Carregar dados inicial
   useEffect(() => {
