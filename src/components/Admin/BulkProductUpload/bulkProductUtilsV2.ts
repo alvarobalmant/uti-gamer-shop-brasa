@@ -260,6 +260,267 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
   }
 ];
 
+export async function generateImportTutorial(): Promise<string> {
+  try {
+    // Buscar produtos mestres existentes
+    const { data: masterProducts, error: mastersError } = await supabase
+      .from('products')
+      .select('sku_code, name')
+      .eq('product_type', 'master')
+      .eq('is_active', true)
+      .order('name');
+    
+    if (mastersError) throw mastersError;
+
+    // Buscar tags existentes
+    const { data: tags, error: tagsError } = await supabase
+      .from('tags')
+      .select('name')
+      .order('name');
+    
+    if (tagsError) throw tagsError;
+
+    // Buscar plataformas únicas dos produtos
+    const { data: platforms, error: platformsError } = await supabase
+      .from('products')
+      .select('platform')
+      .not('platform', 'is', null)
+      .not('platform', 'eq', '');
+    
+    if (platformsError) throw platformsError;
+
+    const uniquePlatforms = [...new Set(platforms?.map(p => p.platform).filter(Boolean))].sort();
+
+    const tutorial = `# TUTORIAL DE IMPORTAÇÃO EM MASSA DE PRODUTOS
+Atualizado automaticamente em: ${new Date().toLocaleString('pt-BR')}
+
+## 🚀 INTRODUÇÃO
+Este sistema permite importar múltiplos produtos de forma eficiente usando planilhas Excel.
+Você pode criar produtos simples, produtos com variações (sistema SKU) ou adicionar variações a produtos mestres existentes.
+
+## 📋 TIPOS DE PRODUTOS SUPORTADOS
+
+### 1. PRODUTO SIMPLES
+- Produto independente sem variações
+- Configure: is_master_product = FALSE
+- Deixe parent_product_id vazio
+- Exemplo: Cabo HDMI, Mouse Gamer, etc.
+
+### 2. PRODUTO MESTRE + VARIAÇÕES
+- Produto principal com múltiplas versões
+- Primeiro: Crie o mestre (is_master_product = TRUE)
+- Depois: Crie as variações (parent_product_id = SKU do mestre)
+- Exemplo: Camiseta (M, G, GG) ou Console (Digital, Físico)
+
+### 3. ADICIONAR VARIAÇÃO A PRODUTO EXISTENTE
+- Use o SKU de um produto mestre já existente no site
+- Configure parent_product_id com o SKU do mestre
+- Veja lista de produtos mestres disponíveis abaixo
+
+## 🏷️ PRODUTOS MESTRES DISPONÍVEIS NO SITE
+${masterProducts && masterProducts.length > 0 
+  ? masterProducts.map(p => `- ${p.sku_code} | ${p.name}`).join('\n')
+  : 'Nenhum produto mestre encontrado no site.'
+}
+
+## 🏷️ TAGS DISPONÍVEIS NO SITE
+Use essas tags existentes para evitar duplicatas:
+${tags && tags.length > 0 
+  ? tags.map(t => `- ${t.name}`).join('\n')
+  : 'Nenhuma tag encontrada no site.'
+}
+
+## 🎮 PLATAFORMAS DISPONÍVEIS NO SITE
+Use essas plataformas existentes:
+${uniquePlatforms.length > 0 
+  ? uniquePlatforms.map(p => `- ${p}`).join('\n')
+  : 'Nenhuma plataforma encontrada no site.'
+}
+
+## 📊 CAMPOS OBRIGATÓRIOS
+- **name**: Nome do produto (sempre obrigatório)
+- **price**: Preço do produto (sempre obrigatório)
+
+## 📊 CAMPOS IMPORTANTES
+
+### Sistema SKU (Para produtos com variações)
+- **is_master_product**: TRUE para produto mestre, FALSE para variação
+- **parent_product_id**: SKU do produto mestre (só para variações)
+- **sku_code**: Código único do produto/variação
+- **variant_attributes**: JSON com atributos da variação
+
+### Preços
+- **price**: Preço principal (obrigatório)
+- **pro_price**: Preço para membros UTI Pro
+- **list_price**: Preço original (para mostrar desconto)
+
+### Categorização
+- **brand**: Marca do produto
+- **category**: Categoria do produto
+- **platform**: Plataforma (veja lista acima)
+- **tags**: Tags separadas por vírgula (veja lista acima)
+
+### SEO
+- **meta_title**: Título para busca no Google
+- **meta_description**: Descrição para busca no Google
+- **slug**: URL amigável (será gerada automaticamente se vazia)
+
+## 💡 EXEMPLOS PRÁTICOS
+
+### Exemplo 1: Produto Simples
+\`\`\`
+name: Mouse Gamer RGB
+description: Mouse gamer com iluminação RGB
+price: 199.99
+stock: 50
+brand: Logitech
+category: Periféricos
+platform: PC
+tags: mouse,gamer,rgb
+is_master_product: FALSE
+is_active: TRUE
+\`\`\`
+
+### Exemplo 2: Produto Mestre + Variações
+**Linha 1 - Produto Mestre:**
+\`\`\`
+name: Camiseta UTI Games
+description: Camiseta oficial da UTI Games
+price: 0
+stock: 0
+is_master_product: TRUE
+sku_code: CAMISA-UTI-MASTER
+brand: UTI Games
+category: Vestuário
+tags: camiseta,oficial
+is_active: TRUE
+\`\`\`
+
+**Linha 2 - Variação M:**
+\`\`\`
+name: Camiseta UTI Games - Tamanho M
+description: Camiseta oficial da UTI Games tamanho M
+price: 59.99
+stock: 20
+is_master_product: FALSE
+parent_product_id: CAMISA-UTI-MASTER
+sku_code: CAMISA-UTI-M
+variant_attributes: {"size":"M","color":"preto"}
+is_active: TRUE
+\`\`\`
+
+**Linha 3 - Variação G:**
+\`\`\`
+name: Camiseta UTI Games - Tamanho G
+description: Camiseta oficial da UTI Games tamanho G
+price: 59.99
+stock: 15
+is_master_product: FALSE
+parent_product_id: CAMISA-UTI-MASTER
+sku_code: CAMISA-UTI-G
+variant_attributes: {"size":"G","color":"preto"}
+is_active: TRUE
+\`\`\`
+
+### Exemplo 3: Adicionar Variação a Produto Existente
+Se você tem um produto mestre "CP2077-ULTIMATE-MASTER" no site:
+\`\`\`
+name: Cyberpunk 2077 Ultimate - Edição Xbox
+description: Versão Ultimate para Xbox Series X
+price: 299.99
+stock: 10
+is_master_product: FALSE
+parent_product_id: CP2077-ULTIMATE-MASTER
+sku_code: CP2077-ULTIMATE-XBOX
+variant_attributes: {"platform":"Xbox Series X","edition":"Ultimate"}
+is_active: TRUE
+\`\`\`
+
+## 🔧 CAMPOS JSON
+
+### specifications (Especificações Básicas)
+\`\`\`json
+[
+  {
+    "name": "Processador",
+    "value": "AMD Ryzen Zen 2",
+    "category": "technical",
+    "icon": "⚙️",
+    "highlight": true
+  }
+]
+\`\`\`
+
+### technical_specs (Especificações Técnicas)
+\`\`\`json
+{
+  "cpu": "AMD Zen 2",
+  "gpu": "RDNA 2",
+  "ram": "16GB",
+  "storage": "825GB SSD"
+}
+\`\`\`
+
+### product_highlights (Destaques)
+\`\`\`json
+["SSD ultra-rápido", "Ray tracing", "4K gaming", "Compatibilidade PS4"]
+\`\`\`
+
+### variant_attributes (Atributos da Variação)
+\`\`\`json
+{
+  "color": "white",
+  "size": "standard",
+  "platform": "PlayStation 5",
+  "edition": "Digital"
+}
+\`\`\`
+
+## ⚠️ DICAS IMPORTANTES
+
+1. **SKUs Únicos**: Cada SKU deve ser único em toda a planilha e no site
+2. **Produto Mestre**: Sempre defina price=0 e stock=0 para produtos mestres
+3. **Variações**: Sempre defina price e stock reais para variações
+4. **URLs de Imagem**: Use URLs válidas e acessíveis
+5. **Slugs**: Serão gerados automaticamente baseados no nome se não fornecidos
+6. **Campos Booleanos**: Use TRUE/FALSE (maiúsculo)
+7. **Arrays**: Separe itens por vírgula (ex: tag1,tag2,tag3)
+8. **JSON**: Use formato JSON válido para campos estruturados
+
+## 🚨 VALIDAÇÕES AUTOMÁTICAS
+
+O sistema verificará:
+- ✅ Campos obrigatórios preenchidos
+- ✅ SKUs únicos
+- ✅ Slugs únicos
+- ✅ URLs válidas
+- ✅ JSON válido nos campos estruturados
+- ✅ Consistência entre produtos mestres e variações
+- ⚠️ Produtos mestres inexistentes (aviso, não erro)
+
+## 📞 SUPORTE
+
+Em caso de dúvidas ou erros na importação:
+1. Verifique se seguiu os exemplos corretamente
+2. Valide o formato JSON dos campos estruturados
+3. Certifique-se de que os SKUs são únicos
+4. Verifique se os produtos mestres existem (veja lista acima)
+
+Última atualização: ${new Date().toLocaleString('pt-BR')}
+`;
+
+    return tutorial;
+  } catch (error) {
+    console.error('Erro ao gerar tutorial:', error);
+    return `# TUTORIAL DE IMPORTAÇÃO EM MASSA DE PRODUTOS
+
+Erro ao carregar dados dinâmicos. Verifique sua conexão e tente novamente.
+
+Data: ${new Date().toLocaleString('pt-BR')}
+`;
+  }
+}
+
 export function generateProductTemplate(): ProductTemplate {
   const templateData = [{}];
   
@@ -328,6 +589,22 @@ export function validateProductData(products: ImportedProduct[]): ValidationErro
   const errors: ValidationError[] = [];
   const usedSKUs = new Set<string>();
   const usedSlugs = new Set<string>();
+  const parentProductIds = new Set<string>();
+
+  // Coletar todos os parent_product_ids mencionados na planilha
+  products.forEach(product => {
+    if (product.parent_product_id) {
+      parentProductIds.add(String(product.parent_product_id).trim());
+    }
+  });
+
+  // Coletar todos os SKU codes que serão produtos mestres
+  const masterSKUs = new Set<string>();
+  products.forEach(product => {
+    if (parseBooleanField(product.is_master_product) && product.sku_code) {
+      masterSKUs.add(String(product.sku_code).trim());
+    }
+  });
 
   products.forEach((product, index) => {
     const row = product._rowIndex || index + 2;
@@ -408,6 +685,19 @@ export function validateProductData(products: ImportedProduct[]): ValidationErro
         message: 'Produto não pode ser mestre e ter produto pai ao mesmo tempo',
         severity: 'error'
       });
+    }
+
+    // Validação de parent_product_id - deve existir na planilha ou no banco
+    if (product.parent_product_id && !parseBooleanField(product.is_master_product)) {
+      const parentId = String(product.parent_product_id).trim();
+      if (!masterSKUs.has(parentId)) {
+        errors.push({
+          row,
+          field: 'parent_product_id',
+          message: `Produto mestre com SKU '${parentId}' não encontrado na planilha. Certifique-se de que existe na planilha ou no site.`,
+          severity: 'warning'
+        });
+      }
     }
 
     // Validações de JSON
@@ -525,7 +815,34 @@ export async function processProductImport(
       onProgress(Math.round((processed / total) * 100));
     }
     
-    // 3. Processar variações
+    // 3. Buscar produtos mestres existentes no banco para os parent_product_ids
+    const missingParentIds = Array.from(new Set(
+      variations
+        .map(p => String(p.parent_product_id).trim())
+        .filter(id => !masterProductMap.has(id))
+    ));
+    
+    if (missingParentIds.length > 0) {
+      const { data: existingMasters, error } = await supabase
+        .from('products')
+        .select('id, sku_code')
+        .eq('product_type', 'master')
+        .in('sku_code', missingParentIds);
+        
+      if (error) {
+        throw new Error(`Erro ao buscar produtos mestres existentes: ${error.message}`);
+      }
+      
+      // Mapear produtos mestres existentes
+      existingMasters?.forEach(master => {
+        if (master.sku_code) {
+          masterProductMap.set(master.sku_code, master.id);
+          console.log(`[IMPORT] Encontrado mestre existente: ${master.sku_code} -> ${master.id}`);
+        }
+      });
+    }
+
+    // 4. Processar variações
     for (const product of variations) {
       console.log(`[IMPORT] Criando variação: ${product.name} (parent: ${product.parent_product_id})`);
       const productData = convertImportedProductToDatabase(product);
@@ -538,7 +855,7 @@ export async function processProductImport(
           productData.parent_product_id = realParentId;
           console.log(`[IMPORT] Mapeando parent ${parentSku} -> ${realParentId}`);
         } else {
-          throw new Error(`Produto mestre com SKU '${parentSku}' não encontrado. Certifique-se de que existe na planilha.`);
+          throw new Error(`Produto mestre com SKU '${parentSku}' não encontrado na planilha nem no banco de dados.`);
         }
       }
       
