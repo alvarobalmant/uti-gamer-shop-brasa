@@ -13,7 +13,7 @@ interface DailyLoginSectionProps {
 
 export const DailyLoginSection: React.FC<DailyLoginSectionProps> = ({ showTitle = true }) => {
   const [isClaimingDaily, setIsClaimingDaily] = useState(false);
-  const { processDailyLogin } = useUTICoins();
+  const { earnCoins } = useUTICoins();
   const { streak, timer, calculateNextMultiplier, calculateMultiplierPercentage, refreshStreak } = useDailyBonusBrasilia();
   const { toast } = useToast();
 
@@ -28,7 +28,7 @@ export const DailyLoginSection: React.FC<DailyLoginSectionProps> = ({ showTitle 
     setIsClaimingDaily(true);
     
     try {
-      const result = await processDailyLogin();
+      const result = await earnCoins('daily_login', undefined, 'Bônus diário resgatado');
       
       if (result?.success) {
         toast({
