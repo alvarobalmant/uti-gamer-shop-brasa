@@ -39,46 +39,95 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Separar vendor libraries principais
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-router': ['react-router-dom'],
+        manualChunks: (id) => {
+          // Core vendors - sempre carregados
+          if (id.includes('react') && (id.includes('react-dom') || id.includes('react/'))) {
+            return 'vendor-react';
+          }
+          if (id.includes('react-router-dom')) {
+            return 'vendor-router';
+          }
+          if (id.includes('@supabase/supabase-js')) {
+            return 'vendor-supabase';
+          }
+          if (id.includes('framer-motion')) {
+            return 'vendor-motion';
+          }
           
-          // UI components em chunk separado
-          'ui-radix': [
-            '@radix-ui/react-dialog', 
-            '@radix-ui/react-dropdown-menu', 
-            '@radix-ui/react-select',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-accordion',
-            '@radix-ui/react-tabs'
-          ],
+          // UI components - carregados quando necessário
+          if (id.includes('@radix-ui/')) {
+            return 'ui-radix';
+          }
           
-          // Supabase em chunk separado
-          'vendor-supabase': ['@supabase/supabase-js'],
+          // ADMIN-ONLY chunks - carregados apenas para admins
+          if (id.includes('@huggingface/transformers')) {
+            return 'admin-ai';
+          }
+          if (id.includes('xlsx')) {
+            return 'admin-excel';
+          }
           
-          // Charts em chunk separado
-          'vendor-charts': ['recharts'],
+          // Admin components - detectar por path
+          if (id.includes('/Admin/') || id.includes('/admin/') || 
+              id.includes('AdminPanel') || id.includes('ProductManager') ||
+              id.includes('SpecificationDiagnostic') || id.includes('ProductImageManager')) {
+            return 'admin-core';
+          }
           
-          // Motion em chunk separado
-          'vendor-motion': ['framer-motion'],
+          // Admin features específicas
+          if (id.includes('BulkImageUpload') || id.includes('ProductImageManager') ||
+              id.includes('ProductDesktopManager') || id.includes('SpecialSectionManager')) {
+            return 'admin-features';
+          }
           
-          // Forms em chunk separado
-          'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          // Charts - lazy load
+          if (id.includes('recharts')) {
+            return 'vendor-charts';
+          }
           
-          // Utils em chunk separado
-          'vendor-utils': ['clsx', 'tailwind-merge', 'class-variance-authority'],
+          // Forms - lazy load
+          if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
+            return 'vendor-forms';
+          }
           
-          // Date utilities
-          'vendor-date': ['date-fns'],
+          // Date utilities - lazy load
+          if (id.includes('date-fns')) {
+            return 'vendor-date';
+          }
           
-          // Excel/XLSX separado (muito grande)
-          'vendor-excel': ['xlsx'],
+          // Utils pequenos - podem ficar juntos
+          if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('class-variance-authority')) {
+            return 'vendor-utils';
+          }
           
-          // AI/Transformers separado (muito grande)
-          'vendor-ai': ['@huggingface/transformers']
+          // Platform pages - lazy load por plataforma
+          if (id.includes('/platforms/PlayStation')) {
+            return 'platform-playstation';
+          }
+          if (id.includes('/platforms/Xbox')) {
+            return 'platform-xbox';
+          }
+          if (id.includes('/platforms/Nintendo')) {
+            return 'platform-nintendo';
+          }
+          if (id.includes('/platforms/')) {
+            return 'platform-others';
+          }
+          
+          // Product pages
+          if (id.includes('ProductPage') || id.includes('/produto/')) {
+            return 'product-pages';
+          }
+          
+          // Client area
+          if (id.includes('ClientArea') || id.includes('Wishlist') || id.includes('/area-cliente/')) {
+            return 'client-area';
+          }
+          
+          // UTI Coins system
+          if (id.includes('UTI') || id.includes('Coins') || id.includes('/coins/')) {
+            return 'uti-coins';
+          }
         },
       },
     },
@@ -103,6 +152,11 @@ export default defineConfig(({ mode }) => ({
       '@radix-ui/react-dialog',
       '@radix-ui/react-dropdown-menu',
       'lucide-react',
+    ],
+    exclude: [
+      // Admin-only libraries - não pré-carregar
+      '@huggingface/transformers',
+      'xlsx',
     ],
   },
 }));

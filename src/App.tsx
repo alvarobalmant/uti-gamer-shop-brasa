@@ -79,8 +79,8 @@ const AreaGeekPage = lazy(() => import("./pages/platforms/AreaGeekPage"));
 // Lazy loading para Xbox4 (única versão mantida)
 const XboxPage4 = lazy(() => import("./pages/platforms/XboxPage4"));
 
-// Lazy loading para admin
-const AdminPanel = lazy(() => import("@/components/Admin/AdminPanel").then(module => ({ default: module.AdminPanel })));
+// Conditional lazy loading para admin - apenas carrega se usuário for admin
+const ConditionalAdminLoader = lazy(() => import("@/components/Admin/ConditionalAdminLoader").then(module => ({ default: module.ConditionalAdminLoader })));
 const Xbox4AdminPage = lazy(() => import("./components/Admin/Xbox4AdminPage"));
 const SpecialSectionCarouselPage = lazy(() => import("./pages/SpecialSectionCarouselPage"));
 const PlatformPage = lazy(() => import("./components/PlatformPage"));
@@ -195,13 +195,13 @@ const App = () => {
                   {/* Admin Auto Login Route - MUST come before admin routes */}
                   <Route path="/admin-login/:token" element={<AdminAutoLogin />} />
 
-                  {/* Admin Routes - Protected - MUST come before dynamic routes */}
+                  {/* Admin Routes - Protected & Conditionally Loaded */}
                   <Route 
                     path="/admin" 
                     element={
                       <ProtectedAdminRoute>
                         <ProductProvider>
-                          <AdminPanel /> 
+                          <ConditionalAdminLoader />
                         </ProductProvider>
                       </ProtectedAdminRoute>
                     }
