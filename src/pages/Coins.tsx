@@ -20,6 +20,7 @@ import { useUTICoins } from '@/hooks/useUTICoins';
 import { Navigate } from 'react-router-dom';
 import { useUTICoinsRouteProtection } from '@/hooks/useUTICoinsRouteProtection';
 import { supabase } from '@/integrations/supabase/client';
+import { AdminTestModeControl } from '@/components/Admin/AdminTestModeControl';
 
 interface DailyBonusData {
   canClaim: boolean;
@@ -29,6 +30,7 @@ interface DailyBonusData {
   multiplier: number;
   nextReset: string;
   lastClaim?: string;
+  testMode?: boolean;
 }
 
 const Coins: React.FC = () => {
@@ -72,7 +74,8 @@ const Coins: React.FC = () => {
           secondsUntilNextClaim: data.secondsUntilNextClaim || 0,
           multiplier: data.multiplier || 1.0,
           nextReset: data.nextReset,
-          lastClaim: data.lastClaim
+          lastClaim: data.lastClaim,
+          testMode: data.testMode || false
         });
       } else {
         console.warn('[COINS] Daily bonus data load failed:', data?.message);
@@ -318,6 +321,11 @@ const Coins: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Admin Test Mode Control */}
+        <div className="mb-6">
+          <AdminTestModeControl />
         </div>
 
         {/* Tabs */}

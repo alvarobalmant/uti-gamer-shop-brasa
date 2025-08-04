@@ -12,6 +12,7 @@ interface DailyBonusData {
   multiplier: number;
   nextReset: string;
   lastClaim?: string;
+  testMode?: boolean;
 }
 
 interface DailyBonusSectionProps {
@@ -67,7 +68,8 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
           secondsUntilNextClaim: data.secondsUntilNextClaim || 0,
           multiplier: data.multiplier || 1.0,
           nextReset: data.nextReset,
-          lastClaim: data.lastClaim
+          lastClaim: data.lastClaim,
+          testMode: data.testMode || false
         });
       } else {
         console.warn('[DAILY_BONUS_WIDGET] Daily bonus response not successful:', data);
@@ -205,6 +207,11 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
         <h4 className="font-semibold text-gray-800 flex items-center gap-2">
           <Calendar className="w-4 h-4 text-blue-500" />
           Bônus Diário
+          {dailyBonusData.testMode && (
+            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-normal">
+              TESTE (60s)
+            </span>
+          )}
         </h4>
         <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center gap-1">
