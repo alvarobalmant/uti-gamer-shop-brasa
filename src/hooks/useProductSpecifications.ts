@@ -41,6 +41,18 @@ export const useProductSpecifications = (productId: string, viewType: 'mobile' |
 
       if (error) throw error;
 
+      // Se não há especificações na tabela, tentar gerar a partir dos technical_specs
+      if ((!data || data.length === 0) && viewType === 'desktop') {
+        const generatedSpecs = await generateSpecsFromTechnicalSpecs(productId);
+        if (generatedSpecs.length > 0) {
+          const categories = groupSpecificationsByCategory(generatedSpecs);
+          setSpecifications(generatedSpecs);
+          setCategorizedSpecs(categories);
+          setLoading(false);
+          return;
+        }
+      }
+
       const filteredData = filterSpecificationsByViewType(data || [], viewType);
       setSpecifications(filteredData);
       
@@ -61,12 +73,16 @@ export const useProductSpecifications = (productId: string, viewType: 'mobile' |
       // Mobile: apenas especificações básicas (categoria "Informações Gerais")
       return specs.filter(spec => spec.category === 'Informações Gerais');
     } else {
-      // Desktop: apenas as 4 categorias técnicas principais
+      // Desktop: incluir categorias técnicas principais + categorias de override
       const desktopCategories = [
         '⚙️ Especificações Técnicas',
         '🚀 Performance', 
         '💾 Armazenamento',
-        '🔌 Conectividade'
+        '🔌 Conectividade',
+        // Categorias de override
+        '📋 Informações Gerais',
+        '🎮 Especificações de Jogo',
+        '🎨 Detalhes do Colecionável'
       ];
       return specs.filter(spec => desktopCategories.includes(spec.category));
     }
@@ -140,6 +156,95 @@ export const useProductSpecifications = (productId: string, viewType: 'mobile' |
       console.error('Erro ao deletar especificação:', error);
       return { success: false, error };
     }
+  };
+
+  // Função para gerar especificações a partir dos technical_specs do produto
+  const generateSpecsFromTechnicalSpecs = async (productId: string): Promise<ProductSpecification[]> => {
+    try {
+      const { data: product, error } = await supabase
+        .from('products')
+        .select('technical_specs')
+        .eq('id', productId)
+        .single();
+
+      if (error || !product?.technical_specs) return [];
+
+      const technicalSpecs = product.technical_specs as Record<string, any>;
+      const generatedSpecs: ProductSpecification[] = [];
+
+      // Verificar se existe category_override
+      const categoryOverride = technicalSpecs.category_override as string;
+      const defaultCategory = getCategoryFromOverride(categoryOverride) || '⚙️ Especificações Técnicas';
+
+      // Converter technical_specs em especificações
+      Object.entries(technicalSpecs).forEach(([key, value], index) => {
+        // Pular o campo category_override
+        if (key === 'category_override') return;
+        
+        const label = formatLabel(key);
+        const formattedValue = formatValue(value);
+        
+        generatedSpecs.push({
+          id: `temp_${productId}_${key}`,
+          product_id: productId,
+          category: defaultCategory,
+          label,
+          value: formattedValue,
+          highlight: false,
+          order_index: index
+        });
+      });
+
+      return generatedSpecs;
+    } catch (error) {
+      console.error('Erro ao gerar especificações dos technical_specs:', error);
+      return [];
+    }
+  };
+
+  // Mapear códigos de override para categorias
+  const getCategoryFromOverride = (override: string): string | null => {
+    const categoryMap: Record<string, string> = {
+      'GENERAL': '📋 Informações Gerais',
+      'TECH': '⚙️ Especificações Técnicas',
+      'GAMING': '🎮 Especificações de Jogo',
+      'COLLECTIBLE': '🎨 Detalhes do Colecionável'
+    };
+    
+    return override ? categoryMap[override] : null;
+  };
+
+  // Formatar labels dos campos technical_specs
+  const formatLabel = (key: string): string => {
+    const labelMap: Record<string, string> = {
+      'material': 'Material',
+      'filling': 'Preenchimento',
+      'height': 'Altura',
+      'width': 'Largura',
+      'weight': 'Peso',
+      'care': 'Cuidados',
+      'certification': 'Certificação',
+      'age_group': 'Faixa Etária',
+      'cpu': 'Processador',
+      'gpu': 'Placa de Vídeo',
+      'ram': 'Memória RAM',
+      'storage': 'Armazenamento',
+      'resolution': 'Resolução',
+      'fps': 'Taxa de Quadros',
+      'platform': 'Plataforma',
+      'connectivity': 'Conectividade'
+    };
+    
+    return labelMap[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+  };
+
+  // Formatar valores
+  const formatValue = (value: any): string => {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number') return value.toString();
+    if (typeof value === 'boolean') return value ? 'Sim' : 'Não';
+    if (Array.isArray(value)) return value.join(', ');
+    return JSON.stringify(value);
   };
 
   return {

@@ -499,17 +499,27 @@ Array de especificações básicas simples. Todas sempre aparecem na categoria "
 
 ### technical_specs (Especificações Técnicas - SOMENTE Desktop View)
 **IMPORTANTE**: Este campo é usado APENAS na visualização DESKTOP do produto.
-Objeto com especificações técnicas detalhadas, organizadas automaticamente em 4 categorias:
+Objeto com especificações técnicas detalhadas, organizadas automaticamente em categorias.
 
-**🏷️ As 4 categorias automáticas do Desktop:**
+**🎯 NOVO: Campo category_override (Categorização Manual)**
+Use este campo especial para forçar uma categoria específica no desktop:
+
+**Códigos disponíveis:**
+- **"GENERAL"** → 📋 Informações Gerais (para pelúcias, roupas, decoração)
+- **"TECH"** → ⚙️ Especificações Técnicas (para eletrônicos, computadores)
+- **"GAMING"** → 🎮 Especificações de Jogo (para games, consoles)
+- **"COLLECTIBLE"** → 🎨 Detalhes do Colecionável (para Funkos, figuras)
+
+**🏷️ Categorias automáticas do Desktop (se não usar override):**
 - **⚙️ Especificações Técnicas**: Hardware e sistema (cpu, gpu, ram, platform, etc.)
 - **🚀 Performance**: Desempenho e gráficos (fps, resolution, framerate, etc.)
 - **💾 Armazenamento**: Espaço e instalação (storage, size, ssd, hdd, etc.)
 - **🔌 Conectividade**: Multiplayer e rede (multiplayer, online, wifi, bluetooth, etc.)
 
 **Regras importantes:**
+- ✅ Use "category_override" para controle manual da categoria
 - ✅ Use nomes de campos técnicos em inglês ou português
-- ✅ O sistema detecta automaticamente a categoria pela palavra-chave
+- ✅ O sistema detecta automaticamente a categoria pela palavra-chave (se não usar override)
 - ✅ Use para especificações técnicas detalhadas
 - ❌ NÃO misture com especificações básicas
 
@@ -525,6 +535,21 @@ Objeto com especificações técnicas detalhadas, organizadas automaticamente em
   "multiplayer": "Até 4 jogadores online",
   "wifi": "Wi-Fi 6 (802.11ax)",
   "bluetooth": "Bluetooth 5.1"
+}
+\`\`\`
+
+**💡 Exemplo com category_override (para produtos não técnicos):**
+\`\`\`json
+{
+  "category_override": "GENERAL",
+  "material": "Pelúcia 100% poliéster",
+  "filling": "Fibra hipoalergênica",
+  "height": "25cm",
+  "width": "20cm",
+  "weight": "180g",
+  "care": "Lavagem à mão",
+  "certification": "CE, INMETRO",
+  "age_group": "3+"
 }
 \`\`\`
 
@@ -644,6 +669,28 @@ export function generateProductTemplate(): ProductTemplate {
       'tags': 'console,playstation,next-gen,4k',
       'is_active': true,
       'is_featured': true
+    },
+    {
+      'Tipo': 'PRODUTO COLECIONÁVEL (EXEMPLO category_override)',
+      'name': 'Abubu de Pelúcia Original',
+      'description': 'Pelúcia oficial do personagem Abubu, macia e hipoalergênica',
+      'price': 89.99,
+      'stock': 25,
+      'image': 'https://example.com/abubu-pelucia.jpg',
+      'is_master_product': false,
+      'sku_code': 'ABUBU-PELUCIA-25CM',
+      'specifications': '[{"name":"Personagem","value":"Abubu Original","category":"Informações Gerais","icon":"🎨","highlight":true},{"name":"Tamanho","value":"25cm de altura","category":"Informações Gerais","icon":"📏","highlight":false}]',
+      'technical_specs': '{"category_override":"GENERAL","material":"Pelúcia 100% poliéster","filling":"Fibra hipoalergênica","height":"25cm","width":"20cm","weight":"180g","care":"Lavagem à mão","certification":"CE, INMETRO","age_group":"3+"}',
+      'product_highlights': '["Material hipoalergênico","Certificação INMETRO","Personagem oficial","Ideal para colecionadores"]',
+      'meta_title': 'Abubu de Pelúcia Original 25cm - Personagem Oficial | UTI Games',
+      'meta_description': 'Pelúcia oficial do Abubu com material premium e certificação INMETRO. Ideal para fãs e colecionadores. Compre já!',
+      'slug': 'abubu-pelucia-original-25cm',
+      'brand': 'Abubu Official',
+      'category': 'Colecionáveis',
+      'platform': 'Geral',
+      'tags': 'pelucia,abubu,colecionavel,personagem',
+      'is_active': true,
+      'is_featured': false
     }
   ];
   
