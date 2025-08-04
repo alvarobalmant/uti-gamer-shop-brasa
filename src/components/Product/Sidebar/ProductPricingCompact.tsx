@@ -74,12 +74,16 @@ const ProductPricingCompact: React.FC<ProductPricingCompactProps> = ({
             <span className="text-3xl font-bold text-gray-900">
               {formatPrice(basePrice)}
             </span>
-            {originalPrice && originalPrice > basePrice && (
+          </div>
+          
+          {/* Badge de desconto */}
+          {originalPrice && originalPrice > basePrice && (
+            <div className="flex justify-start">
               <Badge variant="destructive" className="font-bold">
                 -{Math.round(((originalPrice - basePrice) / originalPrice) * 100)}% OFF
               </Badge>
-            )}
-          </div>
+            </div>
+          )}
           
           {/* Parcelamento */}
           <div className="space-y-1">
