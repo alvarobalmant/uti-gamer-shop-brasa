@@ -79,6 +79,16 @@ export default defineConfig(({ mode }) => ({
               id.includes('ProductDesktopManager') || id.includes('SpecialSectionManager')) {
             return 'admin-features';
           }
+
+          // Admin tabs - lazy loading individual
+          if (id.includes('LazyAdminTabs') || id.includes('BulkProductUploadLazy')) {
+            return 'admin-tabs';
+          }
+
+          // Performance monitoring
+          if (id.includes('usePerformanceMonitoring') || id.includes('useBackgroundRemovalLazy')) {
+            return 'admin-performance';
+          }
           
           // Charts - lazy load
           if (id.includes('recharts')) {
@@ -157,6 +167,10 @@ export default defineConfig(({ mode }) => ({
       // Admin-only libraries - não pré-carregar
       '@huggingface/transformers',
       'xlsx',
+      // Background removal for admins only
+      '@/utils/backgroundRemoval',
+      // Lazy admin components
+      '@/components/Admin/LazyAdminTabs',
     ],
   },
 }));
