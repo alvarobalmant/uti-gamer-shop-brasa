@@ -35,9 +35,8 @@ const DailyBonusConfig: React.FC<DailyBonusConfigProps> = ({ configs, onConfigUp
     const dailyConfigs = configs.filter(c => c.setting_key.startsWith('daily_bonus_'));
     
     dailyConfigs.forEach(config => {
-      const value = typeof config.setting_value === 'string' 
-        ? JSON.parse(config.setting_value) 
-        : config.setting_value;
+      // Os valores já vêm como números ou strings simples do JSONB
+      const value = config.setting_value;
         
       switch (config.setting_key) {
         case 'daily_bonus_base_amount':
