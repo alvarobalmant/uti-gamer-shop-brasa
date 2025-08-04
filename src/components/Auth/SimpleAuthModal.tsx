@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { LogIn, UserPlus, X } from 'lucide-react';
+import { LogoImage } from '@/components/OptimizedImage/LogoImage';
 import { LoginForm } from './LoginForm';
 import { SignUpForm } from './SignUpForm';
 
@@ -68,10 +69,11 @@ export const SimpleAuthModal = ({ isOpen, onClose }: SimpleAuthModalProps) => {
           </Button>
           
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <img 
+            <LogoImage 
               src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
               alt="UTI DOS GAMES" 
-              className="w-16 h-16 object-contain"
+              className="w-16 h-16"
+              priority={true}
             />
             <div>
               <DialogTitle className="text-2xl font-bold text-primary">

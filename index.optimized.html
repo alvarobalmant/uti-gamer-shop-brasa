@@ -23,14 +23,28 @@
     <meta property="twitter:description" content="Mais de 10 anos oferecendo os melhores produtos em games para Colatina e região." />
     <meta property="twitter:image" content="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" />
 
-    <!-- DNS Prefetch para recursos externos -->
+    <!-- Critical Resource Hints - Phase 3 Optimization -->
+    <!-- DNS Prefetch para resolver nomes mais rápido -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://cdn.gpteng.co">
+    <link rel="dns-prefetch" href="https://images.unsplash.com">
+    <link rel="dns-prefetch" href="https://upload.wikimedia.org">
+    <link rel="dns-prefetch" href="//lovable-uploads">
     
-    <!-- Preconnect para recursos críticos -->
+    <!-- Preconnect para recursos críticos (estabelece conexão completa) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+    
+    <!-- Prefetch para recursos que serão usados na próxima navegação -->
+    <link rel="prefetch" href="/placeholder.svg">
+    <link rel="prefetch" href="/placeholder-image.webp">
+    <link rel="prefetch" href="/placeholder-image-error.webp">
+    
+    <!-- Preload para recursos críticos da primeira renderização -->
+    <link rel="preload" href="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" as="image" type="image/png">
+    <link rel="preload" href="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" as="image" type="image/png">
     
     <!-- Professional Fonts from Google Fonts com display=swap para melhor performance -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">

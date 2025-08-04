@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Product } from '@/hooks/useProducts';
+import { ProductImage } from '@/components/OptimizedImage/ProductImage';
 
 interface Xbox4GameHighCardProps {
   game: Product;
@@ -27,13 +28,13 @@ const Xbox4GameHighCard = ({ game, onGameClick, index = 0, className }: Xbox4Gam
       onClick={() => onGameClick(game.id)}
     >
       {/* Image container */}
-      <div className="relative w-full aspect-[3/4] overflow-hidden">
-        <img
-          src={game.image}
-          alt={game.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
+      <ProductImage
+        src={game.image}
+        alt={game.name}
+        variant="detail"
+        className="w-full aspect-[3/4]"
+        priority={index < 3} // Primeiras 3 imagens têm prioridade
+      />
       {/* Title below the image */}
       <p className="mt-2 text-sm md:text-base text-white text-center font-semibold">
         {game.name}
