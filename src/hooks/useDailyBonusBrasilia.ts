@@ -109,22 +109,12 @@ export const useDailyBonusBrasilia = () => {
       const periodEnd = data.periodEnd ? new Date(data.periodEnd) : null;
       const lastClaim = data.lastClaim ? new Date(data.lastClaim) : null;
 
-      // Calcular tempo até o próximo reset (sempre às 20h Brasília)
-      let hoursUntilNext = 0;
-      let minutesUntilNext = 0;
-      let secondsUntilNext = 0;
-
-      if (nextReset && !data.canClaim) {
-        // Use UTC time to match backend's UTC timestamps
-        const nowUTC = new Date();
-        const timeDiff = nextReset.getTime() - nowUTC.getTime();
-        
-        if (timeDiff > 0) {
-          hoursUntilNext = Math.floor(timeDiff / (1000 * 60 * 60));
-          minutesUntilNext = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-          secondsUntilNext = Math.floor((timeDiff % (1000 * 60)) / 1000);
-        }
-      }
+      // Use server-calculated seconds to avoid client/server time discrepancies
+      const totalSecondsUntilNext = data.secondsUntilNextClaim || 0;
+      
+      const hoursUntilNext = Math.floor(totalSecondsUntilNext / 3600);
+      const minutesUntilNext = Math.floor((totalSecondsUntilNext % 3600) / 60);
+      const secondsUntilNext = totalSecondsUntilNext % 60;
 
       return {
         canClaim: data.canClaim,
