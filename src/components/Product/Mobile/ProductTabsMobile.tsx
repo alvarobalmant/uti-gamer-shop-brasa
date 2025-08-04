@@ -13,8 +13,8 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   
-  // Buscar especificações reais do produto
-  const { categorizedSpecs, loading: specsLoading } = useProductSpecifications(product.id);
+  // Buscar especificações reais do produto (apenas mobile)
+  const { categorizedSpecs, loading: specsLoading } = useProductSpecifications(product.id, 'mobile');
 
   // Função para fazer scroll preciso alinhando com o cabeçalho
   const scrollToContent = (tabId: string) => {

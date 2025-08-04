@@ -146,7 +146,7 @@ const ProductDesktopCard: React.FC<{
   product: any;
   onEdit: (product: any) => void;
 }> = ({ product, onEdit }) => {
-  const { categorizedSpecs } = useProductSpecifications(product.id);
+  const { categorizedSpecs } = useProductSpecifications(product.id, 'desktop');
 
   return (
     <Card className="transition-shadow hover:shadow-md">

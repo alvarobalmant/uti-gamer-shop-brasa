@@ -455,44 +455,67 @@ is_active: TRUE
 
 ## 🔧 CAMPOS JSON
 
-### specifications (Especificações Básicas - Mobile View)
-Array de especificações básicas que aparecem na visualização mobile:
+### specifications (Especificações Básicas - SOMENTE Mobile View)
+**IMPORTANTE**: Este campo é usado APENAS na visualização MOBILE do produto.
+Array de especificações básicas simples. Todas sempre aparecem na categoria "Informações Gerais".
+
+**Regras importantes:**
+- ✅ Use apenas emojis simples (1-2 caracteres) no campo "icon", ou deixe vazio
+- ✅ O campo "category" é ignorado - sempre será "Informações Gerais"
+- ✅ Use para informações simples e resumidas
+- ❌ NÃO coloque especificações técnicas detalhadas aqui
+
 \`\`\`json
 [
   {
-    "name": "Processador", 
-    "value": "AMD Ryzen Zen 2",
-    "category": "Informações Gerais",
-    "icon": "⚙️",
+    "name": "Tipo", 
+    "value": "Console Next-Gen",
+    "icon": "🎮",
     "highlight": true
   },
   {
-    "name": "Memória",
-    "value": "16GB GDDR6", 
-    "category": "Informações Gerais",
-    "icon": "🧠",
+    "name": "Garantia",
+    "value": "1 ano", 
+    "icon": "🛡️",
+    "highlight": false
+  },
+  {
+    "name": "Cor",
+    "value": "Branco",
+    "icon": "🎨",
     "highlight": false
   }
 ]
 \`\`\`
 
-### technical_specs (Especificações Técnicas - Desktop View)
-Objeto com especificações técnicas detalhadas organizadas automaticamente em 4 categorias:
-- **⚙️ Especificações Técnicas**: Hardware e sistema (cpu, gpu, ram, etc.)
-- **🚀 Performance**: Desempenho e gráficos (fps, resolution, etc.)
-- **💾 Armazenamento**: Espaço e instalação (storage, size, etc.)
-- **🔌 Conectividade**: Multiplayer e rede (multiplayer, online, etc.)
+### technical_specs (Especificações Técnicas - SOMENTE Desktop View)
+**IMPORTANTE**: Este campo é usado APENAS na visualização DESKTOP do produto.
+Objeto com especificações técnicas detalhadas, organizadas automaticamente em 4 categorias:
+
+**🏷️ As 4 categorias automáticas do Desktop:**
+- **⚙️ Especificações Técnicas**: Hardware e sistema (cpu, gpu, ram, platform, etc.)
+- **🚀 Performance**: Desempenho e gráficos (fps, resolution, framerate, etc.)
+- **💾 Armazenamento**: Espaço e instalação (storage, size, ssd, hdd, etc.)
+- **🔌 Conectividade**: Multiplayer e rede (multiplayer, online, wifi, bluetooth, etc.)
+
+**Regras importantes:**
+- ✅ Use nomes de campos técnicos em inglês ou português
+- ✅ O sistema detecta automaticamente a categoria pela palavra-chave
+- ✅ Use para especificações técnicas detalhadas
+- ❌ NÃO misture com especificações básicas
 
 \`\`\`json
 {
-  "cpu": "AMD Zen 2 8-Core",
-  "gpu": "RDNA 2 Custom", 
+  "cpu": "AMD Zen 2 8-Core 3.8GHz",
+  "gpu": "RDNA 2 Custom 12 TFLOPS", 
   "ram": "16GB GDDR6",
-  "storage": "825GB SSD NVMe",
-  "fps": "60 FPS",
-  "resolution": "4K Ultra HD",
+  "platform": "Xbox Series X",
+  "storage": "1TB SSD NVMe",
+  "fps": "Até 120 FPS",
+  "resolution": "4K Ultra HD (2160p)",
   "multiplayer": "Até 4 jogadores online",
-  "wifi": "Wi-Fi 6 (802.11ax)"
+  "wifi": "Wi-Fi 6 (802.11ax)",
+  "bluetooth": "Bluetooth 5.1"
 }
 \`\`\`
 
@@ -1150,13 +1173,23 @@ async function processProductSpecifications(productId: string, product: Imported
         // Aceitar tanto 'name' quanto 'label' como nome da especificação
         const specName = spec.name || spec.label;
         if (specName && spec.value) {
+          // Filtrar ícones inválidos (apenas emojis únicos ou null)
+          let cleanIcon = null;
+          if (spec.icon && typeof spec.icon === 'string') {
+            const trimmedIcon = spec.icon.trim();
+            // Aceitar apenas emojis únicos (1-2 caracteres) ou ícones válidos
+            if (trimmedIcon.length <= 2 && !/^[a-zA-Z0-9-_]+$/.test(trimmedIcon)) {
+              cleanIcon = trimmedIcon;
+            }
+          }
+          
           specsToInsert.push({
             product_id: productId,
-            category: spec.category || 'Informações Gerais',
+            category: 'Informações Gerais', // Sempre usar esta categoria para mobile
             label: specName,
             value: String(spec.value),
             highlight: Boolean(spec.highlight || false),
-            icon: spec.icon || null,
+            icon: cleanIcon,
             order_index: orderIndex++
           });
         }
