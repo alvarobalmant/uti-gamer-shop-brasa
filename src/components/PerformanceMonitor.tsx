@@ -1,45 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { useIntelligentPreloader } from '@/hooks/useIntelligentPreloader';
+import { logger } from '@/lib/productionLogger';
+import { useConsolidatedTimers } from '@/hooks/useConsolidatedTimers';
 
-// Componente para monitorar performance do preloading
+// Optimized component for monitoring performance with consolidated timers
 export const PerformanceMonitor: React.FC = () => {
   const { getStats } = useIntelligentPreloader();
+  const { addTimer, removeTimer } = useConsolidatedTimers();
   const [stats, setStats] = useState<any>(null);
   const [performanceMetrics, setPerformanceMetrics] = useState<any>(null);
   const [showMonitor, setShowMonitor] = useState(false);
 
-  // Atualizar estatísticas periodicamente
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentStats = getStats();
-      setStats(currentStats);
-      
-      // Coletar métricas de performance
-      if ('performance' in window) {
-        const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-        const memory = (performance as any).memory;
-        
-        setPerformanceMetrics({
-          loadTime: navigation?.loadEventEnd && navigation?.loadEventStart ? navigation.loadEventEnd - navigation.loadEventStart : null,
-          domContentLoaded: navigation?.domContentLoadedEventEnd && navigation?.loadEventStart ? navigation.domContentLoadedEventEnd - navigation.loadEventStart : null,
-          memoryUsed: memory ? Math.round(memory.usedJSHeapSize / 1024 / 1024) : null,
-          memoryTotal: memory ? Math.round(memory.totalJSHeapSize / 1024 / 1024) : null,
-          connectionType: (navigator as any).connection?.effectiveType || 'unknown'
-        });
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [getStats]);
-
-  // Mostrar monitor apenas em desenvolvimento ou com parâmetro especial
+  // Show monitor only in development or with special parameter
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const isDev = process.env.NODE_ENV === 'development';
     const showDebug = urlParams.get('debug') === 'performance';
     
-    setShowMonitor(isDev || showDebug);
-  }, []);
+    const shouldShow = isDev || showDebug;
+    setShowMonitor(shouldShow);
+    
+    if (!shouldShow) {
+      logger.debug('PerformanceMonitor: Disabled in production');
+      return;
+    }
+
+    // Use consolidated timer instead of setInterval
+    addTimer({
+      id: 'performance-monitor-stats',
+      callback: () => {
+        const currentStats = getStats();
+        setStats(currentStats);
+        
+        // Collect performance metrics
+        if ('performance' in window) {
+          const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+          const memory = (performance as any).memory;
+          
+          setPerformanceMetrics({
+            loadTime: navigation?.loadEventEnd && navigation?.loadEventStart ? navigation.loadEventEnd - navigation.loadEventStart : null,
+            domContentLoaded: navigation?.domContentLoadedEventEnd && navigation?.loadEventStart ? navigation.domContentLoadedEventEnd - navigation.loadEventStart : null,
+            memoryUsed: memory ? Math.round(memory.usedJSHeapSize / 1024 / 1024) : null,
+            memoryTotal: memory ? Math.round(memory.totalJSHeapSize / 1024 / 1024) : null,
+            connectionType: (navigator as any).connection?.effectiveType || 'unknown'
+          });
+        }
+      },
+      interval: 3000, // Reduced frequency to save CPU
+      priority: 'low'
+    });
+
+    return () => {
+      removeTimer('performance-monitor-stats');
+    };
+  }, [getStats, addTimer, removeTimer]);
 
   if (!showMonitor || !stats) {
     return null;
