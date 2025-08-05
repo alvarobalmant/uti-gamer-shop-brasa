@@ -1,27 +1,24 @@
 import React, { useEffect } from 'react';
 import { useIntelligentPreloader } from '@/hooks/useIntelligentPreloader';
 import { PerformanceMonitor } from '@/components/PerformanceMonitor';
-import { useOptimizedScrollCoins } from '@/hooks/useOptimizedScrollCoins';
-import { logger } from '@/lib/productionLogger';
 
 // Importar componente Index original
 import Index from './Index';
 
-// Versão da home com preloading inteligente integrado e otimizações
+// Versão da home com preloading inteligente integrado
 const IndexWithPreloader: React.FC = () => {
-  // Inicializar preloader inteligente e scroll coins otimizado
+  // Inicializar preloader inteligente
   const { getStats } = useIntelligentPreloader();
-  useOptimizedScrollCoins();
 
-  // Log para debug usando logger otimizado
+  // Log para debug
   useEffect(() => {
-    logger.info('🏠 Home carregada - preloading inteligente ativo');
+    console.log('🏠 Home carregada - preloading inteligente ativo');
     
     // Verificar estatísticas após 5 segundos
     const timer = setTimeout(() => {
       const stats = getStats();
       if (stats) {
-        logger.info('📊 Estatísticas de preloading:', stats);
+        console.log('📊 Estatísticas de preloading:', stats);
       }
     }, 5000);
 

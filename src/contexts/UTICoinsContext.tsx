@@ -3,8 +3,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { UTICoins, CoinTransaction, CoinRule } from '@/types/retention';
 import { supabase } from '@/integrations/supabase/client';
 import { useUTICoinsSettings } from '@/hooks/useUTICoinsSettings';
-import { logger } from '@/lib/productionLogger';
-import { useConsolidatedTimers } from '@/hooks/useConsolidatedTimers';
 
 interface UTICoinsContextType {
   coins: UTICoins;
@@ -31,7 +29,6 @@ interface UTICoinsProviderProps {
 export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) => {
   const { user } = useAuth();
   const { isEnabled } = useUTICoinsSettings();
-  const { addTimer, removeTimer } = useConsolidatedTimers();
   const [coins, setCoins] = useState<UTICoins>({
     balance: 0,
     totalEarned: 0,
@@ -57,7 +54,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
         .single();
 
       if (coinsError) {
-        logger.warn('Erro ao carregar moedas:', coinsError);
+        console.warn('Erro ao carregar moedas:', coinsError);
         // Se não existir registro, criar um padrão
         if (coinsError.code === 'PGRST116') {
           setCoins({
@@ -79,16 +76,8 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
         setCoins(prevCoins => {
           if (prevCoins.balance !== newCoins.balance && prevCoins.balance > 0) {
             setBalanceChanged(true);
-            // Use consolidated timer instead of setTimeout
-            addTimer({
-              id: 'balance-animation-reset',
-              callback: () => {
-                setBalanceChanged(false);
-                removeTimer('balance-animation-reset');
-              },
-              interval: 1000,
-              priority: 'low'
-            });
+            // Reset da animação após 1 segundo
+            setTimeout(() => setBalanceChanged(false), 1000);
           }
           return newCoins;
         });
@@ -103,7 +92,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
         .limit(50);
 
       if (transactionsError) {
-        logger.warn('Erro ao carregar transações:', transactionsError);
+        console.warn('Erro ao carregar transações:', transactionsError);
         setTransactions([]);
       } else if (transactionsData) {
         const formattedTransactions: CoinTransaction[] = transactionsData.map(t => ({
@@ -119,7 +108,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
         setTransactions(formattedTransactions);
       }
     } catch (error) {
-      logger.error('Erro ao carregar dados de moedas:', error);
+      console.error('Erro ao carregar dados de moedas:', error);
       // Definir valores padrão em caso de erro
       setCoins({
         balance: 0,
@@ -143,7 +132,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
         .order('action');
 
       if (rulesError) {
-        logger.warn('Erro ao carregar regras:', rulesError);
+        console.warn('Erro ao carregar regras:', rulesError);
         setRules([]);
       } else if (rulesData) {
         const formattedRules: CoinRule[] = rulesData.map(r => ({
@@ -158,7 +147,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
         setRules(formattedRules);
       }
     } catch (error) {
-      logger.error('Erro ao carregar regras de moedas:', error);
+      console.error('Erro ao carregar regras de moedas:', error);
       setRules([]);
     }
   }, []);
@@ -175,7 +164,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     // Criar canal único com timestamp para evitar conflitos
     const channelName = `uti_coins_provider_${user.id}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     
-    logger.debug('Criando canal realtime:', channelName);
+    console.log('Criando canal realtime:', channelName);
     
     const channel = supabase
       .channel(channelName)
@@ -188,7 +177,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          logger.debug('UTI Coins real-time update (Provider):', payload);
+          console.log('UTI Coins real-time update (Provider):', payload);
           if (payload.eventType === 'UPDATE' && payload.new) {
             const newData = payload.new as any;
             const newCoins = {
@@ -202,15 +191,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
               // Detectar mudança no saldo para ativar animação
               if (prevCoins.balance !== newCoins.balance && prevCoins.balance > 0) {
                 setBalanceChanged(true);
-                addTimer({
-                  id: 'balance-animation-reset-realtime',
-                  callback: () => {
-                    setBalanceChanged(false);
-                    removeTimer('balance-animation-reset-realtime');
-                  },
-                  interval: 1000,
-                  priority: 'low'
-                });
+                setTimeout(() => setBalanceChanged(false), 1000);
               }
               return newCoins;
             });
@@ -226,7 +207,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          logger.debug('New coin transaction (Provider):', payload);
+          console.log('New coin transaction (Provider):', payload);
           // Recarregar dados quando houver nova transação
           loadUserData();
         }
@@ -234,7 +215,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       .subscribe();
 
     return () => {
-      logger.debug('Removendo canal realtime (Provider):', channelName);
+      console.log('Removendo canal realtime (Provider):', channelName);
       supabase.removeChannel(channel);
     };
   }, [user?.id, isEnabled]);
@@ -251,7 +232,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     if (!isEnabled) return { success: false, message: 'Sistema UTI Coins desabilitado' };
 
     try {
-      logger.debug(`[SECURE] Earning coins for action: ${action}, user: ${user.id}`);
+      console.log(`[SECURE] Earning coins for action: ${action}, user: ${user.id}`);
       
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
         body: {
@@ -266,10 +247,10 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       });
 
       if (error) {
-        logger.warn('Erro ao ganhar moedas (edge function):', error);
+        console.warn('Erro ao ganhar moedas (edge function):', error);
         
         // Fallback: try database function directly
-        logger.debug('[FALLBACK] Trying database function for earn_coins');
+        console.log('[FALLBACK] Trying database function for earn_coins');
         try {
           const { data: fallbackData, error: fallbackError } = await supabase
             .rpc('earn_coins', {
@@ -281,7 +262,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
             });
           
           if (fallbackError) {
-            logger.warn('Fallback earn_coins failed:', fallbackError);
+            console.warn('Fallback earn_coins failed:', fallbackError);
             return { success: false, message: 'Erro de conexão com o servidor' };
           }
           
@@ -292,7 +273,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
           
           return fallbackData || { success: false, message: 'Erro desconhecido' };
         } catch (fallbackErr) {
-          logger.error('Fallback error:', fallbackErr);
+          console.error('Fallback error:', fallbackErr);
           return { success: false, message: 'Erro interno do sistema' };
         }
       }
@@ -305,7 +286,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
 
       return result || { success: false, message: 'Erro desconhecido do servidor' };
     } catch (error) {
-      logger.error('Erro ao ganhar moedas:', error);
+      console.error('Erro ao ganhar moedas:', error);
       return { success: false, message: 'Erro interno do sistema' };
     }
   }, [user, loadUserData, isEnabled]);
@@ -324,7 +305,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
       });
 
       if (error) {
-        logger.warn('Erro ao resgatar produto:', error);
+        console.warn('Erro ao resgatar produto:', error);
         return { success: false, message: 'Função não disponível' };
       }
 
@@ -336,7 +317,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
 
       return result || { success: false, message: 'Erro desconhecido' };
     } catch (error) {
-      logger.error('Erro ao resgatar produto:', error);
+      console.error('Erro ao resgatar produto:', error);
       return { success: false, message: 'Erro interno' };
     }
   }, [user, loadUserData, isEnabled]);
@@ -348,7 +329,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
     
     // Sempre retorna true - o backend fará toda a validação
     // Isso evita duplicação de lógica e garante que o backend seja a única fonte de verdade
-    logger.debug(`[FRONTEND] Deferring validation to backend for action: ${action}`);
+    console.log(`[FRONTEND] Deferring validation to backend for action: ${action}`);
     return true;
   }, [user, isEnabled]);
 
@@ -360,7 +341,7 @@ export const UTICoinsProvider: React.FC<UTICoinsProviderProps> = ({ children }) 
   // Ganhar moedas por scroll de forma segura (via edge function)
   const earnScrollCoins = useCallback(async () => {
     if (!isEnabled) return { success: false, message: 'Sistema UTI Coins desabilitado' };
-    logger.debug('[SECURE] Earning scroll coins');
+    console.log('[SECURE] Earning scroll coins');
     return await earnCoins('scroll_page', undefined, 'Scroll da página', {
       source: 'scroll_tracking',
       page: window.location.pathname
