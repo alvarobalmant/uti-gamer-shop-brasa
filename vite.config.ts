@@ -40,103 +40,141 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Core vendors - sempre carregados
+          // PHASE 4B: Smart Bundle Splitting
+          
+          // Critical core - always loaded
           if (id.includes('react') && (id.includes('react-dom') || id.includes('react/'))) {
-            return 'vendor-react';
+            return 'core-react';
           }
           if (id.includes('react-router-dom')) {
-            return 'vendor-router';
+            return 'core-router';
           }
           if (id.includes('@supabase/supabase-js')) {
-            return 'vendor-supabase';
-          }
-          if (id.includes('framer-motion')) {
-            return 'vendor-motion';
+            return 'core-supabase';
           }
           
-          // UI components - carregados quando necessário
+          // Smart bundle detection
+          if (id.includes('smartBundleSplitter') || id.includes('useSmartBundleLoader')) {
+            return 'core-smart-loader';
+          }
+          
+          // Production essentials
+          if (id.includes('productionLogger') || id.includes('timerManager')) {
+            return 'core-production';
+          }
+          
+          // Modular Radix UI - split by component type
+          if (id.includes('@radix-ui/react-dialog') || id.includes('@radix-ui/react-alert-dialog')) {
+            return 'ui-modals';
+          }
+          if (id.includes('@radix-ui/react-dropdown-menu') || id.includes('@radix-ui/react-select') || id.includes('@radix-ui/react-popover')) {
+            return 'ui-dropdowns';
+          }
+          if (id.includes('@radix-ui/react-tabs') || id.includes('@radix-ui/react-accordion') || id.includes('@radix-ui/react-collapsible')) {
+            return 'ui-navigation';
+          }
+          if (id.includes('@radix-ui/react-checkbox') || id.includes('@radix-ui/react-radio-group') || id.includes('@radix-ui/react-switch')) {
+            return 'ui-inputs';
+          }
+          if (id.includes('@radix-ui/react-toast') || id.includes('@radix-ui/react-tooltip') || id.includes('@radix-ui/react-hover-card')) {
+            return 'ui-feedback';
+          }
           if (id.includes('@radix-ui/')) {
-            return 'ui-radix';
+            return 'ui-radix-misc';
           }
           
-          // ADMIN-ONLY chunks - carregados apenas para admins
+          // Platform-specific splitting
+          if (id.includes('/Mobile/') || id.includes('mobile') || id.includes('touch')) {
+            return 'platform-mobile';
+          }
+          if (id.includes('/Desktop/') || id.includes('desktop') || id.includes('keyboard')) {
+            return 'platform-desktop';
+          }
+          if (id.includes('/Tablet/') || id.includes('tablet') || id.includes('hybrid')) {
+            return 'platform-tablet';
+          }
+          
+          // ADMIN ISOLATION - Complete separation
           if (id.includes('@huggingface/transformers')) {
-            return 'admin-ai';
+            return 'admin-ai-isolated';
           }
           if (id.includes('xlsx')) {
-            return 'admin-excel';
+            return 'admin-excel-isolated';
           }
-          
-          // Admin components - detectar por path
           if (id.includes('/Admin/') || id.includes('/admin/') || 
               id.includes('AdminPanel') || id.includes('ProductManager') ||
-              id.includes('SpecificationDiagnostic') || id.includes('ProductImageManager')) {
-            return 'admin-core';
+              id.includes('SpecificationDiagnostic') || id.includes('ProductImageManager') ||
+              id.includes('TagManager') || id.includes('Xbox4Admin') ||
+              id.includes('BulkImageUpload') || id.includes('SpecialSectionManager')) {
+            return 'admin-complete-isolated';
           }
-          
-          // Admin features específicas
-          if (id.includes('BulkImageUpload') || id.includes('ProductImageManager') ||
-              id.includes('ProductDesktopManager') || id.includes('SpecialSectionManager')) {
-            return 'admin-features';
-          }
-
-          // Admin tabs - lazy loading individual
           if (id.includes('LazyAdminTabs') || id.includes('BulkProductUploadLazy')) {
-            return 'admin-tabs';
+            return 'admin-tabs-isolated';
           }
-
-          // Performance monitoring
-          if (id.includes('usePerformanceMonitoring') || id.includes('useBackgroundRemovalLazy')) {
-            return 'admin-performance';
+          if (id.includes('usePerformanceMonitoring') || id.includes('useBackgroundRemovalLazy') || id.includes('adminHelpers')) {
+            return 'admin-utils-isolated';
           }
           
-          // Charts - lazy load
+          // Feature-based chunking
           if (id.includes('recharts')) {
-            return 'vendor-charts';
+            return 'feature-charts';
           }
-          
-          // Forms - lazy load
           if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
-            return 'vendor-forms';
+            return 'feature-forms';
           }
-          
-          // Date utilities - lazy load
+          if (id.includes('@tanstack/react-query')) {
+            return 'feature-query';
+          }
+          if (id.includes('framer-motion')) {
+            return 'feature-motion';
+          }
           if (id.includes('date-fns')) {
-            return 'vendor-date';
+            return 'feature-date';
           }
           
-          // Utils pequenos - podem ficar juntos
-          if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('class-variance-authority')) {
-            return 'vendor-utils';
+          // Search functionality
+          if (id.includes('/Search/') || id.includes('searchHelpers') || id.includes('SearchComponents')) {
+            return 'feature-search';
           }
           
-          // Platform pages - lazy load por plataforma
+          // Product system
+          if (id.includes('/Products/') || id.includes('productHelpers') || id.includes('ProductComponents')) {
+            return 'feature-products';
+          }
+          if (id.includes('ProductPage') || id.includes('/produto/')) {
+            return 'page-product';
+          }
+          
+          // Platform pages - more granular
           if (id.includes('/platforms/PlayStation')) {
-            return 'platform-playstation';
+            return 'page-playstation';
           }
           if (id.includes('/platforms/Xbox')) {
-            return 'platform-xbox';
+            return 'page-xbox';
           }
           if (id.includes('/platforms/Nintendo')) {
-            return 'platform-nintendo';
+            return 'page-nintendo';
           }
           if (id.includes('/platforms/')) {
-            return 'platform-others';
+            return 'page-platforms-other';
           }
           
-          // Product pages
-          if (id.includes('ProductPage') || id.includes('/produto/')) {
-            return 'product-pages';
+          // UTI Coins system - isolated
+          if (id.includes('/UTI/') || id.includes('CoinsComponents') || id.includes('coinsHelpers') || id.includes('/coins/')) {
+            return 'feature-coins-isolated';
           }
           
           // Client area
           if (id.includes('ClientArea') || id.includes('Wishlist') || id.includes('/area-cliente/')) {
-            return 'client-area';
+            return 'page-client-area';
           }
           
-          // UTI Coins system
-          if (id.includes('UTI') || id.includes('Coins') || id.includes('/coins/')) {
-            return 'uti-coins';
+          // Small utilities - keep together
+          if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('class-variance-authority')) {
+            return 'utils-styling';
+          }
+          if (id.includes('lucide-react')) {
+            return 'utils-icons';
           }
         },
       },
@@ -164,13 +202,38 @@ export default defineConfig(({ mode }) => ({
       'lucide-react',
     ],
     exclude: [
-      // Admin-only libraries - não pré-carregar
+      // PHASE 4B: Aggressive exclusions for smart loading
+      
+      // Admin-only libraries - never preload
       '@huggingface/transformers',
       'xlsx',
-      // Background removal for admins only
       '@/utils/backgroundRemoval',
-      // Lazy admin components
       '@/components/Admin/LazyAdminTabs',
+      '@/components/Admin/ProductManager',
+      '@/components/Admin/TagManager',
+      '@/components/Admin/Xbox4Admin',
+      
+      // Platform-specific bundles
+      '@/components/Mobile/MobileLayouts',
+      '@/components/Desktop/DesktopLayouts', 
+      '@/components/Tablet/TabletLayouts',
+      '@/utils/touchHandlers',
+      '@/utils/keyboardHandlers',
+      '@/utils/hybridHandlers',
+      
+      // Heavy feature bundles
+      'recharts',
+      '@tanstack/react-query',
+      'react-hook-form',
+      '@hookform/resolvers',
+      
+      // Smart bundle loaders
+      '@/lib/smartBundleSplitter',
+      '@/hooks/useSmartBundleLoader',
+      
+      // UTI Coins - lazy load completely
+      '@/components/UTI/CoinsComponents',
+      '@/utils/coinsHelpers',
     ],
   },
 }));
