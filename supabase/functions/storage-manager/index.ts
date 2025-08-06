@@ -272,97 +272,206 @@ serve(async (req) => {
     console.log(`   • Imagens externas não otimizadas: ${externalNonOptimized}`);
     console.log(`   • Tamanho total do storage: ${totalSizeMB.toFixed(2)} MB`);
 
-    // === FASE 2: COMPRESSÃO (se solicitada) ===
+    // === FASE 2: DOWNLOAD E COMPRESSÃO ===
     let compressionResults = null;
     
-    if ((action === 'compress' || compress) && nonWebpImages > 0) {
-      console.log(`🗜️ Iniciando compressão de ${nonWebpImages} imagens...`);
+    if (action === 'compress' || compress) {
+      console.log(`🌐 Iniciando download e compressão...`);
+      console.log(`   • ${nonWebpImages} imagens no storage para comprimir`);
+      console.log(`   • ${externalNonOptimized} imagens externas para baixar e otimizar`);
       
       let processedCount = 0;
+      let downloadedCount = 0;
       let totalSaved = 0;
       const errors: string[] = [];
       
-      for (const imageInfo of imagesToCompress) {
-        try {
-          console.log(`📦 Processando: ${imageInfo.name}`);
-          
-          // Download da imagem original
-          const { data: imageData, error: downloadError } = await supabase.storage
-            .from('site-images')
-            .download(imageInfo.name);
+      // FASE 2.1: Processar imagens do storage interno
+      if (nonWebpImages > 0) {
+        console.log(`🗜️ Processando ${nonWebpImages} imagens do storage...`);
+        
+        for (const imageInfo of imagesToCompress) {
+          try {
+            console.log(`📦 Processando: ${imageInfo.name}`);
+            
+            // Download da imagem original
+            const { data: imageData, error: downloadError } = await supabase.storage
+              .from('site-images')
+              .download(imageInfo.name);
 
-          if (downloadError) {
-            console.error(`❌ Erro ao baixar ${imageInfo.name}:`, downloadError);
-            errors.push(`Erro ao baixar ${imageInfo.name}: ${downloadError.message}`);
-            continue;
+            if (downloadError) {
+              console.error(`❌ Erro ao baixar ${imageInfo.name}:`, downloadError);
+              errors.push(`Erro ao baixar ${imageInfo.name}: ${downloadError.message}`);
+              continue;
+            }
+
+            // Converter para ArrayBuffer
+            const arrayBuffer = await imageData.arrayBuffer();
+            
+            // Converter para WebP
+            const { buffer: webpBuffer, compressedSize } = await convertToWebP(arrayBuffer, 0.85);
+            
+            // Nome do arquivo WebP
+            const webpName = imageInfo.name.replace(/\.(jpe?g|png|gif|bmp|tiff?)$/i, '.webp');
+            
+            // Upload da versão WebP
+            const { error: uploadError } = await supabase.storage
+              .from('site-images')
+              .upload(webpName, new Uint8Array(webpBuffer), {
+                contentType: 'image/webp',
+                upsert: true
+              });
+
+            if (uploadError) {
+              console.error(`❌ Erro ao fazer upload de ${webpName}:`, uploadError);
+              errors.push(`Erro ao fazer upload de ${webpName}: ${uploadError.message}`);
+              continue;
+            }
+
+            // Calcular economia
+            const originalSize = imageInfo.size;
+            const savedBytes = originalSize - compressedSize;
+            totalSaved += savedBytes;
+            
+            console.log(`✅ Convertido: ${imageInfo.name} -> ${webpName} (economizou ${(savedBytes / 1024 / 1024).toFixed(2)} MB)`);
+            
+            // Atualizar referências no banco de dados
+            await updateDatabaseReferences(supabase, imageInfo.name, webpName);
+            
+            // Deletar arquivo original
+            const { error: deleteError } = await supabase.storage
+              .from('site-images')
+              .remove([imageInfo.name]);
+
+            if (deleteError) {
+              console.warn(`⚠️ Aviso: Não foi possível deletar ${imageInfo.name}:`, deleteError);
+            } else {
+              console.log(`🗑️ Arquivo original deletado: ${imageInfo.name}`);
+            }
+            
+            processedCount++;
+            
+          } catch (error) {
+            console.error(`❌ Erro ao processar ${imageInfo.name}:`, error);
+            errors.push(`Erro ao processar ${imageInfo.name}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
           }
+        }
+      }
+      
+      // FASE 2.2: Baixar e otimizar imagens externas
+      if (externalNonOptimized > 0) {
+        console.log(`🌐 Baixando e otimizando ${externalNonOptimized} imagens externas...`);
+        
+        for (const externalImg of externalImagesToOptimize) {
+          try {
+            console.log(`🌐 Baixando: ${externalImg.image_url}`);
+            
+            // Download da imagem externa
+            const response = await fetch(externalImg.image_url);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const arrayBuffer = await response.arrayBuffer();
+            const originalSize = arrayBuffer.byteLength;
+            
+            // Detectar formato
+            const urlFormat = detectImageFormat(externalImg.image_url);
+            console.log(`🔍 Formato detectado: ${urlFormat} (${(originalSize / 1024 / 1024).toFixed(2)} MB)`);
+            
+            // Converter para WebP
+            const { buffer: webpBuffer, compressedSize } = await convertToWebP(arrayBuffer, 0.85);
+            
+            // Gerar nome único para o arquivo
+            const timestamp = Date.now();
+            const randomId = Math.random().toString(36).substring(2, 15);
+            const fileName = `downloaded/${timestamp}-${randomId}.webp`;
+            
+            // Upload para o storage
+            const { error: uploadError } = await supabase.storage
+              .from('site-images')
+              .upload(fileName, new Uint8Array(webpBuffer), {
+                contentType: 'image/webp',
+                upsert: true
+              });
 
-          // Converter para ArrayBuffer
-          const arrayBuffer = await imageData.arrayBuffer();
-          
-          // Converter para WebP
-          const { buffer: webpBuffer, compressedSize } = await convertToWebP(arrayBuffer, 0.85);
-          
-          // Nome do arquivo WebP
-          const webpName = imageInfo.name.replace(/\.(jpe?g|png|gif|bmp|tiff?)$/i, '.webp');
-          
-          // Upload da versão WebP
-          const { error: uploadError } = await supabase.storage
-            .from('site-images')
-            .upload(webpName, new Uint8Array(webpBuffer), {
-              contentType: 'image/webp',
-              upsert: true
-            });
-
-          if (uploadError) {
-            console.error(`❌ Erro ao fazer upload de ${webpName}:`, uploadError);
-            errors.push(`Erro ao fazer upload de ${webpName}: ${uploadError.message}`);
-            continue;
+            if (uploadError) {
+              console.error(`❌ Erro ao fazer upload de ${fileName}:`, uploadError);
+              errors.push(`Erro ao fazer upload de ${fileName}: ${uploadError.message}`);
+              continue;
+            }
+            
+            // Construir nova URL
+            const supabaseUrl = Deno.env.get('SUPABASE_URL');
+            const newUrl = `${supabaseUrl}/storage/v1/object/public/site-images/${fileName}`;
+            
+            // Atualizar referência no banco de dados
+            if (externalImg.type === 'main') {
+              const { error: updateError } = await supabase
+                .from('products')
+                .update({ image: newUrl })
+                .eq('id', externalImg.product_id);
+                
+              if (updateError) {
+                console.error(`❌ Erro ao atualizar produto ${externalImg.product_id}:`, updateError);
+                errors.push(`Erro ao atualizar produto: ${updateError.message}`);
+                continue;
+              }
+            } else {
+              // Atualizar imagem adicional - buscar o array atual e substituir
+              const { data: product, error: fetchError } = await supabase
+                .from('products')
+                .select('additional_images')
+                .eq('id', externalImg.product_id)
+                .single();
+                
+              if (!fetchError && product) {
+                const additionalImages = product.additional_images || [];
+                const updatedImages = additionalImages.map((img: string) => 
+                  img === externalImg.image_url ? newUrl : img
+                );
+                
+                const { error: updateError } = await supabase
+                  .from('products')
+                  .update({ additional_images: updatedImages })
+                  .eq('id', externalImg.product_id);
+                  
+                if (updateError) {
+                  console.error(`❌ Erro ao atualizar imagens adicionais:`, updateError);
+                  errors.push(`Erro ao atualizar imagens adicionais: ${updateError.message}`);
+                  continue;
+                }
+              }
+            }
+            
+            const savedBytes = originalSize - compressedSize;
+            totalSaved += savedBytes;
+            downloadedCount++;
+            
+            console.log(`✅ Baixado e otimizado: ${externalImg.image_url} -> ${fileName} (economizou ${(savedBytes / 1024 / 1024).toFixed(2)} MB)`);
+            
+          } catch (error) {
+            console.error(`❌ Erro ao baixar ${externalImg.image_url}:`, error);
+            errors.push(`Erro ao baixar ${externalImg.image_url}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
           }
-
-          // Calcular economia
-          const originalSize = imageInfo.size;
-          const savedBytes = originalSize - compressedSize;
-          totalSaved += savedBytes;
-          
-          console.log(`✅ Convertido: ${imageInfo.name} -> ${webpName} (economizou ${(savedBytes / 1024 / 1024).toFixed(2)} MB)`);
-          
-          // Atualizar referências no banco de dados
-          await updateDatabaseReferences(supabase, imageInfo.name, webpName);
-          
-          // Deletar arquivo original
-          const { error: deleteError } = await supabase.storage
-            .from('site-images')
-            .remove([imageInfo.name]);
-
-          if (deleteError) {
-            console.warn(`⚠️ Aviso: Não foi possível deletar ${imageInfo.name}:`, deleteError);
-          } else {
-            console.log(`🗑️ Arquivo original deletado: ${imageInfo.name}`);
-          }
-          
-          processedCount++;
-          
-        } catch (error) {
-          console.error(`❌ Erro ao processar ${imageInfo.name}:`, error);
-          errors.push(`Erro ao processar ${imageInfo.name}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
         }
       }
       
       compressionResults = {
         processedCount,
-        totalRequested: nonWebpImages,
+        downloadedCount,
+        totalRequested: nonWebpImages + externalNonOptimized,
         savedMB: Number((totalSaved / 1024 / 1024).toFixed(2)),
         errors,
-        message: `${processedCount} de ${nonWebpImages} imagens comprimidas. Economizou ${(totalSaved / 1024 / 1024).toFixed(2)} MB.`
+        message: `${processedCount} imagens do storage e ${downloadedCount} imagens externas processadas. Economizou ${(totalSaved / 1024 / 1024).toFixed(2)} MB.`
       };
       
-      console.log(`✅ Compressão concluída: ${compressionResults.message}`);
+      console.log(`✅ Processamento concluído: ${compressionResults.message}`);
       
-      // Atualizar estatísticas após compressão
-      webpImages += processedCount;
+      // Atualizar estatísticas após processamento
+      webpImages += processedCount + downloadedCount;
       nonWebpImages -= processedCount;
-      totalSizeMB -= (totalSaved / 1024 / 1024);
+      externalNonOptimized -= downloadedCount;
+      totalSizeMB += (totalSaved / 1024 / 1024); // Adicionar ao storage local
     }
 
     // === FASE 3: RESPOSTA UNIFICADA ===
