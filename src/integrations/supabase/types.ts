@@ -2033,6 +2033,39 @@ export type Database = {
         }
         Relationships: []
       }
+      storage_stats_backup: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          last_scan: string | null
+          non_webp_images: number | null
+          total_images: number | null
+          total_size_mb: number | null
+          updated_at: string | null
+          webp_images: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          last_scan?: string | null
+          non_webp_images?: number | null
+          total_images?: number | null
+          total_size_mb?: number | null
+          updated_at?: string | null
+          webp_images?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          last_scan?: string | null
+          non_webp_images?: number | null
+          total_images?: number | null
+          total_size_mb?: number | null
+          updated_at?: string | null
+          webp_images?: number | null
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           created_at: string
