@@ -170,6 +170,58 @@ serve(async (req) => {
     const allFiles = await listAllFiles(supabase, 'site-images');
     console.log(`📁 Encontrados ${allFiles.length} arquivos no bucket (busca recursiva)`);
 
+    // === FASE 1.5: SCAN DE IMAGENS EXTERNAS ===
+    console.log('🌐 Verificando imagens externas no banco de dados...');
+    
+    const { data: productsWithExternalImages, error: extError } = await supabase
+      .from('products')
+      .select('id, name, image, additional_images')
+      .not('image', 'is', null);
+
+    let externalImages = 0;
+    let externalNonOptimized = 0;
+    const externalImagesToOptimize: Array<{product_id: string, product_name: string, image_url: string, type: 'main' | 'additional'}> = [];
+
+    if (!extError && productsWithExternalImages) {
+      for (const product of productsWithExternalImages) {
+        // Verificar imagem principal
+        if (product.image && !product.image.includes('supabase.co/storage')) {
+          externalImages++;
+          const isOptimized = product.image.toLowerCase().endsWith('.webp');
+          if (!isOptimized) {
+            externalNonOptimized++;
+            externalImagesToOptimize.push({
+              product_id: product.id,
+              product_name: product.name,
+              image_url: product.image,
+              type: 'main'
+            });
+          }
+          console.log(`🌐 Imagem externa ${isOptimized ? '✅' : '❌'}: ${product.name} - ${product.image}`);
+        }
+        
+        // Verificar imagens adicionais
+        if (product.additional_images && Array.isArray(product.additional_images)) {
+          for (const addImg of product.additional_images) {
+            if (addImg && !addImg.includes('supabase.co/storage')) {
+              externalImages++;
+              const isOptimized = addImg.toLowerCase().endsWith('.webp');
+              if (!isOptimized) {
+                externalNonOptimized++;
+                externalImagesToOptimize.push({
+                  product_id: product.id,
+                  product_name: product.name,
+                  image_url: addImg,
+                  type: 'additional'
+                });
+              }
+              console.log(`🌐 Imagem adicional externa ${isOptimized ? '✅' : '❌'}: ${product.name} - ${addImg}`);
+            }
+          }
+        }
+      }
+    }
+
     // Processar arquivos e coletar estatísticas
     let totalImages = 0;
     let webpImages = 0;
@@ -213,10 +265,12 @@ serve(async (req) => {
     totalSizeMB = totalSizeMB / 1024 / 1024;
 
     console.log(`📊 Estatísticas coletadas:`);
-    console.log(`   • Total de imagens: ${totalImages}`);
-    console.log(`   • Imagens WebP: ${webpImages}`);
-    console.log(`   • Imagens não otimizadas: ${nonWebpImages}`);
-    console.log(`   • Tamanho total: ${totalSizeMB.toFixed(2)} MB`);
+    console.log(`   • Total de imagens no storage: ${totalImages}`);
+    console.log(`   • Imagens WebP no storage: ${webpImages}`);
+    console.log(`   • Imagens não otimizadas no storage: ${nonWebpImages}`);
+    console.log(`   • Imagens externas encontradas: ${externalImages}`);
+    console.log(`   • Imagens externas não otimizadas: ${externalNonOptimized}`);
+    console.log(`   • Tamanho total do storage: ${totalSizeMB.toFixed(2)} MB`);
 
     // === FASE 2: COMPRESSÃO (se solicitada) ===
     let compressionResults = null;
@@ -316,6 +370,7 @@ serve(async (req) => {
       success: true,
       action,
       data: {
+        // Estatísticas do Storage
         totalSizeMB: Number(totalSizeMB.toFixed(2)),
         storageLimitMB: 1024, // 1GB limite
         availableMB: Number((1024 - totalSizeMB).toFixed(2)),
@@ -326,12 +381,21 @@ serve(async (req) => {
         webpCount: webpImages, // alias
         non_webp_images: nonWebpImages,
         nonWebpCount: nonWebpImages, // alias
-        compressionPotential: nonWebpImages > 0 
-          ? `${nonWebpImages} imagens podem ser otimizadas` 
+        
+        // Estatísticas de Imagens Externas
+        external_images: externalImages,
+        external_non_optimized: externalNonOptimized,
+        external_images_list: externalImagesToOptimize,
+        
+        // Potencial de otimização
+        compressionPotential: nonWebpImages > 0 || externalNonOptimized > 0
+          ? `${nonWebpImages} imagens no storage + ${externalNonOptimized} imagens externas podem ser otimizadas` 
           : 'Todas as imagens já estão otimizadas',
+        
         lastScan: new Date().toISOString(),
         compressionResults,
-        message: compressionResults?.message || `Scan concluído: ${totalImages} imagens encontradas (${webpImages} WebP, ${nonWebpImages} não otimizadas)`
+        message: compressionResults?.message || 
+          `Scan concluído: ${totalImages} imagens no storage (${webpImages} WebP, ${nonWebpImages} não otimizadas) + ${externalImages} imagens externas (${externalNonOptimized} não otimizadas)`
       }
     };
 
