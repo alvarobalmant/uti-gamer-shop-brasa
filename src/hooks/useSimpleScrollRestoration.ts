@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLocation, useNavigationType, NavigationType } from 'react-router-dom';
 import simpleScrollManager from '@/lib/simpleScrollManager';
 import horizontalScrollManager from '@/lib/horizontalScrollManager';
+import pageStateManager from '@/lib/pageStateManager';
 
 /**
  * Hook simples e robusto para restauração de scroll
@@ -30,6 +31,10 @@ export const useSimpleScrollRestoration = () => {
     // Define a página atual em ambos os managers
     simpleScrollManager.setCurrentPage(currentPath);
     horizontalScrollManager.setCurrentPage(currentPath);
+    
+    // Sync with page state manager
+    const scrollPosition = { x: window.scrollX, y: window.scrollY };
+    pageStateManager.saveScrollPosition(currentPath, scrollPosition);
     
     // Lógica baseada no tipo de navegação
     if (navigationType === NavigationType.Pop) {

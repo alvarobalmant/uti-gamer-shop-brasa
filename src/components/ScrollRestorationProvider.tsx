@@ -1,5 +1,5 @@
 import React, { createContext } from 'react';
-import { useSimpleScrollRestoration } from '@/hooks/useSimpleScrollRestoration';
+import { useEnhancedScrollSystem } from '@/hooks/useEnhancedScrollSystem';
 import { useScrollSystemIntegration } from '@/hooks/useScrollSystemIntegration';
 
 // Contexto vazio apenas para fornecer o provedor
@@ -21,8 +21,25 @@ const ScrollRestorationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     performanceMode: 'smooth'
   });
   
-  // Use the scroll restoration system
-  useSimpleScrollRestoration();
+  // Use the enhanced scroll system with full caching
+  useEnhancedScrollSystem({
+    enablePageStateCache: true,
+    enableTransitionCache: true,
+    enableScrollRestoration: true,
+    transitionCacheOptions: {
+      enableSnapshots: true,
+      snapshotDelay: 1000,
+      enableInstantTransitions: true,
+      preloadRoutes: [], // Add commonly visited routes here
+    },
+    pageCacheOptions: {
+      enableAutoSave: true,
+      saveInterval: 2000,
+      restoreQueryCache: true,
+      enableFormDataCache: true,
+      enableFiltersCache: true,
+    },
+  });
   
   return (
     <ScrollRestorationContext.Provider value={null}>
