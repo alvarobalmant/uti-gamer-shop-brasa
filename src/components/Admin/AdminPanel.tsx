@@ -16,6 +16,7 @@ import { NavigationManager } from './NavigationManager';
 import MasterProductManager from './MasterProductManager';
 import PlatformManager from './PlatformManager';
 import BulkProductUpload from './BulkProductUpload';
+import BulkProductBackupAndEdit from './BulkProductBackupAndEdit';
 import ProductImageManager from '@/pages/Admin/ProductImageManager';
 import StorageManager from './StorageManager';
 import { SettingsManager } from './SettingsManager';
@@ -42,6 +43,7 @@ export const AdminPanel = () => {
     { id: 'products', label: 'Produtos', icon: Package },
     { id: 'desktop_products', label: 'Produtos Desktop', icon: Monitor },
     { id: 'bulk_upload', label: 'Importação em Massa', icon: Upload },
+    { id: 'backup_edit', label: 'Backup & Edição', icon: FileText },
     { id: 'image_upload', label: 'Upload Fácil', icon: ImagePlus },
     { id: 'storage', label: 'Gerenciar Storage', icon: HardDrive },
     { id: 'skus', label: 'Sistema de SKUs', icon: Layers },
@@ -192,6 +194,10 @@ export const AdminPanel = () => {
 
               <TabsContent value="bulk_upload" className="mt-0">
                 <BulkProductUpload />
+              </TabsContent>
+
+              <TabsContent value="backup_edit" className="mt-0">
+                <BulkProductBackupAndEdit />
               </TabsContent>
 
               <TabsContent value="image_upload" className="mt-0">

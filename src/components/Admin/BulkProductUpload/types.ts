@@ -65,7 +65,10 @@ export interface ImportedProduct {
   brand?: string;
   category?: string;
   platform?: string;
+  condition?: string;
   tags?: string;
+  colors?: string;
+  sizes?: string;
   
   // Status
   is_active?: boolean;
