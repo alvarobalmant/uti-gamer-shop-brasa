@@ -50,7 +50,7 @@ const StorageManager: React.FC = () => {
   const [scanning, setScanning] = useState(false);
   const [compressionProgress, setCompressionProgress] = useState<CompressionProgress | null>(null);
 
-  // Escanear storage real para detectar novas imagens
+  // Escanear storage usando a nova função unificada
   const scanRealStorage = async () => {
     if (scanning) return;
     
@@ -58,12 +58,14 @@ const StorageManager: React.FC = () => {
     try {
       console.log('🔍 Iniciando scan completo do storage...');
       
-      const { data, error } = await supabase.functions.invoke('scan-storage');
+      const { data, error } = await supabase.functions.invoke('storage-manager', {
+        body: JSON.stringify({ action: 'scan' })
+      });
       
-      console.log('📊 Resposta da função scan-storage:', { data, error });
+      console.log('📨 Resposta do scan:', { data, error });
       
       if (error) {
-        console.error('❌ Erro na função scan-storage:', error);
+        console.error('❌ Erro na função storage-manager:', error);
         toast.error('Erro ao escanear storage: ' + error.message);
         return;
       }
@@ -75,12 +77,9 @@ const StorageManager: React.FC = () => {
       }
 
       console.log('✅ Scan concluído:', data.data);
-      toast.success(`Scan concluído: ${data.data?.total_images || 0} imagens encontradas (${data.data?.webp_images || 0} WebP, ${data.data?.non_webp_images || 0} não otimizadas)`);
+      setStorageStats(data.data);
+      toast.success(data.data.message || `Scan concluído: ${data.data?.total_images || 0} imagens encontradas`);
       
-      // Aguardar um pouco antes de recarregar para garantir que o banco foi atualizado
-      setTimeout(() => {
-        loadStorageStats();
-      }, 1000);
     } catch (error: any) {
       console.error('❌ Erro ao escanear storage:', error);
       toast.error('Erro inesperado ao escanear storage');
@@ -89,38 +88,42 @@ const StorageManager: React.FC = () => {
     }
   };
 
-  // Carregar estatísticas do storage
+  // Carregar estatísticas de storage usando a nova função unificada
   const loadStorageStats = async () => {
     setLoadingStats(true);
     try {
-      console.log('🔄 Carregando estatísticas de storage...');
+      console.log('📊 Carregando estatísticas de storage...');
       
-      const { data, error } = await supabase.functions.invoke('storage-stats');
+      const { data, error } = await supabase.functions.invoke('storage-manager', {
+        body: JSON.stringify({ action: 'stats' })
+      });
       
-      console.log('📊 Resposta da função storage-stats:', { data, error });
+      console.log('📨 Resposta recebida:', { data, error });
       
       if (error) {
-        console.error('❌ Erro na função storage-stats:', error);
-        throw new Error(`Erro na função: ${error.message || 'Erro desconhecido'}`);
+        console.error('❌ Erro na função storage-manager:', error);
+        toast.error('Erro ao carregar estatísticas: ' + error.message);
+        return;
       }
 
       if (!data || !data.success) {
         console.error('❌ Resposta inválida:', data);
-        throw new Error(data?.error || data?.message || 'Resposta inválida da função');
+        toast.error(data?.error || 'Erro desconhecido ao carregar estatísticas');
+        return;
       }
 
-      console.log('✅ Estatísticas carregadas:', data.data);
+      console.log('✅ Dados recebidos:', data.data);
       setStorageStats(data.data);
-      toast.success('Estatísticas atualizadas!');
+      
     } catch (error: any) {
       console.error('❌ Erro ao carregar estatísticas:', error);
-      toast.error(`Erro ao carregar estatísticas: ${error.message}`);
+      toast.error('Erro inesperado ao carregar estatísticas');
     } finally {
       setLoadingStats(false);
     }
   };
 
-  // Comprimir todas as imagens
+  // Comprimir todas as imagens usando a nova função unificada
   const compressAllImages = async () => {
     if (compressing) return;
     
@@ -137,12 +140,14 @@ const StorageManager: React.FC = () => {
       console.log(`🗜️ Iniciando compressão de ${storageStats.nonWebpCount} imagens...`);
       toast.info('Compressão iniciada... Isso pode levar alguns minutos.');
       
-      const { data, error } = await supabase.functions.invoke('compress-images');
+      const { data, error } = await supabase.functions.invoke('storage-manager', {
+        body: JSON.stringify({ action: 'compress' })
+      });
       
-      console.log('📊 Resposta da função compress-images:', { data, error });
+      console.log('📨 Resposta da compressão:', { data, error });
       
       if (error) {
-        console.error('❌ Erro na função compress-images:', error);
+        console.error('❌ Erro na função storage-manager:', error);
         toast.error('Erro ao comprimir imagens: ' + error.message);
         return;
       }
@@ -154,19 +159,20 @@ const StorageManager: React.FC = () => {
       }
 
       console.log('✅ Compressão concluída:', data.data);
-      setCompressionResult(data.data);
       
-      const { processedCount, savedMB } = data.data;
-      if (processedCount > 0) {
-        toast.success(`${processedCount} imagens comprimidas! Economizou ${savedMB} MB de espaço.`);
-      } else {
-        toast.info('Nenhuma imagem foi comprimida.');
+      // Atualizar dados com resultados da compressão
+      setStorageStats(data.data);
+      setCompressionResult(data.data.compressionResults);
+      
+      if (data.data.compressionResults) {
+        const { processedCount, savedMB } = data.data.compressionResults;
+        if (processedCount > 0) {
+          toast.success(`${processedCount} imagens comprimidas! Economizou ${savedMB} MB de espaço.`);
+        } else {
+          toast.info('Nenhuma imagem foi comprimida.');
+        }
       }
       
-      // Aguardar antes de recarregar estatísticas
-      setTimeout(() => {
-        loadStorageStats();
-      }, 1500);
     } catch (error: any) {
       console.error('❌ Erro na compressão:', error);
       toast.error('Erro inesperado ao comprimir imagens');
