@@ -89,18 +89,18 @@ const BulkProductBackupAndEdit: React.FC = () => {
       const columnWidths = template.columns.map(col => ({ wch: col.width || 15 }));
       ws['!cols'] = columnWidths;
       
-      // Adicionar cabeçalhos personalizados
-      const headers = template.columns.map(col => col.label);
+      // Adicionar cabeçalhos usando os códigos corretos (key) em vez dos rótulos
+      const headers = template.columns.map(col => col.key);
       XLSX.utils.sheet_add_aoa(ws, [headers], { origin: 'A1' });
       
       // Adicionar comentários/instruções nas células do cabeçalho
       template.columns.forEach((col, index) => {
         const cellRef = XLSX.utils.encode_cell({ r: 0, c: index });
         if (col.instructions) {
-          if (!ws[cellRef]) ws[cellRef] = { t: 's', v: col.label };
+          if (!ws[cellRef]) ws[cellRef] = { t: 's', v: col.key };
           ws[cellRef].c = [{
             a: 'Sistema',
-            t: col.instructions
+            t: `${col.label}: ${col.instructions}`
           }];
         }
       });
