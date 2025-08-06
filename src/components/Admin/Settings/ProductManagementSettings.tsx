@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Tag, RefreshCw } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Product } from '@/hooks/useProducts/types';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductManagementSettingsProps {
   products: Product[];
@@ -16,6 +18,7 @@ interface ProductManagementSettingsProps {
   handleProductSelection: (productId: string, checked: boolean) => void;
   selectAllProducts: () => void;
   deselectAllProducts: () => void;
+  refreshProducts: () => Promise<void>;
 }
 
 export const ProductManagementSettings: React.FC<ProductManagementSettingsProps> = ({
@@ -27,20 +30,144 @@ export const ProductManagementSettings: React.FC<ProductManagementSettingsProps>
   handleDeleteSelectedProducts,
   handleProductSelection,
   selectAllProducts,
-  deselectAllProducts
+  deselectAllProducts,
+  refreshProducts
 }) => {
+  const { toast } = useToast();
+  const [isGeneratingSKUs, setIsGeneratingSKUs] = useState(false);
+
+  // Função para gerar código SKU único
+  const generateUniqueSKU = (productName: string, existingSkus: Set<string>): string => {
+    const cleanName = productName
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .substring(0, 6);
+    
+    let counter = 1;
+    let baseSku = cleanName || 'PROD';
+    let sku = `${baseSku}${String(counter).padStart(3, '0')}`;
+    
+    while (existingSkus.has(sku)) {
+      counter++;
+      sku = `${baseSku}${String(counter).padStart(3, '0')}`;
+    }
+    
+    existingSkus.add(sku);
+    return sku;
+  };
+
+  // Função para gerar SKUs para produtos sem código SKU
+  const handleGenerateSKUs = async () => {
+    setIsGeneratingSKUs(true);
+    try {
+      // Buscar todos os produtos existentes para verificar SKUs existentes
+      const { data: allProducts, error: fetchError } = await supabase
+        .from('products')
+        .select('id, name, sku_code');
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      // Criar conjunto de SKUs existentes
+      const existingSkus = new Set<string>();
+      const productsWithoutSku: Array<{ id: string; name: string }> = [];
+
+      allProducts?.forEach(product => {
+        if (product.sku_code) {
+          existingSkus.add(product.sku_code);
+        } else {
+          productsWithoutSku.push({ id: product.id, name: product.name });
+        }
+      });
+
+      if (productsWithoutSku.length === 0) {
+        toast({
+          title: "Nenhum produto encontrado",
+          description: "Todos os produtos já possuem código SKU.",
+        });
+        return;
+      }
+
+      // Gerar SKUs únicos para produtos sem SKU
+      const updates = productsWithoutSku.map(product => ({
+        id: product.id,
+        sku_code: generateUniqueSKU(product.name, existingSkus)
+      }));
+
+      // Atualizar produtos em lotes
+      const batchSize = 50;
+      let updatedCount = 0;
+
+      for (let i = 0; i < updates.length; i += batchSize) {
+        const batch = updates.slice(i, i + batchSize);
+        
+        for (const update of batch) {
+          const { error } = await supabase
+            .from('products')
+            .update({ sku_code: update.sku_code })
+            .eq('id', update.id);
+
+          if (error) {
+            console.error(`Erro ao atualizar produto ${update.id}:`, error);
+          } else {
+            updatedCount++;
+          }
+        }
+      }
+
+      await refreshProducts();
+
+      toast({
+        title: "SKUs gerados com sucesso",
+        description: `${updatedCount} produtos receberam códigos SKU únicos.`,
+      });
+
+    } catch (error) {
+      console.error('Erro ao gerar SKUs:', error);
+      toast({
+        title: "Erro ao gerar SKUs",
+        description: "Ocorreu um erro ao gerar os códigos SKU. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingSKUs(false);
+    }
+  };
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Trash2 className="w-5 h-5" />
+          <Tag className="w-5 h-5" />
           Gerenciamento de Produtos
         </CardTitle>
         <CardDescription>
-          Deletar produtos em massa ou individualmente
+          Gerar códigos SKU, deletar produtos em massa ou individualmente
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Gerar códigos SKU */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-primary">Códigos SKU</h3>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button 
+              onClick={handleGenerateSKUs}
+              disabled={isGeneratingSKUs || products.length === 0}
+              className="flex items-center gap-2"
+              variant="outline"
+            >
+              <RefreshCw className={`w-4 h-4 ${isGeneratingSKUs ? 'animate-spin' : ''}`} />
+              {isGeneratingSKUs ? 'Gerando SKUs...' : 'Gerar SKUs para Produtos'}
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Esta função irá gerar códigos SKU únicos para todos os produtos que ainda não possuem um código SKU. 
+            Isso facilitará o uso do sistema de edição em massa e backup de produtos.
+          </p>
+        </div>
+
+        <Separator />
+
         {/* Deletar todos os produtos */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-destructive">Zona de Perigo</h3>

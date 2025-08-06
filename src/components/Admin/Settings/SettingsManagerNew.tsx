@@ -339,6 +339,7 @@ export const SettingsManagerNew = () => {
         handleProductSelection={handleProductSelection}
         selectAllProducts={selectAllProducts}
         deselectAllProducts={deselectAllProducts}
+        refreshProducts={refreshProducts}
       />
 
       {/* Salvar configurações */}
