@@ -6,11 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Função para detectar formato de imagem
+// Função melhorada para detectar formato de imagem
 function detectImageFormat(fileName: string, firstBytes?: Uint8Array): string {
   const name = fileName.toLowerCase();
   
-  // Detecção por extensão
+  // Detecção por extensão - mais confiável
   if (name.endsWith('.webp')) return 'webp';
   if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'jpeg';
   if (name.endsWith('.png')) return 'png';
@@ -18,8 +18,11 @@ function detectImageFormat(fileName: string, firstBytes?: Uint8Array): string {
   if (name.endsWith('.svg')) return 'svg';
   if (name.endsWith('.bmp')) return 'bmp';
   if (name.endsWith('.tiff') || name.endsWith('.tif')) return 'tiff';
+  if (name.endsWith('.ico')) return 'ico';
+  if (name.endsWith('.avif')) return 'avif';
+  if (name.endsWith('.heic') || name.endsWith('.heif')) return 'heic';
   
-  // Detecção por bytes (magic numbers)
+  // Detecção por bytes (magic numbers) como fallback
   if (firstBytes && firstBytes.length >= 12) {
     // WebP: RIFF....WEBP
     if (firstBytes[0] === 0x52 && firstBytes[1] === 0x49 && 
@@ -48,6 +51,55 @@ function detectImageFormat(fileName: string, firstBytes?: Uint8Array): string {
   }
   
   return 'unknown';
+}
+
+// Função para verificar se um arquivo é imagem
+function isImageFile(fileName: string): boolean {
+  const imageExtensions = [
+    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', 
+    '.tiff', '.tif', '.ico', '.avif', '.heic', '.heif'
+  ];
+  
+  const name = fileName.toLowerCase();
+  return imageExtensions.some(ext => name.endsWith(ext));
+}
+
+// Função para listar todos os arquivos do bucket recursivamente
+async function listAllFiles(supabase: any, bucketName: string): Promise<Array<{name: string, size: number}>> {
+  const allFiles: Array<{name: string, size: number}> = [];
+  
+  async function listRecursive(path = '', depth = 0) {
+    if (depth > 10) return; // Prevenir recursão infinita
+    
+    const { data: files, error } = await supabase.storage
+      .from(bucketName)
+      .list(path, { limit: 1000 });
+    
+    if (error) {
+      console.error(`Erro ao listar ${path}:`, error);
+      return;
+    }
+    
+    if (!files) return;
+    
+    for (const file of files) {
+      const fullPath = path ? `${path}/${file.name}` : file.name;
+      
+      if (file.metadata && !file.name.endsWith('/')) {
+        // É um arquivo
+        allFiles.push({
+          name: fullPath,
+          size: file.metadata.size || 0
+        });
+      } else if (!file.metadata && file.name !== '.emptyFolderPlaceholder') {
+        // É uma pasta, listar recursivamente
+        await listRecursive(fullPath, depth + 1);
+      }
+    }
+  }
+  
+  await listRecursive();
+  return allFiles;
 }
 
 // Função para converter imagem para WebP
@@ -87,26 +139,36 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
     console.log('✅ Cliente Supabase criado com sucesso')
 
-    // Buscar parâmetros da requisição
-    const url = new URL(req.url);
-    const action = url.searchParams.get('action') || 'scan'; // scan, compress, stats
-    const compress = url.searchParams.get('compress') === 'true';
+    // Buscar parâmetros da requisição (GET params ou POST body)
+    let action = 'scan';
+    let compress = false;
+    
+    try {
+      const url = new URL(req.url);
+      action = url.searchParams.get('action') || action;
+      compress = url.searchParams.get('compress') === 'true';
+      
+      // Tentar ler body se for POST
+      if (req.method === 'POST') {
+        const body = await req.text();
+        if (body) {
+          const bodyData = JSON.parse(body);
+          action = bodyData.action || action;
+          compress = bodyData.compress || compress;
+        }
+      }
+    } catch (e) {
+      console.log('Usando parâmetros padrão devido a erro na leitura:', e);
+    }
     
     console.log(`📋 Ação solicitada: ${action}${compress ? ' + compressão' : ''}`);
 
     // === FASE 1: SCAN DO STORAGE ===
     console.log('🔍 Iniciando scan do bucket site-images...');
     
-    const { data: files, error: listError } = await supabase.storage
-      .from('site-images')
-      .list('', { limit: 1000, sortBy: { column: 'name', order: 'asc' } });
-
-    if (listError) {
-      console.error('❌ Erro ao listar arquivos:', listError);
-      throw new Error(`Erro ao acessar storage: ${listError.message}`);
-    }
-
-    console.log(`📁 Encontrados ${files?.length || 0} arquivos no bucket`);
+    // Listar todos os arquivos de forma recursiva
+    const allFiles = await listAllFiles(supabase, 'site-images');
+    console.log(`📁 Encontrados ${allFiles.length} arquivos no bucket (busca recursiva)`);
 
     // Processar arquivos e coletar estatísticas
     let totalImages = 0;
@@ -115,31 +177,35 @@ serve(async (req) => {
     let totalSizeMB = 0;
     const imagesToCompress: Array<{name: string, size: number, format: string}> = [];
 
-    if (files) {
-      for (const file of files) {
-        if (!file.name || file.name.endsWith('/')) continue; // Pular pastas
-        
-        const fileSize = file.metadata?.size || 0;
-        totalSizeMB += fileSize;
-        
-        // Detectar se é imagem
+    for (const file of allFiles) {
+      console.log(`📄 Analisando arquivo: ${file.name} (${(file.size / 1024 / 1024).toFixed(3)} MB)`);
+      
+      totalSizeMB += file.size;
+      
+      // Verificar se é imagem
+      if (isImageFile(file.name)) {
         const format = detectImageFormat(file.name);
+        
         if (format !== 'unknown') {
           totalImages++;
           
           if (format === 'webp') {
             webpImages++;
-            console.log(`✅ WebP encontrado: ${file.name} (${(fileSize / 1024 / 1024).toFixed(2)} MB)`);
+            console.log(`✅ WebP encontrado: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
           } else {
             nonWebpImages++;
             imagesToCompress.push({
               name: file.name,
-              size: fileSize,
+              size: file.size,
               format
             });
-            console.log(`🔄 Imagem não otimizada: ${file.name} (${format}, ${(fileSize / 1024 / 1024).toFixed(2)} MB)`);
+            console.log(`🔄 Imagem não otimizada: ${file.name} (${format}, ${(file.size / 1024 / 1024).toFixed(2)} MB)`);
           }
+        } else {
+          console.log(`❓ Arquivo com extensão de imagem mas formato desconhecido: ${file.name}`);
         }
+      } else {
+        console.log(`📋 Arquivo não é imagem: ${file.name}`);
       }
     }
 
