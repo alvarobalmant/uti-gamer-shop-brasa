@@ -119,34 +119,48 @@ export const usePageTransitionCache = (options: UsePageTransitionCacheOptions = 
   useEffect(() => {
     if (isInitialLoad.current) return;
 
-    // Listen for significant DOM changes that should trigger a new snapshot
-    const observer = new MutationObserver((mutations) => {
-      const significantChange = mutations.some(mutation => {
-        // Check if this is a significant content change
-        return mutation.type === 'childList' && 
-               mutation.addedNodes.length > 0 && 
-               Array.from(mutation.addedNodes).some(node => 
-                 node.nodeType === Node.ELEMENT_NODE &&
-                 !(node as Element).matches('.transition-element, .loading-indicator, [data-exclude-snapshot]')
-               );
+    let observer: MutationObserver | null = null;
+
+    try {
+      // Listen for significant DOM changes that should trigger a new snapshot
+      observer = new MutationObserver((mutations) => {
+        const significantChange = mutations.some(mutation => {
+          // Check if this is a significant content change
+          return mutation.type === 'childList' && 
+                 mutation.addedNodes.length > 0 && 
+                 Array.from(mutation.addedNodes).some(node => 
+                   node.nodeType === Node.ELEMENT_NODE &&
+                   !(node as Element).matches('.transition-element, .loading-indicator, [data-exclude-snapshot]')
+                 );
+        });
+
+        if (significantChange) {
+          console.log(`[PageTransitionCache] 📝 Significant content change detected`);
+          createSnapshot();
+        }
       });
 
-      if (significantChange) {
-        console.log(`[PageTransitionCache] 📝 Significant content change detected`);
-        createSnapshot();
+      // Observe the main content area
+      const mainContent = document.querySelector('main, #root, [data-main-content]');
+      if (mainContent) {
+        observer.observe(mainContent, {
+          childList: true,
+          subtree: true,
+        });
       }
-    });
-
-    // Observe the main content area
-    const mainContent = document.querySelector('main, #root, [data-main-content]');
-    if (mainContent) {
-      observer.observe(mainContent, {
-        childList: true,
-        subtree: true,
-      });
+    } catch (error) {
+      console.warn('[PageTransitionCache] Failed to create MutationObserver:', error);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      if (observer) {
+        try {
+          observer.disconnect();
+        } catch (error) {
+          console.warn('[PageTransitionCache] Failed to disconnect observer:', error);
+        }
+      }
+    };
   }, [createSnapshot]);
 
   // Preload routes on mount

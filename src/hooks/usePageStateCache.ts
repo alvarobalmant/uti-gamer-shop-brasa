@@ -41,25 +41,33 @@ export const usePageStateCache = (options: UsePageStateCacheOptions = {}) => {
 
     // Gather horizontal scroll positions
     const horizontalScrolls: Record<string, number> = {};
-    document.querySelectorAll('[data-scroll-section]').forEach((element) => {
-      const sectionId = element.getAttribute('data-scroll-section');
-      if (sectionId && element.scrollLeft > 0) {
-        horizontalScrolls[sectionId] = element.scrollLeft;
-      }
-    });
+    try {
+      document.querySelectorAll('[data-scroll-section]').forEach((element) => {
+        const sectionId = element.getAttribute('data-scroll-section');
+        if (sectionId && element.scrollLeft > 0) {
+          horizontalScrolls[sectionId] = element.scrollLeft;
+        }
+      });
+    } catch (error) {
+      console.warn('[PageStateCache] Failed to gather horizontal scrolls:', error);
+    }
 
     // Gather query cache data if enabled
     const queryCache: Record<string, any> = {};
     if (restoreQueryCache) {
-      const cache = queryClient.getQueryCache();
-      cache.getAll().forEach((query) => {
-        if (query.state.data && query.queryKey) {
-          queryCache[JSON.stringify(query.queryKey)] = {
-            data: query.state.data,
-            dataUpdatedAt: query.state.dataUpdatedAt,
-          };
-        }
-      });
+      try {
+        const cache = queryClient.getQueryCache();
+        cache.getAll().forEach((query) => {
+          if (query.state.data && query.queryKey) {
+            queryCache[JSON.stringify(query.queryKey)] = {
+              data: query.state.data,
+              dataUpdatedAt: query.state.dataUpdatedAt,
+            };
+          }
+        });
+      } catch (error) {
+        console.warn('[PageStateCache] Failed to gather query cache:', error);
+      }
     }
 
     pageStateManager.savePageState(currentPath, {

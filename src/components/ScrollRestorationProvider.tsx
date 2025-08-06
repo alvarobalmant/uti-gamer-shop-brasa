@@ -21,21 +21,21 @@ const ScrollRestorationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     performanceMode: 'smooth'
   });
   
-  // Use the enhanced scroll system with full caching
+  // Use the enhanced scroll system with conservative settings for stability
   useEnhancedScrollSystem({
     enablePageStateCache: true,
-    enableTransitionCache: true,
+    enableTransitionCache: false, // Disable DOM snapshots temporarily for stability
     enableScrollRestoration: true,
     transitionCacheOptions: {
-      enableSnapshots: true,
-      snapshotDelay: 1000,
-      enableInstantTransitions: true,
-      preloadRoutes: [], // Add commonly visited routes here
+      enableSnapshots: false,
+      snapshotDelay: 2000,
+      enableInstantTransitions: false,
+      preloadRoutes: [],
     },
     pageCacheOptions: {
       enableAutoSave: true,
-      saveInterval: 2000,
-      restoreQueryCache: true,
+      saveInterval: 3000, // Increase interval for stability
+      restoreQueryCache: false, // Disable query cache temporarily
       enableFormDataCache: true,
       enableFiltersCache: true,
     },
