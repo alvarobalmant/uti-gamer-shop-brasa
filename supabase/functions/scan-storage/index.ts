@@ -42,26 +42,60 @@ serve(async (req) => {
 
     console.log(`Encontrados ${files?.length || 0} arquivos no storage`)
 
-    // Processar arquivos recursivamente para pegar todos os subdiretórios
-    const getAllFiles = async (path = '', allFiles: any[] = []): Promise<any[]> => {
-      const { data: items } = await supabase.storage
+    // Processar arquivos recursivamente com melhor detecção de arquivos vs pastas
+    const getAllFiles = async (path = '', allFiles: any[] = [], visitedPaths = new Set()): Promise<any[]> => {
+      const currentPath = path || '/'
+      
+      // Evitar loops infinitos
+      if (visitedPaths.has(currentPath)) {
+        console.log(`Caminho já visitado, pulando: ${currentPath}`)
+        return allFiles
+      }
+      visitedPaths.add(currentPath)
+      
+      console.log(`Escaneando pasta: ${currentPath}`)
+      
+      const { data: items, error } = await supabase.storage
         .from('site-images')
-        .list(path, { limit: 1000 })
+        .list(path, { 
+          limit: 1000,
+          sortBy: { column: 'name', order: 'asc' }
+        })
 
-      if (!items) return allFiles
+      if (error) {
+        console.error(`Erro ao escanear ${currentPath}:`, error)
+        return allFiles
+      }
+
+      if (!items || items.length === 0) {
+        console.log(`Nenhum item encontrado em: ${currentPath}`)
+        return allFiles
+      }
+
+      console.log(`Encontrados ${items.length} itens em ${currentPath}`)
 
       for (const item of items) {
         const fullPath = path ? `${path}/${item.name}` : item.name
         
-        if (item.metadata) {
-          // É um arquivo
+        // Verificar se é arquivo baseado em extensão E metadata
+        const hasExtension = item.name.includes('.')
+        const hasMetadata = item.metadata && Object.keys(item.metadata).length > 0
+        
+        if (hasExtension && hasMetadata) {
+          // É um arquivo real
           allFiles.push({
             ...item,
-            fullPath
+            fullPath,
+            isFile: true
           })
-        } else {
+          console.log(`Arquivo encontrado: ${fullPath} (${item.metadata?.size || 0} bytes)`)
+        } else if (!hasExtension) {
           // É uma pasta, escanear recursivamente
-          await getAllFiles(fullPath, allFiles)
+          console.log(`Pasta encontrada: ${fullPath}, escaneando...`)
+          await getAllFiles(fullPath, allFiles, visitedPaths)
+        } else {
+          // Caso ambíguo - log para investigação
+          console.log(`Item ambíguo: ${fullPath} - extensão: ${hasExtension}, metadata: ${hasMetadata}`)
         }
       }
 
@@ -71,29 +105,48 @@ serve(async (req) => {
     const allFiles = await getAllFiles()
     console.log(`Total de arquivos encontrados: ${allFiles.length}`)
 
-    // Calcular estatísticas
+    // Calcular estatísticas com validação rigorosa
     let totalSizeBytes = 0
     let totalImages = 0
     let webpImages = 0
     let nonWebpImages = 0
+    let invalidFiles = 0
 
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp']
     
-    allFiles.forEach(file => {
+    console.log(`\n=== ANÁLISE DE ${allFiles.length} ARQUIVOS ===`)
+    
+    allFiles.forEach((file, index) => {
       const fileName = file.name.toLowerCase()
+      const fileSize = file.metadata?.size || 0
       const isImage = imageExtensions.some(ext => fileName.endsWith(ext))
       
-      if (isImage) {
+      if (isImage && fileSize > 0) {
         totalImages++
-        totalSizeBytes += file.metadata?.size || 0
+        totalSizeBytes += fileSize
         
         if (fileName.endsWith('.webp')) {
           webpImages++
+          console.log(`${index + 1}. WebP: ${file.fullPath} (${(fileSize / 1024).toFixed(1)} KB)`)
         } else {
           nonWebpImages++
+          console.log(`${index + 1}. Não-WebP: ${file.fullPath} (${(fileSize / 1024).toFixed(1)} KB)`)
         }
+      } else if (isImage && fileSize === 0) {
+        invalidFiles++
+        console.log(`${index + 1}. INVÁLIDO: ${file.fullPath} (0 bytes - arquivo corrompido)`)
+      } else {
+        console.log(`${index + 1}. Ignorado: ${file.fullPath} (não é imagem)`)
       }
     })
+    
+    console.log(`\n=== RESUMO ===`)
+    console.log(`Total de arquivos escaneados: ${allFiles.length}`)
+    console.log(`Imagens válidas: ${totalImages}`)
+    console.log(`Imagens WebP: ${webpImages}`)
+    console.log(`Imagens não-WebP: ${nonWebpImages}`)
+    console.log(`Arquivos inválidos/corrompidos: ${invalidFiles}`)
+    console.log(`Tamanho total: ${(totalSizeBytes / 1024 / 1024).toFixed(2)} MB`)
 
     const totalSizeMB = totalSizeBytes / (1024 * 1024)
 

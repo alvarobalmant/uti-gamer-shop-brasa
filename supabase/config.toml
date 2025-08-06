@@ -34,6 +34,9 @@ port = 54327
 [functions.image-proxy]
 verify_jwt = false
 
+[functions.scan-storage]
+verify_jwt = true
+
 [functions.storage-stats]
 verify_jwt = true
 
