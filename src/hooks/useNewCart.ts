@@ -131,18 +131,13 @@ export const useNewCart = () => {
     return count;
   }, [cart]);
 
-  const sendToWhatsApp = useCallback(() => {
+  const sendToWhatsApp = useCallback(async () => {
     if (cart.length === 0) return;
 
-    const itemsList = cart.map(item => 
-      `• ${item.product.name} (${item.size || 'Padrão'}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
-    ).join('\n');
-    
-    const total = getCartTotal();
-    const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  }, [cart, getCartTotal]);
+    // Importar e usar a função do utils que inclui o código de verificação
+    const { sendToWhatsApp: sendToWhatsAppWithCode } = await import('@/utils/whatsapp');
+    return await sendToWhatsAppWithCode(cart);
+  }, [cart]);
 
   return {
     cart,
