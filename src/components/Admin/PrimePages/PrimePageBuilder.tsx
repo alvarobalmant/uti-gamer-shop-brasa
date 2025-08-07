@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import { usePrimePages, PrimePage, PrimePageLayoutInput } from '@/hooks/usePrimePages';
-import { ProductSectionCreator } from './ProductSectionCreator';
-import { SpecialSectionCreator } from './SpecialSectionCreator';
+import { ProductSectionCreator } from './modals/ProductSectionCreator';
+import { SpecialSectionCreator } from './modals/SpecialSectionCreator';
 import { VisualBuilder } from './VisualBuilder';
 import { PageStats } from './PageStats';
 import { PreviewPanel } from './PreviewPanel';
@@ -286,19 +286,19 @@ export const PrimePageBuilder: React.FC<PrimePageBuilderProps> = ({ pageId, onBa
       </div>
 
       {/* Modals */}
-      {activeModal === 'products' && (
-        <ProductSectionCreator
-          onSave={handleAddProductSection}
-          onClose={() => setActiveModal(null)}
-        />
-      )}
+      <ProductSectionCreator
+        open={activeModal === 'products'}
+        pageId={pageId}
+        onClose={() => setActiveModal(null)}
+        onSectionCreated={handleAddProductSection}
+      />
 
-      {activeModal === 'special' && (
-        <SpecialSectionCreator
-          onSave={handleAddSpecialSection}
-          onClose={() => setActiveModal(null)}
-        />
-      )}
+      <SpecialSectionCreator
+        open={activeModal === 'special'}
+        pageId={pageId}
+        onClose={() => setActiveModal(null)}
+        onSectionCreated={handleAddSpecialSection}
+      />
     </div>
   );
 };

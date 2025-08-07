@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ProductSectionEditor } from './modals/ProductSectionEditor';
+import { SpecialSectionEditor } from './modals/SpecialSectionEditor';
 
 interface VisualBuilderProps {
   sections: any[];
@@ -25,6 +27,8 @@ export const VisualBuilder: React.FC<VisualBuilderProps> = ({
 }) => {
   const [editingSection, setEditingSection] = useState<any>(null);
   const [editForm, setEditForm] = useState<any>({});
+  const [showProductEditor, setShowProductEditor] = useState(false);
+  const [showSpecialEditor, setShowSpecialEditor] = useState(false);
 
   const handleDragEnd = (result: any) => {
     if (!result.destination) return;
@@ -54,12 +58,21 @@ export const VisualBuilder: React.FC<VisualBuilderProps> = ({
 
   const handleEditSection = (section: any) => {
     setEditingSection(section);
-    setEditForm({
-      section_key: section.section_key,
-      section_type: section.section_type,
-      section_config: { ...section.section_config },
-      is_visible: section.is_visible
-    });
+    
+    // Open specific editor based on section type
+    if (section.section_type === 'product_section') {
+      setShowProductEditor(true);
+    } else if (['banner_hero', 'product_carousel', 'custom_banner', 'promo_banner', 'special_section'].includes(section.section_type)) {
+      setShowSpecialEditor(true);
+    } else {
+      // Fallback to generic editor for other types
+      setEditForm({
+        section_key: section.section_key,
+        section_type: section.section_type,
+        section_config: { ...section.section_config },
+        is_visible: section.is_visible
+      });
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -68,6 +81,27 @@ export const VisualBuilder: React.FC<VisualBuilderProps> = ({
     await onSectionUpdate(editingSection.id, editForm);
     setEditingSection(null);
     setEditForm({});
+  };
+
+  const handleProductSectionUpdate = async (updatedSection: any) => {
+    await onSectionUpdate(editingSection.id, {
+      section_key: updatedSection.section_key,
+      is_visible: updatedSection.is_visible,
+      section_config: updatedSection.section_config
+    });
+    setEditingSection(null);
+    setShowProductEditor(false);
+  };
+
+  const handleSpecialSectionUpdate = async (updatedSection: any) => {
+    await onSectionUpdate(editingSection.id, {
+      section_type: updatedSection.section_type,
+      section_key: updatedSection.section_key,
+      is_visible: updatedSection.is_visible,
+      section_config: updatedSection.section_config
+    });
+    setEditingSection(null);
+    setShowSpecialEditor(false);
   };
 
   const getSectionName = (section: any) => {
@@ -245,8 +279,30 @@ export const VisualBuilder: React.FC<VisualBuilderProps> = ({
         </DragDropContext>
       </div>
 
-      {/* Edit Section Modal */}
-      {editingSection && (
+      {/* Product Section Editor */}
+      <ProductSectionEditor
+        open={showProductEditor}
+        onClose={() => {
+          setShowProductEditor(false);
+          setEditingSection(null);
+        }}
+        section={editingSection}
+        onSectionUpdated={handleProductSectionUpdate}
+      />
+
+      {/* Special Section Editor */}
+      <SpecialSectionEditor
+        open={showSpecialEditor}
+        onClose={() => {
+          setShowSpecialEditor(false);
+          setEditingSection(null);
+        }}
+        section={editingSection}
+        onSectionUpdated={handleSpecialSectionUpdate}
+      />
+
+      {/* Generic Edit Section Modal (for simple sections) */}
+      {editingSection && !showProductEditor && !showSpecialEditor && editForm.section_key !== undefined && (
         <Dialog open={true} onOpenChange={() => setEditingSection(null)}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
