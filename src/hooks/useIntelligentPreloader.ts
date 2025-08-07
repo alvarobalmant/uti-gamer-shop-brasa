@@ -31,6 +31,14 @@ export class IntelligentPreloader {
   // Configurar fila de preloading com prioridades
   private setupPreloadQueue() {
     this.preloadQueue = [
+      // Prioridade máxima - Homepage (especialmente de páginas de produto)
+      {
+        route: '/',
+        priority: 'high',
+        delay: 500,
+        preloadFn: () => this.preloadHomePage(),
+        isPreloaded: false
+      },
       // Alta prioridade - preload imediato após idle
       {
         route: '/produto',
@@ -225,6 +233,19 @@ export class IntelligentPreloader {
   }
 
   // Funções específicas de preloading
+  private async preloadHomePage(): Promise<void> {
+    // Preload dos componentes da homepage
+    await Promise.all([
+      import('../pages/Index'),
+      import('../hooks/useOptimizedHomepageLayout'),
+      import('../components/HomePage/SectionRenderer'),
+      import('../components/HomePage/LoadingState'),
+      import('../hooks/useIndexPage')
+    ]);
+    
+    console.log('🏠 Homepage preloaded com sucesso');
+  }
+
   private async preloadProductPage(): Promise<void> {
     // Preload do chunk da página de produto
     await import('../pages/ProductPageSKU');
@@ -316,16 +337,30 @@ export const useIntelligentPreloader = () => {
     }
   }, []);
 
-  // Iniciar preloading quando estiver na home
+  // Iniciar preloading baseado na página atual
   useEffect(() => {
-    if (location.pathname === '/' && preloaderRef.current) {
-      // Aguardar um pouco para garantir que a home carregou
-      const timer = setTimeout(() => {
+    if (!preloaderRef.current) return;
+
+    let timer: NodeJS.Timeout;
+
+    if (location.pathname === '/') {
+      // Na homepage, priorizar outras páginas
+      timer = setTimeout(() => {
         preloaderRef.current?.startBackgroundPreloading();
       }, 2000);
-
-      return () => clearTimeout(timer);
+    } else if (location.pathname.startsWith('/produto/')) {
+      // Em páginas de produto, priorizar homepage
+      timer = setTimeout(() => {
+        preloaderRef.current?.startBackgroundPreloading();
+      }, 1000); // Delay menor para páginas de produto
+    } else {
+      // Em outras páginas, preload com delay maior
+      timer = setTimeout(() => {
+        preloaderRef.current?.startBackgroundPreloading();
+      }, 3000);
     }
+
+    return () => clearTimeout(timer);
   }, [location.pathname]);
 
   // Cleanup ao desmontar
