@@ -1,15 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Filter, Package } from 'lucide-react';
+import { Plus, Search, Filter, Package, Zap, AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useProducts } from '@/hooks/useProducts';
 import { useTags } from '@/hooks/useTags';
 import ProductList from './ProductManager/ProductList';
 import ProductForm from './ProductManager/ProductForm';
 import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
+
+// Lazy load the optimized version for large datasets
+const ProductManagerOptimized = React.lazy(() => import('./ProductManager/ProductManagerOptimized'));
 
 const ProductManager = () => {
   const { products, loading, addProduct, updateProduct, deleteProduct, fetchSingleProduct } = useProducts();
@@ -18,6 +22,15 @@ const ProductManager = () => {
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [useOptimizedView, setUseOptimizedView] = useState(false);
+
+  // Auto-switch to optimized view for large datasets
+  useEffect(() => {
+    if (products.length > 500 && !useOptimizedView) {
+      console.log('[ProductManager] Large dataset detected, switching to optimized view');
+      setUseOptimizedView(true);
+    }
+  }, [products.length, useOptimizedView]);
 
   // Detectar se deve abrir diretamente na edição via URL parameter
   useEffect(() => {
@@ -118,8 +131,44 @@ const ProductManager = () => {
     );
   }
 
+  // Use optimized version for large datasets
+  if (useOptimizedView) {
+    return (
+      <Suspense fallback={
+        <div className="flex items-center justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-2 text-muted-foreground">Carregando versão otimizada...</span>
+        </div>
+      }>
+        <ProductManagerOptimized />
+      </Suspense>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Performance Alert */}
+      {products.length > 200 && !useOptimizedView && (
+        <Alert className="border-warning">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>
+              Grande volume de produtos detectado ({products.length} produtos). 
+              Recomendamos usar a versão otimizada para melhor performance.
+            </span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setUseOptimizedView(true)}
+              className="ml-4"
+            >
+              <Zap className="w-4 h-4 mr-1" />
+              Usar Versão Otimizada
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Header com estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-[#2C2C44] border-[#343A40]">
@@ -172,7 +221,7 @@ const ProductManager = () => {
             <div>
               <CardTitle className="text-white text-xl">Gerenciamento de Produtos</CardTitle>
               <CardDescription className="text-gray-400">
-                Gerencie o catálogo de produtos da loja
+                Gerencie o catálogo de produtos da loja ({products.length} produtos)
               </CardDescription>
             </div>
             <Button 
