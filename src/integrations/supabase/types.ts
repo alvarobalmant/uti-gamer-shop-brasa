@@ -2584,6 +2584,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_orphaned_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       cleanup_uti_coins_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2606,6 +2610,10 @@ export type Database = {
       }
       delete_master_product_cascade: {
         Args: { p_master_product_id: string }
+        Returns: Json
+      }
+      diagnose_product_data: {
+        Args: Record<PropertyKey, never>
         Returns: Json
       }
       earn_coins: {
@@ -2642,6 +2650,81 @@ export type Database = {
           period_end: string
           can_claim: boolean
           next_reset: string
+        }[]
+      }
+      get_products_with_tags_corrected: {
+        Args: {
+          include_admin?: boolean
+          tag_filter?: string[]
+          limit_count?: number
+        }
+        Returns: {
+          product_id: string
+          product_name: string
+          product_description: string
+          product_image: string
+          additional_images: string[]
+          product_price: number
+          pro_price: number
+          list_price: number
+          new_price: number
+          digital_price: number
+          discount_price: number
+          product_stock: number
+          sizes: string[]
+          colors: string[]
+          badge_text: string
+          badge_color: string
+          badge_visible: boolean
+          specifications: Json
+          technical_specs: Json
+          product_features: Json
+          shipping_weight: number
+          free_shipping: boolean
+          is_active: boolean
+          is_featured: boolean
+          promotional_price: number
+          discount_percentage: number
+          pix_discount_percentage: number
+          uti_pro_price: number
+          installment_options: number
+          rating_average: number
+          rating_count: number
+          meta_title: string
+          meta_description: string
+          slug: string
+          brand: string
+          category: string
+          platform: string
+          condition: string
+          pro_discount_percent: number
+          uti_pro_enabled: boolean
+          uti_pro_value: number
+          uti_pro_type: string
+          uti_pro_custom_price: number
+          parent_product_id: string
+          product_type: string
+          sku_code: string
+          is_master_product: boolean
+          variant_attributes: Json
+          sort_order: number
+          available_variants: Json
+          inherit_from_master: Json
+          product_videos: Json
+          product_faqs: Json
+          product_highlights: Json
+          reviews_config: Json
+          trust_indicators: Json
+          manual_related_products: Json
+          breadcrumb_config: Json
+          product_descriptions: Json
+          delivery_config: Json
+          display_config: Json
+          master_slug: string
+          created_at: string
+          updated_at: string
+          tag_id: string
+          tag_name: string
         }[]
       }
       get_user_role: {
@@ -2754,6 +2837,17 @@ export type Database = {
       validate_admin_token: {
         Args: { p_token: string; p_ip?: string }
         Returns: Json
+      }
+      validate_product_integrity: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_products: number
+          products_with_tags: number
+          products_without_tags: number
+          orphaned_product_tags: number
+          invalid_tag_references: number
+          integrity_issues: string[]
+        }[]
       }
       verify_redemption_code: {
         Args: { p_code: string }

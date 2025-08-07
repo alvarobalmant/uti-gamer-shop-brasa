@@ -125,18 +125,56 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
         invalidateSupabaseCache();
         
         // Fallback: query products table directly
-        try {
-          console.log('[fetchProductsFromDatabase] Trying fallback query...');
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from('products')
-            .select('*');
-            
-          if (fallbackError) {
-            throw fallbackError;
-          }
+    try {
+      console.log('[fetchProductsFromDatabase] Using enhanced fallback with tags...');
+      
+      // Fallback melhorado que inclui tags via JOIN
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_tags!inner(
+            tag_id,
+            tags!inner(
+              id,
+              name
+            )
+          )
+        `);
+        
+      if (fallbackError) {
+        // Se mesmo o fallback with JOIN falhar, usar query simples
+        console.warn('[fetchProductsFromDatabase] JOIN fallback failed, using simple query...');
+        const { data: simpleData, error: simpleError } = await supabase
+          .from('products')
+          .select('*');
           
-          console.log(`[fetchProductsFromDatabase] Fallback successful: ${fallbackData?.length || 0} products`);
-          return fallbackData?.map(row => mapRowToProduct({
+        if (simpleError) {
+          throw simpleError;
+        }
+        
+        console.log(`[fetchProductsFromDatabase] Simple fallback successful: ${simpleData?.length || 0} products`);
+        return simpleData?.map(row => mapRowToProduct({
+          product_id: row.id,
+          product_name: row.name,
+          product_description: row.description,
+          product_price: row.price,
+          product_image: row.image,
+          product_stock: row.stock,
+          ...row
+        })) || [];
+      }
+      
+      console.log(`[fetchProductsFromDatabase] Enhanced fallback successful: ${fallbackData?.length || 0} products`);
+      
+      // Processar dados com tags do fallback
+      const productsMap = new Map<string, Product>();
+      
+      fallbackData?.forEach((row: any) => {
+        const productId = row.id;
+        
+        if (!productsMap.has(productId)) {
+          productsMap.set(productId, mapRowToProduct({
             product_id: row.id,
             product_name: row.name,
             product_description: row.description,
@@ -144,11 +182,32 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
             product_image: row.image,
             product_stock: row.stock,
             ...row
-          })) || [];
-        } catch (fallbackError) {
-          console.error('[fetchProductsFromDatabase] Fallback also failed:', fallbackError);
-          throw fallbackError;
+          }));
         }
+        
+        // Adicionar tags do JOIN
+        if (row.product_tags && row.product_tags.length > 0) {
+          const product = productsMap.get(productId)!;
+          row.product_tags.forEach((pt: any) => {
+            if (pt.tags) {
+              const tagExists = product.tags?.some(tag => tag.id === pt.tags.id);
+              if (!tagExists) {
+                product.tags = product.tags || [];
+                product.tags.push({
+                  id: pt.tags.id,
+                  name: pt.tags.name
+                });
+              }
+            }
+          });
+        }
+      });
+      
+      return Array.from(productsMap.values());
+    } catch (fallbackError) {
+      console.error('[fetchProductsFromDatabase] All fallback attempts failed:', fallbackError);
+      throw fallbackError;
+    }
       }
       throw error;
     }

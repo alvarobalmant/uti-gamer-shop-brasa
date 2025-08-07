@@ -12,6 +12,7 @@ import ProductForm from './ProductManager/ProductForm';
 import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
 import { ProductDebugInfo } from './ProductManager/ProductDebugInfo';
+import { ProductDataValidator } from './ProductDataValidator';
 
 // DISABLED: Optimized version disabled to ensure ALL products are visible
 // const ProductManagerOptimized = React.lazy(() => import('./ProductManager/ProductManagerOptimized'));
@@ -138,6 +139,9 @@ const ProductManager = () => {
     <div className="space-y-6">
       {/* Debug Info */}
       <ProductDebugInfo products={products} loading={loading} />
+      
+      {/* Validador de Dados */}
+      <ProductDataValidator />
       
       {/* Performance Alert - Disabled, showing all products */}
       {products.length > 200 && (
