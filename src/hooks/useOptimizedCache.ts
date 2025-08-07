@@ -1,15 +1,6 @@
 import { useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 
-// Cache ULTRA-PERSISTENTE para layout específico
-const ULTRA_LAYOUT_CONFIG = {
-  staleTime: 30 * 60 * 1000,    // 30 minutos
-  gcTime: 60 * 60 * 1000,       // 1 hora  
-  refetchOnWindowFocus: false,
-  refetchOnMount: false,
-  retry: 1
-};
-
 // Tipos para configuração de cache
 interface CacheConfig {
   staleTime: number;
@@ -30,13 +21,13 @@ const CACHE_CONFIGS: Record<string, CacheConfig> = {
     retry: 3
   },
   
-  // Cache ULTRA-AGRESSIVO para layout da homepage
+  // Cache médio para layout dinâmico
   layout: {
-    staleTime: 30 * 60 * 1000, // 30 minutos - dados são considerados frescos por muito tempo
-    gcTime: 60 * 60 * 1000,    // 1 hora - permanecem em memória por muito tempo
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
     refetchOnWindowFocus: false,
-    refetchOnMount: false,     // NUNCA refetch ao remontar componente
-    retry: 1                   // Mínimo de retries para falhas
+    refetchOnMount: false,
+    retry: 2
   },
   
   // Cache rápido para seções especiais
@@ -248,22 +239,7 @@ export const CacheKeys = {
   user: (id?: string) => 
     ['user', ...(id ? [id] : [])],
     
-    search: (query: string, filters?: Record<string, any>) =>
+  search: (query: string, filters?: Record<string, any>) =>
     ['search', query, ...(filters ? [JSON.stringify(filters)] : [])]
 } as const;
-
-// Hook ULTRA-PERSISTENTE específico para layout da homepage
-export const useUltraLayoutCache = <T>(
-  queryKey: string[],
-  queryFn: () => Promise<T>
-) => {
-  return useQuery({
-    queryKey,
-    queryFn,
-    ...ULTRA_LAYOUT_CONFIG,
-    // Configurações específicas para máxima persistência
-    structuralSharing: true,
-    placeholderData: (previousData) => previousData,
-  } as UseQueryOptions<T>);
-};
 

@@ -1,13 +1,13 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useHomepageProducts } from '@/hooks/useHomepageProducts';
-import { useOptimizedHomepageLayout } from '@/hooks/useOptimizedHomepageLayout';
+import { useHomepageLayout } from '@/hooks/useHomepageLayout';
 import { useProductSections } from '@/hooks/useProductSections';
 import { useSpecialSections } from '@/hooks/useSpecialSections';
 
 export const useIndexPage = () => {
   const { data: products, isLoading: productsLoading, refetch } = useHomepageProducts();
-  const { layoutItems, isLoading: layoutLoading } = useOptimizedHomepageLayout();
+  const { layoutItems, loading: layoutLoading } = useHomepageLayout();
   const { sections, loading: sectionsLoading } = useProductSections();
   const { sections: specialSections, loading: specialSectionsLoading } = useSpecialSections();
 
