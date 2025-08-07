@@ -25,6 +25,7 @@ import { useEffect } from "react";
 
 // Componentes de preloading inteligente
 import { AppWithPreloader } from "@/components/AppWithPreloader";
+import { useLayoutPreloader } from "@/hooks/useLayoutPreloader";
 
 // Hook minimalista para prevenir layout shift sem interferir no scroll
 const usePreventLayoutShift = () => {
@@ -144,10 +145,18 @@ const App = () => {
   // Hook para prevenir layout shift globalmente
   usePreventLayoutShift();
   
+  // Inicializar preloader de layout ultra-persistente
+  const { initializeLayoutCache } = useLayoutPreloader();
+  
   // Setup de interceptação de erros 404
   React.useEffect(() => {
     setupErrorInterception();
   }, []);
+  
+  // Inicializar cache de layout na startup da aplicação
+  React.useEffect(() => {
+    initializeLayoutCache();
+  }, [initializeLayoutCache]);
   
   return (
     <QueryClientProvider client={queryClient}>

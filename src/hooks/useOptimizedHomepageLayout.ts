@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { useOptimizedCache, CacheKeys } from './useOptimizedCache';
+import { useUltraLayoutCache, CacheKeys } from './useOptimizedCache';
+import { usePersistentLayoutCache } from './usePersistentLayoutCache';
 import { supabase } from '@/integrations/supabase/client';
 
 // Tipos para a view unificada
@@ -47,22 +48,27 @@ const fetchOptimizedHomepageLayout = async (): Promise<OptimizedHomepageLayoutIt
   return data || [];
 };
 
-// Hook principal para layout otimizado
+// Hook principal para layout otimizado com cache ULTRA-PERSISTENTE
 export const useOptimizedHomepageLayout = () => {
+  const { persistLayoutData } = usePersistentLayoutCache();
+  
   const queryKey = useMemo(() => 
     CacheKeys.layout(), 
     []
   );
 
-  const query = useOptimizedCache(
+  // Usar cache ULTRA-PERSISTENTE
+  const query = useUltraLayoutCache(
     queryKey,
-    fetchOptimizedHomepageLayout,
-    'layout', // 2 minutos de cache
-    {
-      staleTime: 2 * 60 * 1000, // 2 minutos
-      gcTime: 10 * 60 * 1000, // 10 minutos
-    }
+    fetchOptimizedHomepageLayout
   );
+
+  // Salvar dados no cache persistente quando disponíveis
+  useMemo(() => {
+    if (query.data) {
+      persistLayoutData(query.data);
+    }
+  }, [query.data, persistLayoutData]);
 
   // Processar dados para compatibilidade com componentes existentes
   const processedLayoutItems = useMemo(() => {
