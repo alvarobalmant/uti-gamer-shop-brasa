@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { SpecialSectionForm } from '../forms/SpecialSectionForm';
+import SpecialSectionForm from '@/components/Admin/SpecialSectionManager/SpecialSectionForm';
 
 interface SpecialSectionEditorProps {
   open: boolean;
@@ -56,10 +56,9 @@ export const SpecialSectionEditor: React.FC<SpecialSectionEditorProps> = ({
           <DialogTitle>Editar Seção Especial</DialogTitle>
         </DialogHeader>
         <SpecialSectionForm
-          section={sectionData}
-          onSave={handleSectionSave}
+          section={sectionData as any}
+          onSubmit={handleSectionSave}
           onCancel={onClose}
-          mode="edit"
         />
       </DialogContent>
     </Dialog>

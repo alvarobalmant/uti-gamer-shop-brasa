@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ProductSectionForm } from '../forms/ProductSectionForm';
+import { SimpleProductSectionForm } from '../forms/SimpleProductSectionForm';
 
 interface ProductSectionCreatorProps {
   open: boolean;
@@ -45,7 +45,7 @@ export const ProductSectionCreator: React.FC<ProductSectionCreatorProps> = ({
         <DialogHeader>
           <DialogTitle>Criar Seção de Produtos</DialogTitle>
         </DialogHeader>
-        <ProductSectionForm
+        <SimpleProductSectionForm
           onSave={handleSectionSave}
           onCancel={onClose}
           mode="create"
