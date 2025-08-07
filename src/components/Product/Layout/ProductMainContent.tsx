@@ -269,7 +269,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
                   Plataforma:
                 </label>
                 <div className="flex gap-2 flex-wrap">
-                  {skuNavigation.platforms.slice(0, 3).map(({ platform, sku, available }, index) => {
+                  {skuNavigation.platforms.map(({ platform, sku, available }, index) => {
                     const isCurrentPlatform = skuNavigation.currentSKU?.variant_attributes?.platform === platform;
                     
                     // Mapear nomes de plataforma para os slugs corretos
@@ -327,11 +327,6 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
                       </Button>
                     );
                   })}
-                  {skuNavigation.platforms.length > 3 && (
-                    <span className="text-sm text-gray-500 self-center">
-                      +{skuNavigation.platforms.length - 3} mais
-                    </span>
-                  )}
                 </div>
                 <p className="text-xs text-gray-500">
                   💡 Preços podem variar entre plataformas
