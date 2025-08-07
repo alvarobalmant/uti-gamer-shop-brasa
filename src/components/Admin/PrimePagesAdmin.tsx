@@ -55,10 +55,12 @@ const PrimePagesAdmin: React.FC = () => {
     display_order: 0,
     is_visible: true
   });
+  const [productSectionTitle, setProductSectionTitle] = useState('');
+  const [specialSectionTitle, setSpecialSectionTitle] = useState('');
   
   // Page-scoped section hooks
   const { sections, createSection, fetchSections } = useProductSections(selectedPageWithLayout?.id);
-  const { sections: specialSections } = useSpecialSections({ pageId: selectedPageWithLayout?.id });
+  const { sections: specialSections, createSection: createSpecialSection } = useSpecialSections({ pageId: selectedPageWithLayout?.id });
 
   // Resetar formulário
   const resetForm = () => {
@@ -189,6 +191,53 @@ const PrimePagesAdmin: React.FC = () => {
       if (updatedPage) {
         setSelectedPageWithLayout(updatedPage);
       }
+    }
+  };
+
+  // Criação rápida inline
+  const handleQuickCreateProductSection = async () => {
+    if (!selectedPageWithLayout) return;
+    if (!productSectionTitle.trim()) {
+      toast({ title: 'Erro', description: 'Informe um título para a seção de produtos.', variant: 'destructive' });
+      return;
+    }
+    const created = await createSection({ title: productSectionTitle.trim(), view_all_link: null, items: [] });
+    if (created) {
+      await addLayoutItem(selectedPageWithLayout.id, {
+        section_key: `product_section_${created.id}`,
+        section_type: 'product_section',
+        section_config: {},
+        display_order: selectedPageWithLayout.layout_items?.length || 0,
+        is_visible: true,
+      });
+      const updated = await fetchPageWithLayout(selectedPageWithLayout.id);
+      if (updated) setSelectedPageWithLayout(updated);
+      setProductSectionTitle('');
+      setShowAddSectionModal(false);
+      toast({ title: 'Sucesso', description: 'Seção de produtos criada e adicionada ao layout!' });
+    }
+  };
+
+  const handleQuickCreateSpecialSection = async () => {
+    if (!selectedPageWithLayout) return;
+    if (!specialSectionTitle.trim()) {
+      toast({ title: 'Erro', description: 'Informe um título para a seção especial.', variant: 'destructive' });
+      return;
+    }
+    const created = await createSpecialSection({ title: specialSectionTitle.trim(), is_active: true, background_type: 'color' });
+    if (created) {
+      await addLayoutItem(selectedPageWithLayout.id, {
+        section_key: `special_section_${created.id}`,
+        section_type: 'special_section',
+        section_config: {},
+        display_order: selectedPageWithLayout.layout_items?.length || 0,
+        is_visible: true,
+      });
+      const updated = await fetchPageWithLayout(selectedPageWithLayout.id);
+      if (updated) setSelectedPageWithLayout(updated);
+      setSpecialSectionTitle('');
+      setShowAddSectionModal(false);
+      toast({ title: 'Sucesso', description: 'Seção especial criada e adicionada ao layout!' });
     }
   };
 
@@ -554,44 +603,74 @@ const PrimePagesAdmin: React.FC = () => {
             </div>
 
             {newSectionData.section_type === 'product_section' && (
-              <div>
-                <Label htmlFor="product_section">Seção de Produtos</Label>
-                <Select
-                  value={newSectionData.section_key}
-                  onValueChange={(value) => setNewSectionData({ ...newSectionData, section_key: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma seção de produtos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sections.map((section) => (
-                      <SelectItem key={section.id} value={`product_section_${section.id}`}>
-                        {section.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="product_section">Seção de Produtos</Label>
+                  <Select
+                    value={newSectionData.section_key}
+                    onValueChange={(value) => setNewSectionData({ ...newSectionData, section_key: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma seção de produtos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sections.map((section) => (
+                        <SelectItem key={section.id} value={`product_section_${section.id}`}>
+                          {section.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                  <div className="md:col-span-2">
+                    <Label htmlFor="product_section_title">Ou crie rapidamente</Label>
+                    <Input
+                      id="product_section_title"
+                      placeholder="Título da nova seção de produtos"
+                      value={productSectionTitle}
+                      onChange={(e) => setProductSectionTitle(e.target.value)}
+                    />
+                  </div>
+                  <Button onClick={handleQuickCreateProductSection}>Criar e adicionar</Button>
+                </div>
               </div>
             )}
 
             {newSectionData.section_type === 'special_section' && (
-              <div>
-                <Label htmlFor="special_section">Seção Especial</Label>
-                <Select
-                  value={newSectionData.section_key}
-                  onValueChange={(value) => setNewSectionData({ ...newSectionData, section_key: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma seção especial" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {specialSections.map((section) => (
-                      <SelectItem key={section.id} value={`special_section_${section.id}`}>
-                        {section.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="special_section">Seção Especial</Label>
+                  <Select
+                    value={newSectionData.section_key}
+                    onValueChange={(value) => setNewSectionData({ ...newSectionData, section_key: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma seção especial" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {specialSections.map((section) => (
+                        <SelectItem key={section.id} value={`special_section_${section.id}`}>
+                          {section.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                  <div className="md:col-span-2">
+                    <Label htmlFor="special_section_title">Ou crie rapidamente</Label>
+                    <Input
+                      id="special_section_title"
+                      placeholder="Título da nova seção especial"
+                      value={specialSectionTitle}
+                      onChange={(e) => setSpecialSectionTitle(e.target.value)}
+                    />
+                  </div>
+                  <Button onClick={handleQuickCreateSpecialSection}>Criar e adicionar</Button>
+                </div>
               </div>
             )}
 
