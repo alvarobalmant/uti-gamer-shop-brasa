@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import SpecialSectionForm from '@/components/Admin/SpecialSectionManager/SpecialSectionForm';
+import NewSpecialSectionManager from '@/components/Admin/SpecialSectionManager/NewSpecialSectionManager';
 
 interface SpecialSectionEditorProps {
   open: boolean;
@@ -15,39 +15,7 @@ export const SpecialSectionEditor: React.FC<SpecialSectionEditorProps> = ({
   section,
   onSectionUpdated
 }) => {
-  // Convert PrimePageLayoutItem to SpecialSection format for editing
-  const sectionData = section ? {
-    id: section.id,
-    title: section.section_config?.title || section.section_config?.name || '',
-    type: section.section_type,
-    visibility: section.is_visible ? 'active' : 'inactive',
-    config: {
-      ...section.section_config
-    },
-    section_key: section.section_key
-  } : null;
-
-  const handleSectionSave = async (updatedData: any) => {
-    // Convert back to PrimePageLayoutItem format
-    const updatedSection = {
-      ...section,
-      section_type: updatedData.type,
-      section_key: updatedData.section_key,
-      is_visible: updatedData.visibility === 'active',
-      section_config: {
-        ...updatedData.config,
-        name: updatedData.title,
-        title: updatedData.title
-      }
-    };
-
-    if (onSectionUpdated) {
-      onSectionUpdated(updatedSection);
-    }
-    onClose();
-  };
-
-  if (!section || !sectionData) return null;
+  if (!section) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -55,11 +23,9 @@ export const SpecialSectionEditor: React.FC<SpecialSectionEditorProps> = ({
         <DialogHeader>
           <DialogTitle>Editar Seção Especial</DialogTitle>
         </DialogHeader>
-        <SpecialSectionForm
-          section={sectionData as any}
-          onSubmit={handleSectionSave}
-          onCancel={onClose}
-        />
+        <div className="p-4">
+          <NewSpecialSectionManager sectionId={section.id} />
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -159,11 +159,14 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
               </p>
               {product.tags && product.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {product.tags.slice(0, 2).map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
+                  {product.tags.slice(0, 2).map((tag, index) => {
+                    const tagName = typeof tag === 'string' ? tag : (tag as any)?.name || (tag as any)?.id || 'Tag';
+                    return (
+                      <Badge key={`${tagName}-${index}`} variant="secondary" className="text-xs">
+                        {tagName}
+                      </Badge>
+                    );
+                  })}
                   {product.tags.length > 2 && (
                     <Badge variant="outline" className="text-xs">
                       +{product.tags.length - 2}
