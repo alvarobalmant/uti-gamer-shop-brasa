@@ -29,8 +29,7 @@ const PrimePagesAdmin: React.FC = () => {
     removeLayoutItem
   } = usePrimePages();
   
-  const { sections, createSection, fetchSections } = useProductSections(selectedPageWithLayout?.id);
-  const { sections: specialSections } = useSpecialSections({ pageId: selectedPageWithLayout?.id });
+  // Hooks moved below after state declarations to avoid TDZ with selectedPageWithLayout
 
   // Estados para modais e formulários
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -56,6 +55,10 @@ const PrimePagesAdmin: React.FC = () => {
     display_order: 0,
     is_visible: true
   });
+  
+  // Page-scoped section hooks
+  const { sections, createSection, fetchSections } = useProductSections(selectedPageWithLayout?.id);
+  const { sections: specialSections } = useSpecialSections({ pageId: selectedPageWithLayout?.id });
 
   // Resetar formulário
   const resetForm = () => {
