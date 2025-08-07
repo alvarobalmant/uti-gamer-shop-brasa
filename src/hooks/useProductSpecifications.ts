@@ -17,7 +17,7 @@ export interface SpecificationCategory {
   items: ProductSpecification[];
 }
 
-export const useProductSpecifications = (productId: string) => {
+export const useProductSpecifications = (productId: string, viewType: 'mobile' | 'desktop' = 'desktop', product?: any) => {
   const [specifications, setSpecifications] = useState<ProductSpecification[]>([]);
   const [categorizedSpecs, setCategorizedSpecs] = useState<SpecificationCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ export const useProductSpecifications = (productId: string) => {
     if (productId) {
       loadSpecifications();
     }
-  }, [productId]);
+  }, [productId, viewType]);
 
   const loadSpecifications = async () => {
     try {
@@ -41,10 +41,11 @@ export const useProductSpecifications = (productId: string) => {
 
       if (error) throw error;
 
-      setSpecifications(data || []);
+      const filteredData = filterSpecificationsByViewType(data || [], viewType);
+      setSpecifications(filteredData);
       
       // Categorizar especificações
-      const categories = groupSpecificationsByCategory(data || []);
+      const categories = groupSpecificationsByCategory(filteredData);
       setCategorizedSpecs(categories);
     } catch (error) {
       console.error('Erro ao carregar especificações:', error);
@@ -55,23 +56,67 @@ export const useProductSpecifications = (productId: string) => {
     }
   };
 
-  const groupSpecificationsByCategory = (specs: ProductSpecification[]): SpecificationCategory[] => {
-    console.log('[DIAGNOSTIC] groupSpecificationsByCategory - Input specs:', specs);
+  const detectTechnicalProduct = (product?: any): boolean => {
+    if (!product) return true; // Default para técnico se não há produto
     
+    const technicalCategories = [
+      'games', 'jogos', 'consoles', 'periféricos', 
+      'eletrônicos', 'computadores', 'smartphones',
+      'acessórios gaming', 'hardware'
+    ];
+    
+    const technicalKeywords = [
+      'playstation', 'xbox', 'nintendo', 'pc', 'gamer', 
+      'gaming', 'console', 'mouse', 'teclado', 'headset',
+      'monitor', 'placa', 'processador', 'smartphone'
+    ];
+    
+    const category = (product.category || '').toLowerCase();
+    const name = (product.name || product.product_name || '').toLowerCase();
+    
+    // Verificar categoria
+    if (technicalCategories.some(cat => category.includes(cat))) {
+      return true;
+    }
+    
+    // Verificar palavras-chave no nome
+    if (technicalKeywords.some(keyword => name.includes(keyword))) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  const filterSpecificationsByViewType = (specs: ProductSpecification[], type: 'mobile' | 'desktop'): ProductSpecification[] => {
+    if (type === 'mobile') {
+      // Mobile: apenas especificações básicas (categoria "Informações Gerais")
+      return specs.filter(spec => spec.category === 'Informações Gerais');
+    } else {
+      // Desktop: detectar se é produto técnico
+      const isTechnicalProduct = detectTechnicalProduct(product);
+      
+      if (isTechnicalProduct) {
+        // Produtos técnicos: usar especificações técnicas específicas
+        const desktopCategories = [
+          '⚙️ Especificações Técnicas',
+          '🚀 Performance', 
+          '💾 Armazenamento',
+          '🔌 Conectividade'
+        ];
+        return specs.filter(spec => desktopCategories.includes(spec.category));
+      } else {
+        // Produtos não-técnicos: usar as mesmas especificações do mobile
+        return specs.filter(spec => spec.category === 'Informações Gerais');
+      }
+    }
+  };
+
+  const groupSpecificationsByCategory = (specs: ProductSpecification[]): SpecificationCategory[] => {
     const categoryMap = new Map<string, ProductSpecification[]>();
     
-    specs.forEach((spec, index) => {
-      console.log(`[DIAGNOSTIC] groupSpecificationsByCategory - Spec ${index}:`, {
-        category: spec.category,
-        label: spec.label,
-        value: spec.value,
-        icon: spec.icon,
-        highlight: spec.highlight
-      });
-      
+    specs.forEach((spec) => {
       if (!categoryMap.has(spec.category)) {
         categoryMap.set(spec.category, []);
-        console.log(`[DIAGNOSTIC] groupSpecificationsByCategory - Nova categoria criada: ${spec.category}`);
       }
       categoryMap.get(spec.category)!.push(spec);
     });
@@ -81,7 +126,6 @@ export const useProductSpecifications = (productId: string) => {
       items: items.sort((a, b) => a.order_index - b.order_index)
     }));
     
-    console.log('[DIAGNOSTIC] groupSpecificationsByCategory - Resultado final:', result);
     return result;
   };
 

@@ -57,7 +57,7 @@ const ProductSpecificationsTable: React.FC<ProductSpecificationsTableProps> = ({
   className
 }) => {
   const [expandedSections, setExpandedSections] = useState<string[]>(['general']);
-  const { categorizedSpecs, loading } = useProductSpecifications(product.id);
+  const { categorizedSpecs, loading } = useProductSpecifications(product.id, 'desktop', product);
   const { storeSettings } = useStoreSettings();
 
   const toggleSection = (sectionId: string) => {

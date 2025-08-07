@@ -2,8 +2,9 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Settings, Box, LogOut, Package, Image, ImagePlus, Zap, Monitor, Wrench } from 'lucide-react';
+import { LayoutDashboard, Settings, Box, LogOut, Package, Image, ImagePlus, Zap, Monitor, Wrench, HardDrive } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { LogoImage } from '@/components/OptimizedImage/LogoImage';
 
 const AdminLayout: React.FC = () => {
   const { signOut } = useAuth();
@@ -15,6 +16,7 @@ const AdminLayout: React.FC = () => {
     { id: 'desktop-products', label: 'Produtos Desktop', icon: Monitor, path: '/admin/desktop-products' },
     { id: 'easy-manager', label: 'Gerenciamento Fácil', icon: Zap, path: '/admin/easy-manager' },
     { id: 'images', label: 'Upload Fácil', icon: ImagePlus, path: '/admin/images' },
+    { id: 'storage', label: 'Storage Manager', icon: HardDrive, path: '/admin/storage' },
     { id: 'banners', label: 'Banners', icon: Image, path: '/admin/banners' },
     { id: 'spec-diagnostic', label: 'Diagnóstico Specs', icon: Wrench, path: '/admin/spec-diagnostic' },
     // Add more admin links here (e.g., Products, Orders, Settings)
@@ -27,7 +29,12 @@ const AdminLayout: React.FC = () => {
       <aside className="hidden md:flex md:flex-col md:w-64 bg-background border-r border-border">
         <div className="flex items-center h-16 px-6 border-b border-border">
           <Link to="/" className="flex items-center gap-2 font-semibold">
-            <img src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" alt="Logo" className="h-8 w-auto" />
+            <LogoImage 
+              src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png" 
+              alt="UTI DOS GAMES Logo" 
+              className="h-8 w-auto" 
+              priority={true}
+            />
             <span className="text-lg">Admin UTI</span>
           </Link>
         </div>

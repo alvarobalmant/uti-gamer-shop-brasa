@@ -100,7 +100,9 @@ export const useImageUpload = () => {
 
       // Trigger scan automático para atualizar estatísticas
       try {
-        await supabase.functions.invoke('scan-storage');
+        await supabase.functions.invoke('storage-manager', {
+          body: JSON.stringify({ action: 'scan' })
+        });
         console.log('✅ Scan automático executado após upload');
       } catch (scanError) {
         console.warn('⚠️ Erro no scan automático:', scanError);
@@ -174,7 +176,9 @@ export const useImageUpload = () => {
       
       // Trigger scan automático para atualizar estatísticas
       try {
-        await supabase.functions.invoke('scan-storage');
+        await supabase.functions.invoke('storage-manager', {
+          body: JSON.stringify({ action: 'scan' })
+        });
         console.log('✅ Scan automático executado após download');
       } catch (scanError) {
         console.warn('⚠️ Erro no scan automático:', scanError);
@@ -232,7 +236,9 @@ export const useImageUpload = () => {
 
       // Trigger scan automático para atualizar estatísticas
       try {
-        await supabase.functions.invoke('scan-storage');
+        await supabase.functions.invoke('storage-manager', {
+          body: JSON.stringify({ action: 'scan' })
+        });
         console.log('✅ Scan automático executado após deletar');
       } catch (scanError) {
         console.warn('⚠️ Erro no scan automático:', scanError);

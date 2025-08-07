@@ -102,53 +102,240 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
   }
 
   return handleSupabaseRetry(async () => {
-    let query = supabase
-      .from('view_product_with_tags')
-      .select('*');
+    console.log(`[fetchProductsFromDatabase] 🔧 VERSÃO CORRIGIDA - Fetching ALL products (includeAdmin: ${includeAdmin})`);
     
-    // Só filtrar produtos master se não for para admin
-    if (!includeAdmin) {
-      query = query.neq('product_type', 'master');
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      // Se for o erro específico, invalidar cache antes de lançar erro
-      if (error.message?.includes('idasproduct_id')) {
-        console.warn('🔧 Erro idasproduct_id detectado - invalidando cache...');
-        invalidateSupabaseCache();
-      }
-      throw error;
-    }
-
-    // Agrupar produtos por ID para evitar duplicatas devido às tags
-    const productsMap = new Map<string, Product>();
-    
-    data?.forEach((row: any) => {
-      const productId = row.product_id;
+    try {
+      // ESTRATÉGIA 1: Query direta na tabela products com LEFT JOIN para tags
+      console.log('[fetchProductsFromDatabase] Tentativa 1: Query direta com LEFT JOIN');
       
-      if (!productsMap.has(productId)) {
-        productsMap.set(productId, mapRowToProduct(row));
-      }
+      let query = supabase
+        .from('products')
+        .select(`
+          *,
+          product_tags!left(
+            tag_id,
+            tags!left(
+              id,
+              name
+            )
+          )
+        `);
       
-      // Adicionar tag se existir e não for duplicata
-      if (row.tag_id && row.tag_name) {
-        const product = productsMap.get(productId)!;
-        const tagExists = product.tags?.some(tag => tag.id === row.tag_id);
+      // Aplicar filtros apenas se necessário
+      if (!includeAdmin) {
+        query = query.neq('product_type', 'master').eq('is_active', true);
+      }
+
+      const { data: productsWithTags, error: joinError } = await query;
+
+      if (joinError) {
+        console.warn('[fetchProductsFromDatabase] LEFT JOIN falhou, tentando estratégia 2:', joinError.message);
+        throw joinError;
+      }
+
+      if (productsWithTags && productsWithTags.length > 0) {
+        console.log(`[fetchProductsFromDatabase] ✅ LEFT JOIN bem-sucedido: ${productsWithTags.length} registros`);
         
-        if (!tagExists) {
-          product.tags = product.tags || [];
-          product.tags.push({
-            id: row.tag_id,
-            name: row.tag_name
-          });
-        }
+        // Processar dados com tags do LEFT JOIN
+        const productsMap = new Map<string, Product>();
+        let processedCount = 0;
+        let skippedCount = 0;
+        
+        productsWithTags.forEach((row: any) => {
+          const productId = row.id;
+          
+          if (!productId) {
+            console.warn('[fetchProductsFromDatabase] ⚠️ Produto sem ID ignorado:', row);
+            skippedCount++;
+            return;
+          }
+          
+          if (!productsMap.has(productId)) {
+            productsMap.set(productId, mapRowToProduct({
+              product_id: row.id,
+              product_name: row.name,
+              product_description: row.description,
+              product_price: row.price,
+              product_image: row.image,
+              product_stock: row.stock,
+              ...row
+            }));
+            processedCount++;
+          }
+          
+          // Adicionar tags do LEFT JOIN se existirem
+          if (row.product_tags && Array.isArray(row.product_tags)) {
+            const product = productsMap.get(productId)!;
+            
+            row.product_tags.forEach((pt: any) => {
+              if (pt && pt.tags && pt.tags.id && pt.tags.name) {
+                const tagExists = product.tags?.some(tag => tag.id === pt.tags.id);
+                if (!tagExists) {
+                  product.tags = product.tags || [];
+                  product.tags.push({
+                    id: pt.tags.id,
+                    name: pt.tags.name
+                  });
+                }
+              }
+            });
+          }
+        });
+        
+        const finalProducts = Array.from(productsMap.values());
+        console.log(`[fetchProductsFromDatabase] ✅ Processamento concluído:`);
+        console.log(`  - Registros processados: ${processedCount}`);
+        console.log(`  - Registros ignorados: ${skippedCount}`);
+        console.log(`  - Produtos únicos finais: ${finalProducts.length}`);
+        
+        return finalProducts;
       }
-    });
+    } catch (joinError) {
+      console.warn('[fetchProductsFromDatabase] Estratégia 1 falhou, tentando estratégia 2');
+    }
 
-    console.log(`[fetchProductsFromDatabase] Carregados ${productsMap.size} produtos únicos`);
-    return Array.from(productsMap.values());
+    try {
+      // ESTRATÉGIA 2: Buscar produtos e tags separadamente
+      console.log('[fetchProductsFromDatabase] Tentativa 2: Queries separadas');
+      
+      // Buscar todos os produtos
+      let productsQuery = supabase
+        .from('products')
+        .select('*');
+      
+      if (!includeAdmin) {
+        productsQuery = productsQuery.neq('product_type', 'master').eq('is_active', true);
+      }
+      
+      const { data: products, error: productsError } = await productsQuery;
+      
+      if (productsError) {
+        console.error('[fetchProductsFromDatabase] Erro ao buscar produtos:', productsError);
+        throw productsError;
+      }
+      
+      if (!products || products.length === 0) {
+        console.warn('[fetchProductsFromDatabase] Nenhum produto encontrado');
+        return [];
+      }
+      
+      console.log(`[fetchProductsFromDatabase] ✅ Produtos encontrados: ${products.length}`);
+      
+      // Buscar todas as relações produto-tag
+      const { data: productTags, error: tagsError } = await supabase
+        .from('product_tags')
+        .select(`
+          product_id,
+          tag_id,
+          tags!inner(
+            id,
+            name
+          )
+        `);
+      
+      if (tagsError) {
+        console.warn('[fetchProductsFromDatabase] Erro ao buscar tags (continuando sem tags):', tagsError);
+      }
+      
+      // Criar mapa de produtos
+      const productsMap = new Map<string, Product>();
+      let processedCount = 0;
+      let skippedCount = 0;
+      
+      products.forEach((row: any) => {
+        const productId = row.id;
+        
+        if (!productId) {
+          console.warn('[fetchProductsFromDatabase] ⚠️ Produto sem ID ignorado:', row);
+          skippedCount++;
+          return;
+        }
+        
+        productsMap.set(productId, mapRowToProduct({
+          product_id: row.id,
+          product_name: row.name,
+          product_description: row.description,
+          product_price: row.price,
+          product_image: row.image,
+          product_stock: row.stock,
+          ...row
+        }));
+        processedCount++;
+      });
+      
+      // Adicionar tags aos produtos
+      if (productTags && productTags.length > 0) {
+        console.log(`[fetchProductsFromDatabase] Adicionando ${productTags.length} relações de tags`);
+        
+        productTags.forEach((pt: any) => {
+          if (pt.product_id && pt.tags && productsMap.has(pt.product_id)) {
+            const product = productsMap.get(pt.product_id)!;
+            const tagExists = product.tags?.some(tag => tag.id === pt.tags.id);
+            
+            if (!tagExists) {
+              product.tags = product.tags || [];
+              product.tags.push({
+                id: pt.tags.id,
+                name: pt.tags.name
+              });
+            }
+          }
+        });
+      }
+      
+      const finalProducts = Array.from(productsMap.values());
+      console.log(`[fetchProductsFromDatabase] ✅ Estratégia 2 concluída:`);
+      console.log(`  - Produtos processados: ${processedCount}`);
+      console.log(`  - Produtos ignorados: ${skippedCount}`);
+      console.log(`  - Produtos únicos finais: ${finalProducts.length}`);
+      
+      return finalProducts;
+      
+    } catch (separateError) {
+      console.error('[fetchProductsFromDatabase] Estratégia 2 também falhou:', separateError);
+    }
+
+    // ESTRATÉGIA 3: Fallback para produtos sem tags
+    console.log('[fetchProductsFromDatabase] Tentativa 3: Fallback simples (apenas produtos)');
+    
+    try {
+      let fallbackQuery = supabase
+        .from('products')
+        .select('*');
+      
+      if (!includeAdmin) {
+        fallbackQuery = fallbackQuery.neq('product_type', 'master').eq('is_active', true);
+      }
+      
+      const { data: fallbackProducts, error: fallbackError } = await fallbackQuery;
+      
+      if (fallbackError) {
+        throw fallbackError;
+      }
+      
+      if (!fallbackProducts) {
+        return [];
+      }
+      
+      const finalProducts = fallbackProducts
+        .filter(row => row.id) // Garantir que tem ID
+        .map(row => mapRowToProduct({
+          product_id: row.id,
+          product_name: row.name,
+          product_description: row.description,
+          product_price: row.price,
+          product_image: row.image,
+          product_stock: row.stock,
+          ...row
+        }));
+      
+      console.log(`[fetchProductsFromDatabase] ✅ Fallback concluído: ${finalProducts.length} produtos (sem tags)`);
+      return finalProducts;
+      
+    } catch (fallbackError) {
+      console.error('[fetchProductsFromDatabase] ❌ Todas as estratégias falharam:', fallbackError);
+      throw fallbackError;
+    }
   }, 'fetchProductsFromDatabase', 3);
 };
 

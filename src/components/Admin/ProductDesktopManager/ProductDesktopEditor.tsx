@@ -34,7 +34,7 @@ const ProductDesktopEditor: React.FC<ProductDesktopEditorProps> = ({
   });
 
   const [isDirty, setIsDirty] = useState(false);
-  const { categorizedSpecs, loading: specsLoading, refreshSpecifications } = useProductSpecifications(product.id);
+  const { categorizedSpecs, loading: specsLoading, refreshSpecifications } = useProductSpecifications(product.id, 'desktop', product);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({

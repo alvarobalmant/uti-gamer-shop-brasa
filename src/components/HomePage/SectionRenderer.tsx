@@ -62,25 +62,41 @@ export const SectionRenderer: React.FC<SectionRendererProps> = ({
         return <ContactHelp key="contact_help" />;
       
       default:
-        // Handle product sections
+        // Handle product sections - Add safety checks
         if (sectionKey.startsWith('product_section_')) {
           const sectionId = sectionKey.replace('product_section_', '');
+          
+          // Safety check: Ensure sections array exists
+          if (!sections || !Array.isArray(sections)) {
+            console.warn(`[SectionRenderer] Sections not available for ${sectionKey}`);
+            return null;
+          }
+          
           const section = sections.find(s => s.id === sectionId);
           
-          if (!section) return null;
+          if (!section) {
+            console.warn(`[SectionRenderer] Section not found: ${sectionId}`);
+            return null;
+          }
           
           // --- BUG FIX: Deduplicate products and filter master products --- 
           const productMap = new Map<string, Product>(); // Use a Map to store unique products by ID
           
-          if (section.items) {
+          if (section.items && Array.isArray(section.items)) {
             for (const item of section.items) {
               if (item.item_type === 'product') {
+                // Safety check: Ensure products array exists
+                if (!products || !Array.isArray(products)) continue;
+                
                 // Find specific product by ID
                 const product = products.find(p => p.id === item.item_id);
                 if (product && product.product_type !== 'master' && !productMap.has(product.id)) { // Filter master products
                   productMap.set(product.id, product);
                 }
               } else if (item.item_type === 'tag') {
+                // Safety check: Ensure products array exists
+                if (!products || !Array.isArray(products)) continue;
+                
                 // Find products with this tag, excluding master products
                 const tagProducts = products.filter(p => 
                   p.product_type !== 'master' && // Filter master products

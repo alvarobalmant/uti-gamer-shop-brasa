@@ -12,6 +12,7 @@ import {
 } from './useProducts/productApi';
 import { handleProductError } from './useProducts/productErrorHandler';
 import { CarouselConfig } from '@/types/specialSections'; // Import CarouselConfig type
+import { invalidateAllProductCaches, debugProductLoading } from './useProducts/cacheInvalidator'; // Import cache utilities
 
 export type { Product } from './useProducts/types';
 
@@ -20,12 +21,16 @@ export const useProducts = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchProducts = useCallback(async () => { // Wrap in useCallback
+  const fetchProducts = useCallback(async (includeAdmin: boolean = true) => { // Wrap in useCallback, include admin products by default
     try {
       setLoading(true);
-      const productsData = await fetchProductsFromDatabase();
+      console.log('[useProducts] Fetching ALL products including admin products');
+      const productsData = await fetchProductsFromDatabase(includeAdmin);
+      console.log('[useProducts] Fetched products count:', productsData.length);
+      debugProductLoading(productsData, 'useProducts.fetchProducts'); // Debug helper
       setProducts(productsData);
     } catch (error: any) {
+      console.error('[useProducts] Error fetching products:', error);
       const errorMessage = handleProductError(error, 'ao carregar produtos');
       
       if (errorMessage) {
@@ -36,8 +41,10 @@ export const useProducts = () => {
         });
       }
       
-      // Em caso de erro, definir produtos como array vazio para não quebrar a interface
+      // Clear products on error and invalidate cache
       setProducts([]);
+      // Force invalidate any caches to prevent corrupt data
+      invalidateAllProductCaches();
     } finally {
       setLoading(false);
     }
@@ -148,8 +155,9 @@ export const useProducts = () => {
   };
 
   useEffect(() => {
-    // Initial fetch is needed for general product sections on the homepage
-    fetchProducts(); 
+    // Initial fetch with admin products included to ensure ALL products are visible
+    console.log('[useProducts] Initial fetch with ALL products including admin');
+    fetchProducts(true); 
   }, [fetchProducts]); // Corrected dependency array
 
   return {

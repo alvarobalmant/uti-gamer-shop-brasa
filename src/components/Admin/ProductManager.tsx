@@ -1,15 +1,21 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Filter, Package } from 'lucide-react';
+import { Plus, Search, Filter, Package, Zap, AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useProducts } from '@/hooks/useProducts';
 import { useTags } from '@/hooks/useTags';
 import ProductList from './ProductManager/ProductList';
 import ProductForm from './ProductManager/ProductForm';
 import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
+import { ProductDebugInfo } from './ProductManager/ProductDebugInfo';
+import { ProductDataValidator } from './ProductDataValidator';
+
+// DISABLED: Optimized version disabled to ensure ALL products are visible
+// const ProductManagerOptimized = React.lazy(() => import('./ProductManager/ProductManagerOptimized'));
 
 const ProductManager = () => {
   const { products, loading, addProduct, updateProduct, deleteProduct, fetchSingleProduct } = useProducts();
@@ -18,6 +24,12 @@ const ProductManager = () => {
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  // DISABLED: useOptimizedView removed to force standard view that shows ALL products
+
+  // Auto-switching to optimized view DISABLED - always show all products
+  useEffect(() => {
+    console.log('[ProductManager] Auto-switching disabled - showing all products', products.length);
+  }, [products.length]);
 
   // Detectar se deve abrir diretamente na edição via URL parameter
   useEffect(() => {
@@ -118,8 +130,32 @@ const ProductManager = () => {
     );
   }
 
+  // Force standard view - optimized view disabled
+  if (false) {
+    return null; // Never render optimized view
+  }
+
   return (
     <div className="space-y-6">
+      {/* Debug Info */}
+      <ProductDebugInfo products={products} loading={loading} />
+      
+      {/* Validador de Dados */}
+      <ProductDataValidator />
+      
+      {/* Performance Alert - Disabled, showing all products */}
+      {products.length > 200 && (
+        <Alert className="border-blue-500">
+          <Package className="h-4 w-4" />
+          <AlertDescription>
+            <span>
+              Exibindo TODOS os {products.length} produtos. 
+              Optimizações desabilitadas para garantir visibilidade completa.
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Header com estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-[#2C2C44] border-[#343A40]">
@@ -172,7 +208,7 @@ const ProductManager = () => {
             <div>
               <CardTitle className="text-white text-xl">Gerenciamento de Produtos</CardTitle>
               <CardDescription className="text-gray-400">
-                Gerencie o catálogo de produtos da loja
+                Gerencie o catálogo de produtos da loja ({products.length} produtos)
               </CardDescription>
             </div>
             <Button 

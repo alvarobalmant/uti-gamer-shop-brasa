@@ -12,7 +12,9 @@ import {
   AlertCircle,
   BarChart3,
   Minimize2,
-  Search
+  Search,
+  Download,
+  Globe
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -24,12 +26,21 @@ interface StorageStats {
   imageCount: number;
   webpCount: number;
   nonWebpCount: number;
+  external_images?: number;
+  external_non_optimized?: number;
+  external_images_list?: Array<{
+    product_id: string;
+    product_name: string;
+    image_url: string;
+    type: 'main' | 'additional';
+  }>;
   compressionPotential: string;
   lastScan?: string;
 }
 
 interface CompressionResult {
   processedCount: number;
+  downloadedCount?: number;
   savedMB: number;
   errors: string[];
   message: string;
@@ -50,118 +61,157 @@ const StorageManager: React.FC = () => {
   const [scanning, setScanning] = useState(false);
   const [compressionProgress, setCompressionProgress] = useState<CompressionProgress | null>(null);
 
-  // Escanear storage real para detectar novas imagens
+  // Escanear storage usando a nova função unificada
   const scanRealStorage = async () => {
+    if (scanning) return;
+    
     setScanning(true);
     try {
-      console.log('🔍 Iniciando scan do storage real...');
+      console.log('🔍 Iniciando scan completo do storage...');
       
-      const { data, error } = await supabase.functions.invoke('scan-storage');
+      const { data, error } = await supabase.functions.invoke('storage-manager', {
+        body: JSON.stringify({ action: 'scan' })
+      });
       
-      console.log('📊 Resposta da função scan-storage:', { data, error });
+      console.log('📨 Resposta do scan:', { data, error });
       
       if (error) {
-        console.error('❌ Erro na função scan-storage:', error);
-        throw new Error(`Erro na função: ${error.message || 'Erro desconhecido'}`);
+        console.error('❌ Erro na função storage-manager:', error);
+        toast.error('Erro ao escanear storage: ' + error.message);
+        return;
       }
 
       if (!data || !data.success) {
         console.error('❌ Resposta inválida:', data);
-        throw new Error(data?.error || data?.message || 'Resposta inválida da função');
+        toast.error(data?.error || 'Erro desconhecido ao escanear storage');
+        return;
       }
 
       console.log('✅ Scan concluído:', data.data);
       setStorageStats(data.data);
-      toast.success(data.data.message || 'Storage escaneado com sucesso!');
+      toast.success(data.data.message || `Scan concluído: ${data.data?.total_images || 0} imagens encontradas`);
       
-      // Recarregar estatísticas para garantir dados atualizados
-      await loadStorageStats();
     } catch (error: any) {
       console.error('❌ Erro ao escanear storage:', error);
-      toast.error(`Erro ao escanear storage: ${error.message}`);
+      toast.error('Erro inesperado ao escanear storage');
     } finally {
       setScanning(false);
     }
   };
 
-  // Carregar estatísticas do storage
+  // Carregar estatísticas de storage usando a nova função unificada
   const loadStorageStats = async () => {
     setLoadingStats(true);
     try {
-      console.log('🔄 Carregando estatísticas de storage...');
+      console.log('📊 Carregando estatísticas de storage...');
       
-      const { data, error } = await supabase.functions.invoke('storage-stats');
+      const { data, error } = await supabase.functions.invoke('storage-manager', {
+        body: JSON.stringify({ action: 'stats' })
+      });
       
-      console.log('📊 Resposta da função storage-stats:', { data, error });
+      console.log('📨 Resposta recebida:', { data, error });
       
       if (error) {
-        console.error('❌ Erro na função storage-stats:', error);
-        throw new Error(`Erro na função: ${error.message || 'Erro desconhecido'}`);
+        console.error('❌ Erro na função storage-manager:', error);
+        toast.error('Erro ao carregar estatísticas: ' + error.message);
+        return;
       }
 
       if (!data || !data.success) {
         console.error('❌ Resposta inválida:', data);
-        throw new Error(data?.error || data?.message || 'Resposta inválida da função');
+        toast.error(data?.error || 'Erro desconhecido ao carregar estatísticas');
+        return;
       }
 
-      console.log('✅ Estatísticas carregadas:', data.data);
+      console.log('✅ Dados recebidos:', data.data);
       setStorageStats(data.data);
-      toast.success('Estatísticas atualizadas!');
+      
     } catch (error: any) {
       console.error('❌ Erro ao carregar estatísticas:', error);
-      toast.error(`Erro ao carregar estatísticas: ${error.message}`);
+      toast.error('Erro inesperado ao carregar estatísticas');
     } finally {
       setLoadingStats(false);
     }
   };
 
-  // Comprimir todas as imagens
+  // Comprimir todas as imagens usando a nova função unificada
   const compressAllImages = async () => {
-    if (!storageStats || storageStats.nonWebpCount === 0) {
-      toast.info('Nenhuma imagem precisa ser comprimida!');
+    if (compressing) return;
+    
+    const hasStorageImages = storageStats && storageStats.nonWebpCount > 0;
+    const hasExternalImages = storageStats && (storageStats.external_non_optimized || 0) > 0;
+    
+    if (!hasStorageImages && !hasExternalImages) {
+      toast.info('Não há imagens para processar! Todas já estão otimizadas.');
       return;
     }
 
     setCompressing(true);
     setCompressionResult(null);
     
+    const totalToProcess = (storageStats.nonWebpCount || 0) + (storageStats.external_non_optimized || 0);
+    setCompressionProgress({ currentFile: '', processedCount: 0, totalCount: totalToProcess, isActive: true });
+    
     try {
-      console.log('🗜️ Iniciando compressão de imagens...');
-      toast.info('Compressão iniciada... Isso pode levar alguns minutos.');
+      const storageImagesMsg = hasStorageImages ? `${storageStats.nonWebpCount} imagens do storage` : '';
+      const externalImagesMsg = hasExternalImages ? `${storageStats.external_non_optimized} imagens externas` : '';
+      const separator = hasStorageImages && hasExternalImages ? ' + ' : '';
       
-      const { data, error } = await supabase.functions.invoke('compress-images');
+      console.log(`🗜️ Iniciando processamento: ${storageImagesMsg}${separator}${externalImagesMsg}...`);
+      toast.info('Processamento iniciado... Isso pode levar alguns minutos.');
       
-      console.log('📊 Resposta da função compress-images:', { data, error });
+      const { data, error } = await supabase.functions.invoke('storage-manager', {
+        body: JSON.stringify({ action: 'compress' })
+      });
+      
+      console.log('📨 Resposta da compressão:', { data, error });
       
       if (error) {
-        console.error('❌ Erro na função compress-images:', error);
-        throw new Error(`Erro na função: ${error.message || 'Erro desconhecido'}`);
+        console.error('❌ Erro na função storage-manager:', error);
+        toast.error('Erro ao comprimir imagens: ' + error.message);
+        return;
       }
 
       if (!data || !data.success) {
         console.error('❌ Resposta inválida:', data);
-        throw new Error(data?.error || data?.message || 'Resposta inválida da função');
+        toast.error(data?.error || 'Erro desconhecido ao comprimir imagens');
+        return;
       }
 
       console.log('✅ Compressão concluída:', data.data);
-      setCompressionResult(data.data);
       
-      // Recarregar estatísticas imediatamente
-      await loadStorageStats();
+      // Atualizar dados com resultados da compressão
+      setStorageStats(data.data);
+      setCompressionResult(data.data.compressionResults);
       
-      toast.success(data.data.message);
+      if (data.data.compressionResults) {
+        const result = data.data.compressionResults;
+        const totalProcessed = (result.processedCount || 0) + (result.downloadedCount || 0);
+        
+        if (totalProcessed > 0) {
+          const storageMsg = result.processedCount ? `${result.processedCount} do storage` : '';
+          const externalMsg = result.downloadedCount ? `${result.downloadedCount} externas` : '';
+          const separator = storageMsg && externalMsg ? ' + ' : '';
+          
+          toast.success(`${totalProcessed} imagens processadas (${storageMsg}${separator}${externalMsg})! Economizou ${result.savedMB} MB.`);
+        } else {
+          toast.info('Nenhuma imagem foi processada.');
+        }
+      }
+      
     } catch (error: any) {
       console.error('❌ Erro na compressão:', error);
-      toast.error(`Erro ao comprimir imagens: ${error.message}`);
+      toast.error('Erro inesperado ao comprimir imagens');
     } finally {
       setCompressing(false);
+      setCompressionProgress(null);
     }
   };
 
   // Carregar estatísticas ao montar o componente
   useEffect(() => {
-    // Primeiro fazer scan do storage real para detectar novas imagens
-    scanRealStorage();
+    // Carregar estatísticas primeiro, deixando o scan manual
+    loadStorageStats();
   }, []);
 
   return (
@@ -206,7 +256,7 @@ const StorageManager: React.FC = () => {
 
       {/* Storage Statistics Cards */}
       {storageStats ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           <Card className="bg-[#2C2C44] border-[#343A40]">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-400 flex items-center">
@@ -274,10 +324,45 @@ const StorageManager: React.FC = () => {
               </p>
             </CardContent>
           </Card>
+
+          {/* Cards para imagens externas */}
+          <Card className="bg-[#2C2C44] border-[#343A40]">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-400 flex items-center">
+                <Globe className="w-4 h-4 mr-2" />
+                Imagens Externas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-400">
+                {storageStats.external_images || 0}
+              </div>
+              <p className="text-xs text-gray-400">
+                links externos
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#2C2C44] border-[#343A40]">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-400 flex items-center">
+                <Download className="w-4 h-4 mr-2" />
+                Para Baixar
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-400">
+                {storageStats.external_non_optimized || 0}
+              </div>
+              <p className="text-xs text-gray-400">
+                podem ser baixadas
+              </p>
+            </CardContent>
+          </Card>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+          {[...Array(6)].map((_, i) => (
             <Card key={i} className="bg-[#2C2C44] border-[#343A40]">
               <CardContent className="p-6">
                 <div className="animate-pulse">
@@ -289,6 +374,81 @@ const StorageManager: React.FC = () => {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* External Images Download Section */}
+      {storageStats && storageStats.external_images && storageStats.external_images > 0 && (
+        <Card className="bg-[#2C2C44] border-[#343A40]">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center">
+              <Download className="w-5 h-5 mr-2" />
+              Download de Imagens Externas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="text-orange-400 font-medium mb-2">Imagens Externas Detectadas</h4>
+                  <p className="text-gray-300 text-sm mb-3">
+                    {storageStats.external_images} imagens externas encontradas ({storageStats.external_non_optimized || 0} não otimizadas)
+                  </p>
+                  <div className="space-y-2">
+                    <p className="text-gray-400 text-xs">
+                      • Baixar todas as imagens externas para o storage local
+                    </p>
+                    <p className="text-gray-400 text-xs">
+                      • Converter automaticamente para WebP (otimização)
+                    </p>
+                    <p className="text-gray-400 text-xs">
+                      • Atualizar todas as referências no banco de dados
+                    </p>
+                    <p className="text-gray-400 text-xs">
+                      • Imagens ficarão independentes dos links originais
+                    </p>
+                  </div>
+                  
+                  {storageStats.external_images_list && storageStats.external_images_list.length > 0 && (
+                    <div className="mt-4 p-3 bg-black/20 rounded-lg">
+                      <h5 className="text-orange-300 text-sm font-medium mb-2">
+                        Primeiras {Math.min(3, storageStats.external_images_list.length)} imagens:
+                      </h5>
+                      <div className="space-y-1 text-xs">
+                        {storageStats.external_images_list.slice(0, 3).map((img, index) => (
+                          <div key={index} className="text-gray-400 truncate">
+                            📦 {img.product_name} ({img.type === 'main' ? 'principal' : 'adicional'})
+                          </div>
+                        ))}
+                        {storageStats.external_images_list.length > 3 && (
+                          <div className="text-gray-500 text-xs">
+                            ... e mais {storageStats.external_images_list.length - 3} imagens
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <Button
+                  onClick={compressAllImages}
+                  disabled={compressing || (storageStats.external_non_optimized || 0) === 0}
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  {compressing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Baixando...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 mr-2" />
+                      Baixar Todas
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Storage Usage Chart */}
@@ -383,9 +543,16 @@ const StorageManager: React.FC = () => {
                   <h4 className="text-green-400 font-medium">Compressão Concluída!</h4>
                 </div>
                 <div className="space-y-1 text-sm">
-                  <p className="text-gray-300">
-                    ✅ {compressionResult.processedCount} imagens processadas
-                  </p>
+                  {compressionResult.processedCount > 0 && (
+                    <p className="text-gray-300">
+                      ✅ {compressionResult.processedCount} imagens do storage processadas
+                    </p>
+                  )}
+                  {compressionResult.downloadedCount && compressionResult.downloadedCount > 0 && (
+                    <p className="text-gray-300">
+                      📥 {compressionResult.downloadedCount} imagens externas baixadas e otimizadas
+                    </p>
+                  )}
                   <p className="text-gray-300">
                     💾 {compressionResult.savedMB} MB economizados
                   </p>

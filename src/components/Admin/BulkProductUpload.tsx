@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { generateProductTemplate, validateProductData, processProductImport } from './BulkProductUpload/bulkProductUtils';
+import { generateProductTemplate, generateImportTutorial, validateProductData, processProductImport } from './BulkProductUpload/bulkProductUtilsV2';
 import type { ImportedProduct, ValidationError } from './BulkProductUpload/types';
 
 const BulkProductUpload: React.FC = () => {
@@ -69,6 +69,39 @@ const BulkProductUpload: React.FC = () => {
       console.error('Erro ao gerar template:', error);
       toast({
         title: "Erro ao baixar template",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadTutorial = async () => {
+    try {
+      const tutorialContent = await generateImportTutorial();
+      
+      // Criar arquivo de texto
+      const blob = new Blob([tutorialContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      
+      // Criar link para download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tutorial-importacao-produtos-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Limpar URL
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Tutorial baixado com sucesso!",
+        description: "O tutorial inclui produtos mestres, tags e plataformas disponíveis.",
+      });
+    } catch (error) {
+      console.error('Erro ao gerar tutorial:', error);
+      toast({
+        title: "Erro ao baixar tutorial",
         description: "Tente novamente em alguns instantes.",
         variant: "destructive",
       });
@@ -232,10 +265,17 @@ const BulkProductUpload: React.FC = () => {
             </AlertDescription>
           </Alert>
 
-          <Button onClick={handleDownloadTemplate} className="bg-blue-600 hover:bg-blue-700">
-            <FileSpreadsheet className="w-4 h-4 mr-2" />
-            Baixar Template Excel
-          </Button>
+          <div className="flex gap-4">
+            <Button onClick={handleDownloadTemplate} className="bg-blue-600 hover:bg-blue-700">
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Baixar Template Excel
+            </Button>
+            
+            <Button onClick={handleDownloadTutorial} variant="outline" className="border-green-500 text-green-400 hover:bg-green-500 hover:text-white">
+              <Download className="w-4 h-4 mr-2" />
+              Baixar Tutorial Completo
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

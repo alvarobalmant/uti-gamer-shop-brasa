@@ -34,10 +34,7 @@ port = 54327
 [functions.image-proxy]
 verify_jwt = false
 
-[functions.storage-stats]
-verify_jwt = true
-
-[functions.compress-images]
+[functions.storage-manager]
 verify_jwt = true
 
 [functions.secure-coin-actions]

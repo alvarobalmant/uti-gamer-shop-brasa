@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/carousel"
 import Autoplay from "embla-carousel-autoplay"
 import PromotionalRibbon from '@/components/PromotionalRibbon';
+import { LogoImage } from '@/components/OptimizedImage/LogoImage';
 
 const HeroBannerCarousel = React.memo(() => {
   const { banners, loading } = useBanners();
@@ -153,10 +154,11 @@ const HeroBannerCarousel = React.memo(() => {
         <section className="relative bg-gradient-to-br from-uti-dark via-gray-900 to-uti-dark text-white overflow-hidden">
           <div className="relative w-full aspect-[4.4/1] min-h-[240px] max-h-[400px] flex items-center justify-center">
             <div className="container mx-auto px-4 max-w-4xl text-center animate-fade-in">
-              <img 
+              <LogoImage 
                 src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png"
                 alt="UTI DOS GAMES" 
                 className="h-16 w-16 md:h-20 md:w-20 mx-auto mb-5 drop-shadow-md"
+                priority={true}
               />
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 drop-shadow-md leading-tight">
                 Bem-vindo à UTI DOS GAMES

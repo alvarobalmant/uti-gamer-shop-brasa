@@ -14,7 +14,7 @@ const ProductTabsEnhanced: React.FC<ProductTabsEnhancedProps> = ({ product }) =>
   const [activeTab, setActiveTab] = useState('description');
   const [jsonbData, setJsonbData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { categorizedSpecs, loading: specsLoading } = useProductSpecifications(product?.id);
+  const { categorizedSpecs, loading: specsLoading } = useProductSpecifications(product?.id, 'desktop', product);
 
   // Buscar campos JSONB diretamente da tabela products
   useEffect(() => {
