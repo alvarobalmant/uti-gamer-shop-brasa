@@ -102,22 +102,53 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
   }
 
   return handleSupabaseRetry(async () => {
+    console.log(`[fetchProductsFromDatabase] Fetching ALL products (includeAdmin: ${includeAdmin})`);
+    
     let query = supabase
       .from('view_product_with_tags')
       .select('*');
     
-    // Só filtrar produtos master se não for para admin
+    // REMOVE LIMIT: Don't filter anything - fetch ALL products including admin
+    // Only exclude master products if specifically requested (not by default)
     if (!includeAdmin) {
       query = query.neq('product_type', 'master');
     }
 
+    // NO PAGINATION - fetch ALL products at once
     const { data, error } = await query;
 
     if (error) {
-      // Se for o erro específico, invalidar cache antes de lançar erro
-      if (error.message?.includes('idasproduct_id')) {
-        console.warn('🔧 Erro idasproduct_id detectado - invalidando cache...');
+      console.error('[fetchProductsFromDatabase] Database error:', error);
+      // Se for o erro específico de coluna, invalidar cache e tentar fallback
+      if (error.message?.includes('idasproduct_id') || error.message?.includes('column') || error.message?.includes('does not exist')) {
+        console.warn('🔧 Column error detected - invalidating cache and using fallback...');
         invalidateSupabaseCache();
+        
+        // Fallback: query products table directly
+        try {
+          console.log('[fetchProductsFromDatabase] Trying fallback query...');
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('products')
+            .select('*');
+            
+          if (fallbackError) {
+            throw fallbackError;
+          }
+          
+          console.log(`[fetchProductsFromDatabase] Fallback successful: ${fallbackData?.length || 0} products`);
+          return fallbackData?.map(row => mapRowToProduct({
+            product_id: row.id,
+            product_name: row.name,
+            product_description: row.description,
+            product_price: row.price,
+            product_image: row.image,
+            product_stock: row.stock,
+            ...row
+          })) || [];
+        } catch (fallbackError) {
+          console.error('[fetchProductsFromDatabase] Fallback also failed:', fallbackError);
+          throw fallbackError;
+        }
       }
       throw error;
     }
@@ -127,6 +158,11 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
     
     data?.forEach((row: any) => {
       const productId = row.product_id;
+      
+      if (!productId) {
+        console.warn('[fetchProductsFromDatabase] Row without product_id:', row);
+        return;
+      }
       
       if (!productsMap.has(productId)) {
         productsMap.set(productId, mapRowToProduct(row));
@@ -147,7 +183,7 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
       }
     });
 
-    console.log(`[fetchProductsFromDatabase] Carregados ${productsMap.size} produtos únicos`);
+    console.log(`[fetchProductsFromDatabase] Successfully loaded ${productsMap.size} unique products from ${data?.length || 0} rows`);
     return Array.from(productsMap.values());
   }, 'fetchProductsFromDatabase', 3);
 };

@@ -24,13 +24,10 @@ const ProductManager = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [useOptimizedView, setUseOptimizedView] = useState(false);
 
-  // Auto-switch to optimized view for large datasets
+  // Auto-switching to optimized view DISABLED - always show all products
   useEffect(() => {
-    if (products.length > 500 && !useOptimizedView) {
-      console.log('[ProductManager] Large dataset detected, switching to optimized view');
-      setUseOptimizedView(true);
-    }
-  }, [products.length, useOptimizedView]);
+    console.log('[ProductManager] Auto-switching disabled - showing all products', products.length);
+  }, [products.length]);
 
   // Detectar se deve abrir diretamente na edição via URL parameter
   useEffect(() => {
@@ -131,40 +128,22 @@ const ProductManager = () => {
     );
   }
 
-  // Use optimized version for large datasets
-  if (useOptimizedView) {
-    return (
-      <Suspense fallback={
-        <div className="flex items-center justify-center p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="ml-2 text-muted-foreground">Carregando versão otimizada...</span>
-        </div>
-      }>
-        <ProductManagerOptimized />
-      </Suspense>
-    );
+  // Force standard view - optimized view disabled
+  if (false) {
+    return null; // Never render optimized view
   }
 
   return (
     <div className="space-y-6">
-      {/* Performance Alert */}
-      {products.length > 200 && !useOptimizedView && (
-        <Alert className="border-warning">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between">
+      {/* Performance Alert - Disabled, showing all products */}
+      {products.length > 200 && (
+        <Alert className="border-blue-500">
+          <Package className="h-4 w-4" />
+          <AlertDescription>
             <span>
-              Grande volume de produtos detectado ({products.length} produtos). 
-              Recomendamos usar a versão otimizada para melhor performance.
+              Exibindo TODOS os {products.length} produtos. 
+              Optimizações desabilitadas para garantir visibilidade completa.
             </span>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setUseOptimizedView(true)}
-              className="ml-4"
-            >
-              <Zap className="w-4 h-4 mr-1" />
-              Usar Versão Otimizada
-            </Button>
           </AlertDescription>
         </Alert>
       )}

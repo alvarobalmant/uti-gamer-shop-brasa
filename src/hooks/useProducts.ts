@@ -20,12 +20,15 @@ export const useProducts = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchProducts = useCallback(async () => { // Wrap in useCallback
+  const fetchProducts = useCallback(async (includeAdmin: boolean = true) => { // Wrap in useCallback, include admin products by default
     try {
       setLoading(true);
-      const productsData = await fetchProductsFromDatabase();
+      console.log('[useProducts] Fetching ALL products including admin products');
+      const productsData = await fetchProductsFromDatabase(includeAdmin);
+      console.log('[useProducts] Fetched products count:', productsData.length);
       setProducts(productsData);
     } catch (error: any) {
+      console.error('[useProducts] Error fetching products:', error);
       const errorMessage = handleProductError(error, 'ao carregar produtos');
       
       if (errorMessage) {
@@ -36,8 +39,13 @@ export const useProducts = () => {
         });
       }
       
-      // Em caso de erro, definir produtos como array vazio para não quebrar a interface
+      // Clear products on error and invalidate cache
       setProducts([]);
+      // Force invalidate any caches to prevent corrupt data
+      if (typeof window !== 'undefined') {
+        console.log('[useProducts] Invalidating localStorage cache due to error');
+        localStorage.removeItem('supabase-cache');
+      }
     } finally {
       setLoading(false);
     }
@@ -148,8 +156,9 @@ export const useProducts = () => {
   };
 
   useEffect(() => {
-    // Initial fetch is needed for general product sections on the homepage
-    fetchProducts(); 
+    // Initial fetch with admin products included to ensure ALL products are visible
+    console.log('[useProducts] Initial fetch with ALL products including admin');
+    fetchProducts(true); 
   }, [fetchProducts]); // Corrected dependency array
 
   return {
