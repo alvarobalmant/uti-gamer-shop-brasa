@@ -4,12 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { SpecialSection, SpecialSectionCreateInput, SpecialSectionUpdateInput } from '@/types/specialSections';
 import { Database } from '@/integrations/supabase/types';
 
-export const useSpecialSections = (options?: { pageId?: string }) => {
+export const useSpecialSections = (options?: any) => {
   const [specialSections, setSpecialSections] = useState<Database['public']['Tables']['special_sections']['Row'][]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const pageId = options?.pageId;
 
   const fetchSpecialSections = useCallback(async () => {
     setLoading(true);
@@ -19,11 +18,10 @@ export const useSpecialSections = (options?: { pageId?: string }) => {
       const timestamp = new Date().getTime();
       console.log(`[useSpecialSections] Fetching at ${timestamp}`);
       
-      const baseQuery = supabase
+      const { data, error: fetchError } = await supabase
         .from('special_sections')
         .select('*')
         .order('created_at', { ascending: false });
-      const { data, error: fetchError } = await (pageId ? baseQuery.eq('page_id', pageId) : baseQuery.is('page_id', null));
 
       if (fetchError) throw fetchError;
       
@@ -39,7 +37,7 @@ export const useSpecialSections = (options?: { pageId?: string }) => {
     } finally {
       setLoading(false);
     }
-  }, [toast, pageId]);
+  }, [toast]);
 
   // Function to add the section to homepage_layout
   const addSectionToLayout = async (sectionId: string) => {
@@ -102,20 +100,17 @@ export const useSpecialSections = (options?: { pageId?: string }) => {
     const { display_order, ...dataToInsert } = sectionData as any; 
 
     try {
-      const payload = { ...dataToInsert, page_id: pageId ?? null };
       const { data: newSection, error } = await supabase
         .from('special_sections')
-        .insert([payload])
+        .insert([dataToInsert])
         .select()
         .single();
 
       if (error) throw error;
       if (!newSection) throw new Error('Failed to create special section, no data returned.');
 
-      // Add to homepage_layout only for global (non-scoped) sections
-      if (!pageId) {
-        await addSectionToLayout(newSection.id);
-      }
+      // **Add to homepage_layout after successful creation**
+      await addSectionToLayout(newSection.id);
 
       await fetchSpecialSections(); // Refetch to update the list
 
