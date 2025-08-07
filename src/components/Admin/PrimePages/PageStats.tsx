@@ -81,7 +81,7 @@ export const PageStats: React.FC<PageStatsProps> = ({ page, sections }) => {
                       {getTypeLabel(type)}
                     </span>
                     <Badge variant="outline" className="text-xs">
-                      {count}
+                      {count as number}
                     </Badge>
                   </div>
                 ))}
