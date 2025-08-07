@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Product } from '@/hooks/useProducts/types';
 import type { TemplateColumn } from './types';
 
+<<<<<<< HEAD
 // FUNÇÃO CORRIGIDA: Busca todos os produtos para backup usando estratégia robusta
 export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
   console.log('[fetchAllProductsForBackup] 🔧 USANDO VERSÃO CORRIGIDA');
@@ -227,11 +228,56 @@ export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
         updated_at: row.updated_at || '',
         
         // Todos os outros campos...
+=======
+// Função para buscar todos os produtos para backup
+export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
+  const { data, error } = await supabase
+    .from('view_product_with_tags')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Erro ao buscar produtos:', error);
+    throw new Error('Erro ao buscar produtos do banco de dados');
+  }
+
+  // Agrupar produtos por ID para evitar duplicatas devido às tags
+  const productsMap = new Map<string, Product>();
+  
+  data?.forEach((row) => {
+    const productId = row.product_id;
+    if (!productId) return;
+
+    if (productsMap.has(productId)) {
+      const existingProduct = productsMap.get(productId)!;
+      if (row.tag_id && row.tag_name) {
+        if (!existingProduct.tags) existingProduct.tags = [];
+        existingProduct.tags.push({
+          id: row.tag_id,
+          name: row.tag_name
+        });
+      }
+    } else {
+      const product: Product = {
+        id: productId,
+        name: row.product_name || '',
+        description: row.product_description || '',
+        price: Number(row.product_price) || 0,
+        image: row.product_image || '',
+        created_at: row.created_at || '',
+        updated_at: row.updated_at || '',
+        
+        // Campos expandidos
+>>>>>>> 85b4236820d0f5087c04acbc0c3bd377925948a2
         brand: row.brand,
         category: row.category,
         platform: row.platform,
         condition: row.condition,
+<<<<<<< HEAD
         stock: row.stock,
+=======
+        stock: row.product_stock,
+>>>>>>> 85b4236820d0f5087c04acbc0c3bd377925948a2
         list_price: row.list_price ? Number(row.list_price) : undefined,
         pro_price: row.pro_price ? Number(row.pro_price) : undefined,
         pro_discount_percent: row.pro_discount_percent,
@@ -257,6 +303,11 @@ export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
         slug: row.slug,
         meta_title: row.meta_title,
         meta_description: row.meta_description,
+<<<<<<< HEAD
+=======
+        
+        // Sistema SKU
+>>>>>>> 85b4236820d0f5087c04acbc0c3bd377925948a2
         parent_product_id: row.parent_product_id,
         is_master_product: row.is_master_product,
         product_type: row.product_type as 'simple' | 'master' | 'sku' | undefined,
@@ -268,9 +319,19 @@ export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
         inherit_from_master: typeof row.inherit_from_master === 'object' && row.inherit_from_master !== null 
           ? row.inherit_from_master as { [key: string]: boolean } 
           : undefined,
+<<<<<<< HEAD
         additional_images: row.additional_images,
         colors: row.colors,
         sizes: row.sizes,
+=======
+        
+        // Arrays
+        additional_images: row.additional_images,
+        colors: row.colors,
+        sizes: row.sizes,
+        
+        // Especificações e conteúdo
+>>>>>>> 85b4236820d0f5087c04acbc0c3bd377925948a2
         specifications: Array.isArray(row.specifications) 
           ? row.specifications as { label: string; value: string; }[] 
           : undefined,
@@ -288,6 +349,7 @@ export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
         product_descriptions: row.product_descriptions,
         delivery_config: row.delivery_config,
         display_config: row.display_config,
+<<<<<<< HEAD
         tags: []
       };
       
@@ -327,6 +389,21 @@ export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
     console.error('[fetchAllProductsForBackup] Estratégia 2 também falhou:', separateError);
     throw new Error(`Erro ao buscar produtos para backup: ${separateError.message}`);
   }
+=======
+        
+        // Tags
+        tags: row.tag_id && row.tag_name ? [{
+          id: row.tag_id,
+          name: row.tag_name
+        }] : []
+      };
+      
+      productsMap.set(productId, product);
+    }
+  });
+
+  return Array.from(productsMap.values());
+>>>>>>> 85b4236820d0f5087c04acbc0c3bd377925948a2
 };
 
 // Função para converter produtos em dados para planilha
