@@ -1,15 +1,14 @@
-
 import React from 'react';
-import { useHomepageLayout } from '@/hooks/useHomepageLayout';
+import { useOptimizedHomepageLayout } from '@/hooks/useOptimizedHomepageLayout';
 import { SectionRenderer } from '@/components/HomePage/SectionRenderer';
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
 
 const HomePage = () => {
-  const { layoutItems: layout, loading, error } = useHomepageLayout();
+  const { layoutItems: layout, isLoading, error } = useOptimizedHomepageLayout();
 
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState message={error} />;
+  if (isLoading) return <LoadingState />;
+  if (error) return <ErrorState message={error?.message || 'Erro ao carregar layout'} />;
 
   return (
     <div className="min-h-screen bg-gray-50">
