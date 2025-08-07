@@ -29,8 +29,8 @@ const PrimePagesAdmin: React.FC = () => {
     removeLayoutItem
   } = usePrimePages();
   
-  const { sections } = useProductSections();
-  const { sections: specialSections } = useSpecialSections();
+  const { sections, createSection, fetchSections } = useProductSections(selectedPageWithLayout?.id);
+  const { sections: specialSections } = useSpecialSections({ pageId: selectedPageWithLayout?.id });
 
   // Estados para modais e formulários
   const [showCreateModal, setShowCreateModal] = useState(false);

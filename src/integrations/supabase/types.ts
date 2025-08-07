@@ -991,6 +991,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          page_id: string | null
           title: string
           title_color1: string | null
           title_color2: string | null
@@ -1002,6 +1003,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          page_id?: string | null
           title: string
           title_color1?: string | null
           title_color2?: string | null
@@ -1013,6 +1015,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          page_id?: string | null
           title?: string
           title_color1?: string | null
           title_color2?: string | null
@@ -1021,7 +1024,15 @@ export type Database = {
           updated_at?: string | null
           view_all_link?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "product_sections_page_id_fk"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "prime_pages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_specifications: {
         Row: {
@@ -1814,6 +1825,7 @@ export type Database = {
           padding_left: number | null
           padding_right: number | null
           padding_top: number | null
+          page_id: string | null
           title: string
           title_color1: string | null
           title_color2: string | null
@@ -1843,6 +1855,7 @@ export type Database = {
           padding_left?: number | null
           padding_right?: number | null
           padding_top?: number | null
+          page_id?: string | null
           title: string
           title_color1?: string | null
           title_color2?: string | null
@@ -1872,6 +1885,7 @@ export type Database = {
           padding_left?: number | null
           padding_right?: number | null
           padding_top?: number | null
+          page_id?: string | null
           title?: string
           title_color1?: string | null
           title_color2?: string | null
@@ -1879,7 +1893,15 @@ export type Database = {
           title_part2?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "special_sections_page_id_fk"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "prime_pages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       specification_categories: {
         Row: {

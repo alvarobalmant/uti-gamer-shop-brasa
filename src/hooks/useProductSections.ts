@@ -21,6 +21,7 @@ export interface ProductSection {
   view_all_link?: string | null;
   created_at?: string;
   updated_at?: string;
+  page_id?: string | null; // Optional: scope to a Prime Page when set
   items?: ProductSectionItem[]; // Populated after fetch
 }
 
@@ -40,7 +41,7 @@ export interface HomepageLayoutItem {
   title?: string;
 }
 
-export const useProductSections = () => {
+export const useProductSections = (pageId?: string) => {
   const [sections, setSections] = useState<ProductSection[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,10 +54,14 @@ export const useProductSections = () => {
     try {
       // Fetch sections with retry mechanism
       const { data: sectionsData, error: sectionsError } = await retrySupabaseQuery(
-        async () => await supabase
-          .from('product_sections')
-          .select('*')
-          .order('created_at', { ascending: false }),
+        async () => {
+          const base = supabase
+            .from('product_sections')
+            .select('*')
+            .order('created_at', { ascending: false });
+          const query = pageId ? base.eq('page_id', pageId) : base.is('page_id', null);
+          return await query;
+        },
         'fetchProductSections'
       );
 
@@ -98,7 +103,7 @@ export const useProductSections = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, pageId]);
 
   const createSection = useCallback(async (sectionInput: ProductSectionInput): Promise<ProductSection | null> => {
     setLoading(true);
@@ -111,6 +116,7 @@ export const useProductSections = () => {
         .insert({
           title: sectionInput.title,
           view_all_link: sectionInput.view_all_link,
+          page_id: pageId ?? null,
         })
         .select()
         .single();
@@ -134,36 +140,40 @@ export const useProductSections = () => {
         if (itemsError) throw itemsError;
       }
 
-      // 3. Add to homepage_layout (find the last order and add 1)
-      const { data: lastOrderItem, error: orderError } = await supabase
-        .from('homepage_layout')
-        .select('display_order')
-        .order('display_order', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // 3. Add to homepage_layout only for global (non-scoped) sections
+      if (!pageId) {
+        const { data: lastOrderItem, error: orderError } = await supabase
+          .from('homepage_layout')
+          .select('display_order')
+          .order('display_order', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (orderError && orderError.code !== 'PGRST116') { // Ignore 'No rows found' error
-         throw orderError;
-      }
+        if (orderError && orderError.code !== 'PGRST116') { // Ignore 'No rows found' error
+           throw orderError;
+        }
 
-      const nextOrder = lastOrderItem ? lastOrderItem.display_order + 1 : 1;
-      const sectionKey = `product_section_${newSectionId}`;
+        const nextOrder = lastOrderItem ? lastOrderItem.display_order + 1 : 1;
+        const sectionKey = `product_section_${newSectionId}`;
 
-      const { error: layoutError } = await supabase
-        .from('homepage_layout')
-        .insert({
-          section_key: sectionKey,
-          display_order: nextOrder,
-          is_visible: true, // Default to visible
-        });
+        const { error: layoutError } = await supabase
+          .from('homepage_layout')
+          .insert({
+            section_key: sectionKey,
+            display_order: nextOrder,
+            is_visible: true, // Default to visible
+          });
 
-      if (layoutError) {
-        // Attempt to rollback or notify user about layout inconsistency
-        console.error('Failed to add section to layout:', layoutError);
-        toast({ title: 'Aviso', description: 'Seção criada, mas falha ao adicionar ao layout da home.', variant: 'destructive' });
-        // Don't throw here, section is created, but needs manual layout adjustment
+        if (layoutError) {
+          // Attempt to rollback or notify user about layout inconsistency
+          console.error('Failed to add section to layout:', layoutError);
+          toast({ title: 'Aviso', description: 'Seção criada, mas falha ao adicionar ao layout da home.', variant: 'destructive' });
+          // Don't throw here, section is created, but needs manual layout adjustment
+        } else {
+           toast({ title: 'Sucesso', description: 'Seção de produtos criada e adicionada ao layout.' });
+        }
       } else {
-         toast({ title: 'Sucesso', description: 'Seção de produtos criada e adicionada ao layout.' });
+        toast({ title: 'Sucesso', description: 'Seção de produtos criada para esta página.' });
       }
 
       // Refetch sections to update the list
