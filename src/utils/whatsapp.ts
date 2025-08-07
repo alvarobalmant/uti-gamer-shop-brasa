@@ -76,23 +76,7 @@ export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '55
     console.warn('Não foi possível enviar email de confirmação:', err);
   }
   
-  // Formatação otimizada para copiar no WhatsApp
-  const message = `🎮 *UTI DOS GAMES* - Novo Pedido
-
-📋 *ITENS:*
-${itemsList}
-
-💰 *TOTAL: R$ ${total.toFixed(2)}*
-
-🔐 *CÓDIGO DE VERIFICAÇÃO:*
-
-\`\`\`
-${orderCode}
-\`\`\`
-
-👆 *Toque no código acima para copiar*
-
-Aguardo confirmação! 🚀`;
+  const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*\n\n🔐 *Código de Verificação:*\n${orderCode}\n\n📋 *Copie o código:*\n${orderCode}\n\nAguardo retorno! 🎮`;
   
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
   window.open(whatsappUrl, '_blank');
