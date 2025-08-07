@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Zap, Check, Star, Heart, Share2, ChevronLeft, ChevronRight, ZoomIn, Info, X } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import FavoriteButton from '@/components/FavoriteButton';
+import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
 
 // Importar componentes especializados da MainContent
 import ProductGalleryEnhanced from '../MainContent/ProductGalleryEnhanced';
@@ -29,6 +30,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
   className
 }) => {
   const { addToCart, sendToWhatsApp } = useCart();
+  const { platformConfig } = useDynamicPlatforms();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
@@ -250,24 +252,64 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
 
 
 
-        {/* PLATAFORMAS */}
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-900">
-            Plataforma:
-          </label>
-          <div className="flex gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              🎮 PlayStation
-            </Button>
+        {/* PLATAFORMAS - Só aparece para produtos com variações (SKUs) */}
+        {skuNavigation && skuNavigation.platforms && skuNavigation.platforms.length > 1 && (
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-900">
+              Plataforma:
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              {skuNavigation.platforms.slice(0, 3).map(({ platform, sku, available }, index) => {
+                const isCurrentPlatform = skuNavigation.currentSKU?.variant_attributes?.platform === platform;
+                const platformInfo = platformConfig[platform];
+                
+                if (!platformInfo) return null;
+                
+                return (
+                  <Button
+                    key={`${platform}-${sku?.id || index}`}
+                    variant={isCurrentPlatform ? "default" : "outline"}
+                    size="sm"
+                    className={isCurrentPlatform 
+                      ? "bg-red-600 hover:bg-red-700 text-white" 
+                      : "bg-white hover:bg-red-50 border-gray-300 hover:border-red-400 text-gray-800"
+                    }
+                    onClick={() => {
+                      if (available && sku && !isCurrentPlatform) {
+                        window.location.href = `/produto/${sku.id}`;
+                      }
+                    }}
+                    disabled={!available}
+                  >
+                    {platformInfo.icon.startsWith('http') ? (
+                      <>
+                        <img 
+                          src={platformInfo.icon} 
+                          alt={platformInfo.name}
+                          className="w-4 h-4 mr-1"
+                        />
+                        {platformInfo.name}
+                      </>
+                    ) : (
+                      <>
+                        <span className="mr-1">{platformInfo.icon}</span>
+                        {platformInfo.name}
+                      </>
+                    )}
+                  </Button>
+                );
+              })}
+              {skuNavigation.platforms.length > 3 && (
+                <span className="text-sm text-gray-500 self-center">
+                  +{skuNavigation.platforms.length - 3} mais
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">
+              💡 Preços podem variar entre plataformas
+            </p>
           </div>
-          <p className="text-xs text-gray-500">
-            💡 Preços podem variar entre plataformas
-          </p>
-        </div>
+        )}
 
         {/* APENAS DESCRIÇÃO EXPANDÍVEL APÓS AVISO DE PREÇOS */}
         <div className="mt-8">
