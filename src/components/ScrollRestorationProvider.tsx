@@ -1,7 +1,6 @@
 import React, { createContext } from 'react';
 import { useEnhancedScrollSystem } from '@/hooks/useEnhancedScrollSystem';
 import { useScrollSystemIntegration } from '@/hooks/useScrollSystemIntegration';
-import { useNavigationCachePrefetch } from '@/hooks/useNavigationCachePrefetch';
 
 // Contexto vazio apenas para fornecer o provedor
 const ScrollRestorationContext = createContext<null>(null);
@@ -11,9 +10,6 @@ const ScrollRestorationContext = createContext<null>(null);
  * Sistema novo: robusto, simples e eficaz
  */
 const ScrollRestorationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize navigation cache prefetching for ultra-fast navigation
-  useNavigationCachePrefetch();
-  
   // Initialize scroll system coordination
   useScrollSystemIntegration({
     enabledSystems: {
