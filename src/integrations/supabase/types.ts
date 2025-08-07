@@ -586,6 +586,72 @@ export type Database = {
         }
         Relationships: []
       }
+      order_verification_codes: {
+        Row: {
+          browser_info: Json | null
+          code: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          customer_info: Json
+          discount_info: Json | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          items: Json
+          rewards_given: Json | null
+          rewards_processed: boolean | null
+          shipping_info: Json | null
+          status: string
+          total_amount: number
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          browser_info?: Json | null
+          code: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          customer_info: Json
+          discount_info?: Json | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          items: Json
+          rewards_given?: Json | null
+          rewards_processed?: boolean | null
+          shipping_info?: Json | null
+          status?: string
+          total_amount: number
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          browser_info?: Json | null
+          code?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          customer_info?: Json
+          discount_info?: Json | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          items?: Json
+          rewards_given?: Json | null
+          rewards_processed?: boolean | null
+          shipping_info?: Json | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       page_layout_items: {
         Row: {
           created_at: string
@@ -2614,12 +2680,30 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      complete_order_verification: {
+        Args: { p_code: string; p_admin_id: string }
+        Returns: Json
+      }
       create_admin_link: {
         Args: { duration_minutes: number }
         Returns: Json
       }
       create_admin_link_secure: {
         Args: { duration_minutes: number }
+        Returns: Json
+      }
+      create_order_verification_code: {
+        Args: {
+          p_user_id: string
+          p_items: Json
+          p_total_amount: number
+          p_customer_info: Json
+          p_shipping_info?: Json
+          p_discount_info?: Json
+          p_ip_address?: unknown
+          p_user_agent?: string
+          p_browser_info?: Json
+        }
         Returns: Json
       }
       debug_column_references: {
@@ -2649,6 +2733,10 @@ export type Database = {
         Returns: Json
       }
       generate_admin_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_order_code: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
@@ -2870,6 +2958,10 @@ export type Database = {
           invalid_tag_references: number
           integrity_issues: string[]
         }[]
+      }
+      verify_order_code: {
+        Args: { p_code: string }
+        Returns: Json
       }
       verify_redemption_code: {
         Args: { p_code: string }

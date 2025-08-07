@@ -23,9 +23,10 @@ import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
 import UTICoinsManager from './UTICoinsManager';
 import { EmailManager } from './EmailManager/EmailManager';
+import OrderVerifier from './OrderVerifier';
 // Admin login system removed
 import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor } from 'lucide-react';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -53,6 +54,7 @@ export const AdminPanel = () => {
     { id: 'services', label: 'Serviços', icon: Briefcase },
     { id: 'tags', label: 'Tags', icon: Tag },
     { id: 'uti_coins', label: 'UTI Coins', icon: Coins },
+    { id: 'order_verifier', label: 'VERIFICADOR DE PEDIDO', icon: ClipboardCheck },
     { id: 'emails', label: 'Emails', icon: Mail },
     // Admin login removed
     { id: 'users', label: 'Usuários/PRO', icon: Users },
@@ -234,6 +236,10 @@ export const AdminPanel = () => {
 
               <TabsContent value="uti_coins" className="mt-0">
                 <UTICoinsManager />
+              </TabsContent>
+
+              <TabsContent value="order_verifier" className="mt-0">
+                <OrderVerifier />
               </TabsContent>
 
               <TabsContent value="emails" className="mt-0">
