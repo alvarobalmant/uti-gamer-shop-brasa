@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { sendOrderCreatedEmail } from './orderEmailService';
 
@@ -49,79 +48,56 @@ export const generateOrderVerificationCode = async (cartItems: any[], total: num
 };
 
 export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '5527996882090') => {
-  return new Promise<string | null>((resolve) => {
-    const processOrder = async () => {
-      const itemsList = cartItems.map(item => 
-        `• ${item.product.name} (${item.size}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
-      ).join('\n');
-      
-      const total = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-      
-      // Gerar código de verificação do pedido
-      const orderCode = await generateOrderVerificationCode(cartItems, total);
-      
-      if (!orderCode) {
-        console.error('Erro ao gerar código de verificação');
-        resolve(null);
-        return;
-      }
+  const itemsList = cartItems.map(item => 
+    `• ${item.product.name} (${item.size}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
+  ).join('\n');
+  
+  const total = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  
+  // Gerar código de verificação do pedido
+  const orderCode = await generateOrderVerificationCode(cartItems, total);
+  
+  if (!orderCode) {
+    console.error('Erro ao gerar código de verificação');
+    return;
+  }
 
-      // Enviar email de confirmação se o usuário estiver logado
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.email) {
-          await sendOrderCreatedEmail(
-            user.email,
-            user.user_metadata?.name || 'Cliente',
-            orderCode
-          );
-        }
-      } catch (err) {
-        console.warn('Não foi possível enviar email de confirmação:', err);
-      }
+  // Enviar email de confirmação se o usuário estiver logado
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.email) {
+      await sendOrderCreatedEmail(
+        user.email,
+        user.user_metadata?.name || 'Cliente',
+        orderCode
+      );
+    }
+  } catch (err) {
+    console.warn('Não foi possível enviar email de confirmação:', err);
+  }
+  
+  // Formatação otimizada para copiar no WhatsApp
+  const message = `🎮 *UTI DOS GAMES* - Novo Pedido
 
-      // Função para abrir WhatsApp
-      const openWhatsApp = () => {
-        const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*\n\n🔐 *Código de Verificação:*\n${orderCode}\n\n📋 *Copie o código:*\n${orderCode}\n\nAguardo retorno! 🎮`;
-        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
-        resolve(orderCode);
-      };
+📋 *ITENS:*
+${itemsList}
 
-      // Importar e mostrar dialog
-      import('@/components/dialogs/VerificationCodeDialog').then(({ VerificationCodeDialog }) => {
-        import('react-dom').then(ReactDOM => {
-          // Criar container para o modal
-          const modalContainer = document.createElement('div');
-          document.body.appendChild(modalContainer);
+💰 *TOTAL: R$ ${total.toFixed(2)}*
 
-          const handleClose = () => {
-            ReactDOM.unmountComponentAtNode(modalContainer);
-            document.body.removeChild(modalContainer);
-            resolve(orderCode);
-          };
+🔐 *CÓDIGO DE VERIFICAÇÃO:*
 
-          const handleContinue = () => {
-            openWhatsApp();
-            handleClose();
-          };
+\`\`\`
+${orderCode}
+\`\`\`
 
-          // Renderizar modal
-          ReactDOM.render(
-            React.createElement(VerificationCodeDialog, {
-              isOpen: true,
-              onClose: handleClose,
-              verificationCode: orderCode,
-              onContinueToWhatsApp: handleContinue
-            }),
-            modalContainer
-          );
-        });
-      });
-    };
+👆 *Toque no código acima para copiar*
 
-    processOrder();
-  });
+Aguardo confirmação! 🚀`;
+  
+  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  window.open(whatsappUrl, '_blank');
+  
+  return orderCode;
 };
 
 export const formatWhatsAppMessage = (cartItems: any[]) => {
