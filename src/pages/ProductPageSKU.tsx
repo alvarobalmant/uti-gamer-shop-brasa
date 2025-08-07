@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
-import { useProductDetail } from '@/hooks/useProductDetail';
+import { useOptimizedProductDetail } from '@/hooks/useOptimizedProductDetail';
 
 import { saveScrollPosition, restoreScrollPosition } from '@/lib/scrollRestorationManager';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
@@ -36,7 +36,7 @@ const ProductPageSKU = () => {
   console.log('[ProductPageSKU] Iniciando com ID:', id);
   console.log('[ProductPageSKU] Location:', location.pathname);
   
-  const { product, skuNavigation, loading, error } = useProductDetail(id);
+  const { product, skuNavigation, loading, error, isOptimistic } = useOptimizedProductDetail(id);
   const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const { toast } = useToast();
   
@@ -152,13 +152,18 @@ const ProductPageSKU = () => {
             )}
           </div>
 
-          {/* Desktop Version - Novo Layout */}
-          <div className="hidden md:block">
+           {/* Desktop Version - Novo Layout */}
+          <div className={`hidden md:block transition-opacity duration-200 ${isOptimistic ? 'opacity-75' : ''}`}>
             <ProductLayout
               product={product}
               skuNavigation={skuNavigation}
               onAddToCart={handleAddToCart}
             />
+            {isOptimistic && (
+              <div className="fixed top-20 right-4 z-50 bg-blue-500 text-white px-3 py-2 rounded-lg text-sm shadow-lg animate-pulse">
+                ⚡ Carregamento otimizado...
+              </div>
+            )}
           </div>
 
           {/* Mobile Version */}

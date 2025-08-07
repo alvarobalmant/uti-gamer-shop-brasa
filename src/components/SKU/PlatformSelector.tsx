@@ -1,9 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SKUNavigation, Platform } from '@/hooks/useProducts/types';
 import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
+import { useOptimizedPlatformNavigation } from '@/hooks/useOptimizedPlatformNavigation';
+import { useIntelligentSKUPrefetch } from '@/hooks/useIntelligentSKUPrefetch';
 import { cn } from '@/lib/utils';
 
 interface PlatformSelectorProps {
@@ -17,12 +18,13 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
   currentProductId,
   className
 }) => {
-  const navigate = useNavigate();
   const { platformConfig } = useDynamicPlatforms();
+  const { navigateToPlatform, isTransitioning } = useOptimizedPlatformNavigation();
+  const { handlePlatformHover, cancelPlatformHover } = useIntelligentSKUPrefetch();
 
   const handlePlatformClick = (platform: string, sku: any) => {
-    if (sku) {
-      navigate(`/produto/${sku.id}`);
+    if (sku && !isTransitioning) {
+      navigateToPlatform(platform, sku, currentProductId);
     }
   };
 
@@ -58,13 +60,16 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
               key={`${platform}-${sku?.id || index}`}
               variant={isCurrentPlatform ? "default" : "outline"}
               className={cn(
-                "h-auto p-4 flex flex-col items-center gap-2 relative",
+                "h-auto p-4 flex flex-col items-center gap-2 relative transition-all duration-200",
                 isCurrentPlatform && "ring-2 ring-red-500 bg-red-600 hover:bg-red-700",
                 !available && "opacity-50 cursor-not-allowed",
-                available && !isCurrentPlatform && "hover:bg-gray-50 hover:border-red-300"
+                available && !isCurrentPlatform && "hover:bg-gray-50 hover:border-red-300 hover:scale-105",
+                isTransitioning && "opacity-80 pointer-events-none"
               )}
               onClick={() => available && handlePlatformClick(platform, sku)}
-              disabled={!available}
+              onMouseEnter={() => available && sku && handlePlatformHover(sku)}
+              onMouseLeave={() => available && sku && cancelPlatformHover(sku)}
+              disabled={!available || isTransitioning}
             >
               {/* Ícone da plataforma */}
               <div className="text-2xl mb-1 flex items-center justify-center w-8 h-8">
