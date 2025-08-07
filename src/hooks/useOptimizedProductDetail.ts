@@ -223,29 +223,40 @@ export const useOptimizedProductDetail = (productId: string | undefined) => {
   }, [productQuery.error]);
 
   // Memoized return value
-  return useMemo(() => ({
-    product: productQuery.data?.product || null,
-    skuNavigation: productQuery.data?.skuNavigation || null,
-    loading: productQuery.isLoading,
-    error,
-    isOptimistic: isOptimisticUpdate,
-    
-    // Optimistic navigation helper
-    getOptimisticData,
-    
-    // Cache utilities
-    invalidateCache: () => {
-      productQuery.refetch();
-      if (productId) {
-        productDetailCache.delete(productId);
+  return useMemo(() => {
+    console.log('[useOptimizedProductDetail] Return values:', {
+      hasProduct: !!productQuery.data?.product,
+      hasSkuNavigation: !!productQuery.data?.skuNavigation,
+      platformsCount: productQuery.data?.skuNavigation?.platforms?.length,
+      loading: productQuery.isLoading,
+      error,
+      isOptimistic: isOptimisticUpdate
+    });
+
+    return {
+      product: productQuery.data?.product || null,
+      skuNavigation: productQuery.data?.skuNavigation || null,
+      loading: productQuery.isLoading,
+      error,
+      isOptimistic: isOptimisticUpdate,
+      
+      // Optimistic navigation helper
+      getOptimisticData,
+      
+      // Cache utilities
+      invalidateCache: () => {
+        productQuery.refetch();
+        if (productId) {
+          productDetailCache.delete(productId);
+        }
+      },
+      
+      // Prefetch utilities
+      prefetchSKU: (skuId: string) => {
+        prefetchProducts([skuId]);
       }
-    },
-    
-    // Prefetch utilities
-    prefetchSKU: (skuId: string) => {
-      prefetchProducts([skuId]);
-    }
-  }), [
+    };
+  }, [
     productQuery.data,
     productQuery.isLoading,
     error,
