@@ -1,5 +1,6 @@
 import React from 'react';
 import { useIntelligentPreloader } from '@/hooks/useIntelligentPreloader';
+import { useLayoutPreloader } from '@/hooks/useLayoutPreloader';
 import { PerformanceMonitor } from '@/components/PerformanceMonitor';
 
 // Error Boundary para o AppWithPreloader
@@ -33,12 +34,20 @@ class PreloaderErrorBoundary extends React.Component<
 
 // Componente wrapper que adiciona preloading inteligente
 export const AppWithPreloader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Inicializar preloader de layout ultra-persistente (dentro do QueryClientProvider)
+  const { initializeLayoutCache } = useLayoutPreloader();
+  
   // Inicializar preloader inteligente com error handling
   try {
     useIntelligentPreloader();
   } catch (error) {
     console.warn('Erro ao inicializar preloader:', error);
   }
+
+  // Inicializar cache de layout na startup
+  React.useEffect(() => {
+    initializeLayoutCache();
+  }, [initializeLayoutCache]);
 
   return (
     <PreloaderErrorBoundary>
