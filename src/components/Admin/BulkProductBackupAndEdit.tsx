@@ -33,6 +33,7 @@ import {
   type BulkEditResult 
 } from './BulkProductUpload/bulkEditUtils';
 import type { ImportedProduct, ValidationError } from './BulkProductUpload/types';
+import { SkippedProductsModal } from './BulkProductUpload/SkippedProductsModal';
 
 const BulkProductBackupAndEdit: React.FC = () => {
   const { toast } = useToast();
@@ -49,6 +50,7 @@ const BulkProductBackupAndEdit: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [editResult, setEditResult] = useState<BulkEditResult | null>(null);
+  const [showSkippedModal, setShowSkippedModal] = useState(false);
 
   // Função para gerar backup
   const handleGenerateBackup = async () => {
@@ -248,6 +250,11 @@ const BulkProductBackupAndEdit: React.FC = () => {
         });
       }
 
+      // Mostrar modal de produtos ignorados se houver algum
+      if (result.skipped > 0 && result.skipped_logs.length > 0) {
+        setShowSkippedModal(true);
+      }
+
     } catch (error) {
       console.error('Erro na edição em massa:', error);
       toast({
@@ -383,10 +390,22 @@ const BulkProductBackupAndEdit: React.FC = () => {
                       <p className="font-semibold">
                         {editResult.success ? 'Edição concluída com sucesso!' : 'Edição concluída com problemas'}
                       </p>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>✅ Produtos atualizados: {editResult.updated}</div>
-                        <div>⏭️ Produtos ignorados: {editResult.skipped}</div>
-                      </div>
+                        <div className="flex items-center gap-2">
+                          ⏭️ Produtos ignorados: {editResult.skipped}
+                          {editResult.skipped > 0 && editResult.skipped_logs.length > 0 && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setShowSkippedModal(true)}
+                              className="h-6 px-2 text-xs"
+                            >
+                              Ver Detalhes
+                            </Button>
+                          )}
+                        </div>
+                       </div>
                       {editResult.errors.length > 0 && (
                         <div className="mt-2">
                           <p className="text-sm font-medium text-red-600">Erros encontrados:</p>
@@ -486,6 +505,13 @@ const BulkProductBackupAndEdit: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Produtos Ignorados */}
+      <SkippedProductsModal
+        open={showSkippedModal}
+        onOpenChange={setShowSkippedModal}
+        skippedLogs={editResult?.skipped_logs || []}
+      />
     </div>
   );
 };
