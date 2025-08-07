@@ -6,11 +6,11 @@ const LoadingState: React.FC = () => {
     <div className="container mx-auto px-4 py-16">
       <div className="text-center">
         <div className="inline-flex items-center space-x-2">
-          <div className="w-4 h-4 bg-red-600 rounded-full animate-bounce"></div>
-          <div className="w-4 h-4 bg-red-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-          <div className="w-4 h-4 bg-red-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          <div className="w-4 h-4 bg-primary rounded-full animate-bounce"></div>
+          <div className="w-4 h-4 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+          <div className="w-4 h-4 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
         </div>
-        <p className="mt-4 text-gray-600">Carregando...</p>
+        <p className="mt-4 text-muted-foreground">Carregando...</p>
       </div>
     </div>
   );

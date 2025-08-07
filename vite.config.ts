@@ -39,105 +39,22 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // Core vendors - sempre carregados
-          if (id.includes('react') && (id.includes('react-dom') || id.includes('react/'))) {
-            return 'vendor-react';
-          }
-          if (id.includes('react-router-dom')) {
-            return 'vendor-router';
-          }
-          if (id.includes('@supabase/supabase-js')) {
-            return 'vendor-supabase';
-          }
-          if (id.includes('framer-motion')) {
-            return 'vendor-motion';
-          }
+        manualChunks: {
+          // Core vendors
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-router': ['react-router-dom'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-query': ['@tanstack/react-query'],
           
-          // UI components - carregados quando necessário
-          if (id.includes('@radix-ui/')) {
-            return 'ui-radix';
-          }
+          // UI components essenciais
+          'ui-core': [
+            '@radix-ui/react-dialog', 
+            '@radix-ui/react-dropdown-menu', 
+            '@radix-ui/react-toast'
+          ],
           
-          // ADMIN-ONLY chunks - carregados apenas para admins
-          if (id.includes('@huggingface/transformers')) {
-            return 'admin-ai';
-          }
-          if (id.includes('xlsx')) {
-            return 'admin-excel';
-          }
-          
-          // Admin components - detectar por path
-          if (id.includes('/Admin/') || id.includes('/admin/') || 
-              id.includes('AdminPanel') || id.includes('ProductManager') ||
-              id.includes('SpecificationDiagnostic') || id.includes('ProductImageManager')) {
-            return 'admin-core';
-          }
-          
-          // Admin features específicas
-          if (id.includes('BulkImageUpload') || id.includes('ProductImageManager') ||
-              id.includes('ProductDesktopManager') || id.includes('SpecialSectionManager')) {
-            return 'admin-features';
-          }
-
-          // Admin tabs - lazy loading individual
-          if (id.includes('LazyAdminTabs') || id.includes('BulkProductUploadLazy')) {
-            return 'admin-tabs';
-          }
-
-          // Performance monitoring
-          if (id.includes('usePerformanceMonitoring') || id.includes('useBackgroundRemovalLazy')) {
-            return 'admin-performance';
-          }
-          
-          // Charts - lazy load
-          if (id.includes('recharts')) {
-            return 'vendor-charts';
-          }
-          
-          // Forms - lazy load
-          if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
-            return 'vendor-forms';
-          }
-          
-          // Date utilities - lazy load
-          if (id.includes('date-fns')) {
-            return 'vendor-date';
-          }
-          
-          // Utils pequenos - podem ficar juntos
-          if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('class-variance-authority')) {
-            return 'vendor-utils';
-          }
-          
-          // Platform pages - lazy load por plataforma
-          if (id.includes('/platforms/PlayStation')) {
-            return 'platform-playstation';
-          }
-          if (id.includes('/platforms/Xbox')) {
-            return 'platform-xbox';
-          }
-          if (id.includes('/platforms/Nintendo')) {
-            return 'platform-nintendo';
-          }
-          if (id.includes('/platforms/')) {
-            return 'platform-others';
-          }
-          
-          // Product pages
-          if (id.includes('ProductPage') || id.includes('/produto/')) {
-            return 'product-pages';
-          }
-          
-          // Client area
-          if (id.includes('ClientArea') || id.includes('Wishlist') || id.includes('/area-cliente/')) {
-            return 'client-area';
-          }
-          
-          // UTI Coins system
-          if (id.includes('UTI') || id.includes('Coins') || id.includes('/coins/')) {
-            return 'uti-coins';
-          }
+          // Utils
+          'vendor-utils': ['clsx', 'tailwind-merge', 'class-variance-authority'],
         },
       },
     },

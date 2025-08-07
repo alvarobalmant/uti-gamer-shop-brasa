@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from "react";
 import './utils/categoryTestSimple';
 import './utils/n7ErrorSuppressor'; // ← NOVO: Supressor de erro n7.map
 import './styles/n7ErrorSuppression.css'; // ← NOVO: CSS para suprimir erro n7.map
+import './utils/debugHelper'; // ← Debug helper para diagnosticar problemas
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +26,7 @@ import { useEffect } from "react";
 
 // Componentes de preloading inteligente
 import { AppWithPreloader } from "@/components/AppWithPreloader";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Hook minimalista para prevenir layout shift sem interferir no scroll
 const usePreventLayoutShift = () => {
@@ -32,29 +34,45 @@ const usePreventLayoutShift = () => {
     // Apenas configuração básica, sem interferir no scroll restoration
     document.body.style.overflowX = 'hidden';
     
-    // Observer mais específico - apenas para mudanças críticas
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-          const target = mutation.target as HTMLElement;
-          if (target === document.body) {
-            // Apenas remove padding/margin que causam layout shift, SEM tocar no overflow-y
-            if (target.style.paddingRight || target.style.marginRight) {
-              target.style.paddingRight = '';
-              target.style.marginRight = '';
+    // Observer mais específico com proteção contra erros
+    let observer: MutationObserver | null = null;
+    
+    try {
+      observer = new MutationObserver((mutations) => {
+        try {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+              const target = mutation.target as HTMLElement;
+              if (target === document.body) {
+                // Apenas remove padding/margin que causam layout shift, SEM tocar no overflow-y
+                if (target.style.paddingRight || target.style.marginRight) {
+                  target.style.paddingRight = '';
+                  target.style.marginRight = '';
+                }
+              }
             }
-          }
+          });
+        } catch (error) {
+          console.warn('MutationObserver error:', error);
         }
       });
-    });
 
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ['style']
-    });
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['style']
+      });
+    } catch (error) {
+      console.warn('Failed to setup MutationObserver:', error);
+    }
 
     return () => {
-      observer.disconnect();
+      if (observer) {
+        try {
+          observer.disconnect();
+        } catch (error) {
+          console.warn('Failed to disconnect MutationObserver:', error);
+        }
+      }
     };
   }, []);
 };
@@ -150,23 +168,24 @@ const App = () => {
   }, []);
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        {/* Security system removed */}
-          <UTICoinsProvider>
-            <CartProvider>
-              <ProductProviderOptimized>
-                <LoadingProvider>
-                  <TooltipProvider>
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter>
-                      <AppWithPreloader>
-                        <GlobalNavigationProvider>
-                          <ScrollRestorationProvider>
-                            <LoadingOverlay />
-                            <GlobalNavigationOverlay />
-                            <Suspense fallback={<PageLoader />}>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          {/* Security system removed */}
+            <UTICoinsProvider>
+              <CartProvider>
+                <ProductProviderOptimized>
+                  <LoadingProvider>
+                    <TooltipProvider>
+                      <Toaster />
+                      <Sonner />
+                      <BrowserRouter>
+                        <AppWithPreloader>
+                          <GlobalNavigationProvider>
+                            <ScrollRestorationProvider>
+                              <LoadingOverlay />
+                              <GlobalNavigationOverlay />
+                              <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes - Index sem lazy loading por ser crítica */}
                   <Route path="/" element={<Index />} />
@@ -250,19 +269,20 @@ const App = () => {
                   {/* Catch-all Not Found Route - MUST be absolute last */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-                            </Suspense>
-                          </ScrollRestorationProvider>
-                        </GlobalNavigationProvider>
-                      </AppWithPreloader>
-                    </BrowserRouter>
-                  </TooltipProvider>
-                </LoadingProvider>
-              </ProductProviderOptimized>
-            </CartProvider>
-          </UTICoinsProvider>
-        {/* Security system removed */}
-      </AuthProvider>
-    </QueryClientProvider>
+                              </Suspense>
+                            </ScrollRestorationProvider>
+                          </GlobalNavigationProvider>
+                        </AppWithPreloader>
+                      </BrowserRouter>
+                    </TooltipProvider>
+                  </LoadingProvider>
+                </ProductProviderOptimized>
+              </CartProvider>
+            </UTICoinsProvider>
+          {/* Security system removed */}
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 
