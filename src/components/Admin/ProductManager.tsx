@@ -11,9 +11,10 @@ import ProductList from './ProductManager/ProductList';
 import ProductForm from './ProductManager/ProductForm';
 import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
+import { ProductDebugInfo } from './ProductManager/ProductDebugInfo';
 
-// Lazy load the optimized version for large datasets
-const ProductManagerOptimized = React.lazy(() => import('./ProductManager/ProductManagerOptimized'));
+// DISABLED: Optimized version disabled to ensure ALL products are visible
+// const ProductManagerOptimized = React.lazy(() => import('./ProductManager/ProductManagerOptimized'));
 
 const ProductManager = () => {
   const { products, loading, addProduct, updateProduct, deleteProduct, fetchSingleProduct } = useProducts();
@@ -22,7 +23,7 @@ const ProductManager = () => {
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [useOptimizedView, setUseOptimizedView] = useState(false);
+  // DISABLED: useOptimizedView removed to force standard view that shows ALL products
 
   // Auto-switching to optimized view DISABLED - always show all products
   useEffect(() => {
@@ -135,6 +136,9 @@ const ProductManager = () => {
 
   return (
     <div className="space-y-6">
+      {/* Debug Info */}
+      <ProductDebugInfo products={products} loading={loading} />
+      
       {/* Performance Alert - Disabled, showing all products */}
       {products.length > 200 && (
         <Alert className="border-blue-500">

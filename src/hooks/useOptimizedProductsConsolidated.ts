@@ -1,3 +1,6 @@
+// ⚠️ DISABLED: This file is disabled to ensure ALL products are visible in admin
+// The pagination and virtualization here was limiting product display to 50 items
+// Use the standard useProducts hook instead for full product visibility
 import { useCallback, useMemo, useRef, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchProductsFromDatabaseCached, fetchProductDetails } from './useProducts/productApiOptimized';

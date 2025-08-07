@@ -12,6 +12,7 @@ import {
 } from './useProducts/productApi';
 import { handleProductError } from './useProducts/productErrorHandler';
 import { CarouselConfig } from '@/types/specialSections'; // Import CarouselConfig type
+import { invalidateAllProductCaches, debugProductLoading } from './useProducts/cacheInvalidator'; // Import cache utilities
 
 export type { Product } from './useProducts/types';
 
@@ -26,6 +27,7 @@ export const useProducts = () => {
       console.log('[useProducts] Fetching ALL products including admin products');
       const productsData = await fetchProductsFromDatabase(includeAdmin);
       console.log('[useProducts] Fetched products count:', productsData.length);
+      debugProductLoading(productsData, 'useProducts.fetchProducts'); // Debug helper
       setProducts(productsData);
     } catch (error: any) {
       console.error('[useProducts] Error fetching products:', error);
@@ -42,10 +44,7 @@ export const useProducts = () => {
       // Clear products on error and invalidate cache
       setProducts([]);
       // Force invalidate any caches to prevent corrupt data
-      if (typeof window !== 'undefined') {
-        console.log('[useProducts] Invalidating localStorage cache due to error');
-        localStorage.removeItem('supabase-cache');
-      }
+      invalidateAllProductCaches();
     } finally {
       setLoading(false);
     }

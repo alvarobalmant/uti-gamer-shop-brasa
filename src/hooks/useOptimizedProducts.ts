@@ -1,3 +1,6 @@
+// ⚠️ DISABLED: This file is disabled to ensure ALL products are visible in admin
+// The optimizations in this file were preventing all products from being displayed
+// Use the standard useProducts hook instead for full product visibility
 import { useCallback, useMemo } from 'react';
 import { useOptimizedCache, useCacheWithFallback, CacheKeys } from './useOptimizedCache';
 import { fetchProductsFromDatabase, fetchSingleProductFromDatabase } from './useProducts/productApi';
