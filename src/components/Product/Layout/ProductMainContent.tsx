@@ -253,63 +253,95 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
 
 
         {/* PLATAFORMAS - Só aparece para produtos com variações (SKUs) */}
-        {skuNavigation && skuNavigation.platforms && skuNavigation.platforms.length > 1 && (
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-900">
-              Plataforma:
-            </label>
-            <div className="flex gap-2 flex-wrap">
-              {skuNavigation.platforms.slice(0, 3).map(({ platform, sku, available }, index) => {
-                const isCurrentPlatform = skuNavigation.currentSKU?.variant_attributes?.platform === platform;
-                const platformInfo = platformConfig[platform];
-                
-                if (!platformInfo) return null;
-                
-                return (
-                  <Button
-                    key={`${platform}-${sku?.id || index}`}
-                    variant={isCurrentPlatform ? "default" : "outline"}
-                    size="sm"
-                    className={isCurrentPlatform 
-                      ? "bg-red-600 hover:bg-red-700 text-white" 
-                      : "bg-white hover:bg-red-50 border-gray-300 hover:border-red-400 text-gray-800"
-                    }
-                    onClick={() => {
-                      if (available && sku && !isCurrentPlatform) {
-                        window.location.href = `/produto/${sku.id}`;
-                      }
-                    }}
-                    disabled={!available}
-                  >
-                    {platformInfo.icon.startsWith('http') ? (
-                      <>
-                        <img 
-                          src={platformInfo.icon} 
-                          alt={platformInfo.name}
-                          className="w-4 h-4 mr-1"
-                        />
-                        {platformInfo.name}
-                      </>
-                    ) : (
-                      <>
-                        <span className="mr-1">{platformInfo.icon}</span>
-                        {platformInfo.name}
-                      </>
-                    )}
-                  </Button>
-                );
-              })}
-              {skuNavigation.platforms.length > 3 && (
-                <span className="text-sm text-gray-500 self-center">
-                  +{skuNavigation.platforms.length - 3} mais
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-gray-500">
-              💡 Preços podem variar entre plataformas
-            </p>
-          </div>
-        )}
+        {(() => {
+          console.log('[ProductMainContent] Debug plataformas:', {
+            hasSkuNavigation: !!skuNavigation,
+            hasPlatforms: !!(skuNavigation?.platforms),
+            platformsLength: skuNavigation?.platforms?.length,
+            platforms: skuNavigation?.platforms,
+            productType: product?.product_type
+          });
+          
+          if (skuNavigation && skuNavigation.platforms && skuNavigation.platforms.length > 1) {
+            return (
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-900">
+                  Plataforma:
+                </label>
+                <div className="flex gap-2 flex-wrap">
+                  {skuNavigation.platforms.slice(0, 3).map(({ platform, sku, available }, index) => {
+                    const isCurrentPlatform = skuNavigation.currentSKU?.variant_attributes?.platform === platform;
+                    
+                    // Mapear nomes de plataforma para os slugs corretos
+                    const platformMapping: { [key: string]: string } = {
+                      'PlayStation 3': 'ps3',
+                      'PlayStation 4': 'ps4', 
+                      'Xbox 360': 'xbox-360',
+                      'Xbox One': 'xbox-one',
+                      'PC': 'pc',
+                      'Mobile': 'mobile',
+                      'Nintendo Switch': 'nintendo-switch'
+                    };
+                    
+                    const platformSlug = platformMapping[platform] || platform.toLowerCase().replace(/\s+/g, '-');
+                    const platformInfo = platformConfig[platformSlug];
+                    
+                    // Se não encontrou a configuração, usar dados padrão
+                    const displayInfo = platformInfo || {
+                      name: platform,
+                      icon: '🎮',
+                      color: '#000000'
+                    };
+                    
+                    return (
+                      <Button
+                        key={`${platform}-${sku?.id || index}`}
+                        variant={isCurrentPlatform ? "default" : "outline"}
+                        size="sm"
+                        className={isCurrentPlatform 
+                          ? "bg-red-600 hover:bg-red-700 text-white" 
+                          : "bg-white hover:bg-red-50 border-gray-300 hover:border-red-400 text-gray-800"
+                        }
+                        onClick={() => {
+                          if (available && sku && !isCurrentPlatform) {
+                            window.location.href = `/produto/${sku.id}`;
+                          }
+                        }}
+                        disabled={!available}
+                      >
+                        {displayInfo.icon.startsWith('http') ? (
+                          <>
+                            <img 
+                              src={displayInfo.icon} 
+                              alt={displayInfo.name}
+                              className="w-4 h-4 mr-1"
+                            />
+                            {displayInfo.name}
+                          </>
+                        ) : (
+                          <>
+                            <span className="mr-1">{displayInfo.icon}</span>
+                            {displayInfo.name}
+                          </>
+                        )}
+                      </Button>
+                    );
+                  })}
+                  {skuNavigation.platforms.length > 3 && (
+                    <span className="text-sm text-gray-500 self-center">
+                      +{skuNavigation.platforms.length - 3} mais
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">
+                  💡 Preços podem variar entre plataformas
+                </p>
+              </div>
+            );
+          } else {
+            return null;
+          }
+        })()}
 
         {/* APENAS DESCRIÇÃO EXPANDÍVEL APÓS AVISO DE PREÇOS */}
         <div className="mt-8">
