@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProductManager from './ProductManagerNew';
+import ProductManagerOptimized from './ProductManager/ProductManagerOptimizedNew';
 import { BannerManagerNew } from './BannerManagerNew';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
@@ -185,7 +185,7 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="products" className="mt-0">
-                <ProductManager />
+                <ProductManagerOptimized />
               </TabsContent>
 
               <TabsContent value="desktop_products" className="mt-0">

@@ -742,3 +742,37 @@ html, body {
   animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Optimized Scrollbars for Virtualized Lists */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) hsl(var(--muted));
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--accent));
+}
+
+.scrollbar-thumb-border::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+}
+
+.scrollbar-track-background::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
