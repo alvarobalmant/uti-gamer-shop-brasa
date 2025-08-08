@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowUpDown, Eye, ShoppingCart, TrendingUp, MessageCircle } from 'lucide-react';
+import { ArrowUpDown, Eye, ShoppingCart, TrendingUp, MessageCircle, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +19,7 @@ interface ProductAnalyticsTableProps {
   onRefresh: () => void;
 }
 
-type SortField = 'total_views' | 'total_purchases' | 'total_revenue' | 'avg_conversion_rate' | 'whatsapp_clicks';
+type SortField = 'total_views' | 'total_add_to_cart' | 'total_purchases' | 'total_revenue' | 'avg_conversion_rate' | 'whatsapp_clicks';
 type SortDirection = 'asc' | 'desc';
 
 export const ProductAnalyticsTable: React.FC<ProductAnalyticsTableProps> = ({
@@ -136,6 +136,12 @@ export const ProductAnalyticsTable: React.FC<ProductAnalyticsTableProps> = ({
                   </SortButton>
                 </TableHead>
                 <TableHead>
+                  <SortButton field="total_add_to_cart">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Carrinho
+                  </SortButton>
+                </TableHead>
+                <TableHead>
                   <SortButton field="total_purchases">
                     <ShoppingCart className="h-4 w-4 mr-1" />
                     Compras
@@ -181,6 +187,12 @@ export const ProductAnalyticsTable: React.FC<ProductAnalyticsTableProps> = ({
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
+                      <span className="font-medium">{formatNumber(product.total_add_to_cart)}</span>
+                      <Plus className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
                       <span className="font-medium">{formatNumber(product.total_purchases)}</span>
                       <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                     </div>
@@ -210,6 +222,7 @@ export const ProductAnalyticsTable: React.FC<ProductAnalyticsTableProps> = ({
         <div className="mt-4 text-sm text-muted-foreground">
           Mostrando {products.length} produtos ordenados por {
             sortField === 'total_views' ? 'visualizações' :
+            sortField === 'total_add_to_cart' ? 'adições ao carrinho' :
             sortField === 'total_purchases' ? 'compras' :
             sortField === 'total_revenue' ? 'receita' :
             sortField === 'avg_conversion_rate' ? 'conversão' :

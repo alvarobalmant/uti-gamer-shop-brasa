@@ -30,6 +30,7 @@ export interface ProductAnalytics {
   product_id: string;
   product_name: string;
   total_views: number;
+  total_add_to_cart: number;
   total_purchases: number;
   total_revenue: number;
   avg_conversion_rate: number;
@@ -195,6 +196,7 @@ export const useAnalyticsData = () => {
           product_id: String(item.product_id),
           product_name: String(item.product_name || 'Produto sem nome'),
           total_views: Number(item.total_views) || 0,
+          total_add_to_cart: Number(item.total_add_to_cart) || 0,
           total_purchases: Number(item.total_purchases) || 0,
           total_revenue: Number(item.total_revenue) || 0,
           avg_conversion_rate: Number(item.avg_conversion_rate) || 0,
