@@ -283,8 +283,8 @@ Deno.serve(async (req) => {
           }
 
           // Calcular próximo bônus baseado no streak validado e configuração
-          const currentStreak = Math.max(validatedStreak, 1); // Sempre mostrar pelo menos dia 1
-          const currentStreakDay = currentStreak % streakDays || streakDays;
+          const currentStreak = validatedStreak; // Usar streak validado (pode ser 0)
+          const currentStreakDay = currentStreak > 0 ? (currentStreak % streakDays || streakDays) : 1;
           let nextBonusAmount;
           
           if (incrementType === 'fixed') {

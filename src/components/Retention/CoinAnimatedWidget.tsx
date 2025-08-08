@@ -264,7 +264,7 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
         const secondsUntil8PM = getSecondsUntil8PM();
         setDailyBonusData({
           canClaim: secondsUntil8PM <= 0, // Sempre baseado nas 20h
-          currentStreak: data.currentStreak || 1,
+          currentStreak: data.validatedStreak !== undefined ? data.validatedStreak : (data.currentStreak || 1),
           nextBonusAmount: data.nextBonusAmount || 10,
           secondsUntilNextClaim: secondsUntil8PM, // Sempre até as 20h
           multiplier: data.multiplier || 1.0,
