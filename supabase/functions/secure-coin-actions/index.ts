@@ -183,12 +183,47 @@ Deno.serve(async (req) => {
         if (bonusResult && bonusResult.length > 0) {
           const bonusData = bonusResult[0];
           
-          // Get user streak information
+          // Get user streak information with last login date for validation
           const { data: streakData } = await supabase
             .from('user_streaks')
-            .select('current_streak, streak_multiplier')
+            .select('current_streak, streak_multiplier, last_login_date')
             .eq('user_id', user.id)
             .single();
+
+          // Validate streak status - reset if user missed days
+          let validatedStreak = streakData?.current_streak || 0;
+          
+          if (streakData?.last_login_date) {
+            const now = new Date();
+            const lastLoginDate = new Date(streakData.last_login_date);
+            const daysSinceLastLogin = Math.floor((now.getTime() - lastLoginDate.getTime()) / (24 * 60 * 60 * 1000));
+            
+            // If more than 1 day passed since last login, reset streak
+            if (daysSinceLastLogin > 1) {
+              console.log(`[STREAK_VALIDATION] User ${user.id} missed ${daysSinceLastLogin} days. Resetting streak from ${validatedStreak} to 0`);
+              
+              // Update user_streaks table to reset streak
+              const { error: updateError } = await supabase
+                .from('user_streaks')
+                .update({ 
+                  current_streak: 0,
+                  updated_at: now.toISOString()
+                })
+                .eq('user_id', user.id);
+              
+              if (updateError) {
+                console.error('[STREAK_VALIDATION] Error updating streak:', updateError);
+              } else {
+                console.log(`[STREAK_VALIDATION] Successfully reset streak for user ${user.id}`);
+                validatedStreak = 0;
+              }
+            } else {
+              console.log(`[STREAK_VALIDATION] User ${user.id} streak is valid. Days since last login: ${daysSinceLastLogin}`);
+            }
+          } else {
+            console.log(`[STREAK_VALIDATION] User ${user.id} has no last_login_date. Setting streak to 0`);
+            validatedStreak = 0;
+          }
 
           // Get daily bonus configuration - buscar novas configurações
           const { data: configData } = await supabase
@@ -247,8 +282,8 @@ Deno.serve(async (req) => {
             });
           }
 
-          // Calcular próximo bônus baseado no streak atual e configuração
-          const currentStreak = streakData?.current_streak || 1;
+          // Calcular próximo bônus baseado no streak validado e configuração
+          const currentStreak = Math.max(validatedStreak, 1); // Sempre mostrar pelo menos dia 1
           const currentStreakDay = currentStreak % streakDays || streakDays;
           let nextBonusAmount;
           
@@ -274,6 +309,8 @@ Deno.serve(async (req) => {
 
           console.log(`[DAILY_BONUS] User ${user.id} bonus status:`, {
             canClaim: bonusData.can_claim,
+            originalStreak: streakData?.current_streak || 0,
+            validatedStreak: validatedStreak,
             currentStreak,
             nextBonusAmount,
             secondsUntilNextClaim,
@@ -287,6 +324,7 @@ Deno.serve(async (req) => {
             canClaim: bonusData.can_claim || false,
             secondsUntilNextClaim: secondsUntilNextClaim || 0,
             currentStreak: currentStreakDay,
+            validatedStreak: validatedStreak,
             nextBonusAmount: nextBonusAmount,
             multiplier: 1.0, // Não usamos mais multiplicador com o novo sistema
             nextReset: bonusData.next_reset,
