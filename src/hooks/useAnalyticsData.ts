@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useAnalyticsConfig } from '@/hooks/useAnalyticsConfig';
+import { 
+  getMockDashboardData, 
+  getMockProductAnalytics, 
+  getMockCustomerSegments, 
+  getMockTrafficAnalytics 
+} from '@/data/mockAnalyticsData';
 
 export interface DashboardAnalytics {
   total_revenue: number;
@@ -56,6 +63,7 @@ interface AnalyticsFilters {
 
 export const useAnalyticsData = () => {
   const { user, isAdmin } = useAuth();
+  const { showMockData } = useAnalyticsConfig();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -72,132 +80,160 @@ export const useAnalyticsData = () => {
     setError(null);
 
     try {
-      const { data, error } = await supabase.rpc('get_dashboard_analytics', {
-        start_date: filters.startDate.toISOString().split('T')[0],
-        end_date: filters.endDate.toISOString().split('T')[0]
-      });
+      if (showMockData) {
+        // Usar dados mock quando habilitado
+        const mockData = getMockDashboardData();
+        setDashboardData(mockData);
+      } else {
+        // Buscar dados reais do banco
+        const { data, error } = await supabase.rpc('get_dashboard_analytics', {
+          start_date: filters.startDate.toISOString().split('T')[0],
+          end_date: filters.endDate.toISOString().split('T')[0]
+        });
 
-      if (error) throw error;
-      setDashboardData(data as unknown as DashboardAnalytics);
+        if (error) throw error;
+        setDashboardData(data as unknown as DashboardAnalytics);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao buscar dados do dashboard');
     } finally {
       setLoading(false);
     }
-  }, [isAdmin]);
+  }, [isAdmin, showMockData]);
 
   // Função para buscar top produtos
   const fetchTopProducts = useCallback(async (filters: AnalyticsFilters, limit = 10) => {
     if (!isAdmin) return;
 
     try {
-      const { data, error } = await supabase.rpc('get_top_products_analytics', {
-        start_date: filters.startDate.toISOString().split('T')[0],
-        end_date: filters.endDate.toISOString().split('T')[0],
-        limit_count: limit
-      });
+      if (showMockData) {
+        // Usar dados mock quando habilitado
+        const mockData = getMockProductAnalytics();
+        setTopProducts(mockData.slice(0, limit));
+      } else {
+        // Buscar dados reais do banco
+        const { data, error } = await supabase.rpc('get_top_products_analytics', {
+          start_date: filters.startDate.toISOString().split('T')[0],
+          end_date: filters.endDate.toISOString().split('T')[0],
+          limit_count: limit
+        });
 
-      if (error) throw error;
-      setTopProducts((data as unknown as ProductAnalytics[]) || []);
+        if (error) throw error;
+        setTopProducts((data as unknown as ProductAnalytics[]) || []);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao buscar dados de produtos');
     }
-  }, [isAdmin]);
+  }, [isAdmin, showMockData]);
 
   // Função para buscar segmentação de clientes
   const fetchCustomerSegments = useCallback(async (filters: AnalyticsFilters) => {
     if (!isAdmin) return;
 
     try {
-      const { data, error } = await supabase
-        .from('customer_ltv')
-        .select('segment, total_spent, total_purchases')
-        .not('segment', 'is', null);
+      if (showMockData) {
+        // Usar dados mock quando habilitado
+        const mockData = getMockCustomerSegments();
+        setCustomerSegments(mockData);
+      } else {
+        // Buscar dados reais do banco
+        const { data, error } = await supabase
+          .from('customer_ltv')
+          .select('segment, total_spent, total_purchases')
+          .not('segment', 'is', null);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // Processar dados de segmentação
-      const segmentMap = new Map();
-      let totalCustomers = 0;
+        // Processar dados de segmentação
+        const segmentMap = new Map();
+        let totalCustomers = 0;
 
-      data?.forEach(customer => {
-        const segment = customer.segment || 'unknown';
-        if (!segmentMap.has(segment)) {
-          segmentMap.set(segment, {
-            count: 0,
-            total_revenue: 0,
-            total_orders: 0
-          });
-        }
+        data?.forEach(customer => {
+          const segment = customer.segment || 'unknown';
+          if (!segmentMap.has(segment)) {
+            segmentMap.set(segment, {
+              count: 0,
+              total_revenue: 0,
+              total_orders: 0
+            });
+          }
 
-        const segmentData = segmentMap.get(segment);
-        segmentData.count++;
-        segmentData.total_revenue += customer.total_spent || 0;
-        segmentData.total_orders += customer.total_purchases || 0;
-        totalCustomers++;
-      });
+          const segmentData = segmentMap.get(segment);
+          segmentData.count++;
+          segmentData.total_revenue += customer.total_spent || 0;
+          segmentData.total_orders += customer.total_purchases || 0;
+          totalCustomers++;
+        });
 
-      const segments: CustomerSegment[] = Array.from(segmentMap.entries()).map(([segment, data]) => ({
-        segment,
-        count: data.count,
-        percentage: totalCustomers > 0 ? (data.count / totalCustomers) * 100 : 0,
-        avg_order_value: data.total_orders > 0 ? data.total_revenue / data.total_orders : 0,
-        total_revenue: data.total_revenue
-      }));
+        const segments: CustomerSegment[] = Array.from(segmentMap.entries()).map(([segment, data]) => ({
+          segment,
+          count: data.count,
+          percentage: totalCustomers > 0 ? (data.count / totalCustomers) * 100 : 0,
+          avg_order_value: data.total_orders > 0 ? data.total_revenue / data.total_orders : 0,
+          total_revenue: data.total_revenue
+        }));
 
-      setCustomerSegments(segments);
+        setCustomerSegments(segments);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao buscar segmentação de clientes');
     }
-  }, [isAdmin]);
+  }, [isAdmin, showMockData]);
 
   // Função para buscar dados de tráfego
   const fetchTrafficAnalytics = useCallback(async (filters: AnalyticsFilters) => {
     if (!isAdmin) return;
 
     try {
-      const { data, error } = await supabase
-        .from('user_sessions')
-        .select('traffic_source, converted, purchase_value')
-        .gte('started_at', filters.startDate.toISOString())
-        .lte('started_at', filters.endDate.toISOString());
+      if (showMockData) {
+        // Usar dados mock quando habilitado
+        const mockData = getMockTrafficAnalytics();
+        setTrafficData(mockData);
+      } else {
+        // Buscar dados reais do banco
+        const { data, error } = await supabase
+          .from('user_sessions')
+          .select('traffic_source, converted, purchase_value')
+          .gte('started_at', filters.startDate.toISOString())
+          .lte('started_at', filters.endDate.toISOString());
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // Processar dados de tráfego
-      const trafficMap = new Map();
+        // Processar dados de tráfego
+        const trafficMap = new Map();
 
-      data?.forEach(session => {
-        const source = session.traffic_source || 'unknown';
-        if (!trafficMap.has(source)) {
-          trafficMap.set(source, {
-            sessions: 0,
-            conversions: 0,
-            revenue: 0
-          });
-        }
+        data?.forEach(session => {
+          const source = session.traffic_source || 'unknown';
+          if (!trafficMap.has(source)) {
+            trafficMap.set(source, {
+              sessions: 0,
+              conversions: 0,
+              revenue: 0
+            });
+          }
 
-        const trafficData = trafficMap.get(source);
-        trafficData.sessions++;
-        if (session.converted) {
-          trafficData.conversions++;
-          trafficData.revenue += session.purchase_value || 0;
-        }
-      });
+          const trafficData = trafficMap.get(source);
+          trafficData.sessions++;
+          if (session.converted) {
+            trafficData.conversions++;
+            trafficData.revenue += session.purchase_value || 0;
+          }
+        });
 
-      const traffic: TrafficAnalytics[] = Array.from(trafficMap.entries()).map(([source, data]) => ({
-        source,
-        sessions: data.sessions,
-        conversions: data.conversions,
-        conversion_rate: data.sessions > 0 ? (data.conversions / data.sessions) * 100 : 0,
-        revenue: data.revenue
-      }));
+        const traffic: TrafficAnalytics[] = Array.from(trafficMap.entries()).map(([source, data]) => ({
+          source,
+          sessions: data.sessions,
+          conversions: data.conversions,
+          conversion_rate: data.sessions > 0 ? (data.conversions / data.sessions) * 100 : 0,
+          revenue: data.revenue
+        }));
 
-      setTrafficData(traffic.sort((a, b) => b.sessions - a.sessions));
+        setTrafficData(traffic.sort((a, b) => b.sessions - a.sessions));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao buscar dados de tráfego');
     }
-  }, [isAdmin]);
+  }, [isAdmin, showMockData]);
 
   // Função para buscar eventos de um período
   const fetchRawEvents = useCallback(async (filters: AnalyticsFilters, eventType?: string) => {

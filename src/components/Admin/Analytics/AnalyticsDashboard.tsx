@@ -11,6 +11,7 @@ import { ProductAnalyticsTable } from './ProductAnalyticsTable';
 import { CustomerSegmentChart } from './CustomerSegmentChart';
 import { TrafficSourceChart } from './TrafficSourceChart';
 import { WhatsAppAnalytics } from './WhatsAppAnalytics';
+import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 
 interface DateRange {
   startDate: Date;
@@ -114,6 +115,9 @@ export const AnalyticsDashboard = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
+      {/* Painel de Configuração */}
+      <AnalyticsConfigPanel />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
