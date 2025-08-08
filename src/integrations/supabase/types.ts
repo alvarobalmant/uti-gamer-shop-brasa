@@ -3234,6 +3234,7 @@ export type Database = {
           product_id: string
           product_name: string
           total_views: number
+          total_add_to_cart: number
           total_purchases: number
           total_revenue: number
           avg_conversion_rate: number
