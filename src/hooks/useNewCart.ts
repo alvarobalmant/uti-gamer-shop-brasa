@@ -5,12 +5,14 @@ import { CartItem } from '@/types/cart';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 export const useNewCart = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { trackAddToCart, trackRemoveFromCart } = useAnalytics();
 
   // Carregar carrinho do localStorage na inicialização
   useEffect(() => {
@@ -79,22 +81,31 @@ export const useNewCart = () => {
       }
     });
 
+    // Track analytics
+    trackAddToCart(product.id, product.name, product.price, 1);
+
     toast({
       title: "✅ Produto adicionado!",
       description: `${product.name} foi adicionado ao carrinho`,
       duration: 2000,
       className: "bg-green-50 border-green-200 text-green-800",
     });
-  }, [generateItemId, toast]);
+  }, [generateItemId, toast, trackAddToCart]);
 
   const removeFromCart = useCallback((itemId: string) => {
     console.log('removeFromCart chamado para:', itemId);
     setCart(prev => {
+      // Find the item being removed for analytics
+      const removedItem = prev.find(item => item.id === itemId);
+      if (removedItem) {
+        trackRemoveFromCart(removedItem.product.id, removedItem.product.name, removedItem.product.price);
+      }
+      
       const newCart = prev.filter(item => item.id !== itemId);
       console.log('Item removido. Carrinho agora tem:', newCart.length, 'items');
       return newCart;
     });
-  }, []);
+  }, [trackRemoveFromCart]);
 
   const updateQuantity = useCallback((productId: string, size: string | undefined, color: string | undefined, quantity: number) => {
     const itemId = `${productId}-${size || 'default'}-${color || 'default'}`;
@@ -136,7 +147,9 @@ export const useNewCart = () => {
 
     // Importar e usar a função do utils que inclui o código de verificação
     const { sendToWhatsApp: sendToWhatsAppWithCode } = await import('@/utils/whatsapp');
-    return await sendToWhatsAppWithCode(cart);
+    return await sendToWhatsAppWithCode(cart, '5527996882090', (context) => {
+      // This will be handled by the CheckoutButton component
+    });
   }, [cart]);
 
   return {

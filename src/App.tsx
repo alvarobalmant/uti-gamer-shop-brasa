@@ -15,6 +15,7 @@ import { ProductProvider } from '@/contexts/ProductContext';
 import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
+import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
@@ -178,7 +179,8 @@ const App = () => {
               <CartProvider>
                 <ProductProviderOptimized>
                   <LoadingProvider>
-                    <TooltipProvider>
+                    <AnalyticsProvider>
+                      <TooltipProvider>
                       <Toaster />
                       <Sonner />
                       <BrowserRouter>
@@ -284,7 +286,8 @@ const App = () => {
                           </GlobalNavigationProvider>
                         </AppWithPreloader>
                       </BrowserRouter>
-                    </TooltipProvider>
+                      </TooltipProvider>
+                    </AnalyticsProvider>
                   </LoadingProvider>
                 </ProductProviderOptimized>
               </CartProvider>

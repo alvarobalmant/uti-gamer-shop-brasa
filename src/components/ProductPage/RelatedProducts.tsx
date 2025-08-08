@@ -5,6 +5,7 @@ import ProductCard from '@/components/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 interface RelatedProductsProps {
   product: Product;
@@ -14,6 +15,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
   const { products: allProducts, loading } = useProducts();
   const { addToCart } = useCart();
   const navigate = useNavigate();
+  const { trackProductView } = useAnalytics();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -43,6 +45,11 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
   };
 
   const handleProductClick = (productId: string) => {
+    // Find the product to get its data for analytics
+    const clickedProduct = relatedProducts.find(p => p.id === productId);
+    if (clickedProduct) {
+      trackProductView(productId, clickedProduct.name, clickedProduct.price);
+    }
     navigate(`/produto/${productId}`);
   };
 

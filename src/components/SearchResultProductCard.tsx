@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 import SearchResultProductCardImage from './ProductCard/SearchResultProductCardImage';
 import SearchResultProductCardInfo from './ProductCard/SearchResultProductCardInfo';
@@ -18,14 +19,19 @@ interface SearchResultProductCardProps {
 
 const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart }: SearchResultProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { trackProductView } = useAnalytics();
 
   const handleCardClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('[data-action="true"]')) {
       return;
     }
+    
+    // Track product view
+    trackProductView(product.id, product.name, product.price);
+    
     onCardClick(product.id);
-  }, [onCardClick, product.id]);
+  }, [onCardClick, product.id, trackProductView, product.name, product.price]);
 
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);

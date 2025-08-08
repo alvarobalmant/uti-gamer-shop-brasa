@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { useProductDetail } from '@/hooks/useProductDetail';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 import { saveScrollPosition, restoreScrollPosition } from '@/lib/scrollRestorationManager';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
@@ -47,6 +48,7 @@ const ProductPageSKU = () => {
   });
   const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const { toast } = useToast();
+  const { trackProductView } = useAnalytics();
   
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -58,6 +60,13 @@ const ProductPageSKU = () => {
       saveScrollPosition(currentPath, 'product-page-exit');
     };
   }, [location.pathname]);
+
+  // Track product view when product loads
+  useEffect(() => {
+    if (product && id) {
+      trackProductView(id, product.name, product.price);
+    }
+  }, [product, id, trackProductView]);
 
 
 

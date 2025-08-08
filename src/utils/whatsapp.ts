@@ -47,7 +47,7 @@ export const generateOrderVerificationCode = async (cartItems: any[], total: num
   }
 };
 
-export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '5527996882090') => {
+export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '5527996882090', trackWhatsAppClick?: (context?: string) => void) => {
   const itemsList = cartItems.map(item => 
     `• ${item.product.name} (${item.size}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
   ).join('\n');
@@ -78,6 +78,11 @@ export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '55
   
   const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*\n\n🔐 *Código de Verificação:*\n${orderCode}\n\n📋 *Copie o código:*\n${orderCode}\n\nAguardo retorno! 🎮`;
   
+  // Track WhatsApp click if tracking function is provided
+  if (trackWhatsAppClick) {
+    trackWhatsAppClick('cart_checkout');
+  }
+
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
   window.open(whatsappUrl, '_blank');
   
