@@ -3141,8 +3141,17 @@ export type Database = {
         }[]
       }
       get_dashboard_analytics: {
-        Args: { start_date?: string; end_date?: string }
-        Returns: Json
+        Args: { start_date: string; end_date: string }
+        Returns: {
+          total_revenue: number
+          total_sessions: number
+          total_purchases: number
+          avg_conversion_rate: number
+          avg_order_value: number
+          cart_abandonment_rate: number
+          whatsapp_clicks: number
+          period_data: Json
+        }[]
       }
       get_products_with_tags_corrected: {
         Args: {
@@ -3220,8 +3229,16 @@ export type Database = {
         }[]
       }
       get_top_products_analytics: {
-        Args: { start_date?: string; end_date?: string; limit_count?: number }
-        Returns: Json
+        Args: { start_date: string; end_date: string; limit_count?: number }
+        Returns: {
+          product_id: string
+          product_name: string
+          total_views: number
+          total_purchases: number
+          total_revenue: number
+          avg_conversion_rate: number
+          whatsapp_clicks: number
+        }[]
       }
       get_user_role: {
         Args: { user_id: string }
