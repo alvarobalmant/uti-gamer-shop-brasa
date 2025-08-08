@@ -141,7 +141,7 @@ export const useDailyBonusBrasilia = () => {
     }
   }, [user?.id]);
 
-  // Carregar dados de streak e configurações
+  // Carregar dados de streak e configurações COM VALIDAÇÃO AUTOMÁTICA
   const loadStreakData = useCallback(async () => {
     if (!user) {
       setLoading(false);
@@ -149,18 +149,33 @@ export const useDailyBonusBrasilia = () => {
     }
 
     try {
-      // Carregar streak do usuário
-      const { data: streakData, error: streakError } = await supabase
-        .from('user_streaks')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      // USAR EDGE FUNCTION para carregar streak validado automaticamente
+      const { data: validationResult, error: validationError } = await supabase.functions.invoke('secure-coin-actions', {
+        body: { action: 'can_claim_daily_bonus_brasilia' }
+      });
 
-      if (!streakError && streakData) {
-        setStreak(streakData);
-      } else if (streakError.code === 'PGRST116') {
-        // Usuário não tem streak ainda
-        setStreak(null);
+      if (!validationError && validationResult?.success) {
+        // Criar objeto streak baseado nos dados validados do backend
+        const validatedStreakData = {
+          current_streak: validationResult.validatedStreak || 0,
+          longest_streak: 0, // Será atualizado na próxima consulta se necessário
+          streak_multiplier: validationResult.multiplier || 1.0,
+          last_login_date: validationResult.lastClaim ? new Date(validationResult.lastClaim).toISOString().split('T')[0] : null
+        };
+        setStreak(validatedStreakData);
+      } else {
+        // Fallback: carregar diretamente da tabela
+        const { data: streakData, error: streakError } = await supabase
+          .from('user_streaks')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!streakError && streakData) {
+          setStreak(streakData);
+        } else if (streakError.code === 'PGRST116') {
+          setStreak(null);
+        }
       }
 
       // Carregar configurações do sistema

@@ -263,14 +263,15 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
       if (data?.success) {
         const secondsUntil8PM = getSecondsUntil8PM();
         setDailyBonusData({
-          canClaim: secondsUntil8PM <= 0, // Sempre baseado nas 20h
+          canClaim: data.canClaim || false,
           currentStreak: data.validatedStreak !== undefined ? data.validatedStreak : (data.currentStreak || 1),
           nextBonusAmount: data.nextBonusAmount || 10,
-          secondsUntilNextClaim: secondsUntil8PM, // Sempre até as 20h
+          secondsUntilNextClaim: data.secondsUntilNextClaim || 0,
           multiplier: data.multiplier || 1.0,
-          nextReset: "20:00", // Sempre 20h
+          nextReset: data.nextReset || "20:00",
           lastClaim: data.lastClaim,
-          testMode: data.testMode || false
+          testMode: data.testMode || false,
+          totalStreakDays: data.totalStreakDays || 7
         });
       }
     } catch (error) {
@@ -287,17 +288,20 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
     }
   }, [showPopover, user]);
 
-  // Timer em tempo real para atualizar segundos restantes até 20h
+  // Timer em tempo real - usar dados do backend
   useEffect(() => {
     if (!showPopover || !dailyBonusData) return;
 
     const timer = setInterval(() => {
-      const secondsUntil8PM = getSecondsUntil8PM();
-      setDailyBonusData(prev => prev ? {
-        ...prev,
-        secondsUntilNextClaim: secondsUntil8PM,
-        canClaim: secondsUntil8PM <= 0 // Disponível se chegou nas 20h
-      } : null);
+      setDailyBonusData(prev => {
+        if (!prev || prev.secondsUntilNextClaim <= 0) return prev;
+        
+        return {
+          ...prev,
+          secondsUntilNextClaim: Math.max(0, prev.secondsUntilNextClaim - 1),
+          canClaim: prev.secondsUntilNextClaim <= 1
+        };
+      });
     }, 1000);
 
     return () => clearInterval(timer);

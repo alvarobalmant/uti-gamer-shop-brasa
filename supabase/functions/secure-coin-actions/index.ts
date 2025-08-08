@@ -351,14 +351,14 @@ Deno.serve(async (req) => {
             canClaim: bonusData.can_claim || false,
             secondsUntilNextClaim: secondsUntilNextClaim || 0,
             currentStreak: currentStreakDay,
-            validatedStreak: validatedStreak,
+            validatedStreak: validatedStreak, // Sempre usar o streak validado
             nextBonusAmount: nextBonusAmount,
             multiplier: 1.0, // Não usamos mais multiplicador com o novo sistema
             nextReset: bonusData.next_reset,
             lastClaim: bonusData.last_claim,
             testMode: isTestMode,
             totalStreakDays: streakDays,
-            message: bonusData.can_claim ? 'Bonus available' : (isTestMode ? 'Aguarde 60 segundos' : 'Bonus already claimed today')
+            message: bonusData.can_claim ? 'Bonus available' : (isTestMode ? 'Aguarde ' + Math.ceil(secondsUntilNextClaim) + ' segundos' : 'Bonus already claimed today')
           };
         } else {
           result = {

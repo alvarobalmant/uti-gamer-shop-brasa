@@ -114,7 +114,7 @@ export const useUserStreak = () => {
     }
   }, []);
 
-  // Carregar dados de streak e configurações
+  // Carregar dados de streak e configurações COM VALIDAÇÃO AUTOMÁTICA
   const loadStreakData = useCallback(async () => {
     if (!user) {
       setLoading(false);
@@ -122,28 +122,54 @@ export const useUserStreak = () => {
     }
 
     try {
-      // Carregar streak do usuário
-      const { data: streakData, error: streakError } = await supabase
-        .from('user_streaks')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      // USAR EDGE FUNCTION para carregar streak validado automaticamente
+      const { data: validationResult, error: validationError } = await supabase.functions.invoke('secure-coin-actions', {
+        body: { action: 'can_claim_daily_bonus_brasilia' }
+      });
 
-      if (!streakError && streakData) {
-        setStreak(streakData);
-        // Usar backend timer em vez de cálculo local
-        const timerData = await calculateNextClaimTime(user.id);
-        setTimer(timerData);
-      } else if (streakError.code === 'PGRST116') {
-        // Usuário não tem streak ainda - pode fazer primeiro claim
-        setStreak(null);
+      if (!validationError && validationResult?.success) {
+        // Criar objeto streak baseado nos dados validados do backend
+        const validatedStreakData = {
+          current_streak: validationResult.validatedStreak || 0,
+          longest_streak: 0, // Será atualizado na próxima consulta se necessário
+          streak_multiplier: validationResult.multiplier || 1.0,
+          last_login_date: validationResult.lastClaim ? new Date(validationResult.lastClaim).toISOString().split('T')[0] : null
+        };
+        setStreak(validatedStreakData);
+
+        // Configurar timer baseado nos dados do backend
+        const secondsUntilNext = validationResult.secondsUntilNextClaim || 0;
+        const nextClaimTime = validationResult.nextReset ? new Date(validationResult.nextReset) : null;
+        
         setTimer({
-          canClaim: true,
-          hoursUntilNext: 0,
-          minutesUntilNext: 0,
-          secondsUntilNext: 0,
-          nextClaimTime: null
+          canClaim: validationResult.canClaim || false,
+          hoursUntilNext: Math.floor(secondsUntilNext / 3600),
+          minutesUntilNext: Math.floor((secondsUntilNext % 3600) / 60),
+          secondsUntilNext: secondsUntilNext % 60,
+          nextClaimTime
         });
+      } else {
+        // Fallback: carregar diretamente da tabela
+        const { data: streakData, error: streakError } = await supabase
+          .from('user_streaks')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!streakError && streakData) {
+          setStreak(streakData);
+          const timerData = await calculateNextClaimTime(user.id);
+          setTimer(timerData);
+        } else if (streakError.code === 'PGRST116') {
+          setStreak(null);
+          setTimer({
+            canClaim: true,
+            hoursUntilNext: 0,
+            minutesUntilNext: 0,
+            secondsUntilNext: 0,
+            nextClaimTime: null
+          });
+        }
       }
 
       // Carregar configurações do sistema
