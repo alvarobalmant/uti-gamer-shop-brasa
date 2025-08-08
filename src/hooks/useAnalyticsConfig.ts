@@ -17,9 +17,11 @@ export const useAnalyticsConfig = () => {
 
   useEffect(() => {
     const savedConfig = localStorage.getItem(ANALYTICS_CONFIG_KEY);
+    console.log('useAnalyticsConfig - Loading saved config:', savedConfig);
     if (savedConfig) {
       try {
         const parsedConfig = JSON.parse(savedConfig);
+        console.log('useAnalyticsConfig - Parsed config:', parsedConfig);
         setConfig(parsedConfig);
       } catch (error) {
         console.error('Erro ao carregar configuração de analytics:', error);
@@ -29,6 +31,7 @@ export const useAnalyticsConfig = () => {
 
   const updateConfig = (newConfig: Partial<AnalyticsConfig>) => {
     const updatedConfig = { ...config, ...newConfig };
+    console.log('useAnalyticsConfig - Updating config:', updatedConfig);
     setConfig(updatedConfig);
     localStorage.setItem(ANALYTICS_CONFIG_KEY, JSON.stringify(updatedConfig));
   };

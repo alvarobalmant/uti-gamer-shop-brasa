@@ -84,15 +84,15 @@ export const AnalyticsDashboard = () => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(value);
+    }).format(value || 0);
   };
 
   const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('pt-BR').format(value);
+    return new Intl.NumberFormat('pt-BR').format(value || 0);
   };
 
   const formatPercentage = (value: number) => {
-    return `${value.toFixed(2)}%`;
+    return `${(value || 0).toFixed(2)}%`;
   };
 
   if (error) {
@@ -178,10 +178,10 @@ export const AnalyticsDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData ? formatCurrency(dashboardData.total_revenue) : '---'}
+              {dashboardData ? formatCurrency(dashboardData.total_revenue) : formatCurrency(0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Ticket médio: {dashboardData ? formatCurrency(dashboardData.avg_order_value) : '---'}
+              Ticket médio: {dashboardData ? formatCurrency(dashboardData.avg_order_value) : formatCurrency(0)}
             </p>
           </CardContent>
         </Card>
@@ -193,10 +193,10 @@ export const AnalyticsDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData ? formatNumber(dashboardData.total_sessions) : '---'}
+              {dashboardData ? formatNumber(dashboardData.total_sessions) : '0'}
             </div>
             <p className="text-xs text-muted-foreground">
-              Conversão: {dashboardData ? formatPercentage(dashboardData.avg_conversion_rate) : '---'}
+              Conversão: {dashboardData ? formatPercentage(dashboardData.avg_conversion_rate) : '0.00%'}
             </p>
           </CardContent>
         </Card>
@@ -208,10 +208,10 @@ export const AnalyticsDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData ? formatNumber(dashboardData.total_purchases) : '---'}
+              {dashboardData ? formatNumber(dashboardData.total_purchases) : '0'}
             </div>
             <p className="text-xs text-muted-foreground">
-              Abandono carrinho: {dashboardData ? formatPercentage(dashboardData.cart_abandonment_rate) : '---'}
+              Abandono carrinho: {dashboardData ? formatPercentage(dashboardData.cart_abandonment_rate) : '0.00%'}
             </p>
           </CardContent>
         </Card>
@@ -223,7 +223,7 @@ export const AnalyticsDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData ? formatNumber(dashboardData.whatsapp_clicks) : '---'}
+              {dashboardData ? formatNumber(dashboardData.whatsapp_clicks) : '0'}
             </div>
             <p className="text-xs text-muted-foreground">
               Cliques no período
