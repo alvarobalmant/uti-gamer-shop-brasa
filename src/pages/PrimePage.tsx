@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePrimePages, PrimePageWithLayout } from '@/hooks/usePrimePages';
+import { useProducts } from '@/hooks/useProducts';
+import { useProductSections } from '@/hooks/useProductSections';
+import { useSpecialSections } from '@/hooks/useSpecialSections';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/hooks/useAuth';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
@@ -22,46 +25,13 @@ const PrimePage: React.FC = () => {
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
 
-  // Hook otimizado - apenas para buscar página
+  // Hooks para dados
   const { fetchPageBySlug } = usePrimePages();
+  const { products, loading: productsLoading } = useProducts();
+  const { sections, loading: sectionsLoading } = useProductSections();
+  const { sections: specialSections, loading: specialSectionsLoading } = useSpecialSections();
 
-  // Estados dinâmicos para dados carregados conforme necessário
-  const [products, setProducts] = useState<any[]>([]);
-  const [sections, setSections] = useState<any[]>([]);
-  const [specialSections, setSpecialSections] = useState<any[]>([]);
-  const [dataLoading, setDataLoading] = useState(false);
-
-  // Função simplificada para carregar dados mínimos
-  const loadMinimalData = async () => {
-    if (!currentPage?.layout_items?.length) return;
-    
-    setDataLoading(true);
-    try {
-      // Carregar apenas dados essenciais diretamente do Supabase
-      const { supabase } = await import('@/integrations/supabase/client');
-      
-      // Carregar produtos se necessário
-      const needsProducts = currentPage.layout_items.some(item => 
-        item.section_type === 'products' || item.section_key.includes('product')
-      );
-      
-      if (needsProducts) {
-        const { data: productsData } = await supabase
-          .from('products')
-          .select('id, name, price, image_url, category, platform, is_active')
-          .eq('is_active', true)
-          .limit(20); // Limitar para performance
-        
-        setProducts(productsData || []);
-      }
-    } catch (error) {
-      console.error('Error loading minimal data:', error);
-    } finally {
-      setDataLoading(false);
-    }
-  };
-
-  // Buscar página por slug - ultra otimizado com timeout
+  // Buscar página por slug
   useEffect(() => {
     const loadPage = async () => {
       if (!slug) {
@@ -73,23 +43,14 @@ const PrimePage: React.FC = () => {
       setPageLoading(true);
       setPageError(null);
 
-      // Timeout para evitar carregamento infinito
-      const timeoutId = setTimeout(() => {
-        setPageError('Timeout: A página demorou muito para carregar');
-        setPageLoading(false);
-      }, 10000); // 10 segundos
-
       try {
         const page = await fetchPageBySlug(slug);
-        clearTimeout(timeoutId);
-        
         if (page) {
           setCurrentPage(page);
         } else {
           setPageError('Página não encontrada');
         }
       } catch (error) {
-        clearTimeout(timeoutId);
         console.error('Error loading page:', error);
         setPageError('Erro ao carregar a página');
       } finally {
@@ -99,23 +60,6 @@ const PrimePage: React.FC = () => {
 
     loadPage();
   }, [slug, fetchPageBySlug]);
-
-  // Carregar dados após página carregar (separado para melhor UX)
-  useEffect(() => {
-    if (currentPage && !pageLoading) {
-      // Timeout para dados também
-      const timeoutId = setTimeout(() => {
-        console.warn('Data loading timeout, stopping...');
-        setDataLoading(false);
-      }, 5000);
-
-      loadMinimalData().finally(() => {
-        clearTimeout(timeoutId);
-      });
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [currentPage, pageLoading]);
 
   // Handlers
   const handleAddToCart = (product: any, size?: string, color?: string) => {
@@ -130,8 +74,8 @@ const PrimePage: React.FC = () => {
     setShowAuthModal(!showAuthModal);
   };
 
-  // Loading state - otimizado
-  const isLoading = pageLoading || dataLoading;
+  // Loading state
+  const isLoading = pageLoading || productsLoading || sectionsLoading || specialSectionsLoading;
 
   // Error state
   if (pageError && !pageLoading) {
@@ -227,8 +171,8 @@ const PrimePage: React.FC = () => {
               products={products}
               sections={sections}
               specialSections={specialSections}
-              productsLoading={dataLoading}
-              sectionsLoading={dataLoading}
+              productsLoading={productsLoading}
+              sectionsLoading={sectionsLoading}
               onAddToCart={handleAddToCart}
               reduceTopSpacing={index > 0}
             />
