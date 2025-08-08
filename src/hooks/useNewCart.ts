@@ -53,6 +53,8 @@ export const useNewCart = () => {
     console.log('addToCart chamado para:', product.name, 'size:', size, 'color:', color);
     
     const itemId = generateItemId(product, size, color);
+    let isNewItem = false;
+    let finalQuantity = 1;
     
     setCart(prev => {
       const existingItemIndex = prev.findIndex(item => item.id === itemId);
@@ -64,7 +66,9 @@ export const useNewCart = () => {
           ...newCart[existingItemIndex],
           quantity: newCart[existingItemIndex].quantity + 1
         };
-        console.log('Item existente atualizado. Nova quantidade:', newCart[existingItemIndex].quantity);
+        finalQuantity = newCart[existingItemIndex].quantity;
+        isNewItem = false;
+        console.log('Item existente atualizado. Nova quantidade:', finalQuantity);
         return newCart;
       } else {
         // Adicionar novo item
@@ -76,13 +80,20 @@ export const useNewCart = () => {
           quantity: 1,
           addedAt: new Date()
         };
+        isNewItem = true;
+        finalQuantity = 1;
         console.log('Novo item adicionado:', newItem);
         return [...prev, newItem];
       }
     });
 
-    // Track analytics
-    trackAddToCart(product.id, product.name, product.price, 1);
+    // Track analytics with differentiation
+    trackAddToCart(product.id, product.name, product.price, 1, {
+      isNewItem,
+      finalQuantity,
+      size,
+      color
+    });
 
     toast({
       title: "✅ Produto adicionado!",

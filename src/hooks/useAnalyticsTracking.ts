@@ -217,13 +217,17 @@ export const useAnalyticsTracking = () => {
 
   // Rastrear adição ao carrinho
   const trackAddToCart = useCallback((productId: string, quantity: number, price: number, productData?: any) => {
+    const eventType = productData?.isNewItem === false ? 'cart_quantity_increase' : 'add_to_cart';
+    
     trackEvent({
-      event_type: 'add_to_cart',
+      event_type: eventType,
       product_id: productId,
       event_data: {
         quantity,
         price,
         value: price * quantity,
+        is_new_item: productData?.isNewItem !== false,
+        final_quantity: productData?.finalQuantity || quantity,
         ...productData
       }
     });

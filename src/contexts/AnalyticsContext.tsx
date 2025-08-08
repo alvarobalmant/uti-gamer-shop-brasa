@@ -8,7 +8,7 @@ export interface AnalyticsContextType {
   trackEvent: (type: string, data?: any, productId?: string) => void;
   trackPageView: (page: string, title?: string) => void;
   trackProductView: (productId: string, productName?: string, productPrice?: number) => void;
-  trackAddToCart: (productId: string, productName?: string, productPrice?: number, quantity?: number) => void;
+  trackAddToCart: (productId: string, productName?: string, productPrice?: number, quantity?: number, additionalData?: any) => void;
   trackRemoveFromCart: (productId: string, productName?: string, productPrice?: number) => void;
   trackCheckoutStart: (cartValue: number, itemCount: number) => void;
   trackCheckoutAbandon: (cartValue: number, itemCount: number, step?: string) => void;
@@ -52,8 +52,11 @@ export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({ children 
     trackProductView: (productId: string, productName?: string, productPrice?: number) => {
       analytics.trackProductView(productId, { name: productName, price: productPrice });
     },
-    trackAddToCart: (productId: string, productName?: string, productPrice?: number, quantity: number = 1) => {
-      analytics.trackAddToCart(productId, quantity, productPrice || 0, { name: productName });
+    trackAddToCart: (productId: string, productName?: string, productPrice?: number, quantity: number = 1, additionalData?: any) => {
+      analytics.trackAddToCart(productId, quantity, productPrice || 0, { 
+        name: productName, 
+        ...additionalData 
+      });
     },
     trackRemoveFromCart: (productId: string, productName?: string, productPrice?: number) => {
       analytics.trackRemoveFromCart(productId, 1, productPrice || 0);
