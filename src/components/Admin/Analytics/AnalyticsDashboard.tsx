@@ -44,6 +44,7 @@ export const AnalyticsDashboard = () => {
 
   // Carregar dados iniciais
   useEffect(() => {
+    console.log('📈 AnalyticsDashboard - Date range changed, refreshing data:', dateRange);
     refreshData();
   }, [dateRange]);
 
@@ -57,6 +58,8 @@ export const AnalyticsDashboard = () => {
       compareWith: compareRange || undefined
     };
 
+    console.log('🔄 AnalyticsDashboard - Refreshing all analytics data with filters:', filters);
+
     try {
       await Promise.all([
         fetchDashboardAnalytics(filters),
@@ -64,8 +67,9 @@ export const AnalyticsDashboard = () => {
         fetchCustomerSegments(filters),
         fetchTrafficAnalytics(filters)
       ]);
+      console.log('✅ AnalyticsDashboard - All data refreshed successfully');
     } catch (err) {
-      console.error('Erro ao atualizar dados:', err);
+      console.error('❌ AnalyticsDashboard - Erro ao atualizar dados:', err);
     } finally {
       setRefreshing(false);
     }
@@ -169,6 +173,32 @@ export const AnalyticsDashboard = () => {
         loading={loading}
       />
 
+      {/* Aviso quando não há dados */}
+      {!loading && dashboardData && dashboardData.total_sessions === 0 && dashboardData.total_purchases === 0 && (
+        <Card className="border-warning/20 bg-warning/5">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="font-medium text-warning-foreground">
+                Nenhum dado encontrado no período selecionado
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Isso pode significar que não houve atividade no site durante o período ou que o sistema de analytics ainda não capturou dados suficientes.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center mt-4">
+                <Button
+                  onClick={refreshData}
+                  variant="outline"
+                  size="sm"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Recarregar Dados
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Métricas principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
@@ -178,11 +208,16 @@ export const AnalyticsDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData ? formatCurrency(dashboardData.total_revenue) : formatCurrency(0)}
+              {loading ? '...' : dashboardData ? formatCurrency(dashboardData.total_revenue) : formatCurrency(0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Ticket médio: {dashboardData ? formatCurrency(dashboardData.avg_order_value) : formatCurrency(0)}
+              Ticket médio: {loading ? '...' : dashboardData ? formatCurrency(dashboardData.avg_order_value) : formatCurrency(0)}
             </p>
+            {!loading && dashboardData && dashboardData.total_revenue === 0 && (
+              <p className="text-xs text-warning mt-1">
+                Nenhuma venda no período
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -193,11 +228,16 @@ export const AnalyticsDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData ? formatNumber(dashboardData.total_sessions) : '0'}
+              {loading ? '...' : dashboardData ? formatNumber(dashboardData.total_sessions) : '0'}
             </div>
             <p className="text-xs text-muted-foreground">
-              Conversão: {dashboardData ? formatPercentage(dashboardData.avg_conversion_rate) : '0.00%'}
+              Conversão: {loading ? '...' : dashboardData ? formatPercentage(dashboardData.avg_conversion_rate) : '0.00%'}
             </p>
+            {!loading && dashboardData && dashboardData.total_sessions === 0 && (
+              <p className="text-xs text-warning mt-1">
+                Nenhuma sessão no período
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -208,11 +248,16 @@ export const AnalyticsDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData ? formatNumber(dashboardData.total_purchases) : '0'}
+              {loading ? '...' : dashboardData ? formatNumber(dashboardData.total_purchases) : '0'}
             </div>
             <p className="text-xs text-muted-foreground">
-              Abandono carrinho: {dashboardData ? formatPercentage(dashboardData.cart_abandonment_rate) : '0.00%'}
+              Abandono carrinho: {loading ? '...' : dashboardData ? formatPercentage(dashboardData.cart_abandonment_rate) : '0.00%'}
             </p>
+            {!loading && dashboardData && dashboardData.total_purchases === 0 && (
+              <p className="text-xs text-warning mt-1">
+                Nenhuma compra no período
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -223,11 +268,16 @@ export const AnalyticsDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData ? formatNumber(dashboardData.whatsapp_clicks) : '0'}
+              {loading ? '...' : dashboardData ? formatNumber(dashboardData.whatsapp_clicks) : '0'}
             </div>
             <p className="text-xs text-muted-foreground">
               Cliques no período
             </p>
+            {!loading && dashboardData && dashboardData.whatsapp_clicks === 0 && (
+              <p className="text-xs text-warning mt-1">
+                Nenhum clique no período
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

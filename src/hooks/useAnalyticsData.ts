@@ -86,13 +86,77 @@ export const useAnalyticsData = () => {
         setDashboardData(mockData);
       } else {
         // Buscar dados reais do banco
+        console.log('🔍 Fetching real dashboard data from:', filters.startDate.toISOString().split('T')[0], 'to', filters.endDate.toISOString().split('T')[0]);
+        
         const { data, error } = await supabase.rpc('get_dashboard_analytics', {
           start_date: filters.startDate.toISOString().split('T')[0],
           end_date: filters.endDate.toISOString().split('T')[0]
         });
 
-        if (error) throw error;
-        setDashboardData(data as unknown as DashboardAnalytics);
+        if (error) {
+          console.error('❌ Error fetching dashboard analytics:', error);
+          throw error;
+        }
+        
+        console.log('📊 Raw dashboard data received:', data);
+        
+        // A função retorna um array com uma linha
+        const rawData = Array.isArray(data) ? data[0] : data;
+        
+        if (!rawData) {
+          throw new Error('Nenhum dado retornado pela função de analytics');
+        }
+
+        // Processar period_data se necessário
+        let processedPeriodData: Array<{
+          date: string;
+          revenue: number;
+          sessions: number;
+          purchases: number;
+          conversion_rate: number;
+        }> = [];
+
+        if (rawData.period_data) {
+          if (typeof rawData.period_data === 'string') {
+            try {
+              const parsed = JSON.parse(rawData.period_data);
+              if (Array.isArray(parsed)) {
+                processedPeriodData = parsed.map((item: any) => ({
+                  date: String(item.date || ''),
+                  revenue: Number(item.revenue) || 0,
+                  sessions: Number(item.sessions) || 0,
+                  purchases: Number(item.purchases) || 0,
+                  conversion_rate: Number(item.conversion_rate) || 0
+                }));
+              }
+            } catch (e) {
+              console.error('Erro ao parsear period_data:', e);
+              processedPeriodData = [];
+            }
+          } else if (Array.isArray(rawData.period_data)) {
+            processedPeriodData = rawData.period_data.map((item: any) => ({
+              date: String(item.date || ''),
+              revenue: Number(item.revenue) || 0,
+              sessions: Number(item.sessions) || 0,
+              purchases: Number(item.purchases) || 0,
+              conversion_rate: Number(item.conversion_rate) || 0
+            }));
+          }
+        }
+
+        const processedData: DashboardAnalytics = {
+          total_revenue: Number(rawData.total_revenue) || 0,
+          total_sessions: Number(rawData.total_sessions) || 0,
+          total_purchases: Number(rawData.total_purchases) || 0,
+          avg_conversion_rate: Number(rawData.avg_conversion_rate) || 0,
+          avg_order_value: Number(rawData.avg_order_value) || 0,
+          cart_abandonment_rate: Number(rawData.cart_abandonment_rate) || 0,
+          whatsapp_clicks: Number(rawData.whatsapp_clicks) || 0,
+          period_data: processedPeriodData
+        };
+
+        console.log('✅ Processed dashboard data:', processedData);
+        setDashboardData(processedData);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao buscar dados do dashboard');
@@ -112,14 +176,33 @@ export const useAnalyticsData = () => {
         setTopProducts(mockData.slice(0, limit));
       } else {
         // Buscar dados reais do banco
+        console.log('🔍 Fetching top products analytics for limit:', limit);
+        
         const { data, error } = await supabase.rpc('get_top_products_analytics', {
           start_date: filters.startDate.toISOString().split('T')[0],
           end_date: filters.endDate.toISOString().split('T')[0],
           limit_count: limit
         });
 
-        if (error) throw error;
-        setTopProducts((data as unknown as ProductAnalytics[]) || []);
+        if (error) {
+          console.error('❌ Error fetching products analytics:', error);
+          throw error;
+        }
+        
+        console.log('📊 Raw products data received:', data);
+        
+        const processedProducts: ProductAnalytics[] = (data || []).map((item: any) => ({
+          product_id: String(item.product_id),
+          product_name: String(item.product_name || 'Produto sem nome'),
+          total_views: Number(item.total_views) || 0,
+          total_purchases: Number(item.total_purchases) || 0,
+          total_revenue: Number(item.total_revenue) || 0,
+          avg_conversion_rate: Number(item.avg_conversion_rate) || 0,
+          whatsapp_clicks: Number(item.whatsapp_clicks) || 0
+        }));
+
+        console.log('✅ Processed products data:', processedProducts);
+        setTopProducts(processedProducts);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao buscar dados de produtos');
