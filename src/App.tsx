@@ -176,14 +176,14 @@ const App = () => {
         <AuthProvider>
           {/* Security system removed */}
             <UTICoinsProvider>
-              <CartProvider>
-                <ProductProviderOptimized>
-                  <LoadingProvider>
-                    <TooltipProvider>
-                      <Toaster />
-                      <Sonner />
-                      <BrowserRouter>
-                        <AnalyticsProvider>
+              <ProductProviderOptimized>
+                <LoadingProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                      <AnalyticsProvider>
+                        <CartProvider>
                           <AppWithPreloader>
                             <GlobalNavigationProvider>
                               <ScrollRestorationProvider>
@@ -285,13 +285,13 @@ const App = () => {
                               </ScrollRestorationProvider>
                             </GlobalNavigationProvider>
                           </AppWithPreloader>
-                        </AnalyticsProvider>
-                      </BrowserRouter>
-                    </TooltipProvider>
-                  </LoadingProvider>
-                </ProductProviderOptimized>
-              </CartProvider>
-            </UTICoinsProvider>
+                        </CartProvider>
+                      </AnalyticsProvider>
+                    </BrowserRouter>
+                  </TooltipProvider>
+                 </LoadingProvider>
+               </ProductProviderOptimized>
+             </UTICoinsProvider>
           {/* Security system removed */}
         </AuthProvider>
       </QueryClientProvider>
