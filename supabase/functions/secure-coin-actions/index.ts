@@ -190,18 +190,42 @@ Deno.serve(async (req) => {
             .eq('user_id', user.id)
             .single();
 
-          // Validate streak status - reset if user missed days
+          // Validate streak status - reset if user missed days (or time in test mode)
           let validatedStreak = streakData?.current_streak || 0;
           
           if (streakData?.last_login_date) {
             const now = new Date();
             const lastLoginDate = new Date(streakData.last_login_date);
-            const daysSinceLastLogin = Math.floor((now.getTime() - lastLoginDate.getTime()) / (24 * 60 * 60 * 1000));
             
-            // If more than 1 day passed since last login, reset streak
-            if (daysSinceLastLogin > 1) {
-              console.log(`[STREAK_VALIDATION] User ${user.id} missed ${daysSinceLastLogin} days. Resetting streak from ${validatedStreak} to 0`);
+            let streakLost = false;
+            
+            if (isTestMode) {
+              // No modo de teste, verificar se passou mais de 2x o cooldown (tolerância para teste)
+              const { data: testCooldownData } = await supabase
+                .from('coin_system_config')
+                .select('setting_value')
+                .eq('setting_key', 'test_cooldown_seconds')
+                .single();
               
+              const testCooldownSeconds = parseInt(testCooldownData?.setting_value || '10');
+              const maxTestGapSeconds = testCooldownSeconds * 2; // 2x o cooldown para tolerância
+              const secondsSinceLastLogin = Math.floor((now.getTime() - lastLoginDate.getTime()) / 1000);
+              
+              if (secondsSinceLastLogin > maxTestGapSeconds) {
+                streakLost = true;
+                console.log(`[STREAK_VALIDATION] TEST MODE: User ${user.id} missed streak. ${secondsSinceLastLogin}s > ${maxTestGapSeconds}s threshold. Resetting streak from ${validatedStreak} to 0`);
+              }
+            } else {
+              // Modo normal: verificar se passou mais de 1 dia
+              const daysSinceLastLogin = Math.floor((now.getTime() - lastLoginDate.getTime()) / (24 * 60 * 60 * 1000));
+              
+              if (daysSinceLastLogin > 1) {
+                streakLost = true;
+                console.log(`[STREAK_VALIDATION] User ${user.id} missed ${daysSinceLastLogin} days. Resetting streak from ${validatedStreak} to 0`);
+              }
+            }
+            
+            if (streakLost) {
               // Update user_streaks table to reset streak
               const { error: updateError } = await supabase
                 .from('user_streaks')
@@ -218,7 +242,10 @@ Deno.serve(async (req) => {
                 validatedStreak = 0;
               }
             } else {
-              console.log(`[STREAK_VALIDATION] User ${user.id} streak is valid. Days since last login: ${daysSinceLastLogin}`);
+              const timeInfo = isTestMode ? 
+                `${Math.floor((now.getTime() - lastLoginDate.getTime()) / 1000)} seconds` : 
+                `${Math.floor((now.getTime() - lastLoginDate.getTime()) / (24 * 60 * 60 * 1000))} days`;
+              console.log(`[STREAK_VALIDATION] User ${user.id} streak is valid. Time since last login: ${timeInfo}`);
             }
           } else {
             console.log(`[STREAK_VALIDATION] User ${user.id} has no last_login_date. Setting streak to 0`);
