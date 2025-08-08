@@ -80,6 +80,45 @@ export type Database = {
         }
         Relationships: []
       }
+      cart_abandonment: {
+        Row: {
+          abandoned_at: string
+          cart_items: Json
+          cart_value: number
+          checkout_step: string | null
+          id: string
+          recovered: boolean | null
+          recovered_at: string | null
+          session_id: string
+          time_in_checkout_seconds: number | null
+          user_id: string | null
+        }
+        Insert: {
+          abandoned_at?: string
+          cart_items: Json
+          cart_value: number
+          checkout_step?: string | null
+          id?: string
+          recovered?: boolean | null
+          recovered_at?: string | null
+          session_id: string
+          time_in_checkout_seconds?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          abandoned_at?: string
+          cart_items?: Json
+          cart_value?: number
+          checkout_step?: string | null
+          id?: string
+          recovered?: boolean | null
+          recovered_at?: string | null
+          session_id?: string
+          time_in_checkout_seconds?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           color: string | null
@@ -310,6 +349,99 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_events: {
+        Row: {
+          created_at: string
+          device_type: string | null
+          event_data: Json
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          location_data: Json | null
+          page_url: string | null
+          product_id: string | null
+          referrer: string | null
+          session_id: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_type?: string | null
+          event_data?: Json
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          location_data?: Json | null
+          page_url?: string | null
+          product_id?: string | null
+          referrer?: string | null
+          session_id: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_type?: string | null
+          event_data?: Json
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          location_data?: Json | null
+          page_url?: string | null
+          product_id?: string | null
+          referrer?: string | null
+          session_id?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      customer_ltv: {
+        Row: {
+          avg_order_value: number | null
+          churn_risk_score: number | null
+          first_purchase_date: string | null
+          id: string
+          last_purchase_date: string | null
+          lifetime_value: number | null
+          purchase_frequency: number | null
+          segment: string | null
+          total_purchases: number | null
+          total_spent: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_order_value?: number | null
+          churn_risk_score?: number | null
+          first_purchase_date?: string | null
+          id?: string
+          last_purchase_date?: string | null
+          lifetime_value?: number | null
+          purchase_frequency?: number | null
+          segment?: string | null
+          total_purchases?: number | null
+          total_spent?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_order_value?: number | null
+          churn_risk_score?: number | null
+          first_purchase_date?: string | null
+          id?: string
+          last_purchase_date?: string | null
+          lifetime_value?: number | null
+          purchase_frequency?: number | null
+          segment?: string | null
+          total_purchases?: number | null
+          total_spent?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_actions: {
         Row: {
           action: string
@@ -472,6 +604,33 @@ export type Database = {
           is_visible?: boolean
           section_key?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      navigation_flow: {
+        Row: {
+          from_page: string | null
+          id: string
+          session_id: string
+          time_on_previous_page_seconds: number | null
+          to_page: string | null
+          transition_time: string
+        }
+        Insert: {
+          from_page?: string | null
+          id?: string
+          session_id: string
+          time_on_previous_page_seconds?: number | null
+          to_page?: string | null
+          transition_time?: string
+        }
+        Update: {
+          from_page?: string | null
+          id?: string
+          session_id?: string
+          time_on_previous_page_seconds?: number | null
+          to_page?: string | null
+          transition_time?: string
         }
         Relationships: []
       }
@@ -806,6 +965,69 @@ export type Database = {
         }
         Relationships: []
       }
+      period_analytics: {
+        Row: {
+          avg_order_value: number | null
+          avg_session_duration: number | null
+          bounce_rate: number | null
+          cart_abandonment_rate: number | null
+          conversion_rate: number | null
+          date: string
+          id: string
+          new_visitors: number | null
+          returning_visitors: number | null
+          total_events: number | null
+          total_page_views: number | null
+          total_purchases: number | null
+          total_revenue: number | null
+          total_sessions: number | null
+          unique_visitors: number | null
+          updated_at: string
+          whatsapp_clicks: number | null
+          whatsapp_conversions: number | null
+        }
+        Insert: {
+          avg_order_value?: number | null
+          avg_session_duration?: number | null
+          bounce_rate?: number | null
+          cart_abandonment_rate?: number | null
+          conversion_rate?: number | null
+          date: string
+          id?: string
+          new_visitors?: number | null
+          returning_visitors?: number | null
+          total_events?: number | null
+          total_page_views?: number | null
+          total_purchases?: number | null
+          total_revenue?: number | null
+          total_sessions?: number | null
+          unique_visitors?: number | null
+          updated_at?: string
+          whatsapp_clicks?: number | null
+          whatsapp_conversions?: number | null
+        }
+        Update: {
+          avg_order_value?: number | null
+          avg_session_duration?: number | null
+          bounce_rate?: number | null
+          cart_abandonment_rate?: number | null
+          conversion_rate?: number | null
+          date?: string
+          id?: string
+          new_visitors?: number | null
+          returning_visitors?: number | null
+          total_events?: number | null
+          total_page_views?: number | null
+          total_purchases?: number | null
+          total_revenue?: number | null
+          total_sessions?: number | null
+          unique_visitors?: number | null
+          updated_at?: string
+          whatsapp_clicks?: number | null
+          whatsapp_conversions?: number | null
+        }
+        Relationships: []
+      }
       platforms: {
         Row: {
           color: string | null
@@ -958,6 +1180,90 @@ export type Database = {
           is_active?: boolean | null
           used_at?: string | null
           used_by?: string | null
+        }
+        Relationships: []
+      }
+      product_affinity: {
+        Row: {
+          affinity_score: number | null
+          co_purchase_count: number | null
+          co_view_count: number | null
+          id: string
+          last_updated: string
+          product_a_id: string
+          product_b_id: string
+        }
+        Insert: {
+          affinity_score?: number | null
+          co_purchase_count?: number | null
+          co_view_count?: number | null
+          id?: string
+          last_updated?: string
+          product_a_id: string
+          product_b_id: string
+        }
+        Update: {
+          affinity_score?: number | null
+          co_purchase_count?: number | null
+          co_view_count?: number | null
+          id?: string
+          last_updated?: string
+          product_a_id?: string
+          product_b_id?: string
+        }
+        Relationships: []
+      }
+      product_analytics: {
+        Row: {
+          add_to_cart_count: number | null
+          cart_abandonment_rate: number | null
+          checkout_starts: number | null
+          conversion_rate: number | null
+          date: string
+          id: string
+          product_id: string
+          purchase_value: number | null
+          purchases_count: number | null
+          remove_from_cart_count: number | null
+          unique_views: number | null
+          updated_at: string
+          views_count: number | null
+          whatsapp_clicks: number | null
+          whatsapp_conversions: number | null
+        }
+        Insert: {
+          add_to_cart_count?: number | null
+          cart_abandonment_rate?: number | null
+          checkout_starts?: number | null
+          conversion_rate?: number | null
+          date: string
+          id?: string
+          product_id: string
+          purchase_value?: number | null
+          purchases_count?: number | null
+          remove_from_cart_count?: number | null
+          unique_views?: number | null
+          updated_at?: string
+          views_count?: number | null
+          whatsapp_clicks?: number | null
+          whatsapp_conversions?: number | null
+        }
+        Update: {
+          add_to_cart_count?: number | null
+          cart_abandonment_rate?: number | null
+          checkout_starts?: number | null
+          conversion_rate?: number | null
+          date?: string
+          id?: string
+          product_id?: string
+          purchase_value?: number | null
+          purchases_count?: number | null
+          remove_from_cart_count?: number | null
+          unique_views?: number | null
+          updated_at?: string
+          views_count?: number | null
+          whatsapp_clicks?: number | null
+          whatsapp_conversions?: number | null
         }
         Relationships: []
       }
@@ -2369,6 +2675,69 @@ export type Database = {
           },
         ]
       }
+      user_sessions: {
+        Row: {
+          browser: string | null
+          converted: boolean | null
+          device_type: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          events_count: number | null
+          id: string
+          location_data: Json | null
+          os: string | null
+          page_views: number | null
+          purchase_value: number | null
+          session_id: string
+          started_at: string
+          traffic_source: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          browser?: string | null
+          converted?: boolean | null
+          device_type?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          events_count?: number | null
+          id?: string
+          location_data?: Json | null
+          os?: string | null
+          page_views?: number | null
+          purchase_value?: number | null
+          session_id: string
+          started_at?: string
+          traffic_source?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          browser?: string | null
+          converted?: boolean | null
+          device_type?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          events_count?: number | null
+          id?: string
+          location_data?: Json | null
+          os?: string | null
+          page_views?: number | null
+          purchase_value?: number | null
+          session_id?: string
+          started_at?: string
+          traffic_source?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       user_streaks: {
         Row: {
           created_at: string
@@ -2771,6 +3140,10 @@ export type Database = {
           next_reset: string
         }[]
       }
+      get_dashboard_analytics: {
+        Args: { start_date?: string; end_date?: string }
+        Returns: Json
+      }
       get_products_with_tags_corrected: {
         Args: {
           include_admin?: boolean
@@ -2846,6 +3219,10 @@ export type Database = {
           tag_name: string
         }[]
       }
+      get_top_products_analytics: {
+        Args: { start_date?: string; end_date?: string; limit_count?: number }
+        Returns: Json
+      }
       get_user_role: {
         Args: { user_id: string }
         Returns: string
@@ -2910,6 +3287,10 @@ export type Database = {
           total_calls: number
           table_name: string
         }[]
+      }
+      process_analytics_batch: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       process_daily_login: {
         Args: { p_user_id: string }
