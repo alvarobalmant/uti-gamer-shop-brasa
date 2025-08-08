@@ -50,11 +50,11 @@ const RegisterPage = () => {
       // Se chegou até aqui, o cadastro foi bem-sucedido
       toast({
         title: "Cadastro realizado!",
-        description: "Verifique seu email para confirmar sua conta.",
+        description: "Verifique seu email para confirmar sua conta antes de fazer login.",
       });
       
-      // Redirecionar para página inicial
-      navigate('/', { 
+      // Redirecionar para página de login
+      navigate('/auth', { 
         state: { message: 'Cadastro realizado! Verifique seu email para confirmar sua conta.' }
       });
 
