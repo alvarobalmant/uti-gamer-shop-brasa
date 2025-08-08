@@ -84,10 +84,263 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ============ FUNÇÕES CORE DO SISTEMA DE CÓDIGOS DIÁRIOS ============
+
+    // Função para gerar código diário único
+    const generateDailyCode = async (isTestMode = false) => {
+      console.log(`[GENERATE_CODE] Generating new daily code, test mode: ${isTestMode}`);
+      
+      const now = new Date();
+      const expiresAt = new Date(now);
+      
+      if (isTestMode) {
+        // Modo teste: código válido por 10 segundos
+        expiresAt.setSeconds(now.getSeconds() + 10);
+      } else {
+        // Modo produção: código válido até próximas 20h (Brasília)
+        expiresAt.setUTCHours(23, 0, 0, 0); // 20h Brasília = 23h UTC
+        if (expiresAt <= now) {
+          expiresAt.setUTCDate(expiresAt.getUTCDate() + 1); // Amanhã às 20h
+        }
+      }
+      
+      // Buscar configurações do sistema
+      const { data: configs } = await supabase
+        .from('coin_system_config')
+        .select('setting_key, setting_value')
+        .in('setting_key', [
+          'daily_bonus_base_amount',
+          'daily_bonus_max_amount', 
+          'daily_bonus_streak_days'
+        ]);
+      
+      const configMap = Object.fromEntries(
+        configs?.map(c => [c.setting_key, c.setting_value]) || []
+      );
+      
+      const baseAmount = parseInt(configMap.daily_bonus_base_amount || '10');
+      
+      // Gerar código único
+      const { data: uniqueCode } = await supabase.rpc('generate_unique_daily_code');
+      
+      // Inserir código na tabela (bonus_amount será calculado no momento do resgate)
+      const { data: newCode, error } = await supabase
+        .from('daily_bonus_codes')
+        .insert({
+          code: uniqueCode,
+          generated_at: now,
+          expires_at: expiresAt,
+          bonus_amount: baseAmount, // Valor base, será recalculado no resgate
+          streak_position: 1, // Será ajustado no resgate baseado no streak do usuário
+          is_test_mode: isTestMode
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error(`[GENERATE_CODE] Error inserting code:`, error);
+        throw error;
+      }
+      
+      console.log(`[GENERATE_CODE] New code generated: ${newCode.code}, expires: ${expiresAt}`);
+      return newCode;
+    };
+
+    // Função para validar streak atual baseado em códigos resgatados consecutivos
+    const validateCurrentStreak = async (userId) => {
+      console.log(`[VALIDATE_STREAK] Validating streak for user ${userId}`);
+      
+      // Buscar últimos resgates do usuário em ordem decrescente
+      const { data: userClaims } = await supabase
+        .from('user_bonus_claims')
+        .select(`
+          *,
+          daily_bonus_codes(*)
+        `)
+        .eq('user_id', userId)
+        .order('claimed_at', { ascending: false })
+        .limit(20); // Buscar últimos 20 para calcular streak
+      
+      if (!userClaims || userClaims.length === 0) {
+        console.log(`[VALIDATE_STREAK] No claims found, streak = 0`);
+        return 0;
+      }
+      
+      // Buscar configuração de dias de streak
+      const { data: streakConfig } = await supabase
+        .from('coin_system_config')
+        .select('setting_value')
+        .eq('setting_key', 'daily_bonus_streak_days')
+        .single();
+      
+      const streakDays = parseInt(streakConfig?.setting_value || '7');
+      let currentStreak = 0;
+      
+      // Calcular streak baseado em códigos consecutivos
+      const now = new Date();
+      
+      for (let i = 0; i < userClaims.length; i++) {
+        const claim = userClaims[i];
+        const codeGeneratedAt = new Date(claim.daily_bonus_codes.generated_at);
+        
+        // Verificar se o código foi gerado no dia esperado (hoje - i dias)
+        const expectedDate = new Date(now);
+        expectedDate.setDate(expectedDate.getDate() - i);
+        
+        // Comparar apenas o dia (ignorar horas)
+        const isSameDay = codeGeneratedAt.toDateString() === expectedDate.toDateString();
+        
+        if (isSameDay) {
+          currentStreak++;
+        } else {
+          break; // Streak quebrado - parar contagem
+        }
+      }
+      
+      console.log(`[VALIDATE_STREAK] Calculated streak: ${currentStreak}`);
+      return currentStreak;
+    };
+
+    // Função para verificar código disponível para resgate
+    const checkAvailableBonus = async (userId) => {
+      console.log(`[CHECK_AVAILABLE] Checking available bonus for user ${userId}`);
+      
+      // Buscar código válido não expirado mais recente
+      const { data: availableCodes } = await supabase
+        .from('daily_bonus_codes')
+        .select('*')
+        .gt('expires_at', new Date().toISOString())
+        .order('generated_at', { ascending: false })
+        .limit(1);
+      
+      if (!availableCodes || availableCodes.length === 0) {
+        console.log(`[CHECK_AVAILABLE] No valid codes found`);
+        return null;
+      }
+      
+      const latestCode = availableCodes[0];
+      
+      // Verificar se usuário já resgatou este código
+      const { data: existingClaim } = await supabase
+        .from('user_bonus_claims')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('code_id', latestCode.id)
+        .single();
+      
+      if (existingClaim) {
+        console.log(`[CHECK_AVAILABLE] User already claimed this code`);
+        return null;
+      }
+      
+      console.log(`[CHECK_AVAILABLE] Available code found: ${latestCode.code}`);
+      return latestCode;
+    };
+
+    // Função para calcular próximo bonus baseado no streak
+    const calculateNextBonus = async (currentStreak) => {
+      const { data: configs } = await supabase
+        .from('coin_system_config')
+        .select('setting_key, setting_value')
+        .in('setting_key', [
+          'daily_bonus_base_amount',
+          'daily_bonus_max_amount', 
+          'daily_bonus_streak_days',
+          'daily_bonus_increment_type',
+          'daily_bonus_fixed_increment'
+        ]);
+      
+      const configMap = Object.fromEntries(
+        configs?.map(c => [c.setting_key, c.setting_value]) || []
+      );
+      
+      const baseAmount = parseInt(configMap.daily_bonus_base_amount || '10');
+      const maxAmount = parseInt(configMap.daily_bonus_max_amount || '100');
+      const streakDays = parseInt(configMap.daily_bonus_streak_days || '7');
+      const incrementType = configMap.daily_bonus_increment_type || 'calculated';
+      const fixedIncrement = parseInt(configMap.daily_bonus_fixed_increment || '10');
+      
+      const nextStreakPosition = Math.max(1, (currentStreak % streakDays) + 1);
+      let nextBonusAmount;
+      
+      if (incrementType === 'fixed') {
+        nextBonusAmount = Math.min(baseAmount + ((nextStreakPosition - 1) * fixedIncrement), maxAmount);
+      } else {
+        if (streakDays > 1) {
+          nextBonusAmount = baseAmount + Math.round(((maxAmount - baseAmount) * (nextStreakPosition - 1)) / (streakDays - 1));
+        } else {
+          nextBonusAmount = baseAmount;
+        }
+      }
+      
+      return Math.max(nextBonusAmount, baseAmount); // Garantir que nunca seja negativo
+    };
+
     // Handle different actions
     let result;
     
-    if (action === 'daily_login') {
+    if (action === 'generate_daily_code') {
+      console.log(`[ADMIN] Generating daily code`);
+      
+      // Verificar se existe código válido ativo
+      const { data: existingCodes } = await supabase
+        .from('daily_bonus_codes')
+        .select('*')
+        .gt('expires_at', new Date().toISOString())
+        .order('generated_at', { ascending: false })
+        .limit(1);
+      
+      if (existingCodes && existingCodes.length > 0) {
+        console.log(`[ADMIN] Active code already exists: ${existingCodes[0].code}`);
+        result = {
+          success: true,
+          message: 'Code already exists',
+          code: existingCodes[0]
+        };
+      } else {
+        // Verificar modo teste
+        const { data: testModeData } = await supabase
+          .from('coin_system_config')
+          .select('setting_value')
+          .eq('setting_key', 'test_mode_enabled')
+          .single();
+        
+        const isTestMode = testModeData?.setting_value === 'true' || testModeData?.setting_value === true;
+        
+        try {
+          const newCode = await generateDailyCode(isTestMode);
+          result = {
+            success: true,
+            message: 'New code generated',
+            code: newCode
+          };
+        } catch (error) {
+          console.error(`[ADMIN] Error generating code:`, error);
+          result = {
+            success: false,
+            message: 'Failed to generate code'
+          };
+        }
+      }
+      
+    } else if (action === 'cleanup_old_codes') {
+      console.log(`[ADMIN] Cleaning up old codes`);
+      
+      try {
+        const { data: deletedCount } = await supabase.rpc('cleanup_old_bonus_codes');
+        result = {
+          success: true,
+          message: `Cleaned up ${deletedCount} old codes`
+        };
+      } catch (error) {
+        console.error(`[ADMIN] Error cleaning up codes:`, error);
+        result = {
+          success: false,
+          message: 'Failed to cleanup codes'
+        };
+      }
+      
+    } else if (action === 'daily_login') {
       console.log(`[BRASILIA_TIMER] Processing daily login for user ${user.id} at ${new Date().toISOString()}`);
       
       // Use new Brasilia-based function
@@ -150,10 +403,19 @@ Deno.serve(async (req) => {
       }
       
     } else if (action === 'can_claim_daily_bonus_brasilia') {
-      console.log(`[DAILY_BONUS] Checking bonus status for user ${user.id}`);
+      console.log(`[NEW_SYSTEM] Checking bonus status for user ${user.id}`);
       
       try {
-        // Check if test mode is enabled
+        // Verificar se existe código disponível
+        const availableCode = await checkAvailableBonus(user.id);
+        
+        // Validar streak atual baseado em códigos resgatados
+        const currentStreak = await validateCurrentStreak(user.id);
+        
+        // Calcular próximo bônus baseado no streak atual
+        const nextBonusAmount = await calculateNextBonus(currentStreak);
+        
+        // Verificar modo teste
         const { data: testModeData } = await supabase
           .from('coin_system_config')
           .select('setting_value')
@@ -161,213 +423,78 @@ Deno.serve(async (req) => {
           .single();
 
         const isTestMode = testModeData?.setting_value === 'true' || testModeData?.setting_value === true;
-        const rpcFunction = isTestMode ? 'can_claim_daily_bonus_test' : 'can_claim_daily_bonus_brasilia';
         
-        console.log(`[DAILY_BONUS] Using ${isTestMode ? 'TEST' : 'PRODUCTION'} mode for user ${user.id}`);
-
-        // Get current bonus period and claim status
-        const { data: bonusResult, error: bonusError } = await supabase
-          .rpc(rpcFunction, { p_user_id: user.id });
-
-        if (bonusError) {
-          console.error('[DAILY_BONUS] Error checking bonus status:', bonusError);
-          return new Response(
-            JSON.stringify({ success: false, message: 'Failed to check bonus status' }),
-            { 
-              status: 500, 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        // Buscar configuração de streak days
+        const { data: streakConfig } = await supabase
+          .from('coin_system_config')
+          .select('setting_value')
+          .eq('setting_key', 'daily_bonus_streak_days')
+          .single();
+        
+        const totalStreakDays = parseInt(streakConfig?.setting_value || '7');
+        
+        // Se não há código disponível, garantir que existe um
+        if (!availableCode) {
+          console.log(`[NEW_SYSTEM] No code available, generating new one`);
+          try {
+            await generateDailyCode(isTestMode);
+            const newAvailableCode = await checkAvailableBonus(user.id);
+            
+            if (newAvailableCode) {
+              console.log(`[NEW_SYSTEM] New code generated and available`);
             }
-          );
+          } catch (error) {
+            console.error(`[NEW_SYSTEM] Error generating code:`, error);
+          }
+        }
+        
+        // Recalcular após possível geração de código
+        const finalAvailableCode = await checkAvailableBonus(user.id);
+        const canClaim = !!finalAvailableCode;
+        
+        // Calcular tempo até expiração
+        let secondsUntilNextClaim = 0;
+        let nextReset = null;
+        
+        if (finalAvailableCode) {
+          const expiresAt = new Date(finalAvailableCode.expires_at);
+          const now = new Date();
+          
+          if (!canClaim) {
+            // Se não pode resgatar, mostrar tempo até poder
+            secondsUntilNextClaim = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
+          }
+          nextReset = finalAvailableCode.expires_at;
         }
 
-        if (bonusResult && bonusResult.length > 0) {
-          const bonusData = bonusResult[0];
-          
-          // Get user streak information with last login date for validation
-          const { data: streakData } = await supabase
-            .from('user_streaks')
-            .select('current_streak, streak_multiplier, last_login_date')
-            .eq('user_id', user.id)
-            .single();
+        console.log(`[NEW_SYSTEM] User ${user.id} bonus status:`, {
+          canClaim,
+          currentStreak,
+          nextBonusAmount,
+          secondsUntilNextClaim,
+          nextReset,
+          testMode: isTestMode,
+          totalStreakDays,
+          codeAvailable: !!finalAvailableCode
+        });
 
-          // Validate streak status - reset if user missed days (or time in test mode)
-          let validatedStreak = streakData?.current_streak || 0;
-          
-          if (streakData?.last_login_date) {
-            const now = new Date();
-            const lastLoginDate = new Date(streakData.last_login_date);
-            
-            let streakLost = false;
-            
-            if (isTestMode) {
-              // No modo de teste, verificar se passou mais de 2x o cooldown (tolerância para teste)
-              const { data: testCooldownData } = await supabase
-                .from('coin_system_config')
-                .select('setting_value')
-                .eq('setting_key', 'test_cooldown_seconds')
-                .single();
-              
-              const testCooldownSeconds = parseInt(testCooldownData?.setting_value || '10');
-              const maxTestGapSeconds = testCooldownSeconds * 2; // 2x o cooldown para tolerância
-              const secondsSinceLastLogin = Math.floor((now.getTime() - lastLoginDate.getTime()) / 1000);
-              
-              if (secondsSinceLastLogin > maxTestGapSeconds) {
-                streakLost = true;
-                console.log(`[STREAK_VALIDATION] TEST MODE: User ${user.id} missed streak. ${secondsSinceLastLogin}s > ${maxTestGapSeconds}s threshold. Resetting streak from ${validatedStreak} to 0`);
-              }
-            } else {
-              // Modo normal: verificar se passou mais de 1 dia
-              const daysSinceLastLogin = Math.floor((now.getTime() - lastLoginDate.getTime()) / (24 * 60 * 60 * 1000));
-              
-              if (daysSinceLastLogin > 1) {
-                streakLost = true;
-                console.log(`[STREAK_VALIDATION] User ${user.id} missed ${daysSinceLastLogin} days. Resetting streak from ${validatedStreak} to 0`);
-              }
-            }
-            
-            if (streakLost) {
-              // Update user_streaks table to reset streak
-              const { error: updateError } = await supabase
-                .from('user_streaks')
-                .update({ 
-                  current_streak: 0,
-                  updated_at: now.toISOString()
-                })
-                .eq('user_id', user.id);
-              
-              if (updateError) {
-                console.error('[STREAK_VALIDATION] Error updating streak:', updateError);
-              } else {
-                console.log(`[STREAK_VALIDATION] Successfully reset streak for user ${user.id}`);
-                validatedStreak = 0;
-              }
-            } else {
-              const timeInfo = isTestMode ? 
-                `${Math.floor((now.getTime() - lastLoginDate.getTime()) / 1000)} seconds` : 
-                `${Math.floor((now.getTime() - lastLoginDate.getTime()) / (24 * 60 * 60 * 1000))} days`;
-              console.log(`[STREAK_VALIDATION] User ${user.id} streak is valid. Time since last login: ${timeInfo}`);
-            }
-          } else {
-            console.log(`[STREAK_VALIDATION] User ${user.id} has no last_login_date. Setting streak to 0`);
-            validatedStreak = 0;
-          }
-
-          // Get daily bonus configuration - buscar novas configurações
-          const { data: configData } = await supabase
-            .from('coin_system_config')
-            .select('setting_key, setting_value')
-            .in('setting_key', [
-              'daily_bonus_base_amount', 
-              'daily_bonus_max_amount', 
-              'daily_bonus_streak_days',
-              'daily_bonus_increment_type',
-              'daily_bonus_fixed_increment'
-            ]);
-
-          let baseAmount = 10;
-          let maxAmount = 100;
-          let streakDays = 7;
-          let incrementType = 'calculated';
-          let fixedIncrement = 10;
-
-          if (configData) {
-            configData.forEach(config => {
-              // Extrair valor do JSONB - tratamento mais robusto
-              let value = config.setting_value;
-              
-              // Se for um objeto JSONB, extrair o valor
-              if (typeof value === 'object' && value !== null) {
-                value = value;
-              } else if (typeof value === 'string') {
-                // Se for string com aspas, remover
-                if (value.startsWith('"') && value.endsWith('"')) {
-                  value = value.slice(1, -1);
-                }
-                // Tentar converter para número se for numérico
-                if (!isNaN(Number(value))) {
-                  value = Number(value);
-                }
-              }
-                
-              switch (config.setting_key) {
-                case 'daily_bonus_base_amount':
-                  baseAmount = Number(value) || 10;
-                  break;
-                case 'daily_bonus_max_amount':
-                  maxAmount = Number(value) || 100;
-                  break;
-                case 'daily_bonus_streak_days':
-                  streakDays = Number(value) || 7;
-                  break;
-                case 'daily_bonus_increment_type':
-                  incrementType = String(value) || 'calculated';
-                  break;
-                case 'daily_bonus_fixed_increment':
-                  fixedIncrement = Number(value) || 10;
-                  break;
-              }
-            });
-          }
-
-          // Calcular próximo bônus baseado no streak validado e configuração
-          const currentStreak = validatedStreak; // Usar streak validado (pode ser 0)
-          const currentStreakDay = validatedStreak;
-          let nextBonusAmount;
-          
-          if (incrementType === 'fixed') {
-            nextBonusAmount = Math.min(baseAmount + ((currentStreakDay - 1) * fixedIncrement), maxAmount);
-          } else {
-            if (streakDays > 1) {
-              nextBonusAmount = baseAmount + Math.round(((maxAmount - baseAmount) * (currentStreakDay - 1)) / (streakDays - 1));
-            } else {
-              nextBonusAmount = baseAmount;
-            }
-          }
-          
-          nextBonusAmount = Math.min(nextBonusAmount, maxAmount);
-
-          // Calculate seconds until next claim
-          let secondsUntilNextClaim = 0;
-          if (bonusData.next_reset && !bonusData.can_claim) {
-            const nextReset = new Date(bonusData.next_reset);
-            const now = new Date();
-            secondsUntilNextClaim = Math.max(0, Math.floor((nextReset.getTime() - now.getTime()) / 1000));
-          }
-
-          console.log(`[DAILY_BONUS] User ${user.id} bonus status:`, {
-            canClaim: bonusData.can_claim,
-            originalStreak: streakData?.current_streak || 0,
-            validatedStreak: validatedStreak,
-            currentStreak,
-            nextBonusAmount,
-            secondsUntilNextClaim,
-            nextReset: bonusData.next_reset,
-            lastClaim: bonusData.last_claim,
-            testMode: isTestMode
-          });
-
-          result = {
-            success: true,
-            canClaim: bonusData.can_claim || false,
-            secondsUntilNextClaim: secondsUntilNextClaim || 0,
-            currentStreak: validatedStreak, // Mostrar o streak real validado
-            validatedStreak: validatedStreak,
-            nextBonusAmount: nextBonusAmount,
-            multiplier: 1.0,
-            nextReset: bonusData.next_reset,
-            lastClaim: bonusData.last_claim,
-            testMode: isTestMode,
-            totalStreakDays: streakDays,
-            message: bonusData.can_claim ? 'Bonus available' : (isTestMode ? 'Aguarde ' + Math.ceil(secondsUntilNextClaim) + ' segundos' : 'Bonus already claimed today')
-          };
-        } else {
-          result = {
-            success: false,
-            message: 'No bonus data available - database function may have failed'
-          };
-        }
+        result = {
+          success: true,
+          canClaim,
+          secondsUntilNextClaim,
+          currentStreak,
+          validatedStreak: currentStreak,
+          nextBonusAmount,
+          multiplier: 1.0,
+          nextReset,
+          lastClaim: null, // Será implementado depois
+          testMode: isTestMode,
+          totalStreakDays,
+          message: canClaim ? 'Bonus available' : (isTestMode ? 'Aguarde ' + Math.ceil(secondsUntilNextClaim) + ' segundos' : 'Aguarde o próximo período')
+        };
+        
       } catch (error) {
-        console.error('[DAILY_BONUS] Exception checking bonus status:', error);
+        console.error('[NEW_SYSTEM] Exception checking bonus status:', error);
         return new Response(
           JSON.stringify({ success: false, message: 'Internal server error checking bonus' }),
           { 
@@ -378,47 +505,97 @@ Deno.serve(async (req) => {
       }
       
     } else if (action === 'process_daily_login_brasilia') {
-      console.log(`[DAILY_LOGIN] Processing daily login for user ${user.id}`);
+      console.log(`[NEW_CLAIM] Processing daily bonus claim for user ${user.id}`);
       
       try {
-        // Check if test mode is enabled
-        const { data: testModeData } = await supabase
-          .from('coin_system_config')
-          .select('setting_value')
-          .eq('setting_key', 'test_mode_enabled')
-          .single();
-
-        const isTestMode = testModeData?.setting_value === 'true' || testModeData?.setting_value === true;
-        const rpcFunction = isTestMode ? 'process_daily_login_test' : 'process_daily_login_brasilia';
+        // Verificar se existe código disponível
+        const availableCode = await checkAvailableBonus(user.id);
         
-        console.log(`[DAILY_LOGIN] Using ${isTestMode ? 'TEST' : 'PRODUCTION'} mode for user ${user.id}`);
-
-        // Use the appropriate login processing function
-        const { data: loginResult, error: loginError } = await supabase
-          .rpc(rpcFunction, { p_user_id: user.id });
-
-        if (loginError) {
-          console.error('[DAILY_LOGIN] Error processing daily login:', loginError);
-          return new Response(
-            JSON.stringify({ success: false, message: 'Failed to process daily login' }),
-            { 
-              status: 500, 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-            }
-          );
-        }
-
-        result = loginResult;
-        
-        if (result && result.success) {
-          console.log(`[DAILY_LOGIN] SUCCESS: User ${user.id} earned ${result.coins_earned} coins. New streak: ${result.streak} (${isTestMode ? 'TEST' : 'PRODUCTION'} mode)`);
+        if (!availableCode) {
+          console.log(`[NEW_CLAIM] No code available for user ${user.id}`);
+          result = {
+            success: false,
+            message: 'Nenhum código disponível para resgate'
+          };
         } else {
-          console.log(`[DAILY_LOGIN] BLOCKED: User ${user.id} login blocked: ${result?.message || 'Unknown error'} (${isTestMode ? 'TEST' : 'PRODUCTION'} mode)`);
+          // Validar streak atual
+          const currentStreak = await validateCurrentStreak(user.id);
+          const newStreak = currentStreak + 1;
+          
+          // Calcular bonus baseado no novo streak
+          const bonusAmount = await calculateNextBonus(currentStreak);
+          
+          // Registrar resgate na tabela user_bonus_claims
+          const { data: claimData, error: claimError } = await supabase
+            .from('user_bonus_claims')
+            .insert({
+              user_id: user.id,
+              code_id: availableCode.id,
+              claimed_at: new Date().toISOString(),
+              streak_at_claim: newStreak,
+              bonus_received: bonusAmount
+            })
+            .select()
+            .single();
+          
+          if (claimError) {
+            console.error(`[NEW_CLAIM] Error recording claim:`, claimError);
+            result = {
+              success: false,
+              message: 'Erro ao registrar resgate'
+            };
+          } else {
+            // Dar coins ao usuário
+            const { data: coinResult, error: coinError } = await supabase
+              .from('coin_transactions')
+              .insert({
+                user_id: user.id,
+                amount: bonusAmount,
+                type: 'earned',
+                reason: 'daily_login',
+                description: `Daily Bonus - Streak ${newStreak}`,
+                metadata: {
+                  code_id: availableCode.id,
+                  streak: newStreak,
+                  new_system: true
+                }
+              });
+            
+            if (coinError) {
+              console.error(`[NEW_CLAIM] Error giving coins:`, coinError);
+              result = {
+                success: false,
+                message: 'Erro ao creditar moedas'
+              };
+            } else {
+              // Atualizar saldo do usuário via RPC para evitar problemas com SQL
+              const { error: balanceError } = await supabase
+                .rpc('update_user_balance', {
+                  p_user_id: user.id,
+                  p_amount: bonusAmount
+                });
+              
+              if (balanceError) {
+                console.error(`[NEW_CLAIM] Error updating balance:`, balanceError);
+              }
+              
+              console.log(`[NEW_CLAIM] SUCCESS: User ${user.id} earned ${bonusAmount} coins. New streak: ${newStreak}`);
+              
+              result = {
+                success: true,
+                coins_earned: bonusAmount,
+                streak_day: newStreak,
+                message: `Bônus diário resgatado! +${bonusAmount} coins`,
+                code_id: availableCode.id
+              };
+            }
+          }
         }
+        
       } catch (error) {
-        console.error('[DAILY_LOGIN] Exception processing daily login:', error);
+        console.error('[NEW_CLAIM] Exception processing claim:', error);
         return new Response(
-          JSON.stringify({ success: false, message: 'Internal server error processing login' }),
+          JSON.stringify({ success: false, message: 'Internal server error processing claim' }),
           { 
             status: 500, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

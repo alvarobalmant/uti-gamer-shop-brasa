@@ -469,6 +469,39 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_bonus_codes: {
+        Row: {
+          bonus_amount: number
+          code: string
+          created_at: string | null
+          expires_at: string
+          generated_at: string
+          id: string
+          is_test_mode: boolean | null
+          streak_position: number
+        }
+        Insert: {
+          bonus_amount: number
+          code: string
+          created_at?: string | null
+          expires_at: string
+          generated_at: string
+          id?: string
+          is_test_mode?: boolean | null
+          streak_position?: number
+        }
+        Update: {
+          bonus_amount?: number
+          code?: string
+          created_at?: string | null
+          expires_at?: string
+          generated_at?: string
+          id?: string
+          is_test_mode?: boolean | null
+          streak_position?: number
+        }
+        Relationships: []
+      }
       daily_bonus_config: {
         Row: {
           created_at: string
@@ -2561,6 +2594,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_bonus_claims: {
+        Row: {
+          bonus_received: number
+          claimed_at: string | null
+          code_id: string | null
+          id: string
+          streak_at_claim: number
+          user_id: string
+        }
+        Insert: {
+          bonus_received: number
+          claimed_at?: string | null
+          code_id?: string | null
+          id?: string
+          streak_at_claim: number
+          user_id: string
+        }
+        Update: {
+          bonus_received?: number
+          claimed_at?: string | null
+          code_id?: string | null
+          id?: string
+          streak_at_claim?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_bonus_claims_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "daily_bonus_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_favorites: {
         Row: {
           created_at: string | null
@@ -3038,6 +3106,10 @@ export type Database = {
         Args: { p_user_id: string; p_action: string }
         Returns: boolean
       }
+      cleanup_old_bonus_codes: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       cleanup_old_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -3121,6 +3193,10 @@ export type Database = {
       generate_redemption_code: {
         Args: { p_user_id: string; p_product_id: string; p_cost: number }
         Returns: Json
+      }
+      generate_unique_daily_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_active_subscription: {
         Args: { user_id: string }
