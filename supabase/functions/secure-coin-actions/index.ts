@@ -433,20 +433,8 @@ Deno.serve(async (req) => {
         
         const totalStreakDays = parseInt(streakConfig?.setting_value || '7');
         
-        // Se não há código disponível, garantir que existe um
-        if (!availableCode) {
-          console.log(`[NEW_SYSTEM] No code available, generating new one`);
-          try {
-            await generateDailyCode(isTestMode);
-            const newAvailableCode = await checkAvailableBonus(user.id);
-            
-            if (newAvailableCode) {
-              console.log(`[NEW_SYSTEM] New code generated and available`);
-            }
-          } catch (error) {
-            console.error(`[NEW_SYSTEM] Error generating code:`, error);
-          }
-        }
+        // NÃO gerar código aqui - apenas o cron job deve gerar
+        // Se não há código disponível, simplesmente informar que não pode resgatar
         
         // Recalcular após possível geração de código
         const finalAvailableCode = await checkAvailableBonus(user.id);
