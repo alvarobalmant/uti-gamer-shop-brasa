@@ -146,6 +146,15 @@ const XboxPage4 = () => {
     setShowAuthModal(true);
   };
 
+  // Handlers para navegação de seções usando template padrão
+  const handleViewAllGames = () => {
+    navigate('/secao/xbox4_games');
+  };
+
+  const handleViewAllAccessories = () => {
+    navigate('/secao/xbox4_accessories');
+  };
+
   // Mostrar loader apenas por um curto período inicial
   if (loading) {
     return (
@@ -338,7 +347,8 @@ const XboxPage4 = () => {
           <div className="mt-8 text-center md:mt-12">
             <Button 
               size="lg" 
-              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 py-3 h-12 text-sm transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:px-8 md:py-6 md:text-lg md:h-auto"
+              onClick={handleViewAllGames}
+              className="bg-[#107C10] hover:bg-[#0D5A0D] text-white font-bold px-6 py-3 h-12 text-sm transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-[#107C10]/30 md:px-8 md:py-6 md:text-lg md:h-auto cursor-pointer"
             >
               VER TODOS OS JOGOS <ChevronRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
             </Button>
@@ -384,7 +394,8 @@ const XboxPage4 = () => {
           <div className="mt-8 text-center md:mt-12">
             <Button 
               size="lg" 
-              className="bg-transparent hover:bg-[#107C10] text-[#107C10] hover:text-white font-bold border-2 border-[#107C10] px-6 py-3 h-12 text-sm transition-all duration-300 md:px-8 md:py-6 md:text-lg md:h-auto"
+              onClick={handleViewAllAccessories}
+              className="bg-transparent hover:bg-[#107C10] text-[#107C10] hover:text-white font-bold border-2 border-[#107C10] px-6 py-3 h-12 text-sm transition-all duration-300 md:px-8 md:py-6 md:text-lg md:h-auto cursor-pointer"
             >
               VER TODOS OS ACESSÓRIOS <ChevronRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
             </Button>
