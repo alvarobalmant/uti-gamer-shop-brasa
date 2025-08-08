@@ -311,7 +311,7 @@ Deno.serve(async (req) => {
 
           // Calcular próximo bônus baseado no streak validado e configuração
           const currentStreak = validatedStreak; // Usar streak validado (pode ser 0)
-          const currentStreakDay = currentStreak > 0 ? (currentStreak % streakDays || streakDays) : 1;
+          const currentStreakDay = validatedStreak;
           let nextBonusAmount;
           
           if (incrementType === 'fixed') {
@@ -350,10 +350,10 @@ Deno.serve(async (req) => {
             success: true,
             canClaim: bonusData.can_claim || false,
             secondsUntilNextClaim: secondsUntilNextClaim || 0,
-            currentStreak: currentStreakDay,
-            validatedStreak: validatedStreak, // Sempre usar o streak validado
+            currentStreak: validatedStreak, // Mostrar o streak real validado
+            validatedStreak: validatedStreak,
             nextBonusAmount: nextBonusAmount,
-            multiplier: 1.0, // Não usamos mais multiplicador com o novo sistema
+            multiplier: 1.0,
             nextReset: bonusData.next_reset,
             lastClaim: bonusData.last_claim,
             testMode: isTestMode,
