@@ -176,10 +176,10 @@ const App = () => {
         <AuthProvider>
           {/* Security system removed */}
             <UTICoinsProvider>
-              <CartProvider>
-                <ProductProviderOptimized>
-                  <LoadingProvider>
-                    <AnalyticsProvider>
+              <AnalyticsProvider>
+                <CartProvider>
+                  <ProductProviderOptimized>
+                    <LoadingProvider>
                       <TooltipProvider>
                       <Toaster />
                       <Sonner />
@@ -287,10 +287,10 @@ const App = () => {
                         </AppWithPreloader>
                       </BrowserRouter>
                       </TooltipProvider>
-                    </AnalyticsProvider>
-                  </LoadingProvider>
-                </ProductProviderOptimized>
-              </CartProvider>
+                    </LoadingProvider>
+                  </ProductProviderOptimized>
+                </CartProvider>
+              </AnalyticsProvider>
             </UTICoinsProvider>
           {/* Security system removed */}
         </AuthProvider>
