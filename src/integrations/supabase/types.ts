@@ -3428,6 +3428,10 @@ export type Database = {
           can_read_profiles: boolean
         }[]
       }
+      update_user_balance: {
+        Args: { p_user_id: string; p_amount: number }
+        Returns: undefined
+      }
       validate_admin_token: {
         Args: { p_token: string; p_ip?: string }
         Returns: Json
