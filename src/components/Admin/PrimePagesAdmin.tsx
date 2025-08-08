@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, EyeOff, Settings, Save, X, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Settings, Save, X, ArrowUp, ArrowDown, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +14,7 @@ import { usePrimePages, PrimePage, PrimePageInput, PrimePageLayoutInput, PrimePa
 import { useProductSections } from '@/hooks/useProductSections';
 import { useSpecialSections } from '@/hooks/useSpecialSections';
 import { useToast } from '@/components/ui/use-toast';
+import { PrimePageBuilder } from './PrimePages/PrimePageBuilder';
 
 const PrimePagesAdmin: React.FC = () => {
   const { toast } = useToast();
@@ -37,6 +38,8 @@ const PrimePagesAdmin: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showLayoutModal, setShowLayoutModal] = useState(false);
   const [selectedPage, setSelectedPage] = useState<PrimePage | null>(null);
+  const [showPageBuilder, setShowPageBuilder] = useState(false);
+  const [builderPageId, setBuilderPageId] = useState<string | null>(null);
   const [selectedPageWithLayout, setSelectedPageWithLayout] = useState<PrimePageWithLayout | null>(null);
   const [formData, setFormData] = useState<PrimePageInput>({
     title: '',
@@ -336,12 +339,21 @@ const PrimePagesAdmin: React.FC = () => {
                   </div>
                   <div className="flex space-x-2">
                     <Button
+                      onClick={() => {
+                        setBuilderPageId(page.id);
+                        setShowPageBuilder(true);
+                      }}
+                    >
+                      <Wrench className="w-4 h-4 mr-1" />
+                      Construir
+                    </Button>
+                    <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleOpenLayoutModal(page)}
                     >
                       <Settings className="w-4 h-4 mr-1" />
-                      Layout
+                      Layout Antigo
                     </Button>
                     <Button
                       variant="outline"
@@ -613,6 +625,19 @@ const PrimePagesAdmin: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Prime Page Builder */}
+      {showPageBuilder && builderPageId && (
+        <div className="fixed inset-0 bg-background z-50 overflow-auto">
+          <PrimePageBuilder
+            pageId={builderPageId}
+            onBack={() => {
+              setShowPageBuilder(false);
+              setBuilderPageId(null);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

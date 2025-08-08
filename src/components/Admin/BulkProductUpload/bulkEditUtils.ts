@@ -3,6 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Product } from '@/hooks/useProducts/types';
 import type { ImportedProduct, ValidationError } from './types';
 
+// Interface para log de produtos ignorados
+export interface SkippedProductLog {
+  sku_code: string;
+  reason: string;
+  details?: string;
+  row?: number;
+}
+
 // Interface para resultado da edição em massa
 export interface BulkEditResult {
   success: boolean;
@@ -13,6 +21,7 @@ export interface BulkEditResult {
     updated_products: string[];
     skipped_skus: string[];
   };
+  skipped_logs: SkippedProductLog[];
 }
 
 // Função para validar dados de edição em massa
@@ -143,7 +152,8 @@ export const processBulkEdit = async (
     details: {
       updated_products: [],
       skipped_skus: []
-    }
+    },
+    skipped_logs: []
   };
   
   // Filtrar apenas produtos com SKU válido
@@ -152,6 +162,7 @@ export const processBulkEdit = async (
   for (let i = 0; i < validProducts.length; i++) {
     const product = validProducts[i];
     const progress = ((i + 1) / validProducts.length) * 100;
+    const rowNumber = products.findIndex(p => p.sku_code === product.sku_code) + 2; // +2 para linha do Excel
     
     if (onProgress) {
       onProgress(progress, i + 1, validProducts.length);
@@ -164,6 +175,12 @@ export const processBulkEdit = async (
       if (!existingProduct) {
         result.skipped++;
         result.details.skipped_skus.push(product.sku_code!);
+        result.skipped_logs.push({
+          sku_code: product.sku_code!,
+          reason: 'Produto não encontrado',
+          details: `O código SKU "${product.sku_code}" não existe no banco de dados`,
+          row: rowNumber
+        });
         continue;
       }
       
@@ -260,6 +277,12 @@ export const processBulkEdit = async (
       } else {
         result.skipped++;
         result.details.skipped_skus.push(product.sku_code!);
+        result.skipped_logs.push({
+          sku_code: product.sku_code!,
+          reason: 'Nenhum campo para atualizar',
+          details: 'Todos os campos estavam vazios ou com valores inválidos',
+          row: rowNumber
+        });
       }
       
     } catch (error) {

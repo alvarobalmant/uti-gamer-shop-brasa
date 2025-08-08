@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProductManager from './ProductManagerNew';
+import ProductManagerOptimized from './ProductManager/ProductManagerOptimizedNew';
 import { BannerManagerNew } from './BannerManagerNew';
 import { ServiceCardManager } from './ServiceCardManager';
 import { TagManager } from './TagManager';
@@ -23,9 +23,11 @@ import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
 import UTICoinsManager from './UTICoinsManager';
 import { EmailManager } from './EmailManager/EmailManager';
+import OrderVerifier from './OrderVerifier';
 // Admin login system removed
 import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor } from 'lucide-react';
+import { AnalyticsDashboard } from './Analytics/AnalyticsDashboard';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor, ClipboardCheck, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -52,7 +54,9 @@ export const AdminPanel = () => {
     { id: 'quick_links', label: 'Links Rápidos', icon: Link },
     { id: 'services', label: 'Serviços', icon: Briefcase },
     { id: 'tags', label: 'Tags', icon: Tag },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'uti_coins', label: 'UTI Coins', icon: Coins },
+    { id: 'order_verifier', label: 'VERIFICADOR DE PEDIDO', icon: ClipboardCheck },
     { id: 'emails', label: 'Emails', icon: Mail },
     // Admin login removed
     { id: 'users', label: 'Usuários/PRO', icon: Users },
@@ -185,7 +189,7 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="products" className="mt-0">
-                <ProductManager />
+                <ProductManagerOptimized />
               </TabsContent>
 
               <TabsContent value="desktop_products" className="mt-0">
@@ -232,8 +236,16 @@ export const AdminPanel = () => {
                 <TagManager />
               </TabsContent>
 
+              <TabsContent value="analytics" className="mt-0">
+                <AnalyticsDashboard />
+              </TabsContent>
+
               <TabsContent value="uti_coins" className="mt-0">
                 <UTICoinsManager />
+              </TabsContent>
+
+              <TabsContent value="order_verifier" className="mt-0">
+                <OrderVerifier />
               </TabsContent>
 
               <TabsContent value="emails" className="mt-0">

@@ -102,7 +102,6 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
   }
 
   return handleSupabaseRetry(async () => {
-<<<<<<< HEAD
     console.log(`[fetchProductsFromDatabase] 🔧 VERSÃO CORRIGIDA - Fetching ALL products (includeAdmin: ${includeAdmin})`);
     
     try {
@@ -121,132 +120,6 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
             )
           )
         `);
-=======
-    console.log(`[fetchProductsFromDatabase] Fetching ALL products (includeAdmin: ${includeAdmin})`);
-    
-    let query = supabase
-      .from('view_product_with_tags')
-      .select('*');
-    
-    // REMOVE LIMIT: Don't filter anything - fetch ALL products including admin
-    // Only exclude master products if specifically requested (not by default)
-    if (!includeAdmin) {
-      query = query.neq('product_type', 'master');
-    }
-
-    // NO PAGINATION - fetch ALL products at once
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('[fetchProductsFromDatabase] Database error:', error);
-      // Se for o erro específico de coluna, invalidar cache e tentar fallback
-      if (error.message?.includes('idasproduct_id') || error.message?.includes('column') || error.message?.includes('does not exist')) {
-        console.warn('🔧 Column error detected - invalidating cache and using fallback...');
-        invalidateSupabaseCache();
-        
-        // Fallback: query products table directly
-    try {
-      console.log('[fetchProductsFromDatabase] Using enhanced fallback with tags...');
-      
-      // Fallback melhorado que inclui tags via JOIN
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from('products')
-        .select(`
-          *,
-          product_tags!inner(
-            tag_id,
-            tags!inner(
-              id,
-              name
-            )
-          )
-        `);
-        
-      if (fallbackError) {
-        // Se mesmo o fallback with JOIN falhar, usar query simples
-        console.warn('[fetchProductsFromDatabase] JOIN fallback failed, using simple query...');
-        const { data: simpleData, error: simpleError } = await supabase
-          .from('products')
-          .select('*');
-          
-        if (simpleError) {
-          throw simpleError;
-        }
-        
-        console.log(`[fetchProductsFromDatabase] Simple fallback successful: ${simpleData?.length || 0} products`);
-        return simpleData?.map(row => mapRowToProduct({
-          product_id: row.id,
-          product_name: row.name,
-          product_description: row.description,
-          product_price: row.price,
-          product_image: row.image,
-          product_stock: row.stock,
-          ...row
-        })) || [];
-      }
-      
-      console.log(`[fetchProductsFromDatabase] Enhanced fallback successful: ${fallbackData?.length || 0} products`);
-      
-      // Processar dados com tags do fallback
-      const productsMap = new Map<string, Product>();
-      
-      fallbackData?.forEach((row: any) => {
-        const productId = row.id;
-        
-        if (!productsMap.has(productId)) {
-          productsMap.set(productId, mapRowToProduct({
-            product_id: row.id,
-            product_name: row.name,
-            product_description: row.description,
-            product_price: row.price,
-            product_image: row.image,
-            product_stock: row.stock,
-            ...row
-          }));
-        }
-        
-        // Adicionar tags do JOIN
-        if (row.product_tags && row.product_tags.length > 0) {
-          const product = productsMap.get(productId)!;
-          row.product_tags.forEach((pt: any) => {
-            if (pt.tags) {
-              const tagExists = product.tags?.some(tag => tag.id === pt.tags.id);
-              if (!tagExists) {
-                product.tags = product.tags || [];
-                product.tags.push({
-                  id: pt.tags.id,
-                  name: pt.tags.name
-                });
-              }
-            }
-          });
-        }
-      });
-      
-      return Array.from(productsMap.values());
-    } catch (fallbackError) {
-      console.error('[fetchProductsFromDatabase] All fallback attempts failed:', fallbackError);
-      throw fallbackError;
-    }
-      }
-      throw error;
-    }
-
-    // Agrupar produtos por ID para evitar duplicatas devido às tags
-    const productsMap = new Map<string, Product>();
-    
-    data?.forEach((row: any) => {
-      const productId = row.product_id;
-      
-      if (!productId) {
-        console.warn('[fetchProductsFromDatabase] Row without product_id:', row);
-        return;
-      }
-      
-      if (!productsMap.has(productId)) {
-        productsMap.set(productId, mapRowToProduct(row));
-      }
->>>>>>> 85b4236820d0f5087c04acbc0c3bd377925948a2
       
       // Aplicar filtros apenas se necessário
       if (!includeAdmin) {
@@ -321,7 +194,6 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
       console.warn('[fetchProductsFromDatabase] Estratégia 1 falhou, tentando estratégia 2');
     }
 
-<<<<<<< HEAD
     try {
       // ESTRATÉGIA 2: Buscar produtos e tags separadamente
       console.log('[fetchProductsFromDatabase] Tentativa 2: Queries separadas');
@@ -464,10 +336,6 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
       console.error('[fetchProductsFromDatabase] ❌ Todas as estratégias falharam:', fallbackError);
       throw fallbackError;
     }
-=======
-    console.log(`[fetchProductsFromDatabase] Successfully loaded ${productsMap.size} unique products from ${data?.length || 0} rows`);
-    return Array.from(productsMap.values());
->>>>>>> 85b4236820d0f5087c04acbc0c3bd377925948a2
   }, 'fetchProductsFromDatabase', 3);
 };
 

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Coins, TrendingUp, Gift, Star } from 'lucide-react';
+import { Coins, TrendingUp, Gift, Star, Flame, Calendar, Clock, CheckCircle } from 'lucide-react';
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 import { UTICoinsConditional } from './UTICoinsConditional';
 
@@ -15,11 +16,196 @@ interface CoinAnimation {
   amount: number;
 }
 
+interface DailyBonusData {
+  canClaim: boolean;
+  currentStreak: number;
+  nextBonusAmount: number;
+  secondsUntilNextClaim: number;
+  multiplier: number;
+  nextReset: string;
+  lastClaim?: string;
+  testMode?: boolean;
+  totalStreakDays?: number;
+}
+
+// Componente de Streak Animado estilo Duolingo
+const StreakDisplay: React.FC<{ streak: number; animated?: boolean }> = ({ streak, animated = false }) => {
+  const [showFireworks, setShowFireworks] = useState(false);
+
+  useEffect(() => {
+    if (animated && streak >= 3) {
+      setShowFireworks(true);
+      setTimeout(() => setShowFireworks(false), 2000);
+    }
+  }, [animated, streak]);
+
+  const getStreakColor = (streak: number) => {
+    if (streak >= 30) return { bg: 'bg-purple-100', text: 'text-purple-700', flame: 'text-purple-500' };
+    if (streak >= 14) return { bg: 'bg-red-100', text: 'text-red-700', flame: 'text-red-500' };
+    if (streak >= 7) return { bg: 'bg-orange-100', text: 'text-orange-700', flame: 'text-orange-500' };
+    if (streak >= 3) return { bg: 'bg-yellow-100', text: 'text-yellow-700', flame: 'text-yellow-500' };
+    return { bg: 'bg-gray-100', text: 'text-gray-700', flame: 'text-gray-500' };
+  };
+
+  const colors = getStreakColor(streak);
+
+  return (
+    <motion.div 
+      className={`relative flex items-center gap-2 ${colors.bg} px-3 py-2 rounded-full border-2 border-transparent`}
+      initial={animated ? { scale: 0.8, opacity: 0 } : {}}
+      animate={animated ? { 
+        scale: [0.8, 1.1, 1], 
+        opacity: 1,
+        borderColor: streak >= 7 ? ['transparent', '#f97316', 'transparent'] : 'transparent'
+      } : {}}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      {/* Efeito de fogos de artifício */}
+      <AnimatePresence>
+        {showFireworks && (
+          <>
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-yellow-400 rounded-full"
+                initial={{ 
+                  x: 0, 
+                  y: 0, 
+                  scale: 0,
+                  opacity: 1 
+                }}
+                animate={{ 
+                  x: Math.cos(i * 60 * Math.PI / 180) * 30,
+                  y: Math.sin(i * 60 * Math.PI / 180) * 30,
+                  scale: [0, 1, 0],
+                  opacity: [1, 1, 0]
+                }}
+                transition={{ 
+                  duration: 1,
+                  delay: 0.3,
+                  ease: "easeOut"
+                }}
+              />
+            ))}
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Ícone de chama animado */}
+      <motion.div
+        animate={animated ? { 
+          rotate: [0, -15, 15, -10, 10, 0],
+          scale: [1, 1.3, 1.1, 1.2, 1]
+        } : streak >= 7 ? {
+          rotate: [0, 5, -5, 0],
+          scale: [1, 1.1, 1]
+        } : {}}
+        transition={{ 
+          duration: animated ? 1 : 2,
+          ease: "easeInOut",
+          repeat: streak >= 7 && !animated ? Infinity : 0,
+          repeatDelay: 3
+        }}
+      >
+        <Flame className={`w-5 h-5 ${colors.flame} drop-shadow-sm`} />
+      </motion.div>
+
+      {/* Número do streak */}
+      <motion.span 
+        className={`font-bold ${colors.text}`}
+        initial={animated ? { y: 10, opacity: 0 } : {}}
+        animate={animated ? { y: 0, opacity: 1 } : {}}
+        transition={{ delay: 0.2, duration: 0.3 }}
+      >
+        {streak} dia{streak !== 1 ? 's' : ''}
+      </motion.span>
+
+      {/* Badges especiais */}
+      <AnimatePresence>
+        {streak >= 30 && (
+          <motion.span
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.4, duration: 0.5, type: "spring" }}
+            className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full font-bold"
+          >
+            👑 Lenda!
+          </motion.span>
+        )}
+        {streak >= 14 && streak < 30 && (
+          <motion.span
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.4, duration: 0.5, type: "spring" }}
+            className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold"
+          >
+            🔥 Insano!
+          </motion.span>
+        )}
+        {streak >= 7 && streak < 14 && (
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+            className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full"
+          >
+            🔥 Em chamas!
+          </motion.span>
+        )}
+        {streak >= 3 && streak < 7 && (
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+            className="text-xs bg-yellow-500 text-white px-2 py-1 rounded-full"
+          >
+            ⚡ Aquecendo!
+          </motion.span>
+        )}
+      </AnimatePresence>
+
+      {/* Partículas flutuantes para streaks altos */}
+      <AnimatePresence>
+        {streak >= 7 && (
+          <>
+            {[...Array(3)].map((_, i) => (
+              <motion.div
+                key={`particle-${i}`}
+                className="absolute w-1 h-1 bg-orange-400 rounded-full opacity-60"
+                initial={{ 
+                  x: -10 + i * 5, 
+                  y: 0, 
+                  scale: 0 
+                }}
+                animate={{ 
+                  y: [-5, -15, -5],
+                  scale: [0, 1, 0],
+                  opacity: [0, 0.8, 0]
+                }}
+                transition={{ 
+                  duration: 2,
+                  delay: i * 0.3,
+                  repeat: Infinity,
+                  repeatDelay: 1
+                }}
+              />
+            ))}
+          </>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
 export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }) => {
   const [showPopover, setShowPopover] = useState(false);
   const [coinAnimations, setCoinAnimations] = useState<CoinAnimation[]>([]);
+  const [dailyBonusData, setDailyBonusData] = useState<DailyBonusData | null>(null);
+  const [loadingDailyBonus, setLoadingDailyBonus] = useState(true);
+  const [claiming, setClaiming] = useState(false);
+  const [streakAnimated, setStreakAnimated] = useState(false);
   const { user } = useAuth();
-  const { coins, transactions, loading } = useUTICoins();
+  const { coins, transactions, loading, refreshData } = useUTICoins();
   const previousBalance = useRef(coins.balance);
 
   // Detectar mudança no saldo para animar moedas
@@ -37,6 +223,141 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
     }
     previousBalance.current = coins.balance;
   }, [coins.balance]);
+
+  // Calcular segundos até as 20h
+  const getSecondsUntil8PM = () => {
+    const now = new Date();
+    const today8PM = new Date();
+    today8PM.setHours(20, 0, 0, 0); // 20:00:00
+    
+    // Se já passou das 20h hoje, calcular para amanhã
+    if (now > today8PM) {
+      const tomorrow8PM = new Date(today8PM);
+      tomorrow8PM.setDate(tomorrow8PM.getDate() + 1);
+      return Math.floor((tomorrow8PM.getTime() - now.getTime()) / 1000);
+    }
+    
+    // Senão, calcular para hoje
+    return Math.floor((today8PM.getTime() - now.getTime()) / 1000);
+  };
+
+  // Carregar dados do daily bonus
+  const loadDailyBonusData = async () => {
+    try {
+      if (!user) {
+        setLoadingDailyBonus(false);
+        return;
+      }
+
+      setLoadingDailyBonus(true);
+      
+      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
+        body: { action: 'can_claim_daily_bonus_brasilia' }
+      });
+
+      if (error) {
+        console.error('[DAILY_BONUS_WIDGET] Error loading daily bonus data:', error);
+        return;
+      }
+
+      if (data?.success) {
+        const secondsUntil8PM = getSecondsUntil8PM();
+        setDailyBonusData({
+          canClaim: secondsUntil8PM <= 0, // Sempre baseado nas 20h
+          currentStreak: data.currentStreak || 1,
+          nextBonusAmount: data.nextBonusAmount || 10,
+          secondsUntilNextClaim: secondsUntil8PM, // Sempre até as 20h
+          multiplier: data.multiplier || 1.0,
+          nextReset: "20:00", // Sempre 20h
+          lastClaim: data.lastClaim,
+          testMode: data.testMode || false
+        });
+      }
+    } catch (error) {
+      console.error('[DAILY_BONUS_WIDGET] Exception loading daily bonus data:', error);
+    } finally {
+      setLoadingDailyBonus(false);
+    }
+  };
+
+  // Carregar dados do daily bonus quando o popover abre
+  useEffect(() => {
+    if (showPopover && user) {
+      loadDailyBonusData();
+    }
+  }, [showPopover, user]);
+
+  // Timer em tempo real para atualizar segundos restantes até 20h
+  useEffect(() => {
+    if (!showPopover || !dailyBonusData) return;
+
+    const timer = setInterval(() => {
+      const secondsUntil8PM = getSecondsUntil8PM();
+      setDailyBonusData(prev => prev ? {
+        ...prev,
+        secondsUntilNextClaim: secondsUntil8PM,
+        canClaim: secondsUntil8PM <= 0 // Disponível se chegou nas 20h
+      } : null);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [showPopover, dailyBonusData?.currentStreak]); // Removido dependência do secondsUntilNextClaim
+
+  // Função para resgatar daily bonus
+  const claimDailyBonus = async () => {
+    if (!dailyBonusData?.canClaim || claiming) return;
+    
+    try {
+      setClaiming(true);
+      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
+        body: { action: 'process_daily_login_brasilia' }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        // Animar streak se aumentou
+        if (data.streak > (dailyBonusData.currentStreak || 0)) {
+          setStreakAnimated(true);
+          setTimeout(() => setStreakAnimated(false), 1000);
+        }
+
+        // Atualizar dados locais
+        setDailyBonusData(prev => prev ? {
+          ...prev,
+          canClaim: false,
+          currentStreak: data.streak || prev.currentStreak,
+          multiplier: data.multiplier || prev.multiplier,
+          lastClaim: new Date().toISOString()
+        } : null);
+        
+        // Atualizar dados do parent
+        refreshData?.();
+        // Recarregar dados após o claim
+        setTimeout(() => loadDailyBonusData(), 1000);
+      }
+    } catch (error) {
+      console.error('[DAILY_BONUS_WIDGET] Error claiming daily bonus:', error);
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  // Formatar tempo restante
+  const formatSecondsToTime = (seconds: number) => {
+    if (seconds <= 0) return 'Disponível agora';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    } else if (minutes > 0) {
+      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    return `${remainingSeconds}s`;
+  };
 
   
   // Calcular nível baseado no total de moedas ganhas
@@ -189,6 +510,110 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
               )}
             </div>
 
+            {/* Daily Bonus Section */}
+            <div className="p-4 border-t border-gray-200">
+              <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-blue-500" />
+                Recompensa Diária
+                {dailyBonusData?.testMode && (
+                  <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-normal">
+                    TESTE (60s)
+                  </span>
+                )}
+              </h4>
+              
+              {loadingDailyBonus ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                </div>
+              ) : dailyBonusData ? (
+                <div className="space-y-3">
+                  {/* Streak Display */}
+                  <div className="flex items-center justify-between">
+                    <StreakDisplay 
+                      streak={dailyBonusData.currentStreak} 
+                      animated={streakAnimated}
+                    />
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-gray-700">
+                        +{dailyBonusData.nextBonusAmount} UTI Coins
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Próximo bônus
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status e Timer */}
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {dailyBonusData.canClaim ? (
+                          <>
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <span className="text-sm font-medium text-green-700">
+                              Disponível agora!
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="w-4 h-4 text-gray-500" />
+                            <div className="flex flex-col">
+                              <span className="text-sm text-gray-600">
+                                Próximo em
+                              </span>
+                              <motion.span 
+                                key={dailyBonusData.secondsUntilNextClaim}
+                                initial={{ scale: 1.1, color: "#3B82F6" }}
+                                animate={{ scale: 1, color: "#6B7280" }}
+                                transition={{ duration: 0.3 }}
+                                className="text-xs font-mono font-bold"
+                              >
+                                {formatSecondsToTime(dailyBonusData.secondsUntilNextClaim)}
+                              </motion.span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      
+                      {dailyBonusData.canClaim && (
+                        <motion.button
+                          onClick={claimDailyBonus}
+                          disabled={claiming}
+                          className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-green-600 hover:to-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          {claiming ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                          ) : (
+                            <Gift className="w-3 h-3" />
+                          )}
+                          {claiming ? 'Resgatando...' : 'Resgatar'}
+                        </motion.button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Multiplicador Info */}
+                  {dailyBonusData.multiplier > 1 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-center bg-orange-50 border border-orange-200 rounded-lg p-2"
+                    >
+                      <span className="text-sm text-orange-700">
+                        🎉 Multiplicador ativo: <strong>{dailyBonusData.multiplier}x</strong>
+                      </span>
+                    </motion.div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  Sistema de recompensas não disponível
+                </div>
+              )}
+            </div>
 
             {/* Ganhos recentes */}
             <div className="p-4">

@@ -207,12 +207,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) throw error;
+      
+      // Verificar se o email foi confirmado
+      if (data.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Email não confirmado",
+          description: "Verifique seu email e clique no link de confirmação antes de acessar.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       toast({
         title: "Login realizado com sucesso!",

@@ -4,6 +4,7 @@ import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 interface FavoriteButtonProps {
   productId: string;
@@ -18,10 +19,18 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
 }) => {
   const { user } = useAuth();
   const { isFavorite, toggleFavorite, isAddingToFavorites, isRemovingFromFavorites } = useFavorites();
+  const { trackEvent } = useAnalytics();
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    const wasAlreadyFavorite = isFavorite(productId);
+    
+    // Track analytics event
+    trackEvent(wasAlreadyFavorite ? 'remove_from_favorites' : 'add_to_favorites', {
+      product_id: productId
+    }, productId);
     
     await toggleFavorite(productId);
   };

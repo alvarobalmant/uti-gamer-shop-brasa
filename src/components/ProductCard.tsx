@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import FavoriteButton from '@/components/FavoriteButton';
 import { useProductHover } from '@/hooks/useProductPrefetch';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
@@ -22,14 +23,19 @@ interface ProductCardProps {
 const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const { handleMouseEnter: handlePrefetchMouseEnter, handleMouseLeave: handlePrefetchMouseLeave } = useProductHover(product.id);
+  const { trackProductView } = useAnalytics();
 
   const handleCardClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('[data-action="true"]')) {
       return;
     }
+    
+    // Track product view
+    trackProductView(product.id, product.name, product.price);
+    
     onCardClick(product.id);
-  }, [onCardClick, product.id]);
+  }, [onCardClick, product.id, trackProductView, product.name, product.price]);
 
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);

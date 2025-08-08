@@ -5,12 +5,14 @@ import { CartItem } from '@/types/cart';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 export const useNewCart = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { trackAddToCart, trackRemoveFromCart } = useAnalytics();
 
   // Carregar carrinho do localStorage na inicialização
   useEffect(() => {
@@ -51,6 +53,8 @@ export const useNewCart = () => {
     console.log('addToCart chamado para:', product.name, 'size:', size, 'color:', color);
     
     const itemId = generateItemId(product, size, color);
+    let isNewItem = false;
+    let finalQuantity = 1;
     
     setCart(prev => {
       const existingItemIndex = prev.findIndex(item => item.id === itemId);
@@ -62,7 +66,9 @@ export const useNewCart = () => {
           ...newCart[existingItemIndex],
           quantity: newCart[existingItemIndex].quantity + 1
         };
-        console.log('Item existente atualizado. Nova quantidade:', newCart[existingItemIndex].quantity);
+        finalQuantity = newCart[existingItemIndex].quantity;
+        isNewItem = false;
+        console.log('Item existente atualizado. Nova quantidade:', finalQuantity);
         return newCart;
       } else {
         // Adicionar novo item
@@ -74,9 +80,19 @@ export const useNewCart = () => {
           quantity: 1,
           addedAt: new Date()
         };
+        isNewItem = true;
+        finalQuantity = 1;
         console.log('Novo item adicionado:', newItem);
         return [...prev, newItem];
       }
+    });
+
+    // Track analytics with differentiation
+    trackAddToCart(product.id, product.name, product.price, 1, {
+      isNewItem,
+      finalQuantity,
+      size,
+      color
     });
 
     toast({
@@ -85,16 +101,22 @@ export const useNewCart = () => {
       duration: 2000,
       className: "bg-green-50 border-green-200 text-green-800",
     });
-  }, [generateItemId, toast]);
+  }, [generateItemId, toast, trackAddToCart]);
 
   const removeFromCart = useCallback((itemId: string) => {
     console.log('removeFromCart chamado para:', itemId);
     setCart(prev => {
+      // Find the item being removed for analytics
+      const removedItem = prev.find(item => item.id === itemId);
+      if (removedItem) {
+        trackRemoveFromCart(removedItem.product.id, removedItem.product.name, removedItem.product.price);
+      }
+      
       const newCart = prev.filter(item => item.id !== itemId);
       console.log('Item removido. Carrinho agora tem:', newCart.length, 'items');
       return newCart;
     });
-  }, []);
+  }, [trackRemoveFromCart]);
 
   const updateQuantity = useCallback((productId: string, size: string | undefined, color: string | undefined, quantity: number) => {
     const itemId = `${productId}-${size || 'default'}-${color || 'default'}`;
@@ -131,18 +153,15 @@ export const useNewCart = () => {
     return count;
   }, [cart]);
 
-  const sendToWhatsApp = useCallback(() => {
+  const sendToWhatsApp = useCallback(async () => {
     if (cart.length === 0) return;
 
-    const itemsList = cart.map(item => 
-      `• ${item.product.name} (${item.size || 'Padrão'}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
-    ).join('\n');
-    
-    const total = getCartTotal();
-    const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  }, [cart, getCartTotal]);
+    // Importar e usar a função do utils que inclui o código de verificação
+    const { sendToWhatsApp: sendToWhatsAppWithCode } = await import('@/utils/whatsapp');
+    return await sendToWhatsAppWithCode(cart, '5527996882090', (context) => {
+      // This will be handled by the CheckoutButton component
+    });
+  }, [cart]);
 
   return {
     cart,

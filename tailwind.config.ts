@@ -64,15 +64,14 @@ const config = {
         },
         // Specific UTI Palette
         uti: {
-          red: "hsl(var(--uti-red))", // e.g., 0 86% 55%
-          pro: "hsl(var(--uti-pro))", // e.g., 260 80% 60% (Violet/Purple)
-          dark: "hsl(var(--uti-dark))", // e.g., 240 10% 3.9%
-          gray: {
-            light: "hsl(var(--uti-gray-light))", // e.g., 210 40% 96.1%
-            medium: "hsl(var(--uti-gray-medium))", // e.g., 215.4 16.3% 46.9%
-            dark: "hsl(var(--uti-gray-dark))", // e.g., 215 20.2% 65.1% (border)
-          },
-          white: "hsl(var(--uti-white))", // e.g., 0 0% 100%
+          red: "hsl(var(--uti-red))",
+          dark: "hsl(var(--uti-dark))",
+          "dark-alt": "hsl(var(--uti-dark-alt))",
+          gray: "hsl(var(--uti-gray))",
+          "light-gray": "hsl(var(--uti-light-gray))",
+          accent: "hsl(var(--uti-accent))",
+          purple: "hsl(var(--uti-purple))",
+          border: "hsl(var(--uti-border))",
         },
       },
       fontFamily: {

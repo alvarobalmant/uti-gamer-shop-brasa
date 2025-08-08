@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { useProductDetail } from '@/hooks/useProductDetail';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 import { saveScrollPosition, restoreScrollPosition } from '@/lib/scrollRestorationManager';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
@@ -37,8 +38,17 @@ const ProductPageSKU = () => {
   console.log('[ProductPageSKU] Location:', location.pathname);
   
   const { product, skuNavigation, loading, error } = useProductDetail(id);
+  
+  console.log('[ProductPageSKU] Debug dados:', {
+    product: !!product,
+    skuNavigation: !!skuNavigation,
+    platforms: skuNavigation?.platforms?.length,
+    loading,
+    error
+  });
   const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
   const { toast } = useToast();
+  const { trackProductView } = useAnalytics();
   
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -50,6 +60,13 @@ const ProductPageSKU = () => {
       saveScrollPosition(currentPath, 'product-page-exit');
     };
   }, [location.pathname]);
+
+  // Track product view when product loads
+  useEffect(() => {
+    if (product && id) {
+      trackProductView(id, product.name, product.price);
+    }
+  }, [product, id, trackProductView]);
 
 
 
@@ -152,7 +169,7 @@ const ProductPageSKU = () => {
             )}
           </div>
 
-          {/* Desktop Version - Novo Layout */}
+           {/* Desktop Version - Novo Layout */}
           <div className="hidden md:block">
             <ProductLayout
               product={product}

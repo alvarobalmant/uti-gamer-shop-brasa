@@ -48,9 +48,10 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
 
     // Filtro por termo de busca
     if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filtered = filtered.filter(product => {
+        const productName = typeof product.name === 'string' ? product.name : '';
+        return productName.toLowerCase().includes(searchTerm.toLowerCase());
+      });
     }
 
     // Filtros específicos por tipo
@@ -144,23 +145,28 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
             {product.image_url && (
               <img
                 src={product.image_url}
-                alt={product.name}
+                alt={typeof product.name === 'string' ? product.name : 'Product'}
                 className="w-12 h-12 object-cover rounded"
               />
             )}
             
             <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-sm truncate">{product.name}</h4>
+              <h4 className="font-medium text-sm truncate">
+                {typeof product.name === 'string' ? product.name : `Produto ${product.id}`}
+              </h4>
               <p className="text-sm text-gray-600">
                 R$ {product.price.toFixed(2)}
               </p>
               {product.tags && product.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {product.tags.slice(0, 2).map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
+                  {product.tags.slice(0, 2).map((tag, index) => {
+                    const tagName = typeof tag === 'string' ? tag : (tag as any)?.name || (tag as any)?.id || 'Tag';
+                    return (
+                      <Badge key={`${tagName}-${index}`} variant="secondary" className="text-xs">
+                        {tagName}
+                      </Badge>
+                    );
+                  })}
                   {product.tags.length > 2 && (
                     <Badge variant="outline" className="text-xs">
                       +{product.tags.length - 2}
@@ -353,7 +359,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
                   variant="secondary"
                   className="gap-1"
                 >
-                  {product.name}
+                  {typeof product.name === 'string' ? product.name : `Product ${id}`}
                   <X
                     className="h-3 w-3 cursor-pointer"
                     onClick={() => handleProductToggle(id)}
