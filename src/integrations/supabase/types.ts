@@ -2656,6 +2656,15 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      check_email_confirmation_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          email: string
+          email_confirmed_at: string
+          is_confirmed: boolean
+        }[]
+      }
       check_suspicious_activity: {
         Args: { p_user_id: string; p_action: string }
         Returns: boolean
