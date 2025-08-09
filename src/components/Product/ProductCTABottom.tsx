@@ -17,8 +17,11 @@ const ProductCTABottom: React.FC<ProductCTABottomProps> = ({ product, onAddToCar
 
   const handleWhatsApp = () => {
     const message = `Olá! Quero comprar: ${product.name} - ${formatPrice(product.price)}`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    
+    // Usar função robusta de redirecionamento
+    import('@/utils/whatsapp').then(({ openWhatsAppDirect }) => {
+      openWhatsAppDirect('5527996882090', message);
+    });
   };
 
   return (

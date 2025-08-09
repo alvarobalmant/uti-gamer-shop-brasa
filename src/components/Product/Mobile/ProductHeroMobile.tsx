@@ -36,8 +36,11 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
 
   const handleWhatsAppContact = () => {
     const message = `Olá! Gostaria de mais informações sobre:\n\n${product.name}\nPreço: ${formatPrice(product.price)}`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    
+    // Usar função robusta de redirecionamento
+    import('@/utils/whatsapp').then(({ openWhatsAppDirect }) => {
+      openWhatsAppDirect('5527996882090', message);
+    });
   };
 
   const getCurrentPrice = () => {

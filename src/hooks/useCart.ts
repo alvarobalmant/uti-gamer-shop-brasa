@@ -176,8 +176,11 @@ export const useCart = () => {
     
     const total = getTotal();
     const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    
+    // Usar função robusta de redirecionamento
+    import('@/utils/whatsapp').then(({ openWhatsAppDirect }) => {
+      openWhatsAppDirect('5527996882090', message);
+    });
   }, [cart, getTotal]);
 
   // Função para compatibilidade com updateQuantity usando productId, size, color

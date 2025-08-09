@@ -3,6 +3,7 @@ import { Coins, TrendingUp, Gift, Star, Flame, Calendar, Clock, CheckCircle } fr
 import { useUTICoins } from '@/hooks/useUTICoins';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 import { UTICoinsConditional } from './UTICoinsConditional';
@@ -199,6 +200,8 @@ const StreakDisplay: React.FC<{ streak: number; animated?: boolean }> = ({ strea
 
 export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' }) => {
   const [showPopover, setShowPopover] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [coinAnimations, setCoinAnimations] = useState<CoinAnimation[]>([]);
   const [dailyBonusData, setDailyBonusData] = useState<DailyBonusData | null>(null);
   const [loadingDailyBonus, setLoadingDailyBonus] = useState(true);
@@ -207,6 +210,29 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
   const { user } = useAuth();
   const { coins, transactions, loading, refreshData } = useUTICoins();
   const previousBalance = useRef(coins.balance);
+  const widgetRef = useRef<HTMLButtonElement>(null);
+
+  // Função para abrir modal e calcular posição
+  const openModal = () => {
+    if (widgetRef.current) {
+      const rect = widgetRef.current.getBoundingClientRect();
+      
+      setModalPosition({
+        top: rect.bottom + 8, // 8px de espaçamento, relativo ao viewport
+        left: rect.left + (rect.width / 2) - 200 // Centralizar modal (400px / 2 = 200px)
+      });
+    }
+    setShowPopover(true);
+  };
+
+  // Função para fechar modal com animação
+  const closeModal = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      setShowPopover(false);
+      setIsExiting(false);
+    }, 300); // Duração da animação de saída
+  };
 
   // Detectar mudança no saldo para animar moedas
   useEffect(() => {
@@ -224,7 +250,40 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
     previousBalance.current = coins.balance;
   }, [coins.balance]);
 
-  // Calcular segundos até as 20h
+  // Bloquear scroll quando modal estiver aberto
+  useEffect(() => {
+    if (showPopover) {
+      // Salvar posição atual do scroll
+      const scrollY = window.scrollY;
+      
+      // Bloquear scroll apenas com overflow hidden
+      document.body.style.overflow = 'hidden';
+      
+      // Função para prevenir scroll com wheel e touch
+      const preventScroll = (e: Event) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      
+      // Adicionar listeners apenas para wheel e touch
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      document.addEventListener('touchmove', preventScroll, { passive: false });
+      
+      return () => {
+        // Restaurar scroll
+        document.body.style.overflow = '';
+        
+        // Remover listeners
+        document.removeEventListener('wheel', preventScroll);
+        document.removeEventListener('touchmove', preventScroll);
+        
+        // Restaurar posição do scroll
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [showPopover]);
+
   const getSecondsUntil8PM = () => {
     const now = new Date();
     const today8PM = new Date();
@@ -263,14 +322,15 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
       if (data?.success) {
         const secondsUntil8PM = getSecondsUntil8PM();
         setDailyBonusData({
-          canClaim: secondsUntil8PM <= 0, // Sempre baseado nas 20h
-          currentStreak: data.currentStreak || 1,
+          canClaim: data.canClaim || false,
+          currentStreak: data.validatedStreak !== undefined ? data.validatedStreak : (data.currentStreak || 1),
           nextBonusAmount: data.nextBonusAmount || 10,
-          secondsUntilNextClaim: secondsUntil8PM, // Sempre até as 20h
+          secondsUntilNextClaim: secondsUntil8PM, // Sempre usar cálculo local para 20h
           multiplier: data.multiplier || 1.0,
-          nextReset: "20:00", // Sempre 20h
+          nextReset: data.nextReset || "20:00",
           lastClaim: data.lastClaim,
-          testMode: data.testMode || false
+          testMode: data.testMode || false,
+          totalStreakDays: data.totalStreakDays || 7
         });
       }
     } catch (error) {
@@ -287,21 +347,26 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
     }
   }, [showPopover, user]);
 
-  // Timer em tempo real para atualizar segundos restantes até 20h
+  // Timer em tempo real - usar dados do backend
   useEffect(() => {
     if (!showPopover || !dailyBonusData) return;
 
     const timer = setInterval(() => {
-      const secondsUntil8PM = getSecondsUntil8PM();
-      setDailyBonusData(prev => prev ? {
-        ...prev,
-        secondsUntilNextClaim: secondsUntil8PM,
-        canClaim: secondsUntil8PM <= 0 // Disponível se chegou nas 20h
-      } : null);
+      setDailyBonusData(prev => {
+        if (!prev) return prev;
+        
+        const newSecondsUntil8PM = getSecondsUntil8PM();
+        
+        return {
+          ...prev,
+          secondsUntilNextClaim: newSecondsUntil8PM,
+          canClaim: newSecondsUntil8PM <= 0
+        };
+      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [showPopover, dailyBonusData?.currentStreak]); // Removido dependência do secondsUntilNextClaim
+  }, [showPopover, dailyBonusData?.currentStreak]);
 
   // Função para resgatar daily bonus
   const claimDailyBonus = async () => {
@@ -359,7 +424,6 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
     return `${remainingSeconds}s`;
   };
 
-  
   // Calcular nível baseado no total de moedas ganhas
   const calculateLevel = (totalEarned: number) => {
     if (totalEarned < 100) return { 
@@ -430,7 +494,8 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
     <UTICoinsConditional>
     <div className={`relative ${className}`}>
       <button
-        onClick={() => setShowPopover(!showPopover)}
+        ref={widgetRef}
+        onClick={openModal}
         className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden"
       >
         <Coins className="w-4 h-4" />
@@ -467,214 +532,227 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
         <span className="text-xs opacity-90">UTI Coins</span>
       </button>
 
-      {showPopover && (
-        <>
-          {/* Overlay para fechar */}
-          <div 
-            className="fixed inset-0 z-40" 
-            onClick={() => setShowPopover(false)}
-          />
-          
-          {/* Popover */}
-          <div className="absolute top-full right-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden max-h-[80vh] overflow-y-auto">{/* Updated width from w-80 to w-96 */}
-            {/* Header */}
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-4 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-lg">{coins.balance.toLocaleString()} UTI Coins</h3>
-                  <p className="text-sm opacity-90">Nível {levelData.level} - {levelData.name}</p>
-                </div>
-                <Star className="w-8 h-8 text-yellow-200" />
-              </div>
-              
-              {/* Barra de progresso */}
-              {levelData.nextThreshold > 0 && (
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>Próximo nível: {levelData.nextLevelName}</span>
-                    <span>{levelData.nextThreshold - levelData.progress} coins restantes</span>
-                  </div>
-                  <div className="w-full bg-white/20 rounded-full h-2">
-                    <div 
-                      className="bg-white h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${progressPercentage}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-              
-              {levelData.nextThreshold === 0 && (
-                <div className="mt-3 text-center">
-                  <span className="text-xs opacity-90">🏆 Nível Máximo Atingido! 🏆</span>
-                </div>
-              )}
-            </div>
-
-            {/* Daily Bonus Section */}
-            <div className="p-4 border-t border-gray-200">
-              <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue-500" />
-                Recompensa Diária
-                {dailyBonusData?.testMode && (
-                  <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-normal">
-                    TESTE (60s)
-                  </span>
-                )}
-              </h4>
-              
-              {loadingDailyBonus ? (
-                <div className="flex items-center justify-center py-4">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-                </div>
-              ) : dailyBonusData ? (
-                <div className="space-y-3">
-                  {/* Streak Display */}
+      {/* Modal Portal com posicionamento relativo ao widget */}
+      {createPortal(
+        <AnimatePresence>
+          {showPopover && (
+            <motion.div
+              key="modal-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isExiting ? 0 : 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="fixed inset-0 bg-black bg-opacity-50 z-[9999]"
+              onClick={closeModal}
+            >
+              {/* Modal posicionado abaixo do widget */}
+              <motion.div
+                key="modal-content"
+                initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                animate={{ 
+                  opacity: isExiting ? 0 : 1, 
+                  scale: isExiting ? 0.8 : 1, 
+                  y: isExiting ? -20 : 0 
+                }}
+                exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                transition={{ 
+                  duration: 0.3, 
+                  ease: "easeInOut"
+                }}
+                className="fixed bg-white rounded-xl shadow-2xl w-96 max-h-[80vh] overflow-y-auto z-[10000]"
+                style={{
+                  top: `${Math.max(8, Math.min(modalPosition.top, window.innerHeight - 400))}px`, // Garantir que não saia da tela
+                  left: `${Math.max(16, Math.min(modalPosition.left, window.innerWidth - 400 - 16))}px` // Garantir que não saia da tela
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-4 text-white">
                   <div className="flex items-center justify-between">
-                    <StreakDisplay 
-                      streak={dailyBonusData.currentStreak} 
-                      animated={streakAnimated}
-                    />
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-gray-700">
-                        +{dailyBonusData.nextBonusAmount} UTI Coins
+                    <div>
+                      <h3 className="font-bold text-lg">{coins.balance.toLocaleString()} UTI Coins</h3>
+                      <p className="text-sm opacity-90">Nível {levelData.level} - {levelData.name}</p>
+                    </div>
+                    <Star className="w-8 h-8 text-yellow-200" />
+                  </div>
+                  
+                  {/* Barra de progresso */}
+                  {levelData.nextThreshold > 0 && (
+                    <div className="mt-3">
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Próximo nível: {levelData.nextLevelName}</span>
+                        <span>{levelData.nextThreshold - levelData.progress} coins restantes</span>
                       </div>
-                      <div className="text-xs text-gray-500">
-                        Próximo bônus
+                      <div className="w-full bg-white/20 rounded-full h-2">
+                        <div 
+                          className="bg-white h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${progressPercentage}%` }}
+                        />
                       </div>
                     </div>
-                  </div>
-
-                  {/* Status e Timer */}
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {dailyBonusData.canClaim ? (
-                          <>
-                            <CheckCircle className="w-4 h-4 text-green-500" />
-                            <span className="text-sm font-medium text-green-700">
-                              Disponível agora!
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <Clock className="w-4 h-4 text-gray-500" />
-                            <div className="flex flex-col">
-                              <span className="text-sm text-gray-600">
-                                Próximo em
-                              </span>
-                              <motion.span 
-                                key={dailyBonusData.secondsUntilNextClaim}
-                                initial={{ scale: 1.1, color: "#3B82F6" }}
-                                animate={{ scale: 1, color: "#6B7280" }}
-                                transition={{ duration: 0.3 }}
-                                className="text-xs font-mono font-bold"
-                              >
-                                {formatSecondsToTime(dailyBonusData.secondsUntilNextClaim)}
-                              </motion.span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                      
-                      {dailyBonusData.canClaim && (
-                        <motion.button
-                          onClick={claimDailyBonus}
-                          disabled={claiming}
-                          className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-green-600 hover:to-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          {claiming ? (
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                          ) : (
-                            <Gift className="w-3 h-3" />
-                          )}
-                          {claiming ? 'Resgatando...' : 'Resgatar'}
-                        </motion.button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Multiplicador Info */}
-                  {dailyBonusData.multiplier > 1 && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-center bg-orange-50 border border-orange-200 rounded-lg p-2"
-                    >
-                      <span className="text-sm text-orange-700">
-                        🎉 Multiplicador ativo: <strong>{dailyBonusData.multiplier}x</strong>
-                      </span>
-                    </motion.div>
                   )}
                 </div>
-              ) : (
-                <div className="text-center py-4 text-gray-500 text-sm">
-                  Sistema de recompensas não disponível
-                </div>
-              )}
-            </div>
 
-            {/* Ganhos recentes */}
-            <div className="p-4">
-              <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                Transações Recentes
-              </h4>
-              
-              <div className="space-y-2">
-                {recentTransactions.length > 0 ? (
-                  recentTransactions.map((transaction, index) => (
-                    <div key={index} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">{transaction.action}</p>
-                        <p className="text-xs text-gray-500">{transaction.date}</p>
+                {/* Daily Bonus Section */}
+                <div className="p-4 border-t border-gray-200">
+                  <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-blue-500" />
+                    Recompensa Diária
+                    {dailyBonusData?.testMode && (
+                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-normal">
+                        TESTE (60s)
+                      </span>
+                    )}
+                  </h4>
+                  
+                  {loadingDailyBonus ? (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                    </div>
+                  ) : dailyBonusData ? (
+                    <div className="space-y-3">
+                      {/* Streak Display */}
+                      <div className="flex items-center justify-between">
+                        <StreakDisplay 
+                          streak={dailyBonusData.currentStreak} 
+                          animated={streakAnimated}
+                        />
+                        <div className="text-right">
+                          <div className="text-sm font-medium text-gray-700">
+                            +{dailyBonusData.nextBonusAmount} UTI Coins
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Próximo bônus
+                          </div>
+                        </div>
                       </div>
-                      <div className={`flex items-center gap-1 font-semibold ${
-                        transaction.type === 'earned' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        <span>{transaction.type === 'earned' ? '+' : '-'}{Math.abs(transaction.amount)}</span>
-                        <Coins className="w-3 h-3" />
+
+                      {/* Status e Timer */}
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-200">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {dailyBonusData.canClaim ? (
+                              <>
+                                <CheckCircle className="w-4 h-4 text-green-500" />
+                                <span className="text-sm font-medium text-green-700">
+                                  Disponível agora!
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Clock className="w-4 h-4 text-gray-500" />
+                                <div className="flex flex-col">
+                                  <span className="text-sm text-gray-600">
+                                    Próximo em
+                                  </span>
+                                  <motion.span 
+                                    key={dailyBonusData.secondsUntilNextClaim}
+                                    initial={{ scale: 1.1, color: "#3B82F6" }}
+                                    animate={{ scale: 1, color: "#6B7280" }}
+                                    transition={{ duration: 0.3 }}
+                                    className="text-xs font-mono font-bold"
+                                  >
+                                    {formatSecondsToTime(dailyBonusData.secondsUntilNextClaim)}
+                                  </motion.span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          
+                          <button
+                            onClick={claimDailyBonus}
+                            disabled={!dailyBonusData.canClaim || claiming}
+                            className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                              dailyBonusData.canClaim && !claiming
+                                ? 'bg-green-500 hover:bg-green-600 text-white shadow-md hover:shadow-lg'
+                                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            }`}
+                          >
+                            {claiming ? (
+                              <div className="flex items-center gap-2">
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                Resgatando...
+                              </div>
+                            ) : dailyBonusData.canClaim ? (
+                              'Resgatar'
+                            ) : (
+                              'Aguardar'
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-4 text-gray-500 text-sm">
-                    Nenhuma transação ainda
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      Erro ao carregar dados do bônus diário
+                    </div>
+                  )}
+                </div>
+
+                {/* Transações Recentes */}
+                <div className="p-4 border-t border-gray-200">
+                  <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                    Transações Recentes
+                  </h4>
+                  
+                  {recentTransactions.length > 0 ? (
+                    <div className="space-y-2">
+                      {recentTransactions.map((transaction, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${
+                              transaction.amount > 0 ? 'bg-green-500' : 'bg-red-500'
+                            }`} />
+                            <div>
+                              <div className="text-sm font-medium text-gray-700">
+                                {transaction.action}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {transaction.date}
+                              </div>
+                            </div>
+                          </div>
+                          <div className={`font-semibold ${
+                            transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {transaction.amount > 0 ? '+' : ''}{transaction.amount}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      Nenhuma transação recente
+                    </div>
+                  )}
+                </div>
+
+                {/* Estatísticas */}
+                <div className="p-4 border-t border-gray-200 bg-gray-50">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-gray-800">
+                        {coins.totalEarned.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500">Total Ganho</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-gray-800">
+                        {coins.totalSpent.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500">Total Gasto</div>
+                    </div>
                   </div>
-                )}
-              </div>
-
-              {/* Estatísticas */}
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="bg-green-50 p-3 rounded-lg text-center">
-                  <div className="text-lg font-bold text-green-600">{coins.totalEarned}</div>
-                  <div className="text-xs text-green-600">Total Ganho</div>
                 </div>
-                <div className="bg-red-50 p-3 rounded-lg text-center">
-                  <div className="text-lg font-bold text-red-600">{coins.totalSpent}</div>
-                  <div className="text-xs text-red-600">Total Gasto</div>
-                </div>
-              </div>
-
-              {/* Botões de ação */}
-              <div className="mt-4">
-                <button 
-                  onClick={() => {
-                    setShowPopover(false);
-                    window.location.href = '/coins';
-                  }}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  <Gift className="w-4 h-4" />
-                  Ver Tudo & Recompensas
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
     </div>
     </UTICoinsConditional>
   );
 };
+
