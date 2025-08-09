@@ -386,19 +386,27 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
           setTimeout(() => setStreakAnimated(false), 1000);
         }
 
-        // Atualizar dados locais
+        // Calcular próximo tempo para 20h do dia seguinte
+        const now = new Date();
+        const tomorrow8PM = new Date();
+        tomorrow8PM.setDate(tomorrow8PM.getDate() + 1);
+        tomorrow8PM.setHours(20, 0, 0, 0);
+        const secondsUntilNext = Math.floor((tomorrow8PM.getTime() - now.getTime()) / 1000);
+
+        // Atualizar dados locais imediatamente
         setDailyBonusData(prev => prev ? {
           ...prev,
           canClaim: false,
           currentStreak: data.streak || prev.currentStreak,
           multiplier: data.multiplier || prev.multiplier,
+          secondsUntilNextClaim: secondsUntilNext,
           lastClaim: new Date().toISOString()
         } : null);
         
         // Atualizar dados do parent
         refreshData?.();
-        // Recarregar dados após o claim
-        setTimeout(() => loadDailyBonusData(), 1000);
+        // Recarregar dados após o claim para sincronizar com backend
+        setTimeout(() => loadDailyBonusData(), 2000);
       }
     } catch (error) {
       console.error('[DAILY_BONUS_WIDGET] Error claiming daily bonus:', error);
