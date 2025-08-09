@@ -325,11 +325,7 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
           canClaim: data.canClaim || false,
           currentStreak: data.validatedStreak !== undefined ? data.validatedStreak : (data.currentStreak || 1),
           nextBonusAmount: data.nextBonusAmount || 10,
-<<<<<<< HEAD
           secondsUntilNextClaim: secondsUntil8PM, // Sempre usar cálculo local para 20h
-=======
-          secondsUntilNextClaim: data.secondsUntilNextClaim || 0,
->>>>>>> 174dc1e796e32017bc5e3c616c59f59e1265501e
           multiplier: data.multiplier || 1.0,
           nextReset: data.nextReset || "20:00",
           lastClaim: data.lastClaim,
@@ -357,7 +353,6 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
 
     const timer = setInterval(() => {
       setDailyBonusData(prev => {
-<<<<<<< HEAD
         if (!prev) return prev;
         
         const newSecondsUntil8PM = getSecondsUntil8PM();
@@ -366,14 +361,6 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
           ...prev,
           secondsUntilNextClaim: newSecondsUntil8PM,
           canClaim: newSecondsUntil8PM <= 0
-=======
-        if (!prev || prev.secondsUntilNextClaim <= 0) return prev;
-        
-        return {
-          ...prev,
-          secondsUntilNextClaim: Math.max(0, prev.secondsUntilNextClaim - 1),
-          canClaim: prev.secondsUntilNextClaim <= 1
->>>>>>> 174dc1e796e32017bc5e3c616c59f59e1265501e
         };
       });
     }, 1000);
