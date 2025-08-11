@@ -126,6 +126,7 @@ export const useDailyCodes = () => {
     }
   }, [user, claiming, fetchCurrentCode, fetchStreakStatus]);
 
+<<<<<<< HEAD
   // Resgatar código automaticamente (Daily Bonus)
   const claimDailyBonus = useCallback(async (): Promise<ClaimResult> => {
     if (!user || claiming) {
@@ -161,6 +162,8 @@ export const useDailyCodes = () => {
     }
   }, [user, claiming, fetchCurrentCode, fetchStreakStatus]);
 
+=======
+>>>>>>> 418a8875989af9b7f51735d92b417f80abcd6e47
   // Carregar dados iniciais
   const loadData = useCallback(async () => {
     if (!user) {
@@ -222,7 +225,10 @@ export const useDailyCodes = () => {
     streakStatus,
     claiming,
     claimCode,
+<<<<<<< HEAD
     claimDailyBonus,
+=======
+>>>>>>> 418a8875989af9b7f51735d92b417f80abcd6e47
     refreshData: loadData,
     getTimeUntilNextCode
   };

@@ -162,6 +162,10 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
   const [isExiting, setIsExiting] = useState(false);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [coinAnimations, setCoinAnimations] = useState<CoinAnimation[]>([]);
+<<<<<<< HEAD
+=======
+  const [codeInput, setCodeInput] = useState('');
+>>>>>>> 418a8875989af9b7f51735d92b417f80abcd6e47
   const [streakAnimated, setStreakAnimated] = useState(false);
   const [timeUntilNext, setTimeUntilNext] = useState({ hours: 0, minutes: 0, seconds: 0 });
   
@@ -252,6 +256,7 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     }
   }, [showPopover]);
 
+<<<<<<< HEAD
   // Função para resgatar código automaticamente
   const handleClaimCode = async () => {
     // Buscar o código do dia atual automaticamente
@@ -264,6 +269,16 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     const result = await claimCode(currentCode.code);
     
     if (result.success) {
+=======
+  // Função para resgatar código
+  const handleClaimCode = async () => {
+    if (!codeInput.trim()) return;
+
+    const result = await claimCode(codeInput.trim());
+    
+    if (result.success) {
+      setCodeInput('');
+>>>>>>> 418a8875989af9b7f51735d92b417f80abcd6e47
       // Animar streak se houve mudança
       if (result.data?.streak_position) {
         setStreakAnimated(true);
@@ -484,6 +499,7 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                       </div>
                     )}
 
+<<<<<<< HEAD
                     {/* Botão de resgate automático - Design minimalista */}
                     <div className="space-y-3">
                       {currentCode?.can_claim ? (
@@ -541,6 +557,30 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                       {/* Streak atual - Design original restaurado */}
                       {streakStatus && (
                         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+=======
+                    {/* Input para código */}
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Digite o código (ex: 1234)"
+                          value={codeInput}
+                          onChange={(e) => setCodeInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                          className="font-mono text-center text-lg"
+                          maxLength={4}
+                        />
+                        <Button
+                          onClick={handleClaimCode}
+                          disabled={codeInput.length !== 4 || claiming}
+                          className="px-6"
+                        >
+                          {claiming ? 'Resgatando...' : 'Resgatar'}
+                        </Button>
+                      </div>
+                      
+                      {/* Streak atual */}
+                      {streakStatus && (
+                        <div className="flex items-center justify-between">
+>>>>>>> 418a8875989af9b7f51735d92b417f80abcd6e47
                           <StreakDisplay 
                             streak={streakStatus.streak_count} 
                             animated={streakAnimated}
