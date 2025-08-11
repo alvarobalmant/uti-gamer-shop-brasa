@@ -532,6 +532,30 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_codes: {
+        Row: {
+          claimable_until: string
+          code: string
+          created_at: string | null
+          id: number
+          valid_until: string
+        }
+        Insert: {
+          claimable_until: string
+          code: string
+          created_at?: string | null
+          id?: number
+          valid_until: string
+        }
+        Update: {
+          claimable_until?: string
+          code?: string
+          created_at?: string | null
+          id?: number
+          valid_until?: string
+        }
+        Relationships: []
+      }
       email_config: {
         Row: {
           company_address: string | null
@@ -2629,6 +2653,36 @@ export type Database = {
           },
         ]
       }
+      user_daily_codes: {
+        Row: {
+          added_at: string | null
+          code: string
+          expires_at: string
+          id: number
+          is_valid: boolean | null
+          streak_position: number
+          user_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          code: string
+          expires_at: string
+          id?: number
+          is_valid?: boolean | null
+          streak_position: number
+          user_id: string
+        }
+        Update: {
+          added_at?: string | null
+          code?: string
+          expires_at?: string
+          id?: number
+          is_valid?: boolean | null
+          streak_position?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_favorites: {
         Row: {
           created_at: string | null
@@ -3069,6 +3123,10 @@ export type Database = {
           tuples_fetched: number
         }[]
       }
+      can_claim_code: {
+        Args: { p_code: string }
+        Returns: boolean
+      }
       can_claim_daily_bonus_brasilia: {
         Args: { p_user_id: string }
         Returns: {
@@ -3107,6 +3165,10 @@ export type Database = {
         Returns: boolean
       }
       cleanup_old_bonus_codes: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      cleanup_old_daily_codes: {
         Args: Record<PropertyKey, never>
         Returns: number
       }
@@ -3186,6 +3248,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      generate_daily_code: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       generate_order_code: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -3193,6 +3259,10 @@ export type Database = {
       generate_redemption_code: {
         Args: { p_user_id: string; p_product_id: string; p_cost: number }
         Returns: Json
+      }
+      generate_unique_4digit_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       generate_unique_daily_code: {
         Args: Record<PropertyKey, never>
@@ -3344,6 +3414,10 @@ export type Database = {
       }
       is_admin_user: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_code_valid: {
+        Args: { p_code: string }
         Returns: boolean
       }
       is_email_confirmed: {

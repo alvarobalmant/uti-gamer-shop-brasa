@@ -320,16 +320,11 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
       }
 
       if (data?.success) {
-        const secondsUntil8PM = getSecondsUntil8PM();
         setDailyBonusData({
           canClaim: data.canClaim || false,
           currentStreak: data.validatedStreak !== undefined ? data.validatedStreak : (data.currentStreak || 1),
           nextBonusAmount: data.nextBonusAmount || 10,
-<<<<<<< HEAD
-          secondsUntilNextClaim: secondsUntil8PM, // Sempre usar cálculo local para 20h
-=======
-          secondsUntilNextClaim: data.secondsUntilNextClaim || 0,
->>>>>>> 174dc1e796e32017bc5e3c616c59f59e1265501e
+          secondsUntilNextClaim: data.secondsUntilNextClaim || 0, // Usar dados do backend
           multiplier: data.multiplier || 1.0,
           nextReset: data.nextReset || "20:00",
           lastClaim: data.lastClaim,
@@ -351,35 +346,26 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
     }
   }, [showPopover, user]);
 
-  // Timer em tempo real - usar dados do backend
+  // Timer em tempo real - apenas decrementar se não puder fazer claim
   useEffect(() => {
-    if (!showPopover || !dailyBonusData) return;
+    if (!showPopover || !dailyBonusData || dailyBonusData.canClaim) return;
 
     const timer = setInterval(() => {
       setDailyBonusData(prev => {
-<<<<<<< HEAD
-        if (!prev) return prev;
+        if (!prev || prev.canClaim) return prev;
         
-        const newSecondsUntil8PM = getSecondsUntil8PM();
-        
-        return {
-          ...prev,
-          secondsUntilNextClaim: newSecondsUntil8PM,
-          canClaim: newSecondsUntil8PM <= 0
-=======
-        if (!prev || prev.secondsUntilNextClaim <= 0) return prev;
+        const newSeconds = Math.max(0, prev.secondsUntilNextClaim - 1);
         
         return {
           ...prev,
-          secondsUntilNextClaim: Math.max(0, prev.secondsUntilNextClaim - 1),
-          canClaim: prev.secondsUntilNextClaim <= 1
->>>>>>> 174dc1e796e32017bc5e3c616c59f59e1265501e
+          secondsUntilNextClaim: newSeconds,
+          canClaim: newSeconds <= 0
         };
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [showPopover, dailyBonusData?.currentStreak]);
+  }, [showPopover, dailyBonusData?.canClaim]);
 
   // Função para resgatar daily bonus
   const claimDailyBonus = async () => {
@@ -400,19 +386,27 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
           setTimeout(() => setStreakAnimated(false), 1000);
         }
 
-        // Atualizar dados locais
+        // Calcular próximo tempo para 20h do dia seguinte
+        const now = new Date();
+        const tomorrow8PM = new Date();
+        tomorrow8PM.setDate(tomorrow8PM.getDate() + 1);
+        tomorrow8PM.setHours(20, 0, 0, 0);
+        const secondsUntilNext = Math.floor((tomorrow8PM.getTime() - now.getTime()) / 1000);
+
+        // Atualizar dados locais imediatamente
         setDailyBonusData(prev => prev ? {
           ...prev,
           canClaim: false,
           currentStreak: data.streak || prev.currentStreak,
           multiplier: data.multiplier || prev.multiplier,
+          secondsUntilNextClaim: secondsUntilNext,
           lastClaim: new Date().toISOString()
         } : null);
         
         // Atualizar dados do parent
         refreshData?.();
-        // Recarregar dados após o claim
-        setTimeout(() => loadDailyBonusData(), 1000);
+        // Recarregar dados após o claim para sincronizar com backend
+        setTimeout(() => loadDailyBonusData(), 2000);
       }
     } catch (error) {
       console.error('[DAILY_BONUS_WIDGET] Error claiming daily bonus:', error);
