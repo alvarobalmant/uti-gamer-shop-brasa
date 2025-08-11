@@ -254,20 +254,31 @@ async function claimCode(supabase: any, userId: string, code: string) {
         }
       })
 
-    // Atualizar saldo
-    await supabase
-      .from('uti_coins')
-      .insert({
-        user_id: userId,
-        balance: finalAmount,
-        total_earned: finalAmount
-      })
-      .onConflict('user_id')
-      .set({
-        balance: supabase.raw('balance + ?', [finalAmount]),
-        total_earned: supabase.raw('total_earned + ?', [finalAmount]),
-        updated_at: new Date().toISOString()
-      })
+    // Atualizar saldo usando função RPC para garantir integridade
+    console.log(`[CLAIM_CODE] Updating balance for user ${userId} with ${finalAmount} coins`)
+    
+    const { error: balanceError } = await supabase.rpc('update_user_balance', {
+      p_user_id: userId,
+      p_amount: finalAmount
+    })
+
+    if (balanceError) {
+      console.error('[CLAIM_CODE] Balance update error:', balanceError)
+      // Remover transação se falhou ao atualizar saldo
+      await supabase
+        .from('coin_transactions')
+        .delete()
+        .eq('user_id', userId)
+        .eq('reason', 'daily_code_claim')
+        .eq('description', `Código resgatado: ${code} (Sequência ${nextPosition})`)
+      
+      return new Response(
+        JSON.stringify({ success: false, message: 'Erro ao atualizar saldo' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log(`[CLAIM_CODE] Balance updated successfully for user ${userId}`)
 
     console.log(`[CLAIM_CODE] Success! User ${userId} claimed code ${code}, position ${nextPosition}, earned ${finalAmount} coins`)
 
