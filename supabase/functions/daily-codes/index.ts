@@ -65,12 +65,9 @@ Deno.serve(async (req) => {
         }
         return await claimCode(supabaseClient, user.id, code)
         
-<<<<<<< HEAD
       case 'claim_daily_bonus':
         return await claimDailyBonus(supabaseClient, user.id)
         
-=======
->>>>>>> 418a8875989af9b7f51735d92b417f80abcd6e47
       case 'get_streak_status':
         return await getStreakStatus(supabaseClient, user.id)
         
@@ -457,7 +454,6 @@ async function getStreakStatus(supabase: any, userId: string) {
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
-<<<<<<< HEAD
 }
 
 async function claimDailyBonus(supabase: any, userId: string) {
@@ -696,6 +692,3 @@ async function processCodeClaim(supabase: any, userId: string, code: string, cod
   )
 }
 
-=======
-}
->>>>>>> 418a8875989af9b7f51735d92b417f80abcd6e47
