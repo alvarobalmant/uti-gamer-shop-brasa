@@ -158,6 +158,35 @@ async function claimCode(supabase: any, userId: string, code: string) {
   console.log(`[CLAIM_CODE] User ${userId} attempting to claim code: ${code}`)
   
   try {
+    // Buscar configurações do sistema
+    console.log('[CLAIM_CODE] Loading system configurations')
+    const { data: configData, error: configError } = await supabase
+      .from('coin_system_config')
+      .select('setting_key, setting_value')
+      .in('setting_key', ['daily_bonus_base_amount', 'daily_bonus_max_amount', 'daily_bonus_streak_days', 'daily_bonus_increment_type', 'daily_bonus_fixed_increment'])
+
+    if (configError) {
+      console.error('[CLAIM_CODE] Error loading config:', configError)
+      return new Response(
+        JSON.stringify({ success: false, message: 'Erro ao carregar configurações' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Processar configurações
+    const config: any = {}
+    configData?.forEach(item => {
+      config[item.setting_key] = item.setting_value
+    })
+
+    const baseAmount = parseInt(config.daily_bonus_base_amount || '10')
+    const maxAmount = parseInt(config.daily_bonus_max_amount || '100')
+    const streakDays = parseInt(config.daily_bonus_streak_days || '7')
+    const incrementType = config.daily_bonus_increment_type || 'calculated'
+    const fixedIncrement = parseInt(config.daily_bonus_fixed_increment || '10')
+
+    console.log(`[CLAIM_CODE] Config loaded - Base: ${baseAmount}, Max: ${maxAmount}, Cycle: ${streakDays} days, Type: ${incrementType}`)
+
     // Verificar se código existe e pode ser resgatado
     const { data: codeData, error: codeError } = await supabase
       .from('daily_codes')
@@ -204,15 +233,69 @@ async function claimCode(supabase: any, userId: string, code: string) {
       )
     }
 
-    // Calcular próxima posição na streak
-    const { data: userCodes } = await supabase
+    // Buscar códigos do usuário para calcular sequência CORRETAMENTE
+    const { data: userCodes, error: userCodesError } = await supabase
       .from('user_daily_codes')
-      .select('streak_position')
+      .select('*')
       .eq('user_id', userId)
-      .order('streak_position', { ascending: false })
-      .limit(1)
+      .order('added_at', { ascending: false })
 
-    const nextPosition = userCodes && userCodes.length > 0 ? userCodes[0].streak_position + 1 : 1
+    if (userCodesError) {
+      console.error('[CLAIM_CODE] Error fetching user codes:', userCodesError)
+      return new Response(
+        JSON.stringify({ success: false, message: 'Erro ao verificar códigos do usuário' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Calcular próxima posição na sequência com lógica de ciclo
+    let nextPosition = 1
+    if (userCodes && userCodes.length > 0) {
+      const lastCode = userCodes[0]
+      const lastDate = new Date(lastCode.added_at)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      lastDate.setHours(0, 0, 0, 0)
+      
+      const daysDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
+      
+      if (daysDiff === 1) {
+        // Consecutivo - continua sequência com ciclo
+        const rawPosition = lastCode.streak_position + 1
+        nextPosition = ((rawPosition - 1) % streakDays) + 1
+        console.log(`[CLAIM_CODE] Consecutive day - raw position: ${rawPosition}, cycle position: ${nextPosition}`)
+      } else if (daysDiff > 1) {
+        // Perdeu sequência - reinicia
+        nextPosition = 1
+        console.log(`[CLAIM_CODE] Streak broken (${daysDiff} days gap) - restarting at position 1`)
+      } else {
+        // Mesmo dia - não pode resgatar
+        return new Response(
+          JSON.stringify({ success: false, message: 'Já resgatou um código hoje' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
+    // Calcular quantidade de coins baseado na configuração
+    let finalAmount: number
+    
+    if (incrementType === 'fixed') {
+      // Incremento fixo
+      finalAmount = Math.min(baseAmount + ((nextPosition - 1) * fixedIncrement), maxAmount)
+    } else {
+      // Incremento calculado (progressivo)
+      if (streakDays > 1) {
+        finalAmount = baseAmount + Math.round(((maxAmount - baseAmount) * (nextPosition - 1)) / (streakDays - 1))
+      } else {
+        finalAmount = baseAmount
+      }
+    }
+
+    // Garantir que não excede o máximo
+    finalAmount = Math.min(finalAmount, maxAmount)
+
+    console.log(`[CLAIM_CODE] User ${userId} at cycle position ${nextPosition}/${streakDays}, earning ${finalAmount} coins (type: ${incrementType})`)
 
     // Adicionar código à tabela pessoal
     const { error: insertError } = await supabase
@@ -232,11 +315,6 @@ async function claimCode(supabase: any, userId: string, code: string) {
       )
     }
 
-    // Dar moedas UTI para o usuário
-    const baseAmount = 10
-    const streakMultiplier = Math.min(1 + (nextPosition - 1) * 0.1, 3.0)
-    const finalAmount = Math.floor(baseAmount * streakMultiplier)
-
     // Inserir transação de moedas
     await supabase
       .from('coin_transactions')
@@ -245,12 +323,20 @@ async function claimCode(supabase: any, userId: string, code: string) {
         amount: finalAmount,
         type: 'earned',
         reason: 'daily_code_claim',
-        description: `Código resgatado: ${code} (Sequência ${nextPosition})`,
+        description: `Código resgatado: ${code} (Sequência ${nextPosition}/${streakDays})`,
         metadata: {
           code: code,
           streak_position: nextPosition,
-          multiplier: streakMultiplier,
-          new_system: true
+          streak_days: streakDays,
+          increment_type: incrementType,
+          daily_code_claim: true,
+          config_used: {
+            base_amount: baseAmount,
+            max_amount: maxAmount,
+            streak_days: streakDays,
+            increment_type: incrementType,
+            fixed_increment: fixedIncrement
+          }
         }
       })
 
@@ -288,8 +374,14 @@ async function claimCode(supabase: any, userId: string, code: string) {
         message: 'Código resgatado com sucesso!',
         data: {
           streak_position: nextPosition,
+          streak_days: streakDays,
           coins_earned: finalAmount,
-          multiplier: streakMultiplier
+          increment_type: incrementType,
+          config_applied: {
+            base_amount: baseAmount,
+            max_amount: maxAmount,
+            cycle_days: streakDays
+          }
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
