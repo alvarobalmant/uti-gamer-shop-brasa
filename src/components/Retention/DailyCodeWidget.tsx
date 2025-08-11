@@ -493,7 +493,7 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                             <span className="text-sm font-medium">Recompensa Disponível</span>
                           </div>
                           <div className="text-lg font-semibold text-gray-800">
-                            +{currentCode.estimated_coins || 15} UTI Coins
+                            +{15} UTI Coins
                           </div>
                           <Button
                             onClick={handleClaimCode}
