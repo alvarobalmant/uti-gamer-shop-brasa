@@ -274,6 +274,25 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     }
   };
 
+  // Calcular coins da próxima recompensa baseado na streak
+  const calculateNextReward = () => {
+    const baseAmount = 15; // Base amount from system
+    const currentStreak = streakStatus?.streak_count || 0;
+    const multiplier = Math.min(1 + (currentStreak * 0.1), 3.0); // Max 3x multiplier
+    return Math.round(baseAmount * multiplier);
+  };
+
+  // Verificar se já resgatou o código do dia
+  const hasClaimedToday = () => {
+    if (!streakStatus?.codes || streakStatus.codes.length === 0) return false;
+    
+    const today = new Date().toDateString();
+    return streakStatus.codes.some(code => {
+      const codeDate = new Date(code.added_at).toDateString();
+      return codeDate === today;
+    });
+  };
+
   // Calcular nível baseado no total de moedas ganhas
   const calculateLevel = (totalEarned: number) => {
     if (totalEarned < 100) return { 
@@ -484,21 +503,37 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                       </div>
                     )}
 
-                    {/* Botão de resgate automático - Design minimalista */}
+                    {/* Sistema melhorado de resgate */}
                     <div className="space-y-3">
-                      {currentCode?.can_claim ? (
-                        <div className="text-center space-y-3">
-                          <div className="flex items-center justify-center gap-2 text-green-600">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      {currentCode?.can_claim && !hasClaimedToday() ? (
+                        /* Pode resgatar hoje */
+                        <div className="text-center space-y-4">
+                          <div className="flex items-center justify-center gap-2 text-emerald-600">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                             <span className="text-sm font-medium">Recompensa Disponível</span>
                           </div>
-                          <div className="text-lg font-semibold text-gray-800">
-                            +{15} UTI Coins
+                          
+                          {/* Valor dinâmico da recompensa */}
+                          <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <Coins className="w-5 h-5 text-emerald-600" />
+                              <span className="text-2xl font-bold text-emerald-700">
+                                +{calculateNextReward()}
+                              </span>
+                              <span className="text-emerald-600 font-medium">UTI Coins</span>
+                            </div>
+                            {streakStatus && streakStatus.streak_count > 0 && (
+                              <div className="text-xs text-emerald-600 font-medium">
+                                Multiplicador {((calculateNextReward() / 15) * 1).toFixed(1)}x pela streak de {streakStatus.streak_count} dias
+                              </div>
+                            )}
                           </div>
+
+                          {/* Botão estético melhorado */}
                           <Button
                             onClick={handleClaimCode}
                             disabled={claiming}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors"
+                            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
                           >
                             {claiming ? (
                               <div className="flex items-center gap-2">
@@ -506,9 +541,13 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                                 Resgatando...
                               </div>
                             ) : (
-                              "Resgatar"
+                              <div className="flex items-center gap-2">
+                                <Gift className="w-4 h-4" />
+                                Resgatar Recompensa
+                              </div>
                             )}
                           </Button>
+                          
                           {currentCode.hours_until_claim_expires > 0 && (
                             <p className="text-xs text-gray-500">
                               Válido por mais {currentCode.hours_until_claim_expires}h
@@ -516,24 +555,44 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                           )}
                         </div>
                       ) : (
-                        <div className="text-center space-y-3">
+                        /* Já resgatou hoje ou sem código disponível */
+                        <div className="text-center space-y-4">
                           <div className="flex items-center justify-center gap-2 text-gray-500">
                             <Clock className="w-4 h-4" />
-                            <span className="text-sm font-medium">Aguardando próxima recompensa</span>
+                            <span className="text-sm font-medium">
+                              {hasClaimedToday() ? 'Recompensa já resgatada hoje' : 'Aguardando próxima recompensa'}
+                            </span>
                           </div>
-                          <div className="text-lg font-mono font-semibold text-gray-700">
-                            {timeUntilNext.hours.toString().padStart(2, '0')}:
-                            {timeUntilNext.minutes.toString().padStart(2, '0')}:
-                            {timeUntilNext.seconds.toString().padStart(2, '0')}
+                          
+                          {/* Timer até próxima recompensa */}
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                            <div className="text-sm text-blue-600 font-medium mb-2">
+                              Próxima recompensa em:
+                            </div>
+                            <div className="text-2xl font-mono font-bold text-blue-700 mb-2">
+                              {timeUntilNext.hours.toString().padStart(2, '0')}:
+                              {timeUntilNext.minutes.toString().padStart(2, '0')}:
+                              {timeUntilNext.seconds.toString().padStart(2, '0')}
+                            </div>
+                            <div className="flex items-center justify-center gap-2">
+                              <Coins className="w-4 h-4 text-blue-600" />
+                              <span className="text-lg font-semibold text-blue-700">
+                                +{calculateNextReward()} UTI Coins
+                              </span>
+                            </div>
+                            <div className="text-xs text-blue-500 mt-1">
+                              Disponível às 20h
+                            </div>
                           </div>
-                          <p className="text-xs text-gray-500">
-                            Próxima recompensa às 20h
-                          </p>
+
                           <Button
                             disabled
-                            className="w-full bg-gray-200 text-gray-500 font-medium py-2.5 px-6 rounded-lg cursor-not-allowed"
+                            className="w-full bg-gray-100 text-gray-400 font-medium py-3 px-6 rounded-xl cursor-not-allowed border border-gray-200"
                           >
-                            Aguardar
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              {hasClaimedToday() ? 'Aguardar até amanhã' : 'Aguardar liberação'}
+                            </div>
                           </Button>
                         </div>
                       )}
