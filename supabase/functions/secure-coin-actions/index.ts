@@ -238,9 +238,7 @@ Deno.serve(async (req) => {
     };
 
     // Função para calcular próximo bonus baseado no streak
-    const calculateNextBonus = async (currentStreak, isForDisplay = false) => {
-      console.log(`[CALCULATE_BONUS] currentStreak: ${currentStreak}, isForDisplay: ${isForDisplay}`);
-      
+    const calculateNextBonus = async (currentStreak) => {
       const { data: configs } = await supabase
         .from('coin_system_config')
         .select('setting_key, setting_value')
@@ -262,34 +260,18 @@ Deno.serve(async (req) => {
       const incrementType = configMap.daily_bonus_increment_type || 'calculated';
       const fixedIncrement = parseInt(configMap.daily_bonus_fixed_increment || '10');
       
-      console.log(`[CALCULATE_BONUS] Loaded config - baseAmount: ${baseAmount}, maxAmount: ${maxAmount}, streakDays: ${streakDays}, incrementType: ${incrementType}`);
-      
-      // Para exibição: calcular o próximo dia do streak
-      // Para resgate: calcular o dia atual do streak  
-      let streakPosition;
-      if (isForDisplay) {
-        // Para exibição no modal: próximo dia que receberá (currentStreak + 1)
-        streakPosition = Math.max(1, ((currentStreak % streakDays) + 1) || 1);
-      } else {
-        // Para resgate: dia atual baseado no streak + 1 (próximo resgate)
-        streakPosition = Math.max(1, ((currentStreak % streakDays) + 1) || 1);
-      }
-      
-      console.log(`[CALCULATE_BONUS] currentStreak: ${currentStreak}, streakDays: ${streakDays}, streakPosition: ${streakPosition}`);
-      
+      const nextStreakPosition = Math.max(1, (currentStreak % streakDays) + 1);
       let nextBonusAmount;
       
       if (incrementType === 'fixed') {
-        nextBonusAmount = Math.min(baseAmount + ((streakPosition - 1) * fixedIncrement), maxAmount);
+        nextBonusAmount = Math.min(baseAmount + ((nextStreakPosition - 1) * fixedIncrement), maxAmount);
       } else {
         if (streakDays > 1) {
-          nextBonusAmount = baseAmount + Math.round(((maxAmount - baseAmount) * (streakPosition - 1)) / (streakDays - 1));
+          nextBonusAmount = baseAmount + Math.round(((maxAmount - baseAmount) * (nextStreakPosition - 1)) / (streakDays - 1));
         } else {
           nextBonusAmount = baseAmount;
         }
       }
-      
-      console.log(`[CALCULATE_BONUS] Final calculation - streakPosition: ${streakPosition}, nextBonusAmount: ${nextBonusAmount}`);
       
       return Math.max(nextBonusAmount, baseAmount); // Garantir que nunca seja negativo
     };
@@ -430,27 +412,8 @@ Deno.serve(async (req) => {
         // Validar streak atual baseado em códigos resgatados
         const currentStreak = await validateCurrentStreak(user.id);
         
-        // Verificar se usuário já resgatou hoje - buscar último resgate
-        const { data: lastClaim } = await supabase
-          .from('user_bonus_claims')
-          .select('claimed_at')
-          .eq('user_id', user.id)
-          .order('claimed_at', { ascending: false })
-          .limit(1)
-          .single();
-        
-        const canClaim = !!availableCode;
-        const hasClaimedToday = !!lastClaim && new Date(lastClaim.claimed_at).toDateString() === new Date().toDateString();
-        
         // Calcular próximo bônus baseado no streak atual
-        let nextBonusAmount;
-        if (hasClaimedToday) {
-          // Se já resgatou hoje, mostrar valor do próximo dia
-          nextBonusAmount = await calculateNextBonus(currentStreak, true);
-        } else {
-          // Se não resgatou, mostrar valor atual que receberá
-          nextBonusAmount = await calculateNextBonus(currentStreak, false);
-        }
+        const nextBonusAmount = await calculateNextBonus(currentStreak);
         
         // Verificar modo teste
         const { data: testModeData } = await supabase
@@ -470,44 +433,42 @@ Deno.serve(async (req) => {
         
         const totalStreakDays = parseInt(streakConfig?.setting_value || '7');
         
-        // Calcular tempo até próximo resgate baseado no último resgate ou início do dia seguinte
+        // NÃO gerar código aqui - apenas o cron job deve gerar
+        // Se não há código disponível, simplesmente informar que não pode resgatar
+        
+        // Recalcular após possível geração de código
+        const finalAvailableCode = await checkAvailableBonus(user.id);
+        const canClaim = !!finalAvailableCode;
+        
+        // Calcular tempo até expiração
         let secondsUntilNextClaim = 0;
         let nextReset = null;
         
-        if (hasClaimedToday && lastClaim) {
-          // Se já resgatou hoje, mostrar tempo até próximo dia (20h Brasília = 23h UTC)
-          const nextDay = new Date();
-          nextDay.setUTCHours(23, 0, 0, 0); // 20h Brasília
-          if (nextDay <= new Date()) {
-            nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-          }
+        if (finalAvailableCode) {
+          const expiresAt = new Date(finalAvailableCode.expires_at);
+          const now = new Date();
           
-          const now = new Date();
-          secondsUntilNextClaim = Math.max(0, Math.floor((nextDay.getTime() - now.getTime()) / 1000));
-          nextReset = nextDay.toISOString();
-        } else if (availableCode) {
-          // Se há código disponível, mostrar quando expira
-          const expiresAt = new Date(availableCode.expires_at);
-          const now = new Date();
-          secondsUntilNextClaim = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
-          nextReset = availableCode.expires_at;
+          if (!canClaim) {
+            // Se não pode resgatar, mostrar tempo até poder
+            secondsUntilNextClaim = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
+          }
+          nextReset = finalAvailableCode.expires_at;
         }
 
         console.log(`[NEW_SYSTEM] User ${user.id} bonus status:`, {
-          canClaim: canClaim && !hasClaimedToday,
+          canClaim,
           currentStreak,
           nextBonusAmount,
           secondsUntilNextClaim,
           nextReset,
-          hasClaimedToday,
           testMode: isTestMode,
           totalStreakDays,
-          codeAvailable: !!availableCode
+          codeAvailable: !!finalAvailableCode
         });
 
         result = {
           success: true,
-          canClaim: canClaim && !hasClaimedToday,
+          canClaim,
           secondsUntilNextClaim,
           currentStreak,
           validatedStreak: currentStreak,
