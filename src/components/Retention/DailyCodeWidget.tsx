@@ -275,52 +275,24 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     }
   };
 
-  // Calcular recompensa baseado na configuração real do sistema (ANTES de ser usada)
-  const calculateRewardFromStreak = useCallback((streakDay: number) => {
-    // Configuração do sistema: 30 (base) a 70 (máx) em 7 dias com progressão linear
-    const baseAmount = 30;
-    const maxAmount = 70;
-    const streakDays = 7;
-    
-    if (streakDay <= 0) return baseAmount;
-    if (streakDay >= streakDays) return maxAmount;
-    
-    // Progressão linear: 30, 37, 43, 50, 57, 63, 70
-    const increment = (maxAmount - baseAmount) / (streakDays - 1);
-    return Math.round(baseAmount + ((streakDay - 1) * increment));
-  }, []);
-
-  // Buscar próxima recompensa do backend com configurações corretas
-  const [nextRewardAmount, setNextRewardAmount] = useState<number>(30); // Base amount correto
+  // Buscar próxima recompensa do backend
+  const [nextRewardAmount, setNextRewardAmount] = useState<number>(15);
   
   const fetchNextRewardAmount = useCallback(async () => {
     if (!user) return;
     
     try {
-      console.log('[DAILY_BONUS] Fetching next reward amount...');
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
         body: { action: 'can_claim_daily_bonus_brasilia' }
       });
       
-      console.log('[DAILY_BONUS] Backend response:', data);
-      
-      if (!error && data?.success) {
-        if (data.nextBonusAmount) {
-          console.log('[DAILY_BONUS] Setting next reward amount to:', data.nextBonusAmount);
-          setNextRewardAmount(data.nextBonusAmount);
-        } else {
-          console.warn('[DAILY_BONUS] No nextBonusAmount in response, using current streak calculation');
-          // Fallback: calcular baseado na streak atual e configuração do sistema
-          const currentStreak = data.currentStreak || streakStatus?.streak_count || 0;
-          const calculatedAmount = calculateRewardFromStreak(currentStreak + 1); // Próximo dia
-          console.log('[DAILY_BONUS] Calculated amount from streak', currentStreak + 1, ':', calculatedAmount);
-          setNextRewardAmount(calculatedAmount);
-        }
+      if (!error && data?.success && data.nextBonusAmount) {
+        setNextRewardAmount(data.nextBonusAmount);
       }
     } catch (error) {
       console.error('[DAILY_BONUS] Error fetching next reward amount:', error);
     }
-  }, [user, streakStatus?.streak_count, calculateRewardFromStreak]);
+  }, [user]);
 
   // Carregar próxima recompensa na inicialização e depois de resgatar
   useEffect(() => {
@@ -334,9 +306,9 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     }
   }, [streakStatus?.streak_count, user, fetchNextRewardAmount]);
 
-  // Calcular coins da próxima recompensa (usa valor do backend ou cálculo)
+  // Calcular coins da próxima recompensa baseado na streak (FALLBACK - agora usa backend)
   const calculateNextReward = () => {
-    return nextRewardAmount;
+    return nextRewardAmount; // Usar valor do backend
   };
 
   // Verificar se já resgatou o código do dia

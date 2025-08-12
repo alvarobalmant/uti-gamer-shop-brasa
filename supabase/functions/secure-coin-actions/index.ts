@@ -238,9 +238,7 @@ Deno.serve(async (req) => {
     };
 
     // Função para calcular próximo bonus baseado no streak
-    const calculateNextBonus = async (currentStreak, isForDisplay = false) => {
-      console.log(`[CALCULATE_BONUS] currentStreak: ${currentStreak}, isForDisplay: ${isForDisplay}`);
-      
+    const calculateNextBonus = async (currentStreak) => {
       const { data: configs } = await supabase
         .from('coin_system_config')
         .select('setting_key, setting_value')
@@ -262,34 +260,18 @@ Deno.serve(async (req) => {
       const incrementType = configMap.daily_bonus_increment_type || 'calculated';
       const fixedIncrement = parseInt(configMap.daily_bonus_fixed_increment || '10');
       
-      console.log(`[CALCULATE_BONUS] Loaded config - baseAmount: ${baseAmount}, maxAmount: ${maxAmount}, streakDays: ${streakDays}, incrementType: ${incrementType}`);
-      
-      // Para exibição: calcular o próximo dia do streak
-      // Para resgate: calcular o dia atual do streak
-      let streakPosition;
-      if (isForDisplay) {
-        // Para exibição no modal: próximo dia que receberá
-        streakPosition = Math.max(1, (currentStreak % streakDays) + 1);
-      } else {
-        // Para resgate: dia atual baseado no streak
-        streakPosition = Math.max(1, (currentStreak % streakDays) || 1);
-      }
-      
-      console.log(`[CALCULATE_BONUS] currentStreak: ${currentStreak}, streakDays: ${streakDays}, streakPosition: ${streakPosition}`);
-      
+      const nextStreakPosition = Math.max(1, (currentStreak % streakDays) + 1);
       let nextBonusAmount;
       
       if (incrementType === 'fixed') {
-        nextBonusAmount = Math.min(baseAmount + ((streakPosition - 1) * fixedIncrement), maxAmount);
+        nextBonusAmount = Math.min(baseAmount + ((nextStreakPosition - 1) * fixedIncrement), maxAmount);
       } else {
         if (streakDays > 1) {
-          nextBonusAmount = baseAmount + Math.round(((maxAmount - baseAmount) * (streakPosition - 1)) / (streakDays - 1));
+          nextBonusAmount = baseAmount + Math.round(((maxAmount - baseAmount) * (nextStreakPosition - 1)) / (streakDays - 1));
         } else {
           nextBonusAmount = baseAmount;
         }
       }
-      
-      console.log(`[CALCULATE_BONUS] Final calculation - streakPosition: ${streakPosition}, nextBonusAmount: ${nextBonusAmount}`);
       
       return Math.max(nextBonusAmount, baseAmount); // Garantir que nunca seja negativo
     };
@@ -430,8 +412,8 @@ Deno.serve(async (req) => {
         // Validar streak atual baseado em códigos resgatados
         const currentStreak = await validateCurrentStreak(user.id);
         
-        // Calcular próximo bônus baseado no streak atual (para exibição no modal)
-        const nextBonusAmount = await calculateNextBonus(currentStreak, true);
+        // Calcular próximo bônus baseado no streak atual
+        const nextBonusAmount = await calculateNextBonus(currentStreak);
         
         // Verificar modo teste
         const { data: testModeData } = await supabase
