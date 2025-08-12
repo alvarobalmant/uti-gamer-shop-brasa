@@ -104,7 +104,7 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
       });
       
       if (user) {
-        await earnCoins(10, 'add_to_cart', `Adicionou ${product.name} ao carrinho`);
+        await earnCoins('add_to_cart', 10, `Adicionou ${product.name} ao carrinho`);
       }
       
       onAddToCart(product);
@@ -280,7 +280,7 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">
-                Quantidade: {quantity} ({product.stock_quantity || 5} disponíveis)
+                Quantidade: {quantity} ({product.stock || 5} disponíveis)
               </span>
               <div className="flex items-center gap-2">
                 <button
