@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Coins, TrendingUp, Gift, Star, Flame, Calendar, Clock, CheckCircle, Hash } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useDailyCodes } from '@/hooks/useDailyCodes';
@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 import { UTICoinsConditional } from './UTICoinsConditional';
 
 interface UTICoinsWidgetProps {
@@ -274,12 +275,40 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     }
   };
 
-  // Calcular coins da próxima recompensa baseado na streak
+  // Buscar próxima recompensa do backend
+  const [nextRewardAmount, setNextRewardAmount] = useState<number>(15);
+  
+  const fetchNextRewardAmount = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
+        body: { action: 'can_claim_daily_bonus_brasilia' }
+      });
+      
+      if (!error && data?.success && data.nextBonusAmount) {
+        setNextRewardAmount(data.nextBonusAmount);
+      }
+    } catch (error) {
+      console.error('[DAILY_BONUS] Error fetching next reward amount:', error);
+    }
+  }, [user]);
+
+  // Carregar próxima recompensa na inicialização e depois de resgatar
+  useEffect(() => {
+    fetchNextRewardAmount();
+  }, [fetchNextRewardAmount]);
+
+  // Atualizar valor após resgate
+  useEffect(() => {
+    if (user) {
+      fetchNextRewardAmount();
+    }
+  }, [streakStatus?.streak_count, user, fetchNextRewardAmount]);
+
+  // Calcular coins da próxima recompensa baseado na streak (FALLBACK - agora usa backend)
   const calculateNextReward = () => {
-    const baseAmount = 15; // Base amount from system
-    const currentStreak = streakStatus?.streak_count || 0;
-    const multiplier = Math.min(1 + (currentStreak * 0.1), 3.0); // Max 3x multiplier
-    return Math.round(baseAmount * multiplier);
+    return nextRewardAmount; // Usar valor do backend
   };
 
   // Verificar se já resgatou o código do dia
