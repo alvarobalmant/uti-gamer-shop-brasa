@@ -89,7 +89,7 @@ export const useNavigationItems = () => {
         .from('navigation_items')
         .insert([itemData])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -126,7 +126,7 @@ export const useNavigationItems = () => {
         .update(updateData)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -204,7 +204,7 @@ export const useNavigationItems = () => {
         .update({ is_visible: isVisible })
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

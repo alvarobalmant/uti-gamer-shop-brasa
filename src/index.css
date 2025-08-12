@@ -507,6 +507,33 @@
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
+
+  /* Desktop Navigation Spacer - Evita que a barra de navegação corte o conteúdo apenas em DESKTOP */
+  .needs-desktop-spacing {
+    /* Aplica espaçamento apenas em dispositivos DESKTOP */
+    @media (min-width: 769px) {
+      /* Header fixo tem 73px + espaçamento desejado de 4rem (64px) = 137px total */
+      padding-top: calc(73px + 4rem);
+    }
+  }
+
+  /* Espaçamento menor para páginas como /coins */
+  .needs-desktop-spacing-small {
+    /* Aplica espaçamento menor apenas em dispositivos DESKTOP */
+    @media (min-width: 769px) {
+      /* Header fixo tem 73px + espaçamento muito pequeno de 0.5rem (8px) = 81px total */
+      padding-top: calc(73px + 0.5rem);
+    }
+  }
+
+  /* Espaçamento maior para páginas prime */
+  .needs-desktop-spacing-large {
+    /* Aplica espaçamento maior apenas em dispositivos DESKTOP */
+    @media (min-width: 769px) {
+      /* Header fixo tem 73px + espaçamento grande de 4rem (64px) = 137px total */
+      padding-top: calc(73px + 4rem);
+    }
+  }
 }
 
 /* Premium Keyframes */

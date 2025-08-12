@@ -19,8 +19,10 @@ import ProductCTABottom from '@/components/Product/ProductCTABottom';
 // Mobile Components
 import ProductHeroMobile from '@/components/Product/Mobile/ProductHeroMobile';
 import ProductTabsMobile from '@/components/Product/Mobile/ProductTabsMobile';
-import ProductCTABottomMobile from '@/components/Product/Mobile/ProductCTABottomMobile';
 import RelatedProductsMobile from '@/components/Product/Mobile/RelatedProductsMobile';
+
+// New Mercado Livre Style Mobile Components
+import ProductPageMobileMercadoLivre from '@/components/Product/Mobile/ProductPageMobileMercadoLivre';
 import ProductSEO from '@/components/Product/ProductSEO';
 import PlatformSelector from '@/components/SKU/PlatformSelector';
 import SKUBreadcrumb from '@/components/SKU/SKUBreadcrumb';
@@ -178,19 +180,13 @@ const ProductPageSKU = () => {
             />
           </div>
 
-          {/* Mobile Version */}
+          {/* Mobile Version - Mercado Livre Style */}
           <div className="block md:hidden">
-            {/* Mobile Hero */}
-            <ProductHeroMobile 
+            <ProductPageMobileMercadoLivre 
               product={product}
+              skuNavigation={skuNavigation}
               onAddToCart={handleAddToCart}
             />
-
-            {/* Mobile Tabs */}
-            <ProductTabsMobile product={product} />
-
-            {/* Mobile Related Products */}
-            <RelatedProductsMobile product={product} />
           </div>
         </div>
       </main>
@@ -198,14 +194,6 @@ const ProductPageSKU = () => {
       {/* CTA Bottom - Desktop */}
       <div className="hidden md:block">
         <ProductCTABottom 
-          product={product}
-          onAddToCart={handleAddToCart}
-        />
-      </div>
-
-      {/* CTA Bottom - Mobile */}
-      <div className="block md:hidden">
-        <ProductCTABottomMobile 
           product={product}
           onAddToCart={handleAddToCart}
         />

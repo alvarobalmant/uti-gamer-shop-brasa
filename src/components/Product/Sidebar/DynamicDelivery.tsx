@@ -14,6 +14,7 @@ const DynamicDelivery: React.FC<DynamicDeliveryProps> = ({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [timeMessage, setTimeMessage] = useState('');
   const [deliveryMessage, setDeliveryMessage] = useState('');
+  const [deliveryTextMessage, setDeliveryTextMessage] = useState('');
   const [isEligible, setIsEligible] = useState(false);
   const [badgeText, setBadgeText] = useState('');
 
@@ -43,7 +44,7 @@ const DynamicDelivery: React.FC<DynamicDeliveryProps> = ({
 
     // Definir badge baseado na elegibilidade
     if (eligible) {
-      setBadgeText('FRETE GRÁTIS HOJE');
+      setBadgeText('FRETE GRÁTIS');
     } else {
       setBadgeText('FRETE GRÁTIS ACIMA DE R$ 150');
     }
@@ -65,10 +66,12 @@ const DynamicDelivery: React.FC<DynamicDeliveryProps> = ({
     if (hours >= cutoffHour) {
       // Após 16h - entrega amanhã
       setDeliveryMessage('Chegará grátis amanhã');
-      setTimeMessage('Comprando no próximo minuto');
+      setDeliveryTextMessage('Entrega amanhã para Colatina-ES');
+      setTimeMessage('Comprando em qualquer horário');
     } else {
       // Antes das 16h - entrega hoje
       setDeliveryMessage('Chegará grátis hoje');
+      setDeliveryTextMessage('Entrega hoje para Colatina-ES');
       
       // Calcular mensagem de tempo baseada nas regras específicas
       const totalMinutesLeft = hoursLeft * 60 + minutesLeft;
@@ -85,7 +88,7 @@ const DynamicDelivery: React.FC<DynamicDeliveryProps> = ({
         setTimeMessage(`Comprando em ${totalMinutesLeft} ${totalMinutesLeft === 1 ? 'minuto' : 'minutos'}`);
       } else {
         // Último minuto
-        setTimeMessage('Comprando no próximo minuto');
+        setTimeMessage('Comprando em qualquer horário');
       }
     }
   }, [currentTime, productPrice]);
@@ -100,7 +103,7 @@ const DynamicDelivery: React.FC<DynamicDeliveryProps> = ({
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2 text-gray-600">
             <Truck className="w-4 h-4 text-orange-500" />
-            <span>Entrega grátis para Colatina-ES</span>
+            <span>{deliveryTextMessage || 'Entrega grátis para Colatina-ES'}</span>
           </div>
           
           <div className="text-xs text-gray-500">

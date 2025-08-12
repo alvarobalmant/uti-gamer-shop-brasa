@@ -133,7 +133,7 @@ const CoinsShop = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background needs-desktop-spacing-small">
       {/* Header */}
       <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
         <div className="container mx-auto px-4 py-4 md:py-6">

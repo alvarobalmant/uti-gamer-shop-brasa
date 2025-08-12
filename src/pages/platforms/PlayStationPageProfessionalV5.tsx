@@ -177,7 +177,7 @@ const PlayStationPageProfessionalV5 = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white needs-desktop-spacing">
       <ProfessionalHeader onCartOpen={handleCartOpen} onAuthOpen={handleAuthOpen} />
       
       {/* Hero Banner - Inspirado na PlayStation Store */}

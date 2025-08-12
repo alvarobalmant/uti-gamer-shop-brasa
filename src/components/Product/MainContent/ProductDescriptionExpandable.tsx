@@ -71,22 +71,6 @@ const ProductDescriptionExpandable: React.FC<ProductDescriptionExpandableProps> 
           </div>
         </div>
       </div>
-
-      {/* Tags do Produto */}
-      <div className="space-y-3">
-        <h5 className="font-semibold text-gray-900">🏷️ Tags do Produto</h5>
-        <div className="flex flex-wrap gap-2">
-          {['PlayStation 5', 'Ação', 'Aventura', '4K', 'Ray Tracing', 'Single Player', 'Exclusivo'].map((tag) => (
-            <Badge
-              key={tag}
-              variant="outline"
-              className="border-gray-300 text-gray-700 hover:bg-gray-100 cursor-pointer"
-            >
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </div>
     </div>
   );
 };

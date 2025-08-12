@@ -172,7 +172,7 @@ export const ProductCarouselRenderer: React.FC<ProductCarouselRendererProps> = (
                       <img
                         src={product.image_url}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain p-2"
                         loading="lazy"
                       />
                     ) : (

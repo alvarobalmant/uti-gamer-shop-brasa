@@ -28,14 +28,12 @@ interface SpecialCarouselRowProps {
   config: CarouselRowConfig;
   sectionBackgroundColor?: string; // Cor de fundo da seção para gradiente adaptativo
   onCardClick?: (productId: string) => void;
-  onAddToCart?: (productId: string) => void;
 }
 
 const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
   config,
   sectionBackgroundColor = '#f3f4f6', // Default para cinza claro
   onCardClick,
-  onAddToCart,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
@@ -440,7 +438,6 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
                 <SpecialCarouselCard
                   product={product}
                   onCardClick={onCardClick}
-                  onAddToCart={onAddToCart}
                 />
               </div>
             ))}

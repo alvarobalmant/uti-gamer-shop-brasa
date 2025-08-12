@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import FavoriteButton from '@/components/FavoriteButton';
 
 interface SpecialCarouselCardProps {
   product: {
@@ -14,13 +15,11 @@ interface SpecialCarouselCardProps {
     discount?: number;
   };
   onCardClick?: (productId: string) => void;
-  onAddToCart?: (productId: string) => void;
 }
 
 const SpecialCarouselCard: React.FC<SpecialCarouselCardProps> = ({
   product,
   onCardClick,
-  onAddToCart,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -30,23 +29,16 @@ const SpecialCarouselCard: React.FC<SpecialCarouselCardProps> = ({
     }
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onAddToCart) {
-      onAddToCart(product.id);
-    }
-  };
-
   return (
     <motion.div
-      className="group relative bg-white rounded-lg border border-gray-200 overflow-hidden cursor-pointer flex-shrink-0"
+      className="group relative bg-white rounded-lg border border-gray-200 overflow-hidden cursor-pointer flex-shrink-0 shadow-none transition-all duration-200 ease-in-out"
       style={{ 
         width: '200px', 
         minWidth: '200px',
         height: '320px', // Altura fixa para consistência
         minHeight: '320px'
       }}
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -4, boxShadow: "0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
       transition={{ duration: 0.2 }}
       onClick={handleCardClick}
       onMouseEnter={() => setIsHovered(true)}
@@ -61,14 +53,19 @@ const SpecialCarouselCard: React.FC<SpecialCarouselCardProps> = ({
         </div>
       )}
 
-      {/* Product Image - COM LAZY LOADING OTIMIZADO */}
-      <div className="relative bg-gray-50 overflow-hidden" style={{ height: '200px' }}>
+      {/* Favorite Button */}
+      <div className="absolute top-2 right-2 z-10">
+        <FavoriteButton productId={product.id} size="sm" />
+      </div>
+
+      {/* Product Image - CORRIGIDO PARA USAR object-contain COMO NAS SEÇÕES NORMAIS */}
+      <div className="relative bg-white overflow-hidden flex items-center justify-center" style={{ height: '200px' }}>
         <img
           src={product.image}
           alt={product.name}
           loading="lazy"
           decoding="async"
-          className={`w-full h-full object-cover transition-transform duration-300 ${
+          className={`h-full w-full object-contain p-2 transition-transform duration-300 ${
             isHovered ? 'scale-105' : 'scale-100'
           }`}
           style={{
@@ -108,14 +105,6 @@ const SpecialCarouselCard: React.FC<SpecialCarouselCardProps> = ({
             )}
           </div>
         </div>
-
-        {/* Add to Cart Button */}
-        <button
-          onClick={handleAddToCart}
-          className="w-full bg-uti-primary text-white text-xs font-medium py-2 px-3 rounded hover:bg-uti-primary-dark transition-colors duration-200"
-        >
-          Adicionar ao Carrinho
-        </button>
       </div>
     </motion.div>
   );

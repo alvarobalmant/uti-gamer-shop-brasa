@@ -53,13 +53,13 @@ const PlatformPageContent: React.FC<PlatformPageContentProps> = ({
     : null;
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black pt-4 needs-desktop-spacing-large">
       <ProfessionalHeader 
         onCartOpen={handleCartOpen}
         onAuthOpen={handleAuthOpen}
       />
 
-      <main className="pt-4">
+      <main>
         {layout.map((section) => (
           <PlatformSectionRenderer
             key={section.id}

@@ -91,12 +91,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
           config={carouselConfig}
           sectionBackgroundColor={section.background_value || '#f3f4f6'} // Passa cor de fundo da seção
           onCardClick={onProductCardClick}
-          onAddToCart={(productId) => {
-            const product = products?.find(p => p.id === productId);
-            if (product) {
-              addToCart(product);
-            }
-          }}
         />
       </div>
     );
