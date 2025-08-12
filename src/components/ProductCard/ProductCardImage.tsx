@@ -41,7 +41,7 @@ const ProductCardImage: React.FC<ProductCardImageProps> = React.memo(({ product,
         className={cn(
           "h-full w-full object-contain p-2 transition-transform duration-300 ease-in-out",
           imageLoaded ? "opacity-100" : "opacity-0",
-          isHovered ? "scale-105" : "scale-100"
+          isHovered ? "md:scale-105" : "scale-100"
         )}
         loading="lazy"
         decoding="async"

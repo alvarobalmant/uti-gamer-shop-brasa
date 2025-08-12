@@ -320,11 +320,13 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
       }
 
       if (data?.success) {
+        const currentStreak = data.validatedStreak !== undefined ? data.validatedStreak : (data.currentStreak || 1);
+        
         setDailyBonusData({
           canClaim: data.canClaim || false,
-          currentStreak: data.validatedStreak !== undefined ? data.validatedStreak : (data.currentStreak || 1),
-          nextBonusAmount: data.nextBonusAmount || 10,
-          secondsUntilNextClaim: data.secondsUntilNextClaim || 0, // Usar dados do backend
+          currentStreak: currentStreak,
+          nextBonusAmount: data.nextBonusAmount || 10, // Usar valor do backend por enquanto
+          secondsUntilNextClaim: data.secondsUntilNextClaim || 0,
           multiplier: data.multiplier || 1.0,
           nextReset: data.nextReset || "20:00",
           lastClaim: data.lastClaim,
@@ -626,7 +628,15 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
                         />
                         <div className="text-right">
                           <div className="text-sm font-medium text-gray-700">
-                            +{dailyBonusData.nextBonusAmount} UTI Coins
+                            +{dailyBonusData.currentStreak === 1 ? 30 : 
+                              dailyBonusData.currentStreak === 2 ? 37 :
+                              dailyBonusData.currentStreak === 3 ? 43 :
+                              dailyBonusData.currentStreak === 4 ? 50 :
+                              dailyBonusData.currentStreak === 5 ? 57 :
+                              dailyBonusData.currentStreak === 6 ? 63 :
+                              dailyBonusData.currentStreak === 7 ? 70 :
+                              30 + Math.round(((70 - 30) * ((dailyBonusData.currentStreak % 7 || 7) - 1)) / 6)
+                            } UTI Coins
                           </div>
                           <div className="text-xs text-gray-500">
                             Próximo bônus

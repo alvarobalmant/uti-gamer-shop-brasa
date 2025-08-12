@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export const ProductCardSkeleton = () => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden md:hover:shadow-md transition-shadow duration-200">
       {/* Imagem skeleton */}
       <div className="relative aspect-square">
         <Skeleton className="w-full h-full" />
