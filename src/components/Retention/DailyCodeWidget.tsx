@@ -275,6 +275,7 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     }
   };
 
+<<<<<<< HEAD
   // Calcular recompensa baseado na configuração real do sistema (ANTES de ser usada)
   const calculateRewardFromStreak = useCallback((streakDay: number) => {
     // Configuração do sistema: 30 (base) a 70 (máx) em 7 dias com progressão linear
@@ -354,6 +355,14 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     // Progressão linear: 30, 37, 43, 50, 57, 63, 70
     const increment = (maxAmount - baseAmount) / (streakDays - 1);
     return Math.round(baseAmount + ((finalPosition - 1) * increment));
+=======
+  // Calcular coins da próxima recompensa baseado na streak
+  const calculateNextReward = () => {
+    const baseAmount = 15; // Base amount from system
+    const currentStreak = streakStatus?.streak_count || 0;
+    const multiplier = Math.min(1 + (currentStreak * 0.1), 3.0); // Max 3x multiplier
+    return Math.round(baseAmount * multiplier);
+>>>>>>> ab7a856029dc052cce77dcb255f09e1de8e665d1
   };
 
   // Verificar se já resgatou o código do dia
