@@ -293,22 +293,11 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
   // Buscar próxima recompensa do backend com configurações corretas
   const [nextRewardAmount, setNextRewardAmount] = useState<number>(30); // Base amount correto
   
-  // Estado unificado para dados do bônus diário
-  const [bonusData, setBonusData] = useState<{
-    currentStreak: number;
-    nextBonusAmount: number;
-    canClaim: boolean;
-  }>({
-    currentStreak: 0,
-    nextBonusAmount: 30,
-    canClaim: false
-  });
-
-  const fetchBonusData = useCallback(async () => {
+  const fetchNextRewardAmount = useCallback(async () => {
     if (!user) return;
     
     try {
-      console.log('[DAILY_BONUS] Fetching complete bonus data...');
+      console.log('[DAILY_BONUS] Fetching next reward amount...');
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
         body: { action: 'can_claim_daily_bonus_brasilia' }
       });
@@ -316,40 +305,34 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
       console.log('[DAILY_BONUS] Backend response:', data);
       
       if (!error && data?.success) {
-        // Usar dados diretos do backend
-        const currentStreak = data.currentStreak || 0;
-        const nextAmount = data.nextBonusAmount || calculateRewardFromStreak(currentStreak + 1);
-        
-        console.log('[DAILY_BONUS] Current streak:', currentStreak, 'Next amount:', nextAmount);
-        
-        setBonusData({
-          currentStreak,
-          nextBonusAmount: nextAmount,
-          canClaim: data.canClaim || false
-        });
-        
-        setNextRewardAmount(nextAmount);
+        if (data.nextBonusAmount) {
+          console.log('[DAILY_BONUS] Setting next reward amount to:', data.nextBonusAmount);
+          setNextRewardAmount(data.nextBonusAmount);
+        } else {
+          console.warn('[DAILY_BONUS] No nextBonusAmount in response, using current streak calculation');
+          // Fallback: calcular baseado na streak atual e configuração do sistema
+          const currentStreak = data.currentStreak || streakStatus?.streak_count || 0;
+          const calculatedAmount = calculateRewardFromStreak(currentStreak + 1); // Próximo dia
+          console.log('[DAILY_BONUS] Calculated amount from streak', currentStreak + 1, ':', calculatedAmount);
+          setNextRewardAmount(calculatedAmount);
+        }
       }
     } catch (error) {
-      console.error('[DAILY_BONUS] Error fetching bonus data:', error);
+      console.error('[DAILY_BONUS] Error fetching next reward amount:', error);
     }
-  }, [user, calculateRewardFromStreak]);
+  }, [user, streakStatus?.streak_count, calculateRewardFromStreak]);
 
-  // Carregar dados do bônus na inicialização e depois de resgatar
+  // Carregar próxima recompensa na inicialização e depois de resgatar
   useEffect(() => {
-    fetchBonusData();
-  }, [fetchBonusData]);
+    fetchNextRewardAmount();
+  }, [fetchNextRewardAmount]);
 
-  // Atualizar dados periodicamente
+  // Atualizar valor após resgate
   useEffect(() => {
-    if (!user) return;
-    
-    const interval = setInterval(() => {
-      fetchBonusData();
-    }, 30000); // A cada 30 segundos
-    
-    return () => clearInterval(interval);
-  }, [user, fetchBonusData]);
+    if (user) {
+      fetchNextRewardAmount();
+    }
+  }, [streakStatus?.streak_count, user, fetchNextRewardAmount]);
 
   // Calcular coins da próxima recompensa (usa valor do backend ou cálculo)
   const calculateNextReward = () => {
@@ -596,11 +579,11 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                               </span>
                               <span className="text-emerald-600 font-medium">UTI Coins</span>
                             </div>
-                             {bonusData.currentStreak > 0 && (
-                               <div className="text-xs text-emerald-600 font-medium">
-                                 Progressão: Dia {bonusData.currentStreak + 1} de 7
-                               </div>
-                             )}
+                            {streakStatus && streakStatus.streak_count > 0 && (
+                              <div className="text-xs text-emerald-600 font-medium">
+                                Multiplicador {((calculateNextReward() / 15) * 1).toFixed(1)}x pela streak de {streakStatus.streak_count} dias
+                              </div>
+                            )}
                           </div>
 
                           {/* Botão estético melhorado */}
@@ -671,23 +654,23 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                         </div>
                       )}
                       
-                       {/* Streak atual - Usando dados do backend correto */}
-                       {bonusData.currentStreak > 0 && (
-                         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                           <StreakDisplay 
-                             streak={bonusData.currentStreak} 
-                             animated={streakAnimated}
-                           />
-                           <div className="text-right">
-                             <div className="text-sm font-medium text-gray-700">
-                               Dia {bonusData.currentStreak} de 7
-                             </div>
-                             <div className="text-xs text-gray-500">
-                               Sequência ativa
-                             </div>
-                           </div>
-                         </div>
-                       )}
+                      {/* Streak atual - Design original restaurado */}
+                      {streakStatus && (
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                          <StreakDisplay 
+                            streak={streakStatus.streak_count} 
+                            animated={streakAnimated}
+                          />
+                          <div className="text-right">
+                            <div className="text-sm font-medium text-gray-700">
+                              {streakStatus.valid_codes_count} código{streakStatus.valid_codes_count !== 1 ? 's' : ''} válido{streakStatus.valid_codes_count !== 1 ? 's' : ''}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Mantendo streak ativa
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
