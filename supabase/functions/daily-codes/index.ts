@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
 
     switch (action) {
       case 'get_current_code':
-        return await getCurrentCode(supabaseClient)
+        return await getCurrentCode(supabaseClient, user.id)
         
       case 'claim_code':
         if (!code) {
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
   }
 })
 
-async function getCurrentCode(supabase: any) {
+async function getCurrentCode(supabase: any, userId?: string) {
   console.log('[GET_CURRENT] Fetching current daily code')
   
   try {
@@ -123,9 +123,25 @@ async function getCurrentCode(supabase: any) {
     const claimableUntil = new Date(currentCode.claimable_until)
     const validUntil = new Date(currentCode.valid_until)
 
+    // Verificar se usuário já resgatou este código
+    let userAlreadyClaimed = false
+    if (userId) {
+      const { data: existingCode } = await supabase
+        .from('user_daily_codes')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('code', currentCode.code)
+        .single()
+      
+      userAlreadyClaimed = !!existingCode
+    }
+
     // Calcular horas até expiração
     const hoursUntilClaimExpires = Math.max(0, Math.floor((claimableUntil.getTime() - now.getTime()) / (1000 * 60 * 60)))
     const hoursUntilValidityExpires = Math.max(0, Math.floor((validUntil.getTime() - now.getTime()) / (1000 * 60 * 60)))
+
+    // O usuário pode resgatar se: código ainda está válido para resgate E usuário não resgatou ainda
+    const canClaim = (now <= claimableUntil) && !userAlreadyClaimed
 
     const result = {
       success: true,
@@ -134,8 +150,9 @@ async function getCurrentCode(supabase: any) {
         created_at: currentCode.created_at,
         claimable_until: currentCode.claimable_until,
         valid_until: currentCode.valid_until,
-        can_claim: now <= claimableUntil,
+        can_claim: canClaim,
         is_valid: now <= validUntil,
+        already_claimed: userAlreadyClaimed,
         hours_until_claim_expires: hoursUntilClaimExpires,
         hours_until_validity_expires: hoursUntilValidityExpires
       }
