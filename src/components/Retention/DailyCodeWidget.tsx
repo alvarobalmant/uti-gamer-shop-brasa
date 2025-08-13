@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Coins, TrendingUp, Gift, Star, Flame, Calendar, Clock, CheckCircle, Hash } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useDailyCodes } from '@/hooks/useDailyCodes';
 import { useUTICoins } from '@/contexts/UTICoinsContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -163,19 +164,19 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [coinAnimations, setCoinAnimations] = useState<CoinAnimation[]>([]);
   const [streakAnimated, setStreakAnimated] = useState(false);
+  const [timeUntilNext, setTimeUntilNext] = useState({ hours: 0, minutes: 0, seconds: 0 });
   
   const { user } = useAuth();
   const { coins, loading: coinsLoading, refreshData } = useUTICoins();
-  
-  // Novo sistema unificado - usar apenas secure-coin-actions
-  const [bonusStatus, setBonusStatus] = useState({
-    canClaim: false,
-    currentStreak: 0,
-    nextBonusAmount: 30,
-    secondsUntilNextClaim: 0,
-    hasClaimedToday: false,
-    loading: true
-  });
+  const { 
+    loading, 
+    currentCode, 
+    streakStatus, 
+    claiming, 
+    claimCode, 
+    refreshData: refreshCodes,
+    getTimeUntilNextCode 
+  } = useDailyCodes();
   
   const previousBalance = useRef(coins.balance);
   const widgetRef = useRef<HTMLButtonElement>(null);
@@ -217,60 +218,16 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     previousBalance.current = coins.balance;
   }, [coins.balance]);
 
-  // Carregar status do bônus do backend unificado
-  const loadBonusStatus = useCallback(async () => {
-    if (!user) return;
-    
-    try {
-      console.log('[DAILY_BONUS] Loading bonus status...');
-      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-        body: { action: 'can_claim_daily_bonus_brasilia' }
-      });
-      
-      if (!error && data?.success) {
-        console.log('[DAILY_BONUS] Backend response:', data);
-        setBonusStatus({
-          canClaim: data.canClaim || false,
-          currentStreak: data.currentStreak || 0,
-          nextBonusAmount: data.nextBonusAmount || 30,
-          secondsUntilNextClaim: data.secondsUntilNextClaim || 0,
-          hasClaimedToday: data.hasClaimedToday || false,
-          loading: false
-        });
-      }
-    } catch (error) {
-      console.error('[DAILY_BONUS] Error loading bonus status:', error);
-      setBonusStatus(prev => ({ ...prev, loading: false }));
-    }
-  }, [user]);
-
-  // Timer para atualizar contador
+  // Timer para próximo código
   useEffect(() => {
-    if (bonusStatus.secondsUntilNextClaim <= 0) return;
+    const updateTimer = () => {
+      setTimeUntilNext(getTimeUntilNextCode());
+    };
 
-    const interval = setInterval(() => {
-      setBonusStatus(prev => {
-        const newSeconds = Math.max(0, prev.secondsUntilNextClaim - 1);
-        
-        // Se chegou a zero, recarregar status
-        if (newSeconds === 0) {
-          loadBonusStatus();
-        }
-        
-        return {
-          ...prev,
-          secondsUntilNextClaim: newSeconds
-        };
-      });
-    }, 1000);
-
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [bonusStatus.secondsUntilNextClaim, loadBonusStatus]);
-
-  // Carregar status inicial
-  useEffect(() => {
-    loadBonusStatus();
-  }, [loadBonusStatus]);
+  }, [getTimeUntilNextCode]);
 
   // Bloquear scroll quando modal estiver aberto
   useEffect(() => {
@@ -296,57 +253,118 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     }
   }, [showPopover]);
 
-  // Função para resgatar bônus diário
-  const handleClaimBonus = async () => {
-    if (!bonusStatus.canClaim) {
-      console.error('[DAILY_BONUS] Cannot claim bonus right now');
+  // Função para resgatar código automaticamente
+  const handleClaimCode = async () => {
+    // Buscar o código do dia atual automaticamente
+    if (!currentCode?.code) {
+      console.error('[DAILY_BONUS] No current code available');
       return;
     }
 
-    try {
-      console.log('[DAILY_BONUS] Claiming daily bonus...');
-      setBonusStatus(prev => ({ ...prev, loading: true }));
-      
-      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-        body: { action: 'daily_login' }
-      });
-      
-      if (!error && data?.success) {
-        console.log('[DAILY_BONUS] Bonus claimed successfully:', data);
-        
-        // Animar streak se houve mudança
-        if (data.streak_day) {
-          setStreakAnimated(true);
-          setTimeout(() => setStreakAnimated(false), 1000);
-        }
-        
-        // Atualizar dados das moedas e recarregar status
-        refreshData?.();
-        loadBonusStatus();
-      } else {
-        console.error('[DAILY_BONUS] Error claiming bonus:', error || data);
+    console.log(`[DAILY_BONUS] Auto-claiming code: ${currentCode.code}`);
+    const result = await claimCode(currentCode.code);
+    
+    if (result.success) {
+      // Animar streak se houve mudança
+      if (result.data?.streak_position) {
+        setStreakAnimated(true);
+        setTimeout(() => setStreakAnimated(false), 1000);
       }
-    } catch (error) {
-      console.error('[DAILY_BONUS] Error claiming bonus:', error);
-    } finally {
-      setBonusStatus(prev => ({ ...prev, loading: false }));
+      // Atualizar dados das moedas
+      refreshData?.();
     }
   };
 
-  // Calcular tempo formatado
-  const formatTimeUntilNext = () => {
-    const totalSeconds = bonusStatus.secondsUntilNextClaim;
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+  // Calcular recompensa baseado na configuração real do sistema (ANTES de ser usada)
+  const calculateRewardFromStreak = useCallback((streakDay: number) => {
+    // Configuração do sistema: 30 (base) a 70 (máx) em 7 dias com progressão linear
+    const baseAmount = 30;
+    const maxAmount = 70;
+    const streakDays = 7;
     
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${seconds}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds}s`;
-    } else {
-      return `${seconds}s`;
+    if (streakDay <= 0) return baseAmount;
+    if (streakDay >= streakDays) return maxAmount;
+    
+    // Progressão linear: 30, 37, 43, 50, 57, 63, 70
+    const increment = (maxAmount - baseAmount) / (streakDays - 1);
+    return Math.round(baseAmount + ((streakDay - 1) * increment));
+  }, []);
+
+  // Buscar próxima recompensa do backend com configurações corretas
+  const [nextRewardAmount, setNextRewardAmount] = useState<number>(30); // Base amount correto
+  
+  const fetchNextRewardAmount = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      console.log('[DAILY_BONUS] Fetching next reward amount...');
+      const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
+        body: { action: 'can_claim_daily_bonus_brasilia' }
+      });
+      
+      console.log('[DAILY_BONUS] Backend response:', data);
+      
+      if (!error && data?.success) {
+        if (data.nextBonusAmount) {
+          console.log('[DAILY_BONUS] Setting next reward amount to:', data.nextBonusAmount);
+          setNextRewardAmount(data.nextBonusAmount);
+        } else {
+          console.warn('[DAILY_BONUS] No nextBonusAmount in response, using current streak calculation');
+          // Fallback: calcular baseado na streak atual e configuração do sistema
+          const currentStreak = data.currentStreak || streakStatus?.streak_count || 0;
+          const calculatedAmount = calculateRewardFromStreak(currentStreak + 1); // Próximo dia
+          console.log('[DAILY_BONUS] Calculated amount from streak', currentStreak + 1, ':', calculatedAmount);
+          setNextRewardAmount(calculatedAmount);
+        }
+      }
+    } catch (error) {
+      console.error('[DAILY_BONUS] Error fetching next reward amount:', error);
     }
+  }, [user, streakStatus?.streak_count, calculateRewardFromStreak]);
+
+  // Carregar próxima recompensa na inicialização e depois de resgatar
+  useEffect(() => {
+    fetchNextRewardAmount();
+  }, [fetchNextRewardAmount]);
+
+  // Atualizar valor após resgate
+  useEffect(() => {
+    if (user) {
+      fetchNextRewardAmount();
+    }
+  }, [streakStatus?.streak_count, user, fetchNextRewardAmount]);
+
+  // Calcular coins da próxima recompensa (usa valor do backend ou cálculo)
+  const calculateNextReward = () => {
+    // Se não tem streak, usar valor base
+    if (!streakStatus?.streak_count) return 30;
+    
+    // Calcular baseado no PRÓXIMO dia (não no atual)
+    const currentStreak = streakStatus.streak_count;
+    const baseAmount = 30;
+    const maxAmount = 70;
+    const streakDays = 7;
+    
+    // Próxima posição no ciclo (dia seguinte)
+    const nextStreakPosition = Math.max(1, (currentStreak % streakDays) + 1);
+    
+    // Se chegou ao final do ciclo, volta para o dia 1
+    const finalPosition = nextStreakPosition > streakDays ? 1 : nextStreakPosition;
+    
+    // Progressão linear: 30, 37, 43, 50, 57, 63, 70
+    const increment = (maxAmount - baseAmount) / (streakDays - 1);
+    return Math.round(baseAmount + ((finalPosition - 1) * increment));
+  };
+
+  // Verificar se já resgatou o código do dia
+  const hasClaimedToday = () => {
+    if (!streakStatus?.codes || streakStatus.codes.length === 0) return false;
+    
+    const today = new Date().toDateString();
+    return streakStatus.codes.some(code => {
+      const codeDate = new Date(code.added_at).toDateString();
+      return codeDate === today;
+    });
   };
 
   // Calcular nível baseado no total de moedas ganhas
@@ -396,7 +414,7 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
   const levelData = calculateLevel(coins.totalEarned);
   const progressPercentage = levelData.nextThreshold > 0 ? (levelData.progress / levelData.nextThreshold) * 100 : 100;
 
-  if (coinsLoading || bonusStatus.loading) {
+  if (coinsLoading || loading) {
     return (
       <div className={`relative ${className}`}>
         <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg opacity-50">
@@ -510,101 +528,184 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                     )}
                   </div>
 
-                  {/* Content */}
-                  <div className="p-4">
-                    {/* Streak Display */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Star className="w-5 h-5 text-yellow-500" />
-                        <span className="font-semibold text-gray-700">Streak de Login</span>
+                  {/* Daily Codes Section */}
+                  <div className="p-4 border-t border-gray-200">
+                    <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                      <Hash className="w-4 h-4 text-blue-500" />
+                      Códigos Diários
+                    </h4>
+                    
+                    {/* Status do código atual */}
+                    {currentCode ? (
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-200 mb-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Hash className="w-4 h-4 text-blue-500" />
+                            <span className="font-mono text-lg font-bold text-blue-700">
+                              {currentCode.code}
+                            </span>
+                          </div>
+                          <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            currentCode.can_claim 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-orange-100 text-orange-700'
+                          }`}>
+                            {currentCode.can_claim ? 'Pode resgatar' : 'Expirado para resgate'}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {currentCode.can_claim 
+                            ? `Válido por mais ${currentCode.hours_until_claim_expires}h` 
+                            : `Ainda mantém streak por ${currentCode.hours_until_validity_expires}h`
+                          }
+                        </div>
                       </div>
-                      <StreakDisplay 
-                        streak={bonusStatus.currentStreak} 
-                        animated={streakAnimated} 
-                      />
-                    </div>
+                    ) : (
+                      <div className="bg-gray-50 rounded-lg p-3 mb-3 text-center">
+                        <Clock className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                        <div className="text-sm text-gray-600">
+                          Próximo código em:
+                        </div>
+                        <div className="font-mono text-lg font-bold text-gray-800">
+                          {timeUntilNext.hours.toString().padStart(2, '0')}:
+                          {timeUntilNext.minutes.toString().padStart(2, '0')}:
+                          {timeUntilNext.seconds.toString().padStart(2, '0')}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          Próximo código será gerado às 20h
+                        </div>
+                      </div>
+                    )}
 
-                    {/* Próxima Recompensa */}
-                    <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Gift className="w-5 h-5 text-orange-500" />
-                          <span className="font-semibold text-gray-700">
-                            {bonusStatus.hasClaimedToday ? 'Próxima Recompensa' : 'Recompensa Atual'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-orange-200">
-                          <Coins className="w-4 h-4 text-yellow-500" />
-                          <span className="font-bold text-orange-600">+{bonusStatus.nextBonusAmount}</span>
-                        </div>
-                      </div>
-                      
-                      {bonusStatus.canClaim && !bonusStatus.hasClaimedToday ? (
-                        <Button 
-                          onClick={handleClaimBonus}
-                          disabled={bonusStatus.loading}
-                          className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                        >
-                          {bonusStatus.loading ? (
-                            <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              Resgatando...
+                    {/* Sistema melhorado de resgate */}
+                    <div className="space-y-3">
+                      {currentCode?.can_claim && !hasClaimedToday() ? (
+                        /* Pode resgatar hoje */
+                        <div className="text-center space-y-4">
+                          <div className="flex items-center justify-center gap-2 text-emerald-600">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <span className="text-sm font-medium">Recompensa Disponível</span>
+                          </div>
+                          
+                          {/* Valor dinâmico da recompensa */}
+                          <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <Coins className="w-5 h-5 text-emerald-600" />
+                              <span className="text-2xl font-bold text-emerald-700">
+                                +{calculateNextReward()}
+                              </span>
+                              <span className="text-emerald-600 font-medium">UTI Coins</span>
                             </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="w-5 h-5" />
-                              Resgatar Agora
-                            </div>
-                          )}
-                        </Button>
-                      ) : (
-                        <div className="text-center">
-                          {bonusStatus.hasClaimedToday || bonusStatus.secondsUntilNextClaim > 0 ? (
-                            <div>
-                              <div className="flex items-center justify-center gap-2 text-green-600 mb-2">
-                                <CheckCircle className="w-5 h-5" />
-                                <span className="font-semibold">
-                                  {bonusStatus.hasClaimedToday ? 'Resgatado hoje!' : 'Aguarde o próximo resgate'}
-                                </span>
+                            {streakStatus && streakStatus.streak_count > 0 && (
+                              <div className="text-xs text-emerald-600 font-medium">
+                                Multiplicador {((calculateNextReward() / 15) * 1).toFixed(1)}x pela streak de {streakStatus.streak_count} dias
                               </div>
-                              {bonusStatus.secondsUntilNextClaim > 0 && (
-                                <div className="text-sm text-gray-600">
-                                  Próximo resgate em: <span className="font-mono font-semibold">{formatTimeUntilNext()}</span>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="text-orange-600">
-                              <Clock className="w-5 h-5 mx-auto mb-2" />
-                              <p className="text-sm">Aguardando código do dia...</p>
-                            </div>
+                            )}
+                          </div>
+
+                          {/* Botão estético melhorado */}
+                          <Button
+                            onClick={handleClaimCode}
+                            disabled={claiming}
+                            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+                          >
+                            {claiming ? (
+                              <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                Resgatando...
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Gift className="w-4 h-4" />
+                                Resgatar Recompensa
+                              </div>
+                            )}
+                          </Button>
+                          
+                          {currentCode.hours_until_claim_expires > 0 && (
+                            <p className="text-xs text-gray-500">
+                              Válido por mais {currentCode.hours_until_claim_expires}h
+                            </p>
                           )}
+                        </div>
+                      ) : (
+                        /* Já resgatou hoje ou sem código disponível */
+                        <div className="text-center space-y-4">
+                          <div className="flex items-center justify-center gap-2 text-gray-500">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-sm font-medium">
+                              {hasClaimedToday() ? 'Recompensa já resgatada hoje' : 'Aguardando próxima recompensa'}
+                            </span>
+                          </div>
+                          
+                          {/* Timer até próxima recompensa */}
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                            <div className="text-sm text-blue-600 font-medium mb-2">
+                              Próxima recompensa em:
+                            </div>
+                            <div className="text-2xl font-mono font-bold text-blue-700 mb-2">
+                              {timeUntilNext.hours.toString().padStart(2, '0')}:
+                              {timeUntilNext.minutes.toString().padStart(2, '0')}:
+                              {timeUntilNext.seconds.toString().padStart(2, '0')}
+                            </div>
+                            <div className="flex items-center justify-center gap-2">
+                              <Coins className="w-4 h-4 text-blue-600" />
+                              <span className="text-lg font-semibold text-blue-700">
+                                +{calculateNextReward()} UTI Coins
+                              </span>
+                            </div>
+                            <div className="text-xs text-blue-500 mt-1">
+                              Disponível às 20h
+                            </div>
+                          </div>
+
+                          <Button
+                            disabled
+                            className="w-full bg-gray-100 text-gray-400 font-medium py-3 px-6 rounded-xl cursor-not-allowed border border-gray-200"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              {hasClaimedToday() ? 'Aguardar até amanhã' : 'Aguardar liberação'}
+                            </div>
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {/* Streak atual - Design original restaurado */}
+                      {streakStatus && (
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                          <StreakDisplay 
+                            streak={streakStatus.streak_count} 
+                            animated={streakAnimated}
+                          />
+                          <div className="text-right">
+                            <div className="text-sm font-medium text-gray-700">
+                              {streakStatus.valid_codes_count} código{streakStatus.valid_codes_count !== 1 ? 's' : ''} válido{streakStatus.valid_codes_count !== 1 ? 's' : ''}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Mantendo streak ativa
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
+                  </div>
 
-                    {/* Estatísticas */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-                        <TrendingUp className="w-5 h-5 text-green-600 mx-auto mb-1" />
-                        <div className="text-lg font-bold text-green-700">{coins.totalEarned.toLocaleString()}</div>
-                        <div className="text-xs text-green-600">Total Ganho</div>
+                  {/* Estatísticas */}
+                  <div className="p-4 border-t border-gray-200 bg-gray-50">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-gray-800">
+                          {coins.totalEarned.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500">Total Ganho</div>
                       </div>
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-                        <Calendar className="w-5 h-5 text-blue-600 mx-auto mb-1" />
-                        <div className="text-lg font-bold text-blue-700">{bonusStatus.currentStreak}</div>
-                        <div className="text-xs text-blue-600">Streak Atual</div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-gray-800">
+                          {coins.totalSpent.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500">Total Gasto</div>
                       </div>
-                    </div>
-
-                    {/* Dicas */}
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <h5 className="font-semibold text-gray-700 mb-2">💡 Dicas:</h5>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• Faça login todos os dias para manter sua streak</li>
-                        <li>• Quanto maior a streak, mais UTI Coins você ganha</li>
-                        <li>• Use UTI Coins para resgatar produtos exclusivos</li>
-                      </ul>
                     </div>
                   </div>
                 </motion.div>

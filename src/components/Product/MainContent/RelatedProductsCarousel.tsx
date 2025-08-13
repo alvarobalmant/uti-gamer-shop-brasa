@@ -186,7 +186,7 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
                     "w-[200px] h-[320px]",
                     "p-0",
                     "product-card",
-                    "hover:shadow-md hover:-translate-y-1"
+                    "md:hover:shadow-md md:hover:-translate-y-1"
                   )}
                   onClick={() => handleProductClick(product)}
                   data-testid="product-card"
