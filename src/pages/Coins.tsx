@@ -464,20 +464,99 @@ const Coins: React.FC = () => {
 
             {activeTab === 'daily' && (
               <div className="space-y-6">
-                <div className="text-center py-12">
-                  <AlertCircle className="w-16 h-16 text-orange-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Sistema de Bônus Diário Desativado</h3>
-                  <p className="text-gray-600 mb-6">
-                    O sistema de bônus diário agora funciona através do modal de códigos diários. 
-                    Use o widget de moedas no canto da tela para resgatar seus códigos.
-                  </p>
-                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 max-w-md mx-auto">
-                    <h4 className="text-sm font-medium text-blue-800 mb-2">💡 Como usar:</h4>
-                    <p className="text-sm text-blue-700">
-                      Clique no widget de moedas (canto da tela) para acessar o sistema de códigos diários
-                    </p>
+                <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  <Calendar className="w-6 h-6 text-blue-500" />
+                  Bônus Diário
+                </h3>
+                
+                {bonusLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                   </div>
-                </div>
+                ) : dailyBonusData ? (
+                  <div className="space-y-6">
+                    {/* Status do bônus */}
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
+                      <div className="text-center mb-6">
+                        <div className="text-3xl mb-2">
+                          {dailyBonusData.canClaim ? '🎁' : '⏰'}
+                        </div>
+                        <h4 className="text-xl font-bold text-gray-800 mb-2">
+                          {dailyBonusData.canClaim ? 'Bônus Disponível!' : 'Volte Amanhã'}
+                        </h4>
+                        <p className="text-gray-600">
+                          {dailyBonusData.canClaim 
+                            ? 'Resgate seu bônus diário agora!' 
+                            : `Próximo bônus em ${formatTimeUntilReset(dailyBonusData.nextReset)}`
+                          }
+                        </p>
+                      </div>
+                      
+                      {dailyBonusData.canClaim && (
+                        <div className="text-center">
+                          <motion.button
+                            onClick={claimDailyBonus}
+                            disabled={claimingBonus}
+                            className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-8 py-3 rounded-xl font-semibold text-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {claimingBonus ? (
+                              <div className="flex items-center gap-2">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                Resgatando...
+                              </div>
+                            ) : (
+                              `Resgatar Bônus`
+                            )}
+                          </motion.button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Streak info */}
+                    <div className="bg-white rounded-xl p-6 border border-gray-200">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <Flame className="w-5 h-5 text-orange-500" />
+                        Sua Sequência
+                      </h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-orange-500 mb-1">
+                            {dailyBonusData.currentStreak}
+                          </div>
+                          <div className="text-sm text-gray-600">Dias Seguidos</div>
+                        </div>
+                        
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-purple-500 mb-1">
+                            {dailyBonusData.multiplier.toFixed(1)}x
+                          </div>
+                          <div className="text-sm text-gray-600">Multiplicador Atual</div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <h5 className="font-medium text-yellow-800 mb-2 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" />
+                          Como Funciona
+                        </h5>
+                        <div className="text-sm text-yellow-700 space-y-1">
+                          <p>• Faça login todos os dias entre 20h e 20h para manter sua sequência</p>
+                          <p>• A cada dia seguido, ganhe mais moedas (progressão linear de 10 a 30 coins)</p>
+                          <p>• Se perder um dia, sua sequência volta ao dia 1</p>
+                          <p>• Máximo de 7 dias de sequência</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">Erro ao carregar dados do bônus diário</p>
+                  </div>
+                )}
                 
                 {/* Componente de teste - remover em produção */}
                 <div className="border-t pt-8 mt-8">

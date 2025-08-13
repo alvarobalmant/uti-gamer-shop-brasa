@@ -1,11 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { SKUNavigation } from '@/hooks/useProducts/types';
-import { ShoppingCart, Heart, Share2, Star, Truck, Shield, Clock, Check, Plus, Minus, ChevronRight, ChevronLeft, Zap } from 'lucide-react';
+import { 
+  Heart, 
+  Share2, 
+  ChevronLeft, 
+  ChevronRight, 
+  Truck, 
+  Shield, 
+  Clock, 
+  Check, 
+  Info, 
+  ShoppingCart, 
+  Zap,
+  ChevronDown,
+  ChevronUp,
+  Search
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 import FavoriteButton from '@/components/FavoriteButton';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,7 +28,6 @@ import { useAnalytics } from '@/contexts/AnalyticsContext';
 import { useProductSpecifications } from '@/hooks/useProductSpecifications';
 import { useProductFAQs } from '@/hooks/useProductFAQs';
 import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
-import DynamicDeliveryMobile from './DynamicDeliveryMobile';
 
 interface ProductPageMobileMercadoLivreProps {
   product: Product;
@@ -199,39 +212,62 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
         </div>
       </div>
 
-      {/* Seção de Preços - SEM CARD */}
+      {/* Seção de Preços em Card - COMO NO PRINT */}
       <div className="p-4">
-        {/* Preço anterior e desconto */}
-        {product.list_price && product.list_price > product.price && (
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm text-gray-500 line-through">
-              R$ {product.list_price.toFixed(2).replace('.', ',')}
-            </span>
-            <Badge className="bg-green-500 text-white text-xs">
-              {discountPercentage}% OFF
-            </Badge>
+        {/* Card de Melhor Preço */}
+        <div className="border border-gray-200 rounded-lg p-4 mb-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500"></div>
+              <span className="text-sm font-medium text-gray-900">Melhor preço</span>
+            </div>
           </div>
-        )}
-        
-        {/* Preço principal */}
-        <div className="text-2xl font-medium text-gray-900 mb-1">
-          R$ {product.price.toFixed(2).replace('.', ',')}
+          
+          {/* Preço anterior e desconto */}
+          {product.list_price && product.list_price > product.price && (
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm text-gray-500 line-through">
+                R$ {product.list_price.toFixed(2).replace('.', ',')}
+              </span>
+              <Badge className="bg-green-500 text-white text-xs">
+                {discountPercentage}% OFF
+              </Badge>
+            </div>
+          )}
+          
+          {/* Preço principal */}
+          <div className="text-2xl font-medium text-gray-900 mb-1">
+            R$ {product.price.toFixed(2).replace('.', ',')}
+          </div>
+          
+          <Button variant="ghost" className="text-blue-600 p-0 h-auto text-sm">
+            Ver os meios de pagamento
+          </Button>
         </div>
-        
-        <Button variant="ghost" className="text-blue-600 p-0 h-auto text-sm mb-4">
-          Ver os meios de pagamento
-        </Button>
 
-        {/* Card de Frete Dinâmico */}
-        <DynamicDeliveryMobile productPrice={product.price} />
+        {/* Card de Frete Grátis */}
+        <div className="border border-gray-200 rounded-lg p-4 mb-3">
+          <div className="flex items-center gap-2 text-green-700 mb-2">
+            <Truck className="w-4 h-4" />
+            <span className="text-sm font-medium">Chegará grátis</span>
+          </div>
+          <div className="text-sm text-gray-700 mb-1">
+            entre 25 e 28/ago
+          </div>
+          <div className="text-sm text-gray-600 mb-2">
+            Chegará entre 18 e 21/ago
+          </div>
+          <Button variant="ghost" className="text-blue-600 p-0 h-auto text-sm">
+            Mais formas de entrega
+          </Button>
+        </div>
 
-        {/* UTI Coins - Ganhos na Compra */}
-        <div className="text-sm text-gray-600 mb-1 flex items-center gap-1">
-          <span className="text-yellow-600">🪙</span>
-          <span>Ganhe <span className="font-medium text-yellow-700">{Math.floor(product.price * quantity * 0.02)} UTI Coins</span> nesta compra</span>
+        {/* Vendedor */}
+        <div className="text-sm text-gray-600 mb-1">
+          Vendido por <span className="text-blue-600 font-medium">UTI DOS GAMES</span>
         </div>
         <div className="text-sm text-gray-500 mb-4">
-          = R$ {(Math.floor(product.price * quantity * 0.02) * 0.01).toFixed(2)} para próximas compras
+          +1000 vendas
         </div>
       </div>
 
@@ -381,8 +417,9 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
         </Button>
       </div>
 
-      {/* Produtos relacionados - SEM TÍTULO */}
+      {/* Produtos relacionados - EXATAMENTE como ML */}
       <div className="border-t border-gray-100 p-4">
+        <h3 className="font-medium text-gray-900 mb-4">Quem viu este produto também comprou</h3>
         <RelatedProductsCarousel currentProduct={product} />
       </div>
 

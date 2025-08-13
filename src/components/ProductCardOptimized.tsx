@@ -85,8 +85,8 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
       to={`/produto/${product.id}`}
       className={cn(
         'group block bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden',
-        'md:hover:shadow-md md:hover:border-gray-200 transition-all duration-200',
-        'transform md:hover:-translate-y-1',
+        'hover:shadow-md hover:border-gray-200 transition-all duration-200',
+        'transform hover:-translate-y-1',
         className
       )}
       onMouseEnter={handleMouseEnter}
@@ -99,7 +99,7 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
           alt={product.name || 'Produto'}
           priority={priority}
           variant="card"
-          className="w-full h-full md:group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full group-hover:scale-105 transition-transform duration-300"
         />
         
         {/* Badge de desconto */}
@@ -121,8 +121,8 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
           onClick={handleFavoriteClick}
           className={cn(
             'absolute top-2 right-2 p-2 rounded-full transition-all duration-200',
-            'bg-white/80 md:hover:bg-white shadow-sm md:hover:shadow-md',
-            'opacity-0 md:group-hover:opacity-100',
+            'bg-white/80 hover:bg-white shadow-sm hover:shadow-md',
+            'opacity-0 group-hover:opacity-100',
             isHovered && 'opacity-100'
           )}
           aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
@@ -130,7 +130,7 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
           <Heart
             className={cn(
               'w-4 h-4 transition-colors duration-200',
-              isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600 md:hover:text-red-500'
+              isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600 hover:text-red-500'
             )}
           />
         </button>
@@ -145,7 +145,7 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
       {/* Conteúdo do card */}
       <div className="p-4 space-y-3">
         {/* Título do produto */}
-        <h3 className="font-medium text-gray-900 line-clamp-2 text-sm leading-tight md:group-hover:text-blue-600 transition-colors duration-200">
+        <h3 className="font-medium text-gray-900 line-clamp-2 text-sm leading-tight group-hover:text-blue-600 transition-colors duration-200">
           {product.name}
         </h3>
         
