@@ -14,7 +14,6 @@ import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionR
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
 import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
-import { useScrollCoins } from '@/hooks/useScrollCoins';
 
 // Lazy load AdminPanel para reduzir bundle inicial
 const AdminPanel = lazy(() => import('./Admin'));
@@ -40,8 +39,7 @@ const Index = React.memo(() => {
     handleRetryProducts
   } = useIndexPage();
 
-  // Ativar sistema de ganho de moedas por scroll
-  useScrollCoins();
+  // Sistema de scroll restoration já gerenciado pelo ScrollRestorationProvider
 
   const handleAddToCart = useCallback((product: any, size?: string, color?: string) => {
     addToCart(product, size, color);
@@ -55,9 +53,7 @@ const Index = React.memo(() => {
 
   const handleProductCardClick = useCallback(async (productId: string) => {
     // Salvar posição atual antes de navegar
-    console.log('[Index] Salvando posição antes de navegar para produto:', productId);
     const currentScrollY = window.scrollY;
-    console.log('[Index] Posição atual do scroll:', currentScrollY);
     
     // Salvar usando o manager diretamente para garantir que seja salvo
     const scrollManager = (await import('@/lib/scrollRestorationManager')).default;

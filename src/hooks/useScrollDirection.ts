@@ -1,49 +1,85 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-/**
- * Custom hook to detect scroll direction and position.
- * @returns {{ scrollDirection: 'up' | 'down' | null, isScrolled: boolean }}
- */
-export function useScrollDirection(threshold = 10) {
-  const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
-  const [lastScrollY, setLastScrollY] = useState(0);
+interface UseScrollDirectionOptions {
+  threshold?: number;
+  debounceMs?: number;
+}
+
+interface ScrollDirectionState {
+  scrollDirection: 'up' | 'down';
+  isScrolled: boolean;
+  scrollY: number;
+}
+
+export const useScrollDirection = (options: UseScrollDirectionOptions = {}): ScrollDirectionState => {
+  const { threshold = 25, debounceMs = 16 } = options; // Aumentado de 10 para 25px
+  
+  const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  
+  const lastScrollY = useRef(0);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const isThrottled = useRef(false);
 
   useEffect(() => {
-    let ticking = false;
-
-    const updateScrollDir = () => {
-      const scrollY = window.pageYOffset;
+    const handleScroll = () => {
+      // Throttling para 60fps
+      if (isThrottled.current) return;
+      isThrottled.current = true;
       
-      // Update isScrolled state
-      setIsScrolled(scrollY > threshold);
-
-      // Determine scroll direction
-      if (Math.abs(scrollY - lastScrollY) < threshold) {
-        ticking = false;
-        return; // Ignore minor scrolls
-      }
-      setScrollDirection(scrollY > lastScrollY ? 'down' : 'up');
-      setLastScrollY(scrollY <= 0 ? 0 : scrollY); // For Mobile or negative scrolling
-      ticking = false;
+      requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        
+        // Atualizar posição do scroll
+        setScrollY(currentScrollY);
+        
+        // Determinar se está scrollado
+        setIsScrolled(currentScrollY > threshold);
+        
+        // Determinar direção apenas se houve movimento significativo
+        const scrollDifference = currentScrollY - lastScrollY.current;
+        
+        if (Math.abs(scrollDifference) > threshold) {
+          // Debounce para evitar mudanças muito frequentes
+          if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
+          }
+          
+          debounceTimer.current = setTimeout(() => {
+            if (scrollDifference > 0) {
+              setScrollDirection('down');
+            } else {
+              setScrollDirection('up');
+            }
+            lastScrollY.current = currentScrollY;
+          }, debounceMs);
+        }
+        
+        isThrottled.current = false;
+      });
     };
 
-    const onScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(updateScrollDir);
-        ticking = true;
+    // Configurar listener com passive para melhor performance
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Executar uma vez para definir estado inicial
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
       }
     };
+  }, [threshold, debounceMs]);
 
-    // Set initial scroll position
-    setLastScrollY(window.pageYOffset);
-    setIsScrolled(window.pageYOffset > threshold);
+  return {
+    scrollDirection,
+    isScrolled,
+    scrollY
+  };
+};
 
-    window.addEventListener('scroll', onScroll);
-
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [lastScrollY, threshold]);
-
-  return { scrollDirection, isScrolled };
-}
+export default useScrollDirection;
 

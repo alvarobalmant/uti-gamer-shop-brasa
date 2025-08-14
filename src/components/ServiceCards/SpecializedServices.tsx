@@ -1,8 +1,6 @@
-
 import { useServiceCards } from "@/hooks/useServiceCards";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
-import SectionTitle from "@/components/SectionTitle";
+import { ArrowRight, Star, Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,91 +26,191 @@ const SpecializedServices = () => {
     }));
   };
 
+  // Cores únicas para cada card
+  const cardColors = [
+    "from-red-500 to-pink-600",
+    "from-blue-500 to-cyan-600", 
+    "from-green-500 to-emerald-600",
+    "from-purple-500 to-violet-600"
+  ];
+
+  const cardBgColors = [
+    "bg-red-50 border-red-200",
+    "bg-blue-50 border-blue-200",
+    "bg-green-50 border-green-200", 
+    "bg-purple-50 border-purple-200"
+  ];
+
   return (
-    <section className="py-8 md:py-12 bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionTitle
-          title="Nossos Serviços Especializados"
-          subtitle="Mais de 10 anos oferecendo os melhores serviços em games para Colatina e região"
-          className="mb-8 md:mb-12"
-        />
+    <section className="relative py-20 md:py-24 overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Elementos decorativos únicos */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-red-100 rounded-full opacity-20 animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 bg-blue-100 rounded-full opacity-30 animate-bounce"></div>
+        <div className="absolute bottom-32 left-1/4 w-20 h-20 bg-green-100 rounded-full opacity-25"></div>
+        <div className="absolute bottom-20 right-1/3 w-28 h-28 bg-purple-100 rounded-full opacity-20"></div>
+      </div>
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Header revolucionário */}
+        <div className="text-center mb-16 md:mb-20">
+          <div className="flex items-center justify-center mb-8">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 rounded-full blur-lg opacity-30 animate-pulse"></div>
+              <div className="relative bg-white border-2 border-red-200 rounded-full px-8 py-3 shadow-lg">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-6 h-6 text-red-600 animate-spin" />
+                  <span className="text-lg font-black text-red-700 uppercase tracking-wider">Nossos Serviços</span>
+                  <Star className="w-6 h-6 text-red-600 animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight">
+            <span className="bg-gradient-to-r from-gray-900 via-red-600 to-gray-900 bg-clip-text text-transparent">
+              Serviços
+            </span>
+            <br />
+            <span className="bg-gradient-to-r from-red-600 via-pink-600 to-red-600 bg-clip-text text-transparent animate-pulse">
+              Especializados
+            </span>
+          </h2>
+          
+          <div className="max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-gray-700 leading-relaxed mb-4">
+              Mais de <span className="font-black text-red-600 text-2xl md:text-3xl">10 anos</span> oferecendo
+            </p>
+            <p className="text-lg md:text-xl text-gray-600">
+              os melhores serviços em games para <span className="font-bold text-red-600">Colatina e região</span>
+            </p>
+          </div>
+        </div>
 
         {loading && (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-60 w-full" />)}
-           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-64 md:h-80 w-full bg-gray-200 rounded-3xl" />
+            ))}
+          </div>
         )}
 
         {!loading && serviceCards.length > 0 && (
           <div className="relative">
-            <div
-              className={cn(
-                "grid grid-cols-1 gap-6",
-                "md:grid-cols-2 lg:grid-cols-4",
-                "md:overflow-visible md:pb-0",
-                "overflow-x-auto pb-4 flex md:grid space-x-4 md:space-x-0",
-                "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 md:mx-0 md:px-0"
-              )}
-              style={{ scrollbarWidth: "none" }}
-            >
-              {serviceCards.map((card) => (
-                <div
-                  key={card.id}
-                  className="w-72 md:w-auto flex-shrink-0 md:flex-shrink"
+            {/* Grid revolucionário - layout diagonal */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
+              {serviceCards.map((card, index) => (
+                <div 
+                  key={card.id} 
+                  className={cn(
+                    "group relative transform transition-all duration-700 hover:scale-105",
+                    index % 2 === 0 ? "md:translate-y-0" : "md:translate-y-8"
+                  )}
                 >
+                  {/* Card revolucionário */}
                   <Card
                     onClick={() => handleCardClick(card.link_url)}
-                    className="group h-full cursor-pointer transition-all duration-300 ease-in-out border border-border/80 rounded-xl overflow-hidden bg-card md:hover:shadow-lg md:hover:border-primary/40 md:hover:-translate-y-1"
+                    className={cn(
+                      "relative rounded-3xl h-full cursor-pointer overflow-hidden border-2 transition-all duration-500",
+                      cardBgColors[index % 4],
+                      "hover:shadow-2xl hover:shadow-red-500/20 hover:-translate-y-2"
+                    )}
                   >
-                    <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                      <div className="mb-4 flex-shrink-0">
-                        {/* Container for the icon/image, without the background div */}
-                        <div className="relative w-14 h-14 mx-auto flex items-center justify-center">
-                          {!imageErrors[card.id] && card.image_url ? (
-                            <img
-                              src={card.image_url}
-                              alt={card.title}
-                              // Apply hover effect only on desktop
-                              className="w-10 h-10 object-contain transition-transform duration-300 md:group-hover:scale-110"
-                              loading="lazy"
-                              onError={() => handleImageError(card.id)}
-                            />
-                          ) : (
-                            // Fallback icon (Box) when image fails to load or is missing
-                            // Apply hover effect only on desktop
-                            <div className="w-10 h-10 flex items-center justify-center text-primary transition-transform duration-300 md:group-hover:scale-110">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                <polyline points="3.29 7 12 12 20.71 7"></polyline>
-                                <line x1="12" y1="22" x2="12" y2="12"></line>
-                              </svg>
-                            </div>
-                          )}
+                    <CardContent className="p-8 md:p-10 h-full">
+                      
+                      {/* Header do card com gradiente */}
+                      <div className="relative mb-8">
+                        <div className={cn(
+                          "absolute inset-0 bg-gradient-to-r rounded-2xl blur-sm opacity-20",
+                          cardColors[index % 4]
+                        )}></div>
+                        
+                        <div className="relative flex items-center justify-between">
+                          <div className={cn(
+                            "w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center bg-gradient-to-br shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6",
+                            cardColors[index % 4]
+                          )}>
+                            {!imageErrors[card.id] && card.image_url ? (
+                              <img
+                                src={card.image_url}
+                                alt={card.title}
+                                className="w-8 h-8 md:w-10 md:h-10 object-contain filter brightness-0 invert"
+                                loading="lazy"
+                                onError={() => handleImageError(card.id)}
+                              />
+                            ) : (
+                              <Zap className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                            )}
+                          </div>
+                          
+                          {/* Número do serviço */}
+                          <div className="text-right">
+                            <span className={cn(
+                              "text-6xl md:text-7xl font-black opacity-20 bg-gradient-to-br bg-clip-text text-transparent",
+                              cardColors[index % 4]
+                            )}>
+                              {String(index + 1).padStart(2, '0')}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <h3 className="text-base font-semibold text-foreground mb-1 transition-colors duration-200 md:group-hover:text-primary">
-                        {card.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                        {card.description}
-                      </p>
-                      <div className="flex items-center justify-center text-primary font-medium text-xs mt-auto transition-colors duration-300 md:group-hover:text-primary/80">
-                        <span>Saiba mais</span>
-                        <ArrowRight className="w-3 h-3 ml-1 transition-transform duration-300 md:group-hover:translate-x-0.5" />
+                      
+                      {/* Conteúdo do card */}
+                      <div className="relative">
+                        <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-4 leading-tight group-hover:text-red-700 transition-colors duration-300">
+                          {card.title}
+                        </h3>
+                        
+                        <p className="text-gray-700 text-base md:text-lg leading-relaxed mb-8 group-hover:text-gray-800 transition-colors duration-300">
+                          {card.description}
+                        </p>
+                        
+                        {/* Call to action revolucionário */}
+                        <div className={cn(
+                          "inline-flex items-center gap-3 bg-gradient-to-r text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg",
+                          cardColors[index % 4]
+                        )}>
+                          <span className="text-sm md:text-base">Saiba mais</span>
+                          <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                        </div>
                       </div>
+                      
+                      {/* Elemento decorativo único */}
+                      <div className={cn(
+                        "absolute -top-4 -right-4 w-24 h-24 rounded-full opacity-10 transition-all duration-500 group-hover:scale-150 group-hover:opacity-20",
+                        cardColors[index % 4].replace('to-', 'to-transparent from-')
+                      )}></div>
                     </CardContent>
                   </Card>
                 </div>
               ))}
             </div>
+
+            {/* Call to action final revolucionário */}
+            <div className="text-center">
+              <div className="relative inline-block">
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 rounded-3xl blur-lg opacity-30 animate-pulse"></div>
+                <div className="relative bg-gradient-to-r from-red-600 via-red-700 to-red-600 text-white font-black py-6 px-12 rounded-3xl text-xl md:text-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-red-500/30 cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <Sparkles className="w-7 h-7 animate-spin" />
+                    <span>Descubra Todos os Nossos Serviços</span>
+                    <ArrowRight className="w-7 h-7 transition-transform duration-300 group-hover:translate-x-2" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
-         {!loading && serviceCards.length === 0 && (
-             <p className="text-center text-muted-foreground">Nenhum serviço cadastrado.</p>
-         )}
+
+        {!loading && serviceCards.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-gray-500 text-xl">Nenhum serviço cadastrado.</p>
+          </div>
+        )}
       </div>
     </section>
   );
 };
 
 export default SpecializedServices;
+

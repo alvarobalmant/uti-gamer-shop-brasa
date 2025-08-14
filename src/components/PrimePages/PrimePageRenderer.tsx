@@ -5,8 +5,8 @@ import { PrimePageLayoutItem } from '@/hooks/usePrimePages';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import HeroQuickLinks from '@/components/HeroQuickLinks';
 import PromotionalBanner from '@/components/PromotionalBanner';
-import SpecializedServices from '@/components/ServiceCards/SpecializedServices';
-import WhyChooseUs from '@/components/ServiceCards/WhyChooseUs';
+import SpecializedServicesUltraCompact from '@/components/ServiceCards/SpecializedServicesUltraCompact';
+import WhyChooseUsWithReviews from '@/components/ServiceCards/WhyChooseUsWithReviews';
 import ContactHelp from '@/components/ServiceCards/ContactHelp';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
 import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
@@ -60,10 +60,10 @@ export const PrimePageRenderer: React.FC<PrimePageRendererProps> = ({
         );
       
       case 'specialized_services':
-        return <SpecializedServices key={section_key} />;
+        return <SpecializedServicesUltraCompact key={section_key} />;
       
       case 'why_choose_us':
-        return <WhyChooseUs key={section_key} />;
+        return <WhyChooseUsWithReviews key={section_key} />;
       
       case 'contact_help':
         return <ContactHelp key={section_key} />;

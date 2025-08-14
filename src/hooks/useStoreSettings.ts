@@ -55,7 +55,7 @@ const DEFAULT_STORE_SETTINGS: StoreSettings = {
   express_delivery_days: '2-3',
   express_delivery_price: 15.90,
   store_address: 'Colatina - ES',
-  company_cnpj: '12.345.678/0001-90',
+  company_cnpj: '16.811.173/0001-20',
   cutoff_time: '14:00',
   company_name: 'UTI dos Games',
   years_in_market: 15,

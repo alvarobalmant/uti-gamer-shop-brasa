@@ -77,6 +77,7 @@ const config = {
       fontFamily: {
         sans: ["var(--font-inter)", "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
         heading: ["var(--font-inter)", "Inter", "sans-serif"], // Keep consistent
+        lexend: ["Lexend Deca", "sans-serif"], // Nova fonte Lexend Deca
       },
       fontSize: {
         // Refined scale from plan

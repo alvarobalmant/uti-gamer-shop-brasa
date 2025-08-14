@@ -60,7 +60,7 @@ const PromotionalRibbon: React.FC<PromotionalRibbonProps> = ({
   const ribbonContent = (
     <div
       className={cn(
-        "w-full h-[40px] flex items-center justify-center text-sm font-medium transition-all duration-200",
+        "w-full h-[40px] flex items-center justify-center text-base font-semibold transition-all duration-200",
         link && link.trim() !== '' && link !== '#' && "cursor-pointer hover:opacity-90",
         className
       )}

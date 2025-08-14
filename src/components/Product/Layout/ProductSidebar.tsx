@@ -13,6 +13,7 @@ import ActionButtons from '../Sidebar/ActionButtons';
 import UTICoinsInfo from '../Sidebar/UTICoinsInfo';
 import TrustBadges from '../Sidebar/TrustBadges';
 import DynamicDelivery from '../Sidebar/DynamicDelivery';
+
 import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
 
 interface ProductSidebarProps {

@@ -39,19 +39,6 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
   }
 
   const config = section.content_config as any;
-  
-  // Log detalhado da ordem dos elementos (apenas em desenvolvimento)
-  if (process.env.NODE_ENV === 'development' && config.banner_rows && Array.isArray(config.banner_rows)) {
-    console.log(`[SpecialSectionRenderer] Section "${section.title}" banner_rows order:`,
-      config.banner_rows.map((row: any, index: number) => ({
-        index,
-        type: row.type,
-        layout: row.layout,
-        title: row.title,
-        row_id: row.row_id
-      }))
-    );
-  }
 
   const getProductsByIds = (ids: string[] = []): Product[] => {
     if (!ids || ids.length === 0) return [];
@@ -189,8 +176,8 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
       // Seção especial sem fundo com espaçamento reduzido (usado em contextos específicos)
       return "py-2 md:py-3 my-1 md:my-2";
     } else if (hasBackground) {
-      // Seções especiais com fundo precisam de mais espaço para destaque visual
-      return "py-6 md:py-8 my-4 md:my-6";
+      // Seções especiais com fundo - padding normal, mas margem superior ainda maior para criar mais espaço branco
+      return "py-6 md:py-8 mt-16 md:mt-20 mb-4 md:mb-6";
     } else {
       // Seções especiais sem fundo devem ter espaçamento reduzido para melhor integração no fluxo
       return "py-3 md:py-4 my-2 md:my-3";

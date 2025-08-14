@@ -83,7 +83,7 @@ const FeaturedProductsSection = ({
     const firstCard = container.querySelector('[data-card]') as HTMLElement;
     if (!firstCard) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('[FeaturedProductsSection] Nenhum card encontrado');
+        // Nenhum card encontrado
       }
       return;
     }
@@ -114,32 +114,17 @@ const FeaturedProductsSection = ({
       newRightLevel = 'subtle';
     }
     
+    // Detecção de gradientes otimizada (desenvolvimento)
     if (process.env.NODE_ENV === 'development') {
-      console.log('[FeaturedProductsSection] Detecção de gradientes:', {
-        scrollLeft,
-        clientWidth,
-        scrollWidth,
-        remainingWidth,
-        cardWidth,
-        subtleThreshold: `${subtleThreshold.toFixed(1)}px`,
-        intenseThreshold: `${intenseThreshold.toFixed(1)}px`,
-        leftLevel: newLeftLevel,
-        rightLevel: newRightLevel
-      });
+      // Debug info removido para produção
     }
     
     // Atualizar estados apenas se houver mudança
     if (leftGradientLevel !== newLeftLevel) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[FeaturedProductsSection] Mudança gradiente esquerdo: ${leftGradientLevel} → ${newLeftLevel}`);
-      }
       setLeftGradientLevel(newLeftLevel);
     }
     
     if (rightGradientLevel !== newRightLevel) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[FeaturedProductsSection] Mudança gradiente direito: ${rightGradientLevel} → ${newRightLevel}`);
-      }
       setRightGradientLevel(newRightLevel);
     }
   }, [leftGradientLevel, rightGradientLevel]);
@@ -161,7 +146,6 @@ const FeaturedProductsSection = ({
   // Function to handle product click - always navigate to product page
   const handleProductCardClick = useCallback(async (productId: string) => {
     // Salvar posição atual antes de navegar
-    console.log('[FeaturedProducts] Salvando posição antes de navegar para produto:', productId);
     const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
     scrollManager.savePosition(location.pathname, 'featured-product-navigation');
     navigate(`/produto/${productId}`);
@@ -180,16 +164,7 @@ const FeaturedProductsSection = ({
     const newCanScrollLeft = scrollLeft > tolerance;
     const newCanScrollRight = scrollLeft < (scrollWidth - clientWidth - tolerance);
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[FeaturedProductsSection] Check scroll buttons:', {
-        scrollLeft,
-        scrollWidth,
-        clientWidth,
-        maxScroll: scrollWidth - clientWidth,
-        canScrollLeft: newCanScrollLeft,
-        canScrollRight: newCanScrollRight
-      });
-    }
+    // Debug info removido para produção
     
     setCanScrollLeft(newCanScrollLeft);
     setCanScrollRight(newCanScrollRight);
@@ -269,30 +244,7 @@ const FeaturedProductsSection = ({
     return () => window.removeEventListener('resize', handleResize);
   }, [checkForCutOffCards, checkScrollButtons]);
 
-  // Effect para detectar quando a animação de scroll termina
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleScrollEnd = () => {
-      // Verifica novamente quando o scroll termina
-      setTimeout(checkForCutOffCards, 100);
-    };
-
-    // Detecta quando o scroll termina usando um timer
-    let scrollTimer: NodeJS.Timeout;
-    const handleScroll = () => {
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(handleScrollEnd, 150);
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      clearTimeout(scrollTimer);
-    };
-  }, [checkForCutOffCards]);
+  // Listener de scroll duplicado removido - otimização de performance
 
   if (loading) {
     // Render loading state if needed

@@ -1,4 +1,3 @@
-
 import { useServiceCards } from "@/hooks/useServiceCards";
 import { useNavigate } from "react-router-dom";
 import {
@@ -16,6 +15,8 @@ import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
+import WhyChooseUsWithReviews from "@/components/ServiceCards/WhyChooseUsWithReviews";
+import SpecializedServicesUltraCompact from "@/components/ServiceCards/SpecializedServicesUltraCompact";
 
 const ServiceCards = () => {
   const { serviceCards, loading } = useServiceCards();
@@ -30,29 +31,6 @@ const ServiceCards = () => {
     }
   };
 
-  const differentiators = [
-    {
-      icon: Award,
-      title: "10+ Anos de Tradição",
-      description: "Referência em games na região",
-    },
-    {
-      icon: Users,
-      title: "Especialistas em Games",
-      description: "Equipe especializada e apaixonada",
-    },
-    {
-      icon: Shield,
-      title: "Garantia e Confiança",
-      description: "Produtos e serviços com garantia",
-    },
-    {
-      icon: Star,
-      title: "Atendimento Personalizado",
-      description: "Suporte dedicado a cada cliente",
-    },
-  ];
-
   if (loading) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
@@ -63,140 +41,11 @@ const ServiceCards = () => {
 
   return (
     <div className="w-full overflow-x-hidden">
-      {/* Main Services Section */}
-      <section className="py-8 md:py-12 bg-background">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionTitle
-            title="Nossos Serviços Especializados"
-            subtitle="Mais de 10 anos oferecendo os melhores serviços em games para Colatina e região"
-            className="text-center mb-8 md:mb-12"
-          />
+      {/* Specialized Services Section - Novo Design Impactante */}
+      <SpecializedServicesUltraCompact />
 
-          {serviceCards.length > 0 && (
-            <div className="relative">
-              <div
-                className={cn(
-                  "grid grid-cols-1 gap-6",
-                  "md:grid-cols-2 lg:grid-cols-4",
-                  "md:overflow-visible md:pb-0",
-                  "overflow-x-auto pb-4 flex md:grid space-x-4 md:space-x-0",
-                  "-mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 md:mx-0 md:px-0"
-                )}
-                style={{ scrollbarWidth: "none" }}
-              >
-                {serviceCards.map((card, index) => (
-                  <div
-                    key={card.id}
-                    className="w-72 md:w-auto flex-shrink-0 md:flex-shrink"
-                  >
-                    <Card
-                      onClick={() => handleCardClick(card.link_url)}
-                      className={cn(
-                        "h-full cursor-pointer border border-border/80 rounded-xl overflow-hidden bg-card",
-                        "group transition-all duration-300 ease-in-out",
-                        // Remover hover effects no mobile, aplicar apenas no desktop
-                        "md:hover:shadow-lg md:hover:border-primary/40 md:hover:-translate-y-1"
-                      )}
-                    >
-                      <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                        <div className="mb-4 flex-shrink-0">
-                          <div className="relative w-14 h-14 mx-auto">
-                            <div className={cn(
-                              "w-full h-full bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center",
-                              "transition-transform duration-300",
-                              // Remover hover scale no mobile
-                              "md:group-hover:scale-110"
-                            )}>
-                              <img
-                                src={card.image_url}
-                                alt=""
-                                className="w-7 h-7 object-contain filter brightness-0 invert"
-                                loading="lazy"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = "none";
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <h3 className={cn(
-                          "text-base font-semibold text-foreground mb-1",
-                          "transition-colors duration-200",
-                          // Remover hover color no mobile
-                          "md:group-hover:text-primary"
-                        )}>
-                          {card.title}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                          {card.description}
-                        </p>
-                        <div className={cn(
-                          "flex items-center justify-center text-primary font-medium text-xs mt-auto",
-                          "transition-colors duration-300",
-                          // Remover hover color no mobile
-                          "md:group-hover:text-primary/80"
-                        )}>
-                          <span>Saiba mais</span>
-                          <ArrowRight className={cn(
-                            "w-3 h-3 ml-1",
-                            "transition-transform duration-300",
-                            // Remover hover translate no mobile
-                            "md:group-hover:translate-x-0.5"
-                          )} />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Store Differentiators Section */}
-      <section className="py-12 md:py-16 bg-secondary text-secondary-foreground">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionTitle
-            title="Por que escolher a UTI DOS GAMES?"
-            subtitle="Nossos diferenciais que fazem a diferença na sua experiência"
-            className="text-center mb-8 md:mb-12"
-            titleClassName="text-white"
-            subtitleClassName="text-secondary-foreground/80"
-          />
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            {differentiators.map((item, index) => {
-              const IconComponent = item.icon;
-              return (
-                <div key={index} className="text-center group">
-                  <div className="mb-4">
-                    <div className={cn(
-                      "w-16 h-16 mx-auto bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg",
-                      "transition-transform duration-300",
-                      // Remover hover scale no mobile
-                      "md:group-hover:scale-110"
-                    )}>
-                      <IconComponent className="w-8 h-8 text-primary-foreground" />
-                    </div>
-                  </div>
-                  <h3 className={cn(
-                    "text-sm font-semibold text-gray-800 mb-1",
-                    "transition-colors duration-300",
-                    // Remover hover color no mobile
-                    "md:group-hover:text-primary/80"
-                  )}>
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* Store Differentiators Section - Novo Design Impactante */}
+      <WhyChooseUsWithReviews />
 
       {/* Contact/Help Section */}
       <section className="py-12 md:py-16 bg-background">
@@ -282,3 +131,4 @@ const ServiceCards = () => {
 };
 
 export default ServiceCards;
+

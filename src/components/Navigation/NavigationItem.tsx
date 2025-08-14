@@ -24,7 +24,7 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
   const ItemContent = () => (
     <motion.div
       ref={containerRef}
-      className="relative inline-block cursor-pointer select-none text-xs md:text-sm font-medium px-2 py-3"
+      className="relative inline-block cursor-pointer select-none text-sm md:text-base font-lexend font-semibold px-3 py-3" // Adicionada font-lexend
       style={{
         color: normalText,
       }}
@@ -138,11 +138,11 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
         className="whitespace-nowrap relative z-10 pointer-events-none select-none"
         variants={{
           initial: {
-            fontWeight: 500,
+            fontWeight: 600, // Reduzido de 700 para 600 (semibold)
             letterSpacing: '0em',
           },
           hover: {
-            fontWeight: 600,
+            fontWeight: 700, // Reduzido de 800 para 700 (bold)
             letterSpacing: '0.025em',
           }
         }}

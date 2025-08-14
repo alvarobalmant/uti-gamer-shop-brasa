@@ -115,7 +115,7 @@ const Footer: React.FC = () => {
         <div className="text-center pt-8">
           {/* Optional: Add payment method icons here */}
           <p className="text-xs text-gray-500 mb-2">
-            UTI DOS GAMES LTDA - CNPJ: XX.XXX.XXX/0001-XX | Endereço: Rua Exemplo, 123, Centro, Colatina - ES, CEP 29700-000
+            UTI DOS GAMES LTDA - CNPJ: 16.811.173/0001-20 | Endereço: Rua Exemplo, 123, Centro, Colatina - ES, CEP 29700-000
           </p>
           <p className="text-xs text-gray-500">
             © {currentYear} UTI DOS GAMES. Todos os direitos reservados. Os preços e condições de pagamento são exclusivos para compras via internet.

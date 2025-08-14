@@ -1,34 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useCart } from '@/contexts/CartContext';
-import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useProductDetail } from '@/hooks/useProductDetail';
-import { useAnalytics } from '@/contexts/AnalyticsContext';
-
-import { saveScrollPosition, restoreScrollPosition } from '@/lib/scrollRestorationManager';
-import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
-import ProductHero from '@/components/Product/ProductHero';
-import ProductLayout from '@/components/Product/Layout/ProductLayout';
-import ProductTabsEnhanced from '@/components/Product/ProductTabsEnhanced';
-import RelatedProductsSection from '@/components/Product/RelatedProductsSection';
-import ProductGuarantees from '@/components/Product/ProductGuarantees';
-import ProductCTABottom from '@/components/Product/ProductCTABottom';
+import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useToast } from '@/hooks/use-toast';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
+import { saveScrollPosition } from '@/lib/scrollRestorationManager';
 
-// Mobile Components
-import ProductHeroMobile from '@/components/Product/Mobile/ProductHeroMobile';
-import ProductTabsMobile from '@/components/Product/Mobile/ProductTabsMobile';
-import RelatedProductsMobile from '@/components/Product/Mobile/RelatedProductsMobile';
-
-// New Mercado Livre Style Mobile Components
-import ProductPageMobileMercadoLivre from '@/components/Product/Mobile/ProductPageMobileMercadoLivre';
+// LAZY LOADING REAL - carrega apenas desktop OU mobile sob demanda
+const ProductLayout = lazy(() => import('@/components/Product/Layout/ProductLayout'));
+const ProductPageMobileMercadoLivre = lazy(() => import('@/components/Product/Mobile/ProductPageMobileMercadoLivre'));
+const ProductCTABottom = lazy(() => import('@/components/Product/ProductCTABottom'));
 import ProductSEO from '@/components/Product/ProductSEO';
-import PlatformSelector from '@/components/SKU/PlatformSelector';
 import SKUBreadcrumb from '@/components/SKU/SKUBreadcrumb';
-import SKUPriceComparison from '@/components/SKU/SKUPriceComparison';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 import { SKUNavigation } from '@/hooks/useProducts/types';
 
 const ProductPageSKU = () => {
@@ -36,21 +26,23 @@ const ProductPageSKU = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  console.log('[ProductPageSKU] Iniciando com ID:', id);
-  console.log('[ProductPageSKU] Location:', location.pathname);
-  
   const { product, skuNavigation, loading, error } = useProductDetail(id);
   
-  console.log('[ProductPageSKU] Debug dados:', {
-    product: !!product,
-    skuNavigation: !!skuNavigation,
-    platforms: skuNavigation?.platforms?.length,
-    loading,
-    error
-  });
-  const { addToCart, items, updateQuantity, getCartTotal, getCartItemsCount } = useCart();
+  const { addToCart } = useCart();
   const { toast } = useToast();
   const { trackProductView } = useAnalytics();
+  
+  // DETECÇÃO DE DISPOSITIVO para lazy loading real
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  
+  // Debug para verificar detecção
+  useEffect(() => {
+    console.log('🔍 Device Detection:', {
+      isMobile,
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'undefined',
+      mediaQueryResult: typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)').matches : 'undefined'
+    });
+  }, [isMobile]);
   
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -73,9 +65,6 @@ const ProductPageSKU = () => {
 
 
   const handleBack = async () => {
-    console.log('[ProductPageSKU] Botão voltar clicado');
-    // NÃO salvar a posição atual da página de produto - queremos manter a posição da página anterior
-    // Usar navigate(-1) para voltar no histórico, que vai acionar o sistema de restauração
     navigate(-1);
   };
 
@@ -150,8 +139,9 @@ const ProductPageSKU = () => {
         showNavigation={false}
       />
 
-      <main className="pt-20 md:pt-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="pt-36 md:pt-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
+          <div className="w-full max-w-6xl">
           {/* Breadcrumb com suporte a SKUs */}
           <div className="mb-4">
             {shouldShowSKUComponents() && skuNavigation ? (
@@ -171,33 +161,49 @@ const ProductPageSKU = () => {
             )}
           </div>
 
-           {/* Desktop Version - Novo Layout */}
-          <div className="hidden md:block">
-            <ProductLayout
-              product={product}
-              skuNavigation={skuNavigation}
-              onAddToCart={handleAddToCart}
-            />
-          </div>
-
-          {/* Mobile Version - Mercado Livre Style */}
-          <div className="block md:hidden">
-            <ProductPageMobileMercadoLivre 
-              product={product}
-              skuNavigation={skuNavigation}
-              onAddToCart={handleAddToCart}
-            />
-          </div>
+           {/* LAZY LOADING REAL - carrega apenas desktop OU mobile */}
+          {(() => {
+            console.log('🚀 Lazy Loading Decision:', { isMobile, component: isMobile ? 'Mobile' : 'Desktop' });
+            
+            return isMobile ? (
+              <Suspense fallback={
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+                </div>
+              }>
+                <ProductPageMobileMercadoLivre 
+                  product={product}
+                  skuNavigation={skuNavigation}
+                  onAddToCart={handleAddToCart}
+                />
+              </Suspense>
+            ) : (
+              <Suspense fallback={
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+                </div>
+              }>
+                <ProductLayout
+                  product={product}
+                  skuNavigation={skuNavigation}
+                  onAddToCart={handleAddToCart}
+                />
+              </Suspense>
+            );
+          })()}
+        </div>
         </div>
       </main>
 
-      {/* CTA Bottom - Desktop */}
-      <div className="hidden md:block">
-        <ProductCTABottom 
-          product={product}
-          onAddToCart={handleAddToCart}
-        />
-      </div>
+      {/* CTA Bottom - Desktop com lazy loading */}
+      {!isMobile && (
+        <Suspense fallback={null}>
+          <ProductCTABottom 
+            product={product}
+            onAddToCart={handleAddToCart}
+          />
+        </Suspense>
+      )}
 
       {/* Modais */}
       <Cart 

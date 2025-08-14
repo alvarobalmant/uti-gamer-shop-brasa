@@ -229,12 +229,16 @@ export class IntelligentPreloader {
     // Preload do chunk da página de produto
     await import('../pages/ProductPageSKU');
     
-    // Preload de componentes críticos da página de produto
+    // Preload de componentes críticos da página de produto com lazy loading
     await Promise.all([
       import('../components/Product/ProductHero'),
-      import('../components/Product/Layout/ProductLayout'),
+      import('../components/Product/Layout/ProductLayout'), // Desktop
+      import('../components/Product/Mobile/ProductPageMobileMercadoLivre'), // Mobile
+      import('../components/Product/ProductCTABottom'), // CTA Bottom
       import('../components/Product/ProductTabsEnhanced')
     ]);
+    
+    console.log('✅ Preload completo: Página de produto (desktop + mobile)');
   }
 
   private async preloadSearchPage(): Promise<void> {

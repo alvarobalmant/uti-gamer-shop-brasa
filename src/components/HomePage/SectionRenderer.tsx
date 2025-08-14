@@ -5,8 +5,8 @@ import { ProductSection } from '@/hooks/useProductSections';
 import HeroBannerCarousel from '@/components/HeroBannerCarousel';
 import HeroQuickLinks from '@/components/HeroQuickLinks';
 import PromotionalBanner from '@/components/PromotionalBanner';
-import SpecializedServices from '@/components/ServiceCards/SpecializedServices';
-import WhyChooseUs from '@/components/ServiceCards/WhyChooseUs';
+import SpecializedServicesUltraCompact from '@/components/ServiceCards/SpecializedServicesUltraCompact';
+import WhyChooseUsWithReviews from '@/components/ServiceCards/WhyChooseUsWithReviews';
 import ContactHelp from '@/components/ServiceCards/ContactHelp';
 import FeaturedProductsSection from '@/components/FeaturedProducts/FeaturedProductsSection';
 
@@ -55,9 +55,9 @@ export const SectionRenderer: React.FC<SectionRendererProps> = ({
         );
       
       case 'specialized_services':
-        return <SpecializedServices key="specialized_services" />;
+        return <SpecializedServicesUltraCompact key="specialized_services" />;
       case 'why_choose_us':
-        return <WhyChooseUs key="why_choose_us" />;
+        return <WhyChooseUsWithReviews key="why_choose_us" />;
       case 'contact_help':
         return <ContactHelp key="contact_help" />;
       

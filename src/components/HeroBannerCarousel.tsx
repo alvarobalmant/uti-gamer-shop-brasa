@@ -114,7 +114,7 @@ const HeroBannerCarousel = React.memo(() => {
     if (!activeRibbonConfig || !activeRibbonConfig.is_active) return null;
     
     return (
-      <div className="mt-[38px]">
+      <div className="mt-[58px]">
         <PromotionalRibbon 
           isVisible={true}
           text={activeRibbonConfig.text}
@@ -195,7 +195,7 @@ const HeroBannerCarousel = React.memo(() => {
       {promotionalRibbonComponent}
       {spacingComponent}
       
-      <section className="relative overflow-hidden border-b border-border/60 bg-uti-gray-light">
+      <section className="relative overflow-hidden bg-uti-gray-light">
         <Carousel 
           setApi={setApi}
           plugins={[plugin.current]}
@@ -281,25 +281,6 @@ const HeroBannerCarousel = React.memo(() => {
             })}
           </CarouselContent>
           
-          {/* Custom Banner Indicators */}
-          {deviceBanners.length > 1 && (
-            <div className="absolute bottom-4 md:bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-              {deviceBanners.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleScrollTo(index)}
-                  className={cn(
-                    "w-2.5 h-2.5 rounded-full transition-all duration-300",
-                    index === currentSlide 
-                      ? "bg-white scale-110 ring-1 ring-white/50 ring-offset-2 ring-offset-black/20" 
-                      : "bg-white/40 hover:bg-white/70"
-                  )}
-                  aria-label={`Ir para o banner ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
-
           {/* Navigation Arrows */}
           {deviceBanners.length > 1 && (
             <>
@@ -332,6 +313,27 @@ const HeroBannerCarousel = React.memo(() => {
             </>
           )}
         </Carousel>
+        
+        {/* Custom Banner Indicators - Posicionados fora do banner */}
+        {deviceBanners.length > 1 && (
+          <div className="flex justify-center pt-4 pb-2">
+            <div className="flex gap-2">
+              {deviceBanners.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleScrollTo(index)}
+                  className={cn(
+                    "w-2.5 h-2.5 rounded-full transition-all duration-300",
+                    index === currentSlide 
+                      ? "bg-gray-800 scale-110" 
+                      : "bg-gray-400 hover:bg-gray-600"
+                  )}
+                  aria-label={`Ir para o banner ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </section>
     </>
   );

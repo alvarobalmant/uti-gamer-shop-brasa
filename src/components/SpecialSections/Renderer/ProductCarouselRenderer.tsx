@@ -93,7 +93,6 @@ export const ProductCarouselRenderer: React.FC<ProductCarouselRendererProps> = (
   // Adicionar ao carrinho
   const handleAddToCart = (productId: string) => {
     // Implementar lógica do carrinho
-    console.log('Adicionar ao carrinho:', productId);
   };
 
   if (!products.length) {

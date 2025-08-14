@@ -107,7 +107,7 @@ const TrustBadges: React.FC<TrustBadgesProps> = ({ className }) => {
 
       {/* Informações Legais */}
       <div className="text-xs text-gray-500 space-y-1">
-        <div>📋 CNPJ: 12.345.678/0001-90</div>
+        <div>📋 CNPJ: 16.811.173/0001-20</div>
         <div>📍 Colatina - ES, Brasil</div>
         <div>⭐ 15+ anos no mercado</div>
         <div>🏆 +50.000 clientes satisfeitos</div>

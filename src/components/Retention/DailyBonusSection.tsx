@@ -106,18 +106,30 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
 
   // Função para resgatar daily bonus
   const claimDailyBonus = async () => {
-    if (!dailyBonusData?.canClaim || claiming) return;
+    console.log('[DAILY_BONUS_WIDGET] claimDailyBonus called', { canClaim: dailyBonusData?.canClaim, claiming });
+    
+    if (!dailyBonusData?.canClaim || claiming) {
+      console.log('[DAILY_BONUS_WIDGET] Cannot claim - conditions not met');
+      return;
+    }
     
     try {
+      console.log('[DAILY_BONUS_WIDGET] Starting claim process...');
       setClaiming(true);
+      
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
         body: { action: 'process_daily_login_brasilia' }
       });
 
-      if (error) throw error;
+      console.log('[DAILY_BONUS_WIDGET] Supabase response:', { data, error });
+
+      if (error) {
+        console.error('[DAILY_BONUS_WIDGET] Supabase error:', error);
+        throw error;
+      }
 
       if (data?.success) {
-        console.log('[DAILY_BONUS_WIDGET] Daily bonus claimed:', data);
+        console.log('[DAILY_BONUS_WIDGET] Daily bonus claimed successfully:', data);
         // Atualizar dados locais
         setDailyBonusData(prev => prev ? {
           ...prev,
@@ -131,10 +143,13 @@ export const DailyBonusSection: React.FC<DailyBonusSectionProps> = ({ onBonusCla
         onBonusClaimed?.();
         // Recarregar dados após o claim
         setTimeout(() => loadDailyBonusData(), 1000);
+      } else {
+        console.error('[DAILY_BONUS_WIDGET] Claim failed:', data);
       }
     } catch (error) {
       console.error('[DAILY_BONUS_WIDGET] Error claiming daily bonus:', error);
     } finally {
+      console.log('[DAILY_BONUS_WIDGET] Claim process finished');
       setClaiming(false);
     }
   };

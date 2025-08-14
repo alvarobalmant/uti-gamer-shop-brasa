@@ -91,16 +91,7 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
     const newCanScrollLeft = scrollLeft > tolerance;
     const newCanScrollRight = scrollLeft < (scrollWidth - clientWidth - tolerance);
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[SpecialCarouselRow] Check scroll buttons:', {
-        scrollLeft,
-        scrollWidth,
-        clientWidth,
-        maxScroll: scrollWidth - clientWidth,
-        canScrollLeft: newCanScrollLeft,
-        canScrollRight: newCanScrollRight
-      });
-    }
+    // Debug info removido para produção
     
     setCanScrollLeft(newCanScrollLeft);
     setCanScrollRight(newCanScrollRight);
@@ -116,9 +107,7 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
     // Obter o primeiro card para medir o tamanho real
     const firstCard = container.querySelector('[data-card]') as HTMLElement;
     if (!firstCard) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[SpecialCarouselRow] Nenhum card encontrado');
-      }
+      // Nenhum card encontrado
       return;
     }
     
@@ -148,32 +137,14 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
       newRightLevel = 'subtle';
     }
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[SpecialCarouselRow] Detecção de gradientes:', {
-        scrollLeft,
-        clientWidth,
-        scrollWidth,
-        remainingWidth,
-        cardWidth,
-        subtleThreshold: `${subtleThreshold.toFixed(1)}px`,
-        intenseThreshold: `${intenseThreshold.toFixed(1)}px`,
-        leftLevel: newLeftLevel,
-        rightLevel: newRightLevel
-      });
-    }
+    // Detecção de gradientes otimizada
     
     // Atualizar estados apenas se houver mudança
     if (leftGradientLevel !== newLeftLevel) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[SpecialCarouselRow] Mudança gradiente esquerdo: ${leftGradientLevel} → ${newLeftLevel}`);
-      }
       setLeftGradientLevel(newLeftLevel);
     }
     
     if (rightGradientLevel !== newRightLevel) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[SpecialCarouselRow] Mudança gradiente direito: ${rightGradientLevel} → ${newRightLevel}`);
-      }
       setRightGradientLevel(newRightLevel);
     }
   }, [leftGradientLevel, rightGradientLevel]);
@@ -268,30 +239,7 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
     return () => window.removeEventListener('resize', handleResize);
   }, [checkForCutOffCards, checkScrollButtons]);
 
-  // Effect para detectar quando a animação de scroll termina
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleScrollEnd = () => {
-      // Verifica novamente quando o scroll termina
-      setTimeout(checkForCutOffCards, 100);
-    };
-
-    // Detecta quando o scroll termina usando um timer
-    let scrollTimer: NodeJS.Timeout;
-    const handleScroll = () => {
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(handleScrollEnd, 150);
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      clearTimeout(scrollTimer);
-    };
-  }, [checkForCutOffCards]);
+  // Listener de scroll duplicado removido - otimização de performance
 
   // Função para renderizar o título estilo GameStop (bicolor ou monocolor)
   const renderGameStopTitle = () => {

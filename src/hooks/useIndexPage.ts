@@ -36,7 +36,6 @@ export const useIndexPage = () => {
     if (products?.length === 0 && !productsLoading && retryCount < MAX_RETRIES) {
       const timer = setTimeout(() => {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`Attempt ${retryCount + 1} of ${MAX_RETRIES} to load products`);
         }
         setRetryCount(prev => prev + 1);
         refetch();

@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { SKUNavigation } from '@/hooks/useProducts/types';
 import { cn } from '@/lib/utils';
 import ProductMainContent from './ProductMainContent';
 import ProductSidebar from './ProductSidebar';
-import { useStickyWithBounds } from '@/hooks/useStickyWithBounds';
 
 interface ProductLayoutProps {
   product: Product;
@@ -19,48 +18,20 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
   onAddToCart,
   className
 }) => {
-  const mainImageRef = useRef<HTMLDivElement>(null);
-  
-  // Initialize sticky behavior com offset natural para não grudar no header
-  const { registerStickyElement, unregisterStickyElement, refreshBounds } = useStickyWithBounds({
-    enabled: true,
-    referenceElementId: 'product-info-column',
-    naturalOffset: 120 // 120px de offset natural do header
-  });
-
-  // Register sticky elements when they mount - apenas imagem principal
-  useEffect(() => {
-    if (mainImageRef.current) {
-      registerStickyElement('main-image-sticky', mainImageRef.current);
-    }
-
-    return () => {
-      unregisterStickyElement('main-image-sticky');
-    };
-  }, [registerStickyElement, unregisterStickyElement]);
-
-  // Refresh bounds when product changes (layout might change)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      refreshBounds();
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, [product, refreshBounds]);
   return (
     <div className={cn("max-w-7xl mx-auto px-4 py-6", className)}>
-      {/* Layout principal: 2 colunas + sidebar separada */}
-      <div className="flex flex-col lg:flex-row gap-6">
+      {/* Layout principal: 2 colunas + sidebar separada - CENTRALIZADO */}
+      <div className="flex flex-col lg:flex-row gap-6 justify-center items-start mx-auto max-w-6xl">
         
         {/* Container da imagem e galeria + seções inferiores */}
-        <div className="flex-1 lg:pr-6">
+        <div className="flex-1 max-w-4xl">
           {/* Top: Layout das 2 colunas superiores */}
-          <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex flex-col lg:flex-row gap-6 justify-center">
             
             {/* COLUNA 1: Container da Imagem Principal + Galeria UNIFICADOS */}
             <div className="w-full lg:w-[480px] order-1 lg:order-1">
-              {/* ELEMENTO sticky unificado - imagem + galeria juntos */}
-              <div ref={mainImageRef} className="h-fit z-10">
+              {/* STICKY REMOVIDO - scroll normal para melhor performance */}
+              <div>
                 <ProductMainContent 
                   product={product}
                   skuNavigation={skuNavigation}
@@ -78,8 +49,8 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
               </div>
             </div>
 
-            {/* COLUNA 2: Informações do Produto - ALTURA NATURAL */}
-            <div className="flex-1 order-2" id="product-info-column">
+            {/* COLUNA 2: Informações do Produto - LARGURA CONTROLADA */}
+            <div className="w-full lg:w-96 order-2" id="product-info-column">
               <ProductMainContent 
                 product={product}
                 skuNavigation={skuNavigation}
@@ -88,12 +59,12 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
             </div>
           </div>
 
-          {/* Seções inferiores */}
+          {/* Seções inferiores - EXPANDIDAS para ocupar largura das duas colunas */}
           <div className="mt-12">
-            {/* Desktop: mantém o alinhamento com as colunas acima */}
-            <div className="hidden lg:flex lg:gap-6">
-              {/* Container dos elementos inferiores alinhado com a imagem */}
-              <div className="w-[480px] flex-1">
+            {/* Desktop: expande da ponta esquerda da coluna 1 até ponta direita da coluna 2 */}
+            <div className="hidden lg:flex lg:gap-6 justify-center">
+              {/* Container expandido - largura das duas colunas principais (480px + 384px + gap) */}
+              <div className="w-full max-w-[900px]">
                 <ProductMainContent 
                   product={product}
                   skuNavigation={skuNavigation}
@@ -114,7 +85,7 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
         </div>
 
         {/* COLUNA 4: Sidebar de Compra - STICKY independente, ao lado do conteúdo */}
-        <div className="w-full lg:w-80 order-4">
+        <div className="w-full lg:w-80 order-4 flex-shrink-0">
           <div className="sticky top-4 z-10">
             <ProductSidebar
               product={product}

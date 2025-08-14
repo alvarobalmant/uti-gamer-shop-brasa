@@ -4,13 +4,12 @@ import { SKUNavigation } from '@/hooks/useProducts/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Zap, Check, Star, Heart, Share2, ChevronLeft, ChevronRight, ZoomIn, Info, X } from 'lucide-react';
+import { ShoppingCart, Share2, ZoomIn, Info } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import FavoriteButton from '@/components/FavoriteButton';
 import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
 
 // Importar componentes especializados da MainContent
-import ProductGalleryEnhanced from '../MainContent/ProductGalleryEnhanced';
 import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
 import ProductSpecificationsTable from '../MainContent/ProductSpecificationsTable';
 import ProductDescriptionExpandable from '../MainContent/ProductDescriptionExpandable';
@@ -29,7 +28,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
   layout = 'bottom-sections',
   className
 }) => {
-  const { addToCart, sendToWhatsApp } = useCart();
+  const { addToCart } = useCart();
   const { platformConfig } = useDynamicPlatforms();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -202,7 +201,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
   // COLUNA 3: Título, Preço, Avaliações, Condições, Plataformas
   if (layout === 'product-info') {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-md">
         {/* Retirada na Loja e Social Proof */}
         <div className="flex items-center justify-between">
           <StorePickupBadge />
@@ -216,7 +215,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
 
         {/* Título */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 leading-tight mb-3">
+          <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-3">
             {product.name}
           </h1>
         </div>
@@ -229,7 +228,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
                 R$ {product.list_price.toFixed(2).replace('.', ',')}
               </span>
             )}
-            <span className="text-3xl font-semibold text-gray-900">
+            <span className="text-2xl font-semibold text-gray-900">
               R$ {product.price.toFixed(2).replace('.', ',')}
             </span>
           </div>
@@ -372,73 +371,13 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
         </div>
       </div>
 
-      {/* 3. Comparação entre Plataformas */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-blue-100 p-2 rounded-full">
-            <span className="text-blue-600 text-lg">🎮</span>
-          </div>
-          <h4 className="text-lg font-semibold text-blue-900">Comparação entre Plataformas</h4>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse bg-white rounded-lg shadow-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Recurso</th>
-                <th className="text-center py-3 px-4 font-semibold text-blue-600">PS5</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-600">PS4</th>
-                <th className="text-center py-3 px-4 font-semibold text-green-600">Xbox Series X</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              <tr>
-                <td className="py-3 px-4 text-blue-600 font-medium">Resolução 4K</td>
-                <td className="py-3 px-4 text-center">
-                  <Check className="w-5 h-5 text-green-500 mx-auto" />
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <X className="w-5 h-5 text-red-500 mx-auto" />
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <Check className="w-5 h-5 text-green-500 mx-auto" />
-                </td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 text-blue-600 font-medium">Ray Tracing</td>
-                <td className="py-3 px-4 text-center">
-                  <Check className="w-5 h-5 text-green-500 mx-auto" />
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <X className="w-5 h-5 text-red-500 mx-auto" />
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <Check className="w-5 h-5 text-green-500 mx-auto" />
-                </td>
-              </tr>
-              <tr>
-                <td className="py-3 px-4 text-blue-600 font-medium">Feedback Háptico</td>
-                <td className="py-3 px-4 text-center">
-                  <Check className="w-5 h-5 text-green-500 mx-auto" />
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <X className="w-5 h-5 text-red-500 mx-auto" />
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <X className="w-5 h-5 text-red-500 mx-auto" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      {/* 4. Produtos Relacionados */}
+      {/* 3. Produtos Relacionados */}
       <RelatedProductsCarousel 
         currentProduct={product}
       />
 
-      {/* 5. Call-to-Action Final */}
+      {/* 4. Call-to-Action Final */}
       <div className="bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-200 rounded-xl p-8 text-center shadow-sm">
         <div className="max-w-md mx-auto">
           <div className="flex justify-center mb-4">

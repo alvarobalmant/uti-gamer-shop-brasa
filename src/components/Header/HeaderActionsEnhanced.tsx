@@ -112,7 +112,7 @@ const HeaderActionsEnhanced = ({
           )}
         >
           <User className="w-4 h-4 mr-1" />
-          Sign In
+          Login
         </Button>
       )}
 

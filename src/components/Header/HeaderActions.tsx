@@ -46,7 +46,7 @@ const HeaderActions = ({
         )}
       >
         <User className="w-4 h-4 mr-1" />
-        {user ? (isAdmin ? 'Admin' : 'Conta') : 'Sign In'}
+        {user ? (isAdmin ? 'Admin' : 'Conta') : 'Login'}
       </Button>
 
       {/* Global Shopping Cart Icon - Always visible */}
