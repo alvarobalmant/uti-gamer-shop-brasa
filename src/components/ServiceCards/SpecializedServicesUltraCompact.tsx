@@ -32,18 +32,40 @@ const SpecializedServicesUltraCompact = () => {
   // Cores padrão caso não estejam configuradas
   const defaultColors = ['#ef4444', '#3b82f6', '#10b981', '#8b5cf6'];
 
-  // Função para converter hex para classe shadow/border com fallback
-  const getShadowClass = (color: string, index: number) => {
+  // Função para criar estilo de sombra dinâmico
+  const getShadowStyle = (color: string, index: number, enabled: boolean) => {
+    if (!enabled) return {};
+    
     const fallbackColor = defaultColors[index % 4];
     const hexColor = color || fallbackColor;
     
-    // Converter hex para RGB para usar no shadow
+    // Converter hex para RGB para usar no box-shadow
     const hex = hexColor.replace('#', '');
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
     
-    return `shadow-[0_4px_20px_rgba(${r},${g},${b},0.15)] hover:shadow-[0_8px_25px_rgba(${r},${g},${b},0.25)]`;
+    return {
+      boxShadow: `0 4px 20px rgba(${r}, ${g}, ${b}, 0.15)`,
+      transition: 'all 0.3s ease'
+    };
+  };
+
+  // Função para criar estilo de sombra hover
+  const getHoverShadowStyle = (color: string, index: number, enabled: boolean) => {
+    if (!enabled) return {};
+    
+    const fallbackColor = defaultColors[index % 4];
+    const hexColor = color || fallbackColor;
+    
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    return {
+      boxShadow: `0 8px 25px rgba(${r}, ${g}, ${b}, 0.25)`
+    };
   };
 
   // Função para criar gradiente dinâmico
@@ -104,7 +126,7 @@ const SpecializedServicesUltraCompact = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
               {serviceCards.map((card, index) => {
                 const IconComponent = serviceIcons[index % 4];
-                const shadowClass = card.shadow_enabled ? getShadowClass(card.shadow_color || '', index) : '';
+                const shadowStyle = getShadowStyle(card.shadow_color || '', index, card.shadow_enabled ?? true);
                 const gradientStyle = getGradientStyle(card.shadow_color || '', index);
                 
                 return (
@@ -115,17 +137,21 @@ const SpecializedServicesUltraCompact = () => {
                     {/* Card ultra-compacto */}
                     <Card
                       onClick={() => handleCardClick(card.link_url)}
-                      className={cn(
-                        "relative rounded-xl h-full cursor-pointer overflow-hidden border-0 transition-all duration-300",
-                        shadowClass,
-                        "hover:-translate-y-0.5"
-                      )}
+                      className="relative rounded-xl h-full cursor-pointer overflow-hidden border-0 transition-all duration-300 hover:-translate-y-0.5 group"
                       style={{
+                        ...shadowStyle,
                         backgroundImage: card.background_image_url 
                           ? `linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9)), url(${card.background_image_url})`
                           : 'linear-gradient(135deg, rgba(248,250,252,0.95), rgba(241,245,249,0.9))',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
+                      }}
+                      onMouseEnter={(e) => {
+                        const hoverStyle = getHoverShadowStyle(card.shadow_color || '', index, card.shadow_enabled ?? true);
+                        Object.assign(e.currentTarget.style, hoverStyle);
+                      }}
+                      onMouseLeave={(e) => {
+                        Object.assign(e.currentTarget.style, shadowStyle);
                       }}
                     >
                       <CardContent className="p-4 md:p-5 h-full relative">
