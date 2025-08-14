@@ -11,6 +11,10 @@ export interface ServiceCard {
   link_url: string;
   position: number;
   is_active: boolean;
+  background_image_url?: string;
+  shadow_color?: string;
+  shadow_enabled?: boolean;
+  icon_filter_enabled?: boolean;
   created_at: string;
   updated_at: string;
 }
