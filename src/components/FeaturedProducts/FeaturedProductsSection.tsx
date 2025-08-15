@@ -359,7 +359,7 @@ const FeaturedProductsSection = ({
               } as React.CSSProperties}
             >
               <div 
-                className="flex gap-3 min-w-max px-1 py-1"
+                className="flex gap-2 md:gap-3 min-w-max px-1 py-1"
                 style={{
                   // FORÇA O CORTE DO ÚLTIMO CARD - CARACTERÍSTICAS ESPECÍFICAS DA VERSÃO
                   width: 'calc(100% + 100px)', // Estende além do container para forçar corte

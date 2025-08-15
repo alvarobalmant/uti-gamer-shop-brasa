@@ -375,7 +375,7 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
               display: none;
             }
           `}</style>
-          <div className="flex gap-3 min-w-max px-1 py-1">
+          <div className="flex gap-2 md:gap-3 min-w-max px-1 py-1">
             {(config.products || []).map((product, index) => (
               <div 
                 key={`${product.id}-${index}`} 

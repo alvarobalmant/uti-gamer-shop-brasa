@@ -200,7 +200,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
             } as React.CSSProperties}
           >
             <div 
-              className="flex gap-3 min-w-max px-1 py-1"
+              className="flex gap-2 md:gap-3 min-w-max px-1 py-1"
               style={{
                 width: 'calc(100% + 100px)',
                 paddingRight: '120px'
