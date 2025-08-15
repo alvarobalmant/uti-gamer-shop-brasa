@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 import { UTICoinsConditional } from './UTICoinsConditional';
 
@@ -209,6 +210,7 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
   const [streakAnimated, setStreakAnimated] = useState(false);
   const { user } = useAuth();
   const { coins, transactions, loading, refreshData } = useUTICoins();
+  const { toast } = useToast();
   const previousBalance = useRef(coins.balance);
   const widgetRef = useRef<HTMLButtonElement>(null);
 
@@ -371,17 +373,34 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
 
   // Função para resgatar daily bonus
   const claimDailyBonus = async () => {
+    console.log('[DAILY_BONUS_WIDGET] claimDailyBonus called', { canClaim: dailyBonusData?.canClaim, claiming });
     if (!dailyBonusData?.canClaim || claiming) return;
     
     try {
       setClaiming(true);
+      console.log('[DAILY_BONUS_WIDGET] Calling secure-coin-actions with daily_login_bonus');
       const { data, error } = await supabase.functions.invoke('secure-coin-actions', {
-        body: { action: 'process_daily_login_brasilia' }
+        body: { action: 'daily_login_bonus' }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[DAILY_BONUS_WIDGET] Error claiming daily bonus:', error);
+        toast({
+          title: '❌ Erro',
+          description: 'Erro ao resgatar bônus diário. Tente novamente.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      console.log('[DAILY_BONUS_WIDGET] Response from secure-coin-actions:', data);
 
       if (data?.success) {
+        console.log('[DAILY_BONUS_WIDGET] Successfully claimed daily bonus:', data);
+        toast({
+          title: '🪙 Bônus Diário Resgatado!',
+          description: `Você ganhou ${data.amount || 0} UTI Coins! Streak: ${data.streak || 1}`,
+        });
         // Animar streak se aumentou
         if (data.streak > (dailyBonusData.currentStreak || 0)) {
           setStreakAnimated(true);
@@ -409,6 +428,13 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
         refreshData?.();
         // Recarregar dados após o claim para sincronizar com backend
         setTimeout(() => loadDailyBonusData(), 2000);
+      } else {
+        console.error('[DAILY_BONUS_WIDGET] Error response from secure-coin-actions:', data);
+        toast({
+          title: '❌ Erro',
+          description: data?.message || 'Erro ao resgatar bônus diário.',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('[DAILY_BONUS_WIDGET] Error claiming daily bonus:', error);

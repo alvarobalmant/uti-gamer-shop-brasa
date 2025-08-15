@@ -47,31 +47,31 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       }}
       className={cn(
         "group relative bg-gray-900 rounded-xl overflow-hidden border border-transparent cursor-pointer",
-        "p-2 md:p-6",
-        // Responsive aspect ratios - mais compacto no mobile, normal no desktop
+        "p-1.5 md:p-6",
+        // Responsive aspect ratios - 15% menor no mobile
         isGame ? "aspect-[3/3.8] md:aspect-[3/4.5]" : "aspect-[3/3.5] md:aspect-[4/6]",
         "transition-all duration-300 ease-out",
         "hover:bg-gray-800 hover:border-[#107C10]/50",
         "active:scale-95 md:active:scale-100",
-        // Mantendo largura responsiva mas proporcional
-        "w-full max-w-[140px] sm:max-w-[160px] md:max-w-none",
-        // Centralizando no mobile e adicionando margin para animações
-        "mx-auto my-4 md:my-0",
+        // Mantendo largura responsiva mas 15% menor no mobile
+        "w-full max-w-[119px] sm:max-w-[136px] md:max-w-none",
+        // Centralizando no mobile e reduzindo margin para manter espaçamento
+        "mx-auto my-3 md:my-0",
         "flex flex-col", // Make the main card a flex column
         className
       )}
       onClick={() => onProductClick(product.id)}
       style={{ 
         transformOrigin: "center center",
-        // Garantindo espaço para animações
-        margin: "16px auto",
+        // Garantindo espaço para animações - ajustado para mobile
+        margin: "13px auto",
       }}
     >
       {/* Badges */}
       <ProductCardBadges product={product} variant={variant} />
       
       {/* Imagem do produto */}
-      <div className="mb-1 md:mb-4 flex-1 flex items-center justify-center"> {/* flex-1 to take available space */} 
+      <div className="mb-0.5 md:mb-4 flex-1 flex items-center justify-center"> {/* flex-1 to take available space */}
         <ProductCardImage 
           product={product} 
           variant={variant}
@@ -81,7 +81,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       {/* Informações do produto, preço e ações - this block will be at the bottom */}
       <div className="flex flex-col justify-between flex-shrink-0"> {/* This container will hold the info, price, and actions */} 
         {/* Product Info (Title) */}
-        <div className="min-h-[48px] flex items-start"> {/* Set min-height for title block, flex items-start to align text to top */} 
+        <div className="min-h-[40px] md:min-h-[48px] flex items-start"> {/* Set min-height for title block, flex items-start to align text to top */}
           <ProductCardInfo 
             product={product} 
             variant={variant}
@@ -90,7 +90,7 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
         </div>
 
         {/* Price and Actions - these will be pushed to the bottom of their parent flex container */}
-        <div className="mt-auto space-y-0.5 md:space-y-3"> {/* mt-auto pushes this block to the bottom */} 
+        <div className="mt-auto space-y-0.5 md:space-y-3"> {/* mt-auto pushes this block to the bottom */}
           <ProductCardPrice 
             product={product} 
             variant={variant}
