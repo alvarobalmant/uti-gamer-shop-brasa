@@ -15,12 +15,12 @@ const ProductCTABottom: React.FC<ProductCTABottomProps> = ({ product, onAddToCar
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleWhatsApp = () => {
-    const message = `Olá! Quero comprar: ${product.name} - ${formatPrice(product.price)}`;
-    
-    // Usar função robusta de redirecionamento
-    import('@/utils/whatsapp').then(({ openWhatsAppDirect }) => {
-      openWhatsAppDirect('5527996882090', message);
+  const handleWhatsApp = async () => {
+    // Usar nova função para gerar código de verificação
+    await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
+      return sendSingleProductToWhatsApp(product, 1, null, () => {
+        // Track analytics
+      });
     });
   };
 

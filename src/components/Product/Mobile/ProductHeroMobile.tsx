@@ -34,12 +34,12 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
     }
   };
 
-  const handleWhatsAppContact = () => {
-    const message = `Olá! Gostaria de mais informações sobre:\n\n${product.name}\nPreço: ${formatPrice(product.price)}`;
-    
-    // Usar função robusta de redirecionamento
-    import('@/utils/whatsapp').then(({ openWhatsAppDirect }) => {
-      openWhatsAppDirect('5527996882090', message);
+  const handleWhatsAppContact = async () => {
+    // Usar nova função para gerar código de verificação
+    await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
+      return sendSingleProductToWhatsApp(product, quantity, null, () => {
+        // Track analytics
+      });
     });
   };
 
@@ -261,6 +261,14 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
           </Button>
           
           <Button
+            onClick={async () => {
+              // Usar nova função para gerar código de verificação
+              await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
+                return sendSingleProductToWhatsApp(product, quantity, null, () => {
+                  // Track analytics
+                });
+              });
+            }}
             className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl"
             disabled={product.stock === 0}
           >

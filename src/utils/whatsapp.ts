@@ -324,7 +324,74 @@ export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '55
   return orderCode;
 };
 
-// Função simples para redirecionamento direto (para casos específicos)
+// Função para gerar código de um único produto
+export const generateSingleProductCode = async (product: any, quantity: number = 1, additionalInfo?: any) => {
+  const cartItems = [{
+    product: product,
+    quantity: quantity,
+    size: additionalInfo?.size,
+    color: additionalInfo?.color
+  }];
+  
+  const total = product.price * quantity;
+  return await generateOrderVerificationCode(cartItems, total);
+};
+
+// Função para compra direta com código de verificação
+export const sendSingleProductToWhatsApp = async (product: any, quantity: number = 1, additionalInfo?: any, trackWhatsAppClick?: (context?: string) => void) => {
+  const total = product.price * quantity;
+  
+  // Gerar código de verificação
+  const orderCode = await generateSingleProductCode(product, quantity, additionalInfo);
+  
+  if (!orderCode) {
+    console.error('Erro ao gerar código de verificação');
+    return false;
+  }
+
+  // Enviar email de confirmação se o usuário estiver logado
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.email) {
+      await sendOrderCreatedEmail(
+        user.email,
+        user.user_metadata?.name || 'Cliente',
+        orderCode
+      );
+    }
+  } catch (err) {
+    console.warn('Não foi possível enviar email de confirmação:', err);
+  }
+  
+  const message = `Olá! Gostaria de comprar este produto da UTI DOS GAMES:
+
+📦 *${product.name}*
+💰 Preço: R$ ${product.price.toFixed(2)}
+📊 Quantidade: ${quantity}
+💵 *Total: R$ ${total.toFixed(2)}*
+
+🔐 *Código de Verificação:*
+${orderCode}
+
+📋 *Copie o código:*
+${orderCode}
+
+Aguardo retorno! 🎮`;
+  
+  // Track WhatsApp click if tracking function is provided
+  if (trackWhatsAppClick) {
+    trackWhatsAppClick('single_product_purchase');
+  }
+
+  const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+  
+  // Usar função robusta para abrir WhatsApp
+  openWhatsApp(whatsappUrl);
+  
+  return orderCode;
+};
+
+// Função simples para redirecionamento direto (para casos específicos - SEM código)
 // NUNCA usa window.open() - funciona como link normal
 export const openWhatsAppDirect = (phoneNumber: string, message: string) => {
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;

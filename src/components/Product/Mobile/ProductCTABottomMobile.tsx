@@ -16,12 +16,12 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleWhatsApp = () => {
-    const message = `Olá! Quero comprar: ${product.name} - ${formatPrice(product.price)}`;
-    
-    // Usar função robusta de redirecionamento
-    import('@/utils/whatsapp').then(({ openWhatsAppDirect }) => {
-      openWhatsAppDirect('5527996882090', message);
+  const handleWhatsApp = async () => {
+    // Usar nova função para gerar código de verificação
+    await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
+      return sendSingleProductToWhatsApp(product, 1, null, () => {
+        // Track analytics
+      });
     });
   };
 
@@ -142,9 +142,14 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
                 </Button>
                 
                 <Button
-                  onClick={() => {
-                    handleAddToCart();
-                    window.location.href = '/checkout';
+                  onClick={async () => {
+                    // Usar nova função para gerar código de verificação ao comprar
+                    await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
+                      return sendSingleProductToWhatsApp(product, quantity, null, () => {
+                        // Track analytics
+                      });
+                    });
+                    setIsExpanded(false);
                   }}
                   className="h-14 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl"
                   disabled={product.stock === 0}

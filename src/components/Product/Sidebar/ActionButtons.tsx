@@ -65,10 +65,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     }
   };
 
-  const handleWhatsAppContact = () => {
-    const message = `Olá! Gostaria de mais informações sobre:\n\n${product.name}\nQuantidade: ${quantity}\nPreço: R$ ${totalPrice.toFixed(2)}`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+  const handleWhatsAppContact = async () => {
+    // Usar nova função para gerar código de verificação
+    await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
+      return sendSingleProductToWhatsApp(product, quantity, null, () => {
+        // Track analytics
+      });
+    });
   };
 
   return (

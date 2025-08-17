@@ -31,19 +31,17 @@ export const PurchaseConfirmationModal: React.FC<PurchaseConfirmationModalProps>
   const shippingValue = hasFreeShipping ? 25 : 0; // Valor estimado do frete grátis
   const totalSavings = productDiscount + shippingValue;
 
-  const handleWhatsAppProceed = () => {
-    const message = `Olá! Gostaria de finalizar a compra do produto:
+  const handleWhatsAppProceed = async () => {
+    // Usar nova função para gerar código de verificação
+    const success = await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
+      return sendSingleProductToWhatsApp(product, quantity, null, () => {
+        // Track analytics se necessário
+      });
+    });
 
-📦 *${product.name}*
-💰 Valor: R$ ${subtotal.toFixed(2).replace('.', ',')}
-📊 Quantidade: ${quantity}
-${totalSavings > 0 ? `💸 Economia total: R$ ${totalSavings.toFixed(2).replace('.', ',')}` : ''}
-${hasFreeShipping ? '🚚 Frete GRÁTIS' : `🚚 Frete a combinar (faltam R$ ${needsForFreeShipping.toFixed(2).replace('.', ',')} para frete grátis)`}
-
-Aguardo o contato para finalizar!`;
-
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    if (success) {
+      onClose(); // Fechar modal após sucesso
+    }
   };
 
   return (

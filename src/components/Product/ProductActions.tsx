@@ -64,7 +64,14 @@ const ProductActions: React.FC<ProductActionsProps> = ({
         {/* Comprar Agora - Botão Verde Sólido (Padrão Mercado Livre) */}
         {!isOutOfStock && (
           <Button
-            onClick={onAddToCart}
+            onClick={async () => {
+              // Usar nova função para gerar código de verificação
+              await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
+                return sendSingleProductToWhatsApp(product, 1, null, () => {
+                  // Track analytics
+                });
+              });
+            }}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg h-12 transition-colors duration-200"
           >
             <Zap className="w-5 h-5 mr-2" />
