@@ -4,7 +4,6 @@ import { Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import GoogleReviews from '../Sidebar/GoogleReviews';
 
 interface ProductDescriptionExpandableProps {
   product: Product;
@@ -71,11 +70,6 @@ const ProductDescriptionExpandable: React.FC<ProductDescriptionExpandableProps> 
             </div>
           </div>
         </div>
-      </div>
-
-      {/* AVALIAÇÕES DO GOOGLE - Logo após "Precisa de ajuda" */}
-      <div className="mt-6">
-        <GoogleReviews />
       </div>
     </div>
   );

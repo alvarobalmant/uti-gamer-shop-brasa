@@ -114,7 +114,7 @@ const HeroBannerCarousel = React.memo(() => {
     if (!activeRibbonConfig || !activeRibbonConfig.is_active) return null;
     
     return (
-      <div className="mt-[58px]">
+      <div className="mt-[36px]">
         <PromotionalRibbon 
           isVisible={true}
           text={activeRibbonConfig.text}

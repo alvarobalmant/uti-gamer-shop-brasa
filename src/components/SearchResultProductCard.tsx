@@ -50,7 +50,7 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart 
         "shadow-none",
         "transition-all duration-200 ease-in-out",
         "cursor-pointer",
-        "w-full h-[380px]",
+        "w-full h-[323px] md:h-[380px]",
         "p-0",
         "product-card",
         isHovered && "md:shadow-md md:-translate-y-1"
@@ -68,7 +68,7 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart 
       
       <SearchResultProductCardImage product={product} isHovered={isHovered} />
 
-      <div className="flex flex-1 flex-col justify-between p-3">
+      <div className="flex flex-1 flex-col justify-between p-2.5 md:p-3">
         <div className="space-y-2">
           <SearchResultProductCardInfo product={product} />
           <ProductCardPrice product={product} />

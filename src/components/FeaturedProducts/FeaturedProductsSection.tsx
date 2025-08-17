@@ -359,7 +359,7 @@ const FeaturedProductsSection = ({
               } as React.CSSProperties}
             >
               <div 
-                className="flex gap-3 min-w-max px-1 py-1"
+                className="flex gap-2 md:gap-3 min-w-max px-1 py-1"
                 style={{
                   // FORÇA O CORTE DO ÚLTIMO CARD - CARACTERÍSTICAS ESPECÍFICAS DA VERSÃO
                   width: 'calc(100% + 100px)', // Estende além do container para forçar corte
@@ -370,11 +370,7 @@ const FeaturedProductsSection = ({
                   <div
                     key={product.id}
                     data-card
-                    className="flex-shrink-0"
-                    style={{
-                      width: "200px", // Fixed width for consistent card sizing
-                      flexShrink: 0 // Prevent cards from shrinking
-                    }}
+                    className="flex-shrink-0 w-[170px] md:w-[200px]"
                   >
                     <ProductCard
                       product={product}

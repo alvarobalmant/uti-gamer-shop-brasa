@@ -375,13 +375,12 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
               display: none;
             }
           `}</style>
-          <div className="flex gap-3 min-w-max px-1 py-1">
+          <div className="flex gap-2 md:gap-3 min-w-max px-1 py-1">
             {(config.products || []).map((product, index) => (
               <div 
                 key={`${product.id}-${index}`} 
                 data-card
-                className="flex-shrink-0"
-                style={{ width: "200px" }}
+                className="flex-shrink-0 w-[170px] md:w-[200px]"
               >
                 <SpecialCarouselCard
                   product={product}

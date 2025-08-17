@@ -29,27 +29,55 @@ const SpecializedServicesUltraCompact = () => {
   // Ícones únicos para cada serviço
   const serviceIcons = [Gamepad2, Wrench, Search, Settings];
 
-  // Cores alinhadas com o design da UTI dos Games
-  const cardGradients = [
-    "from-red-500 via-red-600 to-red-700",
-    "from-blue-500 via-blue-600 to-blue-700", 
-    "from-green-500 via-green-600 to-green-700",
-    "from-purple-500 via-purple-600 to-purple-700"
-  ];
+  // Cores padrão caso não estejam configuradas
+  const defaultColors = ['#ef4444', '#3b82f6', '#10b981', '#8b5cf6'];
 
-  const cardBorders = [
-    "border-red-200 hover:border-red-300 shadow-red-500/10",
-    "border-blue-200 hover:border-blue-300 shadow-blue-500/10",
-    "border-green-200 hover:border-green-300 shadow-green-500/10", 
-    "border-purple-200 hover:border-purple-300 shadow-purple-500/10"
-  ];
+  // Função para criar estilo de sombra dinâmico
+  const getShadowStyle = (color: string, index: number, enabled: boolean) => {
+    if (!enabled) return {};
+    
+    const fallbackColor = defaultColors[index % 4];
+    const hexColor = color || fallbackColor;
+    
+    // Converter hex para RGB para usar no box-shadow
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    return {
+      boxShadow: `0 4px 20px rgba(${r}, ${g}, ${b}, 0.15)`,
+      transition: 'all 0.3s ease'
+    };
+  };
 
-  const cardBackgrounds = [
-    "bg-red-50/50 hover:bg-red-50",
-    "bg-blue-50/50 hover:bg-blue-50",
-    "bg-green-50/50 hover:bg-green-50", 
-    "bg-purple-50/50 hover:bg-purple-50"
-  ];
+  // Função para criar estilo de sombra hover
+  const getHoverShadowStyle = (color: string, index: number, enabled: boolean) => {
+    if (!enabled) return {};
+    
+    const fallbackColor = defaultColors[index % 4];
+    const hexColor = color || fallbackColor;
+    
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    return {
+      boxShadow: `0 8px 25px rgba(${r}, ${g}, ${b}, 0.25)`
+    };
+  };
+
+  // Função para criar gradiente dinâmico
+  const getGradientStyle = (color: string, index: number) => {
+    const fallbackColor = defaultColors[index % 4];
+    const baseColor = color || fallbackColor;
+    
+    // Criar variações da cor base para gradiente
+    return {
+      background: `linear-gradient(135deg, ${baseColor}, ${baseColor}dd, ${baseColor}bb)`
+    };
+  };
 
   return (
     <section className="relative py-6 md:py-8 overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -98,6 +126,8 @@ const SpecializedServicesUltraCompact = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
               {serviceCards.map((card, index) => {
                 const IconComponent = serviceIcons[index % 4];
+                const shadowStyle = getShadowStyle(card.shadow_color || '', index, card.shadow_enabled ?? true);
+                const gradientStyle = getGradientStyle(card.shadow_color || '', index);
                 
                 return (
                   <div 
@@ -107,12 +137,22 @@ const SpecializedServicesUltraCompact = () => {
                     {/* Card ultra-compacto */}
                     <Card
                       onClick={() => handleCardClick(card.link_url)}
-                      className={cn(
-                        "relative rounded-xl h-full cursor-pointer overflow-hidden border transition-all duration-300 shadow-md",
-                        cardBorders[index % 4],
-                        cardBackgrounds[index % 4],
-                        "hover:shadow-lg hover:-translate-y-0.5"
-                      )}
+                      className="relative rounded-xl h-full cursor-pointer overflow-hidden border-0 transition-all duration-300 hover:-translate-y-0.5 group"
+                      style={{
+                        ...shadowStyle,
+                        backgroundImage: card.background_image_url 
+                          ? `linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9)), url(${card.background_image_url})`
+                          : 'linear-gradient(135deg, rgba(248,250,252,0.95), rgba(241,245,249,0.9))',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
+                      onMouseEnter={(e) => {
+                        const hoverStyle = getHoverShadowStyle(card.shadow_color || '', index, card.shadow_enabled ?? true);
+                        Object.assign(e.currentTarget.style, hoverStyle);
+                      }}
+                      onMouseLeave={(e) => {
+                        Object.assign(e.currentTarget.style, shadowStyle);
+                      }}
                     >
                       <CardContent className="p-4 md:p-5 h-full relative">
                         
@@ -125,15 +165,18 @@ const SpecializedServicesUltraCompact = () => {
                         
                         {/* Header do card ultra-compacto */}
                         <div className="relative mb-3">
-                          <div className={cn(
-                            "w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center bg-gradient-to-br shadow-md transition-all duration-300 group-hover:scale-105 group-hover:rotate-2 mb-3",
-                            cardGradients[index % 4]
-                          )}>
+                          <div 
+                            className="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105 group-hover:rotate-2 mb-3"
+                            style={gradientStyle}
+                          >
                             {!imageErrors[card.id] && card.image_url ? (
                               <img
                                 src={card.image_url}
                                 alt={card.title}
-                                className="w-6 h-6 md:w-7 md:h-7 object-contain filter brightness-0 invert"
+                                className={cn(
+                                  "w-6 h-6 md:w-7 md:h-7 object-contain transition-all duration-300",
+                                  card.icon_filter_enabled ? "filter brightness-0 invert" : ""
+                                )}
                                 loading="lazy"
                                 onError={() => handleImageError(card.id)}
                               />
@@ -154,20 +197,24 @@ const SpecializedServicesUltraCompact = () => {
                           </p>
                           
                           {/* Call to action ultra-compacto */}
-                          <div className={cn(
-                            "inline-flex items-center gap-1.5 bg-gradient-to-r text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-md text-xs md:text-sm",
-                            cardGradients[index % 4]
-                          )}>
+                          <div 
+                            className="inline-flex items-center gap-1.5 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-md text-xs md:text-sm"
+                            style={gradientStyle}
+                          >
                             <span>Saiba mais</span>
                             <ArrowRight className="w-3 h-3 md:w-4 md:h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
                           </div>
                         </div>
                         
                         {/* Elemento decorativo sutil - menor */}
-                        <div className={cn(
-                          "absolute -bottom-2 -right-2 w-8 h-8 rounded-full opacity-5 transition-all duration-300 group-hover:scale-125 group-hover:opacity-10",
-                          cardGradients[index % 4].replace('to-', 'to-transparent from-')
-                        )}></div>
+                        {card.shadow_enabled && (
+                          <div 
+                            className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full opacity-5 transition-all duration-300 group-hover:scale-125 group-hover:opacity-10"
+                            style={{
+                              background: `linear-gradient(135deg, ${card.shadow_color || defaultColors[index % 4]}, transparent)`
+                            }}
+                          ></div>
+                        )}
                       </CardContent>
                     </Card>
                   </div>

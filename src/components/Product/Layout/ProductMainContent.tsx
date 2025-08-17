@@ -4,7 +4,7 @@ import { SKUNavigation } from '@/hooks/useProducts/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Share2, ZoomIn, Info } from 'lucide-react';
+import { ShoppingCart, Share2, ZoomIn, Info, MessageCircle } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import FavoriteButton from '@/components/FavoriteButton';
 import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
@@ -14,6 +14,7 @@ import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
 import ProductSpecificationsTable from '../MainContent/ProductSpecificationsTable';
 import ProductDescriptionExpandable from '../MainContent/ProductDescriptionExpandable';
 import StorePickupBadge from '../MainContent/StorePickupBadge';
+import GoogleReviews from '../Sidebar/GoogleReviews';
 
 interface ProductMainContentProps {
   product: Product;
@@ -349,8 +350,18 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
   // SEÇÕES INFERIORES (layout padrão) - Restaurar elementos removidos
   return (
     <div className={cn("space-y-8", className)}>
-      {/* 1. Especificações Técnicas Dinâmicas */}
-      <ProductSpecificationsTable product={product} />
+      {/* 1. Avaliações Google - Substituindo Especificações Técnicas */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="bg-blue-100 p-2 rounded-full">
+            <MessageCircle className="w-5 h-5 text-blue-600" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900">Avaliações Google</h3>
+        </div>
+        <div className="flex justify-center">
+          <GoogleReviews className="max-w-none w-full" />
+        </div>
+      </div>
 
       {/* 2. Informações Importantes */}
       <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-lg p-4">

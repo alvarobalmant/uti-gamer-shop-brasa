@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -2018,35 +2018,47 @@ export type Database = {
       }
       service_cards: {
         Row: {
+          background_image_url: string | null
           created_at: string
           description: string
+          icon_filter_enabled: boolean | null
           id: string
           image_url: string
           is_active: boolean
           link_url: string
           position: number
+          shadow_color: string | null
+          shadow_enabled: boolean | null
           title: string
           updated_at: string
         }
         Insert: {
+          background_image_url?: string | null
           created_at?: string
           description: string
+          icon_filter_enabled?: boolean | null
           id?: string
           image_url: string
           is_active?: boolean
           link_url: string
           position?: number
+          shadow_color?: string | null
+          shadow_enabled?: boolean | null
           title: string
           updated_at?: string
         }
         Update: {
+          background_image_url?: string | null
           created_at?: string
           description?: string
+          icon_filter_enabled?: boolean | null
           id?: string
           image_url?: string
           is_active?: boolean
           link_url?: string
           position?: number
+          shadow_color?: string | null
+          shadow_enabled?: boolean | null
           title?: string
           updated_at?: string
         }
@@ -3110,17 +3122,17 @@ export type Database = {
     }
     Functions: {
       adicionar_meses_assinatura: {
-        Args: { user_id: string; meses: number }
+        Args: { meses: number; user_id: string }
         Returns: boolean
       }
       analyze_index_usage: {
         Args: Record<PropertyKey, never>
         Returns: {
-          table_name: string
           index_name: string
           index_scans: number
-          tuples_read: number
+          table_name: string
           tuples_fetched: number
+          tuples_read: number
         }[]
       }
       can_claim_code: {
@@ -3131,20 +3143,20 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: {
           can_claim: boolean
-          period_start: string
-          period_end: string
-          next_reset: string
           last_claim: string
+          next_reset: string
+          period_end: string
+          period_start: string
         }[]
       }
       can_claim_daily_bonus_test: {
         Args: { p_user_id: string }
         Returns: {
           can_claim: boolean
-          period_start: string
-          period_end: string
-          next_reset: string
           last_claim: string
+          next_reset: string
+          period_end: string
+          period_start: string
         }[]
       }
       cancelar_assinatura: {
@@ -3154,14 +3166,14 @@ export type Database = {
       check_email_confirmation_status: {
         Args: Record<PropertyKey, never>
         Returns: {
-          user_id: string
           email: string
           email_confirmed_at: string
           is_confirmed: boolean
+          user_id: string
         }[]
       }
       check_suspicious_activity: {
-        Args: { p_user_id: string; p_action: string }
+        Args: { p_action: string; p_user_id: string }
         Returns: boolean
       }
       cleanup_old_bonus_codes: {
@@ -3193,7 +3205,7 @@ export type Database = {
         Returns: undefined
       }
       complete_order_verification: {
-        Args: { p_code: string; p_admin_id: string }
+        Args: { p_admin_id: string; p_code: string }
         Returns: Json
       }
       create_admin_link: {
@@ -3206,24 +3218,24 @@ export type Database = {
       }
       create_order_verification_code: {
         Args: {
-          p_user_id: string
-          p_items: Json
-          p_total_amount: number
+          p_browser_info?: Json
           p_customer_info: Json
-          p_shipping_info?: Json
           p_discount_info?: Json
           p_ip_address?: unknown
+          p_items: Json
+          p_shipping_info?: Json
+          p_total_amount: number
           p_user_agent?: string
-          p_browser_info?: Json
+          p_user_id: string
         }
         Returns: Json
       }
       debug_column_references: {
         Args: Record<PropertyKey, never>
         Returns: {
-          source_type: string
-          source_name: string
           has_problematic_ref: boolean
+          source_name: string
+          source_type: string
         }[]
       }
       delete_master_product_cascade: {
@@ -3236,11 +3248,11 @@ export type Database = {
       }
       earn_coins: {
         Args: {
-          p_user_id: string
           p_action: string
           p_amount?: number
           p_description?: string
           p_metadata?: Json
+          p_user_id: string
         }
         Returns: Json
       }
@@ -3257,7 +3269,7 @@ export type Database = {
         Returns: string
       }
       generate_redemption_code: {
-        Args: { p_user_id: string; p_product_id: string; p_cost: number }
+        Args: { p_cost: number; p_product_id: string; p_user_id: string }
         Returns: Json
       }
       generate_unique_4digit_code: {
@@ -3271,119 +3283,119 @@ export type Database = {
       get_active_subscription: {
         Args: { user_id: string }
         Returns: {
-          subscription_id: string
-          plan_name: string
           discount_percentage: number
           end_date: string
+          plan_name: string
+          subscription_id: string
         }[]
       }
       get_current_bonus_period_brasilia: {
         Args: Record<PropertyKey, never>
         Returns: {
-          period_start: string
-          period_end: string
           can_claim: boolean
           next_reset: string
+          period_end: string
+          period_start: string
         }[]
       }
       get_dashboard_analytics: {
-        Args: { start_date: string; end_date: string }
+        Args: { end_date: string; start_date: string }
         Returns: {
-          total_revenue: number
-          total_sessions: number
-          total_purchases: number
           avg_conversion_rate: number
           avg_order_value: number
           cart_abandonment_rate: number
-          whatsapp_clicks: number
           period_data: Json
+          total_purchases: number
+          total_revenue: number
+          total_sessions: number
+          whatsapp_clicks: number
         }[]
       }
       get_products_with_tags_corrected: {
         Args: {
           include_admin?: boolean
-          tag_filter?: string[]
           limit_count?: number
+          tag_filter?: string[]
         }
         Returns: {
-          product_id: string
-          product_name: string
-          product_description: string
-          product_image: string
           additional_images: string[]
-          product_price: number
-          pro_price: number
-          list_price: number
-          new_price: number
-          digital_price: number
-          discount_price: number
-          product_stock: number
-          sizes: string[]
-          colors: string[]
-          badge_text: string
+          available_variants: Json
           badge_color: string
+          badge_text: string
           badge_visible: boolean
-          specifications: Json
-          technical_specs: Json
-          product_features: Json
-          shipping_weight: number
+          brand: string
+          breadcrumb_config: Json
+          category: string
+          colors: string[]
+          condition: string
+          created_at: string
+          delivery_config: Json
+          digital_price: number
+          discount_percentage: number
+          discount_price: number
+          display_config: Json
           free_shipping: boolean
+          inherit_from_master: Json
+          installment_options: number
           is_active: boolean
           is_featured: boolean
-          promotional_price: number
-          discount_percentage: number
+          is_master_product: boolean
+          list_price: number
+          manual_related_products: Json
+          master_slug: string
+          meta_description: string
+          meta_title: string
+          new_price: number
+          parent_product_id: string
           pix_discount_percentage: number
-          uti_pro_price: number
-          installment_options: number
+          platform: string
+          pro_discount_percent: number
+          pro_price: number
+          product_description: string
+          product_descriptions: Json
+          product_faqs: Json
+          product_features: Json
+          product_highlights: Json
+          product_id: string
+          product_image: string
+          product_name: string
+          product_price: number
+          product_stock: number
+          product_type: string
+          product_videos: Json
+          promotional_price: number
           rating_average: number
           rating_count: number
-          meta_title: string
-          meta_description: string
-          slug: string
-          brand: string
-          category: string
-          platform: string
-          condition: string
-          pro_discount_percent: number
-          uti_pro_enabled: boolean
-          uti_pro_value: number
-          uti_pro_type: string
-          uti_pro_custom_price: number
-          parent_product_id: string
-          product_type: string
-          sku_code: string
-          is_master_product: boolean
-          variant_attributes: Json
-          sort_order: number
-          available_variants: Json
-          inherit_from_master: Json
-          product_videos: Json
-          product_faqs: Json
-          product_highlights: Json
           reviews_config: Json
-          trust_indicators: Json
-          manual_related_products: Json
-          breadcrumb_config: Json
-          product_descriptions: Json
-          delivery_config: Json
-          display_config: Json
-          master_slug: string
-          created_at: string
-          updated_at: string
+          shipping_weight: number
+          sizes: string[]
+          sku_code: string
+          slug: string
+          sort_order: number
+          specifications: Json
           tag_id: string
           tag_name: string
+          technical_specs: Json
+          trust_indicators: Json
+          updated_at: string
+          uti_pro_custom_price: number
+          uti_pro_enabled: boolean
+          uti_pro_price: number
+          uti_pro_type: string
+          uti_pro_value: number
+          variant_attributes: Json
         }[]
       }
       get_top_products_analytics: {
-        Args: { start_date: string; end_date: string; limit_count?: number }
+        Args: { end_date: string; limit_count?: number; start_date: string }
         Returns: {
+          avg_conversion_rate: number
           product_id: string
           product_name: string
-          total_views: number
           total_add_to_cart: number
           total_purchases: number
           total_revenue: number
-          avg_conversion_rate: number
+          total_views: number
           whatsapp_clicks: number
         }[]
       }
@@ -3394,10 +3406,10 @@ export type Database = {
       get_user_total_savings: {
         Args: { p_user_id: string }
         Returns: {
-          total_savings: number
           promotion_savings: number
-          uti_pro_savings: number
           total_purchases: number
+          total_savings: number
+          uti_pro_savings: number
         }[]
       }
       has_active_subscription: {
@@ -3435,25 +3447,25 @@ export type Database = {
       log_admin_action: {
         Args: {
           p_action_type: string
-          p_resource_type?: string
-          p_resource_id?: string
           p_details?: Json
           p_ip_address?: unknown
+          p_resource_id?: string
+          p_resource_type?: string
           p_user_agent?: string
         }
         Returns: undefined
       }
       log_security_event: {
-        Args: { event_type: string; user_id?: string; details?: Json }
+        Args: { details?: Json; event_type: string; user_id?: string }
         Returns: undefined
       }
       monitor_query_performance: {
         Args: Record<PropertyKey, never>
         Returns: {
-          query_type: string
           avg_duration_ms: number
-          total_calls: number
+          query_type: string
           table_name: string
+          total_calls: number
         }[]
       }
       process_analytics_batch: {
@@ -3477,48 +3489,48 @@ export type Database = {
         Returns: boolean
       }
       redeem_code_admin: {
-        Args: { p_code: string; p_admin_id: string }
+        Args: { p_admin_id: string; p_code: string }
         Returns: Json
       }
       redeem_coin_product: {
-        Args: { p_user_id: string; p_product_id: string }
+        Args: { p_product_id: string; p_user_id: string }
         Returns: Json
       }
       redeem_pro_code: {
-        Args: { p_code_id: string; p_user_id: string; p_end_date: string }
+        Args: { p_code_id: string; p_end_date: string; p_user_id: string }
         Returns: Json
       }
       remover_meses_assinatura: {
-        Args: { user_id: string; meses: number }
+        Args: { meses: number; user_id: string }
         Returns: boolean
       }
       test_admin_access: {
         Args: Record<PropertyKey, never>
         Returns: {
+          can_read_profiles: boolean
           current_user_id: string
+          is_admin_result: boolean
           user_exists: boolean
           user_role: string
-          is_admin_result: boolean
-          can_read_profiles: boolean
         }[]
       }
       update_user_balance: {
-        Args: { p_user_id: string; p_amount: number }
+        Args: { p_amount: number; p_user_id: string }
         Returns: undefined
       }
       validate_admin_token: {
-        Args: { p_token: string; p_ip?: string }
+        Args: { p_ip?: string; p_token: string }
         Returns: Json
       }
       validate_product_integrity: {
         Args: Record<PropertyKey, never>
         Returns: {
-          total_products: number
+          integrity_issues: string[]
+          invalid_tag_references: number
+          orphaned_product_tags: number
           products_with_tags: number
           products_without_tags: number
-          orphaned_product_tags: number
-          invalid_tag_references: number
-          integrity_issues: string[]
+          total_products: number
         }[]
       }
       verify_order_code: {

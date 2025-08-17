@@ -31,13 +31,7 @@ const SpecialCarouselCard: React.FC<SpecialCarouselCardProps> = ({
 
   return (
     <motion.div
-      className="group relative bg-white rounded-lg border border-gray-200 overflow-hidden cursor-pointer flex-shrink-0 shadow-none transition-all duration-200 ease-in-out"
-      style={{ 
-        width: '200px', 
-        minWidth: '200px',
-        height: '320px', // Altura fixa para consistência
-        minHeight: '320px'
-      }}
+      className="group relative bg-white rounded-lg border border-gray-200 overflow-hidden cursor-pointer flex-shrink-0 shadow-none transition-all duration-200 ease-in-out w-[170px] min-w-[170px] h-[272px] min-h-[272px] md:w-[200px] md:min-w-[200px] md:h-[320px] md:min-h-[320px]"
       whileHover={{ y: -4, boxShadow: "0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
       transition={{ duration: 0.2 }}
       onClick={handleCardClick}
@@ -59,7 +53,7 @@ const SpecialCarouselCard: React.FC<SpecialCarouselCardProps> = ({
       </div>
 
       {/* Product Image - CORRIGIDO PARA USAR object-contain COMO NAS SEÇÕES NORMAIS */}
-      <div className="relative bg-white overflow-hidden flex items-center justify-center" style={{ height: '200px' }}>
+      <div className="relative bg-white overflow-hidden flex items-center justify-center h-[170px] md:h-[200px]">
         <img
           src={product.image}
           alt={product.name}
@@ -76,30 +70,30 @@ const SpecialCarouselCard: React.FC<SpecialCarouselCardProps> = ({
       </div>
 
       {/* Product Info */}
-      <div className="p-3 flex flex-col justify-between" style={{ height: '120px' }}>
+      <div className="p-3 flex flex-col justify-between h-[102px] md:h-[120px]">
         <div>
-          <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-2">
+          <h3 className="text-xs md:text-sm font-medium text-gray-900 line-clamp-2 mb-2">
             {product.name}
           </h3>
 
           {/* Platform */}
           {product.platform && (
-            <p className="text-xs text-gray-500 mb-2">{product.platform}</p>
+            <p className="text-xs md:text-xs text-gray-500 mb-1 md:mb-2">{product.platform}</p>
           )}
 
           {/* Price */}
           <div className="flex flex-col gap-1">
             {product.originalPrice && product.originalPrice > product.price ? (
               <>
-                <span className="text-xs text-gray-400 line-through">
+                <span className="text-xs md:text-xs text-gray-400 line-through">
                   R${product.originalPrice.toFixed(2)}
                 </span>
-                <span className="text-sm font-bold text-red-600">
+                <span className="text-xs md:text-sm font-bold text-red-600">
                   R${product.price.toFixed(2)}
                 </span>
               </>
             ) : (
-              <span className="text-sm font-bold text-gray-900">
+              <span className="text-xs md:text-sm font-bold text-gray-900">
                 R${product.price.toFixed(2)}
               </span>
             )}

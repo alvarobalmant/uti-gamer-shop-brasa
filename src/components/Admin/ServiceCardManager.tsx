@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, Plus, Settings, Info, Link as LinkIcon, Image as ImageIcon, Type, Hash } from 'lucide-react';
+import { Trash2, Edit, Plus, Settings, Info, Link as LinkIcon, Image as ImageIcon, Type, Hash, Palette, ToggleLeft } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Dialog,
@@ -22,6 +22,7 @@ import {
   Alert,
   AlertDescription,
 } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 
 export const ServiceCardManager = () => {
   const { serviceCards, loading, addServiceCard, updateServiceCard, deleteServiceCard } = useServiceCards();
@@ -35,6 +36,10 @@ export const ServiceCardManager = () => {
     link_url: '',
     position: 1,
     is_active: true,
+    background_image_url: '',
+    shadow_color: '#ef4444',
+    shadow_enabled: true,
+    icon_filter_enabled: false,
   });
 
   const resetForm = () => {
@@ -45,6 +50,10 @@ export const ServiceCardManager = () => {
       link_url: '',
       position: (serviceCards.length + 1),
       is_active: true,
+      background_image_url: '',
+      shadow_color: '#ef4444',
+      shadow_enabled: true,
+      icon_filter_enabled: false,
     });
     setEditingCard(null);
   };
@@ -58,6 +67,10 @@ export const ServiceCardManager = () => {
       link_url: card.link_url,
       position: card.position,
       is_active: card.is_active,
+      background_image_url: card.background_image_url || '',
+      shadow_color: card.shadow_color || '#ef4444',
+      shadow_enabled: card.shadow_enabled ?? true,
+      icon_filter_enabled: card.icon_filter_enabled ?? false,
     });
     setIsDialogOpen(true);
   };
@@ -66,7 +79,7 @@ export const ServiceCardManager = () => {
     e.preventDefault();
     
     if (!formData.title || !formData.description || !formData.image_url || !formData.link_url) {
-      alert('Todos os campos são obrigatórios.');
+      alert('Campos obrigatórios: título, descrição, ícone e link de destino.');
       return;
     }
 
@@ -211,6 +224,59 @@ export const ServiceCardManager = () => {
                     required
                     className="bg-[#1A1A2E] border-[#343A40] text-white placeholder:text-gray-500"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-gray-300 flex items-center">
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    Imagem de Fundo (Opcional)
+                  </Label>
+                  <ImageUpload
+                    onImageUploaded={(url) => setFormData(prev => ({ ...prev, background_image_url: url }))}
+                    currentImage={formData.background_image_url}
+                    label="Upload Fundo"
+                    folder="service-cards-bg"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="shadow_color" className="text-gray-300 flex items-center">
+                      <Palette className="mr-2 h-4 w-4" />
+                      Cor da Sombra
+                    </Label>
+                    <Input
+                      id="shadow_color"
+                      type="color"
+                      value={formData.shadow_color}
+                      onChange={(e) => setFormData(prev => ({ ...prev, shadow_color: e.target.value }))}
+                      className="bg-[#1A1A2E] border-[#343A40] h-10 w-full"
+                    />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-gray-300 flex items-center">
+                        <ToggleLeft className="mr-2 h-4 w-4" />
+                        Efeito Sombra
+                      </Label>
+                      <Switch
+                        checked={formData.shadow_enabled}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, shadow_enabled: checked }))}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <Label className="text-gray-300 flex items-center">
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        Filtro Branco no Ícone
+                      </Label>
+                      <Switch
+                        checked={formData.icon_filter_enabled}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, icon_filter_enabled: checked }))}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <DialogFooter className="pt-4">

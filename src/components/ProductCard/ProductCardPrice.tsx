@@ -17,11 +17,11 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
     <div className="space-y-1">
       {/* Main Price Section */}
       <div className="flex items-center gap-2">
-        <span className="text-lg font-bold text-muted-foreground">
+        <span className="text-sm md:text-lg font-bold text-muted-foreground">
           {formatPrice(product.price)}
         </span>
         {discount > 0 && (
-          <span className="text-sm text-gray-400 line-through">
+          <span className="text-xs md:text-sm text-gray-400 line-through">
             {formatPrice(originalPrice)}
           </span>
         )}
@@ -29,7 +29,7 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
       
       {/* Pro Price Section - só mostra se UTI Pro estiver habilitado */}
       {utiProPricing.isEnabled && utiProPricing.proPrice && (
-        <div className="text-sm">
+        <div className="text-xs md:text-sm">
           <span className="font-bold text-purple-600">
             {formatPrice(utiProPricing.proPrice)}
           </span>

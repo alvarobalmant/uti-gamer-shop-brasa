@@ -24,7 +24,7 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
   const ItemContent = () => (
     <motion.div
       ref={containerRef}
-      className="relative inline-block cursor-pointer select-none text-sm md:text-base font-lexend font-semibold px-3 py-3" // Adicionada font-lexend
+      className="relative inline-block cursor-pointer select-none text-sm md:text-base font-work-sans font-normal px-4 py-3" // Trocado para Work Sans e removido semibold
       style={{
         color: normalText,
       }}
@@ -35,14 +35,14 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
         initial: {
           y: 0,
           scale: 1,
-          paddingLeft: window.innerWidth >= 768 ? '10px' : '8px',
-          paddingRight: window.innerWidth >= 768 ? '10px' : '8px',
+          paddingLeft: window.innerWidth >= 768 ? '12px' : '10px', // Aumentado para acomodar ícones maiores
+          paddingRight: window.innerWidth >= 768 ? '12px' : '10px',
         },
         hover: {
           y: -2,
           scale: 1.02,
-          paddingLeft: window.innerWidth >= 1024 ? '32px' : '24px',
-          paddingRight: window.innerWidth >= 1024 ? '16px' : '12px',
+          paddingLeft: window.innerWidth >= 1024 ? '56px' : '48px', // Aumentado ainda mais para dar mais liberdade ao ícone
+          paddingRight: window.innerWidth >= 1024 ? '20px' : '16px',
         }
       }}
       transition={{
@@ -93,7 +93,7 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
       {/* Ícone animado no hover */}
       {item.icon_url && (
         <motion.span 
-          className="text-lg absolute left-2 top-1/2 pointer-events-none select-none"
+          className="text-2xl absolute left-3 top-1/2 pointer-events-none select-none"
           style={{
             transformOrigin: 'center center',
           }}
@@ -124,7 +124,7 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
             <img 
               src={item.icon_url} 
               alt={`${item.title} icon`}
-              className="w-5 h-5"
+              className="w-8 h-8"
               draggable={false}
             />
           ) : (
@@ -138,11 +138,11 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
         className="whitespace-nowrap relative z-10 pointer-events-none select-none"
         variants={{
           initial: {
-            fontWeight: 600, // Reduzido de 700 para 600 (semibold)
+            fontWeight: 400, // font-normal
             letterSpacing: '0em',
           },
           hover: {
-            fontWeight: 700, // Reduzido de 800 para 700 (bold)
+            fontWeight: 500, // font-medium (mais sutil que bold)
             letterSpacing: '0.025em',
           }
         }}

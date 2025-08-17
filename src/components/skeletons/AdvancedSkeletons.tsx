@@ -92,7 +92,7 @@ export const ProductGridSkeleton: React.FC<{
 
   return (
     <div className={cn(
-      'grid gap-4',
+      'grid gap-2 md:gap-3 lg:gap-4',
       variant === 'grid' ? gridCols[columns as keyof typeof gridCols] : 'grid-cols-1',
       'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
     )}>
