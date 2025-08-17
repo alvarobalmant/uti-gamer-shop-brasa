@@ -154,13 +154,25 @@ export const useNewCart = () => {
   }, [cart]);
 
   const sendToWhatsApp = useCallback(async () => {
-    if (cart.length === 0) return;
+    console.log('🛒 sendToWhatsApp called, cart:', cart);
+    if (cart.length === 0) {
+      console.log('❌ Cart is empty');
+      return;
+    }
 
-    // Importar e usar a função do utils que inclui o código de verificação
-    const { sendToWhatsApp: sendToWhatsAppWithCode } = await import('@/utils/whatsapp');
-    return await sendToWhatsAppWithCode(cart, '5527996882090', (context) => {
-      // This will be handled by the CheckoutButton component
-    });
+    try {
+      // Importar e usar a função do utils que inclui o código de verificação
+      const { sendToWhatsApp: sendToWhatsAppWithCode } = await import('@/utils/whatsapp');
+      console.log('✅ WhatsApp function imported');
+      const result = await sendToWhatsAppWithCode(cart, '5527996882090', (context) => {
+        console.log('📊 Tracking context:', context);
+      });
+      console.log('✅ WhatsApp result:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Error in sendToWhatsApp:', error);
+      throw error;
+    }
   }, [cart]);
 
   return {
