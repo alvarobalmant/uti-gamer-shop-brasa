@@ -15,6 +15,7 @@ import { useProductSpecifications } from '@/hooks/useProductSpecifications';
 import { useProductFAQs } from '@/hooks/useProductFAQs';
 import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
 import DynamicDeliveryMobile from './DynamicDeliveryMobile';
+import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 
 interface ProductPageMobileMercadoLivreProps {
   product: Product;
@@ -100,11 +101,17 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
     }
   };
 
-  const handleBuyNow = () => {
-    handleAddToCart();
-    const message = `Olá! Gostaria de comprar:\n\n${product.name}\nPreço: R$ ${product.price.toFixed(2).replace('.', ',')}\nQuantidade: ${quantity}`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+  const handleBuyNow = async () => {
+    // MESMA LÓGICA DO DESKTOP - usar função sendSingleProductToWhatsApp
+    await sendSingleProductToWhatsApp(product, quantity, null, () => {
+      // Track analytics
+      trackEvent('buy_now_click', {
+        product_id: product.id,
+        product_name: product.name,
+        product_price: product.price,
+        quantity: quantity
+      });
+    });
   };
 
   return (

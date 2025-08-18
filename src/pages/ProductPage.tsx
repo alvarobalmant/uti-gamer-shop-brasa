@@ -94,11 +94,13 @@ const ProductPage: React.FC = () => {
     }
   };
 
-  const handleBuyNow = () => {
-    if (product) {
-      addToCart(product, quantity);
-      navigate('/checkout');
-    }
+  const handleBuyNow = async () => {
+    // Usar nova função para gerar código de verificação
+    await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
+      return sendSingleProductToWhatsApp(product, 1, null, () => {
+        // Track analytics
+      });
+    });
   };
 
   const handleCartOpen = () => setShowCart(true);

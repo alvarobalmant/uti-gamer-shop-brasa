@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { sendOrderCreatedEmail } from './orderEmailService';
 
 export const generateOrderVerificationCode = async (cartItems: any[], total: number) => {
+  console.log('🔐 generateOrderVerificationCode called with items:', cartItems.length, 'total:', total);
+  
   try {
     // Preparar dados dos itens
     const items = cartItems.map(item => ({
@@ -14,17 +16,22 @@ export const generateOrderVerificationCode = async (cartItems: any[], total: num
       color: item.color,
       total: item.product.price * item.quantity
     }));
+    console.log('📦 Items prepared:', items);
 
     // Preparar dados do cliente
     const customerInfo = {
       timestamp: new Date().toISOString(),
       browser: navigator.userAgent
     };
+    console.log('👤 Customer info prepared:', customerInfo);
 
     // Obter dados do usuário se logado
+    console.log('🔍 Getting user data...');
     const { data: { user } } = await supabase.auth.getUser();
+    console.log('👤 User:', user?.id || 'not logged in');
 
     // Chamar função do Supabase
+    console.log('📞 Calling supabase RPC create_order_verification_code...');
     const { data, error } = await supabase.rpc('create_order_verification_code', {
       p_user_id: user?.id || null,
       p_items: items,
@@ -33,16 +40,22 @@ export const generateOrderVerificationCode = async (cartItems: any[], total: num
       p_browser_info: { userAgent: navigator.userAgent }
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Supabase RPC error:', error);
+      throw error;
+    }
+    console.log('✅ Supabase RPC response:', data);
 
     const result = data as any;
     if (result?.success) {
+      console.log('✅ Code generated successfully:', result.code);
       return result.code;
     } else {
+      console.error('❌ RPC returned error:', result?.message);
       throw new Error(result?.message || 'Erro ao gerar código');
     }
   } catch (err) {
-    console.error('Erro ao gerar código de verificação:', err);
+    console.error('❌ Error in generateOrderVerificationCode:', err);
     return null;
   }
 };
@@ -281,24 +294,30 @@ const showWhatsAppFallback = (url: string) => {
 };
 
 export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '5527996882090', trackWhatsAppClick?: (context?: string) => void) => {
+  console.log('📦 sendToWhatsApp utils called with:', cartItems.length, 'items');
+  
   const itemsList = cartItems.map(item => 
     `• ${item.product.name} (${item.size}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
   ).join('\n');
   
   const total = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  console.log('💰 Total calculated:', total);
   
   // Gerar código de verificação do pedido
+  console.log('🔐 Generating order code...');
   const orderCode = await generateOrderVerificationCode(cartItems, total);
   
   if (!orderCode) {
-    console.error('Erro ao gerar código de verificação');
-    return;
+    console.error('❌ Failed to generate order code');
+    return null;
   }
+  console.log('✅ Order code generated:', orderCode);
 
   // Enviar email de confirmação se o usuário estiver logado
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (user?.email) {
+      console.log('📧 Sending email to:', user.email);
       await sendOrderCreatedEmail(
         user.email,
         user.user_metadata?.name || 'Cliente',
@@ -306,25 +325,125 @@ export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '55
       );
     }
   } catch (err) {
-    console.warn('Não foi possível enviar email de confirmação:', err);
+    console.warn('📧 Email sending failed:', err);
   }
   
   const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*\n\n🔐 *Código de Verificação:*\n${orderCode}\n\n📋 *Copie o código:*\n${orderCode}\n\nAguardo retorno! 🎮`;
   
   // Track WhatsApp click if tracking function is provided
   if (trackWhatsAppClick) {
+    console.log('📊 Tracking WhatsApp click');
     trackWhatsAppClick('cart_checkout');
   }
 
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  console.log('🚀 Opening WhatsApp with URL length:', whatsappUrl.length);
   
   // Usar função robusta para abrir WhatsApp
   openWhatsApp(whatsappUrl);
   
+  console.log('✅ WhatsApp process completed, returning code:', orderCode);
   return orderCode;
 };
 
-// Função simples para redirecionamento direto (para casos específicos)
+// Função para gerar código de um único produto
+export const generateSingleProductCode = async (product: any, quantity: number = 1, additionalInfo?: any) => {
+  console.log('🔑 [MOBILE DEBUG] generateSingleProductCode called:', {
+    productName: product.name,
+    quantity: quantity,
+    additionalInfo: additionalInfo
+  });
+  
+  const cartItems = [{
+    product: product,
+    quantity: quantity,
+    size: additionalInfo?.size,
+    color: additionalInfo?.color
+  }];
+  
+  const total = product.price * quantity;
+  console.log('📊 [MOBILE DEBUG] Cart items prepared:', cartItems);
+  console.log('💰 [MOBILE DEBUG] Total calculated:', total);
+  
+  return await generateOrderVerificationCode(cartItems, total);
+};
+
+// Função para compra direta com código de verificação
+export const sendSingleProductToWhatsApp = async (product: any, quantity: number = 1, additionalInfo?: any, trackWhatsAppClick?: (context?: string) => void) => {
+  console.log('🛍️ [MOBILE DEBUG] sendSingleProductToWhatsApp called:', {
+    productName: product.name,
+    quantity: quantity,
+    additionalInfo: additionalInfo,
+    isMobile: isMobile(),
+    isIOS: isIOS()
+  });
+  
+  const total = product.price * quantity;
+  
+  // Gerar código de verificação
+  console.log('🔐 [MOBILE DEBUG] Generating single product code...');
+  const orderCode = await generateSingleProductCode(product, quantity, additionalInfo);
+  
+  if (!orderCode) {
+    console.error('❌ [MOBILE DEBUG] Failed to generate order code for single product');
+    return false;
+  }
+  console.log('✅ [MOBILE DEBUG] Single product code generated:', orderCode);
+
+  // Enviar email de confirmação se o usuário estiver logado
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.email) {
+      console.log('📧 Sending single product email to:', user.email);
+      await sendOrderCreatedEmail(
+        user.email,
+        user.user_metadata?.name || 'Cliente',
+        orderCode
+      );
+    }
+  } catch (err) {
+    console.warn('📧 Single product email failed:', err);
+  }
+  
+  const message = `Olá! Gostaria de comprar este produto da UTI DOS GAMES:
+
+📦 *${product.name}*
+💰 Preço: R$ ${product.price.toFixed(2)}
+📊 Quantidade: ${quantity}
+💵 *Total: R$ ${total.toFixed(2)}*
+
+🔐 *Código de Verificação:*
+${orderCode}
+
+📋 *Copie o código:*
+${orderCode}
+
+Aguardo retorno! 🎮`;
+  
+  // Track WhatsApp click if tracking function is provided
+  if (trackWhatsAppClick) {
+    console.log('📊 Tracking single product WhatsApp click');
+    trackWhatsAppClick('single_product_purchase');
+  }
+
+  const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+  console.log('🚀 [MOBILE DEBUG] Opening single product WhatsApp:', {
+    urlLength: whatsappUrl.length,
+    messageIncludes: {
+      productName: message.includes(product.name),
+      verificationCode: message.includes(orderCode),
+      total: message.includes(total.toFixed(2))
+    }
+  });
+  
+  // Usar função robusta para abrir WhatsApp
+  openWhatsApp(whatsappUrl);
+  
+  console.log('✅ [MOBILE DEBUG] Single product WhatsApp process completed');
+  return orderCode;
+};
+
+// Função simples para redirecionamento direto (para casos específicos - SEM código)
 // NUNCA usa window.open() - funciona como link normal
 export const openWhatsAppDirect = (phoneNumber: string, message: string) => {
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;

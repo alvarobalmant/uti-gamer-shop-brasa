@@ -4,6 +4,7 @@ import { Product } from '@/hooks/useProducts';
 import { formatPrice } from '@/utils/formatPrice';
 import { ShoppingCart, MessageCircle, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 
 interface ProductCTABottomProps {
   product: Product;
@@ -15,12 +16,10 @@ const ProductCTABottom: React.FC<ProductCTABottomProps> = ({ product, onAddToCar
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleWhatsApp = () => {
-    const message = `Olá! Quero comprar: ${product.name} - ${formatPrice(product.price)}`;
-    
-    // Usar função robusta de redirecionamento
-    import('@/utils/whatsapp').then(({ openWhatsAppDirect }) => {
-      openWhatsAppDirect('5527996882090', message);
+  const handleWhatsApp = async () => {
+    // Usar nova função para gerar código de verificação
+    await sendSingleProductToWhatsApp(product, 1, null, () => {
+      // Track analytics
     });
   };
 
