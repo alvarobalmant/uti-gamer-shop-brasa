@@ -706,7 +706,7 @@
 
 /* Prevenir layout shift DEFINITIVAMENTE */
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto; /* MUDANÇA: auto ao invés de smooth para scroll restoration instantâneo */
   overflow-y: scroll !important; /* Força a barra de rolagem sempre visível */
 }
 

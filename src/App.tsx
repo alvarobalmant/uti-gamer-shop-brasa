@@ -21,7 +21,6 @@ import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import { usePageResourcePreload } from '@/hooks/useResourceHints';
 import Index from "./pages/Index";
-import ScrollRestorationProvider from "./components/ScrollRestorationProvider";
 // Security system removed - using simplified auth
 import { useEffect } from "react";
 
@@ -125,12 +124,12 @@ const LoginPage = lazy(() => import("./components/Auth/LoginPage").then(module =
 const CoinsShop = lazy(() => import("./pages/CoinsShop"));
 const CoinsHistory = lazy(() => import("./pages/CoinsHistory"));
 
-// Otimizar QueryClient
+// Otimizar QueryClient com cache mais agressivo mas seguro
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutos
-      gcTime: 10 * 60 * 1000, // 10 minutos (antes era cacheTime)
+      staleTime: 10 * 60 * 1000, // 10 minutos - cache moderado
+      gcTime: 20 * 60 * 1000, // 20 minutos
       refetchOnWindowFocus: false,
       retry: 1,
     },
@@ -186,7 +185,6 @@ const App = () => {
                         <CartProvider>
                           <AppWithPreloader>
                             <GlobalNavigationProvider>
-                              <ScrollRestorationProvider>
                                  <LoadingOverlay />
                                  <GlobalNavigationOverlay />
                                  <Suspense fallback={<PageLoader />}>
@@ -282,7 +280,6 @@ const App = () => {
                                      } />
                                    </Routes>
                                  </Suspense>
-                              </ScrollRestorationProvider>
                             </GlobalNavigationProvider>
                           </AppWithPreloader>
                         </CartProvider>

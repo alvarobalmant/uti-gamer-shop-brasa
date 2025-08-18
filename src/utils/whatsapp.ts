@@ -71,11 +71,16 @@ const isIOS = () => {
 };
 
 // Função robusta para redirecionamento WhatsApp
-const openWhatsApp = (url: string) => {
+const openWhatsApp = (url: string, onLoadingStart?: () => void) => {
   const mobile = isMobile();
   const ios = isIOS();
   
   console.log('Abrindo WhatsApp:', { mobile, ios, url });
+  
+  // Ativar loading se callback fornecido
+  if (onLoadingStart) {
+    onLoadingStart();
+  }
   
   if (mobile) {
     // Em mobile, usar window.location.href é mais confiável
@@ -293,7 +298,7 @@ const showWhatsAppFallback = (url: string) => {
   });
 };
 
-export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '5527996882090', trackWhatsAppClick?: (context?: string) => void) => {
+export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '5527996882090', trackWhatsAppClick?: (context?: string) => void, onLoadingStart?: () => void) => {
   console.log('📦 sendToWhatsApp utils called with:', cartItems.length, 'items');
   
   const itemsList = cartItems.map(item => 
@@ -339,8 +344,8 @@ export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '55
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
   console.log('🚀 Opening WhatsApp with URL length:', whatsappUrl.length);
   
-  // Usar função robusta para abrir WhatsApp
-  openWhatsApp(whatsappUrl);
+  // Usar função robusta para abrir WhatsApp com loading
+  openWhatsApp(whatsappUrl, onLoadingStart);
   
   console.log('✅ WhatsApp process completed, returning code:', orderCode);
   return orderCode;
@@ -369,7 +374,7 @@ export const generateSingleProductCode = async (product: any, quantity: number =
 };
 
 // Função para compra direta com código de verificação
-export const sendSingleProductToWhatsApp = async (product: any, quantity: number = 1, additionalInfo?: any, trackWhatsAppClick?: (context?: string) => void) => {
+export const sendSingleProductToWhatsApp = async (product: any, quantity: number = 1, additionalInfo?: any, trackWhatsAppClick?: (context?: string) => void, onLoadingStart?: () => void) => {
   console.log('🛍️ [MOBILE DEBUG] sendSingleProductToWhatsApp called:', {
     productName: product.name,
     quantity: quantity,
@@ -436,8 +441,8 @@ Aguardo retorno! 🎮`;
     }
   });
   
-  // Usar função robusta para abrir WhatsApp
-  openWhatsApp(whatsappUrl);
+  // Usar função robusta para abrir WhatsApp com loading
+  openWhatsApp(whatsappUrl, onLoadingStart);
   
   console.log('✅ [MOBILE DEBUG] Single product WhatsApp process completed');
   return orderCode;

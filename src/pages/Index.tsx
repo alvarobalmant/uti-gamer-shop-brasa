@@ -8,13 +8,14 @@ import { useCart } from '@/contexts/CartContext';
 import ProductSkeleton from '@/components/ProductSkeleton';
 
 import Footer from '@/components/Footer';
-import { useIndexPage } from '@/hooks/useIndexPage';
+import { useIndexPageOptimized } from '@/hooks/useIndexPageOptimized';
 import SectionRenderer from '@/components/HomePage/SectionRenderer';
 import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
 import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
 import { useScrollCoins } from '@/hooks/useScrollCoins';
+import { useSmartScrollRestoration } from '@/hooks/useSmartScrollRestoration';
 
 // Lazy load AdminPanel para reduzir bundle inicial
 const AdminPanel = lazy(() => import('./Admin'));
@@ -34,16 +35,16 @@ const Index = React.memo(() => {
     specialSections,
     bannerData,
     isLoading,
-    showErrorState,
     sectionsLoading,
     specialSectionsLoading,
     handleRetryProducts
-  } = useIndexPage();
+  } = useIndexPageOptimized();
 
   // Ativar sistema de scroll coins
   useScrollCoins();
 
-  // Sistema de scroll restoration já gerenciado pelo ScrollRestorationProvider
+  // Ativar sistema de scroll restoration inteligente
+  useSmartScrollRestoration();
 
   const handleAddToCart = useCallback((product: any, size?: string, color?: string) => {
     addToCart(product, size, color);
@@ -58,10 +59,6 @@ const Index = React.memo(() => {
   const handleProductCardClick = useCallback(async (productId: string) => {
     // Salvar posição atual antes de navegar
     const currentScrollY = window.scrollY;
-    
-    // Salvar usando o manager diretamente para garantir que seja salvo
-    const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
-    scrollManager.savePosition('/', 'product-navigation');
     
     // Encontrar o produto clicado para verificar se é SKU
     const clickedProduct = products.find(p => p.id === productId);
@@ -152,8 +149,6 @@ const Index = React.memo(() => {
       <main className="flex-grow">
         {isLoading ? (
           <LoadingState />
-        ) : showErrorState ? (
-          <ErrorState onRetry={handleRetryProducts} />
         ) : (
           visibleLayoutItems
             .map((item, index) => {

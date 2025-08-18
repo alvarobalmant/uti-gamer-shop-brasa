@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import scrollManager from '@/lib/scrollRestorationManager';
 import { ConfigurableNavigation } from '@/components/Navigation';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 

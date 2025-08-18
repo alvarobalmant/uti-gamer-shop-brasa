@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import scrollManager from '@/lib/scrollRestorationManager';
 import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActionsEnhanced from './HeaderActionsEnhanced';
 import MobileSearchBar from './MobileSearchBar';
@@ -40,11 +39,8 @@ const MainHeader = ({
     
     // Se já estamos na homepage, tentar restaurar posição salva
     if (location.pathname === '/') {
-      const restored = await scrollManager.restorePosition('/', 'logo click', true);
-      if (!restored) {
-        // Se não há posição salva ou falhou, scroll suave para o topo
-        window.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
-      }
+      // Scroll suave para o topo usando comportamento nativo
+      window.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
     } else {
       // Se estamos em outra página, usar navegação global
       await navigateToHome();

@@ -2,13 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchProductsFromDatabase } from './useProducts/productApi';
 import { Product } from './useProducts/types';
 
-// Hook otimizado para produtos da homepage
+// Hook otimizado para produtos da homepage com cache moderado
 export const useHomepageProducts = () => {
   return useQuery({
     queryKey: ['homepage-products'],
     queryFn: () => fetchProductsFromDatabase(),
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 15 * 60 * 1000, // 15 minutos
+    staleTime: 10 * 60 * 1000, // 10 minutos - cache moderado
+    gcTime: 20 * 60 * 1000, // 20 minutos
     refetchOnWindowFocus: false,
     retry: 3,
   });

@@ -145,11 +145,8 @@ const FeaturedProductsSection = ({
 
   // Function to handle product click - always navigate to product page
   const handleProductCardClick = useCallback(async (productId: string) => {
-    // Salvar posição atual antes de navegar
-    const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
-    scrollManager.savePosition(location.pathname, 'featured-product-navigation');
     navigate(`/produto/${productId}`);
-  }, [navigate, location.pathname]);
+  }, [navigate]);
 
   // Check scroll position and update button states
   const checkScrollButtons = useCallback(() => {

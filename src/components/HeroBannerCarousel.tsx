@@ -109,12 +109,24 @@ const HeroBannerCarousel = React.memo(() => {
   const handleScrollNext = useCallback(() => api?.scrollNext(), [api]);
   const handleScrollTo = useCallback((index: number) => api?.scrollTo(index), [api]);
 
-  // Memoizar componente de fita promocional
+  // Skeleton instantâneo que mantém altura fixa de 40px
+  const ribbonSkeletonComponent = useMemo(() => {
+    // Se ainda está carregando OU se não há configuração ativa
+    if (ribbonLoading || !activeRibbonConfig?.is_active) {
+      return (
+        <div className="w-full h-[40px] bg-gray-200 animate-pulse flex items-center justify-center">
+          <div className="h-4 bg-gray-300 rounded w-64 max-w-[80%]"></div>
+        </div>
+      );
+    }
+    return null;
+  }, [ribbonLoading, activeRibbonConfig]);
+
+  // Componente de fita promocional real
   const promotionalRibbonComponent = useMemo(() => {
-    if (!activeRibbonConfig || !activeRibbonConfig.is_active) return null;
-    
-    return (
-      <div className="mt-[36px]">
+    // Só renderiza a fita real se carregou E está ativa
+    if (!ribbonLoading && activeRibbonConfig?.is_active) {
+      return (
         <PromotionalRibbon 
           isVisible={true}
           text={activeRibbonConfig.text}
@@ -124,21 +136,25 @@ const HeroBannerCarousel = React.memo(() => {
           backgroundType={activeRibbonConfig.background_type}
           gradientColors={activeRibbonConfig.gradient_colors}
         />
+      );
+    }
+    return null;
+  }, [ribbonLoading, activeRibbonConfig]);
+
+  // Container que sempre mantém 40px de altura
+  const ribbonContainerComponent = useMemo(() => {
+    return (
+      <div className="w-full h-[40px] relative mt-[38px]">
+        {ribbonSkeletonComponent}
+        {promotionalRibbonComponent}
       </div>
     );
-  }, [activeRibbonConfig]);
-
-  // Memoizar espaçamento quando não há fita
-  const spacingComponent = useMemo(() => {
-    if (activeRibbonConfig && activeRibbonConfig.is_active) return null;
-    return <div className="h-[38px]" />;
-  }, [activeRibbonConfig]);
+  }, [ribbonSkeletonComponent, promotionalRibbonComponent]);
 
   if (loading) {
     return (
       <>
-        {promotionalRibbonComponent}
-        {spacingComponent}
+        {ribbonContainerComponent}
         <section className="relative bg-uti-gray-light overflow-hidden border-b border-border/60">
           <Skeleton className="w-full aspect-[4.4/1] min-h-[240px] max-h-[400px]" />
         </section>
@@ -149,8 +165,7 @@ const HeroBannerCarousel = React.memo(() => {
   if (deviceBanners.length === 0) {
     return (
       <>
-        {promotionalRibbonComponent}
-        {spacingComponent}
+        {ribbonContainerComponent}
         <section className="relative bg-gradient-to-br from-uti-dark via-gray-900 to-uti-dark text-white overflow-hidden">
           <div className="relative w-full aspect-[4.4/1] min-h-[240px] max-h-[400px] flex items-center justify-center">
             <div className="container mx-auto px-4 max-w-4xl text-center animate-fade-in">
@@ -192,8 +207,7 @@ const HeroBannerCarousel = React.memo(() => {
 
   return (
     <>
-      {promotionalRibbonComponent}
-      {spacingComponent}
+      {ribbonContainerComponent}
       
       <section className="relative overflow-hidden bg-uti-gray-light">
         <Carousel 

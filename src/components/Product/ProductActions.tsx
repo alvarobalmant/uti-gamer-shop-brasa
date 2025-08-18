@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useNewCart } from '@/hooks/useNewCart';
 import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
+import { useWhatsAppLoading } from '@/hooks/useWhatsAppLoading';
+import WhatsAppLoadingOverlay from '@/components/ui/WhatsAppLoadingOverlay';
 
 interface ProductActionsProps {
   product: Product;
@@ -28,6 +30,7 @@ const ProductActions: React.FC<ProductActionsProps> = ({
   showLimitedTimeOffer = false,
 }) => {
   const isOutOfStock = product.stock === 0;
+  const { isLoading: isWhatsAppLoading, showLoading } = useWhatsAppLoading();
   const isLowStock = product.stock && product.stock <= 5;
 
   return (
@@ -69,10 +72,10 @@ const ProductActions: React.FC<ProductActionsProps> = ({
         {!isOutOfStock && (
           <Button
             onClick={async () => {
-              // Usar nova função para gerar código de verificação
+              // Usar nova função para gerar código de verificação com loading
               await sendSingleProductToWhatsApp(product, 1, null, () => {
                 // Track analytics
-              });
+              }, showLoading); // Adicionar callback de loading
             }}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg h-12 transition-colors duration-200"
           >
@@ -126,6 +129,9 @@ const ProductActions: React.FC<ProductActionsProps> = ({
           </div>
         </div>
       )}
+
+      {/* Loading Overlay para WhatsApp */}
+      <WhatsAppLoadingOverlay isVisible={isWhatsAppLoading} />
     </div>
   );
 };

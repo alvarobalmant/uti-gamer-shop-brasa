@@ -83,10 +83,8 @@ const ProductPage = () => {
   };
 
   const handleBackClick = () => {
-    // Navigate back and let the global useScrollRestoration handle the position
+    // Navigate back and let the browser's native scroll restoration handle the position
     navigate(-1);
-    
-    // Removed fallback restoreScrollPosition call
   };
 
   const handleWhatsAppContact = () => {

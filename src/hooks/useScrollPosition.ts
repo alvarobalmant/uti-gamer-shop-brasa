@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 
 /**
  * Hook simplificado para operações manuais de scroll
- * Funciona em conjunto com useScrollRestoration
+ * Usa o scroll restoration nativo do navegador
  */
 export const useScrollPosition = () => {
   // Função para salvar posição manualmente (para casos específicos)

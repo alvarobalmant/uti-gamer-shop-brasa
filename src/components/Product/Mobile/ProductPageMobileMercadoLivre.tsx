@@ -16,6 +16,8 @@ import { useProductFAQs } from '@/hooks/useProductFAQs';
 import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
 import DynamicDeliveryMobile from './DynamicDeliveryMobile';
 import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
+import { useWhatsAppLoading } from '@/hooks/useWhatsAppLoading';
+import WhatsAppLoadingOverlay from '@/components/ui/WhatsAppLoadingOverlay';
 
 interface ProductPageMobileMercadoLivreProps {
   product: Product;
@@ -42,6 +44,7 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
   const { trackEvent } = useAnalytics();
   const { specifications } = useProductSpecifications(product.id);
   const { faqs } = useProductFAQs(product.id);
+  const { isLoading: isWhatsAppLoading, showLoading } = useWhatsAppLoading();
 
   // Dados calculados
   const allImages = [product.image, ...(product.additional_images || [])].filter(Boolean);
@@ -102,7 +105,7 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
   };
 
   const handleBuyNow = async () => {
-    // MESMA LÓGICA DO DESKTOP - usar função sendSingleProductToWhatsApp
+    // MESMA LÓGICA DO DESKTOP - usar função sendSingleProductToWhatsApp com loading
     await sendSingleProductToWhatsApp(product, quantity, null, () => {
       // Track analytics
       trackEvent('buy_now_click', {
@@ -111,7 +114,7 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
         product_price: product.price,
         quantity: quantity
       });
-    });
+    }, showLoading); // Adicionar callback de loading
   };
 
   return (
@@ -412,9 +415,11 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
           ))}
         </div>
       </div>
-
       {/* Espaçamento final */}
       <div className="h-6"></div>
+
+      {/* Loading Overlay para WhatsApp */}
+      <WhatsAppLoadingOverlay isVisible={isWhatsAppLoading} />
     </div>
   );
 };

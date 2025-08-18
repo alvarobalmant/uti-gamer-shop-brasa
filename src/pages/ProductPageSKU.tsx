@@ -11,7 +11,6 @@ import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useToast } from '@/hooks/use-toast';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
-import { saveScrollPosition } from '@/lib/scrollRestorationManager';
 
 // LAZY LOADING REAL - carrega apenas desktop OU mobile sob demanda
 const ProductLayout = lazy(() => import('@/components/Product/Layout/ProductLayout'));
@@ -50,8 +49,7 @@ const ProductPageSKU = () => {
   // Implementar scroll restoration
   useEffect(() => {
     return () => {
-      const currentPath = location.pathname;
-      saveScrollPosition(currentPath, 'product-page-exit');
+      // Cleanup quando sair da página de produto
     };
   }, [location.pathname]);
 
@@ -139,7 +137,7 @@ const ProductPageSKU = () => {
         showNavigation={false}
       />
 
-      <main className="pt-36 md:pt-4">
+      <main className="pt-20 md:pt-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
           <div className="w-full max-w-6xl">
           {/* Breadcrumb com suporte a SKUs */}

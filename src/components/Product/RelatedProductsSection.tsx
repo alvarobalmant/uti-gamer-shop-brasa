@@ -58,12 +58,10 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   };
 
   const handleProductClick = useCallback(async (productId: string) => {
-    // Salvar posição atual antes de navegar para produto relacionado
-    console.log('[RelatedProducts] Salvando posição antes de navegar para produto relacionado:', productId);
-    const scrollManager = (await import('@/lib/scrollRestorationManager')).default;
-    scrollManager.savePosition(location.pathname, 'related-product-navigation');
+    // Navegar para produto relacionado
+    console.log('[RelatedProducts] Navegando para produto relacionado:', productId);
     navigate(`/produto/${productId}`);
-  }, [navigate, location.pathname]);
+  }, [navigate]);
 
   const handleViewAllClick = () => {
     navigate('/categoria/inicio');
