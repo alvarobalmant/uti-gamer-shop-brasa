@@ -348,6 +348,12 @@ export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '55
 
 // Função para gerar código de um único produto
 export const generateSingleProductCode = async (product: any, quantity: number = 1, additionalInfo?: any) => {
+  console.log('🔑 [MOBILE DEBUG] generateSingleProductCode called:', {
+    productName: product.name,
+    quantity: quantity,
+    additionalInfo: additionalInfo
+  });
+  
   const cartItems = [{
     product: product,
     quantity: quantity,
@@ -356,24 +362,33 @@ export const generateSingleProductCode = async (product: any, quantity: number =
   }];
   
   const total = product.price * quantity;
+  console.log('📊 [MOBILE DEBUG] Cart items prepared:', cartItems);
+  console.log('💰 [MOBILE DEBUG] Total calculated:', total);
+  
   return await generateOrderVerificationCode(cartItems, total);
 };
 
 // Função para compra direta com código de verificação
 export const sendSingleProductToWhatsApp = async (product: any, quantity: number = 1, additionalInfo?: any, trackWhatsAppClick?: (context?: string) => void) => {
-  console.log('🛍️ sendSingleProductToWhatsApp called:', product.name, 'quantity:', quantity);
+  console.log('🛍️ [MOBILE DEBUG] sendSingleProductToWhatsApp called:', {
+    productName: product.name,
+    quantity: quantity,
+    additionalInfo: additionalInfo,
+    isMobile: isMobile(),
+    isIOS: isIOS()
+  });
   
   const total = product.price * quantity;
   
   // Gerar código de verificação
-  console.log('🔐 Generating single product code...');
+  console.log('🔐 [MOBILE DEBUG] Generating single product code...');
   const orderCode = await generateSingleProductCode(product, quantity, additionalInfo);
   
   if (!orderCode) {
-    console.error('❌ Failed to generate order code for single product');
+    console.error('❌ [MOBILE DEBUG] Failed to generate order code for single product');
     return false;
   }
-  console.log('✅ Single product code generated:', orderCode);
+  console.log('✅ [MOBILE DEBUG] Single product code generated:', orderCode);
 
   // Enviar email de confirmação se o usuário estiver logado
   try {
@@ -412,12 +427,19 @@ Aguardo retorno! 🎮`;
   }
 
   const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-  console.log('🚀 Opening single product WhatsApp with URL length:', whatsappUrl.length);
+  console.log('🚀 [MOBILE DEBUG] Opening single product WhatsApp:', {
+    urlLength: whatsappUrl.length,
+    messageIncludes: {
+      productName: message.includes(product.name),
+      verificationCode: message.includes(orderCode),
+      total: message.includes(total.toFixed(2))
+    }
+  });
   
   // Usar função robusta para abrir WhatsApp
   openWhatsApp(whatsappUrl);
   
-  console.log('✅ Single product WhatsApp process completed');
+  console.log('✅ [MOBILE DEBUG] Single product WhatsApp process completed');
   return orderCode;
 };
 
