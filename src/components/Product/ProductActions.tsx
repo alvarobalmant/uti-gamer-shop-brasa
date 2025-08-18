@@ -1,8 +1,12 @@
 
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
-import { ShoppingCart, MessageCircle, Plus, Minus, Zap } from 'lucide-react';
+import { Heart, ShoppingCart, Plus, Minus, MessageCircle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { useNewCart } from '@/hooks/useNewCart';
+import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 
 interface ProductActionsProps {
   product: Product;
@@ -66,10 +70,8 @@ const ProductActions: React.FC<ProductActionsProps> = ({
           <Button
             onClick={async () => {
               // Usar nova função para gerar código de verificação
-              await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
-                return sendSingleProductToWhatsApp(product, 1, null, () => {
-                  // Track analytics
-                });
+              await sendSingleProductToWhatsApp(product, 1, null, () => {
+                // Track analytics
               });
             }}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg h-12 transition-colors duration-200"

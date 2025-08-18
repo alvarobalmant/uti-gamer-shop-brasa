@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/utils/formatPrice';
 import FavoriteButton from '@/components/FavoriteButton';
+import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 
 interface ProductHeroMobileProps {
   product: Product;
@@ -36,10 +37,8 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
 
   const handleWhatsAppContact = async () => {
     // Usar nova função para gerar código de verificação
-    await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
-      return sendSingleProductToWhatsApp(product, quantity, null, () => {
-        // Track analytics
-      });
+    await sendSingleProductToWhatsApp(product, quantity, null, () => {
+      // Track analytics
     });
   };
 
@@ -263,10 +262,8 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
           <Button
             onClick={async () => {
               // Usar nova função para gerar código de verificação
-              await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
-                return sendSingleProductToWhatsApp(product, quantity, null, () => {
-                  // Track analytics
-                });
+              await sendSingleProductToWhatsApp(product, quantity, null, () => {
+                // Track analytics
               });
             }}
             className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl"

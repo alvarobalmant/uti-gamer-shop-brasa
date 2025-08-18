@@ -3,6 +3,7 @@ import { Product } from '@/hooks/useProducts';
 import { formatPrice } from '@/utils/formatPrice';
 import { ShoppingCart, MessageCircle, Plus, Minus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 
 interface ProductCTABottomMobileProps {
   product: Product;
@@ -18,10 +19,8 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
 
   const handleWhatsApp = async () => {
     // Usar nova função para gerar código de verificação
-    await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
-      return sendSingleProductToWhatsApp(product, 1, null, () => {
-        // Track analytics
-      });
+    await sendSingleProductToWhatsApp(product, 1, null, () => {
+      // Track analytics
     });
   };
 
@@ -144,10 +143,8 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
                 <Button
                   onClick={async () => {
                     // Usar nova função para gerar código de verificação ao comprar
-                    await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
-                      return sendSingleProductToWhatsApp(product, quantity, null, () => {
-                        // Track analytics
-                      });
+                    await sendSingleProductToWhatsApp(product, quantity, null, () => {
+                      // Track analytics
                     });
                     setIsExpanded(false);
                   }}

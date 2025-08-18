@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, ShoppingCart, Truck, Calculator } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 
 interface PurchaseConfirmationModalProps {
   isOpen: boolean;
@@ -33,10 +34,8 @@ export const PurchaseConfirmationModal: React.FC<PurchaseConfirmationModalProps>
 
   const handleWhatsAppProceed = async () => {
     // Usar nova função para gerar código de verificação
-    const success = await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
-      return sendSingleProductToWhatsApp(product, quantity, null, () => {
-        // Track analytics se necessário
-      });
+    const success = await sendSingleProductToWhatsApp(product, quantity, null, () => {
+      // Track analytics se necessário
     });
 
     if (success) {

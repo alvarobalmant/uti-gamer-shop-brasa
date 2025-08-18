@@ -4,6 +4,7 @@ import { ShoppingCart, Zap, Heart, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import FavoriteButton from '@/components/FavoriteButton';
+import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 
 interface ActionButtonsProps {
   product: Product;
@@ -67,10 +68,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 
   const handleWhatsAppContact = async () => {
     // Usar nova função para gerar código de verificação
-    await import('@/utils/whatsapp').then(({ sendSingleProductToWhatsApp }) => {
-      return sendSingleProductToWhatsApp(product, quantity, null, () => {
-        // Track analytics
-      });
+    await sendSingleProductToWhatsApp(product, quantity, null, () => {
+      // Track analytics
     });
   };
 
