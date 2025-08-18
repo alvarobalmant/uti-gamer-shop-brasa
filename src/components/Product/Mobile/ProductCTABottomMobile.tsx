@@ -4,6 +4,7 @@ import { formatPrice } from '@/utils/formatPrice';
 import { ShoppingCart, MessageCircle, Plus, Minus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
+import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
 
 interface ProductCTABottomMobileProps {
   product: Product;
@@ -16,6 +17,7 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleWhatsApp = async () => {
     // Usar nova função para gerar código de verificação
@@ -141,11 +143,8 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
                 </Button>
                 
                 <Button
-                  onClick={async () => {
-                    // Usar nova função para gerar código de verificação ao comprar
-                    await sendSingleProductToWhatsApp(product, quantity, null, () => {
-                      // Track analytics
-                    });
+                  onClick={() => {
+                    setIsModalOpen(true);
                     setIsExpanded(false);
                   }}
                   className="h-14 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl"
@@ -231,6 +230,19 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
 
       {/* Spacer - Altura Dinâmica */}
       <div className={`${isExpanded ? 'h-96' : 'h-24'} transition-all duration-300`} />
+
+      {/* MODAL DE CONFIRMAÇÃO DE COMPRA */}
+      <PurchaseConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        product={{
+          name: product.name,
+          price: product.price,
+          originalPrice: product.list_price,
+          image: product.images?.[0] || '/placeholder.svg'
+        }}
+        quantity={quantity}
+      />
     </>
   );
 };

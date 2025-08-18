@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/utils/formatPrice';
 import FavoriteButton from '@/components/FavoriteButton';
 import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
+import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
 
 interface ProductHeroMobileProps {
   product: Product;
@@ -19,6 +20,7 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedCondition, setSelectedCondition] = useState<'new' | 'pre-owned' | 'digital'>('new');
   const [quantity, setQuantity] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const images = product.images && product.images.length > 0 ? product.images : [product.image];
   const rating = 4.8;
@@ -260,12 +262,7 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
           </Button>
           
           <Button
-            onClick={async () => {
-              // Usar nova função para gerar código de verificação
-              await sendSingleProductToWhatsApp(product, quantity, null, () => {
-                // Track analytics
-              });
-            }}
+            onClick={() => setIsModalOpen(true)}
             className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl"
             disabled={product.stock === 0}
           >
@@ -297,6 +294,19 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
           ))}
         </div>
       </div>
+
+      {/* MODAL DE CONFIRMAÇÃO DE COMPRA */}
+      <PurchaseConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        product={{
+          name: product.name,
+          price: product.price,
+          originalPrice: product.list_price,
+          image: product.images?.[0] || '/placeholder.svg'
+        }}
+        quantity={quantity}
+      />
     </div>
   );
 };
