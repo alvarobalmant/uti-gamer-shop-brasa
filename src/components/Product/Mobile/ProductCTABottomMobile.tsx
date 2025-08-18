@@ -4,6 +4,10 @@ import { formatPrice } from '@/utils/formatPrice';
 import { ShoppingCart, MessageCircle, Plus, Minus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
+<<<<<<< HEAD
+=======
+import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
+>>>>>>> 40b47e6458b668ad090fe1970dd99360491f7572
 
 interface ProductCTABottomMobileProps {
   product: Product;
@@ -16,11 +20,13 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleWhatsApp = async () => {
     // Usar nova função para gerar código de verificação
     await sendSingleProductToWhatsApp(product, 1, null, () => {
       // Track analytics
+<<<<<<< HEAD
     });
   };
 
@@ -29,6 +35,8 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
     // Usar nova função para gerar código de verificação - MESMA LÓGICA DO DESKTOP
     await sendSingleProductToWhatsApp(product, quantity, null, () => {
       // Track analytics
+=======
+>>>>>>> 40b47e6458b668ad090fe1970dd99360491f7572
     });
   };
 
@@ -149,7 +157,14 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
                 </Button>
                 
                 <Button
+<<<<<<< HEAD
                   onClick={handleBuyNow}
+=======
+                  onClick={() => {
+                    setIsModalOpen(true);
+                    setIsExpanded(false);
+                  }}
+>>>>>>> 40b47e6458b668ad090fe1970dd99360491f7572
                   className="h-14 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl"
                   disabled={product.stock === 0}
                 >
@@ -233,6 +248,19 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
 
       {/* Spacer - Altura Dinâmica */}
       <div className={`${isExpanded ? 'h-96' : 'h-24'} transition-all duration-300`} />
+
+      {/* MODAL DE CONFIRMAÇÃO DE COMPRA */}
+      <PurchaseConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        product={{
+          name: product.name,
+          price: product.price,
+          originalPrice: product.list_price,
+          image: product.images?.[0] || '/placeholder.svg'
+        }}
+        quantity={quantity}
+      />
     </>
   );
 };
