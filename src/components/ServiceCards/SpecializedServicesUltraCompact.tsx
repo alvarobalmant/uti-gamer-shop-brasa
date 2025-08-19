@@ -165,23 +165,20 @@ const SpecializedServicesUltraCompact = () => {
                         
                         {/* Header do card ultra-compacto */}
                         <div className="relative mb-3">
-                          <div 
-                            className="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105 group-hover:rotate-2 mb-3"
-                            style={gradientStyle}
-                          >
+                          <div className="mb-3">
                             {!imageErrors[card.id] && card.image_url ? (
                               <img
                                 src={card.image_url}
                                 alt={card.title}
                                 className={cn(
-                                  "w-6 h-6 md:w-7 md:h-7 object-contain transition-all duration-300",
+                                  "w-12 h-12 md:w-14 md:h-14 object-contain transition-all duration-300",
                                   card.icon_filter_enabled ? "filter brightness-0 invert" : ""
                                 )}
                                 loading="lazy"
                                 onError={() => handleImageError(card.id)}
                               />
                             ) : (
-                              <IconComponent className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                              <IconComponent className="w-12 h-12 md:w-14 md:h-14 text-gray-600" />
                             )}
                           </div>
                         </div>

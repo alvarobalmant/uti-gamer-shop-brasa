@@ -21,6 +21,7 @@ import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import { usePageResourcePreload } from '@/hooks/useResourceHints';
 import Index from "./pages/Index";
+import AssistenciaTecnica from "./pages/AssistenciaTecnica";
 // Security system removed - using simplified auth
 import { useEffect } from "react";
 
@@ -243,6 +244,7 @@ const App = () => {
                                            />
 
                                            {/* Special routes - MUST come before dynamic routes */}
+                                           <Route path="/servicos/assistencia" element={<AssistenciaTecnica />} />
                                            <Route path="/busca" element={<SearchResults />} />
                                            <Route path="/secao/:sectionKey" element={<SectionPage />} />
                                            <Route path="/categoria/:category" element={<CategoryPage />} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useBanners } from '@/hooks/useBanners';
 import { usePromotionalRibbon } from '@/hooks/usePromotionalRibbon';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,9 @@ const HeroBannerCarousel = React.memo(() => {
   const { mobileConfig, desktopConfig, loading: ribbonLoading } = usePromotionalRibbon();
   const [api, setApi] = useState<CarouselApi>()
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [progress, setProgress] = useState(0)
+  const [isAutoplayActive, setIsAutoplayActive] = useState(true)
+  const [isAutoplayPaused, setIsAutoplayPaused] = useState(false)
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -45,8 +48,8 @@ const HeroBannerCarousel = React.memo(() => {
   // Configuração do autoplay memoizada
   const plugin = useRef(
     Autoplay({ 
-      delay: 3500, 
-      stopOnInteraction: false 
+      delay: 6000, // 6 segundos
+      stopOnInteraction: true // Para automaticamente em qualquer interação
     })
   );
 
@@ -57,14 +60,79 @@ const HeroBannerCarousel = React.memo(() => {
     
     const handleSelect = () => {
       setCurrentSlide(api.selectedScrollSnap());
+      setProgress(0); // Reset progress when slide changes
+    };
+
+    // Função para parar autoplay por 10 segundos
+    const pauseAutoplayFor10Seconds = () => {
+      console.log('User interaction detected - stopping autoplay');
+      plugin.current.stop();
+      setProgress(0);
+      setIsAutoplayPaused(true); // Marca como pausado
+      
+      // Retoma após 10 segundos
+      setTimeout(() => {
+        console.log('Resuming autoplay after 10 seconds');
+        plugin.current.play();
+        setIsAutoplayPaused(false); // Marca como ativo novamente
+      }, 10000);
+    };
+
+    // Usar eventos específicos do Embla Carousel
+    const handlePointerDown = () => {
+      console.log('PointerDown detected - pausing autoplay');
+      pauseAutoplayFor10Seconds();
+    };
+
+    // Adicionar listener DOM diretamente no container do Embla
+    const emblaContainer = api.containerNode();
+    const emblaViewport = api.rootNode();
+    
+    const handleMouseDown = (e) => {
+      console.log('MouseDown detected on viewport - pausing autoplay');
+      pauseAutoplayFor10Seconds();
+    };
+
+    const handleTouchStart = (e) => {
+      console.log('TouchStart detected on viewport - pausing autoplay');
+      pauseAutoplayFor10Seconds();
     };
     
     api.on("select", handleSelect);
+    api.on("pointerDown", handlePointerDown);
+    
+    // Adicionar listeners DOM no viewport do Embla
+    if (emblaViewport) {
+      emblaViewport.addEventListener('mousedown', handleMouseDown, { passive: true });
+      emblaViewport.addEventListener('touchstart', handleTouchStart, { passive: true });
+    }
     
     return () => {
       api.off("select", handleSelect);
+      api.off("pointerDown", handlePointerDown);
+      
+      if (emblaViewport) {
+        emblaViewport.removeEventListener('mousedown', handleMouseDown);
+        emblaViewport.removeEventListener('touchstart', handleTouchStart);
+      }
     };
   }, [api]);
+
+  // Controle de progresso das barras
+  useEffect(() => {
+    if (deviceBanners.length <= 1 || isAutoplayPaused) return; // Para se autoplay pausado
+    
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          return 0; // Reset when reaches 100%
+        }
+        return prev + (100 / 60); // 6000ms / 100ms = 60 steps
+      });
+    }, 100); // Update every 100ms for smooth animation
+    
+    return () => clearInterval(interval);
+  }, [deviceBanners.length, currentSlide, isAutoplayPaused]); // Adiciona isAutoplayPaused como dependência
 
   // Preload de imagens otimizado - apenas quando deviceBanners mudar
   useEffect(() => {
@@ -105,9 +173,44 @@ const HeroBannerCarousel = React.memo(() => {
     }
   }, [navigate, isMobile]);
 
-  const handleScrollPrev = useCallback(() => api?.scrollPrev(), [api]);
-  const handleScrollNext = useCallback(() => api?.scrollNext(), [api]);
-  const handleScrollTo = useCallback((index: number) => api?.scrollTo(index), [api]);
+  const handleScrollPrev = useCallback(() => {
+    api?.scrollPrev();
+    // Para o autoplay real
+    plugin.current.stop();
+    setProgress(0);
+    setIsAutoplayPaused(true); // Marca como pausado
+    // Retoma após 10 segundos
+    setTimeout(() => {
+      plugin.current.play();
+      setIsAutoplayPaused(false); // Marca como ativo novamente
+    }, 10000);
+  }, [api]);
+  
+  const handleScrollNext = useCallback(() => {
+    api?.scrollNext();
+    // Para o autoplay real
+    plugin.current.stop();
+    setProgress(0);
+    setIsAutoplayPaused(true); // Marca como pausado
+    // Retoma após 10 segundos
+    setTimeout(() => {
+      plugin.current.play();
+      setIsAutoplayPaused(false); // Marca como ativo novamente
+    }, 10000);
+  }, [api]);
+  
+  const handleScrollTo = useCallback((index: number) => {
+    api?.scrollTo(index);
+    // Para o autoplay real
+    plugin.current.stop();
+    setProgress(0);
+    setIsAutoplayPaused(true); // Marca como pausado
+    // Retoma após 10 segundos
+    setTimeout(() => {
+      plugin.current.play();
+      setIsAutoplayPaused(false); // Marca como ativo novamente
+    }, 10000);
+  }, [api]);
 
   // Skeleton instantâneo que mantém altura fixa de 40px
   const ribbonSkeletonComponent = useMemo(() => {
@@ -156,7 +259,7 @@ const HeroBannerCarousel = React.memo(() => {
       <>
         {ribbonContainerComponent}
         <section className="relative bg-uti-gray-light overflow-hidden border-b border-border/60">
-          <Skeleton className="w-full aspect-[4.4/1] min-h-[240px] max-h-[400px]" />
+          <Skeleton className="w-full aspect-[3.2/1] min-h-[240px] max-h-[600px]" />
         </section>
       </>
     );
@@ -167,7 +270,7 @@ const HeroBannerCarousel = React.memo(() => {
       <>
         {ribbonContainerComponent}
         <section className="relative bg-gradient-to-br from-uti-dark via-gray-900 to-uti-dark text-white overflow-hidden">
-          <div className="relative w-full aspect-[4.4/1] min-h-[240px] max-h-[400px] flex items-center justify-center">
+          <div className="relative w-full aspect-[3.2/1] min-h-[240px] max-h-[600px] flex items-center justify-center">
             <div className="container mx-auto px-4 max-w-4xl text-center animate-fade-in">
               <LogoImage 
                 src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png"
@@ -234,8 +337,8 @@ const HeroBannerCarousel = React.memo(() => {
                   <div 
                     className={cn(
                       "relative text-white transition-opacity duration-500 ease-in-out",
-                      "w-full aspect-[4.4/1]", // Proporção baseada na GameStop (4.4:1)
-                      "min-h-[240px] max-h-[400px]", // Altura mínima e máxima para controle
+                      "w-full aspect-[3.2/1]", // Proporção 1920x600 (3.2:1)
+                      "min-h-[240px] max-h-[600px]", // Altura mínima e máxima para controle
                       "flex items-center",
                       "overflow-hidden" // Garante que o conteúdo não vaze
                     )}
@@ -328,7 +431,7 @@ const HeroBannerCarousel = React.memo(() => {
           )}
         </Carousel>
         
-        {/* Custom Banner Indicators - Posicionados fora do banner */}
+        {/* Progress Bar Indicators - Posicionados fora do banner */}
         {deviceBanners.length > 1 && (
           <div className="flex justify-center pt-4 pb-2">
             <div className="flex gap-2">
@@ -336,14 +439,27 @@ const HeroBannerCarousel = React.memo(() => {
                 <button
                   key={index}
                   onClick={() => handleScrollTo(index)}
-                  className={cn(
-                    "w-2.5 h-2.5 rounded-full transition-all duration-300",
-                    index === currentSlide 
-                      ? "bg-gray-800 scale-110" 
-                      : "bg-gray-400 hover:bg-gray-600"
-                  )}
+                  className="relative group"
                   aria-label={`Ir para o banner ${index + 1}`}
-                />
+                >
+                  {/* Background bar */}
+                  <div className="w-12 h-1 bg-gray-300 rounded-full overflow-hidden transition-all duration-300 group-hover:bg-gray-400">
+                    {/* Progress fill ou indicador de banner ativo */}
+                    <div 
+                      className={cn(
+                        "h-full rounded-full transition-all duration-100 ease-linear",
+                        index === currentSlide 
+                          ? (isAutoplayPaused ? "bg-gray-600" : "bg-gray-800") // Cor mais clara quando pausado
+                          : "bg-gray-500 w-0"
+                      )}
+                      style={{
+                        width: index === currentSlide 
+                          ? (isAutoplayPaused ? '100%' : `${progress}%`) // Barra cheia quando pausado
+                          : '0%'
+                      }}
+                    />
+                  </div>
+                </button>
               ))}
             </div>
           </div>
