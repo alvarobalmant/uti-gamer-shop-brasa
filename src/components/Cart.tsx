@@ -16,6 +16,7 @@ import { useCart } from '@/contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CartSheetProps {
+  isOpen?: boolean;
   showCart?: boolean;
   setShowCart?: (show: boolean) => void;
   items?: any[];
@@ -23,6 +24,9 @@ interface CartSheetProps {
   onClose?: () => void;
   onSendToWhatsApp?: () => void;
   total?: number;
+  updateQuantity?: (productId: string, size: string, color: string, quantity: number) => void;
+  getCartTotal?: () => number;
+  sendToWhatsApp?: () => void;
 }
 
 const Cart = ({ showCart = false, setShowCart }: CartSheetProps) => {

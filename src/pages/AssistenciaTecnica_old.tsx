@@ -79,6 +79,7 @@ function AssistanceForm() {
   const [formData, setFormData] = useState({
     consoleBrand: '',
     consoleModel: '',
+    consoleType: '',
     problemCategory: '',
     problemDescription: '',
     serviceType: '',
@@ -93,12 +94,13 @@ function AssistanceForm() {
   const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
-  const consoleBrands = [
+  const consoleTypes = [
     { id: 'playstation', name: 'PlayStation', icon: '🎮' },
     { id: 'xbox', name: 'Xbox', icon: '🎯' },
     { id: 'nintendo', name: 'Nintendo', icon: '🕹️' },
     { id: 'pc', name: 'PC Gaming', icon: '💻' },
-    { id: 'outros', name: 'Outros', icon: '🎲' }
+    { id: 'steam-deck', name: 'Steam Deck', icon: '🎲' },
+    { id: 'other', name: 'Outros', icon: '❓' }
   ];
 
   const consoleModels = {

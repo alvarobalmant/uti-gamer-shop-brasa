@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 interface ProfessionalHeaderProps {
   onCartOpen?: () => void;
   onAuthOpen?: () => void;
+  onMobileMenuToggle?: () => void;
   showNavigation?: boolean;
   // Additional props that components are passing
   user?: any;
