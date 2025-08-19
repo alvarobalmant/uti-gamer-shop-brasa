@@ -129,7 +129,7 @@ const OptimizedProductCard = memo<{
       {/* Informações do produto */}
       <div className="p-4 space-y-2">
         {/* Nome do produto */}
-        <h3 className="font-medium text-sm text-gray-900 line-clamp-2 leading-tight">
+        <h3 className="font-medium text-base text-gray-900 line-clamp-2 leading-tight">
           {product.name}
         </h3>
 
@@ -137,7 +137,7 @@ const OptimizedProductCard = memo<{
         <div className="space-y-1">
           {product.hasDiscount ? (
             <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-green-600">
+              <span className="text-xl font-bold text-green-600">
                 {product.formattedPromotionalPrice}
               </span>
               <span className="text-sm text-gray-500 line-through">
@@ -145,14 +145,14 @@ const OptimizedProductCard = memo<{
               </span>
             </div>
           ) : (
-            <span className="text-lg font-bold text-gray-900">
+            <span className="text-xl font-bold text-gray-900">
               {product.formattedPrice}
             </span>
           )}
 
           {/* Preço UTI Pro */}
           {product.formattedUtiProPrice && (
-            <div className="text-xs text-blue-600">
+            <div className="text-sm text-blue-600">
               UTI PRO: {product.formattedUtiProPrice}
             </div>
           )}
@@ -196,7 +196,7 @@ const OptimizedProductGrid: React.FC<OptimizedProductGridProps> = ({
 
   // Grid classes baseado no número de colunas
   const gridClasses = useMemo(() => {
-    const baseClasses = 'grid gap-4';
+    const baseClasses = 'grid gap-3 md:gap-4';
     const columnClasses = {
       2: 'grid-cols-1 sm:grid-cols-2',
       3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
@@ -266,19 +266,35 @@ const OptimizedProductGrid: React.FC<OptimizedProductGridProps> = ({
 
   return (
     <div className={className}>
-      {/* Título da seção */}
+      {/* Título da seção estilo GameStop */}
       {showTitle && (title || subtitle) && (
-        <div className="mb-8">
-          {title && (
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              {title}
-            </h2>
-          )}
-          {subtitle && (
-            <p className="text-gray-600">
-              {subtitle}
-            </p>
-          )}
+        <div className="flex items-center justify-between mb-2 px-4 md:px-0">
+          <div className="flex-1">
+            {title && (
+              <h2 className="text-xl md:text-4xl font-semibold leading-tight tracking-tight text-gray-900" style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
+                {title}
+              </h2>
+            )}
+            {subtitle && (
+              <p className="text-gray-600 mt-1">
+                {subtitle}
+              </p>
+            )}
+          </div>
+          
+          {/* Botão Ver Todos estilo GameStop */}
+          <button className="bg-black text-white rounded font-semibold hover:bg-gray-800 transition-colors duration-200 flex-shrink-0 ml-4 flex items-center justify-center" style={{ 
+            border: '2px solid #000000',
+            borderRadius: '4px',
+            fontSize: '0.75rem',
+            fontWeight: '600',
+            lineHeight: '1',
+            height: '40px',
+            minWidth: '78px',
+            padding: '7px 9px'
+          }}>
+            Ver Todos
+          </button>
         </div>
       )}
 

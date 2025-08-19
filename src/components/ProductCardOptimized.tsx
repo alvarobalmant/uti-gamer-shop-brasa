@@ -145,7 +145,7 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
       {/* Conteúdo do card */}
       <div className="p-4 space-y-3">
         {/* Título do produto */}
-        <h3 className="font-medium text-gray-900 line-clamp-2 text-sm leading-tight md:group-hover:text-blue-600 transition-colors duration-200">
+        <h3 className="font-medium text-gray-900 line-clamp-2 text-base leading-tight md:group-hover:text-blue-600 transition-colors duration-200">
           {product.name}
         </h3>
         
@@ -179,15 +179,15 @@ export const ProductCardOptimized: React.FC<ProductCardOptimizedProps> = ({
         {/* Preços */}
         <div className="space-y-1">
           {priceInfo.hasDiscount && (
-            <div className="text-xs text-gray-500 line-through">
+            <div className="text-sm text-gray-500 line-through">
               {formatPrice(priceInfo.originalPrice)}
             </div>
           )}
-          <div className="text-lg font-bold text-gray-900">
+          <div className="text-xl font-bold text-gray-900">
             {formatPrice(priceInfo.currentPrice)}
           </div>
           {product.installment_options && (
-            <div className="text-xs text-gray-600">
+            <div className="text-sm text-gray-600">
               ou {product.installment_options}x sem juros
             </div>
           )}

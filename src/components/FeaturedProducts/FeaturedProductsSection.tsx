@@ -35,11 +35,6 @@ const FeaturedProductsSection = ({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Estados para controle dos gradientes com níveis de intensidade (sistema adaptativo)
-  const [leftGradientLevel, setLeftGradientLevel] = useState<'none' | 'subtle' | 'intense'>('none');
-  const [rightGradientLevel, setRightGradientLevel] = useState<'none' | 'subtle' | 'intense'>('none');
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
   const handleViewAllClick = () => {
     navigate(viewAllLink);
   };
@@ -73,75 +68,8 @@ const FeaturedProductsSection = ({
   };
 
   // Função para detectar cards cortados com sistema adaptativo
-  const checkForCutOffCards = useCallback(() => {
-    if (!scrollContainerRef.current) return;
-
-    const container = scrollContainerRef.current;
-    const { scrollLeft, scrollWidth, clientWidth } = container;
-    
-    // Obter o primeiro card para medir o tamanho real
-    const firstCard = container.querySelector('[data-card]') as HTMLElement;
-    if (!firstCard) {
-      if (process.env.NODE_ENV === 'development') {
-        // Nenhum card encontrado
-      }
-      return;
-    }
-    
-    // Medir largura real do card
-    const cardRect = firstCard.getBoundingClientRect();
-    const cardWidth = cardRect.width;
-    
-    // Thresholds mais naturais baseados no tamanho real do card
-    const subtleThreshold = cardWidth * 0.15; // 15% - mais natural
-    const intenseThreshold = cardWidth * 0.25; // 25% - menos agressivo
-    
-    // Verificar gradiente esquerdo (baseado no scroll)
-    let newLeftLevel: 'none' | 'subtle' | 'intense' = 'none';
-    if (scrollLeft > intenseThreshold) {
-      newLeftLevel = 'intense';
-    } else if (scrollLeft > subtleThreshold) {
-      newLeftLevel = 'subtle';
-    }
-    
-    // Verificar gradiente direito (baseado no conteúdo restante)
-    const remainingWidth = scrollWidth - (scrollLeft + clientWidth);
-    let newRightLevel: 'none' | 'subtle' | 'intense' = 'none';
-    
-    if (remainingWidth > intenseThreshold) {
-      newRightLevel = 'intense';
-    } else if (remainingWidth > subtleThreshold) {
-      newRightLevel = 'subtle';
-    }
-    
-    // Detecção de gradientes otimizada (desenvolvimento)
-    if (process.env.NODE_ENV === 'development') {
-      // Debug info removido para produção
-    }
-    
-    // Atualizar estados apenas se houver mudança
-    if (leftGradientLevel !== newLeftLevel) {
-      setLeftGradientLevel(newLeftLevel);
-    }
-    
-    if (rightGradientLevel !== newRightLevel) {
-      setRightGradientLevel(newRightLevel);
-    }
-  }, [leftGradientLevel, rightGradientLevel]);
-
-  // Função com debounce ultra-otimizado (só executa após scroll parar)
-  const debouncedCheckForCutOffCards = useCallback(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-    
-    debounceTimerRef.current = setTimeout(() => {
-      // Usar requestAnimationFrame para suavidade máxima
-      requestAnimationFrame(() => {
-        checkForCutOffCards();
-      });
-    }, 500); // 500ms - só executa quando scroll parar completamente
-  }, [checkForCutOffCards]);
+  // Sistema GameStop: Gradientes fixos simples
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
 
   // Function to handle product click - always navigate to product page
   const handleProductCardClick = useCallback(async (productId: string) => {
@@ -173,10 +101,7 @@ const FeaturedProductsSection = ({
     requestAnimationFrame(() => {
       checkScrollButtons();
     });
-    
-    // Gradientes só após scroll parar (operação pesada)
-    debouncedCheckForCutOffCards();
-  }, [checkScrollButtons, debouncedCheckForCutOffCards]);
+  }, [checkScrollButtons]);
 
   // Scroll functions
   const scrollLeft = () => {
@@ -203,12 +128,11 @@ const FeaturedProductsSection = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       checkScrollButtons();
-      checkForCutOffCards();
     }, 150);
     return () => clearTimeout(timer);
-  }, [products, checkScrollButtons, checkForCutOffCards]);
+  }, [products, checkScrollButtons]);
 
-  // Add scroll event listener (otimizado)
+  // Add scroll event listener (simplificado)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -216,30 +140,25 @@ const FeaturedProductsSection = ({
     // Usar a função otimizada
     container.addEventListener('scroll', handleScrollOptimized, { passive: true });
     
-    // Verificação inicial (sem debounce)
+    // Verificação inicial
     checkScrollButtons();
-    checkForCutOffCards();
     
     return () => {
       container.removeEventListener('scroll', handleScrollOptimized);
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
     };
-  }, [handleScrollOptimized, checkScrollButtons, checkForCutOffCards, products]);
+  }, [handleScrollOptimized, checkScrollButtons, products]);
 
   // Effect para detectar mudanças no tamanho da janela
   useEffect(() => {
     const handleResize = () => {
       setTimeout(() => {
         checkScrollButtons();
-        checkForCutOffCards();
       }, 200);
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [checkForCutOffCards, checkScrollButtons]);
+  }, [checkScrollButtons]);
 
   // Listener de scroll duplicado removido - otimização de performance
 
@@ -247,7 +166,7 @@ const FeaturedProductsSection = ({
     // Render loading state if needed
     return (
       <section className={reduceTopSpacing ? "py-4 md:py-6 bg-background" : "py-12 md:py-16 bg-background"}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="text-center py-16 text-muted-foreground">
             Carregando produtos...
           </div>
@@ -258,19 +177,10 @@ const FeaturedProductsSection = ({
 
   return (
     <section className={reduceTopSpacing ? "py-4 md:py-6 bg-background" : "py-8 md:py-12 bg-background"}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
+        <div className="mb-2">
           <SectionTitle title={title} className="mb-0" />
-          <Button
-            onClick={handleViewAllClick}
-            variant="default"
-            size="sm"
-            className="bg-red-600 hover:bg-red-700 text-white border-0 flex-shrink-0 w-full sm:w-auto font-medium"
-          >
-            Ver Todos
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
         </div>
 
         {/* Products Grid / Scroll Container */}
@@ -280,40 +190,26 @@ const FeaturedProductsSection = ({
           </div>
         ) : (
           <div className="relative group">
-            {/* Gradientes ultra-fortes - eliminam linha de corte completamente */}
-            <div className="absolute inset-0 pointer-events-none z-20">
-              {/* Gradiente esquerdo (ultra-forte para eliminar linha) */}
-              <div 
-                className={`absolute left-0 top-0 bottom-0 w-16 transition-all ease-out ${
-                  leftGradientLevel === 'intense' 
-                    ? 'opacity-95 duration-300' 
-                    : leftGradientLevel === 'subtle'
-                    ? 'opacity-85 duration-500'
-                    : 'opacity-0 duration-200'
-                }`}
-                style={{ 
-                  background: leftGradientLevel === 'intense'
-                    ? `linear-gradient(to right, ${hexToRgba('#ffffff', 1.0)} 0%, ${hexToRgba('#ffffff', 1.0)} 20%, ${hexToRgba('#ffffff', 0.95)} 40%, ${hexToRgba('#ffffff', 0.8)} 60%, ${hexToRgba('#ffffff', 0.5)} 80%, transparent 100%)`
-                    : `linear-gradient(to right, ${hexToRgba('#ffffff', 1.0)} 0%, ${hexToRgba('#ffffff', 0.98)} 20%, ${hexToRgba('#ffffff', 0.9)} 40%, ${hexToRgba('#ffffff', 0.7)} 60%, ${hexToRgba('#ffffff', 0.4)} 80%, transparent 100%)`
-                }}
-              />
-              
-              {/* Gradiente direito (ultra-forte para eliminar linha) */}
-              <div 
-                className={`absolute right-0 top-0 bottom-0 w-16 transition-all ease-out ${
-                  rightGradientLevel === 'intense' 
-                    ? 'opacity-95 duration-300' 
-                    : rightGradientLevel === 'subtle'
-                    ? 'opacity-85 duration-500'
-                    : 'opacity-0 duration-200'
-                }`}
-                style={{ 
-                  background: rightGradientLevel === 'intense'
-                    ? `linear-gradient(to left, ${hexToRgba('#ffffff', 1.0)} 0%, ${hexToRgba('#ffffff', 1.0)} 20%, ${hexToRgba('#ffffff', 0.95)} 40%, ${hexToRgba('#ffffff', 0.8)} 60%, ${hexToRgba('#ffffff', 0.5)} 80%, transparent 100%)`
-                    : `linear-gradient(to left, ${hexToRgba('#ffffff', 1.0)} 0%, ${hexToRgba('#ffffff', 0.98)} 20%, ${hexToRgba('#ffffff', 0.9)} 40%, ${hexToRgba('#ffffff', 0.7)} 60%, ${hexToRgba('#ffffff', 0.4)} 80%, transparent 100%)`
-                }}
-              />
-            </div>
+            {/* Sistema GameStop: Gradientes fixos nas extremidades */}
+            {!isMobile && (
+              <div className="absolute inset-0 pointer-events-none z-20">
+                {/* Gradiente esquerdo fixo */}
+                <div 
+                  className="absolute left-0 top-0 bottom-0 w-16 opacity-90"
+                  style={{ 
+                    background: `linear-gradient(to right, ${hexToRgba('#ffffff', 1.0)} 0%, ${hexToRgba('#ffffff', 0.95)} 30%, ${hexToRgba('#ffffff', 0.7)} 60%, transparent 100%)`
+                  }}
+                />
+                
+                {/* Gradiente direito fixo */}
+                <div 
+                  className="absolute right-0 top-0 bottom-0 w-16 opacity-90"
+                  style={{ 
+                    background: `linear-gradient(to left, ${hexToRgba('#ffffff', 1.0)} 0%, ${hexToRgba('#ffffff', 0.95)} 30%, ${hexToRgba('#ffffff', 0.7)} 60%, transparent 100%)`
+                  }}
+                />
+              </div>
+            )}
 
             {/* Left Navigation Button */}
             {canScrollLeft && (
@@ -356,13 +252,18 @@ const FeaturedProductsSection = ({
               } as React.CSSProperties}
             >
               <div 
-                className="flex gap-2 md:gap-3 min-w-max px-1 py-1"
+                className="flex card-grid-gap min-w-max px-1 py-1"
                 style={{
                   // FORÇA O CORTE DO ÚLTIMO CARD - CARACTERÍSTICAS ESPECÍFICAS DA VERSÃO
                   width: 'calc(100% + 100px)', // Estende além do container para forçar corte
                   paddingRight: '120px' // Garante que último card seja parcialmente visível
                 }}
               >
+                {/* Card fantasma GameStop - empurra primeiro card para dentro do gradiente */}
+                {!isMobile && (
+                  <div className="flex-shrink-0 w-[29px] md:w-[35px] h-full" aria-hidden="true" />
+                )}
+                
                 {products.map((product, index) => (
                   <div
                     key={product.id}

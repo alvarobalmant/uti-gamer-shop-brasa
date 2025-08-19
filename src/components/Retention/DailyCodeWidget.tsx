@@ -579,8 +579,8 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
 
                     {/* Sistema melhorado de resgate */}
                     <div className="space-y-3">
-                      {currentCode?.can_claim && !hasClaimedToday() ? (
-                        /* Pode resgatar hoje */
+                      {!hasClaimedToday() ? (
+                        /* Ainda não resgatou hoje - Mostrar botão de resgatar */
                         <div className="text-center space-y-4">
                           <div className="flex items-center justify-center gap-2 text-emerald-600">
                             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -629,12 +629,12 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                           )}
                         </div>
                       ) : (
-                        /* Já resgatou hoje ou sem código disponível */
+                        /* Já resgatou hoje - Mostrar timer */
                         <div className="text-center space-y-4">
                           <div className="flex items-center justify-center gap-2 text-gray-500">
                             <Clock className="w-4 h-4" />
                             <span className="text-sm font-medium">
-                              {hasClaimedToday() ? 'Recompensa já resgatada hoje' : 'Aguardando próxima recompensa'}
+                              Recompensa já resgatada hoje
                             </span>
                           </div>
                           
@@ -665,7 +665,7 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                           >
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4" />
-                              {hasClaimedToday() ? 'Aguardar até amanhã' : 'Aguardar liberação'}
+                              Aguardar até amanhã
                             </div>
                           </Button>
                         </div>

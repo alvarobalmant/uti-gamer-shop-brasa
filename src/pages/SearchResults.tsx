@@ -68,13 +68,29 @@ const SearchResults = () => {
       {/* Resultados da busca */}
       <section className="py-6">
         <div className="px-4">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
-              Resultados para "{query}"
-            </h2>
-            <p className="text-gray-600">
-              {loading ? 'Buscando...' : `${filteredProducts.length} produtos encontrados`}
-            </p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex-1">
+              <h2 className="text-xl md:text-4xl font-semibold leading-tight tracking-tight text-gray-900 mb-1" style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
+                Resultados para "{query}"
+              </h2>
+              <p className="text-gray-600">
+                {loading ? 'Buscando...' : `${filteredProducts.length} produtos encontrados`}
+              </p>
+            </div>
+            
+            {/* Botão Filtros estilo GameStop */}
+            <button className="bg-black text-white rounded font-semibold hover:bg-gray-800 transition-colors duration-200 flex-shrink-0 ml-4 flex items-center justify-center" style={{ 
+              border: '2px solid #000000',
+              borderRadius: '4px',
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              lineHeight: '1',
+              height: '40px',
+              minWidth: '78px',
+              padding: '7px 9px'
+            }}>
+              Filtros
+            </button>
           </div>
 
           {loading ? (

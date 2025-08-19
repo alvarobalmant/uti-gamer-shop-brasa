@@ -2,6 +2,9 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap');
 
+/* Import centralized card gaps */
+@import './styles/card-gaps.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

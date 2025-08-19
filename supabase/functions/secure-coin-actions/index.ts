@@ -411,7 +411,8 @@ Deno.serve(async (req) => {
           nextReset: timerData.next_reset,
           periodStart: timerData.period_start,
           periodEnd: timerData.period_end,
-          lastClaim: timerData.last_claim
+          lastClaim: timerData.last_claim,
+          alreadyClaimed: !timerData.can_claim
         };
       } else {
         result = {
@@ -496,6 +497,7 @@ Deno.serve(async (req) => {
           lastClaim: null, // Será implementado depois
           testMode: isTestMode,
           totalStreakDays,
+          alreadyClaimed: !canClaim && secondsUntilNextClaim > 0,
           message: canClaim ? 'Bonus available' : (isTestMode ? 'Aguarde ' + Math.ceil(secondsUntilNextClaim) + ' segundos' : 'Aguarde o próximo período')
         };
         

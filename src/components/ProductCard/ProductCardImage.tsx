@@ -28,7 +28,7 @@ const ProductCardImage: React.FC<ProductCardImageProps> = React.memo(({ product,
   const uniqueId = `product-image-${product.id}`;
 
   return (
-    <div className="relative w-full overflow-hidden flex items-center justify-center bg-white" style={{ height: '160px' }}>
+    <div className="relative w-full overflow-hidden flex items-center justify-center bg-white" style={{ height: '192px' }}>
       {!imageLoaded && !imageError && (
         <div className="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center">
           <div className="w-16 h-16 bg-gray-200 rounded"></div>
@@ -39,7 +39,7 @@ const ProductCardImage: React.FC<ProductCardImageProps> = React.memo(({ product,
         src={product.image || '/placeholder-image.webp'}
         alt={product.name}
         className={cn(
-          "h-full w-full object-contain p-2 transition-transform duration-300 ease-in-out",
+          "h-full w-full object-contain p-2.5 transition-transform duration-300 ease-in-out",
           imageLoaded ? "opacity-100" : "opacity-0",
           isHovered ? "md:scale-105" : "scale-100"
         )}
@@ -49,7 +49,7 @@ const ProductCardImage: React.FC<ProductCardImageProps> = React.memo(({ product,
         onError={handleImageError}
         style={{
           contentVisibility: 'auto',
-          containIntrinsicSize: '200px 160px'
+          containIntrinsicSize: '204px 192px'
         }}
       />
     </div>

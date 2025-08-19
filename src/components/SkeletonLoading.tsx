@@ -83,7 +83,7 @@ export const ProductGridSkeleton: React.FC<{
   columns = 4 
 }) => (
   <div className={cn(
-    'grid gap-2 md:gap-3 lg:gap-4',
+    'grid gap-10 md:gap-3 lg:gap-4',
     {
       'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4': columns === 4,
       'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3': columns === 3,

@@ -96,7 +96,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
           <h3 className="text-lg md:text-xl font-bold text-white">{carouselConfig.title}</h3>
         </div>
         
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3 lg:gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 card-grid-gap lg:gap-4">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, index) => (
               <div key={`${carouselKey}-skel-${index}`} className="bg-white rounded-md overflow-hidden border border-gray-200">
@@ -209,8 +209,8 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
               // Determinar se deve aplicar margem negativa para estender até as bordas
               const shouldExtendToBorders = row.margin_included_in_banner;
               const containerClass = shouldExtendToBorders 
-                ? "flex justify-center items-start gap-2 md:gap-3 lg:gap-4 mb-4 md:mb-6 -mx-4 sm:-mx-6 lg:-mx-8" 
-                : "flex justify-center items-start gap-2 md:gap-3 lg:gap-4 mb-4 md:mb-6";
+                ? "flex justify-center items-start card-grid-gap lg:gap-4 mb-4 md:mb-6 -mx-4 sm:-mx-6 lg:-mx-8" 
+                : "flex justify-center items-start card-grid-gap lg:gap-4 mb-4 md:mb-6";
               
               return (
                 <div key={row.row_id || rowIndex} className={containerClass}>
@@ -265,8 +265,8 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
               }
 
               const containerClass = shouldExtendToBorders 
-                ? `grid ${gridClass} gap-2 md:gap-3 lg:gap-4 mb-4 md:mb-6 -mx-4 sm:-mx-6 lg:-mx-8`
-                : `grid ${gridClass} gap-2 md:gap-3 lg:gap-4 mb-4 md:mb-6`;
+                ? `grid ${gridClass} card-grid-gap lg:gap-4 mb-4 md:mb-6 -mx-4 sm:-mx-6 lg:-mx-8`
+                : `grid ${gridClass} card-grid-gap lg:gap-4 mb-4 md:mb-6`;
 
               return (
                 <div key={row.row_id || rowIndex} className={containerClass}>

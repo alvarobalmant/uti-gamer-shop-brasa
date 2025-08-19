@@ -41,10 +41,8 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Estados para controle dos gradientes com níveis de intensidade
-  const [leftGradientLevel, setLeftGradientLevel] = useState<'none' | 'subtle' | 'intense'>('none');
-  const [rightGradientLevel, setRightGradientLevel] = useState<'none' | 'subtle' | 'intense'>('none');
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Sistema GameStop: Gradientes fixos simples
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
 
   // Função para converter cor hex para rgba com transparência
   const hexToRgba = (hex: string, alpha: number) => {
@@ -97,82 +95,13 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
     setCanScrollRight(newCanScrollRight);
   }, []);
 
-  // Função para detectar cards cortados com sistema adaptativo
-  const checkForCutOffCards = useCallback(() => {
-    if (!scrollContainerRef.current) return;
-
-    const container = scrollContainerRef.current;
-    const { scrollLeft, scrollWidth, clientWidth } = container;
-    
-    // Obter o primeiro card para medir o tamanho real
-    const firstCard = container.querySelector('[data-card]') as HTMLElement;
-    if (!firstCard) {
-      // Nenhum card encontrado
-      return;
-    }
-    
-    // Medir largura real do card
-    const cardRect = firstCard.getBoundingClientRect();
-    const cardWidth = cardRect.width;
-    
-    // Thresholds baseados no tamanho real do card
-    const subtleThreshold = cardWidth * 0.05; // 5%
-    const intenseThreshold = cardWidth * 0.10; // 10%
-    
-    // Verificar gradiente esquerdo (baseado no scroll)
-    let newLeftLevel: 'none' | 'subtle' | 'intense' = 'none';
-    if (scrollLeft > intenseThreshold) {
-      newLeftLevel = 'intense';
-    } else if (scrollLeft > subtleThreshold) {
-      newLeftLevel = 'subtle';
-    }
-    
-    // Verificar gradiente direito (baseado no conteúdo restante)
-    const remainingWidth = scrollWidth - (scrollLeft + clientWidth);
-    let newRightLevel: 'none' | 'subtle' | 'intense' = 'none';
-    
-    if (remainingWidth > intenseThreshold) {
-      newRightLevel = 'intense';
-    } else if (remainingWidth > subtleThreshold) {
-      newRightLevel = 'subtle';
-    }
-    
-    // Detecção de gradientes otimizada
-    
-    // Atualizar estados apenas se houver mudança
-    if (leftGradientLevel !== newLeftLevel) {
-      setLeftGradientLevel(newLeftLevel);
-    }
-    
-    if (rightGradientLevel !== newRightLevel) {
-      setRightGradientLevel(newRightLevel);
-    }
-  }, [leftGradientLevel, rightGradientLevel]);
-
-  // Função com debounce ultra-otimizado (só executa após scroll parar)
-  const debouncedCheckForCutOffCards = useCallback(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-    
-    debounceTimerRef.current = setTimeout(() => {
-      // Usar requestAnimationFrame para suavidade máxima
-      requestAnimationFrame(() => {
-        checkForCutOffCards();
-      });
-    }, 500); // 500ms - só executa quando scroll parar completamente
-  }, [checkForCutOffCards]);
-
   // Função ultra-otimizada para scroll suave sem travamentos
   const handleScrollOptimized = useCallback(() => {
     // Botões atualizados imediatamente (operação leve)
     requestAnimationFrame(() => {
       checkScrollButtons();
     });
-    
-    // Gradientes só após scroll parar (operação pesada)
-    debouncedCheckForCutOffCards();
-  }, [checkScrollButtons, debouncedCheckForCutOffCards]);
+  }, [checkScrollButtons]);
 
   // Função de scroll otimizada (baseada nas seções normais)
   // Funções de scroll idênticas às seções normais
@@ -196,17 +125,16 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
     }
   };
 
-  // Effects corrigidos para funcionar corretamente
+  // Effects simplificados
   useEffect(() => {
     const timer = setTimeout(() => {
-      checkForCutOffCards();
       checkScrollButtons();
     }, 150);
 
     return () => clearTimeout(timer);
-  }, [checkForCutOffCards, checkScrollButtons, config.products]);
+  }, [config.products, checkScrollButtons]);
 
-  // Effect para detectar mudanças no scroll (otimizado)
+  // Effect para detectar mudanças no scroll (simplificado)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -214,30 +142,25 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
     // Usar a função otimizada
     container.addEventListener('scroll', handleScrollOptimized, { passive: true });
     
-    // Verificação inicial (sem debounce)
+    // Verificação inicial
     checkScrollButtons();
-    checkForCutOffCards();
     
     return () => {
       container.removeEventListener('scroll', handleScrollOptimized);
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
     };
-  }, [handleScrollOptimized, checkScrollButtons, checkForCutOffCards]);
+  }, [handleScrollOptimized, checkScrollButtons]);
 
   // Effect para detectar mudanças no tamanho da janela
   useEffect(() => {
     const handleResize = () => {
       setTimeout(() => {
         checkScrollButtons();
-        checkForCutOffCards();
       }, 200);
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [checkForCutOffCards, checkScrollButtons]);
+  }, [checkScrollButtons]);
 
   // Listener de scroll duplicado removido - otimização de performance
 
@@ -261,30 +184,44 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
       alignment === 'right' ? 'justify-end text-right' : 'justify-start text-left';
 
     return (
-      <div className={`flex items-center ${alignmentClass} mb-6`}>
+      <div className={`flex items-center justify-between mb-2 px-4 md:px-0`}>
         <div className="flex-1">
           {useBicolorTitle ? (
             // Sistema bicolor estilo GameStop
-            <h2 className="text-3xl font-bold leading-tight tracking-tight">
+            <h2 className="text-xl md:text-4xl font-semibold leading-tight tracking-tight" style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
               {config.titlePart1 && (
-                <span style={{ color: config.titleColor1 || '#000000' }}>
+                <span style={{ color: config.titleColor1 || '#000000' }} className="font-semibold">
                   {config.titlePart1}
                 </span>
               )}
               {config.titlePart1 && config.titlePart2 && ' '}
               {config.titlePart2 && (
-                <span style={{ color: config.titleColor2 || '#9ca3af' }}>
+                <span style={{ color: config.titleColor2 || '#A4A4A4' }} className="font-normal">
                   {config.titlePart2}
                 </span>
               )}
             </h2>
           ) : (
             // Título simples (compatibilidade com versão anterior)
-            <h2 className="text-3xl font-bold text-white leading-tight tracking-tight">
+            <h2 className="text-xl md:text-4xl font-semibold leading-tight tracking-tight text-gray-900" style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
               {config.title}
             </h2>
           )}
         </div>
+        
+        {/* Botão Shop All estilo GameStop */}
+        <button className="bg-black text-white rounded font-semibold hover:bg-gray-800 transition-colors duration-200 flex-shrink-0 ml-4 flex items-center justify-center" style={{ 
+          border: '2px solid #000000',
+          borderRadius: '4px',
+          fontSize: '0.75rem',
+          fontWeight: '600',
+          lineHeight: '1',
+          height: '40px',
+          minWidth: '78px',
+          padding: '7px 9px'
+        }}>
+          Ver Todos
+        </button>
       </div>
     );
   };
@@ -300,42 +237,26 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
 
       {/* Carousel Container */}
       <div className="relative group">
-        {/* Gradientes dinâmicos adaptativos - mais sutis e menos expansivos */}
-        <div className="absolute inset-0 pointer-events-none z-20">
-          {/* Gradiente esquerdo (sutil e compacto) */}
-          <div 
-            className={`absolute left-0 top-0 bottom-0 w-8 transition-all ease-in-out transform ${
-              leftGradientLevel === 'intense' 
-                ? 'opacity-60 scale-x-100 duration-700' 
-                : leftGradientLevel === 'subtle'
-                ? 'opacity-30 scale-x-100 duration-1000'
-                : 'opacity-0 scale-x-75 duration-500'
-            }`}
-            style={{ 
-              background: leftGradientLevel === 'intense'
-                ? `linear-gradient(to right, ${hexToRgba(sectionBackgroundColor, 0.8)} 0%, ${hexToRgba(sectionBackgroundColor, 0.4)} 70%, transparent 100%)`
-                : `linear-gradient(to right, ${hexToRgba(sectionBackgroundColor, 0.5)} 0%, ${hexToRgba(sectionBackgroundColor, 0.2)} 70%, transparent 100%)`,
-              transformOrigin: 'left center'
-            }}
-          />
-          
-          {/* Gradiente direito (sutil e compacto) */}
-          <div 
-            className={`absolute right-0 top-0 bottom-0 w-8 transition-all ease-in-out transform ${
-              rightGradientLevel === 'intense' 
-                ? 'opacity-60 scale-x-100 duration-700' 
-                : rightGradientLevel === 'subtle'
-                ? 'opacity-30 scale-x-100 duration-1000'
-                : 'opacity-0 scale-x-75 duration-500'
-            }`}
-            style={{ 
-              background: rightGradientLevel === 'intense'
-                ? `linear-gradient(to left, ${hexToRgba(sectionBackgroundColor, 0.8)} 0%, ${hexToRgba(sectionBackgroundColor, 0.4)} 70%, transparent 100%)`
-                : `linear-gradient(to left, ${hexToRgba(sectionBackgroundColor, 0.5)} 0%, ${hexToRgba(sectionBackgroundColor, 0.2)} 70%, transparent 100%)`,
-              transformOrigin: 'right center'
-            }}
-          />
-        </div>
+        {/* Sistema GameStop: Gradientes fixos nas extremidades */}
+        {!isMobile && (
+          <div className="absolute inset-0 pointer-events-none z-20">
+            {/* Gradiente esquerdo fixo */}
+            <div 
+              className="absolute left-0 top-0 bottom-0 w-8 opacity-50"
+              style={{ 
+                background: `linear-gradient(to right, ${hexToRgba(sectionBackgroundColor, 0.8)} 0%, ${hexToRgba(sectionBackgroundColor, 0.4)} 70%, transparent 100%)`
+              }}
+            />
+            
+            {/* Gradiente direito fixo */}
+            <div 
+              className="absolute right-0 top-0 bottom-0 w-8 opacity-50"
+              style={{ 
+                background: `linear-gradient(to left, ${hexToRgba(sectionBackgroundColor, 0.8)} 0%, ${hexToRgba(sectionBackgroundColor, 0.4)} 70%, transparent 100%)`
+              }}
+            />
+          </div>
+        )}
         
         {/* Left Navigation Button (igual às seções normais) */}
         {canScrollLeft && (
@@ -375,7 +296,12 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
               display: none;
             }
           `}</style>
-          <div className="flex gap-2 md:gap-3 min-w-max px-1 py-1">
+          <div className="flex card-grid-gap min-w-max px-1 py-1">
+            {/* Card fantasma GameStop - empurra primeiro card para dentro do gradiente */}
+            {!isMobile && (
+              <div className="flex-shrink-0 w-[29px] md:w-[35px] h-full" aria-hidden="true" />
+            )}
+            
             {(config.products || []).map((product, index) => (
               <div 
                 key={`${product.id}-${index}`} 

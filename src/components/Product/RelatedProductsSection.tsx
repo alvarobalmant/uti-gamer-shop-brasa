@@ -30,6 +30,9 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
+  // Sistema GameStop: Detecção mobile para gradientes
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+
   useEffect(() => {
     if (allProducts.length > 0 && product) {
       // Lógica para produtos relacionados baseada em tags
@@ -198,12 +201,17 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
             } as React.CSSProperties}
           >
             <div 
-              className="flex gap-2 md:gap-3 min-w-max px-1 py-1"
+              className="flex gap-10 md:gap-3 min-w-max px-1 py-1"
               style={{
                 width: 'calc(100% + 100px)',
                 paddingRight: '120px'
               }}
             >
+              {/* Card fantasma GameStop - empurra primeiro card para dentro do gradiente */}
+              {!isMobile && (
+                <div className="flex-shrink-0 w-[29px] md:w-[35px] h-full" aria-hidden="true" />
+              )}
+              
               {relatedProducts.map((relatedProduct, index) => (
                 <div
                   key={relatedProduct.id}

@@ -58,7 +58,7 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
         "shadow-none",
         "transition-all duration-200 ease-in-out",
         "cursor-pointer",
-        "w-[170px] h-[272px] md:w-[200px] md:h-[320px]",
+        "w-[204px] h-[326px] md:w-[200px] md:h-[320px]",
         "p-0",
         "product-card",
         isHovered && "md:shadow-md md:-translate-y-1"
@@ -81,7 +81,7 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
       
       <ProductCardImage product={product} isHovered={isHovered} />
 
-      <div className="flex flex-1 flex-col justify-between p-2.5 md:p-3">
+      <div className="flex flex-1 flex-col justify-between p-3 md:p-3">
         <div className="space-y-2">
           <ProductCardInfo product={product} />
           <ProductCardPrice product={product} />

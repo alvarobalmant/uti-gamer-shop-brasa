@@ -180,14 +180,27 @@ export const useDailyCodes = () => {
     }
   }, [user, fetchCurrentCode, fetchStreakStatus]);
 
-  // Calcular timer até próximo código (20h do dia seguinte)
+  // Calcular timer até próximo código (lógica melhorada)
   const getTimeUntilNextCode = useCallback(() => {
     const now = new Date();
-    const tomorrow8PM = new Date();
-    tomorrow8PM.setDate(tomorrow8PM.getDate() + 1);
-    tomorrow8PM.setHours(20, 0, 0, 0);
+    const today8PM = new Date();
+    today8PM.setHours(20, 0, 0, 0);
     
-    const timeDiff = tomorrow8PM.getTime() - now.getTime();
+    let targetTime: Date;
+    
+    // Antes das 20h: sempre mostra tempo até hoje às 20h
+    if (now.getHours() < 20) {
+      targetTime = today8PM;
+    } else {
+      // Depois das 20h: mostra tempo até amanhã às 20h
+      // (o timer só aparece quando já resgatou, então faz sentido mostrar próximo dia)
+      const tomorrow8PM = new Date();
+      tomorrow8PM.setDate(tomorrow8PM.getDate() + 1);
+      tomorrow8PM.setHours(20, 0, 0, 0);
+      targetTime = tomorrow8PM;
+    }
+    
+    const timeDiff = targetTime.getTime() - now.getTime();
     const hours = Math.floor(timeDiff / (1000 * 60 * 60));
     const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);

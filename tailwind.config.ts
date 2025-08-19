@@ -107,6 +107,9 @@ const config = {
         // Refined scale from plan
         section: "5rem",
         "section-lg": "7.5rem",
+        // Card gaps - centralized control
+        "card-gap": "2.5rem", // 40px (gap-10) for mobile
+        "card-gap-md": "0.75rem", // 12px (gap-3) for desktop
       },
       boxShadow: {
         // Refined shadows from plan
