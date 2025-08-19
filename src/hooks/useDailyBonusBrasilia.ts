@@ -11,6 +11,7 @@ interface DailyBonusTimer {
   periodStart: Date | null;
   periodEnd: Date | null;
   lastClaim: Date | null;
+  alreadyClaimed?: boolean;
 }
 
 interface UserStreak {
@@ -124,7 +125,8 @@ export const useDailyBonusBrasilia = () => {
         nextReset,
         periodStart,
         periodEnd,
-        lastClaim
+        lastClaim,
+        alreadyClaimed: data.alreadyClaimed || false
       };
     } catch (error) {
       console.error('Erro ao buscar timer de Brasília:', error);

@@ -148,7 +148,7 @@ export const DailyLoginSection: React.FC<DailyLoginSectionProps> = ({ showTitle 
             </div>
           )}
         </Button>
-      ) : (
+      ) : timer.alreadyClaimed ? (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div className="text-center">
             <Clock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
@@ -164,6 +164,15 @@ export const DailyLoginSection: React.FC<DailyLoginSectionProps> = ({ showTitle 
                 Último resgate: {new Date(timer.lastClaim).toLocaleString('pt-BR')}
               </div>
             )}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <div className="text-center">
+            <div className="text-sm text-blue-600 mb-2">Aguarde o código diário ficar disponível</div>
+            <div className="text-xs text-blue-500">
+              Os códigos são liberados às 20h (Horário de Brasília)
+            </div>
           </div>
         </div>
       )}
