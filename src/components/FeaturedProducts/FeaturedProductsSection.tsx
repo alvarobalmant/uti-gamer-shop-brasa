@@ -241,11 +241,11 @@ const FeaturedProductsSection = ({
               ref={scrollContainerRef}
               className={cn(
                 "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2", // Restored overflow-x-auto for scrolling
-                "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
                 "overscroll-behavior-x-contain"
               )}
               style={{
                 scrollbarWidth: "thin",
+                scrollbarColor: "#1f2937 transparent", // Preto fosco
                 WebkitOverflowScrolling: "touch",
                 scrollBehavior: "smooth",
                 touchAction: "pan-x pan-y"

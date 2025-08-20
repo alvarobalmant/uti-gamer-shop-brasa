@@ -777,7 +777,7 @@ html, body {
 /* Optimized Scrollbars for Virtualized Lists */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: hsl(var(--border)) hsl(var(--muted));
+  scrollbar-color: #1f2937 transparent;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -786,25 +786,25 @@ html, body {
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
+  background: transparent;
   border-radius: 4px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
+  background: #1f2937;
   border-radius: 4px;
   transition: background-color 0.2s ease;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--accent));
+  background: #111827;
 }
 
 .scrollbar-thumb-border::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
+  background: #1f2937;
 }
 
 .scrollbar-track-background::-webkit-scrollbar-track {
-  background: hsl(var(--background));
+  background: transparent;
 }
 

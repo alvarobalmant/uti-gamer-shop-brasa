@@ -40,6 +40,12 @@ export interface SpecialSection {
   type?: string;
   order?: number;
   isVisible?: boolean;
+  // New color customization properties (removed carousel_background_color - using existing background_value)
+  carousel_title_color?: string;
+  view_all_button_bg_color?: string;
+  view_all_button_text_color?: string;
+  scrollbar_color?: string;
+  scrollbar_hover_color?: string;
 }
 
 // Base type for Special Section Element from the database

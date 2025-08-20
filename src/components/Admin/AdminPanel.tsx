@@ -35,6 +35,7 @@ export const AdminPanel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const menuItems = [
+    { id: 'order_verifier', label: 'VERIFICADOR DE PEDIDO', icon: ClipboardCheck },
     { id: 'layout', label: 'Layout Home', icon: LayoutList },
     { id: 'navigation', label: 'Navegação', icon: Navigation },
     { id: 'pages', label: 'Páginas', icon: Globe },
@@ -56,7 +57,6 @@ export const AdminPanel = () => {
     { id: 'tags', label: 'Tags', icon: Tag },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'uti_coins', label: 'UTI Coins', icon: Coins },
-    { id: 'order_verifier', label: 'VERIFICADOR DE PEDIDO', icon: ClipboardCheck },
     { id: 'emails', label: 'Emails', icon: Mail },
     // Admin login removed
     { id: 'users', label: 'Usuários/PRO', icon: Users },
@@ -117,14 +117,14 @@ export const AdminPanel = () => {
         </nav>
 
         {/* Back to Home Button */}
-        <div className="p-2 border-t border-[#343A40]">
+        <div className="p-4 border-t border-[#343A40]">
           <Button
             onClick={handleBackToHome}
-            className="w-full flex items-center gap-3 px-3 py-2.5 bg-[#28A745] hover:bg-[#218838] text-white rounded-lg transition-all duration-200"
+            className={`w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[#28A745] to-[#20C997] hover:from-[#218838] hover:to-[#1BA085] text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] ${!sidebarOpen ? 'justify-center' : ''}`}
           >
             <ArrowLeft className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && (
-              <span className="font-medium">Voltar ao Site</span>
+              <span className="font-semibold">Voltar ao Site</span>
             )}
           </Button>
         </div>
@@ -147,10 +147,9 @@ export const AdminPanel = () => {
             {/* Header Back Button */}
             <Button
               onClick={handleBackToHome}
-              variant="outline"
-              className="flex items-center gap-2 border-[#28A745] text-[#28A745] hover:bg-[#28A745] hover:text-white"
+              className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#28A745] to-[#20C997] hover:from-[#218838] hover:to-[#1BA085] text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] font-semibold"
             >
-              <Home className="w-4 h-4" />
+              <Home className="w-5 h-5" />
               Voltar ao Site
             </Button>
           </div>

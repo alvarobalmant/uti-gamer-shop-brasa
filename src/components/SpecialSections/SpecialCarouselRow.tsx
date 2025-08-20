@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import SpecialCarouselCard from './SpecialCarouselCard';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/hooks/useProducts';
 
@@ -10,18 +9,15 @@ interface CarouselRowConfig {
   titlePart2?: string; // Segunda parte do título (ex: "Trading Cards")
   titleColor1?: string; // Cor da primeira parte
   titleColor2?: string; // Cor da segunda parte
-  products: Array<{
-    id: string;
-    name: string;
-    price: number;
-    originalPrice?: number;
-    image: string;
-    platform?: string;
-    isOnSale?: boolean;
-    discount?: number;
-  }>;
+  products: Product[]; // Usar Product[] em vez do formato customizado
   showTitle?: boolean;
   titleAlignment?: 'left' | 'center' | 'right';
+  // New color customization properties (removed carousel_background_color - using sectionBackgroundColor prop)
+  carousel_title_color?: string;
+  view_all_button_bg_color?: string;
+  view_all_button_text_color?: string;
+  scrollbar_color?: string;
+  scrollbar_hover_color?: string;
 }
 
 interface SpecialCarouselRowProps {
@@ -125,16 +121,15 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
     }
   };
 
-  // Effects simplificados
+  // Effects idênticos às seções normais
   useEffect(() => {
     const timer = setTimeout(() => {
       checkScrollButtons();
     }, 150);
-
     return () => clearTimeout(timer);
   }, [config.products, checkScrollButtons]);
 
-  // Effect para detectar mudanças no scroll (simplificado)
+  // Add scroll event listener (idêntico às seções normais)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -148,9 +143,9 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
     return () => {
       container.removeEventListener('scroll', handleScrollOptimized);
     };
-  }, [handleScrollOptimized, checkScrollButtons]);
+  }, [handleScrollOptimized, checkScrollButtons, config.products]);
 
-  // Effect para detectar mudanças no tamanho da janela
+  // Effect para detectar mudanças no tamanho da janela (idêntico às seções normais)
   useEffect(() => {
     const handleResize = () => {
       setTimeout(() => {
@@ -190,28 +185,34 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
             // Sistema bicolor estilo GameStop
             <h2 className="text-xl md:text-4xl font-semibold leading-tight tracking-tight" style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
               {config.titlePart1 && (
-                <span style={{ color: config.titleColor1 || '#000000' }} className="font-semibold">
+                <span style={{ color: config.carousel_title_color || config.titleColor1 || '#ffffff' }} className="font-semibold">
                   {config.titlePart1}
                 </span>
               )}
               {config.titlePart1 && config.titlePart2 && ' '}
               {config.titlePart2 && (
-                <span style={{ color: config.titleColor2 || '#A4A4A4' }} className="font-normal">
+                <span style={{ color: config.carousel_title_color || config.titleColor2 || '#ffffff' }} className="font-normal">
                   {config.titlePart2}
                 </span>
               )}
             </h2>
           ) : (
             // Título simples (compatibilidade com versão anterior)
-            <h2 className="text-xl md:text-4xl font-semibold leading-tight tracking-tight text-gray-900" style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
+            <h2 className="text-xl md:text-4xl font-semibold leading-tight tracking-tight" style={{ 
+              fontFamily: 'Poppins, "Open Sans", sans-serif', 
+              letterSpacing: '-0.24px',
+              color: config.carousel_title_color || '#ffffff'
+            }}>
               {config.title}
             </h2>
           )}
         </div>
         
         {/* Botão Shop All estilo GameStop */}
-        <button className="bg-black text-white rounded font-semibold hover:bg-gray-800 transition-colors duration-200 flex-shrink-0 ml-4 flex items-center justify-center" style={{ 
-          border: '2px solid #000000',
+        <button className="rounded font-semibold transition-colors duration-200 flex-shrink-0 ml-4 flex items-center justify-center" style={{ 
+          backgroundColor: config.view_all_button_bg_color || '#1f2937',
+          color: config.view_all_button_text_color || '#ffffff',
+          border: `2px solid ${config.view_all_button_bg_color || '#1f2937'}`,
           borderRadius: '4px',
           fontSize: '0.75rem',
           fontWeight: '600',
@@ -281,19 +282,29 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
         )}
 
         {/* Products Scroll Container (otimizado para performance) */}
-        <div
+        <div 
           ref={scrollContainerRef}
-          className="w-full overflow-x-auto overflow-y-hidden pb-4 pt-2 overscroll-behavior-x-contain"
+          className="special-carousel-container w-full overflow-x-auto overflow-y-hidden pb-4 pt-2 overscroll-behavior-x-contain"
           style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
+            scrollbarWidth: "thin",
+            scrollbarColor: `${config.scrollbar_color || '#1f2937'} transparent`,
             WebkitOverflowScrolling: "touch",
             scrollBehavior: "smooth"
           } as React.CSSProperties}
         >
           <style>{`
-            div::-webkit-scrollbar {
-              display: none;
+            .special-carousel-container::-webkit-scrollbar {
+              height: 6px;
+            }
+            .special-carousel-container::-webkit-scrollbar-track {
+              background: transparent !important;
+            }
+            .special-carousel-container::-webkit-scrollbar-thumb {
+              background-color: ${config.scrollbar_color || '#1f2937'} !important;
+              border-radius: 3px;
+            }
+            .special-carousel-container::-webkit-scrollbar-thumb:hover {
+              background-color: ${config.scrollbar_hover_color || '#111827'} !important;
             }
           `}</style>
           <div className="flex card-grid-gap min-w-max px-1 py-1">
@@ -308,9 +319,9 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
                 data-card
                 className="flex-shrink-0 w-[170px] md:w-[200px]"
               >
-                <SpecialCarouselCard
+                <ProductCard
                   product={product}
-                  onCardClick={onCardClick}
+                  onCardClick={onCardClick || (() => {})}
                 />
               </div>
             ))}

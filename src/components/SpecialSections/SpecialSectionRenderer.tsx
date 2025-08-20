@@ -2,7 +2,8 @@ import React from 'react';
 import { SpecialSection, BannerRowConfig, CarouselRowConfig } from '@/types/specialSections';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useProducts, Product } from '@/hooks/useProducts';
+import { useHomepageProducts } from '@/hooks/useHomepageProducts';
+import { Product } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import ProductCard from '@/components/ProductCard';
 
@@ -21,7 +22,7 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
   onProductCardClick,
   reduceTopSpacing = false 
 }) => {
-  const { products, loading: productsLoading } = useProducts();
+  const { data: products, isLoading: productsLoading } = useHomepageProducts();
   const { addToCart } = useCart();
   const isMobile = useIsMobile();
 
@@ -53,23 +54,18 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
     const productIds = carouselRowConfig.product_ids || [];
     const carouselProducts = getProductsByIds(productIds);
 
-    // Transform products to match SpecialCarouselRow expected format
-    const transformedProducts = carouselProducts.map(product => ({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      originalPrice: product.list_price,
-      image: product.image || '/placeholder-product.png',
-      platform: product.platform,
-      isOnSale: product.is_on_sale,
-      discount: product.discount_percentage
-    }));
-
+    // Agora usa Product[] diretamente sem transformação
     const carouselConfig = {
       title: carouselRowConfig.title,
-      products: transformedProducts,
+      products: carouselProducts,
       showTitle: carouselRowConfig.showTitle !== false, // Default to true
-      titleAlignment: carouselRowConfig.titleAlignment || 'left'
+      titleAlignment: carouselRowConfig.titleAlignment || 'left',
+      // Pass color customization from section (using background_value for section background)
+      carousel_title_color: section.carousel_title_color,
+      view_all_button_bg_color: section.view_all_button_bg_color,
+      view_all_button_text_color: section.view_all_button_text_color,
+      scrollbar_color: section.scrollbar_color,
+      scrollbar_hover_color: section.scrollbar_hover_color,
     };
 
     return (

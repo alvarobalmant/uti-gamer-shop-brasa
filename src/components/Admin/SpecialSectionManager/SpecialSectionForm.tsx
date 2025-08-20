@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 
-// Zod schema with background fields
+// Zod schema with background fields and color customization
 const sectionSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório (para identificação no painel)').max(100, 'Título muito longo'),
   description: z.string().max(500, 'Descrição muito longa').optional(),
@@ -23,6 +23,12 @@ const sectionSchema = z.object({
   background_type: z.enum(['color', 'image']).default('color'),
   background_value: z.string().optional(),
   background_image_position: z.enum(['center', 'top', 'bottom', 'left', 'right']).default('center'),
+  // New color customization fields (removed carousel_background_color - using existing background_value)
+  carousel_title_color: z.string().optional(),
+  view_all_button_bg_color: z.string().optional(),
+  view_all_button_text_color: z.string().optional(),
+  scrollbar_color: z.string().optional(),
+  scrollbar_hover_color: z.string().optional(),
 });
 
 type SectionFormData = z.infer<typeof sectionSchema>;
@@ -43,6 +49,11 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
       background_type: (section.background_type as 'color' | 'image') ?? 'color',
       background_value: section.background_value ?? '',
       background_image_position: (section.background_image_position as 'center' | 'top' | 'bottom' | 'left' | 'right') ?? 'center',
+      carousel_title_color: section.carousel_title_color ?? '#ffffff',
+      view_all_button_bg_color: section.view_all_button_bg_color ?? '#1f2937',
+      view_all_button_text_color: section.view_all_button_text_color ?? '#ffffff',
+      scrollbar_color: section.scrollbar_color ?? '#1f2937',
+      scrollbar_hover_color: section.scrollbar_hover_color ?? '#111827',
     } : {
       title: '',
       description: '',
@@ -50,6 +61,11 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
       background_type: 'color',
       background_value: '',
       background_image_position: 'center',
+      carousel_title_color: '#ffffff',
+      view_all_button_bg_color: '#1f2937',
+      view_all_button_text_color: '#ffffff',
+      scrollbar_color: '#1f2937',
+      scrollbar_hover_color: '#111827',
     },
   });
 
@@ -214,6 +230,111 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
                   </div>
                 </div>
               )}
+            </div>
+          </fieldset>
+
+          <Separator className="bg-gray-700" />
+
+          {/* Color Customization Section */}
+          <fieldset className="border border-gray-700 p-6 rounded-lg shadow-inner bg-gray-900">
+            <legend className="text-xl font-semibold px-2 text-purple-300">Customização de Cores</legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              
+              {/* Carousel Title Color */}
+              <div>
+                <Label htmlFor="carousel_title_color" className="text-gray-300">Cor do Título do Carrossel</Label>
+                <div className="flex gap-2 mt-1">
+                  <input
+                    type="color"
+                    {...register('carousel_title_color')}
+                    className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                    title="Cor do título do carrossel"
+                  />
+                  <Input
+                    {...register('carousel_title_color')}
+                    className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="#ffffff"
+                  />
+                </div>
+                {errors.carousel_title_color && <p className="text-red-400 text-sm mt-1">{errors.carousel_title_color.message}</p>}
+              </div>
+
+              {/* View All Button Background Color */}
+              <div>
+                <Label htmlFor="view_all_button_bg_color" className="text-gray-300">Cor de Fundo do Botão "Ver Todos"</Label>
+                <div className="flex gap-2 mt-1">
+                  <input
+                    type="color"
+                    {...register('view_all_button_bg_color')}
+                    className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                    title="Cor de fundo do botão Ver Todos"
+                  />
+                  <Input
+                    {...register('view_all_button_bg_color')}
+                    className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="#1f2937"
+                  />
+                </div>
+                {errors.view_all_button_bg_color && <p className="text-red-400 text-sm mt-1">{errors.view_all_button_bg_color.message}</p>}
+              </div>
+
+              {/* View All Button Text Color */}
+              <div>
+                <Label htmlFor="view_all_button_text_color" className="text-gray-300">Cor do Texto do Botão "Ver Todos"</Label>
+                <div className="flex gap-2 mt-1">
+                  <input
+                    type="color"
+                    {...register('view_all_button_text_color')}
+                    className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                    title="Cor do texto do botão Ver Todos"
+                  />
+                  <Input
+                    {...register('view_all_button_text_color')}
+                    className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="#ffffff"
+                  />
+                </div>
+                {errors.view_all_button_text_color && <p className="text-red-400 text-sm mt-1">{errors.view_all_button_text_color.message}</p>}
+              </div>
+
+              {/* Scrollbar Color */}
+              <div>
+                <Label htmlFor="scrollbar_color" className="text-gray-300">Cor da Barra de Scroll</Label>
+                <div className="flex gap-2 mt-1">
+                  <input
+                    type="color"
+                    {...register('scrollbar_color')}
+                    className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                    title="Cor da barra de scroll"
+                  />
+                  <Input
+                    {...register('scrollbar_color')}
+                    className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="#1f2937"
+                  />
+                </div>
+                {errors.scrollbar_color && <p className="text-red-400 text-sm mt-1">{errors.scrollbar_color.message}</p>}
+              </div>
+
+              {/* Scrollbar Hover Color */}
+              <div>
+                <Label htmlFor="scrollbar_hover_color" className="text-gray-300">Cor da Barra de Scroll (Hover)</Label>
+                <div className="flex gap-2 mt-1">
+                  <input
+                    type="color"
+                    {...register('scrollbar_hover_color')}
+                    className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                    title="Cor da barra de scroll no hover"
+                  />
+                  <Input
+                    {...register('scrollbar_hover_color')}
+                    className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="#111827"
+                  />
+                </div>
+                {errors.scrollbar_hover_color && <p className="text-red-400 text-sm mt-1">{errors.scrollbar_hover_color.message}</p>}
+              </div>
+
             </div>
           </fieldset>
         </CardContent>

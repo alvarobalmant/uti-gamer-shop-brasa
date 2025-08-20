@@ -99,8 +99,6 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
     title: '', 
     title_part1: '',
     title_part2: '',
-    title_color1: '#000000',
-    title_color2: '#9ca3af',
     view_all_link: '' 
   });
   const [selectedItems, setSelectedItems] = useState<{ type: SectionItemType; id: string }[]>([]);
@@ -161,8 +159,6 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
       title: extendedSection.title, 
       title_part1: extendedSection.title_part1 || '',
       title_part2: extendedSection.title_part2 || '',
-      title_color1: extendedSection.title_color1 || '#000000',
-      title_color2: extendedSection.title_color2 || '#9ca3af',
       view_all_link: extendedSection.view_all_link || '' 
     });
     setSelectedItems(section.items?.map(item => ({ type: item.item_type, id: item.item_id })) || []);
@@ -177,8 +173,6 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
       title: '', 
       title_part1: '',
       title_part2: '',
-      title_color1: '#000000',
-      title_color2: '#9ca3af',
       view_all_link: '' 
     });
     setSelectedItems([]);
@@ -220,8 +214,6 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
       title: formData.title || '',
       title_part1: formData.title_part1,
       title_part2: formData.title_part2,
-      title_color1: formData.title_color1,
-      title_color2: formData.title_color2,
       view_all_link: formData.view_all_link || null,
       items: selectedItems,
     } as ProductSectionInput;
@@ -266,12 +258,12 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
       return (
         <div className="flex items-center gap-1">
           {extended.title_part1 && (
-            <span style={{ color: extended.title_color1 || '#000000' }}>
+            <span className="text-gray-900">
               {extended.title_part1}
             </span>
           )}
           {extended.title_part2 && (
-            <span style={{ color: extended.title_color2 || '#9ca3af' }}>
+            <span className="text-gray-600">
               {extended.title_part2}
             </span>
           )}
@@ -585,15 +577,6 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
                             className="flex-1 bg-[#2C2C44] border-[#343A40] text-white placeholder:text-gray-500" 
                             placeholder="Primeira parte (ex: Most Popular)"
                           />
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="color"
-                              value={formData.title_color1 || '#000000'}
-                              onChange={(e) => setFormData(prev => ({ ...prev, title_color1: e.target.value }))}
-                              className="w-12 h-10 rounded border border-[#343A40] bg-[#2C2C44] cursor-pointer"
-                              title="Cor da primeira parte"
-                            />
-                          </div>
                         </div>
                         <div className="flex gap-2">
                           <Input 
@@ -602,15 +585,6 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
                             className="flex-1 bg-[#2C2C44] border-[#343A40] text-white placeholder:text-gray-500" 
                             placeholder="Segunda parte (ex: Trading Cards)"
                           />
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="color"
-                              value={formData.title_color2 || '#9ca3af'}
-                              onChange={(e) => setFormData(prev => ({ ...prev, title_color2: e.target.value }))}
-                              className="w-12 h-10 rounded border border-[#343A40] bg-[#2C2C44] cursor-pointer"
-                              title="Cor da segunda parte"
-                            />
-                          </div>
                         </div>
                       </div>
                       
@@ -620,13 +594,13 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
                           <p className="text-xs text-gray-400 mb-2">Preview:</p>
                           <div className="text-lg font-semibold">
                             {formData.title_part1 && (
-                              <span style={{ color: formData.title_color1 || '#000000' }}>
+                              <span className="text-gray-900">
                                 {formData.title_part1}
                               </span>
                             )}
                             {formData.title_part1 && formData.title_part2 && ' '}
                             {formData.title_part2 && (
-                              <span style={{ color: formData.title_color2 || '#9ca3af' }}>
+                              <span className="text-gray-600">
                                 {formData.title_part2}
                               </span>
                             )}

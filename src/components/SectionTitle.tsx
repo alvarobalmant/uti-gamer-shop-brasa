@@ -43,23 +43,25 @@ const SectionTitle: React.FC<SectionTitleProps> = ({
     <div className={cn(`flex items-center justify-between mb-2 px-4 md:px-0`, className)}>
       <div className="flex-1">
         {useBicolorTitle ? (
-          // Sistema bicolor estilo GameStop
-          <h2 className={cn(
-            "text-xl md:text-4xl font-semibold leading-tight tracking-tight",
-            titleClassName
-          )} style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
-            {titlePart1 && (
-              <span style={{ color: titleColor1 || '#000000' }} className="font-semibold">
-                {titlePart1}
-              </span>
-            )}
-            {titlePart1 && titlePart2 && ' '}
-            {titlePart2 && (
-              <span style={{ color: titleColor2 || '#A4A4A4' }} className="font-normal">
-                {titlePart2}
-              </span>
-            )}
-          </h2>
+          // Sistema bicolor estilo GameStop - RESPONSIVO
+          <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+            <h2 className={cn(
+              "text-xl md:text-4xl font-semibold leading-tight tracking-tight",
+              titleClassName
+            )} style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
+              {titlePart1 && (
+                <span style={{ color: titleColor1 || '#000000' }} className="font-semibold block sm:inline">
+                  {titlePart1}
+                </span>
+              )}
+              {titlePart1 && titlePart2 && <span className="hidden sm:inline"> </span>}
+              {titlePart2 && (
+                <span style={{ color: titleColor2 || '#A4A4A4' }} className="font-normal block sm:inline">
+                  {titlePart2}
+                </span>
+              )}
+            </h2>
+          </div>
         ) : (
           // Título simples (compatibilidade com versão anterior)
           <h2 className={cn(
