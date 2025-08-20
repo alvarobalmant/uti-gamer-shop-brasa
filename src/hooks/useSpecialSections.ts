@@ -20,7 +20,14 @@ export const useSpecialSections = (options?: any) => {
       
       const { data, error: fetchError } = await supabase
         .from('special_sections')
-        .select('*')
+        .select(`
+          *,
+          carousel_title_color,
+          view_all_button_bg_color,
+          view_all_button_text_color,
+          scrollbar_color,
+          scrollbar_hover_color
+        `)
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;

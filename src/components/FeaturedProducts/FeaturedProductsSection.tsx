@@ -15,6 +15,10 @@ interface FeaturedProductsSectionProps {
   loading: boolean;
   onAddToCart: (product: Product) => void;
   title: string;
+  titlePart1?: string;
+  titlePart2?: string;
+  titleColor1?: string;
+  titleColor2?: string;
   viewAllLink?: string;
   reduceTopSpacing?: boolean;
   sectionKey?: string; // ← CRÍTICO: Adicionar sectionKey
@@ -25,6 +29,10 @@ const FeaturedProductsSection = ({
   loading,
   onAddToCart,
   title,
+  titlePart1,
+  titlePart2,
+  titleColor1,
+  titleColor2,
   viewAllLink = "/categoria/inicio",
   reduceTopSpacing = false,
   sectionKey = "", // ← CRÍTICO: Adicionar sectionKey
@@ -180,7 +188,14 @@ const FeaturedProductsSection = ({
       <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-2">
-          <SectionTitle title={title} className="mb-0" />
+          <SectionTitle 
+            title={title}
+            titlePart1={titlePart1}
+            titlePart2={titlePart2}
+            titleColor1={titleColor1}
+            titleColor2={titleColor2}
+            className="mb-0" 
+          />
         </div>
 
         {/* Products Grid / Scroll Container */}

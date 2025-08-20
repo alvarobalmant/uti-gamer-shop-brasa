@@ -99,6 +99,8 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
     title: '', 
     title_part1: '',
     title_part2: '',
+    title_color1: '#000000',
+    title_color2: '#A4A4A4',
     view_all_link: '' 
   });
   const [selectedItems, setSelectedItems] = useState<{ type: SectionItemType; id: string }[]>([]);
@@ -159,6 +161,8 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
       title: extendedSection.title, 
       title_part1: extendedSection.title_part1 || '',
       title_part2: extendedSection.title_part2 || '',
+      title_color1: extendedSection.title_color1 || '#000000',
+      title_color2: extendedSection.title_color2 || '#A4A4A4',
       view_all_link: extendedSection.view_all_link || '' 
     });
     setSelectedItems(section.items?.map(item => ({ type: item.item_type, id: item.item_id })) || []);
@@ -173,6 +177,8 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
       title: '', 
       title_part1: '',
       title_part2: '',
+      title_color1: '#000000',
+      title_color2: '#A4A4A4',
       view_all_link: '' 
     });
     setSelectedItems([]);
@@ -214,6 +220,8 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
       title: formData.title || '',
       title_part1: formData.title_part1,
       title_part2: formData.title_part2,
+      title_color1: formData.title_color1,
+      title_color2: formData.title_color2,
       view_all_link: formData.view_all_link || null,
       items: selectedItems,
     } as ProductSectionInput;
@@ -564,50 +572,93 @@ const ProductSectionManagerUltraSimple: React.FC = () => {
                       </p>
                     </div>
 
-                    <div className="bg-[#1A1A2E] p-4 rounded-lg border border-[#343A40]">
-                      <h4 className="text-sm font-medium text-purple-300 mb-3 flex items-center gap-2">
-                        <Palette className="w-4 h-4" />
-                        Título Bicolor (Opcional)
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex gap-2">
-                          <Input 
-                            value={formData.title_part1 || ''} 
-                            onChange={(e) => setFormData(prev => ({ ...prev, title_part1: e.target.value }))}
-                            className="flex-1 bg-[#2C2C44] border-[#343A40] text-white placeholder:text-gray-500" 
-                            placeholder="Primeira parte (ex: Most Popular)"
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <Input 
-                            value={formData.title_part2 || ''} 
-                            onChange={(e) => setFormData(prev => ({ ...prev, title_part2: e.target.value }))}
-                            className="flex-1 bg-[#2C2C44] border-[#343A40] text-white placeholder:text-gray-500" 
-                            placeholder="Segunda parte (ex: Trading Cards)"
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Preview do título */}
-                      {(formData.title_part1 || formData.title_part2) && (
-                        <div className="mt-3 p-3 bg-[#2C2C44] rounded border border-[#343A40]">
-                          <p className="text-xs text-gray-400 mb-2">Preview:</p>
-                          <div className="text-lg font-semibold">
-                            {formData.title_part1 && (
-                              <span className="text-gray-900">
-                                {formData.title_part1}
-                              </span>
-                            )}
-                            {formData.title_part1 && formData.title_part2 && ' '}
-                            {formData.title_part2 && (
-                              <span className="text-gray-600">
-                                {formData.title_part2}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                     <div className="bg-[#1A1A2E] p-4 rounded-lg border border-[#343A40]">
+                       <h4 className="text-sm font-medium text-purple-300 mb-3 flex items-center gap-2">
+                         <Palette className="w-4 h-4" />
+                         Título Bicolor (Opcional)
+                       </h4>
+                       <p className="text-xs text-gray-400 mb-3">Configure um título em duas partes com cores diferentes, como na GameStop</p>
+                       <div className="space-y-3">
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <div>
+                             <Label className="text-gray-300 text-xs">Primeira Parte do Título</Label>
+                             <Input 
+                               value={formData.title_part1 || ''} 
+                               onChange={(e) => setFormData(prev => ({ ...prev, title_part1: e.target.value }))}
+                               className="bg-[#2C2C44] border-[#343A40] text-white placeholder:text-gray-500" 
+                               placeholder="Ex: Most Popular"
+                             />
+                           </div>
+                           <div>
+                             <Label className="text-gray-300 text-xs">Segunda Parte do Título</Label>
+                             <Input 
+                               value={formData.title_part2 || ''} 
+                               onChange={(e) => setFormData(prev => ({ ...prev, title_part2: e.target.value }))}
+                               className="bg-[#2C2C44] border-[#343A40] text-white placeholder:text-gray-500" 
+                               placeholder="Ex: Trading Cards"
+                             />
+                           </div>
+                           <div>
+                             <Label className="text-gray-300 text-xs">Cor da Primeira Parte</Label>
+                             <div className="flex gap-2 mt-1">
+                               <input
+                                 type="color"
+                                 value={formData.title_color1 || '#000000'}
+                                 onChange={(e) => setFormData(prev => ({ ...prev, title_color1: e.target.value }))}
+                                 className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                                 title="Cor da primeira parte"
+                               />
+                               <Input
+                                 value={formData.title_color1 || '#000000'}
+                                 onChange={(e) => setFormData(prev => ({ ...prev, title_color1: e.target.value }))}
+                                 placeholder="#000000"
+                                 className="flex-1 bg-[#2C2C44] border-[#343A40] text-white"
+                               />
+                             </div>
+                           </div>
+                           <div>
+                             <Label className="text-gray-300 text-xs">Cor da Segunda Parte</Label>
+                             <div className="flex gap-2 mt-1">
+                               <input
+                                 type="color"
+                                 value={formData.title_color2 || '#A4A4A4'}
+                                 onChange={(e) => setFormData(prev => ({ ...prev, title_color2: e.target.value }))}
+                                 className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                                 title="Cor da segunda parte"
+                               />
+                               <Input
+                                 value={formData.title_color2 || '#A4A4A4'}
+                                 onChange={(e) => setFormData(prev => ({ ...prev, title_color2: e.target.value }))}
+                                 placeholder="#A4A4A4"
+                                 className="flex-1 bg-[#2C2C44] border-[#343A40] text-white"
+                               />
+                             </div>
+                           </div>
+                         </div>
+                       </div>
+                       
+                       {/* Preview do título bicolor */}
+                       {(formData.title_part1 || formData.title_part2) && (
+                         <div className="mt-4 p-4 bg-[#2C2C44] rounded-lg">
+                           <Label className="text-gray-300 mb-2 block text-xs">Preview do Título Bicolor:</Label>
+                           <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                             <h2 className="text-xl md:text-2xl font-semibold leading-tight tracking-tight">
+                               {formData.title_part1 && (
+                                 <span style={{ color: formData.title_color1 || '#000000' }} className="font-semibold block sm:inline">
+                                   {formData.title_part1}
+                                 </span>
+                               )}
+                               {formData.title_part1 && formData.title_part2 && <span className="hidden sm:inline"> </span>}
+                               {formData.title_part2 && (
+                                 <span style={{ color: formData.title_color2 || '#A4A4A4' }} className="font-normal block sm:inline">
+                                   {formData.title_part2}
+                                 </span>
+                               )}
+                             </h2>
+                           </div>
+                         </div>
+                       )}
+                     </div>
                   </div>
                 </TabsContent>
 

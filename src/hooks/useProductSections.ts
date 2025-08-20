@@ -18,6 +18,10 @@ export interface ProductSectionItem {
 export interface ProductSection {
   id: string; // UUID
   title: string;
+  title_part1?: string;
+  title_part2?: string;
+  title_color1?: string;
+  title_color2?: string;
   view_all_link?: string | null;
   created_at?: string;
   updated_at?: string;
@@ -28,6 +32,10 @@ export interface ProductSection {
 export interface ProductSectionInput {
   id?: string; // Required for update, absent for create
   title: string;
+  title_part1?: string;
+  title_part2?: string;
+  title_color1?: string;
+  title_color2?: string;
   view_all_link?: string | null;
   items: { type: SectionItemType; id: string }[]; // Simplified item structure for input
 }
@@ -110,6 +118,10 @@ export const useProductSections = () => {
         .from('product_sections')
         .insert({
           title: sectionInput.title,
+          title_part1: sectionInput.title_part1,
+          title_part2: sectionInput.title_part2,
+          title_color1: sectionInput.title_color1,
+          title_color2: sectionInput.title_color2,
           view_all_link: sectionInput.view_all_link,
         })
         .select()
@@ -206,6 +218,10 @@ export const useProductSections = () => {
         .from('product_sections')
         .update({
           title: sectionInput.title,
+          title_part1: sectionInput.title_part1,
+          title_part2: sectionInput.title_part2,
+          title_color1: sectionInput.title_color1,
+          title_color2: sectionInput.title_color2,
           view_all_link: sectionInput.view_all_link,
           updated_at: new Date().toISOString(), // Manually update timestamp
         })

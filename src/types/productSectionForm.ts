@@ -1,5 +1,4 @@
 // Local form types for ProductSectionManager
-
 export interface ProductSectionFormData {
   title: string;
   title_part1?: string;
