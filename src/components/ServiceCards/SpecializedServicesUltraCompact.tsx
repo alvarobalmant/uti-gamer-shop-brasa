@@ -98,9 +98,9 @@ const SpecializedServicesUltraCompact = () => {
                         <div className="relative z-10">
                           {/* Ícone clean */}
                           <div className="flex items-center gap-3 mb-3">
-                            {card.icon_url && !imageErrors[card.id] ? (
+                            {card.image_url && !imageErrors[card.id] ? (
                               <img 
-                                src={card.icon_url} 
+                                src={card.image_url} 
                                 alt={card.title}
                                 className="w-8 h-8 md:w-10 md:h-10 object-contain"
                                 onError={() => handleImageError(card.id)}

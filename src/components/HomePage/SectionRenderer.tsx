@@ -124,6 +124,10 @@ export const SectionRenderer: React.FC<SectionRendererProps> = ({
                 loading={productsLoading || sectionsLoading}
                 onAddToCart={onAddToCart}
                 title={section.title}
+                titlePart1={section.title_part1}
+                titlePart2={section.title_part2}
+                titleColor1={section.title_color1}
+                titleColor2={section.title_color2}
                 viewAllLink={section.view_all_link || `/secao/${sectionKey}`}
                 reduceTopSpacing={reduceTopSpacing}
               />
