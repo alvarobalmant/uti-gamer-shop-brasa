@@ -243,95 +243,135 @@ const SpecialSectionForm: React.FC<SpecialSectionFormProps> = ({ section, onSubm
               {/* Carousel Title Color */}
               <div>
                 <Label htmlFor="carousel_title_color" className="text-gray-300">Cor do Título do Carrossel</Label>
-                <div className="flex gap-2 mt-1">
-                  <input
-                    type="color"
-                    {...register('carousel_title_color')}
-                    className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
-                    title="Cor do título do carrossel"
-                  />
-                  <Input
-                    {...register('carousel_title_color')}
-                    className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="#ffffff"
-                  />
-                </div>
+                <Controller
+                  name="carousel_title_color"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex gap-2 mt-1">
+                      <input
+                        type="color"
+                        value={field.value || '#ffffff'}
+                        onChange={field.onChange}
+                        className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                        title="Cor do título do carrossel"
+                      />
+                      <Input
+                        value={field.value || '#ffffff'}
+                        onChange={field.onChange}
+                        className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="#ffffff"
+                      />
+                    </div>
+                  )}
+                />
                 {errors.carousel_title_color && <p className="text-red-400 text-sm mt-1">{errors.carousel_title_color.message}</p>}
               </div>
 
               {/* View All Button Background Color */}
               <div>
                 <Label htmlFor="view_all_button_bg_color" className="text-gray-300">Cor de Fundo do Botão "Ver Todos"</Label>
-                <div className="flex gap-2 mt-1">
-                  <input
-                    type="color"
-                    {...register('view_all_button_bg_color')}
-                    className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
-                    title="Cor de fundo do botão Ver Todos"
-                  />
-                  <Input
-                    {...register('view_all_button_bg_color')}
-                    className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="#1f2937"
-                  />
-                </div>
+                <Controller
+                  name="view_all_button_bg_color"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex gap-2 mt-1">
+                      <input
+                        type="color"
+                        value={field.value || '#1f2937'}
+                        onChange={field.onChange}
+                        className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                        title="Cor de fundo do botão Ver Todos"
+                      />
+                      <Input
+                        value={field.value || '#1f2937'}
+                        onChange={field.onChange}
+                        className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="#1f2937"
+                      />
+                    </div>
+                  )}
+                />
                 {errors.view_all_button_bg_color && <p className="text-red-400 text-sm mt-1">{errors.view_all_button_bg_color.message}</p>}
               </div>
 
               {/* View All Button Text Color */}
               <div>
                 <Label htmlFor="view_all_button_text_color" className="text-gray-300">Cor do Texto do Botão "Ver Todos"</Label>
-                <div className="flex gap-2 mt-1">
-                  <input
-                    type="color"
-                    {...register('view_all_button_text_color')}
-                    className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
-                    title="Cor do texto do botão Ver Todos"
-                  />
-                  <Input
-                    {...register('view_all_button_text_color')}
-                    className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="#ffffff"
-                  />
-                </div>
+                <Controller
+                  name="view_all_button_text_color"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex gap-2 mt-1">
+                      <input
+                        type="color"
+                        value={field.value || '#ffffff'}
+                        onChange={field.onChange}
+                        className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                        title="Cor do texto do botão Ver Todos"
+                      />
+                      <Input
+                        value={field.value || '#ffffff'}
+                        onChange={field.onChange}
+                        className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="#ffffff"
+                      />
+                    </div>
+                  )}
+                />
                 {errors.view_all_button_text_color && <p className="text-red-400 text-sm mt-1">{errors.view_all_button_text_color.message}</p>}
               </div>
 
               {/* Scrollbar Color */}
               <div>
                 <Label htmlFor="scrollbar_color" className="text-gray-300">Cor da Barra de Scroll</Label>
-                <div className="flex gap-2 mt-1">
-                  <input
-                    type="color"
-                    {...register('scrollbar_color')}
-                    className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
-                    title="Cor da barra de scroll"
-                  />
-                  <Input
-                    {...register('scrollbar_color')}
-                    className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="#1f2937"
-                  />
-                </div>
+                <Controller
+                  name="scrollbar_color"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex gap-2 mt-1">
+                      <input
+                        type="color"
+                        value={field.value || '#1f2937'}
+                        onChange={field.onChange}
+                        className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                        title="Cor da barra de scroll"
+                      />
+                      <Input
+                        value={field.value || '#1f2937'}
+                        onChange={field.onChange}
+                        className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="#1f2937"
+                      />
+                    </div>
+                  )}
+                />
                 {errors.scrollbar_color && <p className="text-red-400 text-sm mt-1">{errors.scrollbar_color.message}</p>}
               </div>
 
               {/* Scrollbar Hover Color */}
               <div>
                 <Label htmlFor="scrollbar_hover_color" className="text-gray-300">Cor da Barra de Scroll (Hover)</Label>
-                <div className="flex gap-2 mt-1">
-                  <input
-                    type="color"
-                    {...register('scrollbar_hover_color')}
-                    className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
-                    title="Cor da barra de scroll no hover"
-                  />
-                  <Input
-                    {...register('scrollbar_hover_color')}
-                    className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="#111827"
-                  />
-                </div>
+                <Controller
+                  name="scrollbar_hover_color"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex gap-2 mt-1">
+                      <input
+                        type="color"
+                        value={field.value || '#111827'}
+                        onChange={field.onChange}
+                        className="w-16 h-10 rounded border border-gray-600 bg-gray-700 cursor-pointer"
+                        title="Cor da barra de scroll no hover"
+                      />
+                      <Input
+                        value={field.value || '#111827'}
+                        onChange={field.onChange}
+                        className="flex-1 bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="#111827"
+                      />
+                    </div>
+                  )}
+                />
                 {errors.scrollbar_hover_color && <p className="text-red-400 text-sm mt-1">{errors.scrollbar_hover_color.message}</p>}
               </div>
 
