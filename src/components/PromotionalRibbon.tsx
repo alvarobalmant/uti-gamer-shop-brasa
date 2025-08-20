@@ -60,11 +60,14 @@ const PromotionalRibbon: React.FC<PromotionalRibbonProps> = ({
   const ribbonContent = (
     <div
       className={cn(
-        "w-full h-[40px] flex items-center justify-center text-base font-semibold transition-all duration-200",
+        "w-full h-[40px] flex items-center justify-center text-base font-semibold transition-all duration-200 promotional-ribbon-poppins",
         link && link.trim() !== '' && link !== '#' && "cursor-pointer hover:opacity-90",
         className
       )}
-      style={getBackgroundStyle()}
+      style={{
+        ...getBackgroundStyle(),
+        fontFamily: 'Poppins, sans-serif', // Adicionada fonte Poppins
+      }}
       onClick={handleClick}
     >
       <div className="container mx-auto px-4 text-center">

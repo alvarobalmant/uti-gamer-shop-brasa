@@ -48,15 +48,15 @@ const SectionTitle: React.FC<SectionTitleProps> = ({
             <h2 className={cn(
               "text-xl md:text-4xl font-semibold leading-tight tracking-tight",
               titleClassName
-            )} style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
+            )} style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.24px' }}>
               {titlePart1 && (
-                <span style={{ color: titleColor1 || '#000000' }} className="font-semibold block sm:inline">
+                <span style={{ color: titleColor1 || '#000000', fontWeight: '700', fontFamily: 'Poppins, sans-serif' }} className="block sm:inline">
                   {titlePart1}
                 </span>
               )}
-              {titlePart1 && titlePart2 && <span className="hidden sm:inline"> </span>}
+              {titlePart1 && titlePart2 && <span className="hidden sm:inline" style={{ fontWeight: '700' }}> </span>}
               {titlePart2 && (
-                <span style={{ color: titleColor2 || '#A4A4A4' }} className="font-normal block sm:inline">
+                <span style={{ color: titleColor2 || '#A4A4A4', fontWeight: '700', fontFamily: 'Poppins, sans-serif' }} className="block sm:inline">
                   {titlePart2}
                 </span>
               )}
@@ -67,7 +67,7 @@ const SectionTitle: React.FC<SectionTitleProps> = ({
           <h2 className={cn(
             "text-xl md:text-4xl font-semibold leading-tight tracking-tight text-black",
             titleClassName
-          )} style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
+          )} style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.24px' }}>
             {title}
           </h2>
         )}

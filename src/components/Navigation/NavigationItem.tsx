@@ -24,9 +24,10 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({ item, className 
   const ItemContent = () => (
     <motion.div
       ref={containerRef}
-      className="relative inline-block cursor-pointer select-none text-sm md:text-base font-work-sans font-normal px-4 py-3" // Trocado para Work Sans e removido semibold
+      className="relative inline-block cursor-pointer select-none text-sm md:text-base font-normal px-4 py-3 nav-item-poppins" // Adicionada classe nav-item-poppins
       style={{
         color: normalText,
+        fontFamily: 'Poppins, sans-serif', // Removido !important
       }}
       onClick={handleClick}
       initial="initial"

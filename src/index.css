@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Circular+Std:wght@400;500;600;700;800&family=Gilroy:wght@400;500;600;700;800;900&display=swap");
 
 @import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* Import centralized card gaps */
 @import './styles/card-gaps.css';
@@ -806,5 +807,25 @@ html, body {
 
 .scrollbar-track-background::-webkit-scrollbar-track {
   background: transparent;
+}
+
+
+/* Força fonte Poppins nos itens de navegação */
+.nav-item-poppins {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.nav-item-poppins span {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+
+/* Força fonte Poppins na fita promocional */
+.promotional-ribbon-poppins {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.promotional-ribbon-poppins * {
+  font-family: 'Poppins', sans-serif !important;
 }
 

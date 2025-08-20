@@ -110,12 +110,12 @@ const MainHeader = ({
                         "font-bold leading-tight text-uti-red",
                         // 🎯 TABLET: Tamanho de fonte otimizado para tablets
                         "text-sm md:text-base lg:text-lg"
-                      )}>{siteInfo.siteName}</h1>
+                      )} style={{ fontFamily: 'Poppins, sans-serif' }}>{siteInfo.siteName}</h1>
                       <p className={cn(
                         "text-gray-600 leading-tight whitespace-normal",
                         // 🎯 TABLET: Texto otimizado para tablets
                         "text-[10px] md:text-xs lg:text-sm"
-                      )}>
+                      )} style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {siteInfo.siteSubtitle}
                       </p>
                     </div>

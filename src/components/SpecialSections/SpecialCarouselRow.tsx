@@ -183,15 +183,15 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
         <div className="flex-1">
           {useBicolorTitle ? (
             // Sistema bicolor estilo GameStop
-            <h2 className="text-xl md:text-4xl font-semibold leading-tight tracking-tight" style={{ fontFamily: 'Poppins, "Open Sans", sans-serif', letterSpacing: '-0.24px' }}>
+            <h2 className="text-xl md:text-4xl font-semibold leading-tight tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.24px' }}>
               {config.titlePart1 && (
-                <span style={{ color: config.carousel_title_color || config.titleColor1 || '#ffffff' }} className="font-semibold">
+                <span style={{ color: config.carousel_title_color || config.titleColor1 || '#ffffff', fontWeight: '700', fontFamily: 'Poppins, sans-serif' }}>
                   {config.titlePart1}
                 </span>
               )}
-              {config.titlePart1 && config.titlePart2 && ' '}
+              {config.titlePart1 && config.titlePart2 && <span style={{ fontWeight: '700' }}> </span>}
               {config.titlePart2 && (
-                <span style={{ color: config.carousel_title_color || config.titleColor2 || '#ffffff' }} className="font-normal">
+                <span style={{ color: config.carousel_title_color || config.titleColor2 || '#ffffff', fontWeight: '700', fontFamily: 'Poppins, sans-serif' }}>
                   {config.titlePart2}
                 </span>
               )}
@@ -199,7 +199,7 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
           ) : (
             // Título simples (compatibilidade com versão anterior)
             <h2 className="text-xl md:text-4xl font-semibold leading-tight tracking-tight" style={{ 
-              fontFamily: 'Poppins, "Open Sans", sans-serif', 
+              fontFamily: 'Poppins, sans-serif', 
               letterSpacing: '-0.24px',
               color: config.carousel_title_color || '#ffffff'
             }}>
