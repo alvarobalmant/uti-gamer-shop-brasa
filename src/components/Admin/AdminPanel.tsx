@@ -27,9 +27,7 @@ import OrderVerifier from './OrderVerifier';
 // Admin login system removed
 import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
 import { AnalyticsDashboard } from './Analytics/AnalyticsDashboard';
-import { EnterpriseDashboard } from './Analytics/EnterpriseDashboard';
-import { RealTimeAlerts } from './Analytics/RealTimeAlerts';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor, ClipboardCheck, BarChart3, Brain, Bell } from 'lucide-react';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor, ClipboardCheck, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -58,8 +56,6 @@ export const AdminPanel = () => {
     { id: 'services', label: 'Serviços', icon: Briefcase },
     { id: 'tags', label: 'Tags', icon: Tag },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'enterprise_analytics', label: 'Analytics Enterprise', icon: Brain },
-    { id: 'real_time_alerts', label: 'Alertas Tempo Real', icon: Bell },
     { id: 'uti_coins', label: 'UTI Coins', icon: Coins },
     { id: 'emails', label: 'Emails', icon: Mail },
     // Admin login removed
@@ -241,14 +237,6 @@ export const AdminPanel = () => {
 
               <TabsContent value="analytics" className="mt-0">
                 <AnalyticsDashboard />
-              </TabsContent>
-
-              <TabsContent value="enterprise_analytics" className="mt-0">
-                <EnterpriseDashboard />
-              </TabsContent>
-
-              <TabsContent value="real_time_alerts" className="mt-0">
-                <RealTimeAlerts />
               </TabsContent>
 
               <TabsContent value="uti_coins" className="mt-0">
