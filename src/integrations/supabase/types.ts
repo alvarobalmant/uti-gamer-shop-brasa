@@ -3307,6 +3307,7 @@ export type Database = {
       get_current_bonus_period_brasilia: {
         Args: Record<PropertyKey, never>
         Returns: {
+          can_claim: boolean
           next_reset: string
           period_end: string
           period_start: string
