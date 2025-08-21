@@ -2252,70 +2252,64 @@ export type Database = {
       }
       scroll_behavior: {
         Row: {
-          content_engagement_score: number | null
-          created_at: string
+          created_at: string | null
+          device_type: string | null
+          engagement_per_section: Json | null
+          exit_scroll_depth: number | null
           id: string
-          page_height: number | null
+          max_scroll_reached: number | null
           page_url: string
-          pause_detected: boolean | null
-          pause_duration_ms: number | null
-          reading_pattern: string | null
-          scroll_acceleration: number | null
+          scroll_depth_percentage: number | null
+          scroll_depth_pixels: number | null
           scroll_direction: string | null
-          scroll_percentage: number
-          scroll_position: Json
-          scroll_speed: number | null
-          scroll_trigger: string | null
-          section_viewed: string | null
+          scroll_pattern: string | null
+          scroll_pauses_count: number | null
+          scroll_velocity: number | null
+          sections_viewed: Json | null
           session_id: string
-          time_at_position_ms: number | null
-          timestamp_precise: string
+          time_to_scroll_seconds: number | null
+          timestamp_precise: string | null
           user_id: string | null
-          viewport_size: Json
         }
         Insert: {
-          content_engagement_score?: number | null
-          created_at?: string
+          created_at?: string | null
+          device_type?: string | null
+          engagement_per_section?: Json | null
+          exit_scroll_depth?: number | null
           id?: string
-          page_height?: number | null
+          max_scroll_reached?: number | null
           page_url: string
-          pause_detected?: boolean | null
-          pause_duration_ms?: number | null
-          reading_pattern?: string | null
-          scroll_acceleration?: number | null
+          scroll_depth_percentage?: number | null
+          scroll_depth_pixels?: number | null
           scroll_direction?: string | null
-          scroll_percentage: number
-          scroll_position: Json
-          scroll_speed?: number | null
-          scroll_trigger?: string | null
-          section_viewed?: string | null
+          scroll_pattern?: string | null
+          scroll_pauses_count?: number | null
+          scroll_velocity?: number | null
+          sections_viewed?: Json | null
           session_id: string
-          time_at_position_ms?: number | null
-          timestamp_precise?: string
+          time_to_scroll_seconds?: number | null
+          timestamp_precise?: string | null
           user_id?: string | null
-          viewport_size: Json
         }
         Update: {
-          content_engagement_score?: number | null
-          created_at?: string
+          created_at?: string | null
+          device_type?: string | null
+          engagement_per_section?: Json | null
+          exit_scroll_depth?: number | null
           id?: string
-          page_height?: number | null
+          max_scroll_reached?: number | null
           page_url?: string
-          pause_detected?: boolean | null
-          pause_duration_ms?: number | null
-          reading_pattern?: string | null
-          scroll_acceleration?: number | null
+          scroll_depth_percentage?: number | null
+          scroll_depth_pixels?: number | null
           scroll_direction?: string | null
-          scroll_percentage?: number
-          scroll_position?: Json
-          scroll_speed?: number | null
-          scroll_trigger?: string | null
-          section_viewed?: string | null
+          scroll_pattern?: string | null
+          scroll_pauses_count?: number | null
+          scroll_velocity?: number | null
+          sections_viewed?: Json | null
           session_id?: string
-          time_at_position_ms?: number | null
-          timestamp_precise?: string
+          time_to_scroll_seconds?: number | null
+          timestamp_precise?: string | null
           user_id?: string | null
-          viewport_size?: Json
         }
         Relationships: []
       }
@@ -4005,6 +3999,10 @@ export type Database = {
         }[]
       }
       get_real_time_alerts: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_realtime_dashboard: {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
