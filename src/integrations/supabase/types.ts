@@ -2253,7 +2253,6 @@ export type Database = {
           background_type: string
           background_value: string | null
           border_radius: number | null
-          carousel_title_color: string | null
           content_config: Json | null
           created_at: string | null
           description: string | null
@@ -2268,16 +2267,12 @@ export type Database = {
           padding_right: number | null
           padding_top: number | null
           page_id: string | null
-          scrollbar_color: string | null
-          scrollbar_hover_color: string | null
           title: string
           title_color1: string | null
           title_color2: string | null
           title_part1: string | null
           title_part2: string | null
           updated_at: string | null
-          view_all_button_bg_color: string | null
-          view_all_button_text_color: string | null
         }
         Insert: {
           background_color?: string | null
@@ -2288,7 +2283,6 @@ export type Database = {
           background_type?: string
           background_value?: string | null
           border_radius?: number | null
-          carousel_title_color?: string | null
           content_config?: Json | null
           created_at?: string | null
           description?: string | null
@@ -2303,16 +2297,12 @@ export type Database = {
           padding_right?: number | null
           padding_top?: number | null
           page_id?: string | null
-          scrollbar_color?: string | null
-          scrollbar_hover_color?: string | null
           title: string
           title_color1?: string | null
           title_color2?: string | null
           title_part1?: string | null
           title_part2?: string | null
           updated_at?: string | null
-          view_all_button_bg_color?: string | null
-          view_all_button_text_color?: string | null
         }
         Update: {
           background_color?: string | null
@@ -2323,7 +2313,6 @@ export type Database = {
           background_type?: string
           background_value?: string | null
           border_radius?: number | null
-          carousel_title_color?: string | null
           content_config?: Json | null
           created_at?: string | null
           description?: string | null
@@ -2338,16 +2327,12 @@ export type Database = {
           padding_right?: number | null
           padding_top?: number | null
           page_id?: string | null
-          scrollbar_color?: string | null
-          scrollbar_hover_color?: string | null
           title?: string
           title_color1?: string | null
           title_color2?: string | null
           title_part1?: string | null
           title_part2?: string | null
           updated_at?: string | null
-          view_all_button_bg_color?: string | null
-          view_all_button_text_color?: string | null
         }
         Relationships: [
           {
@@ -3307,6 +3292,7 @@ export type Database = {
       get_current_bonus_period_brasilia: {
         Args: Record<PropertyKey, never>
         Returns: {
+          can_claim: boolean
           next_reset: string
           period_end: string
           period_start: string
