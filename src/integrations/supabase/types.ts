@@ -664,6 +664,66 @@ export type Database = {
         }
         Relationships: []
       }
+      mouse_tracking: {
+        Row: {
+          acceleration: number | null
+          coordinates: Json
+          created_at: string
+          direction_angle: number | null
+          heat_zone: string | null
+          id: string
+          interaction_context: Json | null
+          movement_type: string | null
+          page_url: string
+          pause_duration_ms: number | null
+          relative_coordinates: Json | null
+          session_id: string
+          target_element: string | null
+          timestamp_precise: string
+          user_id: string | null
+          velocity: number | null
+          viewport_size: Json
+        }
+        Insert: {
+          acceleration?: number | null
+          coordinates: Json
+          created_at?: string
+          direction_angle?: number | null
+          heat_zone?: string | null
+          id?: string
+          interaction_context?: Json | null
+          movement_type?: string | null
+          page_url: string
+          pause_duration_ms?: number | null
+          relative_coordinates?: Json | null
+          session_id: string
+          target_element?: string | null
+          timestamp_precise?: string
+          user_id?: string | null
+          velocity?: number | null
+          viewport_size: Json
+        }
+        Update: {
+          acceleration?: number | null
+          coordinates?: Json
+          created_at?: string
+          direction_angle?: number | null
+          heat_zone?: string | null
+          id?: string
+          interaction_context?: Json | null
+          movement_type?: string | null
+          page_url?: string
+          pause_duration_ms?: number | null
+          relative_coordinates?: Json | null
+          session_id?: string
+          target_element?: string | null
+          timestamp_precise?: string
+          user_id?: string | null
+          velocity?: number | null
+          viewport_size?: Json
+        }
+        Relationships: []
+      }
       navigation_flow: {
         Row: {
           from_page: string | null
@@ -868,6 +928,72 @@ export type Database = {
         }
         Relationships: []
       }
+      page_interactions: {
+        Row: {
+          browser_info: Json | null
+          context_data: Json | null
+          coordinates: Json | null
+          created_at: string
+          device_type: string | null
+          duration_ms: number | null
+          element_attributes: Json | null
+          element_selector: string | null
+          element_text: string | null
+          id: string
+          interaction_type: string
+          page_title: string | null
+          page_url: string
+          scroll_position: Json | null
+          sequence_number: number | null
+          session_id: string
+          timestamp_precise: string
+          user_id: string | null
+          viewport_size: Json | null
+        }
+        Insert: {
+          browser_info?: Json | null
+          context_data?: Json | null
+          coordinates?: Json | null
+          created_at?: string
+          device_type?: string | null
+          duration_ms?: number | null
+          element_attributes?: Json | null
+          element_selector?: string | null
+          element_text?: string | null
+          id?: string
+          interaction_type: string
+          page_title?: string | null
+          page_url: string
+          scroll_position?: Json | null
+          sequence_number?: number | null
+          session_id: string
+          timestamp_precise?: string
+          user_id?: string | null
+          viewport_size?: Json | null
+        }
+        Update: {
+          browser_info?: Json | null
+          context_data?: Json | null
+          coordinates?: Json | null
+          created_at?: string
+          device_type?: string | null
+          duration_ms?: number | null
+          element_attributes?: Json | null
+          element_selector?: string | null
+          element_text?: string | null
+          id?: string
+          interaction_type?: string
+          page_title?: string | null
+          page_url?: string
+          scroll_position?: Json | null
+          sequence_number?: number | null
+          session_id?: string
+          timestamp_precise?: string
+          user_id?: string | null
+          viewport_size?: Json | null
+        }
+        Relationships: []
+      }
       page_layout_items: {
         Row: {
           created_at: string
@@ -1019,6 +1145,102 @@ export type Database = {
           theme?: Json | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      performance_vitals: {
+        Row: {
+          bounce_correlation: boolean | null
+          browser_info: Json | null
+          connection_type: string | null
+          console_errors: Json | null
+          conversion_correlation: boolean | null
+          created_at: string
+          cumulative_layout_shift: number | null
+          device_type: string | null
+          engagement_impact_score: number | null
+          first_contentful_paint: number | null
+          first_input_delay: number | null
+          id: string
+          javascript_errors: Json | null
+          largest_contentful_paint: number | null
+          measurement_timestamp: string
+          navigation_timing: Json | null
+          network_errors: Json | null
+          network_information: Json | null
+          page_load_complete: string | null
+          page_load_start: string | null
+          page_url: string
+          performance_score: number | null
+          resource_timing: Json | null
+          session_id: string
+          time_to_interactive: number | null
+          total_blocking_time: number | null
+          user_experience_score: number | null
+          user_id: string | null
+          viewport_size: Json | null
+        }
+        Insert: {
+          bounce_correlation?: boolean | null
+          browser_info?: Json | null
+          connection_type?: string | null
+          console_errors?: Json | null
+          conversion_correlation?: boolean | null
+          created_at?: string
+          cumulative_layout_shift?: number | null
+          device_type?: string | null
+          engagement_impact_score?: number | null
+          first_contentful_paint?: number | null
+          first_input_delay?: number | null
+          id?: string
+          javascript_errors?: Json | null
+          largest_contentful_paint?: number | null
+          measurement_timestamp?: string
+          navigation_timing?: Json | null
+          network_errors?: Json | null
+          network_information?: Json | null
+          page_load_complete?: string | null
+          page_load_start?: string | null
+          page_url: string
+          performance_score?: number | null
+          resource_timing?: Json | null
+          session_id: string
+          time_to_interactive?: number | null
+          total_blocking_time?: number | null
+          user_experience_score?: number | null
+          user_id?: string | null
+          viewport_size?: Json | null
+        }
+        Update: {
+          bounce_correlation?: boolean | null
+          browser_info?: Json | null
+          connection_type?: string | null
+          console_errors?: Json | null
+          conversion_correlation?: boolean | null
+          created_at?: string
+          cumulative_layout_shift?: number | null
+          device_type?: string | null
+          engagement_impact_score?: number | null
+          first_contentful_paint?: number | null
+          first_input_delay?: number | null
+          id?: string
+          javascript_errors?: Json | null
+          largest_contentful_paint?: number | null
+          measurement_timestamp?: string
+          navigation_timing?: Json | null
+          network_errors?: Json | null
+          network_information?: Json | null
+          page_load_complete?: string | null
+          page_load_start?: string | null
+          page_url?: string
+          performance_score?: number | null
+          resource_timing?: Json | null
+          session_id?: string
+          time_to_interactive?: number | null
+          total_blocking_time?: number | null
+          user_experience_score?: number | null
+          user_id?: string | null
+          viewport_size?: Json | null
         }
         Relationships: []
       }
@@ -1894,6 +2116,93 @@ export type Database = {
         }
         Relationships: []
       }
+      realtime_activity: {
+        Row: {
+          activity_status: string
+          browser_info: Json | null
+          cart_status: Json | null
+          churn_risk_score: number | null
+          conversion_probability: number | null
+          created_at: string
+          current_page_start_time: string
+          current_page_title: string | null
+          current_page_url: string
+          current_product_viewing: string | null
+          device_type: string | null
+          engagement_score: number | null
+          id: string
+          idle_time_seconds: number | null
+          interactions_count: number | null
+          intervention_opportunity: boolean | null
+          last_heartbeat: string
+          location_data: Json | null
+          predicted_intent: string | null
+          recommended_action: string | null
+          scroll_depth_percentage: number | null
+          search_context: Json | null
+          session_id: string
+          session_start_time: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_status: string
+          browser_info?: Json | null
+          cart_status?: Json | null
+          churn_risk_score?: number | null
+          conversion_probability?: number | null
+          created_at?: string
+          current_page_start_time: string
+          current_page_title?: string | null
+          current_page_url: string
+          current_product_viewing?: string | null
+          device_type?: string | null
+          engagement_score?: number | null
+          id?: string
+          idle_time_seconds?: number | null
+          interactions_count?: number | null
+          intervention_opportunity?: boolean | null
+          last_heartbeat?: string
+          location_data?: Json | null
+          predicted_intent?: string | null
+          recommended_action?: string | null
+          scroll_depth_percentage?: number | null
+          search_context?: Json | null
+          session_id: string
+          session_start_time: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_status?: string
+          browser_info?: Json | null
+          cart_status?: Json | null
+          churn_risk_score?: number | null
+          conversion_probability?: number | null
+          created_at?: string
+          current_page_start_time?: string
+          current_page_title?: string | null
+          current_page_url?: string
+          current_product_viewing?: string | null
+          device_type?: string | null
+          engagement_score?: number | null
+          id?: string
+          idle_time_seconds?: number | null
+          interactions_count?: number | null
+          intervention_opportunity?: boolean | null
+          last_heartbeat?: string
+          location_data?: Json | null
+          predicted_intent?: string | null
+          recommended_action?: string | null
+          scroll_depth_percentage?: number | null
+          search_context?: Json | null
+          session_id?: string
+          session_start_time?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       redemption_codes: {
         Row: {
           code: string
@@ -1940,6 +2249,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scroll_behavior: {
+        Row: {
+          content_engagement_score: number | null
+          created_at: string
+          id: string
+          page_height: number | null
+          page_url: string
+          pause_detected: boolean | null
+          pause_duration_ms: number | null
+          reading_pattern: string | null
+          scroll_acceleration: number | null
+          scroll_direction: string | null
+          scroll_percentage: number
+          scroll_position: Json
+          scroll_speed: number | null
+          scroll_trigger: string | null
+          section_viewed: string | null
+          session_id: string
+          time_at_position_ms: number | null
+          timestamp_precise: string
+          user_id: string | null
+          viewport_size: Json
+        }
+        Insert: {
+          content_engagement_score?: number | null
+          created_at?: string
+          id?: string
+          page_height?: number | null
+          page_url: string
+          pause_detected?: boolean | null
+          pause_duration_ms?: number | null
+          reading_pattern?: string | null
+          scroll_acceleration?: number | null
+          scroll_direction?: string | null
+          scroll_percentage: number
+          scroll_position: Json
+          scroll_speed?: number | null
+          scroll_trigger?: string | null
+          section_viewed?: string | null
+          session_id: string
+          time_at_position_ms?: number | null
+          timestamp_precise?: string
+          user_id?: string | null
+          viewport_size: Json
+        }
+        Update: {
+          content_engagement_score?: number | null
+          created_at?: string
+          id?: string
+          page_height?: number | null
+          page_url?: string
+          pause_detected?: boolean | null
+          pause_duration_ms?: number | null
+          reading_pattern?: string | null
+          scroll_acceleration?: number | null
+          scroll_direction?: string | null
+          scroll_percentage?: number
+          scroll_position?: Json
+          scroll_speed?: number | null
+          scroll_trigger?: string | null
+          section_viewed?: string | null
+          session_id?: string
+          time_at_position_ms?: number | null
+          timestamp_precise?: string
+          user_id?: string | null
+          viewport_size?: Json
+        }
+        Relationships: []
       }
       security_flags: {
         Row: {
@@ -2547,6 +2925,57 @@ export type Database = {
         }
         Relationships: []
       }
+      system_alerts: {
+        Row: {
+          acknowledged: boolean | null
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_data: Json | null
+          alert_type: string
+          created_at: string
+          id: string
+          message: string
+          page_url: string | null
+          resolved: boolean | null
+          resolved_at: string | null
+          session_id: string | null
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          acknowledged?: boolean | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_data?: Json | null
+          alert_type: string
+          created_at?: string
+          id?: string
+          message: string
+          page_url?: string | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          session_id?: string | null
+          severity: string
+          user_id?: string | null
+        }
+        Update: {
+          acknowledged?: boolean | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_data?: Json | null
+          alert_type?: string
+          created_at?: string
+          id?: string
+          message?: string
+          page_url?: string | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          session_id?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           created_at: string
@@ -2745,6 +3174,84 @@ export type Database = {
             referencedColumns: ["product_id"]
           },
         ]
+      }
+      user_journey_detailed: {
+        Row: {
+          action_details: Json | null
+          action_type: string
+          conversion_probability: number | null
+          conversion_step: boolean | null
+          created_at: string
+          cumulative_time_seconds: number | null
+          element_interacted: string | null
+          engagement_score: number | null
+          exit_point: boolean | null
+          friction_detected: boolean | null
+          friction_type: string | null
+          funnel_stage: string | null
+          id: string
+          page_title: string | null
+          page_url: string
+          predicted_next_action: string | null
+          previous_page_url: string | null
+          session_id: string
+          step_end_time: string | null
+          step_number: number
+          step_start_time: string
+          time_spent_seconds: number | null
+          user_id: string | null
+        }
+        Insert: {
+          action_details?: Json | null
+          action_type: string
+          conversion_probability?: number | null
+          conversion_step?: boolean | null
+          created_at?: string
+          cumulative_time_seconds?: number | null
+          element_interacted?: string | null
+          engagement_score?: number | null
+          exit_point?: boolean | null
+          friction_detected?: boolean | null
+          friction_type?: string | null
+          funnel_stage?: string | null
+          id?: string
+          page_title?: string | null
+          page_url: string
+          predicted_next_action?: string | null
+          previous_page_url?: string | null
+          session_id: string
+          step_end_time?: string | null
+          step_number: number
+          step_start_time: string
+          time_spent_seconds?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          action_details?: Json | null
+          action_type?: string
+          conversion_probability?: number | null
+          conversion_step?: boolean | null
+          created_at?: string
+          cumulative_time_seconds?: number | null
+          element_interacted?: string | null
+          engagement_score?: number | null
+          exit_point?: boolean | null
+          friction_detected?: boolean | null
+          friction_type?: string | null
+          funnel_stage?: string | null
+          id?: string
+          page_title?: string | null
+          page_url?: string
+          predicted_next_action?: string | null
+          previous_page_url?: string | null
+          session_id?: string
+          step_end_time?: string | null
+          step_number?: number
+          step_start_time?: string
+          time_spent_seconds?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       user_profiles: {
         Row: {
@@ -3024,6 +3531,49 @@ export type Database = {
       }
     }
     Views: {
+      mv_category_performance: {
+        Row: {
+          avg_engagement: number | null
+          avg_time_spent: number | null
+          category: string | null
+          conversion_rate: number | null
+          converted_sessions: number | null
+          friction_incidents: number | null
+          total_revenue: number | null
+          total_sessions: number | null
+        }
+        Relationships: []
+      }
+      mv_hourly_metrics: {
+        Row: {
+          avg_engagement: number | null
+          conversion_rate: number | null
+          hour: string | null
+          page_url: string | null
+          total_clicks: number | null
+          total_conversions: number | null
+          total_hovers: number | null
+          total_interactions: number | null
+          total_revenue: number | null
+          total_scrolls: number | null
+          unique_sessions: number | null
+        }
+        Relationships: []
+      }
+      mv_realtime_dashboard: {
+        Row: {
+          active_users: number | null
+          avg_churn_risk: number | null
+          avg_engagement: number | null
+          current_page_url: string | null
+          high_churn_risk_users: number | null
+          high_intent_users: number | null
+          intervention_opportunities: number | null
+          last_update: string | null
+          users_on_page: number | null
+        }
+        Relationships: []
+      }
       view_homepage_layout_complete: {
         Row: {
           created_at: string | null
@@ -3150,6 +3700,10 @@ export type Database = {
           tuples_read: number
         }[]
       }
+      calculate_engagement_score: {
+        Args: { p_page_url?: string; p_session_id: string }
+        Returns: number
+      }
       can_claim_code: {
         Args: { p_code: string }
         Returns: boolean
@@ -3190,6 +3744,10 @@ export type Database = {
       check_suspicious_activity: {
         Args: { p_action: string; p_user_id: string }
         Returns: boolean
+      }
+      cleanup_old_analytics_data: {
+        Args: { p_retention_days?: number }
+        Returns: Json
       }
       cleanup_old_bonus_codes: {
         Args: Record<PropertyKey, never>
@@ -3257,6 +3815,10 @@ export type Database = {
         Args: { p_master_product_id: string }
         Returns: Json
       }
+      detect_friction_patterns: {
+        Args: { p_page_url: string; p_session_id: string }
+        Returns: Json
+      }
       diagnose_product_data: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -3295,6 +3857,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_abandonment_analysis_by_sector: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: Json
+      }
       get_active_subscription: {
         Args: { user_id: string }
         Returns: {
@@ -3303,6 +3869,18 @@ export type Database = {
           plan_name: string
           subscription_id: string
         }[]
+      }
+      get_behavioral_segmentation: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: Json
+      }
+      get_churn_prediction: {
+        Args: { p_risk_threshold?: number; p_user_id?: string }
+        Returns: Json
+      }
+      get_conversion_routes_analysis: {
+        Args: { p_end_date?: string; p_limit?: number; p_start_date?: string }
+        Returns: Json
       }
       get_current_bonus_period_brasilia: {
         Args: Record<PropertyKey, never>
@@ -3325,6 +3903,31 @@ export type Database = {
           total_sessions: number
           whatsapp_clicks: number
         }[]
+      }
+      get_friction_points_analysis: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: Json
+      }
+      get_heatmap_enterprise_data: {
+        Args: {
+          p_end_date?: string
+          p_interaction_type?: string
+          p_page_url: string
+          p_start_date?: string
+        }
+        Returns: Json
+      }
+      get_performance_correlation: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: Json
+      }
+      get_predictive_conversion_score: {
+        Args: { p_session_id: string }
+        Returns: Json
+      }
+      get_product_intelligence: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: Json
       }
       get_products_with_tags_corrected: {
         Args: {
@@ -3401,6 +4004,14 @@ export type Database = {
           variant_attributes: Json
         }[]
       }
+      get_real_time_alerts: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_realtime_dashboard_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_top_products_analytics: {
         Args: { end_date: string; limit_count?: number; start_date: string }
         Returns: {
@@ -3413,6 +4024,10 @@ export type Database = {
           total_views: number
           whatsapp_clicks: number
         }[]
+      }
+      get_user_complete_journey: {
+        Args: { p_include_interactions?: boolean; p_session_id: string }
+        Returns: Json
       }
       get_user_role: {
         Args: { user_id: string }
@@ -3513,6 +4128,10 @@ export type Database = {
       }
       redeem_pro_code: {
         Args: { p_code_id: string; p_end_date: string; p_user_id: string }
+        Returns: Json
+      }
+      refresh_materialized_views: {
+        Args: Record<PropertyKey, never>
         Returns: Json
       }
       remover_meses_assinatura: {
