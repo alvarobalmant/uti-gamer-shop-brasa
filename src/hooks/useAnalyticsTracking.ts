@@ -14,6 +14,19 @@ interface AnalyticsEvent {
   referrer?: string;
 }
 
+interface MousePosition {
+  x: number;
+  y: number;
+  timestamp: number;
+}
+
+interface ScrollData {
+  scrollY: number;
+  scrollPercentage: number;
+  maxScrollReached: number;
+  timestamp: number;
+}
+
 // Função para gerar session ID único
 const generateSessionId = () => {
   return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -78,6 +91,21 @@ const getTrafficSource = () => {
   return { traffic_source: 'direct' };
 };
 
+// Função para calcular Web Vitals
+const measureWebVitals = () => {
+  const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+  
+  return {
+    largest_contentful_paint: 0, // Será medido via observer
+    first_input_delay: 0, // Será medido via observer
+    cumulative_layout_shift: 0, // Será medido via observer
+    first_contentful_paint: navigation?.loadEventEnd - navigation?.loadEventStart || 0,
+    time_to_interactive: navigation?.domInteractive - navigation?.navigationStart || 0,
+    total_blocking_time: 0,
+    performance_score: 100 // Será calculado baseado nas métricas
+  };
+};
+
 export const useAnalyticsTracking = () => {
   const { user } = useAuth();
   const sessionIdRef = useRef<string>(generateSessionId());
@@ -85,6 +113,15 @@ export const useAnalyticsTracking = () => {
   const pageStartTimeRef = useRef<Date>(new Date());
   const eventsQueueRef = useRef<AnalyticsEvent[]>([]);
   const isInitializedRef = useRef(false);
+  
+  // Refs para tracking granular
+  const mousePositionsRef = useRef<MousePosition[]>([]);
+  const scrollDataRef = useRef<ScrollData[]>([]);
+  const maxScrollReachedRef = useRef<number>(0);
+  const lastMouseMoveRef = useRef<number>(0);
+  const lastScrollRef = useRef<number>(0);
+  const interactionCountRef = useRef<number>(0);
+  const engagementScoreRef = useRef<number>(0);
 
   // Função para enviar eventos em lote
   const flushEvents = useCallback(async () => {
@@ -121,6 +158,68 @@ export const useAnalyticsTracking = () => {
     }
   }, [user?.id]);
 
+  // Função para enviar dados granulares
+  const flushGranularData = useCallback(async () => {
+    const currentTime = Date.now();
+    
+    try {
+      // Enviar dados de mouse tracking
+      if (mousePositionsRef.current.length > 0) {
+        const mouseData = mousePositionsRef.current.map(pos => ({
+          session_id: sessionIdRef.current,
+          user_id: user?.id || null,
+          page_url: window.location.href,
+          coordinates: { x: pos.x, y: pos.y },
+          timestamp_precise: new Date(pos.timestamp).toISOString(),
+          movement_speed: 0, // Será calculado no backend
+          interaction_type: 'mouse_move'
+        }));
+
+        await supabase.from('mouse_tracking').insert(mouseData);
+        mousePositionsRef.current = [];
+      }
+
+      // Enviar dados de scroll
+      if (scrollDataRef.current.length > 0) {
+        const scrollData = scrollDataRef.current.map(scroll => ({
+          session_id: sessionIdRef.current,
+          user_id: user?.id || null,
+          page_url: window.location.href,
+          scroll_position: scroll.scrollY,
+          scroll_percentage: scroll.scrollPercentage,
+          max_scroll_reached: scroll.maxScrollReached,
+          timestamp_precise: new Date(scroll.timestamp).toISOString(),
+          scroll_direction: 'down', // Será calculado baseado na sequência
+          scroll_speed: 0 // Será calculado no backend
+        }));
+
+        await supabase.from('scroll_behavior').insert(scrollData);
+        scrollDataRef.current = [];
+      }
+
+      // Atualizar atividade em tempo real
+      await supabase.from('realtime_activity').upsert({
+        session_id: sessionIdRef.current,
+        user_id: user?.id || null,
+        current_page_url: window.location.href,
+        current_page_title: document.title,
+        activity_status: 'active',
+        last_heartbeat: new Date().toISOString(),
+        session_start_time: sessionStartRef.current.toISOString(),
+        current_page_start_time: pageStartTimeRef.current.toISOString(),
+        engagement_score: engagementScoreRef.current,
+        interactions_count: interactionCountRef.current,
+        scroll_depth_percentage: maxScrollReachedRef.current,
+        time_on_page_seconds: Math.floor((currentTime - pageStartTimeRef.current.getTime()) / 1000),
+        conversion_probability: Math.min(1, engagementScoreRef.current / 100),
+        intervention_opportunity: engagementScoreRef.current > 70 && interactionCountRef.current > 10
+      });
+
+    } catch (error) {
+      console.error('Erro ao enviar dados granulares:', error);
+    }
+  }, [user?.id]);
+
   // Função para rastrear evento
   const trackEvent = useCallback((event: AnalyticsEvent) => {
     eventsQueueRef.current.push({
@@ -134,6 +233,64 @@ export const useAnalyticsTracking = () => {
       flushEvents();
     }
   }, [flushEvents]);
+
+  // Função para rastrear interação granular
+  const trackPageInteraction = useCallback(async (
+    interactionType: string,
+    element: HTMLElement | null,
+    coordinates?: { x: number; y: number },
+    additionalData?: any
+  ) => {
+    const timestamp = new Date().toISOString();
+    const elementSelector = element ? 
+      `${element.tagName.toLowerCase()}${element.id ? '#' + element.id : ''}${element.className ? '.' + element.className.split(' ').join('.') : ''}` 
+      : 'unknown';
+
+    try {
+      await supabase.from('page_interactions').insert({
+        session_id: sessionIdRef.current,
+        user_id: user?.id || null,
+        page_url: window.location.href,
+        page_title: document.title,
+        interaction_type: interactionType,
+        element_selector: elementSelector,
+        coordinates: coordinates || null,
+        timestamp_precise: timestamp,
+        sequence_number: interactionCountRef.current++,
+        duration_ms: additionalData?.duration || 0,
+        interaction_data: additionalData || {}
+      });
+
+      // Atualizar engagement score
+      engagementScoreRef.current = Math.min(100, engagementScoreRef.current + 2);
+
+    } catch (error) {
+      console.error('Erro ao rastrear interação:', error);
+    }
+  }, [user?.id]);
+
+  // Função para calcular e enviar Web Vitals
+  const trackWebVitals = useCallback(async () => {
+    const vitals = measureWebVitals();
+    
+    try {
+      await supabase.from('performance_vitals').insert({
+        session_id: sessionIdRef.current,
+        user_id: user?.id || null,
+        page_url: window.location.href,
+        measurement_timestamp: new Date().toISOString(),
+        ...vitals,
+        viewport_width: window.innerWidth,
+        viewport_height: window.innerHeight,
+        connection_type: (navigator as any).connection?.effectiveType || 'unknown',
+        javascript_errors: [], // Será populado por error handler
+        bounce_correlation: false, // Será calculado no backend
+        engagement_impact_score: 0 // Será calculado no backend
+      });
+    } catch (error) {
+      console.error('Erro ao enviar Web Vitals:', error);
+    }
+  }, [user?.id]);
 
   // Inicializar sessão
   const initializeSession = useCallback(async () => {
@@ -165,10 +322,14 @@ export const useAnalyticsTracking = () => {
           is_initial_page: true
         }
       });
+
+      // Medir Web Vitals iniciais
+      setTimeout(() => trackWebVitals(), 1000);
+
     } catch (error) {
       console.error('Erro ao inicializar sessão:', error);
     }
-  }, [user?.id, trackEvent]);
+  }, [user?.id, trackEvent, trackWebVitals]);
 
   // Finalizar sessão
   const endSession = useCallback(async () => {
@@ -180,16 +341,19 @@ export const useAnalyticsTracking = () => {
         .update({
           ended_at: new Date().toISOString(),
           duration_seconds: duration,
-          events_count: eventsQueueRef.current.length
+          events_count: eventsQueueRef.current.length,
+          page_views: Math.floor(duration / 60), // Estimativa
+          engagement_score: engagementScoreRef.current
         })
         .eq('session_id', sessionIdRef.current);
 
-      // Enviar eventos restantes
+      // Enviar dados restantes
       await flushEvents();
+      await flushGranularData();
     } catch (error) {
       console.error('Erro ao finalizar sessão:', error);
     }
-  }, [flushEvents]);
+  }, [flushEvents, flushGranularData]);
 
   // Rastrear mudanças de página
   const trackPageView = useCallback((title?: string) => {
@@ -201,6 +365,9 @@ export const useAnalyticsTracking = () => {
       }
     });
     pageStartTimeRef.current = new Date();
+    maxScrollReachedRef.current = 0;
+    interactionCountRef.current = 0;
+    engagementScoreRef.current = 0;
   }, [trackEvent]);
 
   // Rastrear visualização de produto
@@ -316,6 +483,105 @@ export const useAnalyticsTracking = () => {
     });
   }, [trackEvent]);
 
+  // Inicializar tracking granular
+  useEffect(() => {
+    if (!isInitializedRef.current) return;
+
+    // Mouse tracking
+    const handleMouseMove = (e: MouseEvent) => {
+      const now = Date.now();
+      if (now - lastMouseMoveRef.current > 100) { // Throttle para 10fps
+        mousePositionsRef.current.push({
+          x: e.clientX,
+          y: e.clientY,
+          timestamp: now
+        });
+        lastMouseMoveRef.current = now;
+
+        // Limitar buffer
+        if (mousePositionsRef.current.length > 100) {
+          mousePositionsRef.current = mousePositionsRef.current.slice(-50);
+        }
+      }
+    };
+
+    // Scroll tracking
+    const handleScroll = () => {
+      const now = Date.now();
+      if (now - lastScrollRef.current > 100) { // Throttle
+        const scrollY = window.scrollY;
+        const scrollPercentage = Math.round((scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        
+        if (scrollPercentage > maxScrollReachedRef.current) {
+          maxScrollReachedRef.current = scrollPercentage;
+        }
+
+        scrollDataRef.current.push({
+          scrollY,
+          scrollPercentage,
+          maxScrollReached: maxScrollReachedRef.current,
+          timestamp: now
+        });
+        lastScrollRef.current = now;
+
+        // Limitar buffer
+        if (scrollDataRef.current.length > 50) {
+          scrollDataRef.current = scrollDataRef.current.slice(-25);
+        }
+
+        // Atualizar engagement baseado em scroll
+        engagementScoreRef.current = Math.min(100, engagementScoreRef.current + 0.5);
+      }
+    };
+
+    // Click tracking
+    const handleClick = (e: MouseEvent) => {
+      trackPageInteraction('click', e.target as HTMLElement, {
+        x: e.clientX,
+        y: e.clientY
+      });
+    };
+
+    // Hover tracking (throttled)
+    let hoverTimeout: NodeJS.Timeout;
+    const handleMouseOver = (e: MouseEvent) => {
+      clearTimeout(hoverTimeout);
+      hoverTimeout = setTimeout(() => {
+        trackPageInteraction('hover', e.target as HTMLElement, {
+          x: e.clientX,
+          y: e.clientY
+        }, { duration: 1000 });
+      }, 1000); // Só rastrear hovers de 1s+
+    };
+
+    // Focus tracking
+    const handleFocus = (e: FocusEvent) => {
+      trackPageInteraction('focus', e.target as HTMLElement);
+    };
+
+    // Adicionar listeners
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
+    document.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('click', handleClick);
+    document.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('focus', handleFocus, true);
+
+    // Heartbeat para manter atividade em tempo real
+    const heartbeatInterval = setInterval(() => {
+      flushGranularData();
+    }, 5000); // A cada 5 segundos
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('click', handleClick);
+      document.removeEventListener('mouseover', handleMouseOver);
+      document.removeEventListener('focus', handleFocus, true);
+      clearInterval(heartbeatInterval);
+      clearTimeout(hoverTimeout);
+    };
+  }, [trackPageInteraction, flushGranularData]);
+
   // Inicializar tracking
   useEffect(() => {
     initializeSession();
@@ -332,6 +598,7 @@ export const useAnalyticsTracking = () => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         flushEvents();
+        flushGranularData();
       }
     };
 
@@ -344,7 +611,7 @@ export const useAnalyticsTracking = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       endSession();
     };
-  }, [initializeSession, endSession, flushEvents]);
+  }, [initializeSession, endSession, flushEvents, flushGranularData]);
 
   return {
     trackEvent,
@@ -356,6 +623,10 @@ export const useAnalyticsTracking = () => {
     trackCheckoutAbandon,
     trackPurchase,
     trackWhatsAppClick,
-    sessionId: sessionIdRef.current
+    trackPageInteraction,
+    sessionId: sessionIdRef.current,
+    engagementScore: engagementScoreRef.current,
+    interactionCount: interactionCountRef.current
   };
 };
+

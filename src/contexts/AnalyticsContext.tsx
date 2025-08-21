@@ -23,6 +23,22 @@ export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({ children 
   const location = useLocation();
   const analytics = useAnalyticsTracking();
 
+  // Ativar tracking granular automaticamente
+  useEffect(() => {
+    console.log('🚀 Analytics: Ativando tracking granular enterprise');
+    
+    // Inicializar tracking granular
+    analytics.initializeGranularTracking();
+    
+    // Ativar heartbeat
+    analytics.startHeartbeat();
+    
+    return () => {
+      // Cleanup quando componente desmonta
+      analytics.stopHeartbeat();
+    };
+  }, [analytics]);
+
   // Track page views automatically
   useEffect(() => {
     const pageTitle = document.title;
