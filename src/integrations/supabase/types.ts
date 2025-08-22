@@ -2203,6 +2203,36 @@ export type Database = {
         }
         Relationships: []
       }
+      realtime_dashboard_cache: {
+        Row: {
+          id: string
+          last_updated: string | null
+          metric_data: Json | null
+          metric_type: string
+          metric_value: number | null
+          period_end: string | null
+          period_start: string | null
+        }
+        Insert: {
+          id?: string
+          last_updated?: string | null
+          metric_data?: Json | null
+          metric_type: string
+          metric_value?: number | null
+          period_end?: string | null
+          period_start?: string | null
+        }
+        Update: {
+          id?: string
+          last_updated?: string | null
+          metric_data?: Json | null
+          metric_type?: string
+          metric_value?: number | null
+          period_end?: string | null
+          period_start?: string | null
+        }
+        Relationships: []
+      }
       redemption_codes: {
         Row: {
           code: string
@@ -3551,20 +3581,6 @@ export type Database = {
           total_revenue: number | null
           total_scrolls: number | null
           unique_sessions: number | null
-        }
-        Relationships: []
-      }
-      mv_realtime_dashboard: {
-        Row: {
-          active_users: number | null
-          avg_churn_risk: number | null
-          avg_engagement: number | null
-          current_page_url: string | null
-          high_churn_risk_users: number | null
-          high_intent_users: number | null
-          intervention_opportunities: number | null
-          last_update: string | null
-          users_on_page: number | null
         }
         Relationships: []
       }
