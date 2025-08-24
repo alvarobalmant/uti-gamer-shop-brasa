@@ -30,6 +30,7 @@ import { ConversionFunnel } from './Enterprise/ConversionFunnel';
 import { UserFlowAnalysis } from './Enterprise/UserFlowAnalysis';
 import { FrictionPointsAnalysis } from './Enterprise/FrictionPointsAnalysis';
 import { ChurnPrediction } from './Enterprise/ChurnPrediction';
+import { SessionsAnalysis } from './Enterprise/SessionsAnalysis';
 
 export const EnterpriseAnalyticsDashboard = () => {
   const {
@@ -218,8 +219,12 @@ export const EnterpriseAnalyticsDashboard = () => {
       </div>
 
       {/* Abas Principais */}
-      <Tabs defaultValue="realtime" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+      <Tabs defaultValue="sessions" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="sessions" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Sessões
+          </TabsTrigger>
           <TabsTrigger value="realtime" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
             Tempo Real
@@ -245,6 +250,13 @@ export const EnterpriseAnalyticsDashboard = () => {
             Churn
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="sessions" className="space-y-4">
+          <SessionsAnalysis 
+            onViewDetails={setSelectedCustomer}
+            dateRange={dateRange}
+          />
+        </TabsContent>
 
         <TabsContent value="realtime" className="space-y-4">
           <RealTimeMetrics data={realTimeData} />
