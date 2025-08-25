@@ -64,8 +64,8 @@ const ProfessionalHeader = ({
       {/* DesktopNavigation agora é fixed e posicionado abaixo do MainHeader */}
       {showNavigation && <DesktopNavigation />}
 
-      {/* Espaçador para compensar o header fixo - reduzido em mobile */}
-      <div className="h-[32px] lg:h-[72px]" />
+      {/* Espaçador para compensar o header fixo - APENAS no desktop */}
+      <div className="hidden lg:block h-[72px]" />
       
       {/* Espaçador adicional para navegação desktop - apenas quando navegação está ativa e em desktop */}
       {showNavigation && <div className="hidden lg:block h-[12px]" />}

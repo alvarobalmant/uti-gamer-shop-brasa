@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from "react";
 import './utils/categoryTestSimple';
 import './utils/n7ErrorSuppressor'; // ← NOVO: Supressor de erro n7.map
 import './styles/n7ErrorSuppression.css'; // ← NOVO: CSS para suprimir erro n7.map
+import './styles/mobile-improvements.css'; // ← NOVO: CSS para melhorias mobile
 import './utils/debugHelper'; // ← Debug helper para diagnosticar problemas
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -16,6 +17,7 @@ import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
+import { EnterpriseTrackingProvider } from "@/contexts/EnterpriseTrackingContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
@@ -183,9 +185,10 @@ const App = () => {
                     <Sonner />
                     <BrowserRouter>
                       <AnalyticsProvider>
-                        <CartProvider>
-                          <AppWithPreloader>
-                            <GlobalNavigationProvider>
+                        <EnterpriseTrackingProvider>
+                          <CartProvider>
+                            <AppWithPreloader>
+                              <GlobalNavigationProvider>
                                  <LoadingOverlay />
                                  <GlobalNavigationOverlay />
                                  <Suspense fallback={<PageLoader />}>
@@ -284,8 +287,9 @@ const App = () => {
                                  </Suspense>
                             </GlobalNavigationProvider>
                           </AppWithPreloader>
-                        </CartProvider>
-                      </AnalyticsProvider>
+                         </CartProvider>
+                        </EnterpriseTrackingProvider>
+                       </AnalyticsProvider>
                     </BrowserRouter>
                   </TooltipProvider>
                  </LoadingProvider>

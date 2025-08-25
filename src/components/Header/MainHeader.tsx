@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActionsEnhanced from './HeaderActionsEnhanced';
 import MobileSearchBar from './MobileSearchBar';
+import { UTICoinsMobileWidget } from '@/components/Mobile/UTICoinsMobileWidget';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -51,10 +52,13 @@ const MainHeader = ({
     <>
       <div className={cn(
         "w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border/80 shadow-sm",
-        "fixed top-0 left-0 right-0 z-50", // Mudança aqui: fixed ao invés de sticky
+        // Header fixo apenas no desktop (lg e acima)
+        "lg:fixed lg:top-0 lg:left-0 lg:right-0 lg:z-50",
+        // No mobile, header é estático
+        "relative",
         className
       )}>
-        <div className="container flex h-[72px] items-center justify-between px-4 gap-2">
+        <div className="container flex h-[72px] items-center justify-between px-0 lg:px-4 gap-2">
           {/* Left side: Mobile Menu Toggle + Header Content */}
           <div className="flex items-center flex-shrink min-w-0"> 
             <Button
@@ -130,8 +134,11 @@ const MainHeader = ({
              <DesktopSearchBar />
           </div>
 
-          {/* Right side: Header Actions + Mobile/Tablet Search Toggle */}
+          {/* Right side: UTI Coins Mobile + Header Actions + Mobile/Tablet Search Toggle */}
           <div className="flex items-center justify-end flex-shrink-0 gap-1"> 
+            {/* UTI Coins Mobile Widget */}
+            <UTICoinsMobileWidget className="mr-1" />
+            
             <Button
               variant="ghost"
               size="icon"

@@ -177,8 +177,8 @@ const SpecialSectionRenderer: React.FC<SpecialSectionRendererProps> = React.memo
       // Seção especial sem fundo com espaçamento reduzido (usado em contextos específicos)
       return "py-2 md:py-3 my-1 md:my-2";
     } else if (hasBackground) {
-      // Seções especiais com fundo - padding normal, mas margem superior ainda maior para criar mais espaço branco
-      return "py-6 md:py-8 mt-16 md:mt-20 mb-4 md:mb-6";
+      // Seções especiais com fundo - padding normal, mas margem superior reduzida no mobile
+      return "py-6 md:py-8 mt-0 md:mt-20 mb-4 md:mb-6";
     } else {
       // Seções especiais sem fundo devem ter espaçamento reduzido para melhor integração no fluxo
       return "py-3 md:py-4 my-2 md:my-3";

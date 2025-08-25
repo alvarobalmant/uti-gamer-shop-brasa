@@ -1,92 +1,187 @@
-import React, { createContext, useContext, ReactNode, useEffect } from 'react';
-import { useAnalyticsTracking } from '@/hooks/useAnalyticsTracking';
-import { useAuth } from '@/hooks/useAuth';
-import { useLocation } from 'react-router-dom';
+/**
+ * ANALYTICS CONTEXT - VERSÃO MULTI-USUÁRIO
+ * Integra sistema básico + enterprise multi-usuário
+ */
 
-export interface AnalyticsContextType {
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useAnalyticsTracking } from '@/hooks/useAnalyticsTracking';
+import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
+
+interface AnalyticsContextType {
+  // IDs únicos
+  uniqueUserId: string;
   sessionId: string;
-  trackEvent: (type: string, data?: any, productId?: string) => void;
-  trackPageView: (page: string, title?: string) => void;
-  trackProductView: (productId: string, productName?: string, productPrice?: number) => void;
-  trackAddToCart: (productId: string, productName?: string, productPrice?: number, quantity?: number, additionalData?: any) => void;
-  trackRemoveFromCart: (productId: string, productName?: string, productPrice?: number) => void;
-  trackCheckoutStart: (cartValue: number, itemCount: number) => void;
-  trackCheckoutAbandon: (cartValue: number, itemCount: number, step?: string) => void;
-  trackPurchase: (orderValue: number, items: any[]) => void;
-  trackWhatsAppClick: (context?: string, productId?: string) => void;
+  
+  // Funções de tracking
+  trackEvent: (eventType: string, data?: any, element?: HTMLElement, coordinates?: { x: number; y: number }) => void;
+  trackPageView: (url?: string, title?: string) => void;
+  trackProductView: (productId: string, productData?: any) => void;
+  trackAddToCart: (productId: string, quantity: number, price: number) => void;
+  trackSearch: (query: string, filters?: any, results?: any) => void;
+  trackPurchase: (orderData: any) => void;
+  
+  // Controles
+  flushEvents: () => Promise<void>;
+  isTracking: boolean;
+  updateRealtimeActivity: () => void;
 }
 
 const AnalyticsContext = createContext<AnalyticsContextType | undefined>(undefined);
 
-export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
-  const location = useLocation();
-  const analytics = useAnalyticsTracking();
+export const useAnalytics = () => {
+  const context = useContext(AnalyticsContext);
+  if (!context) {
+    throw new Error('useAnalytics must be used within an AnalyticsProvider');
+  }
+  return context;
+};
 
-  // Ativar tracking granular automaticamente
-  useEffect(() => {
-    console.log('🚀 Analytics: Ativando tracking granular enterprise');
-    
-    // Inicializar tracking granular
-    analytics.initializeGranularTracking();
-    
-    // Ativar heartbeat
-    analytics.startHeartbeat();
-    
-    return () => {
-      // Cleanup quando componente desmonta
-      analytics.stopHeartbeat();
-    };
-  }, [analytics]);
+interface AnalyticsProviderProps {
+  children: ReactNode;
+}
 
-  // Track page views automatically
-  useEffect(() => {
-    const pageTitle = document.title;
-    const pagePath = location.pathname + location.search;
-    
-    console.log('📊 Analytics: Tracking page view', {
-      path: pagePath,
-      title: pageTitle,
-      sessionId: analytics.sessionId
-    });
-    
-    analytics.trackPageView(pagePath);
-  }, [location, analytics]);
+export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }) => {
+  // Sistema básico
+  const {
+    trackEvent: basicTrackEvent,
+    trackPageView: basicTrackPageView,
+    trackProductView: basicTrackProductView,
+    trackAddToCart: basicTrackAddToCart,
+    trackSearch: basicTrackSearch,
+    flushEvents: basicFlushEvents
+  } = useAnalyticsTracking();
+
+  // Sistema enterprise multi-usuário
+  const {
+    uniqueUserId,
+    sessionId,
+    isTracking,
+    trackPageView: enterpriseTrackPageView,
+    trackProductView: enterpriseTrackProductView,
+    trackAddToCart: enterpriseTrackAddToCart,
+    trackPurchase: enterpriseTrackPurchase,
+    updateRealtimeActivity
+  } = useEnterpriseTrackingMultiUser();
+
+  console.log('📊 [ANALYTICS CONTEXT] Initialized for user:', uniqueUserId);
+
+  // Função híbrida para rastrear eventos
+  const trackEvent = async (eventType: string, data?: any, element?: HTMLElement, coordinates?: { x: number; y: number }) => {
+    try {
+      console.log(`🎯 [ANALYTICS] User ${uniqueUserId}: Event ${eventType}`, data);
+      
+      // Executar ambos os sistemas em paralelo
+      await Promise.all([
+        basicTrackEvent(eventType, data, element, coordinates),
+        // Enterprise tracking específico
+        eventType === 'page_view' && enterpriseTrackPageView(data?.url),
+        eventType === 'product_view' && enterpriseTrackProductView(data?.productId, data),
+        eventType === 'add_to_cart' && enterpriseTrackAddToCart(data?.productId, data?.quantity || 1, data?.price),
+        eventType === 'purchase' && enterpriseTrackPurchase(data)
+      ]);
+      
+      console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Event tracked: ${eventType}`);
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking event:`, error);
+    }
+  };
+
+  // Função híbrida para rastrear visualização de página
+  const trackPageView = async (url?: string, title?: string) => {
+    try {
+      const pageUrl = url || window.location.href;
+      console.log(`📄 [ANALYTICS] User ${uniqueUserId}: Page view: ${pageUrl}`);
+      
+      await Promise.all([
+        basicTrackPageView(url, title),
+        enterpriseTrackPageView(url)
+      ]);
+      
+      console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Page view tracked: ${pageUrl}`);
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking page view:`, error);
+    }
+  };
+
+  // Função híbrida para rastrear visualização de produto
+  const trackProductView = async (productId: string, productData?: any) => {
+    try {
+      console.log(`🛍️ [ANALYTICS] User ${uniqueUserId}: Product view: ${productId}`);
+      
+      await Promise.all([
+        basicTrackProductView(productId, productData),
+        enterpriseTrackProductView(productId, productData)
+      ]);
+      
+      console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Product view tracked: ${productId}`);
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking product view:`, error);
+    }
+  };
+
+  // Função híbrida para rastrear adição ao carrinho
+  const trackAddToCart = async (productId: string, quantity: number, price: number) => {
+    try {
+      console.log(`🛒 [ANALYTICS] User ${uniqueUserId}: Add to cart: ${productId} x${quantity}`);
+      
+      await Promise.all([
+        basicTrackAddToCart(productId, quantity, price),
+        enterpriseTrackAddToCart(productId, quantity, price)
+      ]);
+      
+      console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Add to cart tracked: ${productId}`);
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking add to cart:`, error);
+    }
+  };
+
+  // Função para rastrear busca
+  const trackSearch = async (query: string, filters?: any, results?: any) => {
+    try {
+      console.log(`🔍 [ANALYTICS] User ${uniqueUserId}: Search: ${query}`);
+      await basicTrackSearch(query, filters, results);
+      console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Search tracked: ${query}`);
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking search:`, error);
+    }
+  };
+
+  // Função para rastrear compra
+  const trackPurchase = async (orderData: any) => {
+    try {
+      console.log(`💳 [ANALYTICS] User ${uniqueUserId}: Purchase:`, orderData);
+      await enterpriseTrackPurchase(orderData);
+      console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Purchase tracked`);
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking purchase:`, error);
+    }
+  };
+
+  // Função para flush de eventos
+  const flushEvents = async () => {
+    try {
+      await Promise.all([
+        basicFlushEvents(),
+        updateRealtimeActivity()
+      ]);
+      console.log(`🔄 [ANALYTICS] User ${uniqueUserId}: Events flushed`);
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error flushing events:`, error);
+    }
+  };
 
   const contextValue: AnalyticsContextType = {
-    sessionId: analytics.sessionId,
-    trackEvent: (type: string, data?: any, productId?: string) => {
-      analytics.trackEvent({
-        event_type: type,
-        event_data: data,
-        product_id: productId,
-        page_url: location.pathname,
-        referrer: document.referrer
-      });
-    },
-    trackPageView: analytics.trackPageView,
-    trackProductView: (productId: string, productName?: string, productPrice?: number) => {
-      analytics.trackProductView(productId, { name: productName, price: productPrice });
-    },
-    trackAddToCart: (productId: string, productName?: string, productPrice?: number, quantity: number = 1, additionalData?: any) => {
-      analytics.trackAddToCart(productId, quantity, productPrice || 0, { 
-        name: productName, 
-        ...additionalData 
-      });
-    },
-    trackRemoveFromCart: (productId: string, productName?: string, productPrice?: number) => {
-      analytics.trackRemoveFromCart(productId, 1, productPrice || 0);
-    },
-    trackCheckoutStart: (cartValue: number, itemCount: number) => {
-      analytics.trackCheckoutStart([], cartValue);
-    },
-    trackCheckoutAbandon: (cartValue: number, itemCount: number, step?: string) => {
-      analytics.trackCheckoutAbandon(step || 'unknown', 0, [], cartValue);
-    },
-    trackPurchase: (orderValue: number, items: any[]) => {
-      analytics.trackPurchase('order-' + Date.now(), items, orderValue);
-    },
-    trackWhatsAppClick: analytics.trackWhatsAppClick,
+    uniqueUserId,
+    sessionId,
+    trackEvent,
+    trackPageView,
+    trackProductView,
+    trackAddToCart,
+    trackSearch,
+    trackPurchase,
+    flushEvents,
+    isTracking,
+    updateRealtimeActivity
   };
 
   return (
@@ -96,10 +191,3 @@ export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({ children 
   );
 };
 
-export const useAnalytics = () => {
-  const context = useContext(AnalyticsContext);
-  if (!context) {
-    throw new Error('useAnalytics must be used within an AnalyticsProvider');
-  }
-  return context;
-};

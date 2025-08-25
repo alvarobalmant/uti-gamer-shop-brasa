@@ -21,7 +21,7 @@ interface AuthModalProps {
 
 type ModalState = 'auth' | 'email-verification' | 'success';
 
-export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
+export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');

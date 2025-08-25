@@ -247,7 +247,7 @@ const HeroBannerCarousel = React.memo(() => {
   // Container que sempre mantém 40px de altura
   const ribbonContainerComponent = useMemo(() => {
     return (
-      <div className="w-full h-[40px] relative mt-[38px]">
+      <div className="w-full h-[40px] relative mt-0 lg:mt-[38px]">
         {ribbonSkeletonComponent}
         {promotionalRibbonComponent}
       </div>
@@ -465,6 +465,9 @@ const HeroBannerCarousel = React.memo(() => {
           </div>
         )}
       </section>
+      
+      {/* Espaçamento vertical após o carrossel - apenas no mobile */}
+      <div className="block lg:hidden h-6"></div>
     </>
   );
 });
