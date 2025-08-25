@@ -36,6 +36,7 @@ export const useAnalytics = () => {
   return context;
 };
 
+<<<<<<< HEAD
 interface AnalyticsProviderProps {
   children: ReactNode;
 }
@@ -169,6 +170,21 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error flushing events:`, error);
     }
   };
+=======
+  // Track page views automatically
+  useEffect(() => {
+    const pageTitle = document.title;
+    const pagePath = location.pathname + location.search;
+    
+    console.log('📊 Analytics: Tracking page view', {
+      path: pagePath,
+      title: pageTitle,
+      sessionId: analytics.sessionId
+    });
+    
+    analytics.trackPageView(pagePath);
+  }, [location, analytics]);
+>>>>>>> 17bf3398d26e925e6310190abfe5fd88df611f3b
 
   const contextValue: AnalyticsContextType = {
     uniqueUserId,

@@ -12,6 +12,7 @@ import { CustomerSegmentChart } from './CustomerSegmentChart';
 import { TrafficSourceChart } from './TrafficSourceChart';
 import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
+<<<<<<< HEAD
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
 import { EnterpriseDataViewer } from './EnterpriseDataViewer';
 import { ClientAnalysisTable } from './ClientAnalysisTable';
@@ -19,6 +20,8 @@ import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
 import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
 import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
 import { RealTimeClientDashboard } from './RealTimeClientDashboard';
+=======
+>>>>>>> 17bf3398d26e925e6310190abfe5fd88df611f3b
 
 interface DateRange {
   startDate: Date;
@@ -128,9 +131,12 @@ export const AnalyticsDashboard = () => {
     <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Painel de Configuração */}
       <AnalyticsConfigPanel />
+<<<<<<< HEAD
       
       {/* Painel de Configuração Enterprise */}
       <EnterpriseConfigPanel />
+=======
+>>>>>>> 17bf3398d26e925e6310190abfe5fd88df611f3b
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -294,6 +300,7 @@ export const AnalyticsDashboard = () => {
 
       {/* Abas principais */}
       <Tabs defaultValue="overview" className="w-full">
+<<<<<<< HEAD
         <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="products">Produtos</TabsTrigger>
@@ -303,6 +310,14 @@ export const AnalyticsDashboard = () => {
           <TabsTrigger value="traffic">Tráfego</TabsTrigger>
           <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
           <TabsTrigger value="enterprise">Enterprise</TabsTrigger>
+=======
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="products">Produtos</TabsTrigger>
+          <TabsTrigger value="customers">Clientes</TabsTrigger>
+          <TabsTrigger value="traffic">Tráfego</TabsTrigger>
+          <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
+>>>>>>> 17bf3398d26e925e6310190abfe5fd88df611f3b
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -403,6 +418,7 @@ export const AnalyticsDashboard = () => {
             loading={loading}
             dateRange={dateRange}
           />
+<<<<<<< HEAD
         </TabsContent>
 
         <TabsContent value="client-analysis" className="space-y-6">
@@ -415,6 +431,8 @@ export const AnalyticsDashboard = () => {
 
         <TabsContent value="enterprise" className="space-y-6">
           <EnterpriseDataViewer />
+=======
+>>>>>>> 17bf3398d26e925e6310190abfe5fd88df611f3b
         </TabsContent>
       </Tabs>
     </div>

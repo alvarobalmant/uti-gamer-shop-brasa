@@ -26,7 +26,11 @@ import { EmailManager } from './EmailManager/EmailManager';
 import OrderVerifier from './OrderVerifier';
 // Admin login system removed
 import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
+<<<<<<< HEAD
 import { AnalyticsDashboard } from './Analytics/AnalyticsDashboard';
+=======
+import { EnterpriseAnalyticsDashboard } from './Analytics/EnterpriseAnalyticsDashboard';
+>>>>>>> 17bf3398d26e925e6310190abfe5fd88df611f3b
 import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor, ClipboardCheck, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -236,7 +240,11 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="analytics" className="mt-0">
+<<<<<<< HEAD
                 <AnalyticsDashboard />
+=======
+                <EnterpriseAnalyticsDashboard />
+>>>>>>> 17bf3398d26e925e6310190abfe5fd88df611f3b
               </TabsContent>
 
               <TabsContent value="uti_coins" className="mt-0">
