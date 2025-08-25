@@ -6,10 +6,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-<<<<<<< HEAD
 import { useEnterpriseAnalyticsConfig } from '@/hooks/useEnterpriseAnalyticsConfig';
-=======
->>>>>>> 17bf3398d26e925e6310190abfe5fd88df611f3b
 
 // Tipos para tracking granular
 interface TrackingEvent {
@@ -79,10 +76,7 @@ const getBrowserInfo = () => {
 
 export const useEnterpriseTracking = () => {
   const { user } = useAuth();
-<<<<<<< HEAD
   const { config, isEnterpriseEnabled, isDebugMode } = useEnterpriseAnalyticsConfig();
-=======
->>>>>>> 17bf3398d26e925e6310190abfe5fd88df611f3b
   
   // Refs para tracking contínuo
   const sessionIdRef = useRef<string>(generateSessionId());
@@ -90,7 +84,6 @@ export const useEnterpriseTracking = () => {
   const mousePositionsRef = useRef<MousePosition[]>([]);
   const lastScrollRef = useRef({ y: 0, timestamp: 0 });
   const sequenceNumberRef = useRef(0);
-<<<<<<< HEAD
   const isTrackingRef = useRef(isEnterpriseEnabled);
   
   // Atualizar tracking quando configuração mudar
@@ -100,9 +93,6 @@ export const useEnterpriseTracking = () => {
       console.log('🚀 Enterprise Tracking status:', isEnterpriseEnabled ? 'ENABLED' : 'DISABLED');
     }
   }, [isEnterpriseEnabled, isDebugMode]);
-=======
-  const isTrackingRef = useRef(true);
->>>>>>> 17bf3398d26e925e6310190abfe5fd88df611f3b
   
   // Heartbeat para atividade em tempo real
   const heartbeatRef = useRef<NodeJS.Timeout>();
