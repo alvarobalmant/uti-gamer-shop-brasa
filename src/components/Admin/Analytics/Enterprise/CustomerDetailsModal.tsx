@@ -29,7 +29,7 @@ import {
   Coins,
   Navigation,
   ScrollText,
-  CursorArrowRays,
+  Move,
   Play,
   Pause,
   RotateCcw
@@ -146,7 +146,7 @@ export const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({
 
       // Calcular UTI coins ganhos nesta sessão
       const utiCoinsEvents = events?.filter(e => e.event_type === 'uti_coins_earned') || [];
-      const totalUtiCoins = utiCoinsEvents.reduce((sum, event) => sum + (event.event_data?.amount || 0), 0);
+      const totalUtiCoins = utiCoinsEvents.reduce((sum, event) => sum + ((event.event_data as any)?.amount || 0), 0);
 
       // Montar dados completos
       const completeSessionData: SessionDetails = {
@@ -157,8 +157,15 @@ export const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({
         duration_seconds: session.duration_seconds,
         device_type: session.device_type,
         browser: session.browser,
-        page_views: journey?.journey_steps || [],
-        interactions: interactions || [],
+        page_views: (journey as any)?.journey_steps || [],
+        interactions: interactions?.map(interaction => ({
+          interaction_type: interaction.interaction_type || 'click',
+          element_selector: interaction.element_selector || '',
+          coordinates: (interaction.coordinates as any) || { x: 0, y: 0 },
+          timestamp: interaction.timestamp_precise || interaction.created_at,
+          page_url: interaction.page_url || '',
+          element_text: (interaction.element_attributes as any)?.text || ''
+        })) || [],
         products_viewed: events?.filter(e => e.event_type === 'product_view') || [],
         cart_events: events?.filter(e => ['add_to_cart', 'remove_from_cart'].includes(e.event_type)) || [],
         purchases: events?.filter(e => e.event_type === 'purchase') || [],
@@ -206,7 +213,7 @@ export const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({
     switch (type) {
       case 'click': return <MousePointer className="h-3 w-3" />;
       case 'scroll': return <ScrollText className="h-3 w-3" />;
-      case 'hover': return <CursorArrowRays className="h-3 w-3" />;
+      case 'hover': return <Move className="h-3 w-3" />;
       default: return <Activity className="h-3 w-3" />;
     }
   };
