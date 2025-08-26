@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
+import MobileSearchBar from '@/components/Header/MobileSearchBar';
 import { BottomNavigationBar } from '@/components/Mobile/BottomNavigationBar';
 import { useCart } from '@/contexts/CartContext';
 import ProductSkeleton from '@/components/ProductSkeleton';
@@ -27,6 +28,7 @@ const Index = React.memo(() => {
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const {
     products,
@@ -86,6 +88,10 @@ const Index = React.memo(() => {
   const handleCartOpen = useCallback(() => setShowCart(true), []);
   const handleAuthOpen = useCallback(() => setShowAuthModal(true), []);
   const handleAuthClose = useCallback(() => setShowAuthModal(false), []);
+  
+  const toggleMobileSearch = useCallback(() => {
+    setIsMobileSearchOpen(!isMobileSearchOpen);
+  }, [isMobileSearchOpen]);
 
   // Memoizar filtro de layout items visíveis
   const visibleLayoutItems = useMemo(() => 
@@ -211,7 +217,7 @@ const Index = React.memo(() => {
 
       {/* Bottom Navigation Bar - Mobile Only */}
       <BottomNavigationBar 
-        onSearchOpen={() => {/* TODO: implementar busca mobile */}}
+        onSearchOpen={toggleMobileSearch}
         onCartOpen={() => setShowCart(true)}
         onAuthOpen={() => setShowAuthModal(true)}
       />
@@ -222,6 +228,8 @@ const Index = React.memo(() => {
       />
 
       <AuthModal isOpen={showAuthModal} onClose={handleAuthClose} />
+      
+      <MobileSearchBar isOpen={isMobileSearchOpen} onClose={toggleMobileSearch} />
     </div>
   );
 });

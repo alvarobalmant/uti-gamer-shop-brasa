@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActionsEnhanced from './HeaderActionsEnhanced';
 import MobileSearchBar from './MobileSearchBar';
-import { UTICoinsMobileWidget } from '@/components/Mobile/UTICoinsMobileWidget';
+
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -136,23 +136,7 @@ const MainHeader = ({
 
           {/* Right side: UTI Coins Mobile + Header Actions + Mobile/Tablet Search Toggle */}
           <div className="flex items-center justify-end flex-shrink-0 gap-1"> 
-            {/* UTI Coins Mobile Widget */}
-            <UTICoinsMobileWidget className="mr-1" />
             
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "lg:hidden p-2 h-10 w-10",
-                // 🎯 TABLET: Botão de busca visível em tablets também
-                "hover:bg-accent hover:text-accent-foreground"
-              )}
-              onClick={toggleMobileSearch}
-              aria-label="Abrir busca"
-            >
-              <Search className="h-6 w-6" />
-            </Button>
-
             <HeaderActionsEnhanced
               onCartOpen={onCartOpen}
               onAuthOpen={onAuthOpen}

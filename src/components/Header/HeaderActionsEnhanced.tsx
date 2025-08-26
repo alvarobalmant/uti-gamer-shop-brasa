@@ -116,8 +116,8 @@ const HeaderActionsEnhanced = ({
         </Button>
       )}
 
-      {/* Daily Code Widget - Only for logged users */}
-      {user && <DailyCodeWidget className="hidden md:block" />}
+      {/* Daily Code Widget - For all logged users */}
+      {user && <DailyCodeWidget />}
 
       {/* Global Shopping Cart Icon - Always visible */}
       <GlobalCartIcon onCartOpen={onCartOpen} /> 

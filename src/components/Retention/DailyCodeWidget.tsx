@@ -185,10 +185,11 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
   const openModal = () => {
     if (widgetRef.current) {
       const rect = widgetRef.current.getBoundingClientRect();
+      const isMobile = window.innerWidth < 640;
       
       setModalPosition({
         top: rect.bottom + 8,
-        left: rect.left + (rect.width / 2) - 200
+        left: isMobile ? 0 : rect.left + (rect.width / 2) - 200
       });
     }
     setShowPopover(true);
@@ -428,20 +429,20 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
 
   return (
     <UTICoinsConditional>
-      <div className={`relative ${className}`}>
+      <div className={`relative mr-2 sm:mr-0 ${className}`}>
         <button
           ref={widgetRef}
           onClick={openModal}
-          className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden"
+          className="flex items-center gap-2 sm:gap-2 px-3 sm:px-3 py-2 sm:py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden"
         >
-          <Coins className="w-4 h-4" />
+          <Coins className="w-4 h-4 sm:w-4 sm:h-4" />
           <div className="relative">
             <motion.span 
               key={coins.balance}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.3 }}
-              className="font-semibold"
+              className="font-semibold text-sm sm:text-sm"
             >
               {coins.balance.toLocaleString()}
             </motion.span>
@@ -494,10 +495,10 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                     duration: 0.3, 
                     ease: "easeInOut"
                   }}
-                  className="fixed bg-white rounded-xl shadow-2xl w-96 max-h-[80vh] overflow-y-auto z-[10000]"
+                  className="fixed bg-white rounded-xl shadow-2xl w-[calc(100vw-2rem)] sm:w-96 max-h-[80vh] overflow-y-auto z-[10000]"
                   style={{
                     top: `${Math.max(8, Math.min(modalPosition.top, window.innerHeight - 400))}px`,
-                    left: `${Math.max(16, Math.min(modalPosition.left, window.innerWidth - 400 - 16))}px`
+                    left: window.innerWidth < 640 ? '1rem' : `${Math.max(16, Math.min(modalPosition.left, window.innerWidth - 400 - 16))}px`
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -579,8 +580,8 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
 
                     {/* Sistema melhorado de resgate */}
                     <div className="space-y-3">
-                      {!hasClaimedToday() ? (
-                        /* Ainda não resgatou hoje - Mostrar botão de resgatar */
+                      {currentCode?.can_claim ? (
+                        /* Pode resgatar - Mostrar botão de resgatar */
                         <div className="text-center space-y-4">
                           <div className="flex items-center justify-center gap-2 text-emerald-600">
                             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -629,12 +630,12 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                           )}
                         </div>
                       ) : (
-                        /* Já resgatou hoje - Mostrar timer */
+                        /* Não pode resgatar - Mostrar timer */
                         <div className="text-center space-y-4">
                           <div className="flex items-center justify-center gap-2 text-gray-500">
                             <Clock className="w-4 h-4" />
                             <span className="text-sm font-medium">
-                              Recompensa já resgatada hoje
+                              Recompensa não disponível
                             </span>
                           </div>
                           

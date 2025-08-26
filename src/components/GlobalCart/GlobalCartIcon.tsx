@@ -22,7 +22,8 @@ const GlobalCartIcon: React.FC<GlobalCartIconProps> = ({ onCartOpen }) => {
       size="sm"
       className={cn(
         "relative flex items-center text-xs font-medium text-foreground px-2 py-1",
-        "md:hover:text-primary md:hover:bg-secondary" // Apply hover only on medium screens and up
+        "md:hover:text-primary md:hover:bg-secondary", // Apply hover only on medium screens and up
+        "hidden lg:flex" // Hide on mobile, show on desktop
       )}
     >
       <ShoppingCart className="w-4 h-4 mr-1" />
