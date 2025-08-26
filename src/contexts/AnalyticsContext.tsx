@@ -5,7 +5,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAnalyticsTracking } from '@/hooks/useAnalyticsTracking';
-// import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
+import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
 
 interface AnalyticsContextType {
   // IDs únicos
@@ -13,11 +13,7 @@ interface AnalyticsContextType {
   sessionId: string;
   
   // Funções de tracking
-  trackEvent: (eventType: string, data?: any) => void;
-  trackCheckoutStart: () => void;
-  trackWhatsAppClick: () => void;
-  trackCheckoutAbandon: () => void;
-  trackRemoveFromCart: (productId: string) => void;
+  trackEvent: (eventType: string, data?: any, element?: HTMLElement, coordinates?: { x: number; y: number }) => void;
   trackPageView: (url?: string, title?: string) => void;
   trackProductView: (productId: string, productData?: any) => void;
   trackAddToCart: (productId: string, quantity: number, price: number) => void;
@@ -46,17 +42,26 @@ interface AnalyticsProviderProps {
 
 export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }) => {
   // Sistema básico
-  const analytics = useAnalyticsTracking();
-  const basicTrackEvent = analytics.trackEvent;
-  const basicTrackPageView = analytics.trackPageView;
-  const basicTrackProductView = analytics.trackProductView;
-  const basicTrackAddToCart = analytics.trackAddToCart;
+  const {
+    trackEvent: basicTrackEvent,
+    trackPageView: basicTrackPageView,
+    trackProductView: basicTrackProductView,
+    trackAddToCart: basicTrackAddToCart,
+    trackSearch: basicTrackSearch,
+    flushEvents: basicFlushEvents
+  } = useAnalyticsTracking();
 
-  // Simplified system
-  const uniqueUserId = 'simplified-user';
-  const sessionId = 'simplified-session';
-  const isTracking = true;
-  const updateRealtimeActivity = () => {};
+  // Sistema enterprise multi-usuário
+  const {
+    uniqueUserId,
+    sessionId,
+    isTracking,
+    trackPageView: enterpriseTrackPageView,
+    trackProductView: enterpriseTrackProductView,
+    trackAddToCart: enterpriseTrackAddToCart,
+    trackPurchase: enterpriseTrackPurchase,
+    updateRealtimeActivity
+  } = useEnterpriseTrackingMultiUser();
 
   console.log('📊 [ANALYTICS CONTEXT] Initialized for user:', uniqueUserId);
 
@@ -66,7 +71,14 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       console.log(`🎯 [ANALYTICS] User ${uniqueUserId}: Event ${eventType}`, data);
       
       // Executar ambos os sistemas em paralelo
-      await basicTrackEvent(eventType);
+      await Promise.all([
+        basicTrackEvent(eventType, data, element, coordinates),
+        // Enterprise tracking específico
+        eventType === 'page_view' && enterpriseTrackPageView(data?.url),
+        eventType === 'product_view' && enterpriseTrackProductView(data?.productId, data),
+        eventType === 'add_to_cart' && enterpriseTrackAddToCart(data?.productId, data?.quantity || 1, data?.price),
+        eventType === 'purchase' && enterpriseTrackPurchase(data)
+      ]);
       
       console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Event tracked: ${eventType}`);
     } catch (error) {
@@ -80,7 +92,10 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       const pageUrl = url || window.location.href;
       console.log(`📄 [ANALYTICS] User ${uniqueUserId}: Page view: ${pageUrl}`);
       
-      await basicTrackPageView(pageUrl);
+      await Promise.all([
+        basicTrackPageView(url, title),
+        enterpriseTrackPageView(url)
+      ]);
       
       console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Page view tracked: ${pageUrl}`);
     } catch (error) {
@@ -93,7 +108,10 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     try {
       console.log(`🛍️ [ANALYTICS] User ${uniqueUserId}: Product view: ${productId}`);
       
-      await basicTrackProductView(productId, productData);
+      await Promise.all([
+        basicTrackProductView(productId, productData),
+        enterpriseTrackProductView(productId, productData)
+      ]);
       
       console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Product view tracked: ${productId}`);
     } catch (error) {
@@ -106,7 +124,10 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     try {
       console.log(`🛒 [ANALYTICS] User ${uniqueUserId}: Add to cart: ${productId} x${quantity}`);
       
-      await basicTrackAddToCart(productId, quantity, price);
+      await Promise.all([
+        basicTrackAddToCart(productId, quantity, price),
+        enterpriseTrackAddToCart(productId, quantity, price)
+      ]);
       
       console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Add to cart tracked: ${productId}`);
     } catch (error) {
@@ -114,23 +135,39 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     }
   };
 
-  const trackSearch = async (query: string) => {
-    console.log(`🔍 [ANALYTICS] Search: ${query}`);
+  // Função para rastrear busca
+  const trackSearch = async (query: string, filters?: any, results?: any) => {
+    try {
+      console.log(`🔍 [ANALYTICS] User ${uniqueUserId}: Search: ${query}`);
+      await basicTrackSearch(query, filters, results);
+      console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Search tracked: ${query}`);
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking search:`, error);
+    }
   };
 
   // Função para rastrear compra
   const trackPurchase = async (orderData: any) => {
     try {
       console.log(`💳 [ANALYTICS] User ${uniqueUserId}: Purchase:`, orderData);
-      // Simplified purchase tracking
+      await enterpriseTrackPurchase(orderData);
       console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Purchase tracked`);
     } catch (error) {
       console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking purchase:`, error);
     }
   };
 
+  // Função para flush de eventos
   const flushEvents = async () => {
-    console.log(`🔄 [ANALYTICS] Events flushed`);
+    try {
+      await Promise.all([
+        basicFlushEvents(),
+        updateRealtimeActivity()
+      ]);
+      console.log(`🔄 [ANALYTICS] User ${uniqueUserId}: Events flushed`);
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error flushing events:`, error);
+    }
   };
 
   const contextValue: AnalyticsContextType = {
@@ -144,11 +181,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     trackPurchase,
     flushEvents,
     isTracking,
-    updateRealtimeActivity,
-    trackCheckoutStart: () => {},
-    trackWhatsAppClick: () => {},
-    trackCheckoutAbandon: () => {},
-    trackRemoveFromCart: () => {}
+    updateRealtimeActivity
   };
 
   return (

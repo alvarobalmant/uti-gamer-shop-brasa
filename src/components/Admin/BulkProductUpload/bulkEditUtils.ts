@@ -89,42 +89,6 @@ export const validateBulkEditData = (products: ImportedProduct[]): ValidationErr
         });
       }
     }
-    
-    // Validar formato de tags se fornecidas
-    if (product.tags?.trim()) {
-      const tagNames = product.tags.split(';').map(name => name.trim()).filter(name => name.length > 0);
-      
-      if (tagNames.length === 0) {
-        errors.push({
-          row,
-          field: 'tags',
-          message: 'Tags fornecidas mas formato inválido (use ponto e vírgula para separar)',
-          severity: 'warning'
-        });
-      } else {
-        // Verificar se alguma tag está muito longa ou tem caracteres inválidos
-        tagNames.forEach(tagName => {
-          if (tagName.length > 50) {
-            errors.push({
-              row,
-              field: 'tags',
-              message: `Tag muito longa: "${tagName}" (máximo 50 caracteres)`,
-              severity: 'warning'
-            });
-          }
-          
-          // Verificar caracteres especiais problemáticos
-          if (/[<>{}[\]\\\/]/.test(tagName)) {
-            errors.push({
-              row,
-              field: 'tags',
-              message: `Tag com caracteres inválidos: "${tagName}"`,
-              severity: 'warning'
-            });
-          }
-        });
-      }
-    }
   });
   
   return errors;
@@ -341,74 +305,43 @@ const updateProductTags = async (productId: string, tagsString: string) => {
   if (tagNames.length === 0) return;
   
   try {
-    console.log(`[updateProductTags] Atualizando tags para produto ${productId}: ${tagNames.join(', ')}`);
-    
-    // Remover tags existentes do produto
-    const { error: deleteError } = await supabase
+    // Remover tags existentes
+    await supabase
       .from('product_tags')
       .delete()
       .eq('product_id', productId);
     
-    if (deleteError) {
-      console.error('[updateProductTags] Erro ao remover tags existentes:', deleteError);
-    }
-    
-    // Processar cada tag
+    // Buscar ou criar tags
     for (const tagName of tagNames) {
-      try {
-        // Buscar tag existente (case insensitive)
-        let { data: existingTag, error: findError } = await supabase
+      // Buscar tag existente
+      let { data: tag } = await supabase
+        .from('tags')
+        .select('id')
+        .eq('name', tagName)
+        .single();
+      
+      // Criar tag se não existir
+      if (!tag) {
+        const { data: newTag } = await supabase
           .from('tags')
-          .select('id, name')
-          .ilike('name', tagName)
+          .insert({ name: tagName })
+          .select('id')
           .single();
-        
-        let tagId = existingTag?.id;
-        
-        // Criar tag se não existir
-        if (!existingTag) {
-          console.log(`[updateProductTags] Criando nova tag: ${tagName}`);
-          const { data: newTag, error: createError } = await supabase
-            .from('tags')
-            .insert({ 
-              name: tagName.trim(),
-              created_at: new Date().toISOString()
-            })
-            .select('id')
-            .single();
-          
-          if (createError) {
-            console.error(`[updateProductTags] Erro ao criar tag ${tagName}:`, createError);
-            continue;
-          }
-          
-          tagId = newTag?.id;
-        }
-        
-        // Associar tag ao produto se conseguiu obter o ID
-        if (tagId) {
-          const { error: linkError } = await supabase
-            .from('product_tags')
-            .insert({
-              product_id: productId,
-              tag_id: tagId
-            });
-          
-          if (linkError) {
-            console.error(`[updateProductTags] Erro ao associar tag ${tagName} ao produto:`, linkError);
-          } else {
-            console.log(`[updateProductTags] ✅ Tag ${tagName} associada com sucesso`);
-          }
-        }
-      } catch (tagError) {
-        console.error(`[updateProductTags] Erro ao processar tag ${tagName}:`, tagError);
+        tag = newTag;
+      }
+      
+      if (tag) {
+        // Associar tag ao produto
+        await supabase
+          .from('product_tags')
+          .insert({
+            product_id: productId,
+            tag_id: tag.id
+          });
       }
     }
-    
-    console.log(`[updateProductTags] ✅ Processamento de tags concluído para produto ${productId}`);
-    
   } catch (error) {
-    console.error('[updateProductTags] Erro geral ao atualizar tags:', error);
+    console.error('Erro ao atualizar tags:', error);
   }
 };
 
