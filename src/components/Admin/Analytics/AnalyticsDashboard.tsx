@@ -13,12 +13,6 @@ import { TrafficSourceChart } from './TrafficSourceChart';
 import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
-import { EnterpriseDataViewer } from './EnterpriseDataViewer';
-import { ClientAnalysisTable } from './ClientAnalysisTable';
-import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
-import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
-import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
-import { RealTimeClientDashboard } from './RealTimeClientDashboard';
 
 interface DateRange {
   startDate: Date;
@@ -406,15 +400,51 @@ export const AnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="client-analysis" className="space-y-6">
-          <ClientAnalysisTableFixed />
+          <Card>
+            <CardHeader>
+              <CardTitle>Análise de Clientes</CardTitle>
+              <CardDescription>
+                Funcionalidade em desenvolvimento
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Esta seção será implementada em breve com análises de comportamento de clientes.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="realtime" className="space-y-6">
-          <RealTimeClientDashboard />
+          <Card>
+            <CardHeader>
+              <CardTitle>Tempo Real</CardTitle>
+              <CardDescription>
+                Funcionalidade em desenvolvimento
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Esta seção será implementada em breve com dados em tempo real.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="enterprise" className="space-y-6">
-          <EnterpriseDataViewer />
+          <Card>
+            <CardHeader>
+              <CardTitle>Enterprise Analytics</CardTitle>
+              <CardDescription>
+                Funcionalidade em desenvolvimento
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Esta seção será implementada em breve com análises avançadas.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
