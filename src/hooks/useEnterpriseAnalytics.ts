@@ -1,475 +1,339 @@
+/**
+ * HOOK ENTERPRISE ANALYTICS - Sistema avançado de analytics
+ * Utiliza dados granulares do novo sistema de tracking
+ */
+
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
-interface EnterpriseAnalyticsData {
-  userJourney?: any[];
-  abandonmentAnalysis?: any[];
-  conversionRoutes?: any[];
-  heatmapData?: any[];
-  behavioralSegments?: any[];
-  conversionScore?: any[];
-  frictionPoints?: any[];
-  realTimeAlerts?: any[];
-  churnPrediction?: any[];
-  performanceCorrelation?: any[];
-  productIntelligence?: any[];
-  realtimeDashboard?: any[];
+export interface EnterpriseSessionData {
+  session_id: string;
+  user_id?: string;
+  started_at: string;
+  ended_at?: string;
+  duration_seconds: number;
+  device_type: string;
+  browser: string;
+  pages_visited: Array<{
+    url: string;
+    title: string;
+    entered_at: string;
+    exited_at?: string;
+    time_on_page: number;
+    scroll_percentage: number;
+    clicks: number;
+  }>;
+  products_viewed: Array<{
+    product_id: string;
+    product_name: string;
+    timestamp: string;
+    view_duration: number;
+  }>;
+  cart_events: Array<{
+    action: 'add' | 'remove';
+    product_id: string;
+    timestamp: string;
+  }>;
+  purchases: Array<{
+    order_id: string;
+    value: number;
+    timestamp: string;
+  }>;
+  conversion_score: number;
+  churn_risk: number;
+}
+
+export interface EnterpriseMetrics {
+  real_time_users: number;
+  conversion_rate_today: number;
+  avg_session_duration: number;
+  bounce_rate: number;
+  cart_abandonment_rate: number;
+  revenue_today: number;
+  top_pages: Array<{
+    url: string;
+    title: string;
+    views: number;
+    avg_time: number;
+    conversion_rate: number;
+  }>;
+  user_flows: Array<{
+    path: string;
+    frequency: number;
+    conversion_rate: number;
+    revenue: number;
+  }>;
+  friction_points: Array<{
+    page: string;
+    issue: string;
+    severity: number;
+    affected_sessions: number;
+  }>;
+}
+
+export interface CustomerProfile {
+  user_id: string;
+  email?: string;
+  first_seen: string;
+  last_seen: string;
+  total_sessions: number;
+  total_time_spent: number;
+  lifetime_value: number;
+  behavior_segment: string;
+  favorite_products: Array<{
+    product_id: string;
+    product_name: string;
+    views: number;
+    purchases: number;
+  }>;
+  journey_timeline: Array<{
+    timestamp: string;
+    action: string;
+    details: any;
+  }>;
+  conversion_funnel: {
+    awareness: number;
+    consideration: number;
+    decision: number;
+    purchase: number;
+  };
 }
 
 export const useEnterpriseAnalytics = () => {
+  const { isAdmin } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<EnterpriseAnalyticsData>({});
 
-  // 1. Replay completo de usuário
-  const getUserCompleteJourney = useCallback(async (sessionId: string) => {
+  // Métricas em tempo real
+  const getRealTimeMetrics = useCallback(async (): Promise<EnterpriseMetrics | null> => {
+    if (!isAdmin) return null;
+    
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      const { data: journeyData, error } = await supabase.rpc('get_user_complete_journey', {
+      // Buscar alertas em tempo real
+      const { data: realTimeData, error: rtError } = await supabase.rpc('get_real_time_alerts');
+      if (rtError) throw rtError;
+
+      // Buscar análise de fricção
+      const { data: frictionData, error: frictionError } = await supabase.rpc('get_friction_points_analysis');
+      if (frictionError) throw frictionError;
+
+      // Buscar rotas de conversão
+      const { data: routesData, error: routesError } = await supabase.rpc('get_conversion_routes_analysis');
+      if (routesError) throw routesError;
+
+      const realTimeDataParsed = typeof realTimeData === 'string' ? JSON.parse(realTimeData) : realTimeData;
+      const metrics = realTimeDataParsed?.current_metrics || {};
+      const frictionDataParsed = typeof frictionData === 'string' ? JSON.parse(frictionData) : frictionData;
+      const routesDataParsed = Array.isArray(routesData) ? routesData : (typeof routesData === 'string' ? JSON.parse(routesData) : []);
+      
+      return {
+        real_time_users: metrics.active_users || 0,
+        conversion_rate_today: metrics.conversion_rate_24h || 0,
+        avg_session_duration: 0, // Será calculado
+        bounce_rate: 0, // Será calculado
+        cart_abandonment_rate: 0, // Será calculado
+        revenue_today: 0, // Será calculado
+        top_pages: [], // Será preenchido
+        user_flows: routesDataParsed || [],
+        friction_points: frictionDataParsed?.friction_points || []
+      };
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao buscar métricas em tempo real');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [isAdmin]);
+
+  // Perfil detalhado do cliente
+  const getCustomerProfile = useCallback(async (sessionId: string): Promise<CustomerProfile | null> => {
+    if (!isAdmin) return null;
+    
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase.rpc('get_user_complete_journey', {
+        p_session_id: sessionId,
+        p_include_interactions: true
+      });
+
+      if (error) throw error;
+      if (!data) return null;
+
+      const dataParsed = typeof data === 'string' ? JSON.parse(data) : data;
+      const session = dataParsed.session_summary || {};
+      const journey = dataParsed.journey_steps || [];
+      const interactions = dataParsed.interactions || [];
+
+      // Buscar score de conversão preditivo
+      const { data: conversionData } = await supabase.rpc('get_predictive_conversion_score', {
         p_session_id: sessionId
       });
 
-      if (error) throw error;
+      // Buscar histórico de sessões do usuário
+      let userSessions = [];
+      if (session.user_id) {
+        const { data: sessionsData } = await supabase
+          .from('user_sessions')
+          .select('*')
+          .eq('user_id', session.user_id)
+          .order('started_at', { ascending: false });
+        userSessions = sessionsData || [];
+      }
 
-      setData(prev => ({ ...prev, userJourney: journeyData }));
-      return journeyData;
+      // Processar produtos favoritos
+      const productViews = new Map();
+      const productPurchases = new Map();
+
+      journey.forEach((step: any) => {
+        if (step.action_type === 'product_view' && step.action_details?.product_id) {
+          const productId = step.action_details.product_id;
+          productViews.set(productId, (productViews.get(productId) || 0) + 1);
+        }
+        if (step.action_type === 'purchase' && step.action_details?.items) {
+          step.action_details.items.forEach((item: any) => {
+            const productId = item.product_id;
+            productPurchases.set(productId, (productPurchases.get(productId) || 0) + item.quantity);
+          });
+        }
+      });
+
+      const favoriteProducts = Array.from(productViews.entries()).map(([productId, views]) => ({
+        product_id: productId,
+        product_name: 'Produto', // Buscar nome real se necessário
+        views: views as number,
+        purchases: productPurchases.get(productId) || 0
+      }));
+
+      // Timeline da jornada
+      const timeline = journey.map((step: any) => ({
+        timestamp: step.step_start_time,
+        action: step.action_type,
+        details: {
+          page: step.page_title,
+          url: step.page_url,
+          time_spent: step.time_spent_seconds,
+          ...step.action_details
+        }
+      }));
+
+      // Funil de conversão
+      const funnelStages = { awareness: 0, consideration: 0, decision: 0, purchase: 0 };
+      journey.forEach((step: any) => {
+        if (step.funnel_stage) {
+          funnelStages[step.funnel_stage as keyof typeof funnelStages]++;
+        }
+      });
+
+      return {
+        user_id: session.user_id || sessionId,
+        email: undefined, // Seria necessário buscar na tabela de profiles
+        first_seen: session.started_at,
+        last_seen: session.ended_at || session.started_at,
+        total_sessions: userSessions.length,
+        total_time_spent: userSessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0),
+        lifetime_value: userSessions.reduce((sum, s) => sum + (s.purchase_value || 0), 0),
+        behavior_segment: 'Regular', // Implementar segmentação
+        favorite_products: favoriteProducts,
+        journey_timeline: timeline,
+        conversion_funnel: funnelStages
+      };
     } catch (err) {
-      console.error('Erro ao buscar jornada do usuário:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Erro ao buscar perfil do cliente');
       return null;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAdmin]);
 
-  // 2. Análise de abandono por setor
-  const getAbandonmentAnalysisBySector = useCallback(async (days: number = 30) => {
+  // Análise comportamental avançada
+  const getBehavioralSegmentation = useCallback(async (startDate: Date, endDate: Date) => {
+    if (!isAdmin) return null;
+    
     try {
-      setLoading(true);
-      const { data: abandonmentData, error } = await supabase.rpc('get_abandonment_analysis_by_sector', {
-        p_days_back: days
+      const { data, error } = await supabase.rpc('get_behavioral_segmentation', {
+        p_start_date: startDate.toISOString().split('T')[0],
+        p_end_date: endDate.toISOString().split('T')[0]
       });
 
       if (error) throw error;
-
-      setData(prev => ({ ...prev, abandonmentAnalysis: abandonmentData }));
-      return abandonmentData;
+      return data;
     } catch (err) {
-      console.error('Erro ao buscar análise de abandono:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Erro ao buscar segmentação comportamental');
       return null;
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [isAdmin]);
 
-  // 3. Análise de rotas de conversão
-  const getConversionRoutesAnalysis = useCallback(async (days: number = 30) => {
+  // Análise de abandono por setor
+  const getAbandonmentAnalysis = useCallback(async (startDate: Date, endDate: Date) => {
+    if (!isAdmin) return null;
+    
     try {
-      setLoading(true);
-      const { data: routesData, error } = await supabase.rpc('get_conversion_routes_analysis', {
-        p_days_back: days
+      const { data, error } = await supabase.rpc('get_abandonment_analysis_by_sector', {
+        p_start_date: startDate.toISOString().split('T')[0],
+        p_end_date: endDate.toISOString().split('T')[0]
       });
 
       if (error) throw error;
-
-      setData(prev => ({ ...prev, conversionRoutes: routesData }));
-      return routesData;
+      return data;
     } catch (err) {
-      console.error('Erro ao buscar rotas de conversão:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Erro ao buscar análise de abandono');
       return null;
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [isAdmin]);
 
-  // 4. Dados de heatmap enterprise
-  const getHeatmapEnterpriseData = useCallback(async (pageUrl: string, days: number = 7) => {
+  // Predição de churn
+  const getChurnPrediction = useCallback(async (userId?: string, riskThreshold = 0.7) => {
+    if (!isAdmin) return null;
+    
     try {
-      setLoading(true);
-      const { data: heatmapData, error } = await supabase.rpc('get_heatmap_enterprise_data', {
+      const { data, error } = await supabase.rpc('get_churn_prediction', {
+        p_user_id: userId || null,
+        p_risk_threshold: riskThreshold
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao buscar predição de churn');
+      return null;
+    }
+  }, [isAdmin]);
+
+  // Heatmap de dados enterprise
+  const getHeatmapData = useCallback(async (pageUrl: string, startDate: Date, endDate: Date, interactionType = 'click') => {
+    if (!isAdmin) return null;
+    
+    try {
+      const { data, error } = await supabase.rpc('get_heatmap_enterprise_data', {
         p_page_url: pageUrl,
-        p_days_back: days
+        p_start_date: startDate.toISOString().split('T')[0],
+        p_end_date: endDate.toISOString().split('T')[0],
+        p_interaction_type: interactionType
       });
 
       if (error) throw error;
-
-      setData(prev => ({ ...prev, heatmapData: heatmapData }));
-      return heatmapData;
+      return data;
     } catch (err) {
-      console.error('Erro ao buscar dados de heatmap:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Erro ao buscar dados de heatmap');
       return null;
-    } finally {
-      setLoading(false);
     }
-  }, []);
-
-  // 5. Segmentação comportamental
-  const getBehavioralSegmentation = useCallback(async (days: number = 30) => {
-    try {
-      setLoading(true);
-      const { data: segmentData, error } = await supabase.rpc('get_behavioral_segmentation', {
-        p_days_back: days
-      });
-
-      if (error) throw error;
-
-      setData(prev => ({ ...prev, behavioralSegments: segmentData }));
-      return segmentData;
-    } catch (err) {
-      console.error('Erro ao buscar segmentação comportamental:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // 6. Score preditivo de conversão
-  const getPredictiveConversionScore = useCallback(async (sessionId: string) => {
-    try {
-      setLoading(true);
-      const { data: scoreData, error } = await supabase.rpc('get_predictive_conversion_score', {
-        p_session_id: sessionId
-      });
-
-      if (error) throw error;
-
-      setData(prev => ({ ...prev, conversionScore: scoreData }));
-      return scoreData;
-    } catch (err) {
-      console.error('Erro ao buscar score de conversão:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // 7. Análise de pontos de fricção
-  const getFrictionPointsAnalysis = useCallback(async (days: number = 30) => {
-    try {
-      setLoading(true);
-      const { data: frictionData, error } = await supabase.rpc('get_friction_points_analysis', {
-        p_days_back: days
-      });
-
-      if (error) throw error;
-
-      setData(prev => ({ ...prev, frictionPoints: frictionData }));
-      return frictionData;
-    } catch (err) {
-      console.error('Erro ao buscar pontos de fricção:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // 8. Alertas em tempo real
-  const getRealTimeAlerts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { data: alertsData, error } = await supabase.rpc('get_real_time_alerts');
-
-      if (error) throw error;
-
-      setData(prev => ({ ...prev, realTimeAlerts: alertsData }));
-      return alertsData;
-    } catch (err) {
-      console.error('Erro ao buscar alertas em tempo real:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // 9. Predição de churn
-  const getChurnPrediction = useCallback(async (days: number = 30) => {
-    try {
-      setLoading(true);
-      const { data: churnData, error } = await supabase.rpc('get_churn_prediction', {
-        p_days_back: days
-      });
-
-      if (error) throw error;
-
-      setData(prev => ({ ...prev, churnPrediction: churnData }));
-      return churnData;
-    } catch (err) {
-      console.error('Erro ao buscar predição de churn:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // 10. Correlação de performance
-  const getPerformanceCorrelation = useCallback(async (days: number = 30) => {
-    try {
-      setLoading(true);
-      const { data: perfData, error } = await supabase.rpc('get_performance_correlation', {
-        p_days_back: days
-      });
-
-      if (error) throw error;
-
-      setData(prev => ({ ...prev, performanceCorrelation: perfData }));
-      return perfData;
-    } catch (err) {
-      console.error('Erro ao buscar correlação de performance:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // 11. Inteligência de produtos
-  const getProductIntelligence = useCallback(async (days: number = 30) => {
-    try {
-      setLoading(true);
-      const { data: productData, error } = await supabase.rpc('get_product_intelligence', {
-        p_days_back: days
-      });
-
-      if (error) throw error;
-
-      setData(prev => ({ ...prev, productIntelligence: productData }));
-      return productData;
-    } catch (err) {
-      console.error('Erro ao buscar inteligência de produtos:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // 12. Dashboard em tempo real
-  const getRealtimeDashboardData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { data: dashboardData, error } = await supabase.rpc('get_realtime_dashboard_data');
-
-      if (error) throw error;
-
-      setData(prev => ({ ...prev, realtimeDashboard: dashboardData }));
-      return dashboardData;
-    } catch (err) {
-      console.error('Erro ao buscar dados do dashboard em tempo real:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Função para buscar dados das views materializadas
-  const getMaterializedViewData = useCallback(async (viewName: string) => {
-    try {
-      setLoading(true);
-      const { data: viewData, error } = await supabase
-        .from(viewName)
-        .select('*')
-        .order('last_update', { ascending: false });
-
-      if (error) throw error;
-
-      return viewData;
-    } catch (err) {
-      console.error(`Erro ao buscar dados da view ${viewName}:`, err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Função para atualizar views materializadas
-  const refreshMaterializedViews = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { data: refreshResult, error } = await supabase.rpc('refresh_materialized_views');
-
-      if (error) throw error;
-
-      return refreshResult;
-    } catch (err) {
-      console.error('Erro ao atualizar views materializadas:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Função para buscar dados de categoria gaming
-  const getCategoryPerformance = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { data: categoryData, error } = await supabase
-        .from('mv_category_performance')
-        .select('*')
-        .order('conversion_rate', { ascending: false });
-
-      if (error) throw error;
-
-      return categoryData;
-    } catch (err) {
-      console.error('Erro ao buscar performance por categoria:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Função para buscar métricas horárias
-  const getHourlyMetrics = useCallback(async (hours: number = 24) => {
-    try {
-      setLoading(true);
-      const { data: hourlyData, error } = await supabase
-        .from('mv_hourly_metrics')
-        .select('*')
-        .gte('hour', new Date(Date.now() - hours * 60 * 60 * 1000).toISOString())
-        .order('hour', { ascending: true });
-
-      if (error) throw error;
-
-      return hourlyData;
-    } catch (err) {
-      console.error('Erro ao buscar métricas horárias:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Função para buscar dashboard em tempo real da view materializada
-  const getRealtimeDashboardView = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { data: dashboardData, error } = await supabase
-        .from('mv_realtime_dashboard')
-        .select('*')
-        .order('active_users', { ascending: false });
-
-      if (error) throw error;
-
-      return dashboardData;
-    } catch (err) {
-      console.error('Erro ao buscar dashboard em tempo real:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Função para executar limpeza de dados
-  const cleanupOldData = useCallback(async (retentionDays: number = 90) => {
-    try {
-      setLoading(true);
-      const { data: cleanupResult, error } = await supabase.rpc('cleanup_old_analytics_data', {
-        p_retention_days: retentionDays
-      });
-
-      if (error) throw error;
-
-      return cleanupResult;
-    } catch (err) {
-      console.error('Erro ao executar limpeza de dados:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Função para buscar alertas ativos
-  const getActiveAlerts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { data: alertsData, error } = await supabase
-        .from('system_alerts')
-        .select('*')
-        .eq('resolved', false)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      return alertsData;
-    } catch (err) {
-      console.error('Erro ao buscar alertas ativos:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Função para marcar alerta como resolvido
-  const resolveAlert = useCallback(async (alertId: string) => {
-    try {
-      setLoading(true);
-      const { data: resolveResult, error } = await supabase
-        .from('system_alerts')
-        .update({
-          resolved: true,
-          resolved_at: new Date().toISOString()
-        })
-        .eq('id', alertId);
-
-      if (error) throw error;
-
-      return resolveResult;
-    } catch (err) {
-      console.error('Erro ao resolver alerta:', err);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  }, [isAdmin]);
 
   return {
     loading,
     error,
-    data,
     setError,
-    
-    // Funções RPC principais
-    getUserCompleteJourney,
-    getAbandonmentAnalysisBySector,
-    getConversionRoutesAnalysis,
-    getHeatmapEnterpriseData,
+    getRealTimeMetrics,
+    getCustomerProfile,
     getBehavioralSegmentation,
-    getPredictiveConversionScore,
-    getFrictionPointsAnalysis,
-    getRealTimeAlerts,
+    getAbandonmentAnalysis,
     getChurnPrediction,
-    getPerformanceCorrelation,
-    getProductIntelligence,
-    getRealtimeDashboardData,
-    
-    // Views materializadas
-    getMaterializedViewData,
-    refreshMaterializedViews,
-    getCategoryPerformance,
-    getHourlyMetrics,
-    getRealtimeDashboardView,
-    
-    // Funções de manutenção
-    cleanupOldData,
-    getActiveAlerts,
-    resolveAlert
+    getHeatmapData
   };
 };
-
