@@ -12,6 +12,7 @@ import { Menu, Search } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
 import { CSSLogo } from '@/components/ui/CSSLogo';
+import { useUIState } from '@/contexts/UIStateContext';
 
 interface MainHeaderProps {
   onCartOpen: () => void;
@@ -27,7 +28,7 @@ const MainHeader = ({
   className
 }: MainHeaderProps) => {
   const location = useLocation();
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const { isMobileSearchOpen, setIsMobileSearchOpen } = useUIState();
   const { siteInfo, loading } = useSiteSettings();
   const { navigateToHome } = useGlobalNavigationLinks();
 

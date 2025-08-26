@@ -14,6 +14,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { ProductProviderOptimized } from '@/contexts/ProductContextOptimized';
 import { ProductProvider } from '@/contexts/ProductContext';
 import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
+import { UIStateProvider } from '@/contexts/UIStateContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
@@ -178,15 +179,16 @@ const App = () => {
         <AuthProvider>
           {/* Security system removed */}
             <UTICoinsProvider>
-              <ProductProviderOptimized>
-                <LoadingProvider>
-                  <TooltipProvider>
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter>
-                      <AnalyticsProvider>
-                        <EnterpriseTrackingProvider>
-                          <CartProvider>
+              <UIStateProvider>
+                <ProductProviderOptimized>
+                  <LoadingProvider>
+                    <TooltipProvider>
+                      <Toaster />
+                      <Sonner />
+                      <BrowserRouter>
+                        <AnalyticsProvider>
+                          <EnterpriseTrackingProvider>
+                            <CartProvider>
                             <AppWithPreloader>
                               <GlobalNavigationProvider>
                                  <LoadingOverlay />
@@ -294,6 +296,7 @@ const App = () => {
                   </TooltipProvider>
                  </LoadingProvider>
                </ProductProviderOptimized>
+              </UIStateProvider>
              </UTICoinsProvider>
           {/* Security system removed */}
         </AuthProvider>
