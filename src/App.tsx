@@ -17,7 +17,7 @@ import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
-
+import { EnterpriseTrackingProvider } from "@/contexts/EnterpriseTrackingContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
@@ -185,9 +185,10 @@ const App = () => {
                     <Sonner />
                     <BrowserRouter>
                       <AnalyticsProvider>
-                        <CartProvider>
-                          <AppWithPreloader>
-                            <GlobalNavigationProvider>
+                        <EnterpriseTrackingProvider>
+                          <CartProvider>
+                            <AppWithPreloader>
+                              <GlobalNavigationProvider>
                                  <LoadingOverlay />
                                  <GlobalNavigationOverlay />
                                  <Suspense fallback={<PageLoader />}>
@@ -284,10 +285,11 @@ const App = () => {
                                      } />
                                    </Routes>
                                  </Suspense>
-                          </GlobalNavigationProvider>
-                        </AppWithPreloader>
-                      </CartProvider>
-                    </AnalyticsProvider>
+                            </GlobalNavigationProvider>
+                          </AppWithPreloader>
+                         </CartProvider>
+                        </EnterpriseTrackingProvider>
+                       </AnalyticsProvider>
                     </BrowserRouter>
                   </TooltipProvider>
                  </LoadingProvider>
