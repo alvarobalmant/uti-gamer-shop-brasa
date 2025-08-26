@@ -16,6 +16,7 @@ import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionR
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
 import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
+import { UTICoinsMobileWidget } from '@/components/Mobile/UTICoinsMobileWidget';
 import { useScrollCoins } from '@/hooks/useScrollCoins';
 import { useSmartScrollRestoration } from '@/hooks/useSmartScrollRestoration';
 
@@ -214,6 +215,9 @@ const Index = React.memo(() => {
 
       {/* Floating Action Button */}
       <FloatingActionButton />
+
+      {/* UTI Coins Mobile Widget - Sticky */}
+      <UTICoinsMobileWidget />
 
       {/* Bottom Navigation Bar - Mobile Only */}
       <BottomNavigationBar 

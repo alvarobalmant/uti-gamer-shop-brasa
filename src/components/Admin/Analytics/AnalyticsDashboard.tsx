@@ -13,12 +13,7 @@ import { TrafficSourceChart } from './TrafficSourceChart';
 import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
-import { EnterpriseDataViewer } from './EnterpriseDataViewer';
-import { ClientAnalysisTable } from './ClientAnalysisTable';
-import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
-import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
-import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
-import { RealTimeClientDashboard } from './RealTimeClientDashboard';
+// Removed problematic analytics components
 
 interface DateRange {
   startDate: Date;
@@ -406,15 +401,21 @@ export const AnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="client-analysis" className="space-y-6">
-          <ClientAnalysisTableFixed />
+          <div className="text-center p-8 text-muted-foreground">
+            Análise individual temporariamente indisponível
+          </div>
         </TabsContent>
 
         <TabsContent value="realtime" className="space-y-6">
-          <RealTimeClientDashboard />
+          <div className="text-center p-8 text-muted-foreground">
+            Dashboard em tempo real temporariamente indisponível
+          </div>
         </TabsContent>
 
         <TabsContent value="enterprise" className="space-y-6">
-          <EnterpriseDataViewer />
+          <div className="text-center p-8 text-muted-foreground">
+            Dados enterprise temporariamente indisponíveis
+          </div>
         </TabsContent>
       </Tabs>
     </div>
