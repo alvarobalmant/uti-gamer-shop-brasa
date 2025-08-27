@@ -23,6 +23,8 @@ import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import { usePageResourcePreload } from '@/hooks/useResourceHints';
+import { usePageScrollRestoration } from '@/hooks/usePageScrollRestoration';
+import AppContent from '@/components/AppContent';
 import Index from "./pages/Index";
 import AssistenciaTecnica from "./pages/AssistenciaTecnica";
 // Security system removed - using simplified auth
@@ -194,10 +196,11 @@ const App = () => {
                                  <LoadingOverlay />
                                  <GlobalNavigationOverlay />
                                  <Suspense fallback={<PageLoader />}>
-                                   <Routes>
-                                     {/* Auth Routes - Outside EmailVerificationGuard */}
-                                     <Route path="/auth" element={<LoginPage />} />
-                                     <Route path="/cadastro" element={<RegisterPage />} />
+                                   <AppContent>
+                                     <Routes>
+                                       {/* Auth Routes - Outside EmailVerificationGuard */}
+                                       <Route path="/auth" element={<LoginPage />} />
+                                       <Route path="/cadastro" element={<RegisterPage />} />
                                      
                                      {/* Email Confirmation Route */}
                                      <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
@@ -286,6 +289,7 @@ const App = () => {
                                        </EmailVerificationGuard>
                                      } />
                                    </Routes>
+                                   </AppContent>
                                  </Suspense>
                             </GlobalNavigationProvider>
                           </AppWithPreloader>
