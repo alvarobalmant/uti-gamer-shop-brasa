@@ -13,12 +13,12 @@ import { TrafficSourceChart } from './TrafficSourceChart';
 import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
-import { EnterpriseDataViewer } from './EnterpriseDataViewer';
+// import { EnterpriseDataViewer } from './EnterpriseDataViewer';
 // import { ClientAnalysisTable } from './ClientAnalysisTable';
 // import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
 // import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
 // import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
-import { RealTimeClientDashboard } from './RealTimeClientDashboard';
+// import { RealTimeClientDashboard } from './RealTimeClientDashboard';
 
 interface DateRange {
   startDate: Date;
@@ -410,11 +410,11 @@ export const AnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="realtime" className="space-y-6">
-          <RealTimeClientDashboard />
+          <div className="p-4 border rounded">Dashboard em tempo real temporariamente indisponível</div>
         </TabsContent>
 
         <TabsContent value="enterprise" className="space-y-6">
-          <EnterpriseDataViewer />
+          <div className="p-4 border rounded">Analytics enterprise temporariamente indisponível</div>
         </TabsContent>
       </Tabs>
     </div>

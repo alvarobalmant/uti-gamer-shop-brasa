@@ -5,7 +5,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAnalyticsTracking } from '@/hooks/useAnalyticsTracking';
-import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
+// import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
 
 interface AnalyticsContextType {
   // IDs únicos
@@ -51,17 +51,15 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     flushEvents: basicFlushEvents
   } = useAnalyticsTracking();
 
-  // Sistema enterprise multi-usuário
-  const {
-    uniqueUserId,
-    sessionId,
-    isTracking,
-    trackPageView: enterpriseTrackPageView,
-    trackProductView: enterpriseTrackProductView,
-    trackAddToCart: enterpriseTrackAddToCart,
-    trackPurchase: enterpriseTrackPurchase,
-    updateRealtimeActivity
-  } = useEnterpriseTrackingMultiUser();
+  // Sistema enterprise desabilitado temporariamente
+  const uniqueUserId = 'temp-user-id';
+  const sessionId = 'temp-session-id';
+  const isTracking = true;
+  const enterpriseTrackPageView = async (url?: string) => {};
+  const enterpriseTrackProductView = async (productId: string, data?: any) => {};
+  const enterpriseTrackAddToCart = async (productId: string, quantity: number, price: number) => {};
+  const enterpriseTrackPurchase = async (data: any) => {};
+  const updateRealtimeActivity = () => {};
 
   console.log('📊 [ANALYTICS CONTEXT] Initialized for user:', uniqueUserId);
 
@@ -72,7 +70,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       
       // Executar ambos os sistemas em paralelo
       await Promise.all([
-        basicTrackEvent(eventType, data, element, coordinates),
+        basicTrackEvent(eventType, data),
         // Enterprise tracking específico
         eventType === 'page_view' && enterpriseTrackPageView(data?.url),
         eventType === 'product_view' && enterpriseTrackProductView(data?.productId, data),
@@ -93,7 +91,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       console.log(`📄 [ANALYTICS] User ${uniqueUserId}: Page view: ${pageUrl}`);
       
       await Promise.all([
-        basicTrackPageView(url, title),
+        basicTrackPageView(url),
         enterpriseTrackPageView(url)
       ]);
       
