@@ -5,7 +5,7 @@ import ProductCard from '@/components/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
 import { useOptimizedPlatformNavigation } from '@/hooks/useOptimizedPlatformNavigation';
-import { useAnalytics } from '@/contexts/AnalyticsContext';
+import { useAnalytics } from '@/contexts/AnalyticsContextSimplified';
 import { useProductHover } from '@/hooks/useProductPrefetch';
 
 interface RelatedProductsProps {
@@ -49,7 +49,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
     // Find the product to get its data for analytics
     const clickedProduct = relatedProducts.find(p => p.id === productId);
     if (clickedProduct) {
-      trackProductView(productId, clickedProduct.name, clickedProduct.price);
+      trackProductView(productId, clickedProduct);
       // Use optimized navigation instead of direct navigate
       navigateToPlatform('web', clickedProduct, product.id);
     }

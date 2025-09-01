@@ -10,7 +10,7 @@ import Cart from '@/components/Cart';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useToast } from '@/hooks/use-toast';
-import { useAnalytics } from '@/contexts/AnalyticsContext';
+import { useAnalytics } from '@/contexts/AnalyticsContextSimplified';
 
 // LAZY LOADING REAL - carrega apenas desktop OU mobile sob demanda
 const ProductLayout = lazy(() => import('@/components/Product/Layout/ProductLayout'));
@@ -56,7 +56,7 @@ const ProductPageSKU = () => {
   // Track product view when product loads
   useEffect(() => {
     if (product && id) {
-      trackProductView(id, product.name, product.price);
+      trackProductView(id, product);
     }
   }, [product, id, trackProductView]);
 

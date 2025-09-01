@@ -17,7 +17,7 @@ import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { UIStateProvider } from '@/contexts/UIStateContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
-import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
+import { AnalyticsProvider } from "@/contexts/AnalyticsContextSimplified";
 // import { EnterpriseTrackingProvider } from '@/contexts/EnterpriseTrackingContext';
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";

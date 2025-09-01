@@ -16,6 +16,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   refreshSession: () => Promise<Session | null>;
   clearAuthCache: () => void;
+  openAuthModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -291,6 +292,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const openAuthModal = () => {
+    // Stub implementation for auth modal
+    console.log('Auth modal would open here');
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -302,6 +308,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signOut,
       refreshSession,
       clearAuthCache,
+      openAuthModal,
     }}>
       {children}
     </AuthContext.Provider>

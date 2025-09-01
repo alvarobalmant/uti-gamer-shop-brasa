@@ -9,7 +9,7 @@ import simpleHorizontalScroll from '@/lib/simpleHorizontalScroll';
  * @param enabled - Se o rastreamento está habilitado (padrão: true)
  */
 export const useSimpleHorizontalScroll = (carouselId: string, enabled: boolean = true) => {
-  const elementRef = useRef<HTMLElement>(null);
+  const elementRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
   useEffect(() => {

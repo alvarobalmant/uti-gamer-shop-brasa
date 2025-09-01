@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
-import { useAnalytics } from '@/contexts/AnalyticsContext';
+import { useAnalytics } from '@/contexts/AnalyticsContextSimplified';
 
 const CheckoutButton = () => {
   const { items, sendToWhatsApp, getCartTotal, getCartItemsCount } = useCart();
@@ -24,11 +24,11 @@ const CheckoutButton = () => {
     const itemCount = getCartItemsCount();
     
     // Track checkout start
-    trackCheckoutStart(cartTotal, itemCount);
+    trackCheckoutStart();
 
     try {
       // Track WhatsApp click
-      trackWhatsAppClick('checkout_button');
+      trackWhatsAppClick();
       
       await sendToWhatsApp();
       toast({
@@ -37,7 +37,7 @@ const CheckoutButton = () => {
       });
     } catch (error) {
       // Track checkout abandonment
-      trackCheckoutAbandon(cartTotal, itemCount, 'whatsapp_error');
+      trackCheckoutAbandon();
       
       toast({
         title: "Erro",
