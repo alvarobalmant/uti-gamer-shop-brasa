@@ -14,6 +14,8 @@ import ProductCardImage from '@/components/ProductCard/ProductCardImage';
 import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
 import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
+import { useOptimizedPlatformNavigation } from '@/hooks/useOptimizedPlatformNavigation';
+import { useProductHover } from '@/hooks/useProductPrefetch';
 
 interface RelatedProductsSectionProps {
   product: Product;
@@ -22,7 +24,7 @@ interface RelatedProductsSectionProps {
 const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product }) => {
   const { products: allProducts, loading } = useProducts();
   const { addToCart } = useCart();
-  const navigate = useNavigate();
+  const { navigateToPlatform } = useOptimizedPlatformNavigation();
   const location = useLocation();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [animateProducts, setAnimateProducts] = useState(true);
@@ -64,11 +66,14 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const handleProductClick = useCallback(async (productId: string) => {
     // Navegar para produto relacionado
     console.log('[RelatedProducts] Navegando para produto relacionado:', productId);
-    navigate(`/produto/${productId}`);
-  }, [navigate]);
+    const targetProduct = relatedProducts.find(p => p.id === productId);
+    if (targetProduct) {
+      navigateToPlatform('web', targetProduct, product.id);
+    }
+  }, [navigateToPlatform, relatedProducts, product.id]);
 
   const handleViewAllClick = () => {
-    navigate('/categoria/inicio');
+    window.location.href = '/categoria/inicio';
   };
 
   // Check scroll position and update button states
@@ -213,61 +218,67 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
                 <div className="flex-shrink-0 w-[29px] md:w-[35px] h-full" aria-hidden="true" />
               )}
               
-              {relatedProducts.map((relatedProduct, index) => (
-                <div
-                  key={relatedProduct.id}
-                  className={cn(
-                    "flex-shrink-0",
-                    "transition-all duration-300 ease-in-out",
-                    animateProducts
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
-                  )}
-                  style={{
-                    transitionDelay: animateProducts ? `${index * 75}ms` : "0ms",
-                    width: "200px",
-                    flexShrink: 0
-                  }}
-                >
-                  {/* Card no padrão da homepage */}
-                  <Card
+              {relatedProducts.map((relatedProduct, index) => {
+                const { handleMouseEnter, handleMouseLeave } = useProductHover(relatedProduct.id);
+                
+                return (
+                  <div
+                    key={relatedProduct.id}
                     className={cn(
-                      "relative flex flex-col bg-white overflow-hidden",
-                      "border border-gray-200",
-                      "rounded-lg",
-                      "shadow-none",
-                      "transition-all duration-200 ease-in-out",
-                      "cursor-pointer",
-                      "w-[200px] h-[320px]",
-                      "p-0",
-                      "product-card",
-                      "hover:shadow-md hover:-translate-y-1"
+                      "flex-shrink-0",
+                      "transition-all duration-300 ease-in-out",
+                      animateProducts
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4"
                     )}
-                    onClick={() => handleProductClick(relatedProduct.id)}
-                    data-testid="product-card"
+                    style={{
+                      transitionDelay: animateProducts ? `${index * 75}ms` : "0ms",
+                      width: "200px",
+                      flexShrink: 0
+                    }}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                   >
-                    <ProductCardBadge 
-                      text={relatedProduct.badge_text || ''} 
-                      color={relatedProduct.badge_color || '#22c55e'} 
-                      isVisible={relatedProduct.badge_visible || false} 
-                    />
+                    {/* Card no padrão da homepage */}
+                    <Card
+                      className={cn(
+                        "relative flex flex-col bg-white overflow-hidden",
+                        "border border-gray-200",
+                        "rounded-lg",
+                        "shadow-none",
+                        "transition-all duration-200 ease-in-out",
+                        "cursor-pointer",
+                        "w-[200px] h-[320px]",
+                        "p-0",
+                        "product-card",
+                        "hover:shadow-md hover:-translate-y-1"
+                      )}
+                      onClick={() => handleProductClick(relatedProduct.id)}
+                      data-testid="product-card"
+                    >
+                      <ProductCardBadge 
+                        text={relatedProduct.badge_text || ''} 
+                        color={relatedProduct.badge_color || '#22c55e'} 
+                        isVisible={relatedProduct.badge_visible || false} 
+                      />
 
-                    {/* Favorite Button */}
-                    <div className="absolute top-2 right-2 z-10">
-                      <FavoriteButton productId={relatedProduct.id} size="sm" />
-                    </div>
-                    
-                    <ProductCardImage product={relatedProduct} isHovered={false} />
-
-                    <div className="flex flex-1 flex-col justify-between p-3">
-                      <div className="space-y-2">
-                        <ProductCardInfo product={relatedProduct} />
-                        <ProductCardPrice product={relatedProduct} />
+                      {/* Favorite Button */}
+                      <div className="absolute top-2 right-2 z-10">
+                        <FavoriteButton productId={relatedProduct.id} size="sm" />
                       </div>
-                    </div>
-                  </Card>
-                </div>
-              ))}
+                      
+                      <ProductCardImage product={relatedProduct} isHovered={false} />
+
+                      <div className="flex flex-1 flex-col justify-between p-3">
+                        <div className="space-y-2">
+                          <ProductCardInfo product={relatedProduct} />
+                          <ProductCardPrice product={relatedProduct} />
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

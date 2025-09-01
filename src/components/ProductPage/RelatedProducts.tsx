@@ -4,8 +4,9 @@ import { Product, useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useOptimizedPlatformNavigation } from '@/hooks/useOptimizedPlatformNavigation';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
+import { useProductHover } from '@/hooks/useProductPrefetch';
 
 interface RelatedProductsProps {
   product: Product;
@@ -14,7 +15,7 @@ interface RelatedProductsProps {
 const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
   const { products: allProducts, loading } = useProducts();
   const { addToCart } = useCart();
-  const navigate = useNavigate();
+  const { navigateToPlatform } = useOptimizedPlatformNavigation();
   const { trackProductView } = useAnalytics();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
@@ -49,8 +50,9 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
     const clickedProduct = relatedProducts.find(p => p.id === productId);
     if (clickedProduct) {
       trackProductView(productId, clickedProduct.name, clickedProduct.price);
+      // Use optimized navigation instead of direct navigate
+      navigateToPlatform('web', clickedProduct, product.id);
     }
-    navigate(`/produto/${productId}`);
   };
 
   return (
@@ -70,14 +72,23 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
         </div>
       ) : relatedProducts.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
-          {relatedProducts.map((relatedProduct) => (
-            <ProductCard 
-              key={relatedProduct.id} 
-              product={relatedProduct} 
-              onAddToCart={handleAddToCart}
-              onCardClick={handleProductClick}
-            />
-          ))}
+          {relatedProducts.map((relatedProduct) => {
+            const { handleMouseEnter, handleMouseLeave } = useProductHover(relatedProduct.id);
+            
+            return (
+              <div 
+                key={relatedProduct.id}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                <ProductCard 
+                  product={relatedProduct} 
+                  onAddToCart={handleAddToCart}
+                  onCardClick={handleProductClick}
+                />
+              </div>
+            );
+          })}
         </div>
       ) : (
         <p className="text-muted-foreground">Nenhum produto relacionado encontrado.</p>
