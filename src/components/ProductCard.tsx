@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import FavoriteButton from '@/components/FavoriteButton';
 import { useProductHover } from '@/hooks/useProductPrefetch';
-import { useAnalytics } from '@/contexts/AnalyticsContextSimplified';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
@@ -32,7 +32,7 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
     }
     
     // Track product view
-    trackProductView(product.id, product);
+    trackProductView(product.id, product.name, product.price);
     
     onCardClick(product.id);
   }, [onCardClick, product.id, trackProductView, product.name, product.price]);

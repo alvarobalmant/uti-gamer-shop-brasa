@@ -8,7 +8,7 @@ import ProductCard from "@/components/ProductCard";
 import { Product } from "@/hooks/useProducts";
 import SectionTitle from "@/components/SectionTitle";
 import { cn } from "@/lib/utils";
-import { useSimpleHorizontalScroll } from "@/hooks/useSimpleHorizontalScroll";
+import { useHorizontalScrollTracking } from "@/hooks/useHorizontalScrollTracking";
 
 interface FeaturedProductsSectionProps {
   products: Product[];
@@ -39,8 +39,7 @@ const FeaturedProductsSection = ({
 }: FeaturedProductsSectionProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Usa novo sistema simples de scroll horizontal
-  const scrollContainerRef = useSimpleHorizontalScroll(sectionKey || 'featured-products', true);
+  const scrollContainerRef = useHorizontalScrollTracking('featured-products', true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 

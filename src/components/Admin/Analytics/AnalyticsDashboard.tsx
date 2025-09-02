@@ -13,12 +13,12 @@ import { TrafficSourceChart } from './TrafficSourceChart';
 import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
-// import { EnterpriseDataViewer } from './EnterpriseDataViewer';
-// import { ClientAnalysisTable } from './ClientAnalysisTable';
-// import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
-// import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
-// import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
-// import { RealTimeClientDashboard } from './RealTimeClientDashboard';
+import { EnterpriseDataViewer } from './EnterpriseDataViewer';
+import { ClientAnalysisTable } from './ClientAnalysisTable';
+import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
+import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
+import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
+import { RealTimeClientDashboard } from './RealTimeClientDashboard';
 
 interface DateRange {
   startDate: Date;
@@ -406,15 +406,15 @@ export const AnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="client-analysis" className="space-y-6">
-          <div className="p-4 border rounded">Análise de clientes temporariamente indisponível</div>
+          <ClientAnalysisTableFixed />
         </TabsContent>
 
         <TabsContent value="realtime" className="space-y-6">
-          <div className="p-4 border rounded">Dashboard em tempo real temporariamente indisponível</div>
+          <RealTimeClientDashboard />
         </TabsContent>
 
         <TabsContent value="enterprise" className="space-y-6">
-          <div className="p-4 border rounded">Analytics enterprise temporariamente indisponível</div>
+          <EnterpriseDataViewer />
         </TabsContent>
       </Tabs>
     </div>

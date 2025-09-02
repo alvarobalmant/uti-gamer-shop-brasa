@@ -8,15 +8,12 @@ import ProductCardImage from '@/components/ProductCard/ProductCardImage';
 import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
 import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
-import { useOptimizedPlatformNavigation } from '@/hooks/useOptimizedPlatformNavigation';
-import { useProductHover } from '@/hooks/useProductPrefetch';
 
 interface RelatedProductsMobileProps {
   product: Product;
 }
 
 const RelatedProductsMobile: React.FC<RelatedProductsMobileProps> = ({ product }) => {
-  const { navigateToPlatform } = useOptimizedPlatformNavigation();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -78,42 +75,33 @@ const RelatedProductsMobile: React.FC<RelatedProductsMobileProps> = ({ product }
 
       {/* Horizontal Scroll para mobile */}
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
-        {relatedProducts.map((relatedProduct) => {
-          const { handleMouseEnter, handleMouseLeave } = useProductHover(relatedProduct.id);
-          
-          return (
-            <div
-              key={relatedProduct.id}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              <Card
-                className="flex-shrink-0 w-40 h-64 relative flex flex-col bg-white overflow-hidden border border-gray-200 rounded-lg shadow-none transition-all duration-200 ease-in-out cursor-pointer p-0"
-                onClick={() => navigateToPlatform('web', relatedProduct, product.id)}
-              >
-                <ProductCardBadge 
-                  text={relatedProduct.badge_text || ''} 
-                  color={relatedProduct.badge_color || '#22c55e'} 
-                  isVisible={relatedProduct.badge_visible || false} 
-                />
+        {relatedProducts.map((relatedProduct) => (
+          <Card
+            key={relatedProduct.id}
+            className="flex-shrink-0 w-40 h-64 relative flex flex-col bg-white overflow-hidden border border-gray-200 rounded-lg shadow-none transition-all duration-200 ease-in-out cursor-pointer p-0"
+            onClick={() => window.location.href = `/produto/${relatedProduct.id}`}
+          >
+            <ProductCardBadge 
+              text={relatedProduct.badge_text || ''} 
+              color={relatedProduct.badge_color || '#22c55e'} 
+              isVisible={relatedProduct.badge_visible || false} 
+            />
 
-                {/* Favorite Button */}
-                <div className="absolute top-2 right-2 z-10">
-                  <FavoriteButton productId={relatedProduct.id} size="sm" />
-                </div>
-                
-                <ProductCardImage product={relatedProduct} isHovered={false} />
-
-                <div className="flex flex-1 flex-col justify-between p-3">
-                  <div className="space-y-2">
-                    <ProductCardInfo product={relatedProduct} />
-                    <ProductCardPrice product={relatedProduct} />
-                  </div>
-                </div>
-              </Card>
+            {/* Favorite Button */}
+            <div className="absolute top-2 right-2 z-10">
+              <FavoriteButton productId={relatedProduct.id} size="sm" />
             </div>
-          );
-        })}
+            
+            <ProductCardImage product={relatedProduct} isHovered={false} />
+
+            <div className="flex flex-1 flex-col justify-between p-3">
+              <div className="space-y-2">
+                <ProductCardInfo product={relatedProduct} />
+                <ProductCardPrice product={relatedProduct} />
+              </div>
+            </div>
+          </Card>
+        ))}
       </div>
 
       {/* Navigation dots */}

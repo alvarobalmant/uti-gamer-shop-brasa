@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
-import { useAnalytics } from '@/contexts/AnalyticsContextSimplified';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 import SearchResultProductCardImage from './ProductCard/SearchResultProductCardImage';
 import SearchResultProductCardInfo from './ProductCard/SearchResultProductCardInfo';
@@ -28,7 +28,7 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart 
     }
     
     // Track product view
-    trackProductView(product.id, product);
+    trackProductView(product.id, product.name, product.price);
     
     onCardClick(product.id);
   }, [onCardClick, product.id, trackProductView, product.name, product.price]);

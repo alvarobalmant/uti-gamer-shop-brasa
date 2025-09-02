@@ -14,17 +14,14 @@ import { CartProvider } from "@/contexts/CartContext";
 import { ProductProviderOptimized } from '@/contexts/ProductContextOptimized';
 import { ProductProvider } from '@/contexts/ProductContext';
 import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
-import { UIStateProvider } from '@/contexts/UIStateContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
-import { AnalyticsProvider } from "@/contexts/AnalyticsContextSimplified";
-// import { EnterpriseTrackingProvider } from '@/contexts/EnterpriseTrackingContext';
+import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
+import { EnterpriseTrackingProvider } from "@/contexts/EnterpriseTrackingContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
 import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import { usePageResourcePreload } from '@/hooks/useResourceHints';
-import { usePageScrollRestoration } from '@/hooks/usePageScrollRestoration';
-import AppContent from '@/components/AppContent';
 import Index from "./pages/Index";
 import AssistenciaTecnica from "./pages/AssistenciaTecnica";
 // Security system removed - using simplified auth
@@ -181,25 +178,24 @@ const App = () => {
         <AuthProvider>
           {/* Security system removed */}
             <UTICoinsProvider>
-              <UIStateProvider>
-                <ProductProviderOptimized>
-                  <LoadingProvider>
-                    <TooltipProvider>
-                      <Toaster />
-                      <Sonner />
-                      <BrowserRouter>
-                        <AnalyticsProvider>
-                            <CartProvider>
+              <ProductProviderOptimized>
+                <LoadingProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                      <AnalyticsProvider>
+                        <EnterpriseTrackingProvider>
+                          <CartProvider>
                             <AppWithPreloader>
                               <GlobalNavigationProvider>
                                  <LoadingOverlay />
                                  <GlobalNavigationOverlay />
                                  <Suspense fallback={<PageLoader />}>
-                                   <AppContent>
-                                     <Routes>
-                                       {/* Auth Routes - Outside EmailVerificationGuard */}
-                                       <Route path="/auth" element={<LoginPage />} />
-                                       <Route path="/cadastro" element={<RegisterPage />} />
+                                   <Routes>
+                                     {/* Auth Routes - Outside EmailVerificationGuard */}
+                                     <Route path="/auth" element={<LoginPage />} />
+                                     <Route path="/cadastro" element={<RegisterPage />} />
                                      
                                      {/* Email Confirmation Route */}
                                      <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
@@ -288,17 +284,16 @@ const App = () => {
                                        </EmailVerificationGuard>
                                      } />
                                    </Routes>
-                                   </AppContent>
                                  </Suspense>
                             </GlobalNavigationProvider>
                           </AppWithPreloader>
                          </CartProvider>
-                        </AnalyticsProvider>
+                        </EnterpriseTrackingProvider>
+                       </AnalyticsProvider>
                     </BrowserRouter>
                   </TooltipProvider>
                  </LoadingProvider>
                </ProductProviderOptimized>
-              </UIStateProvider>
              </UTICoinsProvider>
           {/* Security system removed */}
         </AuthProvider>

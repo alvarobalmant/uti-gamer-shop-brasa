@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
@@ -76,7 +75,6 @@ function TrustIndicators() {
 
 // Componente do Formulário Multi-Step
 function AssistanceForm() {
-  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     consoleBrand: '',
@@ -95,33 +93,6 @@ function AssistanceForm() {
   const totalSteps = 6;
   const progress = (currentStep / totalSteps) * 100;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Mapear parâmetros URL para nomes de serviços
-  const serviceParamMapping: Record<string, string> = {
-    "manutencao-preventiva": "Manutenção Preventiva",
-    "diagnostico-reparo": "Diagnóstico + Reparo",
-    "avaliacao-venda": "Avaliação para Venda"
-  };
-
-  // Efeito para seleção automática de serviço baseada em parâmetros URL
-  useEffect(() => {
-    const serviceParam = searchParams.get('service');
-    if (serviceParam && serviceParamMapping[serviceParam]) {
-      const serviceName = serviceParamMapping[serviceParam];
-      setFormData(prev => ({ ...prev, serviceType: serviceName }));
-      
-      // Scroll automático para a seção do formulário após um pequeno delay
-      setTimeout(() => {
-        const formSection = document.getElementById('assistance-form');
-        if (formSection) {
-          formSection.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
-        }
-      }, 500);
-    }
-  }, [searchParams]);
   const isScrollingRef = useRef(false);
 
   // Debounced scroll reset to prevent conflicts
@@ -296,7 +267,7 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
   };
 
   return (
-    <section id="assistance-form" className="py-8 px-4 min-h-screen">
+    <section className="py-8 px-4 min-h-screen">
       <div className="w-full max-w-4xl mx-auto">
         <Card className="shadow-xl w-full min-h-[600px] max-h-[80vh] flex flex-col transition-all duration-300">
           <CardHeader className="text-center px-4 sm:px-6 flex-shrink-0">

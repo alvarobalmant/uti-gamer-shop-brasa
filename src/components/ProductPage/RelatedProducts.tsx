@@ -4,9 +4,8 @@ import { Product, useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
-import { useOptimizedPlatformNavigation } from '@/hooks/useOptimizedPlatformNavigation';
-import { useAnalytics } from '@/contexts/AnalyticsContextSimplified';
-import { useProductHover } from '@/hooks/useProductPrefetch';
+import { useNavigate } from 'react-router-dom';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 interface RelatedProductsProps {
   product: Product;
@@ -15,7 +14,7 @@ interface RelatedProductsProps {
 const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
   const { products: allProducts, loading } = useProducts();
   const { addToCart } = useCart();
-  const { navigateToPlatform } = useOptimizedPlatformNavigation();
+  const navigate = useNavigate();
   const { trackProductView } = useAnalytics();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
@@ -49,10 +48,9 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
     // Find the product to get its data for analytics
     const clickedProduct = relatedProducts.find(p => p.id === productId);
     if (clickedProduct) {
-      trackProductView(productId, clickedProduct);
-      // Use optimized navigation instead of direct navigate
-      navigateToPlatform('web', clickedProduct, product.id);
+      trackProductView(productId, clickedProduct.name, clickedProduct.price);
     }
+    navigate(`/produto/${productId}`);
   };
 
   return (
@@ -72,23 +70,14 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
         </div>
       ) : relatedProducts.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
-          {relatedProducts.map((relatedProduct) => {
-            const { handleMouseEnter, handleMouseLeave } = useProductHover(relatedProduct.id);
-            
-            return (
-              <div 
-                key={relatedProduct.id}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-              >
-                <ProductCard 
-                  product={relatedProduct} 
-                  onAddToCart={handleAddToCart}
-                  onCardClick={handleProductClick}
-                />
-              </div>
-            );
-          })}
+          {relatedProducts.map((relatedProduct) => (
+            <ProductCard 
+              key={relatedProduct.id} 
+              product={relatedProduct} 
+              onAddToCart={handleAddToCart}
+              onCardClick={handleProductClick}
+            />
+          ))}
         </div>
       ) : (
         <p className="text-muted-foreground">Nenhum produto relacionado encontrado.</p>

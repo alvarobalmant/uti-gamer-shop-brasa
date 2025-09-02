@@ -7,7 +7,6 @@ import SearchSuggestions from '@/components/SearchSuggestions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useUIState } from '@/contexts/UIStateContext';
 
 interface MobileSearchBarProps {
   isOpen: boolean;
@@ -20,12 +19,6 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { navigateToSearch } = useGlobalNavigationLinks();
   const isMobile = useIsMobile();
-  const { setIsMobileSearchOpen } = useUIState();
-
-  // Sincronizar estado com UIState
-  useEffect(() => {
-    setIsMobileSearchOpen(isOpen);
-  }, [isOpen, setIsMobileSearchOpen]);
 
   // Focus input when the search bar opens
   useEffect(() => {

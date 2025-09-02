@@ -8,14 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import SectionTitle from '@/components/SectionTitle';
 import { cn } from '@/lib/utils';
-import { useSimpleHorizontalScroll } from '@/hooks/useSimpleHorizontalScroll';
+import { useHorizontalScrollTracking } from '@/hooks/useHorizontalScrollTracking';
 import FavoriteButton from '@/components/FavoriteButton';
 import ProductCardImage from '@/components/ProductCard/ProductCardImage';
 import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
 import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
-import { useOptimizedPlatformNavigation } from '@/hooks/useOptimizedPlatformNavigation';
-import { useProductHover } from '@/hooks/useProductPrefetch';
 
 interface RelatedProductsSectionProps {
   product: Product;
@@ -24,12 +22,11 @@ interface RelatedProductsSectionProps {
 const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product }) => {
   const { products: allProducts, loading } = useProducts();
   const { addToCart } = useCart();
-  const { navigateToPlatform } = useOptimizedPlatformNavigation();
+  const navigate = useNavigate();
   const location = useLocation();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [animateProducts, setAnimateProducts] = useState(true);
-  // Usa novo sistema simples baseado no produto para rastreamento preciso
-  const scrollContainerRef = useSimpleHorizontalScroll(`related-products-${product.id}`, true);
+  const scrollContainerRef = useHorizontalScrollTracking('related-products', true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
@@ -66,14 +63,11 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const handleProductClick = useCallback(async (productId: string) => {
     // Navegar para produto relacionado
     console.log('[RelatedProducts] Navegando para produto relacionado:', productId);
-    const targetProduct = relatedProducts.find(p => p.id === productId);
-    if (targetProduct) {
-      navigateToPlatform('web', targetProduct, product.id);
-    }
-  }, [navigateToPlatform, relatedProducts, product.id]);
+    navigate(`/produto/${productId}`);
+  }, [navigate]);
 
   const handleViewAllClick = () => {
-    window.location.href = '/categoria/inicio';
+    navigate('/categoria/inicio');
   };
 
   // Check scroll position and update button states
@@ -218,67 +212,61 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
                 <div className="flex-shrink-0 w-[29px] md:w-[35px] h-full" aria-hidden="true" />
               )}
               
-              {relatedProducts.map((relatedProduct, index) => {
-                const { handleMouseEnter, handleMouseLeave } = useProductHover(relatedProduct.id);
-                
-                return (
-                  <div
-                    key={relatedProduct.id}
+              {relatedProducts.map((relatedProduct, index) => (
+                <div
+                  key={relatedProduct.id}
+                  className={cn(
+                    "flex-shrink-0",
+                    "transition-all duration-300 ease-in-out",
+                    animateProducts
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4"
+                  )}
+                  style={{
+                    transitionDelay: animateProducts ? `${index * 75}ms` : "0ms",
+                    width: "200px",
+                    flexShrink: 0
+                  }}
+                >
+                  {/* Card no padrão da homepage */}
+                  <Card
                     className={cn(
-                      "flex-shrink-0",
-                      "transition-all duration-300 ease-in-out",
-                      animateProducts
-                        ? "opacity-100 translate-y-0"
-                        : "opacity-0 translate-y-4"
+                      "relative flex flex-col bg-white overflow-hidden",
+                      "border border-gray-200",
+                      "rounded-lg",
+                      "shadow-none",
+                      "transition-all duration-200 ease-in-out",
+                      "cursor-pointer",
+                      "w-[200px] h-[320px]",
+                      "p-0",
+                      "product-card",
+                      "hover:shadow-md hover:-translate-y-1"
                     )}
-                    style={{
-                      transitionDelay: animateProducts ? `${index * 75}ms` : "0ms",
-                      width: "200px",
-                      flexShrink: 0
-                    }}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
+                    onClick={() => handleProductClick(relatedProduct.id)}
+                    data-testid="product-card"
                   >
-                    {/* Card no padrão da homepage */}
-                    <Card
-                      className={cn(
-                        "relative flex flex-col bg-white overflow-hidden",
-                        "border border-gray-200",
-                        "rounded-lg",
-                        "shadow-none",
-                        "transition-all duration-200 ease-in-out",
-                        "cursor-pointer",
-                        "w-[200px] h-[320px]",
-                        "p-0",
-                        "product-card",
-                        "hover:shadow-md hover:-translate-y-1"
-                      )}
-                      onClick={() => handleProductClick(relatedProduct.id)}
-                      data-testid="product-card"
-                    >
-                      <ProductCardBadge 
-                        text={relatedProduct.badge_text || ''} 
-                        color={relatedProduct.badge_color || '#22c55e'} 
-                        isVisible={relatedProduct.badge_visible || false} 
-                      />
+                    <ProductCardBadge 
+                      text={relatedProduct.badge_text || ''} 
+                      color={relatedProduct.badge_color || '#22c55e'} 
+                      isVisible={relatedProduct.badge_visible || false} 
+                    />
 
-                      {/* Favorite Button */}
-                      <div className="absolute top-2 right-2 z-10">
-                        <FavoriteButton productId={relatedProduct.id} size="sm" />
-                      </div>
-                      
-                      <ProductCardImage product={relatedProduct} isHovered={false} />
+                    {/* Favorite Button */}
+                    <div className="absolute top-2 right-2 z-10">
+                      <FavoriteButton productId={relatedProduct.id} size="sm" />
+                    </div>
+                    
+                    <ProductCardImage product={relatedProduct} isHovered={false} />
 
-                      <div className="flex flex-1 flex-col justify-between p-3">
-                        <div className="space-y-2">
-                          <ProductCardInfo product={relatedProduct} />
-                          <ProductCardPrice product={relatedProduct} />
-                        </div>
+                    <div className="flex flex-1 flex-col justify-between p-3">
+                      <div className="space-y-2">
+                        <ProductCardInfo product={relatedProduct} />
+                        <ProductCardPrice product={relatedProduct} />
                       </div>
-                    </Card>
-                  </div>
-                );
-              })}
+                    </div>
+                  </Card>
+                </div>
+              ))}
             </div>
           </div>
         </div>

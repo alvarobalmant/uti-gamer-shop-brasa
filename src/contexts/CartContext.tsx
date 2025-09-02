@@ -16,7 +16,6 @@ export interface CartContextType {
   getCartTotal: () => number;
   getCartItemsCount: () => number;
   sendToWhatsApp: () => void;
-  toggleCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -35,11 +34,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     sendToWhatsApp,
   } = useNewCart();
 
-  const toggleCart = () => {
-    // Stub implementation for cart toggle
-    console.log('Cart toggle would happen here');
-  };
-
   return (
     <CartContext.Provider
       value={{
@@ -54,7 +48,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         getCartTotal,
         getCartItemsCount,
         sendToWhatsApp,
-        toggleCart,
       }}
     >
       {children}

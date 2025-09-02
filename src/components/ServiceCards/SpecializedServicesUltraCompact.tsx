@@ -10,26 +10,11 @@ const SpecializedServicesUltraCompact = () => {
   const navigate = useNavigate();
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
-  const handleCardClick = (linkUrl: string, cardTitle: string) => {
+  const handleCardClick = (linkUrl: string) => {
     if (linkUrl.startsWith("http")) {
       window.open(linkUrl, "_blank");
     } else {
-      // Mapear títulos dos cards para parâmetros de serviço
-      const serviceMapping: Record<string, string> = {
-        "Manutenção Preventiva": "manutencao-preventiva",
-        "Diagnóstico + Reparo": "diagnostico-reparo", 
-        "Avaliação para Venda": "avaliacao-venda"
-        // "Serviços em Geral" não tem mapeamento - vai direto sem parâmetro
-      };
-      
-      const serviceParam = serviceMapping[cardTitle];
-      
-      if (serviceParam && linkUrl.includes("/servicos/assistencia")) {
-        // Adicionar parâmetro de serviço para seleção automática
-        navigate(`${linkUrl}?service=${serviceParam}`);
-      } else {
-        navigate(linkUrl);
-      }
+      navigate(linkUrl);
     }
   };
 
@@ -93,7 +78,7 @@ const SpecializedServicesUltraCompact = () => {
                   >
                     {/* Card clean estilo GameStop com fundo configurável */}
                     <Card
-                      onClick={() => handleCardClick(card.link_url, card.title)}
+                      onClick={() => handleCardClick(card.link_url)}
                       className="relative rounded-xl h-full cursor-pointer overflow-hidden border border-gray-200 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg group"
                       style={{
                         backgroundImage: card.background_image_url 

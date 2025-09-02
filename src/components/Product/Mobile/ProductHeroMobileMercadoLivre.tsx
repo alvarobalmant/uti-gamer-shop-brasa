@@ -8,7 +8,7 @@ import FavoriteButton from '@/components/FavoriteButton';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useUTICoins } from '@/contexts/UTICoinsContext';
-import { useAnalytics } from '@/contexts/AnalyticsContextSimplified';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
 
 interface ProductHeroMobileMercadoLivreProps {
