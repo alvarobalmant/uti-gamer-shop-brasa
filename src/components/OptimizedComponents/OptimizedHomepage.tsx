@@ -93,12 +93,12 @@ const OptimizedHeroBanner: React.FC = () => {
 // Componente de links rápidos otimizado
 const OptimizedQuickLinks: React.FC = () => {
   const categories = [
-    { name: 'PlayStation', icon: '🎮', color: 'from-blue-500 to-blue-600' },
-    { name: 'Xbox', icon: '🎯', color: 'from-green-500 to-green-600' },
-    { name: 'Nintendo', icon: '🍄', color: 'from-red-500 to-red-600' },
-    { name: 'PC Gaming', icon: '💻', color: 'from-purple-500 to-purple-600' },
-    { name: 'Acessórios', icon: '🎧', color: 'from-orange-500 to-orange-600' },
-    { name: 'Ofertas', icon: '🏷️', color: 'from-pink-500 to-pink-600' },
+    { name: 'Xbox', icon: '🎮', color: 'bg-gradient-to-r from-green-500 to-green-600', textColor: 'text-white' },
+    { name: 'PlayStation', icon: '🎯', color: 'bg-gradient-to-r from-blue-500 to-blue-600', textColor: 'text-white' },
+    { name: 'Nintendo', icon: '🍄', color: 'bg-gradient-to-r from-red-500 to-red-600', textColor: 'text-white' },
+    { name: 'PC Gaming', icon: '💻', color: 'bg-gradient-to-r from-purple-500 to-purple-600', textColor: 'text-white' },
+    { name: 'Jogos Xbox 360/PS3', icon: '🎮', color: 'bg-gradient-to-r from-orange-500 to-orange-600', textColor: 'text-white' },
+    { name: 'Área Geek', icon: '🚀', color: 'bg-gradient-to-r from-teal-500 to-teal-600', textColor: 'text-white' },
   ];
 
   const { elementRef, hasIntersected } = useLazyLoading(() => {
@@ -106,32 +106,44 @@ const OptimizedQuickLinks: React.FC = () => {
   });
 
   return (
-    <section ref={elementRef} className="py-8 bg-gray-50">
+    <section ref={elementRef} className="py-6 bg-white">
       <div className="container mx-auto px-4">
         {hasIntersected ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="flex flex-wrap justify-center gap-3 md:gap-4">
             {categories.map((category, index) => (
               <div
                 key={category.name}
-                className="text-center group cursor-pointer"
+                className={`
+                  ${category.color} 
+                  ${category.textColor}
+                  px-6 py-3 md:px-8 md:py-4 
+                  rounded-xl 
+                  cursor-pointer 
+                  transition-all duration-300 
+                  hover:scale-105 hover:shadow-lg 
+                  transform 
+                  font-semibold text-sm md:text-base
+                  min-w-[140px] md:min-w-[160px]
+                  text-center
+                  shadow-md
+                  animate-fade-in
+                `}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className={`w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-r ${category.color} flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                  {category.icon}
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-lg">{category.icon}</span>
+                  <span className="font-bold">{category.name}</span>
                 </div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
-                  {category.name}
-                </span>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="flex flex-wrap justify-center gap-3 md:gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="text-center space-y-2">
-                <div className="w-16 h-16 mx-auto rounded-full animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" />
-                <div className="h-3 w-full animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] rounded" />
-              </div>
+              <div 
+                key={i} 
+                className="min-w-[140px] md:min-w-[160px] h-12 md:h-14 rounded-xl animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" 
+              />
             ))}
           </div>
         )}
