@@ -7,6 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { Search, Package, User, Clock, CheckCircle, XCircle, AlertCircle, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useOrderVerification, OrderVerificationData } from '@/hooks/useOrderVerification';
+import { useUTICoins } from '@/hooks/useUTICoins';
+import { formatUTICoins, utiCoinsToReais } from '@/utils/utiCoinsCalculations';
 
 const OrderVerifier = () => {
   const [searchCode, setSearchCode] = useState('');
@@ -14,6 +16,7 @@ const OrderVerifier = () => {
   const [processing, setProcessing] = useState(false);
   const { loading, error, verifyCode, completeOrder } = useOrderVerification();
   const { toast } = useToast();
+  const { balance: adminBalance } = useUTICoins();
 
   const handleSearch = async () => {
     if (!searchCode.trim()) {
@@ -152,6 +155,20 @@ const OrderVerifier = () => {
                   <p><strong>Nome:</strong> {orderData.user_data.name || 'Não informado'}</p>
                   <p><strong>Email:</strong> {orderData.user_data.email || 'Não informado'}</p>
                   <p><strong>ID do Usuário:</strong> {orderData.user_data.id}</p>
+                  {orderData.user_data.uti_coins_balance !== undefined && (
+                    <div className="bg-yellow-100 p-3 rounded-lg border border-yellow-300">
+                      <p className="flex items-center gap-2">
+                        <Coins className="w-4 h-4 text-yellow-600" />
+                        <strong>Saldo UTI Coins:</strong> 
+                        <span className="text-yellow-700 font-bold">
+                          {formatUTICoins(orderData.user_data.uti_coins_balance)}
+                        </span>
+                        <span className="text-sm text-yellow-600">
+                          (R$ {utiCoinsToReais(orderData.user_data.uti_coins_balance).toFixed(2)})
+                        </span>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

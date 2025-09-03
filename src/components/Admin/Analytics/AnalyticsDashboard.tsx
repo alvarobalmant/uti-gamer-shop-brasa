@@ -14,10 +14,7 @@ import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
 import { EnterpriseDataViewer } from './EnterpriseDataViewer';
-import { ClientAnalysisTable } from './ClientAnalysisTable';
-import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
-import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
-import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
+// Analytics table components removed
 import { RealTimeClientDashboard } from './RealTimeClientDashboard';
 
 interface DateRange {
@@ -406,7 +403,7 @@ export const AnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="client-analysis" className="space-y-6">
-          <ClientAnalysisTableFixed />
+          <div className="p-4 text-center text-gray-500">Analytics em manutenção</div>
         </TabsContent>
 
         <TabsContent value="realtime" className="space-y-6">
