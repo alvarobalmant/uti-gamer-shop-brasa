@@ -7,6 +7,7 @@ import { formatPrice } from '@/utils/formatPrice';
 import { Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import UTICoinsDisplay from './UTICoinsDisplay';
 
 interface ProductPricingProps {
   product: Product;
@@ -111,6 +112,9 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
             </div>
           </div>
         )}
+
+        {/* UTI Coins Display */}
+        <UTICoinsDisplay product={product} />
       </div>
     </div>
   );
