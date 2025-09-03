@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Product, useProducts } from '@/hooks/useProducts';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Product } from '@/hooks/useProducts/types';
+import { usePublicProducts } from '@/hooks/usePublicProducts';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -9,6 +11,8 @@ import ProductCardImage from '@/components/ProductCard/ProductCardImage';
 import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
 import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
+import SectionTitle from '@/components/SectionTitle';
+import { getRelatedProducts } from '@/utils/relatedProducts';
 
 interface RelatedProductsCarouselProps {
   currentProduct: Product;
@@ -21,7 +25,8 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
   relatedProducts = [],
   className
 }) => {
-  const { products: allProducts } = useProducts();
+  const navigate = useNavigate();
+  const { products: allProducts } = usePublicProducts(); // Usar hook que já filtra produtos mestre
   const [products, setProducts] = useState<Product[]>([]);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -29,29 +34,26 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
 
   useEffect(() => {
     if (allProducts.length > 0 && currentProduct) {
-      // Lógica para produtos relacionados baseada em tags
-      const currentProductTags = currentProduct.tags?.map(t => t.id) || [];
-      const related = allProducts
-        .filter(p => 
-          p.id !== currentProduct.id && 
-          p.tags?.some(tag => currentProductTags.includes(tag.id))
-        )
-        .slice(0, 8);
+      console.log('[RelatedProductsCarousel] Calculando produtos relacionados...');
+      console.log(`[RelatedProductsCarousel] Produtos disponíveis (já filtrados): ${allProducts.length}`);
       
-      // Se não houver produtos relacionados por tag, pegar produtos aleatórios
-      if (related.length < 4) {
-        const others = allProducts
-          .filter(p => p.id !== currentProduct.id && !related.some(r => r.id === p.id))
-          .slice(0, 8 - related.length);
-        related.push(...others);
+      // Usar nova lógica de produtos relacionados
+      // Não precisa filtrar produtos mestre pois usePublicProducts já faz isso
+      const result = getRelatedProducts(currentProduct, allProducts, 8);
+      
+      console.log(`[RelatedProductsCarousel] Algoritmo usado: ${result.algorithm}`);
+      console.log(`[RelatedProductsCarousel] Produtos encontrados: ${result.products.length}`);
+      
+      if (result.algorithm === 'tags') {
+        console.log('[RelatedProductsCarousel] Distribuição de matches por tags:', result.tagMatches);
       }
-
-      setProducts(related);
+      
+      setProducts(result.products);
     }
   }, [allProducts, currentProduct]);
 
   const handleProductClick = (product: Product) => {
-    window.location.href = `/produto/${product.id}`;
+    navigate(`/produto/${product.id}`);
   };
 
   // Check scroll position and update button states
@@ -102,28 +104,20 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
   return (
     <div className={cn("space-y-6", className)}>
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h3 className="text-xl font-bold text-gray-900">
-          Produtos Relacionados
-        </h3>
-        <Button
-          variant="default"
-          size="sm"
-          className="bg-red-600 hover:bg-red-700 text-white border-0 flex-shrink-0 w-full sm:w-auto font-medium"
-        >
-          Ver Todos
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
+      <SectionTitle 
+        title="Produtos Relacionados"
+        showViewAllButton={false}
+        className="px-0"
+      />
 
       {/* Products Grid / Scroll Container */}
       <div className="relative group">
-        {/* Left Navigation Button */}
+        {/* Left Navigation Button - Hidden on mobile */}
         {canScrollLeft && (
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200 hidden lg:flex"
             onClick={scrollLeft}
             aria-label="Produtos anteriores"
           >
@@ -131,12 +125,12 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
           </Button>
         )}
 
-        {/* Right Navigation Button */}
+        {/* Right Navigation Button - Hidden on mobile */}
         {canScrollRight && (
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200 hidden lg:flex"
             onClick={scrollRight}
             aria-label="Próximos produtos"
           >
@@ -223,7 +217,7 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
         <div className="text-sm text-blue-700 space-y-1">
           <div>• Produtos relacionados são selecionados com base na sua navegação</div>
           <div>• Combine jogos para ganhar mais UTI Coins</div>
-          <div>• Frete grátis para compras acima de R$ 99</div>
+          <div>• Frete grátis para compras acima de R$ 150</div>
         </div>
       </div>
     </div>

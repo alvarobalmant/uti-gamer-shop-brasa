@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
 import { SKUNavigation } from '@/hooks/useProducts/types';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
   layout = 'bottom-sections',
   className
 }) => {
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { platformConfig } = useDynamicPlatforms();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -304,7 +306,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
                         }
                         onClick={() => {
                           if (available && sku && !isCurrentPlatform) {
-                            window.location.href = `/produto/${sku.id}`;
+                            navigate(`/produto/${sku.id}`);
                           }
                         }}
                         disabled={!available}

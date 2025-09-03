@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { usePersonalization } from '@/hooks/usePersonalization';
 import { PersonalizedGreeting } from './PersonalizedGreeting';
@@ -14,6 +15,7 @@ interface PersonalizedSectionProps {
 export const PersonalizedSection: React.FC<PersonalizedSectionProps> = ({ 
   className = '' 
 }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { 
     topRecommendations, 
@@ -27,7 +29,7 @@ export const PersonalizedSection: React.FC<PersonalizedSectionProps> = ({
   const handleViewProduct = (productId: string) => {
     trackUserAction('view_product', { productId, source: 'personalized_recommendations' });
     // Navegar para página do produto
-    window.location.href = `/produto/${productId}`;
+    navigate(`/produto/${productId}`);
   };
 
   const handleAddToCart = (productId: string) => {

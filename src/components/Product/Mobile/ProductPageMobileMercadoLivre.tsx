@@ -15,6 +15,7 @@ import { useProductSpecifications } from '@/hooks/useProductSpecifications';
 import { useProductFAQs } from '@/hooks/useProductFAQs';
 import RelatedProductsCarousel from '../MainContent/RelatedProductsCarousel';
 import DynamicDeliveryMobile from './DynamicDeliveryMobile';
+import GoogleReviewsMobile from '../Sidebar/GoogleReviewsMobile';
 import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 import { useWhatsAppLoading } from '@/hooks/useWhatsAppLoading';
 import WhatsAppLoadingOverlay from '@/components/ui/WhatsAppLoadingOverlay';
@@ -62,6 +63,12 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
     { label: 'Marca', value: 'UTI dos Games' },
     { label: 'Ano', value: '2024' }
   ];
+
+  // CORREÇÃO: Garantir scroll ao topo quando componente mobile monta
+  useEffect(() => {
+    console.log('🔧 [ProductPageMobileMercadoLivre] Componente mobile montado, forçando scroll ao topo');
+    window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+  }, []);
 
   // Tracking de visualização
   useEffect(() => {
@@ -303,47 +310,37 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
       </div>
 
       {/* Garantias - EXATAMENTE como ML */}
-      <div className="px-4 pb-4">
-        <div className="space-y-3">
-          <div className="flex items-center gap-3 text-sm">
-            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-              <Check className="w-3 h-3 text-blue-600" />
+      <div className="px-4 py-6">
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-3 text-xs">
+            <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
+              <Check className="w-2.5 h-2.5 text-blue-600" />
             </div>
             <span className="text-gray-700">
-              <span className="text-blue-600 font-medium">Devolução grátis.</span> Você tem 30 dias a partir da data de recebimento.
+              <span className="text-blue-600 font-medium">Devolução gratuita.</span> Prazo de 30 dias a partir do recebimento.
             </span>
           </div>
           
-          <div className="flex items-center gap-3 text-sm">
-            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-              <Shield className="w-3 h-3 text-blue-600" />
+          <div className="flex items-center gap-3 text-xs">
+            <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
+              <Shield className="w-2.5 h-2.5 text-blue-600" />
             </div>
             <span className="text-gray-700">
-              <span className="text-blue-600 font-medium">Compra Garantida</span>, receba o produto que está esperando ou devolvemos o dinheiro.
+              <span className="text-blue-600 font-medium">Compra protegida.</span> Receba o produto correto ou seu dinheiro de volta.
             </span>
           </div>
           
-          <div className="flex items-center gap-3 text-sm">
-            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-              <Clock className="w-3 h-3 text-blue-600" />
+          <div className="flex items-center gap-3 text-xs">
+            <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
+              <Clock className="w-2.5 h-2.5 text-blue-600" />
             </div>
-            <span className="text-gray-700">30 dias de garantia de fábrica.</span>
+            <span className="text-gray-700">Até 36 meses de garantia para produtos selecionados.</span>
           </div>
         </div>
       </div>
 
-      {/* O que você precisa saber sobre este produto - EXATAMENTE como ML */}
-      <div className="border-t border-gray-100 p-4">
-        <h3 className="font-medium text-gray-900 mb-4">O que você precisa saber sobre este produto</h3>
-        <div className="space-y-3 text-sm text-gray-700">
-          {mainSpecs.map((spec, index) => (
-            <div key={index} className="flex justify-between py-1">
-              <span className="text-gray-600">• {spec.label}:</span>
-              <span className="font-medium">{spec.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Avaliações Google - substituindo seção de informações do produto */}
+      <GoogleReviewsMobile />
 
 
 
@@ -382,13 +379,16 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
             {product.description || `${product.name}\n\nProduto de alta qualidade da UTI dos Games.\n\nTenha a melhor experiência de jogo com este produto incrível! Desenvolvido com tecnologia de ponta e materiais de primeira qualidade, este item é perfeito para quem busca excelência e diversão.\n\nCaracterísticas especiais que fazem toda a diferença na sua experiência de jogo. Com este produto você terá acesso a funcionalidades exclusivas e uma qualidade incomparável.\n\nEscolha a UTI dos Games e tenha a certeza de estar adquirindo um produto de qualidade superior!`}
           </div>
         </div>
-        <Button
-          variant="ghost"
-          onClick={() => setShowFullDescription(!showFullDescription)}
-          className="text-blue-600 p-0 h-auto mt-2"
-        >
-          {showFullDescription ? 'Ver menos' : 'Ver descrição completa'}
-        </Button>
+        {/* 🔧 CORREÇÃO: Só mostrar botão se descrição for longa (mais de 200 caracteres) */}
+        {(product.description || `${product.name}\n\nProduto de alta qualidade da UTI dos Games.\n\nTenha a melhor experiência de jogo com este produto incrível! Desenvolvido com tecnologia de ponta e materiais de primeira qualidade, este item é perfeito para quem busca excelência e diversão.\n\nCaracterísticas especiais que fazem toda a diferença na sua experiência de jogo. Com este produto você terá acesso a funcionalidades exclusivas e uma qualidade incomparável.\n\nEscolha a UTI dos Games e tenha a certeza de estar adquirindo um produto de qualidade superior!`).length > 200 && (
+          <Button
+            variant="ghost"
+            onClick={() => setShowFullDescription(!showFullDescription)}
+            className="text-blue-600 p-0 h-auto mt-2"
+          >
+            {showFullDescription ? 'Ver menos' : 'Ver descrição completa'}
+          </Button>
+        )}
       </div>
 
       {/* Produtos relacionados - SEM TÍTULO */}
