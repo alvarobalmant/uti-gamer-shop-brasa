@@ -9,8 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { UTICoinsConditional } from './UTICoinsConditional';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useUIState } from '@/contexts/UIStateContext';
 
 interface UTICoinsWidgetProps {
   className?: string;
@@ -180,18 +178,6 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
     getTimeUntilNextCode 
   } = useDailyCodes();
   
-  const isMobileHook = useIsMobile();
-  const [isMobileStable, setIsMobileStable] = useState(isMobileHook);
-  const { shouldHideWidget } = useUIState();
-  
-  // Estabilizar isMobile - uma vez mobile, sempre mobile durante a sessão
-  useEffect(() => {
-    if (isMobileHook && !isMobileStable) {
-      setIsMobileStable(true);
-    }
-  }, [isMobileHook, isMobileStable]);
-  
-  const isMobile = isMobileStable;
   const previousBalance = useRef(coins.balance);
   const widgetRef = useRef<HTMLButtonElement>(null);
 
@@ -429,14 +415,9 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
   const levelData = calculateLevel(coins.totalEarned);
   const progressPercentage = levelData.nextThreshold > 0 ? (levelData.progress / levelData.nextThreshold) * 100 : 100;
 
-  // Ocultar widget em mobile quando há interferência na UX
-  if (isMobile && shouldHideWidget()) {
-    return null;
-  }
-
   if (coinsLoading || loading) {
-    const loadingContent = (
-      <div className={`${isMobile ? 'fixed top-4 right-4 z-50' : 'relative mr-2 sm:mr-0'} ${className}`}>
+    return (
+      <div className={`relative ${className}`}>
         <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg opacity-50">
           <Coins className="w-4 h-4 animate-spin" />
           <span className="font-semibold">...</span>
@@ -444,22 +425,16 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
         </div>
       </div>
     );
-
-    return (
-      <UTICoinsConditional>
-        {isMobile ? createPortal(loadingContent, document.body) : loadingContent}
-      </UTICoinsConditional>
-    );
   }
 
-  // Renderizar widget independente em mobile usando portal
-  const widgetContent = (
-    <div className={`${isMobile ? 'fixed top-4 right-4 z-50' : 'relative mr-2 sm:mr-0'} ${className}`}>
-      <button
-        ref={widgetRef}
-        onClick={openModal}
-        className="flex items-center gap-2 sm:gap-2 px-3 sm:px-3 py-2 sm:py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden"
-      >
+  return (
+    <UTICoinsConditional>
+      <div className={`relative mr-2 sm:mr-0 ${className}`}>
+        <button
+          ref={widgetRef}
+          onClick={openModal}
+          className="flex items-center gap-2 sm:gap-2 px-3 sm:px-3 py-2 sm:py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden"
+        >
           <Coins className="w-4 h-4 sm:w-4 sm:h-4" />
           <div className="relative">
             <motion.span 
@@ -493,13 +468,6 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
           </div>
           <span className="text-xs opacity-90">UTI Coins</span>
         </button>
-      </div>
-    );
-
-    // Em mobile, renderizar independente usando portal
-    return (
-      <UTICoinsConditional>
-        {isMobile ? createPortal(widgetContent, document.body) : widgetContent}
 
         {/* Modal Portal */}
         {createPortal(
@@ -747,6 +715,7 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
           </AnimatePresence>,
           document.body
         )}
-      </UTICoinsConditional>
-    );
+      </div>
+    </UTICoinsConditional>
+  );
 };

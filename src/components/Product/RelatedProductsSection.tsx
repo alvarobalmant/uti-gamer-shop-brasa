@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import SectionTitle from '@/components/SectionTitle';
 import { cn } from '@/lib/utils';
-import { useSimpleHorizontalScroll } from '@/hooks/useSimpleHorizontalScroll';
+import { useHorizontalScrollTracking } from '@/hooks/useHorizontalScrollTracking';
 import FavoriteButton from '@/components/FavoriteButton';
 import ProductCardImage from '@/components/ProductCard/ProductCardImage';
 import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
@@ -28,8 +28,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const navigate = useNavigate();
   const location = useLocation();
   const [animateProducts, setAnimateProducts] = useState(true);
-  // Usa novo sistema simples baseado no produto para rastreamento preciso
-  const scrollContainerRef = useSimpleHorizontalScroll(`related-products-${product.id}`, true);
+  const scrollContainerRef = useHorizontalScrollTracking('related-products', true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 

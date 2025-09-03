@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react'; // Example social icons
 import { cn } from '@/lib/utils';
-import { categories } from '@/components/Header/categories';
 
 // **Redesign based on GameStop Footer structure**
 const Footer: React.FC = () => {
@@ -17,19 +16,18 @@ const Footer: React.FC = () => {
 
   const currentYear = new Date().getFullYear();
 
-  // Filtrar categorias para remover "Início" e criar links da seção Loja
-  const lojaLinks = categories
-    .filter(category => category.id !== 'inicio') // Remove "Início"
-    .map(category => ({
-      label: category.name,
-      path: category.path
-    }));
-
   // Footer link sections (example structure)
   const footerSections = [
     {
       title: 'Loja',
-      links: lojaLinks, // Usar links dinâmicos da navegação
+      links: [
+        { label: 'PlayStation', path: '/categoria/playstation' },
+        { label: 'Xbox', path: '/categoria/xbox' },
+        { label: 'Nintendo', path: '/categoria/nintendo' },
+        { label: 'PC Gamer', path: '/categoria/pc' },
+        { label: 'Acessórios', path: '/categoria/acessorios' },
+        { label: 'Ofertas', path: '/categoria/ofertas' },
+      ],
     },
     {
       title: 'UTI PRO',
@@ -117,7 +115,7 @@ const Footer: React.FC = () => {
         <div className="text-center pt-8">
           {/* Optional: Add payment method icons here */}
           <p className="text-xs text-gray-500 mb-2">
-            UTI DOS GAMES LTDA - CNPJ: 16.811.173/0001-20 | Endereço: R. Alexandre Calmon, 314 - Centro, Colatina - ES, 29700-040
+            UTI DOS GAMES LTDA - CNPJ: 16.811.173/0001-20 | Endereço: Rua Exemplo, 123, Centro, Colatina - ES, CEP 29700-000
           </p>
           <p className="text-xs text-gray-500">
             © {currentYear} UTI DOS GAMES. Todos os direitos reservados. Os preços e condições de pagamento são exclusivos para compras via internet.

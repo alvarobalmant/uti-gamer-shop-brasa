@@ -5,6 +5,7 @@ import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import MobileSearchBar from '@/components/Header/MobileSearchBar';
+import { BottomNavigationBar } from '@/components/Mobile/BottomNavigationBar';
 import { useCart } from '@/contexts/CartContext';
 import ProductSkeleton from '@/components/ProductSkeleton';
 
@@ -216,6 +217,13 @@ const Index = React.memo(() => {
 
       {/* Floating Action Button */}
       <FloatingActionButton />
+
+      {/* Bottom Navigation Bar - Mobile Only */}
+      <BottomNavigationBar 
+        onSearchOpen={toggleMobileSearch}
+        onCartOpen={() => setShowCart(true)}
+        onAuthOpen={() => setShowAuthModal(true)}
+      />
 
       <Cart
         showCart={showCart}

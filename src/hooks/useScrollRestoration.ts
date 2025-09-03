@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigationType, NavigationType } from 'react-router-dom';
 import scrollManager from '@/lib/scrollRestorationManager';
+import horizontalScrollManager from '@/lib/horizontalScrollManager';
 
 /**
  * Hook para gerenciar a restauração da posição de scroll entre navegações.
@@ -33,6 +34,9 @@ export const useScrollRestoration = () => {
       restoreTimeoutRef.current = null;
     }
 
+    // Set current page for tracking in horizontal scroll system
+    horizontalScrollManager.setCurrentPage(currentPathKey);
+
     // SALVA IMEDIATAMENTE a posição da página anterior antes de qualquer coisa
     if (previousPathKey !== currentPathKey && !scrollManager.getIsRestoring()) {
       scrollManager.savePosition(previousPathKey, 'navigation sync save');
@@ -57,6 +61,12 @@ export const useScrollRestoration = () => {
           'POP navigation',
           isHomepage
         );
+        
+        // RESTAURA POSIÇÕES HORIZONTAIS APÓS SCROLL VERTICAL COM DELAY DE 0.5s
+        console.log(`[ScrollRestoration] 📐 Iniciando restauração horizontal com delay de 0.5s`);
+        setTimeout(async () => {
+          await horizontalScrollManager.restoreCurrentPageHorizontalPositions();
+        }, 100); // Pequeno delay adicional após o vertical
         
         if (!restored) {
           console.log(`[ScrollRestoration] ❌ Restauração falhou para ${currentPathKey}. Aplicando fallback.`);

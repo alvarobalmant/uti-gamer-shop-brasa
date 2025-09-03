@@ -30,7 +30,10 @@ const HeroQuickLinks = React.memo(() => {
   // Memoizar skeleton loading
   const skeletonItems = useMemo(() => 
     [...Array(6)].map((_, i) => (
-      <div key={`skeleton-${i}`} className="w-32 h-32 md:w-36 md:h-36 rounded-lg bg-gray-100 animate-pulse" />
+      <div key={`skeleton-${i}`} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-border/60">
+        <Skeleton className="w-5 h-5 rounded-full" />
+        <Skeleton className="h-4 w-16" />
+      </div>
     )), 
     []
   );
@@ -40,44 +43,34 @@ const HeroQuickLinks = React.memo(() => {
     <button
       onClick={() => handleQuickLinkClick(link.path)}
       className={cn(
-        "flex flex-col items-center justify-center",
-        "w-32 h-32 md:w-36 md:h-36",
-        "bg-white border border-gray-200",
-        "rounded-lg",
-        "hover:border-gray-300 hover:shadow-sm",
-        "transition-all duration-200",
-        "text-gray-700 hover:text-gray-900",
-        "group",
-        "p-4"
+        "flex items-center gap-2.5 px-4 py-2.5 rounded-full",
+        "bg-white border border-border/60 shadow-sm",
+        "hover:bg-gray-50 hover:border-primary/50 hover:shadow-md",
+        "transition-all duration-200 ease-in-out",
+        "group cursor-pointer"
       )}
     >
       <img
         src={link.icon_url}
         alt={link.label}
-        className="w-8 h-8 md:w-10 md:h-10 object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-200 mb-2"
+        className="w-5 h-5 object-contain transition-transform duration-200 group-hover:scale-110"
         loading="lazy"
         onError={handleImageError}
       />
-      <span className="text-xs md:text-sm font-medium text-center leading-tight">
+      <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors duration-200">
         {link.label}
       </span>
     </button>
   ));
 
   return (
-    <section className="py-6 md:py-8 bg-gray-50/30 border-b border-gray-100">
+    <section className="py-6 md:py-8 bg-gray-50/50 border-t border-border/40">
       <div className="container mx-auto px-4">
-        {/* Título */}
-        <h2 className="text-xl md:text-2xl font-bold text-center text-gray-800 mb-6 font-['Poppins']">
-          Do que Você Precisa?
-        </h2>
-        
-        {/* Grid de Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 justify-items-center">
+        <div className="flex flex-wrap gap-3 md:gap-4 justify-center">
           {loading && skeletonItems}
 
           {!loading && quickLinks.length === 0 && (
-            <p className="text-center text-muted-foreground py-4 col-span-full text-sm">
+            <p className="text-center text-muted-foreground py-4 w-full">
               Nenhum link rápido configurado.
             </p>
           )}

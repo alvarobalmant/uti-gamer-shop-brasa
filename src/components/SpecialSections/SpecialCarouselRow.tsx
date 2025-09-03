@@ -1,9 +1,12 @@
+<<<<<<< HEAD
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+=======
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+>>>>>>> f4b3b0b3e5ecef84614186ce9180a2d903c697ec
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/hooks/useProducts';
-import { useSimpleHorizontalScroll } from '@/hooks/useSimpleHorizontalScroll';
 
 interface CarouselRowConfig {
   title?: string;
@@ -35,6 +38,7 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
   onCardClick,
   sectionId, // ID da seção especial
 }) => {
+<<<<<<< HEAD
   const navigate = useNavigate();
   // Gera chave única e estável para o carrossel especial
   const generateCarouselKey = () => {
@@ -46,6 +50,9 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
   // Sistema simples de scroll horizontal para seções especiais
   const sectionKey = generateCarouselKey();
   const scrollContainerRef = useSimpleHorizontalScroll(sectionKey, true);
+=======
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+>>>>>>> f4b3b0b3e5ecef84614186ce9180a2d903c697ec
   
   // Estados para controle dos botões de scroll (igual às seções normais)
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -99,9 +106,11 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
     const newCanScrollLeft = scrollLeft > tolerance;
     const newCanScrollRight = scrollLeft < (scrollWidth - clientWidth - tolerance);
     
+    // Debug info removido para produção
+    
     setCanScrollLeft(newCanScrollLeft);
     setCanScrollRight(newCanScrollRight);
-  }, [scrollContainerRef]);
+  }, []);
 
   // Função ultra-otimizada para scroll suave sem travamentos
   const handleScrollOptimized = useCallback(() => {
@@ -111,6 +120,7 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
     });
   }, [checkScrollButtons]);
 
+  // Função de scroll otimizada (baseada nas seções normais)
   // Funções de scroll idênticas às seções normais
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -305,7 +315,6 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
         {/* Products Scroll Container (otimizado para performance) */}
         <div 
           ref={scrollContainerRef}
-          data-carousel-id={sectionKey}
           className="special-carousel-container w-full overflow-x-auto overflow-y-hidden pb-4 pt-2 overscroll-behavior-x-contain"
           style={{
             scrollbarWidth: "thin",

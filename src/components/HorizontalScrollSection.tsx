@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { useSimpleHorizontalScroll } from '@/hooks/useSimpleHorizontalScroll';
+import { useHorizontalScrollTracking } from '@/hooks/useHorizontalScrollTracking';
 
 interface HorizontalScrollSectionProps {
   children: React.ReactNode;
@@ -18,12 +18,13 @@ const HorizontalScrollSection: React.FC<HorizontalScrollSectionProps> = ({
   className = '',
   autoTrack = true
 }) => {
-  const elementRef = useSimpleHorizontalScroll(sectionId || 'horizontal-section', autoTrack) as React.RefObject<HTMLDivElement>;
+  const elementRef = useHorizontalScrollTracking(sectionId, autoTrack) as React.RefObject<HTMLDivElement>;
 
   return (
     <div
       ref={elementRef}
-      data-carousel-id={sectionId}
+      data-section={sectionId}
+      data-testid={sectionId ? `horizontal-scroll-${sectionId}` : undefined}
       className={`overflow-x-auto ${className}`}
     >
       {children}
