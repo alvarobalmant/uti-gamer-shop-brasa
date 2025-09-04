@@ -82,19 +82,21 @@ const OrderVerifier = () => {
     }).format(value);
   };
 
-  // Calcular cashback previsto
+  // Calcular cashback previsto baseado nos produtos reais
   const calculateExpectedCashback = (items: any[]) => {
     let totalCashbackReais = 0;
     let hasProductsWithCashback = false;
 
     items.forEach(item => {
-      if (item.product_id) {
-        // Para produtos com ID, assumir que é produto real e pode ter cashback
+      // Buscar produto pelo nome "coin" ou verificar se tem product_id
+      const isProductCoin = item.product_name?.toLowerCase().includes('coin');
+      const itemTotal = item.total || (item.price * item.quantity);
+      
+      if (isProductCoin || item.product_id) {
         hasProductsWithCashback = true;
-        // Para o produto "coin" (R$ 100.000), seria 10% = R$ 10.000 = 1.000.000 UTI Coins
-        const itemTotal = item.total || (item.price * item.quantity);
-        // Assumir 10% de cashback para produtos identificados
-        totalCashbackReais += itemTotal * 0.10;
+        // Para o produto "coin", usar 10% de cashback
+        const cashbackPercentage = isProductCoin ? 10 : 10; // Assumir 10% para todos por enquanto
+        totalCashbackReais += itemTotal * (cashbackPercentage / 100);
       }
     });
 
