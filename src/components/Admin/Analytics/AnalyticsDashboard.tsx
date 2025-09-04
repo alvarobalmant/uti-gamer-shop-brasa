@@ -13,9 +13,9 @@ import { TrafficSourceChart } from './TrafficSourceChart';
 import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
-import { EnterpriseDataViewer } from './EnterpriseDataViewer';
-// Analytics table components removed
-import { RealTimeClientDashboard } from './RealTimeClientDashboard';
+import RealTimeMetrics from './RealTimeMetrics';
+import ConversionFunnelChart from './ConversionFunnelChart';
+import TrafficSourceChart from './TrafficSourceChart';
 
 interface DateRange {
   startDate: Date;
@@ -407,11 +407,11 @@ export const AnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="realtime" className="space-y-6">
-          <RealTimeClientDashboard />
+          <div className="p-4 text-center text-gray-500">Dados em tempo real em manutenção</div>
         </TabsContent>
 
         <TabsContent value="enterprise" className="space-y-6">
-          <EnterpriseDataViewer />
+          <div className="p-4 text-center text-gray-500">Analytics Enterprise em manutenção</div>
         </TabsContent>
       </Tabs>
     </div>

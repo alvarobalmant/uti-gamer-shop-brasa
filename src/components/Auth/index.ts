@@ -1,17 +1,14 @@
-// Export do novo modal profissional como padrão
-export { AuthModalFinal as AuthModal } from './AuthModalFinal';
-
-// Exports dos componentes auxiliares
-export { 
-  ProfessionalInput,
-  PasswordInput,
-  ProfessionalButton,
-  FormError,
-  FormSuccess,
-  FormLoadingOverlay,
-  Divider,
-  SocialButton
-} from './FormComponents';
+export { default as AuthModal } from './AuthModal';
+export { default as AuthGuard } from './AuthGuard';
+export { default as AuthModalSimplified } from './AuthModalSimplified';
+export { default as AuthModalOptimized } from './AuthModalOptimized';
+export { default as AuthModalProductionReady } from './AuthModalProductionReady';
+export { default as AuthContext } from './AuthContext';
+export { default as AuthProvider } from './AuthProvider';
+export { default as LoginForm } from './LoginForm';
+export { default as SignupForm } from './SignupForm';
+export { default as ForgotPasswordForm } from './ForgotPasswordForm';
+export { default as ResetPasswordForm } from './ResetPasswordForm';
 
 export {
   FloatingParticles,
