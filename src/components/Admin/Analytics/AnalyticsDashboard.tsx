@@ -13,7 +13,12 @@ import { TrafficSourceChart } from './TrafficSourceChart';
 import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
-// Componentes simplificados removidos para evitar erros
+import { EnterpriseDataViewer } from './EnterpriseDataViewer';
+import { ClientAnalysisTable } from './ClientAnalysisTable';
+import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
+import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
+import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
+import { RealTimeClientDashboard } from './RealTimeClientDashboard';
 
 interface DateRange {
   startDate: Date;
@@ -121,7 +126,11 @@ export const AnalyticsDashboard = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      {/* Painéis temporariamente desabilitados para focar em UTI Coins */}
+      {/* Painel de Configuração */}
+      <AnalyticsConfigPanel />
+      
+      {/* Painel de Configuração Enterprise */}
+      <EnterpriseConfigPanel />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -397,27 +406,15 @@ export const AnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="client-analysis" className="space-y-6">
-          <div className="p-6 text-center">
-            <p className="text-muted-foreground">
-              Análise de clientes temporariamente indisponível - focando em funcionalidades principais
-            </p>
-          </div>
+          <ClientAnalysisTableFixed />
         </TabsContent>
 
         <TabsContent value="realtime" className="space-y-6">
-          <div className="p-6 text-center">
-            <p className="text-muted-foreground">
-              Dashboard tempo real temporariamente indisponível
-            </p>
-          </div>
+          <RealTimeClientDashboard />
         </TabsContent>
 
         <TabsContent value="enterprise" className="space-y-6">
-          <div className="p-6 text-center">
-            <p className="text-muted-foreground">
-              Dados enterprise temporariamente indisponíveis
-            </p>
-          </div>
+          <EnterpriseDataViewer />
         </TabsContent>
       </Tabs>
     </div>

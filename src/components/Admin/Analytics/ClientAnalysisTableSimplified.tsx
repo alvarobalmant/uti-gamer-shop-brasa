@@ -1,6 +1,6 @@
 /**
- * TABELA DE ANÁLISE DE CLIENTES - VERSÃO CORRIGIDA
- * Status correto baseado em última atividade real + Modal funcionando
+ * TABELA DE ANÁLISE DE CLIENTES - VERSÃO SIMPLIFICADA
+ * Mostra todos os clientes disponíveis, mesmo com tempo 0
  */
 
 import React, { useState, useEffect } from 'react';
@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Search, 
   Filter, 
@@ -19,11 +18,10 @@ import {
   ShoppingCart, 
   TrendingUp,
   User,
-  RefreshCw,
-  X
+  RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { ClientJourneyTimelineFixed } from './ClientJourneyTimelineFixed';
+import { ClientDetailModal } from './ClientDetailModal';
 
 interface ClientAnalysis {
   user_id: string;
@@ -44,7 +42,7 @@ interface ClientAnalysis {
   sessions: any[];
 }
 
-export const ClientAnalysisTableFixed: React.FC = () => {
+export const ClientAnalysisTableSimplified: React.FC = () => {
   const [clients, setClients] = useState<ClientAnalysis[]>([]);
   const [filteredClients, setFilteredClients] = useState<ClientAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,11 +51,11 @@ export const ClientAnalysisTableFixed: React.FC = () => {
   const [selectedClient, setSelectedClient] = useState<ClientAnalysis | null>(null);
   const [debugInfo, setDebugInfo] = useState<any>({});
 
-  // Função para buscar dados com status correto
-  const fetchClientDataFixed = async () => {
+  // Função simplificada para buscar dados
+  const fetchClientDataSimplified = async () => {
     try {
       setLoading(true);
-      console.log('🔍 [FIXED] Fetching client data with correct status...');
+      console.log('🔍 [SIMPLIFIED] Fetching all available data...');
 
       // Buscar TODOS os dados disponíveis
       const [realtimeResult, journeyResult, interactionsResult] = await Promise.all([
@@ -83,13 +81,13 @@ export const ClientAnalysisTableFixed: React.FC = () => {
       };
       
       setDebugInfo(debug);
-      console.log('📊 [FIXED] Raw data:', debug);
+      console.log('📊 [SIMPLIFIED] Raw data:', debug);
 
       if (realtimeError || journeyError || interactionsError) {
-        console.error('❌ [FIXED] Errors:', { realtimeError, journeyError, interactionsError });
+        console.error('❌ [SIMPLIFIED] Errors:', { realtimeError, journeyError, interactionsError });
       }
 
-      // Processar dados com status correto
+      // Processar dados de forma mais permissiva
       const clientMap = new Map<string, ClientAnalysis>();
 
       // 1. Processar atividade em tempo real
@@ -97,15 +95,11 @@ export const ClientAnalysisTableFixed: React.FC = () => {
         const userId = activity.user_id || activity.session_id || `anonymous_${activity.session_id}`;
         
         if (!clientMap.has(userId)) {
-          // CORREÇÃO: Usar data real ou data antiga se não houver
-          const lastActivity = activity.last_heartbeat || '2024-01-01T00:00:00Z'; // Data antiga se não houver
-          const firstActivity = activity.last_heartbeat || '2024-01-01T00:00:00Z';
-          
           clientMap.set(userId, {
             user_id: userId,
             email: null,
-            first_session: firstActivity,
-            last_session: lastActivity,
+            first_session: activity.last_heartbeat || new Date().toISOString(),
+            last_session: activity.last_heartbeat || new Date().toISOString(),
             total_sessions: 0,
             total_time_spent: 0,
             total_pages_visited: 0,
@@ -128,7 +122,7 @@ export const ClientAnalysisTableFixed: React.FC = () => {
           client.total_time_spent += activity.time_on_site_seconds;
         }
 
-        // CORREÇÃO: Atualizar datas apenas se forem válidas
+        // Atualizar datas
         if (activity.last_heartbeat) {
           if (activity.last_heartbeat < client.first_session) {
             client.first_session = activity.last_heartbeat;
@@ -138,7 +132,7 @@ export const ClientAnalysisTableFixed: React.FC = () => {
           }
         }
 
-        console.log(`👤 [FIXED] Client ${userId}: last_activity=${activity.last_heartbeat}, time=${activity.time_on_site_seconds || 0}s`);
+        console.log(`👤 [SIMPLIFIED] Client ${userId}: time=${activity.time_on_site_seconds || 0}s`);
       });
 
       // 2. Processar jornada detalhada
@@ -146,14 +140,11 @@ export const ClientAnalysisTableFixed: React.FC = () => {
         const userId = journey.user_id || journey.session_id || `anonymous_${journey.session_id}`;
         
         if (!clientMap.has(userId)) {
-          // CORREÇÃO: Usar data real da jornada
-          const stepTime = journey.step_start_time || '2024-01-01T00:00:00Z';
-          
           clientMap.set(userId, {
             user_id: userId,
             email: null,
-            first_session: stepTime,
-            last_session: stepTime,
+            first_session: journey.step_start_time || new Date().toISOString(),
+            last_session: journey.step_start_time || new Date().toISOString(),
             total_sessions: 0,
             total_time_spent: 0,
             total_pages_visited: 0,
@@ -188,19 +179,9 @@ export const ClientAnalysisTableFixed: React.FC = () => {
           }
         }
 
-        // Somar tempo da jornada
+        // Somar tempo da jornada (mesmo que seja 0)
         if (journey.time_spent_seconds) {
           client.total_time_spent += journey.time_spent_seconds;
-        }
-
-        // CORREÇÃO: Atualizar datas da jornada
-        if (journey.step_start_time) {
-          if (journey.step_start_time < client.first_session) {
-            client.first_session = journey.step_start_time;
-          }
-          if (journey.step_start_time > client.last_session) {
-            client.last_session = journey.step_start_time;
-          }
         }
       });
 
@@ -208,19 +189,14 @@ export const ClientAnalysisTableFixed: React.FC = () => {
       interactions?.forEach(interaction => {
         const userId = interaction.user_id || interaction.session_id || `anonymous_${interaction.session_id}`;
         
-        if (clientMap.has(userId) && interaction.timestamp_precise) {
-          const client = clientMap.get(userId)!;
-          
-          // CORREÇÃO: Atualizar última atividade com interações
-          if (interaction.timestamp_precise > client.last_session) {
-            client.last_session = interaction.timestamp_precise;
-          }
+        if (clientMap.has(userId) && interaction.interaction_type === 'product_view') {
+          // Já contado na jornada, mas validamos aqui
         }
       });
 
       // 4. Calcular métricas finais
       clientMap.forEach(client => {
-        // Contar sessões únicas
+        // Contar sessões únicas de forma mais permissiva
         const uniqueSessions = new Set();
         
         realtimeActivity?.forEach(activity => {
@@ -237,7 +213,7 @@ export const ClientAnalysisTableFixed: React.FC = () => {
           }
         });
         
-        client.total_sessions = Math.max(uniqueSessions.size, 1);
+        client.total_sessions = Math.max(uniqueSessions.size, 1); // Pelo menos 1 sessão
         
         // Calcular métricas
         client.avg_session_duration = client.total_sessions > 0 
@@ -248,30 +224,25 @@ export const ClientAnalysisTableFixed: React.FC = () => {
           ? (client.total_purchases / client.total_products_viewed) * 100 
           : 0;
 
-        // Log do status calculado
-        const now = new Date();
-        const lastActivity = new Date(client.last_session);
-        const diffHours = (now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60);
-        
-        console.log(`📊 [FIXED] Client ${client.user_id}:`, {
-          last_session: client.last_session,
-          hours_ago: diffHours.toFixed(1),
+        console.log(`📊 [SIMPLIFIED] Client ${client.user_id}:`, {
           sessions: client.total_sessions,
           time: client.total_time_spent,
-          products: client.total_products_viewed
+          pages: client.total_pages_visited,
+          products: client.total_products_viewed,
+          conversions: client.total_purchases
         });
       });
 
-      // 5. Converter para array
+      // 5. Converter para array (SEM FILTROS RESTRITIVOS)
       const clientsArray = Array.from(clientMap.values())
         .sort((a, b) => new Date(b.last_session).getTime() - new Date(a.last_session).getTime());
 
-      console.log(`✅ [FIXED] Found ${clientsArray.length} clients with corrected status`);
+      console.log(`✅ [SIMPLIFIED] Found ${clientsArray.length} clients total`);
 
       setClients(clientsArray);
       setFilteredClients(clientsArray);
     } catch (error) {
-      console.error('❌ [FIXED] Error fetching client data:', error);
+      console.error('❌ [SIMPLIFIED] Error fetching client data:', error);
       setDebugInfo(prev => ({ ...prev, fetchError: error.message }));
     } finally {
       setLoading(false);
@@ -279,7 +250,7 @@ export const ClientAnalysisTableFixed: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchClientDataFixed();
+    fetchClientDataSimplified();
   }, []);
 
   // Função para filtrar clientes
@@ -334,13 +305,11 @@ export const ClientAnalysisTableFixed: React.FC = () => {
     }
   };
 
-  // CORREÇÃO: Função para determinar status com debug
+  // Função para determinar status do cliente
   const getClientStatus = (lastSession: string) => {
     const now = new Date();
     const lastActivity = new Date(lastSession);
     const diffHours = (now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60);
-    
-    console.log(`🔍 [STATUS] Client last activity: ${lastSession}, hours ago: ${diffHours.toFixed(1)}`);
     
     if (diffHours < 1) return { label: 'Ativo Agora', color: 'bg-green-500' };
     if (diffHours < 24) return { label: 'Ativo Hoje', color: 'bg-blue-500' };
@@ -378,7 +347,7 @@ export const ClientAnalysisTableFixed: React.FC = () => {
       {/* Debug Info */}
       <Card className="bg-blue-50 border-blue-200">
         <CardHeader>
-          <CardTitle className="text-sm text-blue-800">Debug Info - Status Corrigido</CardTitle>
+          <CardTitle className="text-sm text-blue-800">Debug Info</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-xs text-blue-700 space-y-1">
@@ -386,7 +355,6 @@ export const ClientAnalysisTableFixed: React.FC = () => {
             <div>Journey Data: {debugInfo.journeyData} registros</div>
             <div>Interactions: {debugInfo.interactions} registros</div>
             <div>Total Clientes Processados: {clients.length}</div>
-            <div>Status baseado em última atividade REAL (não data atual)</div>
             {debugInfo.errors?.realtime && <div className="text-red-600">Erro Realtime: {debugInfo.errors.realtime}</div>}
             {debugInfo.errors?.journey && <div className="text-red-600">Erro Journey: {debugInfo.errors.journey}</div>}
             {debugInfo.errors?.interactions && <div className="text-red-600">Erro Interactions: {debugInfo.errors.interactions}</div>}
@@ -449,9 +417,9 @@ export const ClientAnalysisTableFixed: React.FC = () => {
       {/* Filtros e Busca */}
       <Card>
         <CardHeader>
-          <CardTitle>Análise Individual de Clientes (Status Corrigido)</CardTitle>
+          <CardTitle>Análise Individual de Clientes (Simplificada)</CardTitle>
           <CardDescription>
-            Status baseado na última atividade real de cada cliente
+            Mostra todos os clientes disponíveis no sistema
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -475,15 +443,15 @@ export const ClientAnalysisTableFixed: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os Clientes</SelectItem>
-                  <SelectItem value="recent">Ativos Recentemente</SelectItem>
                   <SelectItem value="with_time">Com Tempo &gt; 0</SelectItem>
                   <SelectItem value="high_value">Alto Valor (&gt;R$500)</SelectItem>
                   <SelectItem value="frequent">Frequentes (&gt;5 sessões)</SelectItem>
+                  <SelectItem value="recent">Ativos Recentemente</SelectItem>
                   <SelectItem value="converters">Com Compras</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={fetchClientDataFixed} variant="outline">
+            <Button onClick={fetchClientDataSimplified} variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Atualizar
             </Button>
@@ -563,124 +531,13 @@ export const ClientAnalysisTableFixed: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* CORREÇÃO: Modal de Detalhes Funcionando */}
+      {/* Modal de Detalhes */}
       {selectedClient && (
-        <Dialog open={!!selectedClient} onOpenChange={() => setSelectedClient(null)}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center justify-between">
-                <span>Detalhes do Cliente {selectedClient.user_id.slice(-8)}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedClient(null)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </DialogTitle>
-              <DialogDescription>
-                Análise completa do comportamento e jornada do cliente
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-6">
-              {/* Informações Gerais */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">{selectedClient.total_sessions}</p>
-                      <p className="text-sm text-gray-600">Sessões Total</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">{formatTime(selectedClient.total_time_spent)}</p>
-                      <p className="text-sm text-gray-600">Tempo Total</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">{selectedClient.total_products_viewed}</p>
-                      <p className="text-sm text-gray-600">Produtos Visualizados</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Métricas Detalhadas */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Métricas de Comportamento</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Primeira Sessão</p>
-                      <p className="font-medium">{new Date(selectedClient.first_session).toLocaleDateString('pt-BR')}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Última Atividade</p>
-                      <p className="font-medium">{new Date(selectedClient.last_session).toLocaleDateString('pt-BR')}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Páginas Visitadas</p>
-                      <p className="font-medium">{selectedClient.total_pages_visited}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Taxa de Conversão</p>
-                      <p className="font-medium">{selectedClient.conversion_rate.toFixed(1)}%</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Itens no Carrinho</p>
-                      <p className="font-medium">{selectedClient.total_cart_additions}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Compras Realizadas</p>
-                      <p className="font-medium">{selectedClient.total_purchases}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Valor Total Gasto</p>
-                      <p className="font-medium">R$ {selectedClient.total_spent.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Tempo Médio/Sessão</p>
-                      <p className="font-medium">{formatTime(Math.floor(selectedClient.avg_session_duration))}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Status Atual */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Status Atual</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4">
-                    <Badge className={`${getClientStatus(selectedClient.last_session).color} text-white`}>
-                      {getClientStatus(selectedClient.last_session).label}
-                    </Badge>
-                    <span className="text-sm text-gray-600">
-                      Última atividade: {new Date(selectedClient.last_session).toLocaleString('pt-BR')}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Jornada do Cliente */}
-              <div>
-                <ClientJourneyTimelineFixed clientId={selectedClient.user_id} />
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ClientDetailModal
+          client={selectedClient}
+          isOpen={!!selectedClient}
+          onClose={() => setSelectedClient(null)}
+        />
       )}
     </div>
   );
