@@ -3,9 +3,8 @@ import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useUTIProPricing } from '@/hooks/useUTIProPricing';
-import { useUTICoinsProduct } from '@/hooks/useUTICoinsProduct';
 import { formatPrice } from '@/utils/formatPrice';
-import { Crown, Coins } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -23,7 +22,6 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
   const { hasActiveSubscription } = useSubscriptions();
   const isProMember = hasActiveSubscription();
   const utiProPricing = useUTIProPricing(product);
-  const utiCoinsProduct = useUTICoinsProduct(product);
 
   const getBasePrice = () => {
     switch (selectedCondition) {
@@ -110,43 +108,6 @@ const ProductPricing: React.FC<ProductPricingProps> = ({
               >
                 Ser PRO
               </Button>
-            </div>
-          </div>
-        )}
-
-        {/* UTI Coins Info - só mostra se habilitado para o produto */}
-        {utiCoinsProduct.isEnabled && (
-          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Coins className="w-5 h-5 text-orange-600" />
-              <span className="font-bold text-orange-800">UTI Coins</span>
-            </div>
-            
-            <div className="space-y-2">
-              {utiCoinsProduct.canUseCoins && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-orange-700">Desconto máximo disponível:</span>
-                  <span className="font-bold text-orange-800">
-                    {formatPrice(Math.min(utiCoinsProduct.maxDiscount || basePrice, basePrice))}
-                  </span>
-                </div>
-              )}
-              
-              {utiCoinsProduct.estimatedCashback > 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-orange-700">Cashback estimado:</span>
-                  <span className="font-bold text-green-600">
-                    +{utiCoinsProduct.estimatedCashback} UTI Coins
-                  </span>
-                </div>
-              )}
-
-              {utiCoinsProduct.rate > 0 && (
-                <div className="text-xs text-orange-600 mt-2">
-                  1 UTI Coin = {formatPrice(utiCoinsProduct.rate)} • 
-                  {((utiCoinsProduct.cashbackRate || 0) * 100).toFixed(1)}% de cashback
-                </div>
-              )}
             </div>
           </div>
         )}

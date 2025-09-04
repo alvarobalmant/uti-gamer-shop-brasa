@@ -37,12 +37,6 @@ export interface ProductEditorData {
   discount_percentage?: number;
   pix_discount_percentage?: number;
   
-  // UTI Coins configuration
-  uti_coins_enabled?: boolean;
-  uti_coins_rate?: number;
-  uti_coins_max_discount?: number;
-  uti_coins_cashback_rate?: number;
-  
   // Stock and availability
   stock?: number;
   is_active: boolean;
@@ -121,11 +115,6 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
     free_shipping: false,
     store_pickup_available: true,
     tagIds: [],
-    // UTI Coins defaults
-    uti_coins_enabled: false,
-    uti_coins_rate: 0,
-    uti_coins_max_discount: 0,
-    uti_coins_cashback_rate: 0,
   });
 
   // Load product data for editing
@@ -196,11 +185,6 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
         tagIds: product.tags?.map(tag => tag.id) || [],
         created_at: product.created_at,
         updated_at: product.updated_at,
-        // UTI Coins fields
-        uti_coins_enabled: (product as any).uti_coins_enabled || false,
-        uti_coins_rate: (product as any).uti_coins_rate || 0,
-        uti_coins_max_discount: (product as any).uti_coins_max_discount || 0,
-        uti_coins_cashback_rate: (product as any).uti_coins_cashback_rate || 0,
       });
     }
   }, [product]);
@@ -238,14 +222,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
         return;
       }
 
-      console.log('🟦 [ProductEditor] Submitting product data:', formData);
-      console.log('🟧 [ProductEditor] UTI Coins data:', {
-        uti_coins_enabled: formData.uti_coins_enabled,
-        uti_coins_rate: formData.uti_coins_rate,
-        uti_coins_max_discount: formData.uti_coins_max_discount,
-        uti_coins_cashback_rate: formData.uti_coins_cashback_rate
-      });
-      
+      console.log('Submitting product data:', formData);
       await onSubmit(formData);
       setHasUnsavedChanges(false);
       

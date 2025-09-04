@@ -37,12 +37,6 @@ const mapRowToProduct = (row: any): Product => ({
   uti_pro_custom_price: row.uti_pro_custom_price ? Number(row.uti_pro_custom_price) : undefined,
   uti_pro_type: row.uti_pro_type || 'percentage',
   
-  // Campos UTI Coins
-  uti_coins_enabled: row.uti_coins_enabled || false,
-  uti_coins_rate: row.uti_coins_rate ? Number(row.uti_coins_rate) : 0,
-  uti_coins_max_discount: row.uti_coins_max_discount ? Number(row.uti_coins_max_discount) : 0,
-  uti_coins_cashback_rate: row.uti_coins_cashback_rate ? Number(row.uti_coins_cashback_rate) : 0,
-  
   // Campos do sistema de SKUs
   parent_product_id: row.parent_product_id || undefined,
   is_master_product: row.is_master_product || false,
@@ -567,21 +561,10 @@ export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'ta
         urgency_text: '',
         show_social_proof: false,
         social_proof_text: ''
-      },
-      // UTI Coins fields
-      uti_coins_enabled: productInfo.uti_coins_enabled || false,
-      uti_coins_rate: productInfo.uti_coins_rate || 0,
-      uti_coins_max_discount: productInfo.uti_coins_max_discount || 0,
-      uti_coins_cashback_rate: productInfo.uti_coins_cashback_rate || 0,
+      }
     };
     
-    console.log('🟨 [addProductToDatabase] Dados sendo enviados:', productToInsert);
-    console.log('🟧 [addProductToDatabase] UTI Coins dados:', {
-      uti_coins_enabled: productToInsert.uti_coins_enabled,
-      uti_coins_rate: productToInsert.uti_coins_rate,
-      uti_coins_max_discount: productToInsert.uti_coins_max_discount,
-      uti_coins_cashback_rate: productToInsert.uti_coins_cashback_rate
-    });
+    console.log('[addProductToDatabase] Dados sendo enviados:', productToInsert);
     
     const { data: product, error: productError } = await supabase
       .from('products')
@@ -662,21 +645,10 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
         urgency_text: '',
         show_social_proof: false,
         social_proof_text: ''
-      },
-      // UTI Coins fields
-      uti_coins_enabled: productUpdates.uti_coins_enabled || false,
-      uti_coins_rate: productUpdates.uti_coins_rate || 0,
-      uti_coins_max_discount: productUpdates.uti_coins_max_discount || 0,
-      uti_coins_cashback_rate: productUpdates.uti_coins_cashback_rate || 0,
+      }
     };
     
-    console.log('🟨 [updateProductInDatabase] Dados sendo enviados:', updateData);
-    console.log('🟧 [updateProductInDatabase] UTI Coins dados:', {
-      uti_coins_enabled: updateData.uti_coins_enabled,
-      uti_coins_rate: updateData.uti_coins_rate,
-      uti_coins_max_discount: updateData.uti_coins_max_discount,
-      uti_coins_cashback_rate: updateData.uti_coins_cashback_rate
-    });
+    console.log('[updateProductInDatabase] Dados sendo enviados:', updateData);
     
     // Atualizar produto
     const { data: updatedProduct, error: productError } = await supabase

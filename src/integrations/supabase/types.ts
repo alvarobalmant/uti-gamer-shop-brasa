@@ -883,9 +883,6 @@ export type Database = {
           updated_at: string
           user_agent: string | null
           user_id: string | null
-          uti_coins_details: Json | null
-          uti_coins_discount_amount: number | null
-          uti_coins_used: number | null
         }
         Insert: {
           browser_info?: Json | null
@@ -907,9 +904,6 @@ export type Database = {
           updated_at?: string
           user_agent?: string | null
           user_id?: string | null
-          uti_coins_details?: Json | null
-          uti_coins_discount_amount?: number | null
-          uti_coins_used?: number | null
         }
         Update: {
           browser_info?: Json | null
@@ -931,9 +925,6 @@ export type Database = {
           updated_at?: string
           user_agent?: string | null
           user_id?: string | null
-          uti_coins_details?: Json | null
-          uti_coins_discount_amount?: number | null
-          uti_coins_used?: number | null
         }
         Relationships: []
       }
@@ -1870,10 +1861,6 @@ export type Database = {
           title: string | null
           trust_indicators: Json | null
           updated_at: string
-          uti_coins_cashback_rate: number | null
-          uti_coins_enabled: boolean | null
-          uti_coins_max_discount: number | null
-          uti_coins_rate: number | null
           uti_pro_custom_price: number | null
           uti_pro_enabled: boolean | null
           uti_pro_price: number | null
@@ -1952,10 +1939,6 @@ export type Database = {
           title?: string | null
           trust_indicators?: Json | null
           updated_at?: string
-          uti_coins_cashback_rate?: number | null
-          uti_coins_enabled?: boolean | null
-          uti_coins_max_discount?: number | null
-          uti_coins_rate?: number | null
           uti_pro_custom_price?: number | null
           uti_pro_enabled?: boolean | null
           uti_pro_price?: number | null
@@ -2034,10 +2017,6 @@ export type Database = {
           title?: string | null
           trust_indicators?: Json | null
           updated_at?: string
-          uti_coins_cashback_rate?: number | null
-          uti_coins_enabled?: boolean | null
-          uti_coins_max_discount?: number | null
-          uti_coins_rate?: number | null
           uti_pro_custom_price?: number | null
           uti_pro_enabled?: boolean | null
           uti_pro_price?: number | null
@@ -3731,21 +3710,9 @@ export type Database = {
           tuples_read: number
         }[]
       }
-      apply_product_uti_coins_discount: {
-        Args: {
-          p_coins_to_spend: number
-          p_product_id: string
-          p_user_id: string
-        }
-        Returns: Json
-      }
       calculate_engagement_score: {
         Args: { p_page_url?: string; p_session_id: string }
         Returns: number
-      }
-      calculate_product_cashback: {
-        Args: { p_product_id: string; p_purchase_amount: number }
-        Returns: Json
       }
       can_claim_code: {
         Args: { p_code: string }
@@ -4159,10 +4126,6 @@ export type Database = {
       }
       process_daily_login_test: {
         Args: { p_user_id: string }
-        Returns: Json
-      }
-      process_uti_coins_order: {
-        Args: { p_admin_id: string; p_code: string }
         Returns: Json
       }
       promote_user_to_admin: {

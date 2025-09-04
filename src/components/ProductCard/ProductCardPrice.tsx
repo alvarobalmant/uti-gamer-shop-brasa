@@ -2,7 +2,6 @@
 import React from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useUTIProPricing } from '@/hooks/useUTIProPricing';
-import { useUTICoinsProduct } from '@/hooks/useUTICoinsProduct';
 import { formatPrice } from '@/utils/formatPrice';
 
 interface ProductCardPriceProps {
@@ -11,7 +10,6 @@ interface ProductCardPriceProps {
 
 const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
   const utiProPricing = useUTIProPricing(product);
-  const utiCoinsProduct = useUTICoinsProduct(product);
   const originalPrice = product.list_price;
   const discount = originalPrice ? Math.round(((originalPrice - product.price) / originalPrice) * 100) : 0;
 
@@ -36,23 +34,6 @@ const ProductCardPrice: React.FC<ProductCardPriceProps> = ({ product }) => {
             {formatPrice(product.pro_price)}
           </span>
           <span className="text-muted-foreground ml-1">com Pro</span>
-        </div>
-      )}
-
-      {/* UTI Coins Section */}
-      {utiCoinsProduct.isEnabled && utiCoinsProduct.canUseCoins && (
-        <div className="text-xs sm:text-sm">
-          <span className="font-bold text-orange-600">
-            Até {formatPrice(Math.min(utiCoinsProduct.maxDiscount || product.price, product.price))} OFF
-          </span>
-          <span className="text-muted-foreground ml-1">com UTI Coins</span>
-        </div>
-      )}
-
-      {/* Cashback Section */}
-      {utiCoinsProduct.isEnabled && utiCoinsProduct.estimatedCashback > 0 && (
-        <div className="text-xs sm:text-sm text-green-600">
-          +{utiCoinsProduct.estimatedCashback} UTI Coins de volta
         </div>
       )}
     </div>
