@@ -37,6 +37,10 @@ const mapRowToProduct = (row: any): Product => ({
   uti_pro_custom_price: row.uti_pro_custom_price ? Number(row.uti_pro_custom_price) : undefined,
   uti_pro_type: row.uti_pro_type || 'percentage',
   
+  // Campos UTI COINS
+  uti_coins_discount_percentage: row.uti_coins_discount_percentage ? Number(row.uti_coins_discount_percentage) : undefined,
+  uti_coins_cashback_percentage: row.uti_coins_cashback_percentage ? Number(row.uti_coins_cashback_percentage) : undefined,
+  
   // Campos do sistema de SKUs
   parent_product_id: row.parent_product_id || undefined,
   is_master_product: row.is_master_product || false,
@@ -458,6 +462,10 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
         uti_pro_value: directData.uti_pro_value,
         uti_pro_custom_price: directData.uti_pro_custom_price,
         uti_pro_type: directData.uti_pro_type,
+        
+        // Campos UTI COINS
+        uti_coins_discount_percentage: directData.uti_coins_discount_percentage,
+        uti_coins_cashback_percentage: directData.uti_coins_cashback_percentage,
         
         parent_product_id: directData.parent_product_id,
         is_master_product: directData.is_master_product,
