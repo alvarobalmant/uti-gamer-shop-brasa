@@ -195,8 +195,9 @@ const App = () => {
                               <GlobalNavigationProvider>
                                  <LoadingOverlay />
                                  <GlobalNavigationOverlay />
-                                  <Suspense fallback={<PageLoader />}>
-                                    <Routes>
+                                 <Suspense fallback={<PageLoader />}>
+                                   <AppContent>
+                                     <Routes>
                                        {/* Auth Routes - Outside EmailVerificationGuard */}
                                        <Route path="/auth" element={<LoginPage />} />
                                        <Route path="/cadastro" element={<RegisterPage />} />
@@ -287,8 +288,9 @@ const App = () => {
                                          </Routes>
                                        </EmailVerificationGuard>
                                      } />
-                                    </Routes>
-                                  </Suspense>
+                                   </Routes>
+                                   </AppContent>
+                                 </Suspense>
                             </GlobalNavigationProvider>
                           </AppWithPreloader>
                          </CartProvider>

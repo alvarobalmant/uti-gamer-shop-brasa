@@ -19,7 +19,6 @@ const ProductCTABottom = lazy(() => import('@/components/Product/ProductCTABotto
 import ProductSEO from '@/components/Product/ProductSEO';
 import SKUBreadcrumb from '@/components/SKU/SKUBreadcrumb';
 import { SKUNavigation } from '@/hooks/useProducts/types';
-import UTICoinsDisplay from '@/components/Product/UTICoinsDisplay';
 
 const ProductPageSKU = () => {
   const { id } = useParams<{ id: string }>();
@@ -70,7 +69,7 @@ const ProductPageSKU = () => {
   // Track product view when product loads
   useEffect(() => {
     if (product && id) {
-      trackProductView(id, { name: product.name, price: product.price });
+      trackProductView(id, product.name, product.price);
     }
   }, [product, id, trackProductView]);
 
@@ -173,9 +172,6 @@ const ProductPageSKU = () => {
             )}
           </div>
 
-          {/* UTI Coins Display */}
-          <UTICoinsDisplay product={product} className="mb-6" />
-          
            {/* LAZY LOADING REAL - carrega apenas desktop OU mobile */}
           {(() => {
             console.log('🚀 Lazy Loading Decision:', { isMobile, component: isMobile ? 'Mobile' : 'Desktop' });

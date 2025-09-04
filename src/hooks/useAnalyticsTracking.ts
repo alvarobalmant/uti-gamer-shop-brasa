@@ -356,13 +356,6 @@ export const useAnalyticsTracking = () => {
     trackCheckoutAbandon,
     trackPurchase,
     trackWhatsAppClick,
-    trackSearch: (query: string, filters?: any, results?: any) => {
-      trackEvent({
-        event_type: 'search',
-        event_data: { query, filters, results }
-      });
-    },
-    flushEvents,
     sessionId: sessionIdRef.current
   };
 };

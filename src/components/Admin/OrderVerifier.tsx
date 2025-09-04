@@ -7,8 +7,6 @@ import { Separator } from '@/components/ui/separator';
 import { Search, Package, User, Clock, CheckCircle, XCircle, AlertCircle, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useOrderVerification, OrderVerificationData } from '@/hooks/useOrderVerification';
-import { useUTICoins } from '@/hooks/useUTICoins';
-import { formatUTICoins, utiCoinsToReais } from '@/utils/utiCoinsCalculations';
 
 const OrderVerifier = () => {
   const [searchCode, setSearchCode] = useState('');
@@ -16,7 +14,6 @@ const OrderVerifier = () => {
   const [processing, setProcessing] = useState(false);
   const { loading, error, verifyCode, completeOrder } = useOrderVerification();
   const { toast } = useToast();
-  const { balance: adminBalance } = useUTICoins();
 
   const handleSearch = async () => {
     if (!searchCode.trim()) {
@@ -155,38 +152,6 @@ const OrderVerifier = () => {
                   <p><strong>Nome:</strong> {orderData.user_data.name || 'Não informado'}</p>
                   <p><strong>Email:</strong> {orderData.user_data.email || 'Não informado'}</p>
                   <p><strong>ID do Usuário:</strong> {orderData.user_data.id}</p>
-                  
-                  {/* UTI Coins Balance - sempre mostrar se usuário estiver logado */}
-                  <div className="bg-yellow-100 p-3 rounded-lg border border-yellow-300">
-                    <p className="flex items-center gap-2">
-                      <Coins className="w-4 h-4 text-yellow-600" />
-                      <strong>Saldo UTI Coins:</strong> 
-                      <span className="text-yellow-700 font-bold">
-                        {formatUTICoins(orderData.user_data.uti_coins_balance || 0)}
-                      </span>
-                      <span className="text-sm text-yellow-600">
-                        (R$ {utiCoinsToReais(orderData.user_data.uti_coins_balance || 0).toFixed(2)})
-                      </span>
-                    </p>
-                  </div>
-                  
-                  {/* UTI Coins que serão debitadas/creditadas nesta compra */}
-                  {orderData.order_data && orderData.order_data.status === 'pending' && (
-                    <div className="bg-blue-100 p-3 rounded-lg border border-blue-300">
-                      <h4 className="font-medium text-blue-800 mb-2">📊 Transação UTI Coins</h4>
-                      <div className="space-y-1 text-sm">
-                        <p className="text-blue-700">
-                          <strong>Coins a debitar:</strong> 0 🪙 (baseado no desconto)
-                        </p>
-                        <p className="text-blue-700">
-                          <strong>Coins a creditar:</strong> 20 🪙 (cashback padrão)
-                        </p>
-                        <p className="text-blue-600 text-xs">
-                          💡 Saldo final: {((orderData.user_data.uti_coins_balance || 0) + 20).toLocaleString()} 🪙
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             )}

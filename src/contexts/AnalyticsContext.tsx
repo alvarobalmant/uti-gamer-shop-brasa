@@ -19,10 +19,6 @@ interface AnalyticsContextType {
   trackAddToCart: (productId: string, quantity: number, price: number) => void;
   trackSearch: (query: string, filters?: any, results?: any) => void;
   trackPurchase: (orderData: any) => void;
-  trackCheckoutStart: (cartTotal: number, itemCount: number) => void;
-  trackWhatsAppClick: (source: string) => void;
-  trackCheckoutAbandon: (cartTotal: number, itemCount: number, reason: string) => void;
-  trackRemoveFromCart: (productId: string, quantity: number, price: number) => void;
   
   // Controles
   flushEvents: () => Promise<void>;
@@ -46,7 +42,6 @@ interface AnalyticsProviderProps {
 
 export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }) => {
   // Sistema básico
-  const analyticsData = useAnalyticsTracking();
   const {
     trackEvent: basicTrackEvent,
     trackPageView: basicTrackPageView,
@@ -54,7 +49,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     trackAddToCart: basicTrackAddToCart,
     trackSearch: basicTrackSearch,
     flushEvents: basicFlushEvents
-  } = analyticsData;
+  } = useAnalyticsTracking();
 
   // Sistema enterprise multi-usuário
   const {
@@ -77,7 +72,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       
       // Executar ambos os sistemas em paralelo
       await Promise.all([
-        basicTrackEvent({ event_type: eventType, event_data: data }),
+        basicTrackEvent(eventType, data, element, coordinates),
         // Enterprise tracking específico
         eventType === 'page_view' && enterpriseTrackPageView(data?.url),
         eventType === 'product_view' && enterpriseTrackProductView(data?.productId, data),
@@ -98,7 +93,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       console.log(`📄 [ANALYTICS] User ${uniqueUserId}: Page view: ${pageUrl}`);
       
       await Promise.all([
-        basicTrackPageView(title),
+        basicTrackPageView(url, title),
         enterpriseTrackPageView(url)
       ]);
       
@@ -175,22 +170,6 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     }
   };
 
-  const trackCheckoutStart = (cartTotal: number, itemCount: number) => {
-    trackEvent('checkout_start', { cartTotal, itemCount });
-  };
-
-  const trackWhatsAppClick = (source: string) => {
-    trackEvent('whatsapp_click', { source });
-  };
-
-  const trackRemoveFromCart = (productId: string, quantity: number, price: number) => {
-    trackEvent('remove_from_cart', { productId, quantity, price });
-  };
-
-  const trackCheckoutAbandon = (cartTotal: number, itemCount: number, reason: string) => {
-    trackEvent('checkout_abandon', { cartTotal, itemCount, reason });
-  };
-
   const contextValue: AnalyticsContextType = {
     uniqueUserId,
     sessionId,
@@ -200,10 +179,6 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     trackAddToCart,
     trackSearch,
     trackPurchase,
-    trackCheckoutStart,
-    trackWhatsAppClick,
-    trackCheckoutAbandon,
-    trackRemoveFromCart,
     flushEvents,
     isTracking,
     updateRealtimeActivity
