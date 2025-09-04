@@ -106,7 +106,7 @@ export const EnterpriseTrackingProvider: React.FC<EnterpriseTrackingProviderProp
       console.log(`📄 [MULTI-USER CONTEXT] User ${uniqueUserId}: Tracking page view: ${pageUrl}`);
       
       await Promise.all([
-        basicTrackPageView(url, title),
+        basicTrackPageView(title),
         enterpriseTrackPageView(url)
       ]);
       

@@ -70,7 +70,7 @@ const ProductPageSKU = () => {
   // Track product view when product loads
   useEffect(() => {
     if (product && id) {
-      trackProductView(id, product.name, product.price);
+      trackProductView(id, { name: product.name, price: product.price });
     }
   }, [product, id, trackProductView]);
 

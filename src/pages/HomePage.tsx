@@ -44,7 +44,7 @@ const HomePage = () => {
       
       <HomePageContent
         layoutItems={layoutItems}
-        products={products}
+        products={products as any}
         sections={sections}
         bannerData={bannerData}
         isLoading={isLoading}
