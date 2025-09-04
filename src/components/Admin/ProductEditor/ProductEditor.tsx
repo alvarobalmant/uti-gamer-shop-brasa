@@ -37,6 +37,12 @@ export interface ProductEditorData {
   discount_percentage?: number;
   pix_discount_percentage?: number;
   
+  // UTI Coins
+  uti_coins_enabled?: boolean;
+  uti_coins_rate?: number;
+  uti_coins_max_discount?: number;
+  uti_coins_cashback_rate?: number;
+  
   // Stock and availability
   stock?: number;
   is_active: boolean;
@@ -165,6 +171,11 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
         pro_price: product.pro_price,
         discount_percentage: product.discount_percentage,
         pix_discount_percentage: product.pix_discount_percentage || 5,
+        // UTI Coins
+        uti_coins_enabled: product.uti_coins_enabled || false,
+        uti_coins_rate: product.uti_coins_rate || 0,
+        uti_coins_max_discount: product.uti_coins_max_discount || 0,
+        uti_coins_cashback_rate: product.uti_coins_cashback_rate || 0,
         stock: product.stock,
         is_active: product.is_active !== false,
         is_featured: product.is_featured || false,
