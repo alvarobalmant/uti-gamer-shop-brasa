@@ -407,11 +407,15 @@ export const AnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="realtime" className="space-y-6">
-          <RealTimeClientDashboard />
+          <div className="p-4 text-center text-gray-500">
+            Dashboard em tempo real temporariamente indisponível
+          </div>
         </TabsContent>
 
         <TabsContent value="enterprise" className="space-y-6">
-          <EnterpriseDataViewer />
+          <div className="p-4 text-center text-gray-500">
+            Visualizador de dados empresariais temporariamente indisponível
+          </div>
         </TabsContent>
       </Tabs>
     </div>
