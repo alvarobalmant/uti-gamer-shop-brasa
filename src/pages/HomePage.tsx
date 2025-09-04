@@ -44,7 +44,7 @@ const HomePage = () => {
       
       <HomePageContent
         layoutItems={layoutItems}
-        products={products}
+        products={products.map(p => ({ ...p, cached_at: Date.now(), ttl: 300000 } as any))}
         sections={sections}
         bannerData={bannerData}
         isLoading={isLoading}

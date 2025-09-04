@@ -32,7 +32,7 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
     }
     
     // Track product view
-    trackProductView(product.id, product.name, product.price);
+    trackProductView(product.id, { name: product.name, price: product.price });
     
     onCardClick(product.id);
   }, [onCardClick, product.id, trackProductView, product.name, product.price]);

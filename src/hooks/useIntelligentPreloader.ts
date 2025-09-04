@@ -233,7 +233,7 @@ export class IntelligentPreloader {
     await Promise.all([
       import('../components/Product/ProductHero'),
       import('../components/Product/Layout/ProductLayout'), // Desktop
-      import('../components/Product/Mobile/ProductPageMobileMercadoLivre'), // Mobile
+      // import('../components/Product/Mobile/ProductPageMobileMercadoLivre'), // Mobile - Removed
       import('../components/Product/ProductCTABottom'), // CTA Bottom
       import('../components/Product/ProductTabsEnhanced')
     ]);

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CachedProduct } from '@/utils/ProductCacheManager';
+import { CachedProduct } from '@/types/cached-product';
 import { ProductSection, HomepageLayoutItem } from '@/hooks/useProductSections';
 import SectionRenderer from './SectionRenderer';
 import ErrorState from './ErrorState';
@@ -56,7 +56,7 @@ const HomePageContent: React.FC<HomePageContentProps> = ({
             key={item.section_key}
             sectionKey={item.section_key}
             bannerData={bannerData}
-            products={products}
+            products={products as any}
             sections={sections}
             productsLoading={productsLoading}
             sectionsLoading={sectionsLoading}
