@@ -36,6 +36,7 @@ export interface ProductEditorData {
   pro_price?: number;
   discount_percentage?: number;
   pix_discount_percentage?: number;
+  uti_coins_cashback_percentage?: number;
   
   // Stock and availability
   stock?: number;

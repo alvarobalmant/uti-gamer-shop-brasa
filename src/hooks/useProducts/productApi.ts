@@ -89,6 +89,9 @@ const mapRowToProduct = (row: any): Product => ({
     social_proof_text: ''
   },
   
+  // UTI Coins Cashback
+  uti_coins_cashback_percentage: row.uti_coins_cashback_percentage ? Number(row.uti_coins_cashback_percentage) : undefined,
+  
   tags: [],
   created_at: row.created_at || new Date().toISOString(),
   updated_at: row.updated_at || new Date().toISOString()
@@ -478,6 +481,10 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
         product_descriptions: directData.product_descriptions,
         delivery_config: directData.delivery_config,
         display_config: directData.display_config,
+        
+        // UTI Coins Cashback
+        uti_coins_cashback_percentage: directData.uti_coins_cashback_percentage,
+        
         created_at: directData.created_at,
         updated_at: directData.updated_at
       });
