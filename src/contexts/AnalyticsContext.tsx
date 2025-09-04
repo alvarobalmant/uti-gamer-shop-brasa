@@ -16,7 +16,8 @@ interface AnalyticsContextType {
   trackEvent: (eventType: string, data?: any, element?: HTMLElement, coordinates?: { x: number; y: number }) => void;
   trackPageView: (url?: string, title?: string) => void;
   trackProductView: (productId: string, productData?: any) => void;
-  trackAddToCart: (productId: string, quantity: number, price: number) => void;
+  trackAddToCart: (productId: string, productName: string, price: number, quantity?: number, options?: any) => void;
+  trackRemoveFromCart: (productId: string, productName: string, price: number) => void;
   trackSearch: (query: string, filters?: any, results?: any) => void;
   trackPurchase: (orderData: any) => void;
   
@@ -120,7 +121,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
   };
 
   // Função híbrida para rastrear adição ao carrinho
-  const trackAddToCart = async (productId: string, quantity: number, price: number) => {
+  const trackAddToCart = async (productId: string, productName: string, price: number, quantity: number = 1, options?: any) => {
     try {
       console.log(`🛒 [ANALYTICS] User ${uniqueUserId}: Add to cart: ${productId} x${quantity}`);
       
@@ -132,6 +133,25 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Add to cart tracked: ${productId}`);
     } catch (error) {
       console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking add to cart:`, error);
+    }
+  };
+
+  // Função para rastrear remoção do carrinho
+  const trackRemoveFromCart = async (productId: string, productName: string, price: number) => {
+    try {
+      console.log(`🗑️ [ANALYTICS] User ${uniqueUserId}: Remove from cart: ${productId}`);
+      
+      // Usar trackEvent para rastrear remoção
+      await trackEvent('remove_from_cart', {
+        productId,
+        productName,
+        price,
+        quantity: 1
+      });
+      
+      console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Remove from cart tracked: ${productId}`);
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking remove from cart:`, error);
     }
   };
 
@@ -177,6 +197,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     trackPageView,
     trackProductView,
     trackAddToCart,
+    trackRemoveFromCart,
     trackSearch,
     trackPurchase,
     flushEvents,

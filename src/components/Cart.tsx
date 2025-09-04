@@ -13,6 +13,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useCart } from '@/contexts/CartContext';
+import CartItemUTICoins from './Cart/CartItemUTICoins';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CartSheetProps {
@@ -259,6 +260,9 @@ const Cart = ({ showCart = false, setShowCart }: CartSheetProps) => {
                           </div>
                         </div>
                       </div>
+                      
+                      {/* UTI Coins Info */}
+                      <CartItemUTICoins item={item} />
                     </motion.div>
                   ))}
                 </AnimatePresence>

@@ -11,6 +11,7 @@ import ProductOptions from '@/components/ProductPage/ProductOptions';
 import ProductActions from '@/components/ProductPage/ProductActions';
 import ProductTrustBadges from '@/components/ProductPage/ProductTrustBadges';
 import ProductProPricing from './ProductProPricing';
+import UTICoinsProductDisplay from './UTICoinsProductDisplay';
 
 const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -129,6 +130,8 @@ const ProductPage = () => {
               onAddToCart={handleAddToCart}
               onWhatsAppContact={handleWhatsAppContact}
             />
+
+            <UTICoinsProductDisplay product={product} quantity={quantity} />
 
             <ProductTrustBadges />
           </div>
