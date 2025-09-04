@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { DollarSign, Percent } from 'lucide-react';
+import { DollarSign, Percent, Coins } from 'lucide-react';
 import { ProductEditorData } from '../ProductEditor';
+import { calculatePurchaseSummary, formatUTICoins, utiCoinsToReais } from '@/utils/utiCoinsCalculations';
 
 interface PricingTabProps {
   formData: ProductEditorData;
@@ -141,66 +142,134 @@ const PricingTab: React.FC<PricingTabProps> = ({ formData, onChange }) => {
         </CardContent>
       </Card>
 
-      {/* Configurações UTI Coins */}
+      {/* UTI Coins */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-orange-600" />
-            Configurações UTI Coins
+            <Coins className="w-5 h-5 text-yellow-600" />
+            UTI Coins - Sistema de Fidelidade
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Switch
-              checked={formData.uti_coins_enabled || false}
-              onCheckedChange={(checked) => onChange('uti_coins_enabled', checked)}
-            />
-            <Label>Habilitar UTI Coins para este produto</Label>
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <Coins className="h-5 w-5 text-yellow-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-yellow-700">
+                  <strong>Conversão:</strong> 1 UTI Coin = R$ 0,01 (1 centavo)
+                </p>
+                <p className="text-xs text-yellow-600 mt-1">
+                  Configure descontos e cashback em UTI Coins para este produto
+                </p>
+              </div>
+            </div>
           </div>
 
-          {formData.uti_coins_enabled && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border border-orange-200 rounded-lg p-4 bg-orange-50">
-              <div className="space-y-2">
-                <Label htmlFor="uti_coins_rate">Taxa de Conversão (R$ por UTI Coin)</Label>
-                <Input
-                  id="uti_coins_rate"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="Ex: 0.10"
-                  value={formData.uti_coins_rate || ''}
-                  onChange={(e) => onChange('uti_coins_rate', parseFloat(e.target.value) || 0)}
-                />
-                <p className="text-xs text-gray-600">1 UTI Coin = R$ {(formData.uti_coins_rate || 0).toFixed(2)}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="uti_coins_discount_percentage">Desconto UTI Coins (%)</Label>
+              <Input
+                id="uti_coins_discount_percentage"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={formData.uti_coins_discount_percentage || ''}
+                onChange={(e) => onChange('uti_coins_discount_percentage', parseFloat(e.target.value) || undefined)}
+                placeholder="0"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Porcentagem máxima que pode ser paga com UTI Coins
+              </p>
+              {formData.uti_coins_discount_percentage && formData.price && (
+                <div className="text-xs text-blue-600 mt-1">
+                  💰 Máximo: {Math.floor(((formData.price * formData.uti_coins_discount_percentage) / 100) * 100).toLocaleString()} 🪙 = {formatCurrency((formData.price * formData.uti_coins_discount_percentage) / 100)}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="uti_coins_cashback_percentage">Cashback UTI Coins (%)</Label>
+              <Input
+                id="uti_coins_cashback_percentage"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={formData.uti_coins_cashback_percentage || ''}
+                onChange={(e) => onChange('uti_coins_cashback_percentage', parseFloat(e.target.value) || undefined)}
+                placeholder="0"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Porcentagem de cashback sobre valor final pago
+              </p>
+              {formData.uti_coins_cashback_percentage && formData.price && (
+                <div className="text-xs text-green-600 mt-1">
+                  🎁 Cashback: {Math.floor((formData.price * formData.uti_coins_cashback_percentage) / 100 * 100).toLocaleString()} 🪙 = {formatCurrency((formData.price * formData.uti_coins_cashback_percentage) / 100)}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Simulação UTI Coins */}
+          {(formData.uti_coins_discount_percentage || formData.uti_coins_cashback_percentage) && formData.price && (
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-3">💰 Simulação UTI Coins</h4>
+              
+              {/* Cenário 1: Cliente com saldo suficiente */}
+              <div className="space-y-2 mb-4">
+                <h5 className="text-sm font-medium text-gray-700">Cenário: Cliente com saldo suficiente</h5>
+                {(() => {
+                  const summary = calculatePurchaseSummary(
+                    formData.price,
+                    formData.uti_coins_discount_percentage || 0,
+                    formData.uti_coins_cashback_percentage || 0,
+                    10000 // 10.000 coins = R$ 100,00
+                  );
+                  return (
+                    <div className="text-xs space-y-1 text-gray-600">
+                      <div>💳 Preço original: {formatCurrency(summary.originalPrice)}</div>
+                      {summary.hasDiscount && (
+                        <>
+                          <div>🪙 UTI Coins usadas: {summary.utiCoinsUsed.toLocaleString()} ({formatCurrency(summary.discountApplied)})</div>
+                          <div>💰 Valor a pagar: {formatCurrency(summary.finalPrice)}</div>
+                        </>
+                      )}
+                      {summary.hasCashback && (
+                        <div>🎁 Cashback: +{summary.cashbackCoins.toLocaleString()} 🪙 ({formatCurrency(summary.cashbackReais)})</div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
+              {/* Cenário 2: Cliente com saldo insuficiente */}
               <div className="space-y-2">
-                <Label htmlFor="uti_coins_max_discount">Desconto Máximo (R$)</Label>
-                <Input
-                  id="uti_coins_max_discount"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="Ex: 50.00"
-                  value={formData.uti_coins_max_discount || ''}
-                  onChange={(e) => onChange('uti_coins_max_discount', parseFloat(e.target.value) || 0)}
-                />
-                <p className="text-xs text-gray-600">Limite máximo de desconto</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="uti_coins_cashback_rate">Taxa de Cashback</Label>
-                <Input
-                  id="uti_coins_cashback_rate"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="1"
-                  placeholder="Ex: 0.05"
-                  value={formData.uti_coins_cashback_rate || ''}
-                  onChange={(e) => onChange('uti_coins_cashback_rate', parseFloat(e.target.value) || 0)}
-                />
-                <p className="text-xs text-gray-600">{((formData.uti_coins_cashback_rate || 0) * 100).toFixed(1)}% de cashback</p>
+                <h5 className="text-sm font-medium text-gray-700">Cenário: Cliente com saldo limitado (500 🪙)</h5>
+                {(() => {
+                  const summary = calculatePurchaseSummary(
+                    formData.price,
+                    formData.uti_coins_discount_percentage || 0,
+                    formData.uti_coins_cashback_percentage || 0,
+                    500 // 500 coins = R$ 5,00
+                  );
+                  return (
+                    <div className="text-xs space-y-1 text-gray-600">
+                      <div>💳 Preço original: {formatCurrency(summary.originalPrice)}</div>
+                      {summary.hasDiscount && (
+                        <>
+                          <div>🪙 UTI Coins usadas: {summary.utiCoinsUsed.toLocaleString()} ({formatCurrency(summary.discountApplied)})</div>
+                          <div>💰 Valor a pagar: {formatCurrency(summary.finalPrice)}</div>
+                        </>
+                      )}
+                      {summary.hasCashback && (
+                        <div>🎁 Cashback: +{summary.cashbackCoins.toLocaleString()} 🪙 ({formatCurrency(summary.cashbackReais)})</div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -256,26 +325,6 @@ const PricingTab: React.FC<PricingTabProps> = ({ formData, onChange }) => {
                 {formatCurrency(calculatePixPrice())}
               </span>
             </div>
-
-            {/* Preview UTI Coins */}
-            {formData.uti_coins_enabled && formData.uti_coins_rate && formData.uti_coins_rate > 0 && (
-              <>
-                <div className="pt-2 border-t border-orange-200">
-                  <div className="text-sm font-medium text-orange-800 mb-2">Configuração UTI Coins:</div>
-                  <div className="space-y-1 text-xs text-orange-700">
-                    <p>• Taxa: 1 UTI Coin = {formatCurrency(formData.uti_coins_rate)}</p>
-                    {formData.uti_coins_max_discount && formData.uti_coins_max_discount > 0 && (
-                      <p>• Desconto máximo: {formatCurrency(formData.uti_coins_max_discount)} 
-                         ({Math.ceil(formData.uti_coins_max_discount / formData.uti_coins_rate)} UTI Coins)</p>
-                    )}
-                    {formData.uti_coins_cashback_rate && formData.uti_coins_cashback_rate > 0 && (
-                      <p>• Cashback: {((formData.uti_coins_cashback_rate || 0) * 100).toFixed(1)}% do valor pago 
-                         (~{Math.floor((formData.price || 0) * formData.uti_coins_cashback_rate)} UTI Coins)</p>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
 
             {formData.price > 0 && (
               <div className="pt-2 border-t">
