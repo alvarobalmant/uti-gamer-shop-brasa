@@ -197,10 +197,10 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
         created_at: product.created_at,
         updated_at: product.updated_at,
         // UTI Coins fields
-        uti_coins_enabled: product.uti_coins_enabled || false,
-        uti_coins_rate: product.uti_coins_rate || 0,
-        uti_coins_max_discount: product.uti_coins_max_discount || 0,
-        uti_coins_cashback_rate: product.uti_coins_cashback_rate || 0,
+        uti_coins_enabled: (product as any).uti_coins_enabled || false,
+        uti_coins_rate: (product as any).uti_coins_rate || 0,
+        uti_coins_max_discount: (product as any).uti_coins_max_discount || 0,
+        uti_coins_cashback_rate: (product as any).uti_coins_cashback_rate || 0,
       });
     }
   }, [product]);
@@ -238,7 +238,14 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
         return;
       }
 
-      console.log('Submitting product data:', formData);
+      console.log('🟦 [ProductEditor] Submitting product data:', formData);
+      console.log('🟧 [ProductEditor] UTI Coins data:', {
+        uti_coins_enabled: formData.uti_coins_enabled,
+        uti_coins_rate: formData.uti_coins_rate,
+        uti_coins_max_discount: formData.uti_coins_max_discount,
+        uti_coins_cashback_rate: formData.uti_coins_cashback_rate
+      });
+      
       await onSubmit(formData);
       setHasUnsavedChanges(false);
       
