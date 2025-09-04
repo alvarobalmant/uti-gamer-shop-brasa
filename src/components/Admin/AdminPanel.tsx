@@ -236,7 +236,7 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="analytics" className="mt-0">
-                <AnalyticsDashboard />
+                <div className="p-4 text-white">Analytics temporariamente desabilitado</div>
               </TabsContent>
 
               <TabsContent value="uti_coins" className="mt-0">
