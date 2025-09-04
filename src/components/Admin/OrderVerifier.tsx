@@ -148,10 +148,28 @@ const OrderVerifier = () => {
                   <User className="w-4 h-4" />
                   DADOS DO CLIENTE
                 </h3>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                  <p><strong>Nome:</strong> {orderData.user_data.name || 'Não informado'}</p>
-                  <p><strong>Email:</strong> {orderData.user_data.email || 'Não informado'}</p>
-                  <p><strong>ID do Usuário:</strong> {orderData.user_data.id}</p>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="space-y-2">
+                    <p><strong>Nome:</strong> {orderData.user_data.name || 'Não informado'}</p>
+                    <p><strong>Email:</strong> {orderData.user_data.email || 'Não informado'}</p>
+                    <p><strong>ID do Usuário:</strong> {orderData.user_data.id}</p>
+                  </div>
+                  
+                  {orderData.uti_coins_balance !== undefined && (
+                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-xs">U</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Saldo UTI Coins</p>
+                          <p className="text-lg font-bold text-amber-900 dark:text-amber-100">
+                            {orderData.uti_coins_balance.toLocaleString()} moedas
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
