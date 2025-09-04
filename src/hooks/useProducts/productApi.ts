@@ -561,7 +561,12 @@ export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'ta
         urgency_text: '',
         show_social_proof: false,
         social_proof_text: ''
-      }
+      },
+      // UTI Coins fields
+      uti_coins_enabled: productInfo.uti_coins_enabled || false,
+      uti_coins_rate: productInfo.uti_coins_rate || 0,
+      uti_coins_max_discount: productInfo.uti_coins_max_discount || 0,
+      uti_coins_cashback_rate: productInfo.uti_coins_cashback_rate || 0,
     };
     
     console.log('[addProductToDatabase] Dados sendo enviados:', productToInsert);
@@ -645,7 +650,12 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
         urgency_text: '',
         show_social_proof: false,
         social_proof_text: ''
-      }
+      },
+      // UTI Coins fields
+      uti_coins_enabled: productUpdates.uti_coins_enabled,
+      uti_coins_rate: productUpdates.uti_coins_rate,
+      uti_coins_max_discount: productUpdates.uti_coins_max_discount,
+      uti_coins_cashback_rate: productUpdates.uti_coins_cashback_rate,
     };
     
     console.log('[updateProductInDatabase] Dados sendo enviados:', updateData);
