@@ -38,7 +38,7 @@ export const UTICoinsMobileWidget = ({ onClick, className }: UTICoinsMobileWidge
     >
       <Coins className="w-4 h-4 text-white" />
       <span className="text-sm font-semibold">
-        {loading ? '...' : formatCoins(coins.balance || 0)}
+        {loading ? '...' : formatCoins((typeof coins === 'object' ? coins.balance : coins) || 0)}
       </span>
     </button>
   );

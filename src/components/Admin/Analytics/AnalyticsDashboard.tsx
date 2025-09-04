@@ -13,9 +13,6 @@ import { TrafficSourceChart } from './TrafficSourceChart';
 import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
-import RealTimeMetrics from './RealTimeMetrics';
-import ConversionFunnelChart from './ConversionFunnelChart';
-import TrafficSourceChart from './TrafficSourceChart';
 
 interface DateRange {
   startDate: Date;
