@@ -520,7 +520,9 @@ export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'ta
     const { tagIds, ...productInfo } = productData;
     
     // Preparar dados do produto removendo campos inexistentes
-    const { features, highlights, ...cleanProductInfo } = productInfo;
+    const cleanProductInfo = { ...productInfo };
+    delete (cleanProductInfo as any).features;
+    delete (cleanProductInfo as any).highlights;
     
     const productToInsert = {
       ...cleanProductInfo,
@@ -608,11 +610,16 @@ export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'ta
 
 export const updateProductInDatabase = async (id: string, updates: Partial<Product> & { tagIds?: string[] }) => {
   try {
-    const { tagIds, tags, features, highlights, ...productUpdates } = updates;
+    const { tagIds, tags, ...productUpdates } = updates;
+    
+    // Remover campos inexistentes
+    const cleanUpdates = { ...productUpdates };
+    delete (cleanUpdates as any).features;
+    delete (cleanUpdates as any).highlights;
     
     // Preparar dados de atualização removendo campos inexistentes
     const updateData = {
-      ...productUpdates,
+      ...cleanUpdates,
       // Garantir que os novos campos JSONB sejam sempre incluídos
       product_videos: productUpdates.product_videos || [],
       product_faqs: productUpdates.product_faqs || [],
@@ -654,10 +661,10 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
         social_proof_text: ''
       },
       // UTI Coins - incluir campos na atualização
-      ...(productUpdates.uti_coins_enabled !== undefined && { uti_coins_enabled: productUpdates.uti_coins_enabled }),
-      ...(productUpdates.uti_coins_rate !== undefined && { uti_coins_rate: productUpdates.uti_coins_rate }),
-      ...(productUpdates.uti_coins_max_discount !== undefined && { uti_coins_max_discount: productUpdates.uti_coins_max_discount }),
-      ...(productUpdates.uti_coins_cashback_rate !== undefined && { uti_coins_cashback_rate: productUpdates.uti_coins_cashback_rate })
+      ...(cleanUpdates.uti_coins_enabled !== undefined && { uti_coins_enabled: cleanUpdates.uti_coins_enabled }),
+      ...(cleanUpdates.uti_coins_rate !== undefined && { uti_coins_rate: cleanUpdates.uti_coins_rate }),
+      ...(cleanUpdates.uti_coins_max_discount !== undefined && { uti_coins_max_discount: cleanUpdates.uti_coins_max_discount }),
+      ...(cleanUpdates.uti_coins_cashback_rate !== undefined && { uti_coins_cashback_rate: cleanUpdates.uti_coins_cashback_rate })
     };
     
     console.log('[updateProductInDatabase] Dados sendo enviados:', updateData);
