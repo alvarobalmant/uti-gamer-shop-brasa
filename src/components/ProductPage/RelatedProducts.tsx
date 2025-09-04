@@ -48,7 +48,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
     // Find the product to get its data for analytics
     const clickedProduct = relatedProducts.find(p => p.id === productId);
     if (clickedProduct) {
-      trackProductView(productId, { name: clickedProduct.name, price: clickedProduct.price });
+      trackProductView(productId, clickedProduct.name, clickedProduct.price);
     }
     navigate(`/produto/${productId}`);
   };

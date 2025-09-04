@@ -100,12 +100,11 @@ export const useUTICoinsProduct = (product: Product): UTICoinsProductPricing => 
         };
       }
 
-      const result = data as any;
       return {
-        success: result?.success || false,
-        discountAmount: result?.discount_amount || 0,
-        coinsNeeded: result?.coins_needed || 0,
-        message: result?.message || ''
+        success: data.success,
+        discountAmount: data.discount_amount || 0,
+        coinsNeeded: data.coins_needed || 0,
+        message: data.message
       };
     } catch (error) {
       console.error('Erro na função calculateDiscount:', error);

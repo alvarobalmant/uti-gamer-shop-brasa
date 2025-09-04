@@ -14,7 +14,7 @@ import { useAnalytics } from '@/contexts/AnalyticsContext';
 
 // LAZY LOADING REAL - carrega apenas desktop OU mobile sob demanda
 const ProductLayout = lazy(() => import('@/components/Product/Layout/ProductLayout'));
-// const ProductPageMobileMercadoLivre = lazy(() => import('@/components/Product/Mobile/ProductPageMobileMercadoLivre')); // Removed
+const ProductPageMobileMercadoLivre = lazy(() => import('@/components/Product/Mobile/ProductPageMobileMercadoLivre'));
 const ProductCTABottom = lazy(() => import('@/components/Product/ProductCTABottom'));
 import ProductSEO from '@/components/Product/ProductSEO';
 import SKUBreadcrumb from '@/components/SKU/SKUBreadcrumb';
@@ -69,7 +69,7 @@ const ProductPageSKU = () => {
   // Track product view when product loads
   useEffect(() => {
     if (product && id) {
-      trackProductView(id, { name: product.name, price: product.price });
+      trackProductView(id, product.name, product.price);
     }
   }, [product, id, trackProductView]);
 
@@ -182,9 +182,11 @@ const ProductPageSKU = () => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
                 </div>
               }>
-                <div className="text-center py-8">
-                  <p className="text-gray-600">Versão mobile em desenvolvimento</p>
-                </div>
+                <ProductPageMobileMercadoLivre 
+                  product={product}
+                  skuNavigation={skuNavigation}
+                  onAddToCart={handleAddToCart}
+                />
               </Suspense>
             ) : (
               <Suspense fallback={

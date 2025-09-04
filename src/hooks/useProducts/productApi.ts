@@ -519,45 +519,41 @@ export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'ta
   try {
     const { tagIds, ...productInfo } = productData;
     
-    // Preparar dados do produto removendo campos inexistentes
-    const cleanProductInfo = { ...productInfo };
-    delete (cleanProductInfo as any).features;
-    delete (cleanProductInfo as any).highlights;
-    
+    // Preparar dados do produto incluindo todos os novos campos
     const productToInsert = {
-      ...cleanProductInfo,
+      ...productInfo,
       // Garantir que os novos campos JSONB sejam sempre incluídos
-      product_videos: cleanProductInfo.product_videos || [],
-      product_faqs: cleanProductInfo.product_faqs || [],
-      product_highlights: cleanProductInfo.product_highlights || [],
-      reviews_config: cleanProductInfo.reviews_config || {
+      product_videos: productInfo.product_videos || [],
+      product_faqs: productInfo.product_faqs || [],
+      product_highlights: productInfo.product_highlights || [],
+      reviews_config: productInfo.reviews_config || {
         enabled: true,
         show_rating: true,
         show_count: true,
         allow_reviews: true,
         custom_rating: { value: 0, count: 0, use_custom: false }
       },
-      trust_indicators: cleanProductInfo.trust_indicators || [],
-      manual_related_products: cleanProductInfo.manual_related_products || [],
-      breadcrumb_config: cleanProductInfo.breadcrumb_config || {
+      trust_indicators: productInfo.trust_indicators || [],
+      manual_related_products: productInfo.manual_related_products || [],
+      breadcrumb_config: productInfo.breadcrumb_config || {
         custom_path: [],
         use_custom: false,
         show_breadcrumb: true
       },
-      product_descriptions: cleanProductInfo.product_descriptions || {
+      product_descriptions: productInfo.product_descriptions || {
         short: '',
         detailed: '',
         technical: '',
         marketing: ''
       },
-      delivery_config: cleanProductInfo.delivery_config || {
+      delivery_config: productInfo.delivery_config || {
         custom_shipping_time: '',
         shipping_regions: [],
         express_available: false,
         pickup_locations: [],
         shipping_notes: ''
       },
-      display_config: cleanProductInfo.display_config || {
+      display_config: productInfo.display_config || {
         show_stock_counter: true,
         show_view_counter: false,
         custom_view_count: 0,
@@ -565,12 +561,7 @@ export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'ta
         urgency_text: '',
         show_social_proof: false,
         social_proof_text: ''
-      },
-      // UTI Coins
-      uti_coins_enabled: cleanProductInfo.uti_coins_enabled || false,
-      uti_coins_rate: cleanProductInfo.uti_coins_rate || 0,
-      uti_coins_max_discount: cleanProductInfo.uti_coins_max_discount || 0,
-      uti_coins_cashback_rate: cleanProductInfo.uti_coins_cashback_rate || 0
+      }
     };
     
     console.log('[addProductToDatabase] Dados sendo enviados:', productToInsert);
@@ -612,14 +603,9 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
   try {
     const { tagIds, tags, ...productUpdates } = updates;
     
-    // Remover campos inexistentes
-    const cleanUpdates = { ...productUpdates };
-    delete (cleanUpdates as any).features;
-    delete (cleanUpdates as any).highlights;
-    
-    // Preparar dados de atualização removendo campos inexistentes
+    // Preparar dados de atualização incluindo todos os novos campos
     const updateData = {
-      ...cleanUpdates,
+      ...productUpdates,
       // Garantir que os novos campos JSONB sejam sempre incluídos
       product_videos: productUpdates.product_videos || [],
       product_faqs: productUpdates.product_faqs || [],
@@ -659,12 +645,7 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
         urgency_text: '',
         show_social_proof: false,
         social_proof_text: ''
-      },
-      // UTI Coins - incluir campos na atualização
-      ...(cleanUpdates.uti_coins_enabled !== undefined && { uti_coins_enabled: cleanUpdates.uti_coins_enabled }),
-      ...(cleanUpdates.uti_coins_rate !== undefined && { uti_coins_rate: cleanUpdates.uti_coins_rate }),
-      ...(cleanUpdates.uti_coins_max_discount !== undefined && { uti_coins_max_discount: cleanUpdates.uti_coins_max_discount }),
-      ...(cleanUpdates.uti_coins_cashback_rate !== undefined && { uti_coins_cashback_rate: cleanUpdates.uti_coins_cashback_rate })
+      }
     };
     
     console.log('[updateProductInDatabase] Dados sendo enviados:', updateData);
