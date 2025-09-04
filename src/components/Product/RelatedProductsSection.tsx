@@ -39,7 +39,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   // ✅ REMOVIDO: Lógica complexa de filtragem - agora é feita no cache manager
 
   const handleAddToCart = (product: CachedProduct) => {
-    addToCart(product);
+    addToCart(product as any); // Type assertion to handle missing created_at/updated_at
   };
 
   const handleProductClick = useCallback(async (productId: string) => {
@@ -169,7 +169,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
           )}
 
           <div
-            ref={scrollContainerRef}
+            ref={scrollContainerRef as React.RefObject<HTMLDivElement>}
             className={cn(
               "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2",
               "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
@@ -238,12 +238,12 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
                       <FavoriteButton productId={relatedProduct.id} size="sm" />
                     </div>
                     
-                    <ProductCardImage product={relatedProduct} isHovered={false} />
+                    <ProductCardImage product={relatedProduct as any} isHovered={false} />
 
                     <div className="flex flex-1 flex-col justify-between p-3">
                       <div className="space-y-2">
-                        <ProductCardInfo product={relatedProduct} />
-                        <ProductCardPrice product={relatedProduct} />
+                        <ProductCardInfo product={relatedProduct as any} />
+                        <ProductCardPrice product={relatedProduct as any} />
                       </div>
                     </div>
                   </Card>

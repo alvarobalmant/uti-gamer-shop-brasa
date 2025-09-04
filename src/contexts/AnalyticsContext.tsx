@@ -22,6 +22,7 @@ interface AnalyticsContextType {
   trackCheckoutStart: (cartTotal: number, itemCount: number) => void;
   trackWhatsAppClick: (source: string) => void;
   trackCheckoutAbandon: (cartTotal: number, itemCount: number, reason: string) => void;
+  trackRemoveFromCart: (productId: string, quantity: number, price: number) => void;
   
   // Controles
   flushEvents: () => Promise<void>;
@@ -182,6 +183,10 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     trackEvent('whatsapp_click', { source });
   };
 
+  const trackRemoveFromCart = (productId: string, quantity: number, price: number) => {
+    trackEvent('remove_from_cart', { productId, quantity, price });
+  };
+
   const trackCheckoutAbandon = (cartTotal: number, itemCount: number, reason: string) => {
     trackEvent('checkout_abandon', { cartTotal, itemCount, reason });
   };
@@ -198,6 +203,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     trackCheckoutStart,
     trackWhatsAppClick,
     trackCheckoutAbandon,
+    trackRemoveFromCart,
     flushEvents,
     isTracking,
     updateRealtimeActivity

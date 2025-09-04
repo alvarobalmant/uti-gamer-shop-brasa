@@ -74,7 +74,7 @@ export const EnterpriseTrackingProvider: React.FC<EnterpriseTrackingProviderProp
       
       // Executar ambos os sistemas
       await Promise.all([
-        basicTrackEvent(eventType, data, element, coordinates),
+        basicTrackEvent({ event_type: eventType, event_data: data }),
         // Enterprise tracking específico baseado no tipo de evento
         eventType === 'page_view' && enterpriseTrackPageView(data?.url),
         eventType === 'product_view' && enterpriseTrackProductView(data?.productId, data),
