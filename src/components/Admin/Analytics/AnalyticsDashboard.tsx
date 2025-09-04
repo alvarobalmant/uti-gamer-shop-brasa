@@ -14,10 +14,10 @@ import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
 import { EnterpriseDataViewer } from './EnterpriseDataViewer';
-import { ClientAnalysisTable } from './ClientAnalysisTable';
-import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
-import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
-import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
+// import { ClientAnalysisTable } from './ClientAnalysisTable';
+// import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
+// import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
+// import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
 import { RealTimeClientDashboard } from './RealTimeClientDashboard';
 
 interface DateRange {
