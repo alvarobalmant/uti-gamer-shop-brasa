@@ -110,6 +110,12 @@ export interface Product {
   uti_pro_type?: 'percentage' | 'fixed';
   uti_pro_value?: number;
   uti_pro_custom_price?: number;
+
+  // Campos configuráveis do UTI Coins
+  uti_coins_enabled?: boolean;
+  uti_coins_rate?: number;
+  uti_coins_max_discount?: number;
+  uti_coins_cashback_rate?: number;
 }
 
 // Tipos específicos para SKUs
