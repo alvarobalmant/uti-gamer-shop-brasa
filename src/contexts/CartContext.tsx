@@ -8,7 +8,7 @@ export interface CartContextType {
   cart: CartItem[];
   items: CartItem[]; // Add items alias for backward compatibility
   loading: boolean;
-  error: null;
+  error: string | null;
   addToCart: (product: Product, size?: string, color?: string) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (productId: string, size: string | undefined, color: string | undefined, quantity: number) => void;

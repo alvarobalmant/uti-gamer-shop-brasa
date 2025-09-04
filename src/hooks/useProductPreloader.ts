@@ -1,4 +1,7 @@
 export const useProductPreloader = () => ({
   preloadProducts: () => {},
-  isPreloading: false
+  isPreloading: false,
+  addHomepageProducts: () => {},
+  addCategoryProducts: () => {},
+  getStats: () => null
 });

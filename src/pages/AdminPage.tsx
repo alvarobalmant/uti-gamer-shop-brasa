@@ -1,5 +1,12 @@
 import React from 'react';
-import AdminLayout from '@/components/Admin/AdminLayout';
+
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+  return <div className="admin-layout">{children}</div>;
+};
 
 const AdminPage: React.FC = () => {
   return (
