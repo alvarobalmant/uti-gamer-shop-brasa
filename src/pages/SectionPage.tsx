@@ -149,12 +149,11 @@ const SectionPage: React.FC = () => {
     navigate(`/produto/${productId}`);
   };
 
-  const handleCartToggle = () => {
-    setShowCart(!showCart);
-  };
+  const handleCartOpen = () => setShowCart(true);
+  const handleAuthOpen = () => setShowAuthModal(true);
 
-  const handleAuthModalToggle = () => {
-    setShowAuthModal(!showAuthModal);
+  const handleProductCardClick = (productId: string) => {
+    navigate(`/produto/${productId}`);
   };
 
   // Loading state
@@ -164,8 +163,8 @@ const SectionPage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartToggle}
-          onAuthOpen={handleAuthModalToggle}
+          onCartOpen={handleCartOpen}
+          onAuthOpen={handleAuthOpen}
           showNavigation={false}
         />
         <div className="container mx-auto px-4 py-8">
@@ -185,8 +184,8 @@ const SectionPage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartToggle}
-          onAuthOpen={handleAuthModalToggle}
+          onCartOpen={handleCartOpen}
+          onAuthOpen={handleAuthOpen}
           showNavigation={false}
         />
         <div className="container mx-auto px-4 py-8">
@@ -214,8 +213,8 @@ const SectionPage: React.FC = () => {
       <ProfessionalHeader
         user={user}
         cartItemsCount={getCartItemsCount()}
-        onCartOpen={handleCartToggle}
-        onAuthOpen={handleAuthModalToggle}
+        onCartOpen={handleCartOpen}
+        onAuthOpen={handleAuthOpen}
         showNavigation={false}
       />
 
@@ -389,7 +388,7 @@ const SectionPage: React.FC = () => {
         <Cart
           items={items}
           onUpdateQuantity={updateQuantity}
-          onClose={handleCartToggle}
+          onClose={() => setShowCart(false)}
           onSendToWhatsApp={sendToWhatsApp}
           total={getCartTotal()}
         />
@@ -398,7 +397,7 @@ const SectionPage: React.FC = () => {
       {showAuthModal && (
         <AuthModal
           isOpen={showAuthModal}
-          onClose={handleAuthModalToggle}
+          onClose={() => setShowAuthModal(false)}
         />
       )}
     </div>
