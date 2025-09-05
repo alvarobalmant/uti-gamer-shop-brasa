@@ -149,11 +149,12 @@ const SectionPage: React.FC = () => {
     navigate(`/produto/${productId}`);
   };
 
-  const handleCartOpen = () => setShowCart(true);
-  const handleAuthOpen = () => setShowAuthModal(true);
+  const handleCartToggle = () => {
+    setShowCart(!showCart);
+  };
 
-  const handleProductCardClick = (productId: string) => {
-    navigate(`/produto/${productId}`);
+  const handleAuthModalToggle = () => {
+    setShowAuthModal(!showAuthModal);
   };
 
   // Loading state
@@ -163,8 +164,8 @@ const SectionPage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartOpen}
-          onAuthOpen={handleAuthOpen}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
           showNavigation={false}
         />
         <div className="container mx-auto px-4 py-8">
@@ -184,8 +185,8 @@ const SectionPage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartOpen}
-          onAuthOpen={handleAuthOpen}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
           showNavigation={false}
         />
         <div className="container mx-auto px-4 py-8">
@@ -213,8 +214,8 @@ const SectionPage: React.FC = () => {
       <ProfessionalHeader
         user={user}
         cartItemsCount={getCartItemsCount()}
-        onCartOpen={handleCartOpen}
-        onAuthOpen={handleAuthOpen}
+        onCartClick={handleCartToggle}
+        onAuthClick={handleAuthModalToggle}
         showNavigation={false}
       />
 
@@ -388,7 +389,7 @@ const SectionPage: React.FC = () => {
         <Cart
           items={items}
           onUpdateQuantity={updateQuantity}
-          onClose={() => setShowCart(false)}
+          onClose={handleCartToggle}
           onSendToWhatsApp={sendToWhatsApp}
           total={getCartTotal()}
         />
@@ -397,7 +398,7 @@ const SectionPage: React.FC = () => {
       {showAuthModal && (
         <AuthModal
           isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
+          onClose={handleAuthModalToggle}
         />
       )}
     </div>

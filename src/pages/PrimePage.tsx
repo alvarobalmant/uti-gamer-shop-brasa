@@ -66,8 +66,17 @@ const PrimePage: React.FC = () => {
     addToCart(product, size, color);
   };
 
-  const handleCartOpen = () => setShowCart(true);
-  const handleAuthOpen = () => setShowAuthModal(true);
+  const handleCartToggle = () => {
+    console.log('[PrimePage] handleCartToggle called');
+    setShowCart(prev => {
+      console.log('[PrimePage] Setting showCart to:', !prev);
+      return !prev;
+    });
+  };
+
+  const handleAuthModalToggle = () => {
+    setShowAuthModal(!showAuthModal);
+  };
 
   // Loading state
   const isLoading = pageLoading || productsLoading || sectionsLoading || specialSectionsLoading;
@@ -79,8 +88,8 @@ const PrimePage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartOpen}
-          onAuthOpen={handleAuthOpen}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
         />
         <div className="container mx-auto px-4 py-8">
           <ErrorState 
@@ -110,8 +119,8 @@ const PrimePage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartOpen}
-          onAuthOpen={handleAuthOpen}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
         />
         <LoadingState />
         <Footer />
@@ -126,8 +135,8 @@ const PrimePage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartOpen}
-          onAuthOpen={handleAuthOpen}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
         />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-16">
@@ -152,8 +161,8 @@ const PrimePage: React.FC = () => {
       <ProfessionalHeader
         user={user}
         cartItemsCount={getCartItemsCount()}
-        onCartOpen={handleCartOpen}
-        onAuthOpen={handleAuthOpen}
+        onCartOpen={handleCartToggle}
+        onAuthOpen={handleAuthModalToggle}
       />
 
       {/* Conteúdo principal */}
@@ -191,7 +200,7 @@ const PrimePage: React.FC = () => {
         <Cart
           items={items}
           onUpdateQuantity={updateQuantity}
-          onClose={() => setShowCart(false)}
+          onClose={handleCartToggle}
           onSendToWhatsApp={sendToWhatsApp}
           total={getCartTotal()}
         />
@@ -200,7 +209,7 @@ const PrimePage: React.FC = () => {
       {showAuthModal && (
         <AuthModal
           isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
+          onClose={handleAuthModalToggle}
         />
       )}
     </div>
