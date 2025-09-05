@@ -136,6 +136,7 @@ const OrderVerifier = () => {
     }).format(value);
   };
 
+<<<<<<< HEAD
   // FUNÇÃO CORRIGIDA: Calcular cashback baseado nos dados reais do banco (por NOME)
   const calculateExpectedCashback = (items: any[]) => {
     let totalCashbackReais = 0;
@@ -184,13 +185,41 @@ const OrderVerifier = () => {
       itemsWithCashback
     });
 
+=======
+  // Calcular cashback previsto baseado nos produtos reais
+  const calculateExpectedCashback = (items: any[]) => {
+    let totalCashbackReais = 0;
+    let hasProductsWithCashback = false;
+
+    items.forEach(item => {
+      // Buscar produto pelo nome "coin" ou verificar se tem product_id
+      const isProductCoin = item.product_name?.toLowerCase().includes('coin');
+      const itemTotal = item.total || (item.price * item.quantity);
+      
+      if (isProductCoin || item.product_id) {
+        hasProductsWithCashback = true;
+        // Para o produto "coin", usar 10% de cashback
+        const cashbackPercentage = isProductCoin ? 10 : 10; // Assumir 10% para todos por enquanto
+        totalCashbackReais += itemTotal * (cashbackPercentage / 100);
+      }
+    });
+
+    const utiCoinsFromCashback = Math.round(totalCashbackReais * 100); // 1 real = 100 UTI Coins
+    const defaultCoins = 20; // UTI coins padrão por compra
+    const totalCoins = defaultCoins + utiCoinsFromCashback;
+
+>>>>>>> 4a75227ac816f663cd4fa5a89439ac589b9b7dda
     return {
       cashbackReais: totalCashbackReais,
       cashbackCoins: utiCoinsFromCashback,
       defaultCoins,
       totalCoins,
+<<<<<<< HEAD
       hasProductsWithCashback,
       itemsWithCashback
+=======
+      hasProductsWithCashback
+>>>>>>> 4a75227ac816f663cd4fa5a89439ac589b9b7dda
     };
   };
 
@@ -373,6 +402,7 @@ const OrderVerifier = () => {
                     
                     {expectedRewards.hasProductsWithCashback && (
                       <>
+<<<<<<< HEAD
                         {/* NOVO: Mostrar cashback detalhado por produto */}
                         {expectedRewards.itemsWithCashback.map((item, index) => (
                           <div key={index} className="flex justify-between items-center">
@@ -384,6 +414,16 @@ const OrderVerifier = () => {
                             </span>
                           </div>
                         ))}
+=======
+                        <div className="flex justify-between items-center">
+                          <span className="text-amber-700 dark:text-amber-300">
+                            Cashback (10%): {expectedRewards.cashbackReais.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                          </span>
+                          <span className="font-bold text-amber-900 dark:text-amber-100">
+                            {expectedRewards.cashbackCoins.toLocaleString()} moedas
+                          </span>
+                        </div>
+>>>>>>> 4a75227ac816f663cd4fa5a89439ac589b9b7dda
                         
                         <div className="border-t border-amber-200 dark:border-amber-700 pt-2">
                           <div className="flex justify-between items-center">
