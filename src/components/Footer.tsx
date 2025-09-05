@@ -3,26 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react'; // Example social icons
+import { Skeleton } from '@/components/ui/skeleton';
+import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { categories } from '@/components/Header/categories';
+import { useNavigationItems } from '@/hooks/useNavigationItems';
+import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
 
 // **Redesign based on GameStop Footer structure**
 const Footer: React.FC = () => {
-  const navigate = useNavigate();
+  const { items, loading } = useNavigationItems();
+  const { navigateTo } = useGlobalNavigationLinks();
 
   const handleNavigation = (path: string) => {
-    navigate(path);
+    navigateTo(path);
   };
 
   const currentYear = new Date().getFullYear();
 
-  // Filtrar categorias para remover "Início" e criar links da seção Loja
-  const lojaLinks = categories
-    .filter(category => category.id !== 'inicio') // Remove "Início"
-    .map(category => ({
-      label: category.name,
-      path: category.path
+  // Filtrar itens de navegação para remover "Início" e criar links da seção Loja
+  const lojaLinks = items
+    .filter(item => item.title.toLowerCase() !== 'início' && item.title.toLowerCase() !== 'inicio')
+    .map(item => ({
+      label: item.title,
+      path: item.link_url
     }));
 
   // Footer link sections (example structure)
@@ -66,18 +69,26 @@ const Footer: React.FC = () => {
                 <h4 className="font-bold mb-4 text-sm text-white">
                   {section.title}
                 </h4>
-                <ul className="space-y-2.5">
-                  {section.links.map((link) => (
-                    <li key={link.label}>
-                      <button
-                        onClick={() => handleNavigation(link.path)}
-                        className="text-xs text-gray-400 hover:text-white hover:underline transition-colors duration-200"
-                      >
-                        {link.label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                {loading && section.title === 'Loja' ? (
+                  <div className="space-y-2.5">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <Skeleton key={index} className="h-4 w-20" />
+                    ))}
+                  </div>
+                ) : (
+                  <ul className="space-y-2.5">
+                    {section.links.map((link) => (
+                      <li key={link.label}>
+                        <button
+                          onClick={() => handleNavigation(link.path)}
+                          className="text-xs text-gray-400 hover:text-white hover:underline transition-colors duration-200"
+                        >
+                          {link.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             ))}
           </div>
