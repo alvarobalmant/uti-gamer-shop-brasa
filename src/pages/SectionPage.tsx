@@ -214,8 +214,8 @@ const SectionPage: React.FC = () => {
       <ProfessionalHeader
         user={user}
         cartItemsCount={getCartItemsCount()}
-        onCartClick={handleCartToggle}
-        onAuthClick={handleAuthModalToggle}
+        onCartOpen={handleCartToggle}
+        onAuthOpen={handleAuthModalToggle}
         showNavigation={false}
       />
 
