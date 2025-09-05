@@ -656,22 +656,14 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
         show_social_proof: false,
         social_proof_text: ''
       },
-<<<<<<< HEAD
       // Incluir campo UTI Coins Cashback (mesmo tratamento da criação)
       uti_coins_cashback_percentage: productUpdates.uti_coins_cashback_percentage || 0
-=======
-      // Incluir campo UTI Coins Cashback
-      uti_coins_cashback_percentage: productUpdates.uti_coins_cashback_percentage
->>>>>>> 4a75227ac816f663cd4fa5a89439ac589b9b7dda
     };
     
     console.log('[updateProductInDatabase] Dados sendo enviados:', updateData);
     console.log('[updateProductInDatabase] UTI Coins Cashback:', updateData.uti_coins_cashback_percentage);
-<<<<<<< HEAD
     console.log('[updateProductInDatabase] Tipo do cashback:', typeof updateData.uti_coins_cashback_percentage);
     console.log('[updateProductInDatabase] Produto ID:', id);
-=======
->>>>>>> 4a75227ac816f663cd4fa5a89439ac589b9b7dda
     
     // Atualizar produto
     const { data: updatedProduct, error: productError } = await supabase
