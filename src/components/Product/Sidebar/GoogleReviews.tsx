@@ -65,12 +65,6 @@ const GoogleReviews: React.FC<GoogleReviewsProps> = ({ className }) => {
 
   return (
     <div className={cn("space-y-4 w-full max-w-sm", className)}>
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <MessageCircle className="w-4 h-4 text-gray-600" />
-        <span className="font-medium text-gray-900 text-sm">Avaliações Google</span>
-      </div>
-
       {/* Card Principal */}
       <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm w-full">
         {/* Header com foto e info da empresa */}

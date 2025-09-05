@@ -12,6 +12,7 @@ import { Menu, Search } from 'lucide-react';
 import { useSiteSettingsOptimized } from '@/hooks/useSiteSettingsOptimized';
 import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
 import { CSSLogo } from '@/components/ui/CSSLogo';
+import { useUIState } from '@/contexts/UIStateContext';
 
 interface MainHeaderProps {
   onCartOpen: () => void;
@@ -27,13 +28,8 @@ const MainHeader = ({
   className
 }: MainHeaderProps) => {
   const location = useLocation();
-<<<<<<< HEAD
   const { isMobileSearchOpen, setIsMobileSearchOpen } = useUIState();
   const { siteInfo, loading, hasError } = useSiteSettingsOptimized();
-=======
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const { siteInfo, loading } = useSiteSettings();
->>>>>>> f4b3b0b3e5ecef84614186ce9180a2d903c697ec
   const { navigateToHome } = useGlobalNavigationLinks();
 
   // 🔧 CORREÇÃO: Sempre mostrar header, mesmo com erro de carregamento
