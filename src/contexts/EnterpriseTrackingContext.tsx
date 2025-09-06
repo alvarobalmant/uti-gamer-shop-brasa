@@ -4,7 +4,7 @@
  */
 
 import React, { createContext, useContext, ReactNode, useEffect } from 'react';
-import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
+// import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
 import { useAnalyticsTracking } from '@/hooks/useAnalyticsTracking';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'react-router-dom';
@@ -74,7 +74,7 @@ export const EnterpriseTrackingProvider: React.FC<EnterpriseTrackingProviderProp
       
       // Executar ambos os sistemas
       await Promise.all([
-        basicTrackEvent(eventType, data, element, coordinates),
+        basicTrackEvent({ event_type: eventType, event_data: data, product_id: data?.productId }),
         // Enterprise tracking específico baseado no tipo de evento
         eventType === 'page_view' && enterpriseTrackPageView(data?.url),
         eventType === 'product_view' && enterpriseTrackProductView(data?.productId, data),
@@ -106,7 +106,7 @@ export const EnterpriseTrackingProvider: React.FC<EnterpriseTrackingProviderProp
       console.log(`📄 [MULTI-USER CONTEXT] User ${uniqueUserId}: Tracking page view: ${pageUrl}`);
       
       await Promise.all([
-        basicTrackPageView(url, title),
+        basicTrackPageView(title),
         enterpriseTrackPageView(url)
       ]);
       

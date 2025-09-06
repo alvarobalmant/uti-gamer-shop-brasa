@@ -5,7 +5,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAnalyticsTracking } from '@/hooks/useAnalyticsTracking';
-import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
+// import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
 
 interface AnalyticsContextType {
   // IDs únicos
@@ -22,6 +22,7 @@ interface AnalyticsContextType {
   trackCheckoutStart?: (cartItems: any[], totalValue: number) => void;
   trackWhatsAppClick?: (productId?: string, context?: string) => void;
   trackCheckoutAbandon?: (step: string, timeInCheckout: number, cartItems: any[], totalValue: number) => void;
+  trackRemoveFromCart?: (productId: string, quantity: number, price: number) => void;
   
   // Controles
   flushEvents: () => Promise<void>;
@@ -54,17 +55,17 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     flushEvents: basicFlushEvents
   } = useAnalyticsTracking();
 
-  // Sistema enterprise multi-usuário
-  const {
-    uniqueUserId,
-    sessionId,
-    isTracking,
-    trackPageView: enterpriseTrackPageView,
-    trackProductView: enterpriseTrackProductView,
-    trackAddToCart: enterpriseTrackAddToCart,
-    trackPurchase: enterpriseTrackPurchase,
-    updateRealtimeActivity
-  } = useEnterpriseTrackingMultiUser();
+  // Temporarily disabled enterprise tracking
+  const mockEnterpriseTracking = {
+    uniqueUserId: 'mock_user',
+    sessionId: 'mock_session',
+    isTracking: true,
+    trackPageView: async () => {},
+    trackProductView: async () => {},
+    trackAddToCart: async () => {},
+    trackPurchase: async () => {},
+    updateRealtimeActivity: async () => {}
+  };
 
   console.log('📊 [ANALYTICS CONTEXT] Initialized for user:', uniqueUserId);
 
@@ -199,6 +200,16 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     }
   };
 
+  // Função para rastrear remoção do carrinho
+  const trackRemoveFromCart = async (productId: string, quantity: number, price: number) => {
+    try {
+      console.log(`🗑️ [ANALYTICS] User ${uniqueUserId}: Remove from cart: ${productId}`);
+      await trackEvent('remove_from_cart', { productId, quantity, price });
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking remove from cart:`, error);
+    }
+  };
+
   // Função para flush de eventos
   const flushEvents = async () => {
     try {
@@ -213,8 +224,8 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
   };
 
   const contextValue: AnalyticsContextType = {
-    uniqueUserId,
-    sessionId,
+    uniqueUserId: mockEnterpriseTracking.uniqueUserId,
+    sessionId: mockEnterpriseTracking.sessionId,
     trackEvent,
     trackPageView,
     trackProductView,
@@ -224,9 +235,10 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     trackCheckoutStart,
     trackWhatsAppClick,
     trackCheckoutAbandon,
+    trackRemoveFromCart,
     flushEvents,
-    isTracking,
-    updateRealtimeActivity
+    isTracking: mockEnterpriseTracking.isTracking,
+    updateRealtimeActivity: mockEnterpriseTracking.updateRealtimeActivity
   };
 
   return (

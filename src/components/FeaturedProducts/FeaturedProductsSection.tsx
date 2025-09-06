@@ -258,7 +258,7 @@ const FeaturedProductsSection = ({
             )}
 
             <div
-              ref={scrollContainerRef}
+              ref={scrollContainerRef as React.RefObject<HTMLDivElement>}
               className={cn(
                 "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2", // Restored overflow-x-auto for scrolling
                 "overscroll-behavior-x-contain"

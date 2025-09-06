@@ -28,7 +28,7 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart 
     }
     
     // Track product view
-    trackProductView(product.id, product.name, product.price);
+    trackProductView(product.id, product);
     
     onCardClick(product.id);
   }, [onCardClick, product.id, trackProductView, product.name, product.price]);

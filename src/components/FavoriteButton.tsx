@@ -30,7 +30,7 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
     // Track analytics event
     trackEvent(wasAlreadyFavorite ? 'remove_from_favorites' : 'add_to_favorites', {
       product_id: productId
-    }, productId);
+    });
     
     await toggleFavorite(productId);
   };
