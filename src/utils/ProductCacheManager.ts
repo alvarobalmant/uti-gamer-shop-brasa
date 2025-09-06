@@ -15,8 +15,6 @@ export interface CachedProduct {
   id: string;
   name: string;
   slug?: string;
-  created_at: string;
-  updated_at: string;
 
   // PREÇOS (CRÍTICO)
   price: number;
@@ -93,8 +91,6 @@ class ProductCacheManager {
       id: product.id,
       name: product.name,
       slug: product.slug,
-      created_at: product.created_at,
-      updated_at: product.updated_at,
       price: product.price,
       pro_price: product.pro_price,
       list_price: product.list_price,

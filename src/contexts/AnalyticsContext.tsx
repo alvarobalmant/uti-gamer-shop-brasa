@@ -5,7 +5,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAnalyticsTracking } from '@/hooks/useAnalyticsTracking';
-// import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
+import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
 
 interface AnalyticsContextType {
   // IDs únicos
@@ -19,10 +19,6 @@ interface AnalyticsContextType {
   trackAddToCart: (productId: string, quantity: number, price: number) => void;
   trackSearch: (query: string, filters?: any, results?: any) => void;
   trackPurchase: (orderData: any) => void;
-  trackCheckoutStart?: (cartItems: any[], totalValue: number) => void;
-  trackWhatsAppClick?: (productId?: string, context?: string) => void;
-  trackCheckoutAbandon?: (step: string, timeInCheckout: number, cartItems: any[], totalValue: number) => void;
-  trackRemoveFromCart?: (productId: string, quantity: number, price: number) => void;
   
   // Controles
   flushEvents: () => Promise<void>;
@@ -55,17 +51,17 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     flushEvents: basicFlushEvents
   } = useAnalyticsTracking();
 
-  // Temporarily disabled enterprise tracking
-  const mockEnterpriseTracking = {
-    uniqueUserId: 'mock_user',
-    sessionId: 'mock_session',
-    isTracking: true,
-    trackPageView: async () => {},
-    trackProductView: async () => {},
-    trackAddToCart: async () => {},
-    trackPurchase: async () => {},
-    updateRealtimeActivity: async () => {}
-  };
+  // Sistema enterprise multi-usuário
+  const {
+    uniqueUserId,
+    sessionId,
+    isTracking,
+    trackPageView: enterpriseTrackPageView,
+    trackProductView: enterpriseTrackProductView,
+    trackAddToCart: enterpriseTrackAddToCart,
+    trackPurchase: enterpriseTrackPurchase,
+    updateRealtimeActivity
+  } = useEnterpriseTrackingMultiUser();
 
   console.log('📊 [ANALYTICS CONTEXT] Initialized for user:', uniqueUserId);
 
@@ -74,24 +70,15 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     try {
       console.log(`🎯 [ANALYTICS] User ${uniqueUserId}: Event ${eventType}`, data);
       
-      // Executar sistema básico
-      await basicTrackEvent({
-        event_type: eventType,
-        event_data: data,
-        product_id: data?.productId,
-        page_url: data?.url
-      });
-      
-      // Enterprise tracking específico
-      if (eventType === 'page_view' && data?.url) {
-        await enterpriseTrackPageView(data.url);
-      } else if (eventType === 'product_view' && data?.productId) {
-        await enterpriseTrackProductView(data.productId, data);
-      } else if (eventType === 'add_to_cart' && data?.productId) {
-        await enterpriseTrackAddToCart(data.productId, data?.quantity || 1, data?.price);
-      } else if (eventType === 'purchase') {
-        await enterpriseTrackPurchase(data);
-      }
+      // Executar ambos os sistemas em paralelo
+      await Promise.all([
+        basicTrackEvent(eventType, data, element, coordinates),
+        // Enterprise tracking específico
+        eventType === 'page_view' && enterpriseTrackPageView(data?.url),
+        eventType === 'product_view' && enterpriseTrackProductView(data?.productId, data),
+        eventType === 'add_to_cart' && enterpriseTrackAddToCart(data?.productId, data?.quantity || 1, data?.price),
+        eventType === 'purchase' && enterpriseTrackPurchase(data)
+      ]);
       
       console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Event tracked: ${eventType}`);
     } catch (error) {
@@ -106,7 +93,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       console.log(`📄 [ANALYTICS] User ${uniqueUserId}: Page view: ${pageUrl}`);
       
       await Promise.all([
-        basicTrackPageView(title),
+        basicTrackPageView(url, title),
         enterpriseTrackPageView(url)
       ]);
       
@@ -170,46 +157,6 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     }
   };
 
-  // Função para rastrear início do checkout
-  const trackCheckoutStart = async (cartItems: any[], totalValue: number) => {
-    try {
-      console.log(`🛍️ [ANALYTICS] User ${uniqueUserId}: Checkout start: ${totalValue}`);
-      await trackEvent('checkout_start', { cartItems, totalValue });
-    } catch (error) {
-      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking checkout start:`, error);
-    }
-  };
-
-  // Função para rastrear clique no WhatsApp
-  const trackWhatsAppClick = async (productId?: string, context?: string) => {
-    try {
-      console.log(`📱 [ANALYTICS] User ${uniqueUserId}: WhatsApp click: ${productId || 'general'}`);
-      await trackEvent('whatsapp_click', { productId, context });
-    } catch (error) {
-      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking WhatsApp click:`, error);
-    }
-  };
-
-  // Função para rastrear abandono do checkout
-  const trackCheckoutAbandon = async (step: string, timeInCheckout: number, cartItems: any[], totalValue: number) => {
-    try {
-      console.log(`⚠️ [ANALYTICS] User ${uniqueUserId}: Checkout abandon: ${step}`);
-      await trackEvent('checkout_abandon', { step, timeInCheckout, cartItems, totalValue });
-    } catch (error) {
-      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking checkout abandon:`, error);
-    }
-  };
-
-  // Função para rastrear remoção do carrinho
-  const trackRemoveFromCart = async (productId: string, quantity: number, price: number) => {
-    try {
-      console.log(`🗑️ [ANALYTICS] User ${uniqueUserId}: Remove from cart: ${productId}`);
-      await trackEvent('remove_from_cart', { productId, quantity, price });
-    } catch (error) {
-      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking remove from cart:`, error);
-    }
-  };
-
   // Função para flush de eventos
   const flushEvents = async () => {
     try {
@@ -224,21 +171,17 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
   };
 
   const contextValue: AnalyticsContextType = {
-    uniqueUserId: mockEnterpriseTracking.uniqueUserId,
-    sessionId: mockEnterpriseTracking.sessionId,
+    uniqueUserId,
+    sessionId,
     trackEvent,
     trackPageView,
     trackProductView,
     trackAddToCart,
     trackSearch,
     trackPurchase,
-    trackCheckoutStart,
-    trackWhatsAppClick,
-    trackCheckoutAbandon,
-    trackRemoveFromCart,
     flushEvents,
-    isTracking: mockEnterpriseTracking.isTracking,
-    updateRealtimeActivity: mockEnterpriseTracking.updateRealtimeActivity
+    isTracking,
+    updateRealtimeActivity
   };
 
   return (

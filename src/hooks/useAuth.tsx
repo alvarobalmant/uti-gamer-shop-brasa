@@ -11,12 +11,11 @@ interface AuthContextType {
   session: Session | null;
   isAdmin: boolean;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: any }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error?: any }>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<Session | null>;
   clearAuthCache: () => void;
-  openAuthModal?: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -213,14 +212,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password,
       });
       
-      if (error) {
-        toast({
-          title: "Erro no login",
-          description: error.message,
-          variant: "destructive",
-        });
-        return { error };
-      }
+      if (error) throw error;
       
       // Verificar se o email foi confirmado
       if (data.user && !data.user.email_confirmed_at) {
@@ -229,21 +221,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: "Verifique seu email primeiro.",
           variant: "destructive",
         });
-        return { error: { message: "Email não confirmado" } };
+        return;
       }
       
       toast({
         title: "Login realizado!",
         description: "Bem-vindo!",
       });
-      return {};
     } catch (error: any) {
       toast({
         title: "Erro no login",
         description: error.message,
         variant: "destructive",
       });
-      return { error };
+      throw error;
     }
   };
 
@@ -258,27 +249,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         },
       });
       
-      if (error) {
-        toast({
-          title: "Erro no cadastro",
-          description: error.message,
-          variant: "destructive",
-        });
-        return { error };
-      }
+      if (error) throw error;
       
       toast({
         title: "Conta criada!",
         description: "Verifique seu email.",
       });
-      return {};
     } catch (error: any) {
       toast({
         title: "Erro no cadastro",
         description: error.message,
         variant: "destructive",
       });
-      return { error };
+      throw error;
     }
   };
 
@@ -319,7 +302,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signOut,
       refreshSession,
       clearAuthCache,
-      openAuthModal: () => {}, // Placeholder - will be implemented later
     }}>
       {children}
     </AuthContext.Provider>

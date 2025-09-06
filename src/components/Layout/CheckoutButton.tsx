@@ -24,7 +24,7 @@ const CheckoutButton = () => {
     const itemCount = getCartItemsCount();
     
     // Track checkout start
-    trackCheckoutStart(items, cartTotal);
+    trackCheckoutStart(cartTotal, itemCount);
 
     try {
       // Track WhatsApp click
@@ -37,7 +37,7 @@ const CheckoutButton = () => {
       });
     } catch (error) {
       // Track checkout abandonment
-      trackCheckoutAbandon('whatsapp_error', 0, items, cartTotal);
+      trackCheckoutAbandon(cartTotal, itemCount, 'whatsapp_error');
       
       toast({
         title: "Erro",

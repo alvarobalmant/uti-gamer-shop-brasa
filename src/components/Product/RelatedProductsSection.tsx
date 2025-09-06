@@ -169,7 +169,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
           )}
 
           <div
-            ref={scrollContainerRef as React.RefObject<HTMLDivElement>}
+            ref={scrollContainerRef}
             className={cn(
               "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2",
               "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",

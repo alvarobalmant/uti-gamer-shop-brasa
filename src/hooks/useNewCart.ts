@@ -88,7 +88,12 @@ export const useNewCart = () => {
     });
 
     // Track analytics with differentiation
-    trackAddToCart(product.id, 1, product.price);
+    trackAddToCart(product.id, product.name, product.price, 1, {
+      isNewItem,
+      finalQuantity,
+      size,
+      color
+    });
 
     toast({
       title: "✅ Produto adicionado!",
@@ -104,7 +109,7 @@ export const useNewCart = () => {
       // Find the item being removed for analytics
       const removedItem = prev.find(item => item.id === itemId);
       if (removedItem) {
-        trackRemoveFromCart(removedItem.product.id, 1, removedItem.product.price);
+        trackRemoveFromCart(removedItem.product.id, removedItem.product.name, removedItem.product.price);
       }
       
       const newCart = prev.filter(item => item.id !== itemId);

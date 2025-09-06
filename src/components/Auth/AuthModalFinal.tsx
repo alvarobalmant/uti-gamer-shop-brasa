@@ -217,12 +217,22 @@ export const AuthModalFinal = ({ isOpen, onClose }: AuthModalFinalProps) => {
     visible: { 
       opacity: 1, 
       scale: 1,
-      y: 0
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 25,
+        duration: 0.5
+      }
     },
     exit: { 
       opacity: 0, 
       scale: 0.9,
-      y: 50
+      y: 50,
+      transition: {
+        duration: 0.3,
+        ease: "easeInOut"
+      }
     }
   };
 
