@@ -116,6 +116,11 @@ export const useProducts = () => {
         updateData.uti_coins_cashback_percentage = Number(updates.uti_coins_cashback_percentage);
       }
       
+      // Campo UTI Coins Desconto (igual ao bulk edit)
+      if (updates.uti_coins_discount_percentage !== undefined) {
+        updateData.uti_coins_discount_percentage = Number(updates.uti_coins_discount_percentage);
+      }
+      
       // Campos booleanos
       if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
       if (updates.is_featured !== undefined) updateData.is_featured = updates.is_featured;
