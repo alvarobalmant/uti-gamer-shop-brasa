@@ -9,8 +9,13 @@
 import { fetchProductsFromDatabase, fetchSingleProductFromDatabase } from '@/hooks/useProducts/productApi';
 import { Product } from '@/hooks/useProducts/types';
 
-// Interface para produto cacheado (dados essenciais)
+// Interface para produto cacheado (dados essenciais)  
 export interface CachedProduct {
+  // Timestamps required by Product interface
+  created_at: string;
+  updated_at: string;
+  cached_at: number;
+  ttl: number;
   // IDENTIFICAÇÃO
   id: string;
   name: string;
