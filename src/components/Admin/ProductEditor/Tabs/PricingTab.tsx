@@ -179,6 +179,37 @@ const PricingTab: React.FC<PricingTabProps> = ({ formData, onChange }) => {
               )}
             </div>
           </div>
+
+          {/* UTI Coins Desconto */}
+          <div>
+            <Label htmlFor="uti_coins_discount_percentage">Desconto UTI Coins (%)</Label>
+            <Input
+              id="uti_coins_discount_percentage"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              value={formData.uti_coins_discount_percentage || ''}
+              onChange={(e) => onChange('uti_coins_discount_percentage', parseFloat(e.target.value) || undefined)}
+              placeholder="0.0"
+            />
+            <div className="text-sm text-gray-500 mt-1 space-y-1">
+              <p>Porcentagem máxima de desconto que pode ser aplicada com UTI Coins</p>
+              {formData.price && formData.uti_coins_discount_percentage && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-2 rounded border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-xs">U</span>
+                    </div>
+                    <span className="text-blue-800 dark:text-blue-200 font-medium">
+                      Desconto máximo: {formatCurrency((formData.price * formData.uti_coins_discount_percentage) / 100)} 
+                      ({Math.round((formData.price * formData.uti_coins_discount_percentage))} UTI Coins)
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
