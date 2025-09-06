@@ -354,6 +354,36 @@ const OrderVerifier = () => {
                 <p className="text-blue-700">
                   UTI Coins: {orderData.order_data.rewards_given.uti_coins || 0}
                 </p>
+                {orderData.order_data.rewards_given.discount_coins_used > 0 && (
+                  <p className="text-blue-700">
+                    UTI Coins usados para desconto: {orderData.order_data.rewards_given.discount_coins_used} 
+                    ({formatCurrency(orderData.order_data.rewards_given.discount_amount_reais || 0)})
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Desconto UTI Coins Aplicado */}
+            {orderData.order_data.uti_coins_used > 0 && (
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
+                  <Coins className="w-4 h-4" />
+                  💰 DESCONTO UTI COINS APLICADO
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-700 dark:text-blue-300">UTI Coins utilizados:</span>
+                    <span className="font-bold text-blue-900 dark:text-blue-100">
+                      {orderData.order_data.uti_coins_used.toLocaleString()} moedas
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-700 dark:text-blue-300">Desconto aplicado:</span>
+                    <span className="font-bold text-blue-900 dark:text-blue-100">
+                      {formatCurrency(orderData.order_data.uti_coins_discount_amount || 0)}
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
 
