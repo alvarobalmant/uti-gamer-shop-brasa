@@ -82,67 +82,6 @@ const OrderVerifier = () => {
     }).format(value);
   };
 
-<<<<<<< HEAD
-=======
-  // FUNÇÃO CORRIGIDA: Calcular cashback baseado nos dados reais do banco (por NOME)
-  const calculateExpectedCashback = (items: any[]) => {
-    let totalCashbackReais = 0;
-    let hasProductsWithCashback = false;
-    const itemsWithCashback: Array<{
-      name: string;
-      percentage: number;
-      cashbackReais: number;
-      cashbackCoins: number;
-    }> = [];
-
-    items.forEach(item => {
-      const itemTotal = item.total || (item.price * item.quantity);
-      
-      // Buscar percentual real do banco de dados usando NOME do produto
-      const cashbackPercentage = productCashbacks[item.product_name] || 0;
-      
-      console.log('🧮 Calculando cashback para:', item.product_name, 'percentual:', cashbackPercentage);
-      
-      if (cashbackPercentage > 0) {
-        hasProductsWithCashback = true;
-        const cashbackReais = itemTotal * (cashbackPercentage / 100);
-        const cashbackCoins = Math.round(cashbackReais * 100); // 1 real = 100 UTI Coins
-        
-        totalCashbackReais += cashbackReais;
-        
-        itemsWithCashback.push({
-          name: item.product_name,
-          percentage: cashbackPercentage,
-          cashbackReais,
-          cashbackCoins
-        });
-      }
-    });
-
-    const utiCoinsFromCashback = Math.round(totalCashbackReais * 100);
-    const defaultCoins = 20; // UTI coins padrão por compra
-    const totalCoins = defaultCoins + utiCoinsFromCashback;
-
-    console.log('💰 Resultado final do cálculo:', {
-      totalCashbackReais,
-      utiCoinsFromCashback,
-      defaultCoins,
-      totalCoins,
-      hasProductsWithCashback,
-      itemsWithCashback
-    });
-
-    return {
-      cashbackReais: totalCashbackReais,
-      cashbackCoins: utiCoinsFromCashback,
-      defaultCoins,
-      totalCoins,
-      hasProductsWithCashback,
-      itemsWithCashback
-    };
-  };
-
->>>>>>> c2c52d678d89632edb5ee5cce261deb4082d034e
   return (
     <div className="space-y-6">
       <Card>
@@ -277,65 +216,6 @@ const OrderVerifier = () => {
               </div>
             )}
 
-<<<<<<< HEAD
-=======
-            {/* Previsão de Recompensas ANTES de finalizar */}
-            {orderData.order_data.status === 'pending' && (() => {
-              const expectedRewards = calculateExpectedCashback(orderData.order_data.items);
-              
-              return (
-                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
-                  <h4 className="font-semibold text-amber-800 dark:text-amber-200 mb-3 flex items-center gap-2">
-                    <Coins className="w-5 h-5" />
-                    🎯 RECOMPENSAS QUE SERÃO CONCEDIDAS
-                  </h4>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-amber-700 dark:text-amber-300">UTI Coins padrão por compra:</span>
-                      <span className="font-bold text-amber-900 dark:text-amber-100">
-                        {expectedRewards.defaultCoins.toLocaleString()} moedas
-                      </span>
-                    </div>
-                    
-                    {expectedRewards.hasProductsWithCashback && (
-                      <>
-                        {/* NOVO: Mostrar cashback detalhado por produto */}
-                        {expectedRewards.itemsWithCashback.map((item, index) => (
-                          <div key={index} className="flex justify-between items-center">
-                            <span className="text-amber-700 dark:text-amber-300">
-                              Cashback ({item.percentage}%): {item.cashbackReais.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                            </span>
-                            <span className="font-bold text-amber-900 dark:text-amber-100">
-                              {item.cashbackCoins.toLocaleString()} moedas
-                            </span>
-                          </div>
-                        ))}
-                        
-                        <div className="border-t border-amber-200 dark:border-amber-700 pt-2">
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-amber-800 dark:text-amber-200">TOTAL DE UTI COINS:</span>
-                            <span className="text-xl font-bold text-amber-900 dark:text-amber-100">
-                              🪙 {expectedRewards.totalCoins.toLocaleString()} moedas
-                            </span>
-                          </div>
-                        </div>
-                        
-                        {expectedRewards.cashbackCoins >= 1000000 && (
-                          <div className="mt-3 p-3 bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900/50 dark:to-amber-900/50 rounded-lg border border-yellow-300 dark:border-yellow-700">
-                            <p className="text-center text-yellow-800 dark:text-yellow-200 font-bold text-lg">
-                              🎉 MEGA CASHBACK! Mais de 1 MILHÃO de UTI Coins! 🎉
-                            </p>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })()}
-
->>>>>>> c2c52d678d89632edb5ee5cce261deb4082d034e
             {/* Ações */}
             {orderData.order_data.status === 'pending' && new Date(orderData.order_data.expires_at) > new Date() && (
               <div className="pt-4 border-t">

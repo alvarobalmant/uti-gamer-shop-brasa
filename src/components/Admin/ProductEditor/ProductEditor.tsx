@@ -165,10 +165,6 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
         pro_price: product.pro_price,
         discount_percentage: product.discount_percentage,
         pix_discount_percentage: product.pix_discount_percentage || 5,
-<<<<<<< HEAD
-=======
-        uti_coins_cashback_percentage: product.uti_coins_cashback_percentage,
->>>>>>> c2c52d678d89632edb5ee5cce261deb4082d034e
         stock: product.stock,
         is_active: product.is_active !== false,
         is_featured: product.is_featured || false,
