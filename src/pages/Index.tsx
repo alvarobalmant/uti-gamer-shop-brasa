@@ -15,7 +15,7 @@ import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionR
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
 import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
-import { HomepageProductPreloader } from '@/components/HomePage/HomepageProductPreloader';
+
 import { useScrollCoins } from '@/hooks/useScrollCoins';
 import { ScrollCoinsNotification } from '@/components/Mobile/ScrollCoinsNotification';
 import { useSmartScrollRestoration } from '@/hooks/useSmartScrollRestoration';
@@ -148,8 +148,7 @@ const Index = React.memo(() => {
   }, [isSpecialSectionWithoutBackground]);
 
   return (
-    <HomepageProductPreloader products={products}>
-      <div className="min-h-screen bg-background w-full overflow-x-hidden flex flex-col">
+    <div className="min-h-screen bg-background w-full overflow-x-hidden flex flex-col">
       <ProfessionalHeader
         onCartOpen={handleCartOpen}
         onAuthOpen={handleAuthOpen}
@@ -233,7 +232,6 @@ const Index = React.memo(() => {
         onClose={hideNotification}
       />
     </div>
-    </HomepageProductPreloader>
   );
 });
 

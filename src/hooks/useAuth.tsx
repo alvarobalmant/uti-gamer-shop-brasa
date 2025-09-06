@@ -11,8 +11,8 @@ interface AuthContextType {
   session: Session | null;
   isAdmin: boolean;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<Session | null>;
   clearAuthCache: () => void;
@@ -206,14 +206,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [checkAdminRole, validateSession, clearAuthCache]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<{ error?: string }> => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (error) throw error;
+      if (error) {
+        return { error: error.message };
+      }
       
       // Verificar se o email foi confirmado
       if (data.user && !data.user.email_confirmed_at) {
@@ -222,24 +224,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: "Verifique seu email primeiro.",
           variant: "destructive",
         });
-        return;
+        return { error: "Email não confirmado" };
       }
       
       toast({
         title: "Login realizado!",
         description: "Bem-vindo!",
       });
+      
+      return {};
     } catch (error: any) {
       toast({
         title: "Erro no login",
         description: error.message,
         variant: "destructive",
       });
-      throw error;
+      return { error: error.message };
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, name: string): Promise<{ error?: string }> => {
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -250,19 +254,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         },
       });
       
-      if (error) throw error;
+      if (error) {
+        return { error: error.message };
+      }
       
       toast({
         title: "Conta criada!",
         description: "Verifique seu email.",
       });
+      
+      return {};
     } catch (error: any) {
       toast({
         title: "Erro no cadastro",
         description: error.message,
         variant: "destructive",
       });
-      throw error;
+      return { error: error.message };
     }
   };
 

@@ -45,9 +45,7 @@ export interface CachedProduct {
   is_featured?: boolean;
   stock?: number;
 
-  // METADADOS DO CACHE
-  cached_at: number;
-  ttl: number;
+  // Cache metadata already defined above
 }
 
 // Interface para estatísticas do cache

@@ -174,7 +174,7 @@ export const AuthModalFinal = ({ isOpen, onClose }: AuthModalFinalProps) => {
       } else if (mode === 'signup') {
         const result = await signUp(email.trim(), password, name.trim());
         if (result?.error) {
-          setErrors({ form: result.error.message || 'Erro ao criar conta' });
+          setErrors({ form: result.error || 'Erro ao criar conta' });
           setShakeError(true);
           setTimeout(() => setShakeError(false), 500);
         } else {

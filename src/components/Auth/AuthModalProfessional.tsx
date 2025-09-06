@@ -104,7 +104,7 @@ export const AuthModalProfessional = ({ isOpen, onClose }: AuthModalProfessional
       } else if (mode === 'signup') {
         const result = await signUp(email, password, name);
         if (result?.error) {
-          setErrors({ form: result.error.message || 'Erro ao criar conta' });
+          setErrors({ form: result.error || 'Erro ao criar conta' });
         } else {
           setMode('email-verification');
         }
