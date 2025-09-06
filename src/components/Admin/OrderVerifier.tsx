@@ -14,7 +14,6 @@ const OrderVerifier = () => {
   const [orderData, setOrderData] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
   const [productCashbacks, setProductCashbacks] = useState<{[key: string]: number}>({});
-  const [productDiscounts, setProductDiscounts] = useState<{[key: string]: number}>({});
   const { loading, error, verifyCode, completeOrder } = useOrderVerification();
   const { toast } = useToast();
 
@@ -64,7 +63,7 @@ const OrderVerifier = () => {
       
       const { data: products, error } = await supabase
         .from('products')
-        .select('id, name, uti_coins_cashback_percentage, uti_coins_discount_percentage')
+        .select('id, name, uti_coins_cashback_percentage')
         .in('name', productNames);
 
       console.log('📊 Resultado da query:', { products, error });
@@ -75,18 +74,14 @@ const OrderVerifier = () => {
       }
 
       const cashbackMap: {[key: string]: number} = {};
-      const discountMap: {[key: string]: number} = {};
       products?.forEach(product => {
-        console.log('💰 Produto encontrado:', product.name, 'cashback:', product.uti_coins_cashback_percentage, 'discount:', product.uti_coins_discount_percentage);
+        console.log('💰 Produto encontrado:', product.name, 'cashback:', product.uti_coins_cashback_percentage);
         // Usar o NOME como chave ao invés do ID
         cashbackMap[product.name] = product.uti_coins_cashback_percentage || 0;
-        discountMap[product.name] = product.uti_coins_discount_percentage || 0;
       });
 
       console.log('🗺️ Mapa final de cashbacks:', cashbackMap);
-      console.log('🎯 Mapa final de descontos:', discountMap);
       setProductCashbacks(cashbackMap);
-      setProductDiscounts(discountMap);
     } catch (err) {
       console.error('💥 Erro ao buscar dados dos produtos:', err);
     }
