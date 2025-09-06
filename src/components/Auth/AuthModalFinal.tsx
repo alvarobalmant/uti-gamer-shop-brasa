@@ -219,7 +219,7 @@ export const AuthModalFinal = ({ isOpen, onClose }: AuthModalFinalProps) => {
       scale: 1,
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 300,
         damping: 25,
         duration: 0.5
@@ -231,7 +231,7 @@ export const AuthModalFinal = ({ isOpen, onClose }: AuthModalFinalProps) => {
       y: 50,
       transition: {
         duration: 0.3,
-        ease: "easeInOut"
+        ease: "easeInOut" as const
       }
     }
   };

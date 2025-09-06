@@ -110,6 +110,8 @@ class ProductCacheManager {
       is_active: product.is_active,
       is_featured: product.is_featured,
       stock: product.stock,
+      created_at: product.created_at || new Date().toISOString(),
+      updated_at: product.updated_at || new Date().toISOString(),
       cached_at: Date.now(),
       ttl: this.DEFAULT_TTL
     };

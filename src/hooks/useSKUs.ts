@@ -343,7 +343,7 @@ const useSKUs = () => {
     try {
       setLoading(true);
       const result = await updateProduct(id, updates);
-      return result;
+      return result as Product;
     } catch (error) {
       console.error('Erro ao atualizar SKU:', error);
       return null;

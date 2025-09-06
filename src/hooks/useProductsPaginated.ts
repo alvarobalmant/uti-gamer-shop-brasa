@@ -21,7 +21,7 @@ interface UsePaginatedProductsResult {
   loadAllProducts: () => void;
   clearFilters: () => void;
   addProduct: (productData: any) => Promise<Product | null>;
-  updateProduct: (id: string, updates: any) => Promise<Product>;
+  updateProduct: (id: string, updates: any) => Promise<any>;
   deleteProduct: (id: string) => Promise<void>;
 }
 
