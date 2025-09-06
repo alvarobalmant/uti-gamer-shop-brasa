@@ -15,9 +15,7 @@ import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionR
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
 import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
-import { HomepageProductPreloader } from '@/components/HomePage/HomepageProductPreloader';
 import { useScrollCoins } from '@/hooks/useScrollCoins';
-import { ScrollCoinsNotification } from '@/components/Mobile/ScrollCoinsNotification';
 import { useSmartScrollRestoration } from '@/hooks/useSmartScrollRestoration';
 
 // Lazy load AdminPanel para reduzir bundle inicial
@@ -45,7 +43,7 @@ const Index = React.memo(() => {
   } = useIndexPageOptimized();
 
   // Ativar sistema de scroll coins
-  const { notification, hideNotification } = useScrollCoins();
+  useScrollCoins();
 
   // Ativar sistema de scroll restoration inteligente
   useSmartScrollRestoration();
@@ -148,8 +146,7 @@ const Index = React.memo(() => {
   }, [isSpecialSectionWithoutBackground]);
 
   return (
-    <HomepageProductPreloader products={products}>
-      <div className="min-h-screen bg-background w-full overflow-x-hidden flex flex-col">
+    <div className="min-h-screen bg-background w-full overflow-x-hidden flex flex-col">
       <ProfessionalHeader
         onCartOpen={handleCartOpen}
         onAuthOpen={handleAuthOpen}
@@ -225,15 +222,7 @@ const Index = React.memo(() => {
       <AuthModal isOpen={showAuthModal} onClose={handleAuthClose} />
       
       <MobileSearchBar isOpen={isMobileSearchOpen} onClose={toggleMobileSearch} />
-
-      {/* Notificação customizada de scroll coins */}
-      <ScrollCoinsNotification
-        amount={notification.amount}
-        isVisible={notification.isVisible}
-        onClose={hideNotification}
-      />
     </div>
-    </HomepageProductPreloader>
   );
 });
 

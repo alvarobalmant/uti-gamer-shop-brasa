@@ -218,15 +218,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data.user && !data.user.email_confirmed_at) {
         toast({
           title: "Email não confirmado",
-          description: "Verifique seu email primeiro.",
+          description: "Verifique seu email e clique no link de confirmação antes de acessar.",
           variant: "destructive",
         });
         return;
       }
       
       toast({
-        title: "Login realizado!",
-        description: "Bem-vindo!",
+        title: "Login realizado com sucesso!",
+        description: "Bem-vindo de volta!",
       });
     } catch (error: any) {
       toast({
@@ -252,8 +252,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) throw error;
       
       toast({
-        title: "Conta criada!",
-        description: "Verifique seu email.",
+        title: "Conta criada com sucesso!",
+        description: "Verifique seu email para confirmar sua conta.",
       });
     } catch (error: any) {
       toast({
@@ -277,7 +277,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAdmin(false);
       
       toast({
-        title: "Logout realizado!",
+        title: "Logout realizado com sucesso!",
       });
     } catch (error: any) {
       // Even if server logout fails, clear local state
@@ -286,7 +286,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAdmin(false);
       
       toast({
-        title: "Logout realizado!",
+        title: "Logout realizado com sucesso!",
       });
     }
   };

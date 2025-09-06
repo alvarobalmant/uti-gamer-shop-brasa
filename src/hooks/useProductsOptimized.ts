@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { productCache, CachedProduct } from '@/utils/ProductCacheManager';
+import { Product } from './useProducts/types';
 import { 
   fetchProductsFromDatabase, 
   fetchSingleProductFromDatabase,
@@ -9,56 +9,59 @@ import {
 import { handleProductError } from './useProducts/productErrorHandler';
 import { CarouselConfig } from '@/types/specialSections';
 
-// ✅ NOVO: Usar ProductCacheManager unificado em vez de cache local
+// Cache global para produtos
+const productCache = new Map<string, { data: Product[], timestamp: number }>();
+const singleProductCache = new Map<string, { data: Product, timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+// Prefetch queue para produtos
+const prefetchQueue = new Set<string>();
+const prefetchPromises = new Map<string, Promise<any>>();
 
 export const useProductsOptimized = () => {
-  const [products, setProducts] = useState<CachedProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // ✅ REMOVIDO: Cache local - agora usa ProductCacheManager unificado
+  // Função para verificar se cache é válido
+  const isCacheValid = (timestamp: number) => {
+    return Date.now() - timestamp < CACHE_DURATION;
+  };
 
-  // ✅ NOVO: Função simplificada usando ProductCacheManager
+  // Função para buscar produtos com cache
   const fetchProductsWithCache = useCallback(async (cacheKey: string = 'all') => {
+    // Verificar cache primeiro
+    const cached = productCache.get(cacheKey);
+    if (cached && isCacheValid(cached.timestamp)) {
+      setProducts(cached.data);
+      setLoading(false);
+      return cached.data;
+    }
+
     try {
       setLoading(true);
       
-      console.log('[useProductsOptimized] 🔍 Buscando produtos via cache unificado');
+      // Cancelar requisição anterior se existir
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
       
-      // Buscar todos os produtos da API (cache será gerenciado internamente)
+      abortControllerRef.current = new AbortController();
+      
       const productsData = await fetchProductsFromDatabase();
       
-      // Converter para CachedProduct
-      const cachedProducts: CachedProduct[] = productsData.map(p => ({
-        id: p.id,
-        name: p.name,
-        slug: p.slug,
-        price: p.price,
-        pro_price: p.pro_price,
-        list_price: p.list_price,
-        uti_pro_enabled: p.uti_pro_enabled,
-        uti_pro_value: p.uti_pro_value,
-        uti_pro_custom_price: p.uti_pro_custom_price,
-        image: p.image,
-        badge_text: p.badge_text,
-        badge_color: p.badge_color,
-        badge_visible: p.badge_visible,
-        platform: p.platform,
-        category: p.category,
-        tags: p.tags,
-        is_active: p.is_active,
-        is_featured: p.is_featured,
-        stock: p.stock,
-        cached_at: Date.now(),
-        ttl: 5 * 60 * 1000
-      }));
+      // Salvar no cache
+      productCache.set(cacheKey, {
+        data: productsData,
+        timestamp: Date.now()
+      });
       
-      setProducts(cachedProducts);
-      console.log(`[useProductsOptimized] ✅ ${cachedProducts.length} produtos carregados`);
-      
-      return cachedProducts;
+      setProducts(productsData);
+      return productsData;
     } catch (error: any) {
+      if (error.name === 'AbortError') return;
+      
       const errorMessage = handleProductError(error, 'ao carregar produtos');
       
       if (errorMessage) {
@@ -76,23 +79,78 @@ export const useProductsOptimized = () => {
     }
   }, [toast]);
 
-  // ✅ NOVO: Prefetch simplificado usando ProductCacheManager
+  // Função para prefetch de produto individual
   const prefetchProduct = useCallback(async (productId: string) => {
-    console.log(`[useProductsOptimized] 🚀 Prefetch produto ${productId}`);
-    await productCache.getProduct(productId);
+    if (prefetchQueue.has(productId) || singleProductCache.has(productId)) {
+      return;
+    }
+
+    prefetchQueue.add(productId);
+
+    try {
+      // Evitar múltiplas requisições para o mesmo produto
+      if (prefetchPromises.has(productId)) {
+        return prefetchPromises.get(productId);
+      }
+
+      const promise = fetchSingleProductFromDatabase(productId);
+      prefetchPromises.set(productId, promise);
+
+      const product = await promise;
+      
+      // Salvar no cache
+      singleProductCache.set(productId, {
+        data: product,
+        timestamp: Date.now()
+      });
+
+      prefetchPromises.delete(productId);
+    } catch (error) {
+      console.warn('Prefetch failed for product:', productId, error);
+      prefetchPromises.delete(productId);
+    } finally {
+      prefetchQueue.delete(productId);
+    }
   }, []);
 
-  // ✅ NOVO: Busca individual simplificada usando ProductCacheManager
+  // Função para buscar produto individual com cache
   const fetchSingleProduct = useCallback(async (productId: string) => {
-    console.log(`[useProductsOptimized] 🔍 Buscando produto individual ${productId}`);
-    return await productCache.getProduct(productId);
-  }, []);
+    // Verificar cache primeiro
+    const cached = singleProductCache.get(productId);
+    if (cached && isCacheValid(cached.timestamp)) {
+      return cached.data;
+    }
 
-  // ✅ NOVO: Prefetch de relacionados usando ProductCacheManager
+    try {
+      const product = await fetchSingleProductFromDatabase(productId);
+      
+      // Salvar no cache
+      singleProductCache.set(productId, {
+        data: product,
+        timestamp: Date.now()
+      });
+      
+      return product;
+    } catch (error: any) {
+      const errorMessage = handleProductError(error, 'ao carregar produto');
+      
+      if (errorMessage) {
+        toast({
+          title: "Erro ao carregar produto",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+      
+      throw error;
+    }
+  }, [toast]);
+
+  // Função para prefetch de produtos relacionados
   const prefetchRelatedProducts = useCallback(async (productIds: string[]) => {
-    console.log(`[useProductsOptimized] 🚀 Prefetch de ${productIds.length} produtos relacionados`);
-    await productCache.preloadProducts(productIds);
-  }, []);
+    const promises = productIds.map(id => prefetchProduct(id));
+    await Promise.allSettled(promises);
+  }, [prefetchProduct]);
 
   // Função para buscar produtos por critério com cache
   const fetchProductsByConfig = useCallback(async (config: CarouselConfig) => {
@@ -131,10 +189,12 @@ export const useProductsOptimized = () => {
     }
   }, [toast]);
 
-  // ✅ NOVO: Limpar cache usando ProductCacheManager
+  // Função para limpar cache
   const clearCache = useCallback(() => {
-    console.log('[useProductsOptimized] 🗑️ Limpando cache unificado');
-    productCache.clearCache();
+    productCache.clear();
+    singleProductCache.clear();
+    prefetchPromises.clear();
+    prefetchQueue.clear();
   }, []);
 
   // Função para preload de recursos críticos
@@ -177,8 +237,12 @@ export const useProductsOptimized = () => {
     prefetchProduct,
     prefetchRelatedProducts,
     clearCache,
-    // ✅ NOVO: Estatísticas do cache unificado
-    getCacheStats: () => productCache.getStats()
+    // Estatísticas do cache para debug
+    getCacheStats: () => ({
+      productCacheSize: productCache.size,
+      singleProductCacheSize: singleProductCache.size,
+      prefetchQueueSize: prefetchQueue.size
+    })
   };
 };
 

@@ -1,8 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
 import type { SpecialSection } from '@/types/specialSections/core';
 
 interface PromotionalBannerRendererProps {
@@ -15,17 +13,12 @@ export const PromotionalBannerRenderer: React.FC<PromotionalBannerRendererProps>
   className = ''
 }) => {
   const config = section.config as any;
-  const isMobile = useIsMobile();
 
   return (
     <section className={className}>
       <Card className="overflow-hidden">
         <div 
-          className={cn(
-            "relative flex items-center justify-between p-8 text-white",
-            // Proporção diferente para mobile e desktop
-            isMobile ? "aspect-[1102/826]" : "aspect-[3/1]"
-          )}
+          className="relative aspect-[3/1] flex items-center justify-between p-8 text-white"
           style={{
             background: config.backgroundColor || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
           }}

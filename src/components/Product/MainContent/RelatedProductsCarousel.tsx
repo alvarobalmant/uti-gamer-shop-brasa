@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Product } from '@/hooks/useProducts/types';
-import { usePublicProducts } from '@/hooks/usePublicProducts';
+import { Product, useProducts } from '@/hooks/useProducts';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -12,7 +11,6 @@ import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
 import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
 import SectionTitle from '@/components/SectionTitle';
-import { getRelatedProducts } from '@/utils/relatedProducts';
 
 interface RelatedProductsCarouselProps {
   currentProduct: Product;
@@ -26,7 +24,7 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
   className
 }) => {
   const navigate = useNavigate();
-  const { products: allProducts } = usePublicProducts(); // Usar hook que já filtra produtos mestre
+  const { products: allProducts } = useProducts();
   const [products, setProducts] = useState<Product[]>([]);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -34,21 +32,24 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
 
   useEffect(() => {
     if (allProducts.length > 0 && currentProduct) {
-      console.log('[RelatedProductsCarousel] Calculando produtos relacionados...');
-      console.log(`[RelatedProductsCarousel] Produtos disponíveis (já filtrados): ${allProducts.length}`);
+      // Lógica para produtos relacionados baseada em tags
+      const currentProductTags = currentProduct.tags?.map(t => t.id) || [];
+      const related = allProducts
+        .filter(p => 
+          p.id !== currentProduct.id && 
+          p.tags?.some(tag => currentProductTags.includes(tag.id))
+        )
+        .slice(0, 8);
       
-      // Usar nova lógica de produtos relacionados
-      // Não precisa filtrar produtos mestre pois usePublicProducts já faz isso
-      const result = getRelatedProducts(currentProduct, allProducts, 8);
-      
-      console.log(`[RelatedProductsCarousel] Algoritmo usado: ${result.algorithm}`);
-      console.log(`[RelatedProductsCarousel] Produtos encontrados: ${result.products.length}`);
-      
-      if (result.algorithm === 'tags') {
-        console.log('[RelatedProductsCarousel] Distribuição de matches por tags:', result.tagMatches);
+      // Se não houver produtos relacionados por tag, pegar produtos aleatórios
+      if (related.length < 4) {
+        const others = allProducts
+          .filter(p => p.id !== currentProduct.id && !related.some(r => r.id === p.id))
+          .slice(0, 8 - related.length);
+        related.push(...others);
       }
-      
-      setProducts(result.products);
+
+      setProducts(related);
     }
   }, [allProducts, currentProduct]);
 
@@ -106,7 +107,7 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
       {/* Section Header */}
       <SectionTitle 
         title="Produtos Relacionados"
-        showViewAllButton={false}
+        onViewAllClick={() => console.log('Ver todos produtos relacionados')}
         className="px-0"
       />
 

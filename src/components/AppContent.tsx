@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { usePageScrollRestoration } from '@/hooks/usePageScrollRestoration';
 import { BottomNavigationBar } from '@/components/Mobile/BottomNavigationBar';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
-import Cart from '@/components/Cart';
-import MobileSearchBar from '@/components/Header/MobileSearchBar';
 
 interface AppContentProps {
   children: React.ReactNode;
@@ -17,13 +15,9 @@ interface AppContentProps {
  */
 const AppContent: React.FC<AppContentProps> = ({ children }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { openAuthModal } = useAuth();
-  const cartContext = useCart();
-  
-  // ✅ Estados locais como na versão antiga
-  const [showCart, setShowCart] = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const { toggleCart } = useCart();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   
   // Integra sistema simples de scroll horizontal com navegação
   usePageScrollRestoration();
@@ -32,21 +26,18 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
   // Oculta apenas na página de busca (/busca)
   const shouldShowBottomNav = !location.pathname.startsWith('/busca');
   
-  // ✅ Handlers corrigidos como na versão antiga
   const handleSearchOpen = () => {
-    setIsMobileSearchOpen(true);
+    setIsSearchOpen(true);
+    // Navegar para a página de busca ou abrir modal de busca
+    window.location.href = '/busca';
   };
   
   const handleCartOpen = () => {
-    setShowCart(true);
+    toggleCart();
   };
   
   const handleAuthOpen = () => {
     openAuthModal();
-  };
-  
-  const toggleMobileSearch = () => {
-    setIsMobileSearchOpen(!isMobileSearchOpen);
   };
   
   return (
@@ -61,18 +52,6 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
           onAuthOpen={handleAuthOpen}
         />
       )}
-      
-      {/* ✅ Cart modal como na versão antiga */}
-      <Cart
-        showCart={showCart}
-        setShowCart={setShowCart}
-      />
-      
-      {/* ✅ Mobile search bar como na versão antiga */}
-      <MobileSearchBar 
-        isOpen={isMobileSearchOpen} 
-        onClose={toggleMobileSearch} 
-      />
     </>
   );
 };

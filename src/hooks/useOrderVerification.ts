@@ -14,7 +14,6 @@ export interface OrderVerificationData {
   expires_at: string;
   completed_at?: string;
   user_data?: any;
-  uti_coins_balance?: number;
 }
 
 export const useOrderVerification = () => {

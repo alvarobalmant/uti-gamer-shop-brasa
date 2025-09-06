@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useRelatedProducts } from '@/hooks/useProductCache';
-import { CachedProduct } from '@/utils/ProductCacheManager';
+import { Product, useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
@@ -17,16 +16,15 @@ import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
 
 interface RelatedProductsSectionProps {
-  product: CachedProduct;
+  product: Product;
 }
 
 const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product }) => {
-  // ✅ NOVO: Hook otimizado que busca apenas produtos relacionados
-  const { relatedProducts, loading } = useRelatedProducts(product, 8);
-  
+  const { products: allProducts, loading } = useProducts();
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [animateProducts, setAnimateProducts] = useState(true);
   // Usa novo sistema simples baseado no produto para rastreamento preciso
   const scrollContainerRef = useSimpleHorizontalScroll(`related-products-${product.id}`, true);
@@ -36,9 +34,30 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   // Sistema GameStop: Detecção mobile para gradientes
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
 
-  // ✅ REMOVIDO: Lógica complexa de filtragem - agora é feita no cache manager
+  useEffect(() => {
+    if (allProducts.length > 0 && product) {
+      // Lógica para produtos relacionados baseada em tags
+      const currentProductTags = product.tags?.map(t => t.id) || [];
+      const related = allProducts
+        .filter(p => 
+          p.id !== product.id && 
+          p.tags?.some(tag => currentProductTags.includes(tag.id))
+        )
+        .slice(0, 8);
+      
+      // Se não houver produtos relacionados por tag, pegar produtos aleatórios
+      if (related.length < 4) {
+        const others = allProducts
+          .filter(p => p.id !== product.id && !related.some(r => r.id === p.id))
+          .slice(0, 8 - related.length);
+        related.push(...others);
+      }
 
-  const handleAddToCart = (product: CachedProduct) => {
+      setRelatedProducts(related);
+    }
+  }, [allProducts, product]);
+
+  const handleAddToCart = (product: Product) => {
     addToCart(product);
   };
 

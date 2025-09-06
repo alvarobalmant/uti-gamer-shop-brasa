@@ -42,7 +42,7 @@ export const EmailVerificationGuard: React.FC<EmailVerificationGuardProps> = ({ 
 
       toast({
         title: "Email reenviado!",
-        description: "Verifique sua caixa de entrada.",
+        description: "Verifique sua caixa de entrada e spam.",
       });
     } catch (error: any) {
       toast({

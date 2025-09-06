@@ -164,8 +164,8 @@ const SectionPage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartToggle}
-          onAuthOpen={handleAuthModalToggle}
+          onCartClick={handleCartToggle}
+          onAuthClick={handleAuthModalToggle}
           showNavigation={false}
         />
         <div className="container mx-auto px-4 py-8">
@@ -185,8 +185,8 @@ const SectionPage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartToggle}
-          onAuthOpen={handleAuthModalToggle}
+          onCartClick={handleCartToggle}
+          onAuthClick={handleAuthModalToggle}
           showNavigation={false}
         />
         <div className="container mx-auto px-4 py-8">

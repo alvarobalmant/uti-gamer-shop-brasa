@@ -52,35 +52,12 @@ const ProfessionalHeader = ({
     document.body.style.overflow = 'unset';
   };
 
-  const handleCartOpen = () => {
-    console.log('[ProfessionalHeader] handleCartOpen called');
-    console.log('[ProfessionalHeader] onCartOpen:', !!onCartOpen);
-    console.log('[ProfessionalHeader] onCartClick:', !!onCartClick);
-    
-    const cartHandler = onCartOpen || onCartClick;
-    if (cartHandler) {
-      console.log('[ProfessionalHeader] Calling cart handler');
-      cartHandler();
-    } else {
-      console.warn('ProfessionalHeader: No cart handler provided');
-    }
-  };
-
-  const handleAuthOpen = () => {
-    const authHandler = onAuthOpen || onAuthClick;
-    if (authHandler) {
-      authHandler();
-    } else {
-      console.warn('ProfessionalHeader: No auth handler provided');
-    }
-  };
-
   return (
     <>
       {/* MainHeader agora é fixed e não precisa de container wrapper */}
       <MainHeader
-        onCartOpen={handleCartOpen}
-        onAuthOpen={handleAuthOpen}
+        onCartOpen={onCartOpen || onCartClick || (() => {})}
+        onAuthOpen={onAuthOpen || onAuthClick || (() => {})}
         onMobileMenuToggle={toggleMobileMenu}
       />
 
@@ -97,7 +74,7 @@ const ProfessionalHeader = ({
       <MobileMenuEnhanced
         isOpen={mobileMenuOpen}
         onClose={closeMobileMenu}
-        onAuthOpen={handleAuthOpen}
+        onAuthOpen={onAuthOpen}
         categories={categories}
         onCategoryClick={handleCategoryClick}
       />

@@ -259,10 +259,7 @@ const HeroBannerCarousel = React.memo(() => {
       <>
         {ribbonContainerComponent}
         <section className="relative bg-uti-gray-light overflow-hidden border-b border-border/60">
-          <Skeleton className={cn(
-            "w-full",
-            isMobile ? "aspect-[1102/826] min-h-[200px]" : "aspect-[3.2/1] min-h-[240px] max-h-[600px]"
-          )} />
+          <Skeleton className="w-full aspect-[3.2/1] min-h-[240px] max-h-[600px]" />
         </section>
       </>
     );
@@ -273,10 +270,7 @@ const HeroBannerCarousel = React.memo(() => {
       <>
         {ribbonContainerComponent}
         <section className="relative bg-gradient-to-br from-uti-dark via-gray-900 to-uti-dark text-white overflow-hidden">
-          <div className={cn(
-            "relative w-full flex items-center justify-center",
-            isMobile ? "aspect-[1102/826] min-h-[200px]" : "aspect-[3.2/1] min-h-[240px] max-h-[600px]"
-          )}>
+          <div className="relative w-full aspect-[3.2/1] min-h-[240px] max-h-[600px] flex items-center justify-center">
             <div className="container mx-auto px-4 max-w-4xl text-center animate-fade-in">
               <LogoImage 
                 src="/lovable-uploads/ad4a0480-9a16-4bb6-844b-c579c660c65d.png"
@@ -343,10 +337,8 @@ const HeroBannerCarousel = React.memo(() => {
                   <div 
                     className={cn(
                       "relative text-white transition-opacity duration-500 ease-in-out",
-                      "w-full",
-                      // Proporção diferente para mobile e desktop
-                      isMobile ? "aspect-[1102/826]" : "aspect-[3.2/1]", // Mobile: 1102x826px, Desktop: 1920x600 (3.2:1)
-                      isMobile ? "min-h-[200px]" : "min-h-[240px] max-h-[600px]", // Altura mínima diferente para mobile
+                      "w-full aspect-[3.2/1]", // Proporção 1920x600 (3.2:1)
+                      "min-h-[240px] max-h-[600px]", // Altura mínima e máxima para controle
                       "flex items-center",
                       "overflow-hidden" // Garante que o conteúdo não vaze
                     )}
@@ -356,11 +348,7 @@ const HeroBannerCarousel = React.memo(() => {
                       <img 
                         src={imageUrl}
                         alt={banner.title || banner.subtitle || 'Banner'}
-                        className={cn(
-                          "absolute inset-0 w-full h-full",
-                          // Object-fit diferente para mobile e desktop
-                          isMobile ? "object-contain" : "object-cover object-center"
-                        )}
+                        className="absolute inset-0 w-full h-full object-cover object-center"
                         loading="lazy"
                       />
                     )}
@@ -410,8 +398,8 @@ const HeroBannerCarousel = React.memo(() => {
             })}
           </CarouselContent>
           
-          {/* Navigation Arrows - Apenas no Desktop */}
-          {deviceBanners.length > 1 && !isMobile && (
+          {/* Navigation Arrows */}
+          {deviceBanners.length > 1 && (
             <>
               <div className="absolute inset-y-0 left-0 flex items-center">
                 <Button
