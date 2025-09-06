@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Menu, Search } from 'lucide-react';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useSiteSettingsOptimized } from '@/hooks/useSiteSettingsOptimized';
 import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
 import { CSSLogo } from '@/components/ui/CSSLogo';
 import { useUIState } from '@/contexts/UIStateContext';
@@ -29,7 +29,7 @@ const MainHeader = ({
 }: MainHeaderProps) => {
   const location = useLocation();
   const { isMobileSearchOpen, setIsMobileSearchOpen } = useUIState();
-  const { siteInfo, loading, hasError } = useSiteSettings();
+  const { siteInfo, loading, hasError } = useSiteSettingsOptimized();
   const { navigateToHome } = useGlobalNavigationLinks();
 
   // 🔧 CORREÇÃO: Sempre mostrar header, mesmo com erro de carregamento
