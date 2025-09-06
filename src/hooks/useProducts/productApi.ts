@@ -92,6 +92,9 @@ const mapRowToProduct = (row: any): Product => ({
   // UTI Coins Cashback
   uti_coins_cashback_percentage: row.uti_coins_cashback_percentage ? Number(row.uti_coins_cashback_percentage) : undefined,
   
+  // UTI Coins Desconto
+  uti_coins_discount_percentage: row.uti_coins_discount_percentage ? Number(row.uti_coins_discount_percentage) : undefined,
+  
   tags: [],
   created_at: row.created_at || new Date().toISOString(),
   updated_at: row.updated_at || new Date().toISOString()
@@ -485,6 +488,9 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
         // UTI Coins Cashback
         uti_coins_cashback_percentage: directData.uti_coins_cashback_percentage,
         
+        // UTI Coins Desconto
+        uti_coins_discount_percentage: directData.uti_coins_discount_percentage,
+        
         created_at: directData.created_at,
         updated_at: directData.updated_at
       });
@@ -570,7 +576,10 @@ export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'ta
         social_proof_text: ''
       },
       // Incluir campo UTI Coins Cashback
-      uti_coins_cashback_percentage: productInfo.uti_coins_cashback_percentage || 0
+      uti_coins_cashback_percentage: productInfo.uti_coins_cashback_percentage || 0,
+      
+      // Incluir campo UTI Coins Desconto
+      uti_coins_discount_percentage: productInfo.uti_coins_discount_percentage || 0
     };
     
     console.log('[addProductToDatabase] Dados sendo enviados:', productToInsert);
@@ -657,7 +666,10 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
         social_proof_text: ''
       },
       // Incluir campo UTI Coins Cashback (mesmo tratamento da criação)
-      uti_coins_cashback_percentage: productUpdates.uti_coins_cashback_percentage || 0
+      uti_coins_cashback_percentage: productUpdates.uti_coins_cashback_percentage || 0,
+      
+      // Incluir campo UTI Coins Desconto (mesmo tratamento da criação)
+      uti_coins_discount_percentage: productUpdates.uti_coins_discount_percentage || 0
     };
     
     console.log('[updateProductInDatabase] Dados sendo enviados:', updateData);
