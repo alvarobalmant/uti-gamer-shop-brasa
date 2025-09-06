@@ -346,6 +346,14 @@ export const useAnalyticsTracking = () => {
     };
   }, [initializeSession, endSession, flushEvents]);
 
+  // Compatibility function for search tracking
+  const trackSearch = useCallback((query: string, filters?: any, results?: any) => {
+    trackEvent({
+      event_type: 'search',
+      event_data: { query, filters, results }
+    });
+  }, [trackEvent]);
+
   return {
     trackEvent,
     trackPageView,
@@ -356,6 +364,8 @@ export const useAnalyticsTracking = () => {
     trackCheckoutAbandon,
     trackPurchase,
     trackWhatsAppClick,
+    trackSearch,
+    flushEvents,
     sessionId: sessionIdRef.current
   };
 };

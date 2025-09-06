@@ -19,6 +19,9 @@ interface AnalyticsContextType {
   trackAddToCart: (productId: string, quantity: number, price: number) => void;
   trackSearch: (query: string, filters?: any, results?: any) => void;
   trackPurchase: (orderData: any) => void;
+  trackCheckoutStart?: (cartItems: any[], totalValue: number) => void;
+  trackWhatsAppClick?: (productId?: string, context?: string) => void;
+  trackCheckoutAbandon?: (step: string, timeInCheckout: number, cartItems: any[], totalValue: number) => void;
   
   // Controles
   flushEvents: () => Promise<void>;
@@ -70,15 +73,24 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     try {
       console.log(`🎯 [ANALYTICS] User ${uniqueUserId}: Event ${eventType}`, data);
       
-      // Executar ambos os sistemas em paralelo
-      await Promise.all([
-        basicTrackEvent(eventType, data, element, coordinates),
-        // Enterprise tracking específico
-        eventType === 'page_view' && enterpriseTrackPageView(data?.url),
-        eventType === 'product_view' && enterpriseTrackProductView(data?.productId, data),
-        eventType === 'add_to_cart' && enterpriseTrackAddToCart(data?.productId, data?.quantity || 1, data?.price),
-        eventType === 'purchase' && enterpriseTrackPurchase(data)
-      ]);
+      // Executar sistema básico
+      await basicTrackEvent({
+        event_type: eventType,
+        event_data: data,
+        product_id: data?.productId,
+        page_url: data?.url
+      });
+      
+      // Enterprise tracking específico
+      if (eventType === 'page_view' && data?.url) {
+        await enterpriseTrackPageView(data.url);
+      } else if (eventType === 'product_view' && data?.productId) {
+        await enterpriseTrackProductView(data.productId, data);
+      } else if (eventType === 'add_to_cart' && data?.productId) {
+        await enterpriseTrackAddToCart(data.productId, data?.quantity || 1, data?.price);
+      } else if (eventType === 'purchase') {
+        await enterpriseTrackPurchase(data);
+      }
       
       console.log(`✅ [ANALYTICS] User ${uniqueUserId}: Event tracked: ${eventType}`);
     } catch (error) {
@@ -93,7 +105,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       console.log(`📄 [ANALYTICS] User ${uniqueUserId}: Page view: ${pageUrl}`);
       
       await Promise.all([
-        basicTrackPageView(url, title),
+        basicTrackPageView(title),
         enterpriseTrackPageView(url)
       ]);
       
@@ -157,6 +169,36 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     }
   };
 
+  // Função para rastrear início do checkout
+  const trackCheckoutStart = async (cartItems: any[], totalValue: number) => {
+    try {
+      console.log(`🛍️ [ANALYTICS] User ${uniqueUserId}: Checkout start: ${totalValue}`);
+      await trackEvent('checkout_start', { cartItems, totalValue });
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking checkout start:`, error);
+    }
+  };
+
+  // Função para rastrear clique no WhatsApp
+  const trackWhatsAppClick = async (productId?: string, context?: string) => {
+    try {
+      console.log(`📱 [ANALYTICS] User ${uniqueUserId}: WhatsApp click: ${productId || 'general'}`);
+      await trackEvent('whatsapp_click', { productId, context });
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking WhatsApp click:`, error);
+    }
+  };
+
+  // Função para rastrear abandono do checkout
+  const trackCheckoutAbandon = async (step: string, timeInCheckout: number, cartItems: any[], totalValue: number) => {
+    try {
+      console.log(`⚠️ [ANALYTICS] User ${uniqueUserId}: Checkout abandon: ${step}`);
+      await trackEvent('checkout_abandon', { step, timeInCheckout, cartItems, totalValue });
+    } catch (error) {
+      console.error(`❌ [ANALYTICS] User ${uniqueUserId}: Error tracking checkout abandon:`, error);
+    }
+  };
+
   // Função para flush de eventos
   const flushEvents = async () => {
     try {
@@ -179,6 +221,9 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     trackAddToCart,
     trackSearch,
     trackPurchase,
+    trackCheckoutStart,
+    trackWhatsAppClick,
+    trackCheckoutAbandon,
     flushEvents,
     isTracking,
     updateRealtimeActivity
