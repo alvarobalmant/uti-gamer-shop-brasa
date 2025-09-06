@@ -174,7 +174,7 @@ export const AuthModalFinal = ({ isOpen, onClose }: AuthModalFinalProps) => {
       } else if (mode === 'signup') {
         const result = await signUp(email.trim(), password, name.trim());
         if (result?.error) {
-          setErrors({ form: result.error || 'Erro ao criar conta' });
+          setErrors({ form: result.error.message || 'Erro ao criar conta' });
           setShakeError(true);
           setTimeout(() => setShakeError(false), 500);
         } else {
@@ -219,7 +219,7 @@ export const AuthModalFinal = ({ isOpen, onClose }: AuthModalFinalProps) => {
       scale: 1,
       y: 0,
       transition: {
-        type: "spring" as const,
+        type: "spring",
         stiffness: 300,
         damping: 25,
         duration: 0.5
@@ -231,7 +231,7 @@ export const AuthModalFinal = ({ isOpen, onClose }: AuthModalFinalProps) => {
       y: 50,
       transition: {
         duration: 0.3,
-        ease: "easeInOut" as const
+        ease: "easeInOut"
       }
     }
   };

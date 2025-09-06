@@ -11,12 +11,11 @@ interface AuthContextType {
   session: Session | null;
   isAdmin: boolean;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: string }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error?: string }>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<Session | null>;
   clearAuthCache: () => void;
-  openAuthModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -206,16 +205,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [checkAdminRole, validateSession, clearAuthCache]);
 
-  const signIn = async (email: string, password: string): Promise<{ error?: string }> => {
+  const signIn = async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (error) {
-        return { error: error.message };
-      }
+      if (error) throw error;
       
       // Verificar se o email foi confirmado
       if (data.user && !data.user.email_confirmed_at) {
@@ -224,26 +221,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: "Verifique seu email primeiro.",
           variant: "destructive",
         });
-        return { error: "Email não confirmado" };
+        return;
       }
       
       toast({
         title: "Login realizado!",
         description: "Bem-vindo!",
       });
-      
-      return {};
     } catch (error: any) {
       toast({
         title: "Erro no login",
         description: error.message,
         variant: "destructive",
       });
-      return { error: error.message };
+      throw error;
     }
   };
 
-  const signUp = async (email: string, password: string, name: string): Promise<{ error?: string }> => {
+  const signUp = async (email: string, password: string, name: string) => {
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -254,23 +249,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         },
       });
       
-      if (error) {
-        return { error: error.message };
-      }
+      if (error) throw error;
       
       toast({
         title: "Conta criada!",
         description: "Verifique seu email.",
       });
-      
-      return {};
     } catch (error: any) {
       toast({
         title: "Erro no cadastro",
         description: error.message,
         variant: "destructive",
       });
-      return { error: error.message };
+      throw error;
     }
   };
 
@@ -311,7 +302,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signOut,
       refreshSession,
       clearAuthCache,
-      openAuthModal: () => console.log('Auth modal requested')
     }}>
       {children}
     </AuthContext.Provider>

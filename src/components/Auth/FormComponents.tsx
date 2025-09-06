@@ -9,7 +9,6 @@ import {
   EyeOff, 
   AlertCircle, 
   CheckCircle,
-  X,
   Loader2
 } from 'lucide-react';
 

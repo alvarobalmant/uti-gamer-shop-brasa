@@ -304,7 +304,7 @@ const SpecialCarouselRow: React.FC<SpecialCarouselRowProps> = React.memo(({
 
         {/* Products Scroll Container (otimizado para performance) */}
         <div 
-          ref={scrollContainerRef as React.RefObject<HTMLDivElement>}
+          ref={scrollContainerRef}
           data-carousel-id={sectionKey}
           className="special-carousel-container w-full overflow-x-auto overflow-y-hidden pb-4 pt-2 overscroll-behavior-x-contain"
           style={{

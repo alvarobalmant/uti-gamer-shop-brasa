@@ -9,13 +9,8 @@
 import { fetchProductsFromDatabase, fetchSingleProductFromDatabase } from '@/hooks/useProducts/productApi';
 import { Product } from '@/hooks/useProducts/types';
 
-// Interface para produto cacheado (dados essenciais)  
+// Interface para produto cacheado (dados essenciais)
 export interface CachedProduct {
-  // Timestamps required by Product interface
-  created_at: string;
-  updated_at: string;
-  cached_at: number;
-  ttl: number;
   // IDENTIFICAÇÃO
   id: string;
   name: string;
@@ -45,7 +40,9 @@ export interface CachedProduct {
   is_featured?: boolean;
   stock?: number;
 
-  // Cache metadata already defined above
+  // METADADOS DO CACHE
+  cached_at: number;
+  ttl: number;
 }
 
 // Interface para estatísticas do cache
@@ -110,8 +107,6 @@ class ProductCacheManager {
       is_active: product.is_active,
       is_featured: product.is_featured,
       stock: product.stock,
-      created_at: product.created_at || new Date().toISOString(),
-      updated_at: product.updated_at || new Date().toISOString(),
       cached_at: Date.now(),
       ttl: this.DEFAULT_TTL
     };
