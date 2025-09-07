@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import DeliveryInfo from '../Sidebar/DeliveryInfo';
 import QuantitySelector from '../Sidebar/QuantitySelector';
 import ActionButtons from '../Sidebar/ActionButtons';
-import UTICoinsInfo from '../Sidebar/UTICoinsInfo';
+import ProductPricingCompact from '../Sidebar/ProductPricingCompact';
 import TrustBadges from '../Sidebar/TrustBadges';
 import DynamicDelivery from '../Sidebar/DynamicDelivery';
 
@@ -48,6 +48,12 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
     )}>
       {/* ===== SEÇÃO PRIORITÁRIA NO TOPO ===== */}
       
+      {/* PREÇOS COM UTI COINS INTEGRADO */}
+      <ProductPricingCompact 
+        product={product}
+        className="mb-4"
+      />
+
       {/* ENTREGA DINÂMICA */}
       <DynamicDelivery productPrice={product.price} />
 
@@ -88,12 +94,6 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
       </div>
 
       {/* ===== SEÇÃO SECUNDÁRIA ABAIXO ===== */}
-
-      {/* UTI COINS */}
-      <UTICoinsInfo 
-        product={product}
-        quantity={quantity}
-      />
 
       {/* GARANTIAS E SEGURANÇA */}
       <div className="space-y-3">
@@ -138,4 +138,3 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
 };
 
 export default ProductSidebar;
-
