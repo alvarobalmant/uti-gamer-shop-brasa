@@ -216,7 +216,7 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
         </div>
       </div>
 
-      {/* Seção de Preços COM UTI COINS INTEGRADO */}
+      {/* Seção de Preços - SEM CARD */}
       <div className="p-4">
         {/* Preço anterior e desconto */}
         {product.list_price && product.list_price > product.price && (
@@ -239,51 +239,17 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
           Ver os meios de pagamento
         </Button>
 
-        {/* UTI Coins - Cashback */}
-        {product.uti_coins_cashback_percentage && product.uti_coins_cashback_percentage > 0 && (
-          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-3 mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-xs font-bold">₿</span>
-              </div>
-              <div className="text-sm">
-                <div className="font-medium text-yellow-800">
-                  💰 Ganhe {Math.floor((product.price * product.uti_coins_cashback_percentage / 100) * 100)} UTI Coins
-                </div>
-                <div className="text-yellow-600 text-xs">
-                  = R$ {((product.price * product.uti_coins_cashback_percentage / 100)).toFixed(2).replace('.', ',')} para próximas compras
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* UTI Coins - Desconto */}
-        {product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0 && (
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-3 mb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-xs font-bold">%</span>
-                </div>
-                <div className="text-sm">
-                  <div className="font-medium text-purple-800">
-                    🎯 Até {product.uti_coins_discount_percentage}% OFF com UTI Coins
-                  </div>
-                  <div className="text-purple-600 text-xs">
-                    Economize até R$ {((product.price * product.uti_coins_discount_percentage / 100)).toFixed(2).replace('.', ',')}
-                  </div>
-                </div>
-              </div>
-              <Button size="sm" variant="outline" className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 px-2 h-7">
-                Usar
-              </Button>
-            </div>
-          </div>
-        )}
-
         {/* Card de Frete Dinâmico */}
         <DynamicDeliveryMobile productPrice={product.price} />
+
+        {/* UTI Coins - Ganhos na Compra */}
+        <div className="text-sm text-gray-600 mb-1 flex items-center gap-1">
+          <span className="text-yellow-600">🪙</span>
+          <span>Ganhe <span className="font-medium text-yellow-700">{Math.floor(product.price * quantity * 0.02)} UTI Coins</span> nesta compra</span>
+        </div>
+        <div className="text-sm text-gray-500 mb-4">
+          = R$ {(Math.floor(product.price * quantity * 0.02) * 0.01).toFixed(2)} para próximas compras
+        </div>
       </div>
 
       {/* Estoque e Quantidade - SEM CARD AMARELO */}
