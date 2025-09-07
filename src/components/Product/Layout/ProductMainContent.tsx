@@ -223,30 +223,68 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
           </h1>
         </div>
 
-        {/* PREÇOS - ÚNICO E CORRETO */}
+        {/* PREÇOS COM UTI COINS INTEGRADO */}
         <div className="space-y-4">
-          <div className="flex items-baseline gap-3">
+          {/* Preços principais */}
+          <div className="flex items-center gap-3 flex-wrap">
             {product.list_price && product.list_price > product.price && (
-              <span className="text-sm text-gray-500 line-through">
+              <span className="text-lg text-gray-500 line-through">
                 R$ {product.list_price.toFixed(2).replace('.', ',')}
               </span>
             )}
-            <span className="text-2xl font-semibold text-gray-900">
+            <span className="text-3xl font-bold text-gray-900">
               R$ {product.price.toFixed(2).replace('.', ',')}
             </span>
-          </div>
-          
-          {/* Badge de desconto */}
-          {product.list_price && product.list_price > product.price && (
-            <div>
-              <Badge className="bg-red-600 text-white">
+            {product.list_price && product.list_price > product.price && (
+              <Badge className="bg-red-600 text-white font-bold">
                 -{Math.round(((product.list_price - product.price) / product.list_price) * 100)}% OFF
               </Badge>
+            )}
+          </div>
+          
+          {/* UTI Coins - Cashback */}
+          {product.uti_coins_cashback_percentage && product.uti_coins_cashback_percentage > 0 && (
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-xs font-bold">₿</span>
+                </div>
+                <span className="text-sm font-medium text-yellow-800">
+                  💰 Ganhe {Math.floor((product.price * product.uti_coins_cashback_percentage / 100) * 100)} UTI Coins 
+                  <span className="text-yellow-600 ml-1">
+                    (R$ {((product.price * product.uti_coins_cashback_percentage / 100)).toFixed(2).replace('.', ',')})
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* UTI Coins - Desconto */}
+          {product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0 && (
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-xs font-bold">%</span>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-purple-800">
+                      🎯 Até {product.uti_coins_discount_percentage}% OFF com UTI Coins
+                    </div>
+                    <div className="text-xs text-purple-600">
+                      Economize até R$ {((product.price * product.uti_coins_discount_percentage / 100)).toFixed(2).replace('.', ',')}
+                    </div>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50">
+                  Usar Coins
+                </Button>
+              </div>
             </div>
           )}
           
           {/* Parcelamento */}
-          <div className="text-sm text-gray-600 space-y-1">
+          <div className="text-sm text-gray-600 space-y-1 pt-2">
             <p className="font-medium">12x de R$ {(product.price / 12).toFixed(2).replace('.', ',')} sem juros</p>
             <p>ou à vista no PIX com <span className="text-green-600 font-medium">5% desconto</span></p>
           </div>
