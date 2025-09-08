@@ -253,6 +253,16 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
 
 
           {/* Informações UTI Coins */}
+          {(() => {
+            console.log('🪙 [UTI Coins Debug]:', {
+              price: product.price,
+              cashback_percentage: product.uti_coins_cashback_percentage,
+              discount_percentage: product.uti_coins_discount_percentage,
+              calculated_coins: Math.floor((product.price * (product.uti_coins_cashback_percentage || 0)) / 100 * 100),
+              calculated_discount: ((product.price * (product.uti_coins_discount_percentage || 0)) / 100)
+            });
+            return null;
+          })()}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-2 mt-4">
             <div className="flex items-center gap-2">
               <img src="/uti-coin.svg" alt="UTI Coin" className="w-6 h-6" />
