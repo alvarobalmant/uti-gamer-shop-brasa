@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useNewCart } from '@/hooks/useNewCart';
+// import { useNewCart } from '@/hooks/useNewCart';
 import { Product } from '@/hooks/useProducts';
 import { CartItem } from '@/types/cart';
 
@@ -21,35 +21,22 @@ export interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const {
-    cart,
-    loading,
-    error,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    getCartTotal,
-    getCartItemsCount,
-    sendToWhatsApp,
-  } = useNewCart();
+  const value: CartContextType = {
+    cart: [],
+    items: [],
+    loading: false,
+    error: null,
+    addToCart: () => {},
+    removeFromCart: () => {},
+    updateQuantity: () => {},
+    clearCart: () => {},
+    getCartTotal: () => 0,
+    getCartItemsCount: () => 0,
+    sendToWhatsApp: () => {}
+  };
 
   return (
-    <CartContext.Provider
-      value={{
-        cart,
-        items: cart, // Provide items as alias for cart
-        loading,
-        error,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        getCartTotal,
-        getCartItemsCount,
-        sendToWhatsApp,
-      }}
-    >
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );
