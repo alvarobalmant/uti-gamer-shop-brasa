@@ -142,8 +142,10 @@ export const ClientJourneyTimeline: React.FC<ClientJourneyTimelineProps> = ({ cl
         const sessionId = activity.session_id;
         if (sessionMap.has(sessionId)) {
           const session = sessionMap.get(sessionId)!;
-          session.device_info = activity.device_info || {};
-          session.total_duration = activity.time_on_site_seconds || 0;
+          session.device_info = { type: activity.device_type || 'unknown' };
+          const sessionStart = new Date(activity.session_start_time || activity.created_at);
+          const lastActivity = new Date(activity.last_heartbeat || activity.updated_at);
+          session.total_duration = Math.floor((lastActivity.getTime() - sessionStart.getTime()) / 1000);
         }
       });
 
