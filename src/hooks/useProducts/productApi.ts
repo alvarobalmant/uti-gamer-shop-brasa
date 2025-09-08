@@ -36,6 +36,11 @@ const mapRowToProduct = (row: any): Product => ({
   uti_pro_value: row.uti_pro_value ? Number(row.uti_pro_value) : undefined,
   uti_pro_custom_price: row.uti_pro_custom_price ? Number(row.uti_pro_custom_price) : undefined,
   uti_pro_type: row.uti_pro_type || 'percentage',
+
+  // Campos UTI Coins
+  uti_coins_cashback_percentage: row.uti_coins_cashback_percentage ? Number(row.uti_coins_cashback_percentage) : undefined,
+  uti_coins_discount_percentage: row.uti_coins_discount_percentage ? Number(row.uti_coins_discount_percentage) : undefined,
+
   
   // Campos do sistema de SKUs
   parent_product_id: row.parent_product_id || undefined,
@@ -89,15 +94,7 @@ const mapRowToProduct = (row: any): Product => ({
     social_proof_text: ''
   },
   
-<<<<<<< HEAD
 
-=======
-  // UTI Coins Cashback
-  uti_coins_cashback_percentage: row.uti_coins_cashback_percentage ? Number(row.uti_coins_cashback_percentage) : undefined,
-  
-  // UTI Coins Desconto
-  uti_coins_discount_percentage: row.uti_coins_discount_percentage ? Number(row.uti_coins_discount_percentage) : undefined,
->>>>>>> 0622b9168ea581fd2661beb6cd3f972ec97b5c31
   
   tags: [],
   created_at: row.created_at || new Date().toISOString(),
@@ -579,11 +576,7 @@ export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'ta
         show_social_proof: false,
         social_proof_text: ''
       },
-      // Incluir campo UTI Coins Cashback
-      uti_coins_cashback_percentage: productInfo.uti_coins_cashback_percentage || 0,
-      
-      // Incluir campo UTI Coins Desconto
-      uti_coins_discount_percentage: productInfo.uti_coins_discount_percentage || 0
+
     };
     
     console.log('[addProductToDatabase] Dados sendo enviados:', productToInsert);
@@ -669,11 +662,7 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
         show_social_proof: false,
         social_proof_text: ''
       },
-      // Incluir campo UTI Coins Cashback (mesmo tratamento da criação)
-      uti_coins_cashback_percentage: productUpdates.uti_coins_cashback_percentage || 0,
-      
-      // Incluir campo UTI Coins Desconto (mesmo tratamento da criação)
-      uti_coins_discount_percentage: productUpdates.uti_coins_discount_percentage || 0
+
     };
     
     console.log('[updateProductInDatabase] Dados sendo enviados:', updateData);
