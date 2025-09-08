@@ -250,8 +250,42 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
             <p>ou à vista no PIX com <span className="text-green-600 font-medium">5% desconto</span></p>
           </div>
 
+          {/* UTI Coins Section */}
+          <div className="mt-4 space-y-3">
+            {/* Cashback UTI Coins */}
+            {product.uti_coins_cashback_percentage && product.uti_coins_cashback_percentage > 0 && (
+              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">💰</span>
+                  <div>
+                    <p className="text-sm font-medium text-yellow-800">
+                      Ganhe {Math.round((product.price * product.uti_coins_cashback_percentage / 100) * 100)} UTI Coins nesta compra
+                    </p>
+                    <p className="text-xs text-yellow-600">
+                      Cashback de {product.uti_coins_cashback_percentage}% em UTI Coins
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-
+            {/* Desconto UTI Coins */}
+            {product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0 && (
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🎯</span>
+                  <div>
+                    <p className="text-sm font-medium text-purple-800">
+                      Até {product.uti_coins_discount_percentage}% OFF pagando com UTI Coins
+                    </p>
+                    <p className="text-xs text-purple-600">
+                      Economize até R$ {(product.price * product.uti_coins_discount_percentage / 100).toFixed(2).replace(".", ",")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
         </div>
 
