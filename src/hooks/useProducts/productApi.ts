@@ -490,7 +490,7 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
         uti_coins_cashback_percentage: directData.uti_coins_cashback_percentage,
         
         // UTI Coins Desconto
-        uti_coins_discount_percentage: (directData as any).uti_coins_discount_percentage || 0,
+        uti_coins_discount_percentage: directData.uti_coins_discount_percentage,
         
         created_at: directData.created_at,
         updated_at: directData.updated_at

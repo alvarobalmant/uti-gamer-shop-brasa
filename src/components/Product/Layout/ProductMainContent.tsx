@@ -257,7 +257,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
             <div className="flex items-center gap-2">
               <img src="/uti-coin.svg" alt="UTI Coin" className="w-6 h-6" />
               <p className="font-semibold text-yellow-800">
-                Ganhe {Math.floor((product.price * (product.uti_coins_cashback_percentage || 0)) / 100)} UTI Coins nesta compra
+                Ganhe {Math.floor((product.price * (product.uti_coins_cashback_percentage || 0)) / 100 * 100)} UTI Coins nesta compra
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -268,6 +268,7 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
             </div>
           </div>
         </div>
+
 
 
         {/* PLATAFORMAS - Só aparece para produtos com variações (SKUs) */}

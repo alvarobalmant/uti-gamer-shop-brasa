@@ -23,7 +23,7 @@ import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
 import UTICoinsManager from './UTICoinsManager';
 import { EmailManager } from './EmailManager/EmailManager';
-// OrderVerifier removed
+import OrderVerifier from './OrderVerifier';
 // Admin login system removed
 import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
 // import { AnalyticsDashboard } from './Analytics/AnalyticsDashboard';
@@ -244,7 +244,7 @@ export const AdminPanel = () => {
               </TabsContent>
 
               <TabsContent value="order_verifier" className="mt-0">
-                <div>Order Verifier disabled</div>
+                <OrderVerifier />
               </TabsContent>
 
               <TabsContent value="emails" className="mt-0">
