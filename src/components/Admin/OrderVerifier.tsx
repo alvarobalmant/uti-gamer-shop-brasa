@@ -78,10 +78,10 @@ const OrderVerifier = () => {
       const discountMap: {[key: string]: number} = {};
       
       products?.forEach(product => {
-        console.log('💰 Produto encontrado:', product.name, 'cashback:', product.uti_coins_cashback_percentage, 'discount:', product.uti_coins_discount_percentage);
+        console.log('💰 Produto encontrado:', (product as any).name || 'N/A', 'cashback:', (product as any).uti_coins_cashback_percentage || 0, 'discount:', (product as any).uti_coins_discount_percentage || 0);
         // Usar o NOME como chave ao invés do ID
-        cashbackMap[product.name] = product.uti_coins_cashback_percentage || 0;
-        discountMap[product.name] = product.uti_coins_discount_percentage || 0;
+        cashbackMap[(product as any).name] = (product as any).uti_coins_cashback_percentage || 0;
+        discountMap[(product as any).name] = (product as any).uti_coins_discount_percentage || 0;
       });
 
       console.log('🗺️ Mapa final de cashbacks:', cashbackMap);

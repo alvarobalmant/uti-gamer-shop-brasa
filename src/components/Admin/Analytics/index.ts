@@ -1,5 +1,5 @@
-// Temporarily export only working components to avoid build errors
-export { default as AnalyticsDashboard } from './AnalyticsDashboard';
+// Export working analytics components only
+export { AnalyticsDashboard } from './AnalyticsDashboard';
 
 // TODO: Fix and re-enable these components once type issues are resolved
 // export { default as ClientAnalysisTable } from './ClientAnalysisTable';
