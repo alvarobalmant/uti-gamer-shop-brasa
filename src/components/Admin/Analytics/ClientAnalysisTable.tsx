@@ -157,8 +157,12 @@ export const ClientAnalysisTable = () => {
         const userId = act.session_id;
         if (clientMap.has(userId)) {
           const client = clientMap.get(userId)!;
-          if (act.time_on_site_seconds) {
-            client.total_time_spent += act.time_on_site_seconds;
+          // Calculate time on site from session start to last heartbeat
+          const sessionStart = new Date(act.session_start_time || act.created_at);
+          const lastActivity = new Date(act.last_heartbeat || act.updated_at);
+          const timeOnSite = Math.floor((lastActivity.getTime() - sessionStart.getTime()) / 1000);
+          if (timeOnSite > 0) {
+            client.total_time_spent += timeOnSite;
           }
         }
       });

@@ -117,9 +117,12 @@ export const ClientAnalysisTableSimplified: React.FC = () => {
 
         const client = clientMap.get(userId)!;
         
-        // Somar tempo (mesmo que seja 0)
-        if (activity.time_on_site_seconds) {
-          client.total_time_spent += activity.time_on_site_seconds;
+        // Calculate time on site from session start to last heartbeat
+        const sessionStart = new Date(activity.session_start_time || activity.created_at);
+        const lastActivity = new Date(activity.last_heartbeat || activity.updated_at);
+        const timeOnSite = Math.floor((lastActivity.getTime() - sessionStart.getTime()) / 1000);
+        if (timeOnSite > 0) {
+          client.total_time_spent += timeOnSite;
         }
 
         // Atualizar datas
@@ -132,7 +135,7 @@ export const ClientAnalysisTableSimplified: React.FC = () => {
           }
         }
 
-        console.log(`👤 [SIMPLIFIED] Client ${userId}: time=${activity.time_on_site_seconds || 0}s`);
+        console.log(`👤 [SIMPLIFIED] Client ${userId}: time=${timeOnSite}s`);
       });
 
       // 2. Processar jornada detalhada
@@ -174,8 +177,8 @@ export const ClientAnalysisTableSimplified: React.FC = () => {
         }
         if (journey.action_type === 'purchase') {
           client.total_purchases++;
-          if (journey.action_details?.total_value) {
-            client.total_spent += journey.action_details.total_value;
+          if (journey.action_details && typeof journey.action_details === 'object' && 'total_value' in journey.action_details) {
+            client.total_spent += (journey.action_details as any).total_value;
           }
         }
 
@@ -535,7 +538,7 @@ export const ClientAnalysisTableSimplified: React.FC = () => {
       {selectedClient && (
         <ClientDetailModal
           client={selectedClient}
-          isOpen={!!selectedClient}
+          open={!!selectedClient}
           onClose={() => setSelectedClient(null)}
         />
       )}
