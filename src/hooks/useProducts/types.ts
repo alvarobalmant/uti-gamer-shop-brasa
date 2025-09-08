@@ -15,8 +15,13 @@ export interface Product {
   discount_percentage?: number;
   pix_discount_percentage?: number;
   uti_pro_price?: number;
+<<<<<<< HEAD
 
 
+=======
+  uti_coins_cashback_percentage?: number; // Porcentagem de cashback em UTI Coins
+  uti_coins_discount_percentage?: number; // Porcentagem de desconto em UTI Coins
+>>>>>>> 0622b9168ea581fd2661beb6cd3f972ec97b5c31
   installment_options?: number;
   image: string;
   image_url?: string; // Added for backward compatibility
