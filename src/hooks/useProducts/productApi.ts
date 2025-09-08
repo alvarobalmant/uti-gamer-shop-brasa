@@ -89,6 +89,8 @@ const mapRowToProduct = (row: any): Product => ({
     social_proof_text: ''
   },
   
+
+  
   tags: [],
   created_at: row.created_at || new Date().toISOString(),
   updated_at: row.updated_at || new Date().toISOString()
@@ -478,6 +480,13 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
         product_descriptions: directData.product_descriptions,
         delivery_config: directData.delivery_config,
         display_config: directData.display_config,
+        
+        // UTI Coins Cashback
+        uti_coins_cashback_percentage: directData.uti_coins_cashback_percentage,
+        
+        // UTI Coins Desconto
+        uti_coins_discount_percentage: directData.uti_coins_discount_percentage,
+        
         created_at: directData.created_at,
         updated_at: directData.updated_at
       });
@@ -561,10 +570,16 @@ export const addProductToDatabase = async (productData: Omit<Product, 'id' | 'ta
         urgency_text: '',
         show_social_proof: false,
         social_proof_text: ''
-      }
+      },
+      // Incluir campo UTI Coins Cashback
+      uti_coins_cashback_percentage: productInfo.uti_coins_cashback_percentage || 0,
+      
+      // Incluir campo UTI Coins Desconto
+      uti_coins_discount_percentage: productInfo.uti_coins_discount_percentage || 0
     };
     
     console.log('[addProductToDatabase] Dados sendo enviados:', productToInsert);
+    console.log('[addProductToDatabase] UTI Coins Cashback:', productToInsert.uti_coins_cashback_percentage);
     
     const { data: product, error: productError } = await supabase
       .from('products')
@@ -645,22 +660,18 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
         urgency_text: '',
         show_social_proof: false,
         social_proof_text: ''
-<<<<<<< HEAD
-      }
-    };
-    
-    console.log('[updateProductInDatabase] Dados sendo enviados:', updateData);
-=======
       },
       // Incluir campo UTI Coins Cashback (mesmo tratamento da criação)
-      uti_coins_cashback_percentage: productUpdates.uti_coins_cashback_percentage || 0
+      uti_coins_cashback_percentage: productUpdates.uti_coins_cashback_percentage || 0,
+      
+      // Incluir campo UTI Coins Desconto (mesmo tratamento da criação)
+      uti_coins_discount_percentage: productUpdates.uti_coins_discount_percentage || 0
     };
     
     console.log('[updateProductInDatabase] Dados sendo enviados:', updateData);
     console.log('[updateProductInDatabase] UTI Coins Cashback:', updateData.uti_coins_cashback_percentage);
     console.log('[updateProductInDatabase] Tipo do cashback:', typeof updateData.uti_coins_cashback_percentage);
     console.log('[updateProductInDatabase] Produto ID:', id);
->>>>>>> c2c52d678d89632edb5ee5cce261deb4082d034e
     
     // Atualizar produto
     const { data: updatedProduct, error: productError } = await supabase
@@ -701,6 +712,8 @@ export const updateProductInDatabase = async (id: string, updates: Partial<Produ
     }
 
     console.log('[updateProductInDatabase] Produto atualizado com sucesso:', updatedProduct);
+    console.log('[updateProductInDatabase] Cashback salvo no banco:', updatedProduct?.uti_coins_cashback_percentage);
+    console.log('[updateProductInDatabase] Produto completo retornado:', JSON.stringify(updatedProduct, null, 2));
     return mapRowToProduct(updatedProduct);
   } catch (error) {
     console.error('Error updating product:', error);
@@ -732,4 +745,9 @@ export const deleteProductFromDatabase = async (id: string) => {
     throw error;
   }
 };
+
+
+
+
+
 

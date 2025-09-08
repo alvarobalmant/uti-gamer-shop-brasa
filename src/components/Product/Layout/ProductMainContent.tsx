@@ -223,33 +223,36 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
           </h1>
         </div>
 
-        {/* PREÇOS - ÚNICO E CORRETO */}
-        <div className="space-y-4">
-          <div className="flex items-baseline gap-3">
-            {product.list_price && product.list_price > product.price && (
-              <span className="text-sm text-gray-500 line-through">
-                R$ {product.list_price.toFixed(2).replace('.', ',')}
-              </span>
-            )}
-            <span className="text-2xl font-semibold text-gray-900">
-              R$ {product.price.toFixed(2).replace('.', ',')}
-            </span>
-          </div>
-          
-          {/* Badge de desconto */}
+        {/* PREÇOS - FORMATO REORGANIZADO */}
+        <div>
+          {/* Preço de lista em cima */}
           {product.list_price && product.list_price > product.price && (
-            <div>
-              <Badge className="bg-red-600 text-white">
-                -{Math.round(((product.list_price - product.price) / product.list_price) * 100)}% OFF
-              </Badge>
+            <div className="text-sm text-gray-500 line-through">
+              R$ {product.list_price.toFixed(2).replace(".", ",")}
             </div>
           )}
           
+          {/* Preço normal e desconto na mesma linha */}
+          <div className="flex items-baseline mt-1">
+            <span className="text-2xl font-semibold text-gray-900">
+              R$ {product.price.toFixed(2).replace(".", ",")}
+            </span>
+            {product.list_price && product.list_price > product.price && (
+              <span className="text-green-600 font-bold text-xs ml-2 relative -top-2">
+                {Math.round(((product.list_price - product.price) / product.list_price) * 100)}% OFF
+              </span>
+            )}
+          </div>
+          
           {/* Parcelamento */}
-          <div className="text-sm text-gray-600 space-y-1">
-            <p className="font-medium">12x de R$ {(product.price / 12).toFixed(2).replace('.', ',')} sem juros</p>
+          <div className="text-sm text-gray-600 space-y-1 mt-3">
+            <p className="font-medium">12x de R$ {(product.price / 12).toFixed(2).replace(".", ",")} sem juros</p>
             <p>ou à vista no PIX com <span className="text-green-600 font-medium">5% desconto</span></p>
           </div>
+
+
+
+
         </div>
 
 

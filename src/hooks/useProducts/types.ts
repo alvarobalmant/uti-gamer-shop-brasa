@@ -15,6 +15,8 @@ export interface Product {
   discount_percentage?: number;
   pix_discount_percentage?: number;
   uti_pro_price?: number;
+
+
   installment_options?: number;
   image: string;
   image_url?: string; // Added for backward compatibility

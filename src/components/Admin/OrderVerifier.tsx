@@ -7,11 +7,14 @@ import { Separator } from '@/components/ui/separator';
 import { Search, Package, User, Clock, CheckCircle, XCircle, AlertCircle, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useOrderVerification, OrderVerificationData } from '@/hooks/useOrderVerification';
+import { supabase } from '@/integrations/supabase/client';
 
 const OrderVerifier = () => {
   const [searchCode, setSearchCode] = useState('');
   const [orderData, setOrderData] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
+  const [productCashbacks, setProductCashbacks] = useState<{[key: string]: number}>({});
+  const [productDiscounts, setProductDiscounts] = useState<{[key: string]: number}>({});
   const { loading, error, verifyCode, completeOrder } = useOrderVerification();
   const { toast } = useToast();
 
@@ -28,8 +31,65 @@ const OrderVerifier = () => {
     const result = await verifyCode(searchCode.trim());
     if (result) {
       setOrderData(result);
+      // Buscar percentuais de cashback dos produtos
+      await fetchProductCashbacks(result.order_data.items);
     } else {
       setOrderData(null);
+    }
+  };
+
+  // FUNÇÃO CORRIGIDA: Buscar percentuais por NOME do produto (não ID)
+  const fetchProductCashbacks = async (items: any[]) => {
+    console.log('🔍 fetchProductCashbacks chamada com items:', items);
+    
+    const productNames = items
+      .map(item => {
+        console.log('📦 Item:', item, 'product_name:', item.product_name);
+        return item.product_name;
+      })
+      .filter(name => {
+        console.log('✅ Filtering name:', name, 'is valid:', !!name);
+        return name;
+      });
+
+    console.log('🎯 Product Names extraídos:', productNames);
+
+    if (productNames.length === 0) {
+      console.log('❌ Nenhum product_name encontrado');
+      return;
+    }
+
+    try {
+      console.log('🔍 Fazendo query no Supabase para Names:', productNames);
+      
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('id, name, uti_coins_cashback_percentage, uti_coins_discount_percentage')
+        .in('name', productNames);
+
+      console.log('📊 Resultado da query:', { products, error });
+
+      if (error) {
+        console.error('❌ Erro ao buscar dados dos produtos:', error);
+        return;
+      }
+
+      const cashbackMap: {[key: string]: number} = {};
+      const discountMap: {[key: string]: number} = {};
+      
+      products?.forEach(product => {
+        console.log('💰 Produto encontrado:', product.name, 'cashback:', product.uti_coins_cashback_percentage, 'discount:', product.uti_coins_discount_percentage);
+        // Usar o NOME como chave ao invés do ID
+        cashbackMap[product.name] = product.uti_coins_cashback_percentage || 0;
+        discountMap[product.name] = product.uti_coins_discount_percentage || 0;
+      });
+
+      console.log('🗺️ Mapa final de cashbacks:', cashbackMap);
+      console.log('🗺️ Mapa final de descontos:', discountMap);
+      setProductCashbacks(cashbackMap);
+      setProductDiscounts(discountMap);
+    } catch (err) {
+      console.error('💥 Erro ao buscar dados dos produtos:', err);
     }
   };
 
@@ -82,8 +142,6 @@ const OrderVerifier = () => {
     }).format(value);
   };
 
-<<<<<<< HEAD
-=======
   // FUNÇÃO CORRIGIDA: Calcular cashback baseado nos dados reais do banco (por NOME)
   const calculateExpectedCashback = (items: any[]) => {
     let totalCashbackReais = 0;
@@ -142,7 +200,63 @@ const OrderVerifier = () => {
     };
   };
 
->>>>>>> c2c52d678d89632edb5ee5cce261deb4082d034e
+  // NOVA FUNÇÃO: Calcular uso de UTI Coins para desconto
+  const calculateUTICoinsUsage = (items: any[], userBalance: number) => {
+    let totalDiscountAmount = 0;
+    let totalCoinsUsed = 0;
+    let remainingBalance = userBalance;
+    const itemsWithDiscount: Array<{
+      name: string;
+      percentage: number;
+      maxDiscountAmount: number;
+      coinsUsed: number;
+      discountApplied: number;
+    }> = [];
+
+    items.forEach(item => {
+      const itemTotal = item.total || (item.price * item.quantity);
+      const discountPercentage = productDiscounts[item.product_name] || 0;
+      
+      if (discountPercentage > 0 && remainingBalance > 0) {
+        // Calcular desconto máximo permitido
+        const maxDiscountAmount = itemTotal * (discountPercentage / 100);
+        
+        // Calcular UTI Coins necessários para desconto máximo (100 coins = 1 real)
+        const coinsNeeded = Math.round(maxDiscountAmount * 100);
+        
+        // Usar o que tem disponível (máximo disponível ou necessário)
+        const coinsUsed = Math.min(remainingBalance, coinsNeeded);
+        
+        // Calcular desconto real baseado nas moedas usadas
+        const discountApplied = coinsUsed / 100;
+        
+        totalDiscountAmount += discountApplied;
+        totalCoinsUsed += coinsUsed;
+        remainingBalance -= coinsUsed;
+        
+        itemsWithDiscount.push({
+          name: item.product_name,
+          percentage: discountPercentage,
+          maxDiscountAmount,
+          coinsUsed,
+          discountApplied
+        });
+      }
+    });
+
+    const originalTotal = items.reduce((sum, item) => sum + (item.total || (item.price * item.quantity)), 0);
+    const finalCashAmount = originalTotal - totalDiscountAmount;
+
+    return {
+      originalTotal,
+      totalDiscountAmount,
+      totalCoinsUsed,
+      finalCashAmount,
+      itemsWithDiscount,
+      hasDiscounts: totalCoinsUsed > 0
+    };
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -198,7 +312,44 @@ const OrderVerifier = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-sm text-gray-600 mb-2">VALOR TOTAL</h3>
-                <p className="text-lg font-bold text-green-600">{formatCurrency(orderData.order_data.total_amount)}</p>
+                {/* Mostrar divisão de pagamento se houver desconto UTI Coins */}
+                {(() => {
+                  const userBalance = orderData.uti_coins_balance || 0;
+                  const coinsUsage = calculateUTICoinsUsage(orderData.order_data.items, userBalance);
+                  
+                  if (coinsUsage.hasDiscounts) {
+                    return (
+                      <div className="space-y-2">
+                        <p className="text-lg font-bold text-green-600">{formatCurrency(orderData.order_data.total_amount)}</p>
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-200">
+                          <h4 className="font-medium text-blue-800 mb-2">💰 DIVISÃO DO PAGAMENTO</h4>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-green-700">Pagamento em Dinheiro:</span>
+                              <span className="font-bold text-green-800">{formatCurrency(coinsUsage.finalCashAmount)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-amber-700">Pagamento UTI Coins:</span>
+                              <span className="font-bold text-amber-800">
+                                {formatCurrency(coinsUsage.totalDiscountAmount)} ({coinsUsage.totalCoinsUsed.toLocaleString()} moedas)
+                              </span>
+                            </div>
+                            <div className="border-t border-blue-300 pt-1 mt-2">
+                              <div className="flex justify-between">
+                                <span className="text-blue-700 font-medium">DESCONTO APLICADO:</span>
+                                <span className="font-bold text-blue-800">
+                                  {((coinsUsage.totalDiscountAmount / coinsUsage.originalTotal) * 100).toFixed(1)}% usando UTI Coins
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    return <p className="text-lg font-bold text-green-600">{formatCurrency(orderData.order_data.total_amount)}</p>;
+                  }
+                })()}
               </div>
             </div>
 
@@ -209,10 +360,28 @@ const OrderVerifier = () => {
                   <User className="w-4 h-4" />
                   DADOS DO CLIENTE
                 </h3>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                  <p><strong>Nome:</strong> {orderData.user_data.name || 'Não informado'}</p>
-                  <p><strong>Email:</strong> {orderData.user_data.email || 'Não informado'}</p>
-                  <p><strong>ID do Usuário:</strong> {orderData.user_data.id}</p>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="space-y-2">
+                    <p><strong>Nome:</strong> {orderData.user_data.name || 'Não informado'}</p>
+                    <p><strong>Email:</strong> {orderData.user_data.email || 'Não informado'}</p>
+                    <p><strong>ID do Usuário:</strong> {orderData.user_data.id}</p>
+                  </div>
+                  
+                  {orderData.uti_coins_balance !== undefined && (
+                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-xs">U</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Saldo UTI Coins</p>
+                          <p className="text-lg font-bold text-amber-900 dark:text-amber-100">
+                            {orderData.uti_coins_balance.toLocaleString()} moedas
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -230,6 +399,17 @@ const OrderVerifier = () => {
                           {item.size && <span className="mr-3">Tamanho: {item.size}</span>}
                           {item.color && <span className="mr-3">Cor: {item.color}</span>}
                           <span>Quantidade: {item.quantity}</span>
+                          {/* NOVO: Mostrar percentual de cashback e desconto real */}
+                          {productCashbacks[item.product_name] && (
+                            <span className="ml-3 text-amber-600 font-medium">
+                              Cashback: {productCashbacks[item.product_name]}%
+                            </span>
+                          )}
+                          {productDiscounts[item.product_name] && (
+                            <span className="ml-3 text-blue-600 font-medium">
+                              Desconto UTI Coins: {productDiscounts[item.product_name]}%
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="text-right">
@@ -277,8 +457,6 @@ const OrderVerifier = () => {
               </div>
             )}
 
-<<<<<<< HEAD
-=======
             {/* Previsão de Recompensas ANTES de finalizar */}
             {orderData.order_data.status === 'pending' && (() => {
               const expectedRewards = calculateExpectedCashback(orderData.order_data.items);
@@ -335,7 +513,6 @@ const OrderVerifier = () => {
               );
             })()}
 
->>>>>>> c2c52d678d89632edb5ee5cce261deb4082d034e
             {/* Ações */}
             {orderData.order_data.status === 'pending' && new Date(orderData.order_data.expires_at) > new Date() && (
               <div className="pt-4 border-t">

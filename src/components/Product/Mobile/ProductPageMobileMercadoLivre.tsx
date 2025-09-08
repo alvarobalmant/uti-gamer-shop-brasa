@@ -218,24 +218,26 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
 
       {/* Seção de Preços - SEM CARD */}
       <div className="p-4">
-        {/* Preço anterior e desconto */}
+        {/* Preço de lista em cima */}
         {product.list_price && product.list_price > product.price && (
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm text-gray-500 line-through">
-              R$ {product.list_price.toFixed(2).replace('.', ',')}
-            </span>
-            <Badge className="bg-green-500 text-white text-xs">
-              {discountPercentage}% OFF
-            </Badge>
+          <div className="text-sm text-gray-500 line-through">
+            R$ {product.list_price.toFixed(2).replace(".", ",")}
           </div>
         )}
         
-        {/* Preço principal */}
-        <div className="text-2xl font-medium text-gray-900 mb-1">
-          R$ {product.price.toFixed(2).replace('.', ',')}
+        {/* Preço principal e desconto na mesma linha */}
+        <div className="flex items-baseline">
+          <span className="text-2xl font-medium text-gray-900">
+            R$ {product.price.toFixed(2).replace(".", ",")}
+          </span>
+          {product.list_price && product.list_price > product.price && (
+            <span className="text-green-600 text-xs font-bold ml-2 relative -top-2">
+              {discountPercentage}% OFF
+            </span>
+          )}
         </div>
         
-        <Button variant="ghost" className="text-blue-600 p-0 h-auto text-sm mb-4">
+        <Button variant="ghost" className="text-blue-600 p-0 h-auto text-sm mt-3 mb-4">
           Ver os meios de pagamento
         </Button>
 
@@ -310,31 +312,31 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
       </div>
 
       {/* Garantias - EXATAMENTE como ML */}
-      <div className="px-4 pb-4">
-        <div className="space-y-3">
-          <div className="flex items-center gap-3 text-sm">
-            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-              <Check className="w-3 h-3 text-blue-600" />
+      <div className="px-4 py-6">
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-3 text-xs">
+            <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
+              <Check className="w-2.5 h-2.5 text-blue-600" />
             </div>
             <span className="text-gray-700">
-              <span className="text-blue-600 font-medium">Devolução grátis.</span> Você tem 30 dias a partir da data de recebimento.
+              <span className="text-blue-600 font-medium">Devolução gratuita.</span> Prazo de 30 dias a partir do recebimento.
             </span>
           </div>
           
-          <div className="flex items-center gap-3 text-sm">
-            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-              <Shield className="w-3 h-3 text-blue-600" />
+          <div className="flex items-center gap-3 text-xs">
+            <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
+              <Shield className="w-2.5 h-2.5 text-blue-600" />
             </div>
             <span className="text-gray-700">
-              <span className="text-blue-600 font-medium">Compra Garantida</span>, receba o produto que está esperando ou devolvemos o dinheiro.
+              <span className="text-blue-600 font-medium">Compra protegida.</span> Receba o produto correto ou seu dinheiro de volta.
             </span>
           </div>
           
-          <div className="flex items-center gap-3 text-sm">
-            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-              <Clock className="w-3 h-3 text-blue-600" />
+          <div className="flex items-center gap-3 text-xs">
+            <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
+              <Clock className="w-2.5 h-2.5 text-blue-600" />
             </div>
-            <span className="text-gray-700">30 dias de garantia de fábrica.</span>
+            <span className="text-gray-700">Até 36 meses de garantia para produtos selecionados.</span>
           </div>
         </div>
       </div>

@@ -207,8 +207,8 @@ const SectionPageEnhanced: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartToggle}
-          onAuthClick={handleAuthModalToggle}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
           showNavigation={false}
         />
         <div className="container mx-auto px-4 py-8">
@@ -228,8 +228,8 @@ const SectionPageEnhanced: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartClick={handleCartToggle}
-          onAuthClick={handleAuthModalToggle}
+          onCartOpen={handleCartToggle}
+          onAuthOpen={handleAuthModalToggle}
           showNavigation={false}
         />
         <div className="container mx-auto px-4 py-8">
@@ -254,8 +254,8 @@ const SectionPageEnhanced: React.FC = () => {
       <ProfessionalHeader
         user={user}
         cartItemsCount={getCartItemsCount()}
-        onCartClick={handleCartToggle}
-        onAuthClick={handleAuthModalToggle}
+        onCartOpen={handleCartToggle}
+        onAuthOpen={handleAuthModalToggle}
         showNavigation={false}
       />
 
