@@ -94,13 +94,7 @@ const mapRowToProduct = (row: any): Product => ({
     social_proof_text: ''
   },
   
-<<<<<<< HEAD
 
-=======
-  // Campos UTI Coins
-  uti_coins_cashback_percentage: row.uti_coins_cashback_percentage ? Number(row.uti_coins_cashback_percentage) : undefined,
-  uti_coins_discount_percentage: row.uti_coins_discount_percentage ? Number(row.uti_coins_discount_percentage) : undefined,
->>>>>>> 4345817f3151916cd2dbf97c05f1de9a1b2b440d
   
   tags: [],
   created_at: row.created_at || new Date().toISOString(),

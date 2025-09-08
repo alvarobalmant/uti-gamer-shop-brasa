@@ -18,7 +18,7 @@ interface AppContentProps {
 const AppContent: React.FC<AppContentProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { openAuthModal } = useAuth();
   const cartContext = useCart();
   
   // ✅ Estados locais como na versão antiga
@@ -42,8 +42,7 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
   };
   
   const handleAuthOpen = () => {
-    // TODO: Implement auth modal or redirect to auth page
-    console.log('Auth modal requested');
+    openAuthModal();
   };
   
   const toggleMobileSearch = () => {
