@@ -118,9 +118,7 @@ export const ClientAnalysisTableSimplified: React.FC = () => {
         const client = clientMap.get(userId)!;
         
         // Somar tempo (mesmo que seja 0)
-        if (activity.time_on_site_seconds) {
-          client.total_time_spent += activity.time_on_site_seconds;
-        }
+        // time_on_site_seconds doesn't exist in the current schema
 
         // Atualizar datas
         if (activity.last_heartbeat) {
@@ -535,7 +533,7 @@ export const ClientAnalysisTableSimplified: React.FC = () => {
       {selectedClient && (
         <ClientDetailModal
           client={selectedClient}
-          isOpen={!!selectedClient}
+          open={!!selectedClient}
           onClose={() => setSelectedClient(null)}
         />
       )}
