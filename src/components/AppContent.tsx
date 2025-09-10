@@ -30,7 +30,7 @@ interface AppContentProps {
 const AppContent: React.FC<AppContentProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { openAuthModal } = useAuth();
+  const { user } = useAuth();
   const cartContext = useCart();
   
   // ✅ Estados locais 
@@ -56,15 +56,11 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
   };
   
   const handleAuthOpen = () => {
-<<<<<<< HEAD
     setShowAuthModal(true);
   };
 
   const handleAuthRequired = () => {
     setShowFavoritesAlert(true);
-=======
-    openAuthModal();
->>>>>>> 80a2aa279749366252b5817f2cf3c3a9173911ba
   };
   
   const toggleMobileSearch = () => {

@@ -157,14 +157,9 @@ export const ClientAnalysisTable = () => {
         const userId = act.session_id;
         if (clientMap.has(userId)) {
           const client = clientMap.get(userId)!;
-<<<<<<< HEAD
           if (act.time_on_site_seconds) {
             client.total_time_spent += act.time_on_site_seconds;
           }
-=======
-          // Remove time_on_site_seconds reference as it doesn't exist
-          // client.total_time_spent is managed elsewhere
->>>>>>> 80a2aa279749366252b5817f2cf3c3a9173911ba
         }
       });
 
