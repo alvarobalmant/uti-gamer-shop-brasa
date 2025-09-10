@@ -112,17 +112,10 @@ export interface Product {
   uti_pro_type?: 'percentage' | 'fixed';
   uti_pro_value?: number;
   uti_pro_custom_price?: number;
-<<<<<<< HEAD
 
   // Campos UTI Coins
   uti_coins_cashback_percentage?: number;
   uti_coins_discount_percentage?: number;
-=======
-  
-  // Campos UTI Coins - NOVOS
-  uti_coins_cashback_percentage?: number; // Porcentagem de cashback em UTI Coins
-  uti_coins_discount_percentage?: number; // Porcentagem de desconto em UTI Coins
->>>>>>> 4345817f3151916cd2dbf97c05f1de9a1b2b440d
 }
 
 // Tipos específicos para SKUs

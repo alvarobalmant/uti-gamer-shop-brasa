@@ -117,13 +117,10 @@ export const ClientAnalysisTableTimeFixed: React.FC = () => {
 
         const client = clientMap.get(userId)!;
         
-        // Calculate time on site from session start to last heartbeat
-        const sessionStart = new Date(activity.session_start_time || activity.created_at);
-        const lastActivity = new Date(activity.last_heartbeat || activity.updated_at);
-        const timeOnSite = Math.floor((lastActivity.getTime() - sessionStart.getTime()) / 1000);
-        if (timeOnSite > 0) {
-          client.total_time_spent += timeOnSite;
-          console.log(`⏱️ [TIME FIXED] Client ${userId}: +${timeOnSite}s (total: ${client.total_time_spent}s)`);
+        // Somar tempo real da sessão
+        if (activity.time_on_site_seconds && activity.time_on_site_seconds > 0) {
+          client.total_time_spent += activity.time_on_site_seconds;
+          console.log(`⏱️ [TIME FIXED] Client ${userId}: +${activity.time_on_site_seconds}s (total: ${client.total_time_spent}s)`);
         }
 
         // Atualizar datas de sessão
@@ -166,8 +163,8 @@ export const ClientAnalysisTableTimeFixed: React.FC = () => {
           // Contar compras
           if (journey.action_type === 'purchase') {
             client.total_purchases++;
-            if (journey.action_details && typeof journey.action_details === 'object' && 'total_value' in journey.action_details) {
-              client.total_spent += (journey.action_details as any).total_value;
+            if (journey.action_details?.total_value) {
+              client.total_spent += journey.action_details.total_value;
             }
           }
         }
@@ -491,7 +488,7 @@ export const ClientAnalysisTableTimeFixed: React.FC = () => {
       {selectedClient && (
         <ClientDetailModal
           client={selectedClient}
-          open={!!selectedClient}
+          isOpen={!!selectedClient}
           onClose={() => setSelectedClient(null)}
         />
       )}

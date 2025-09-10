@@ -5,7 +5,7 @@ import { SKUNavigation } from '@/hooks/useProducts/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Share2, ZoomIn, Info, MessageCircle } from 'lucide-react';
+import { ShoppingCart, Share2, ZoomIn, Info, MessageCircle, Coins, Tag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import FavoriteButton from '@/components/FavoriteButton';
 import useDynamicPlatforms from '@/hooks/useDynamicPlatforms';
@@ -250,62 +250,33 @@ const ProductMainContent: React.FC<ProductMainContentProps> = ({
             <p>ou à vista no PIX com <span className="text-green-600 font-medium">5% desconto</span></p>
           </div>
 
-          {/* UTI Coins Section */}
-          <div className="mt-4 space-y-3">
-            {/* Cashback UTI Coins */}
-            {product.uti_coins_cashback_percentage && product.uti_coins_cashback_percentage > 0 && (
-              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-3">
+
+
+          {/* Informações UTI Coins - só aparecem se configuradas */}
+          {((product.uti_coins_cashback_percentage && product.uti_coins_cashback_percentage > 0) || 
+            (product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0)) && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-2 mt-4">
+              {/* Cashback UTI Coins */}
+              {product.uti_coins_cashback_percentage && product.uti_coins_cashback_percentage > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">💰</span>
-                  <div>
-                    <p className="text-sm font-medium text-yellow-800">
-                      Ganhe {Math.round((product.price * product.uti_coins_cashback_percentage / 100) * 100)} UTI Coins nesta compra
-                    </p>
-                    <p className="text-xs text-yellow-600">
-                      Cashback de {product.uti_coins_cashback_percentage}% em UTI Coins
-                    </p>
-                  </div>
+                  <Coins className="w-5 h-5 text-yellow-600" />
+                  <p className="font-semibold text-yellow-800">
+                    Ganhe {Math.round((product.price * (product.uti_coins_cashback_percentage || 0)) / 100 * 100)} UTI Coins nesta compra
+                  </p>
                 </div>
-              </div>
-            )}
-
-<<<<<<< HEAD
-
-          {/* Informações UTI Coins */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-2 mt-4">
-            <div className="flex items-center gap-2">
-              <img src="/uti-coin.svg" alt="UTI Coin" className="w-6 h-6" />
-              <p className="font-semibold text-yellow-800">
-                Ganhe {Math.floor((product.price * (product.uti_coins_cashback_percentage || 0)) / 100 * 100)} UTI Coins nesta compra
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <img src="/discount-tag.svg" alt="Discount Tag" className="w-6 h-6" />
-              <p className="text-sm text-yellow-700">
-                Até {product.uti_coins_discount_percentage || 0}% OFF pagando com UTI Coins - Economize até R$ {((product.price * (product.uti_coins_discount_percentage || 0)) / 100).toFixed(2).replace(".", ",")}
-              </p>
-            </div>
-          </div>
-=======
-            {/* Desconto UTI Coins */}
-            {product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0 && (
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-3">
+              )}
+              
+              {/* Desconto UTI Coins */}
+              {product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🎯</span>
-                  <div>
-                    <p className="text-sm font-medium text-purple-800">
-                      Até {product.uti_coins_discount_percentage}% OFF pagando com UTI Coins
-                    </p>
-                    <p className="text-xs text-purple-600">
-                      Economize até R$ {(product.price * product.uti_coins_discount_percentage / 100).toFixed(2).replace(".", ",")}
-                    </p>
-                  </div>
+                  <Tag className="w-5 h-5 text-yellow-600" />
+                  <p className="text-sm text-yellow-700">
+                    Até {product.uti_coins_discount_percentage || 0}% OFF pagando com UTI Coins - Economize até R$ {((product.price * (product.uti_coins_discount_percentage || 0)) / 100).toFixed(2).replace(".", ",")}
+                  </p>
                 </div>
-              </div>
-            )}
-          </div>
-
->>>>>>> 4345817f3151916cd2dbf97c05f1de9a1b2b440d
+              )}
+            </div>
+          )}
         </div>
 
 
