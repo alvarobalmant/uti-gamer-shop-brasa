@@ -17,7 +17,7 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Verificar se temos um token válido na URL
+  // Verificar se temos um token válido na URL e configurar sessão
   useEffect(() => {
     const accessToken = searchParams.get('access_token');
     const refreshToken = searchParams.get('refresh_token');
@@ -29,11 +29,30 @@ const ResetPassword = () => {
       return;
     }
 
-    // Configurar a sessão com os tokens da URL
-    supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken || ''
-    });
+    // Configurar a sessão com os tokens da URL usando o método correto
+    const setSessionAsync = async () => {
+      try {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || ''
+        });
+        
+        if (error) {
+          console.error('Erro ao configurar sessão:', error);
+          toast.error('Erro ao validar token de recuperação');
+          navigate('/');
+          return;
+        }
+        
+        console.log('Sessão configurada com sucesso para reset de senha');
+      } catch (error) {
+        console.error('Erro crítico ao configurar sessão:', error);
+        toast.error('Erro ao validar token de recuperação');
+        navigate('/');
+      }
+    };
+
+    setSessionAsync();
   }, [searchParams, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +83,7 @@ const ResetPassword = () => {
       if (error) throw error;
 
       toast.success('Senha alterada com sucesso!');
-      navigate('/auth');
+      navigate('/');
     } catch (error: any) {
       toast.error('Erro ao alterar senha: ' + error.message);
     } finally {

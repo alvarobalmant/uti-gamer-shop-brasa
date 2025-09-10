@@ -124,8 +124,8 @@ export const ClientAnalysisTableFixed: React.FC = () => {
         const client = clientMap.get(userId)!;
         
         // Somar tempo (mesmo que seja 0)
-        if (activity.time_on_site_seconds) {
-          client.total_time_spent += activity.time_on_site_seconds;
+        if ((activity as any).time_on_site_seconds) {
+          client.total_time_spent += (activity as any).time_on_site_seconds;
         }
 
         // CORREÇÃO: Atualizar datas apenas se forem válidas
