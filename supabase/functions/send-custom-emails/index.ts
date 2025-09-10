@@ -120,8 +120,8 @@ serve(async (req) => {
     // Criar link personalizado baseado no tipo de ação
     let actionLink: string;
     if (email_data.email_action_type === 'recovery') {
-      // Para reset de senha, usar a página de redefinir senha
-      actionLink = `${redirectUrl}/reset-password?access_token=${email_data.token}&refresh_token=${email_data.refresh_token || ''}&type=recovery`;
+      // Para reset de senha, usar token_hash do Supabase
+      actionLink = `${redirectUrl}/reset-password?token_hash=${email_data.token_hash}&type=recovery`;
     } else {
       // Para confirmação de email, usar a página de confirmar conta
       actionLink = `${redirectUrl}/confirmar-conta/${email_data.token_hash}`;

@@ -19,26 +19,37 @@ const ResetPassword = () => {
 
   // Verificar se temos um token válido na URL e configurar sessão
   useEffect(() => {
+    const tokenHash = searchParams.get('token_hash');
     const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
     const type = searchParams.get('type');
 
-    if (type !== 'recovery' || !accessToken) {
+    if (type !== 'recovery' || (!tokenHash && !accessToken)) {
       toast.error('Link de recuperação inválido ou expirado');
       navigate('/');
       return;
     }
 
-    // Configurar a sessão com os tokens da URL usando o método correto
+    // Configurar a sessão usando token_hash (mais comum) ou access_token
     const setSessionAsync = async () => {
       try {
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || ''
-        });
+        let result;
         
-        if (error) {
-          console.error('Erro ao configurar sessão:', error);
+        if (tokenHash) {
+          // Usar verifyOtp para token_hash
+          result = await supabase.auth.verifyOtp({
+            type: 'recovery',
+            token_hash: tokenHash
+          });
+        } else if (accessToken) {
+          // Usar setSession para access_token
+          result = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: searchParams.get('refresh_token') || ''
+          });
+        }
+        
+        if (result?.error) {
+          console.error('Erro ao configurar sessão:', result.error);
           toast.error('Erro ao validar token de recuperação');
           navigate('/');
           return;
