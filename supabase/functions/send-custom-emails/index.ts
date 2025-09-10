@@ -117,8 +117,15 @@ serve(async (req) => {
       redirectUrl = 'https://' + redirectUrl;
     }
     
-    // Criar link personalizado que vai direto para o site
-    const confirmationLink = `${redirectUrl}/confirmar-conta/${email_data.token_hash}`;
+    // Criar link personalizado baseado no tipo de ação
+    let actionLink: string;
+    if (email_data.email_action_type === 'recovery') {
+      // Para reset de senha, usar a página de redefinir senha
+      actionLink = `${redirectUrl}/reset-password?access_token=${email_data.token}&refresh_token=${email_data.refresh_token || ''}&type=recovery`;
+    } else {
+      // Para confirmação de email, usar a página de confirmar conta
+      actionLink = `${redirectUrl}/confirmar-conta/${email_data.token_hash}`;
+    }
     
     const templateVariables = {
       from_name: emailConfig.from_name,
@@ -127,10 +134,10 @@ serve(async (req) => {
       company_address: emailConfig.company_address || '',
       user_name: user.user_metadata?.name || user.email.split('@')[0],
       user_email: user.email,
-      confirmation_link: confirmationLink,
-      confirmation_url: confirmationLink, // Compatibilidade
-      reset_url: confirmationLink,
-      reset_link: confirmationLink,
+      confirmation_link: actionLink,
+      confirmation_url: actionLink, // Compatibilidade
+      reset_url: actionLink,
+      reset_link: actionLink,
       token_hash: email_data.token_hash,
       email_action_type: email_data.email_action_type,
       platform_url: redirectUrl,
