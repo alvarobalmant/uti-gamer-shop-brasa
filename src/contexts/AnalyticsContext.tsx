@@ -5,7 +5,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAnalyticsTracking } from '@/hooks/useAnalyticsTracking';
-import { useEnterpriseTrackingMultiUser } from '@/hooks/useEnterpriseTrackingMultiUser';
+import { useEnterpriseTracking } from '@/contexts/EnterpriseTrackingContext';
 
 interface AnalyticsContextType {
   // IDs únicos

@@ -9,7 +9,8 @@ import {
   EyeOff, 
   AlertCircle, 
   CheckCircle,
-  Loader2
+  Loader2,
+  X
 } from 'lucide-react';
 
 // Professional Input Field with Icon and Validation
