@@ -56,7 +56,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const handleAddToCart = (product: CachedProduct) => {
     trackProductView(product.id, cachedToProduct(product));
     trackAddToCart(product.id, 1, product.price);
-    addToCart(cachedToProduct(product), 1);
+    addToCart(cachedToProduct(product));
   };
 
   const handleProductClick = useCallback(async (productId: string) => {
@@ -255,12 +255,12 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
                       <FavoriteButton productId={relatedProduct.id} size="sm" />
                     </div>
                     
-                    <ProductCardImage product={relatedProduct} isHovered={false} />
+                    <ProductCardImage product={cachedToProduct(relatedProduct)} isHovered={false} />
 
                     <div className="flex flex-1 flex-col justify-between p-3">
                       <div className="space-y-2">
-                        <ProductCardInfo product={relatedProduct} />
-                        <ProductCardPrice product={relatedProduct} />
+                        <ProductCardInfo product={cachedToProduct(relatedProduct)} />
+                        <ProductCardPrice product={cachedToProduct(relatedProduct)} />
                       </div>
                     </div>
                   </Card>

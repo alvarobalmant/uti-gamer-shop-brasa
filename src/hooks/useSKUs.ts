@@ -339,10 +339,11 @@ const useSKUs = () => {
   }, [addProduct]);
 
   // Atualizar SKU
-  const updateSKU = useCallback(async (id: string, updates: Partial<Product>): Promise<Product | null> => {
+  const updateSKU = useCallback(async (id: string, updates: Partial<Product>): Promise<any | null> => {
     try {
       setLoading(true);
-      return await updateProduct(id, updates);
+      const result = await updateProduct(id, updates as any);
+      return result as any;
     } catch (error) {
       console.error('Erro ao atualizar SKU:', error);
       return null;
