@@ -28,19 +28,19 @@ export const useOptimizedPlatformNavigation = () => {
     setIsTransitioning(true);
     
     try {
-      // Check if we have cached data for instant transition
+      console.log(`🚀 [useOptimizedPlatformNavigation] Navegando para ${targetProductId}`);
+      
+      // PRIORIDADE 1: Verificar estado global para navegação otimista
       const cachedSKUNavigation = getSKUNavigation(targetProductId);
       
       if (cachedSKUNavigation) {
-        console.log(`⚡ Instant transition to ${targetProductId}`);
+        console.log(`⚡ [useOptimizedPlatformNavigation] SKU Navigation encontrado - navegação otimista`);
         
         // Enable optimistic update mode
         setOptimisticUpdate(true);
         
         // Navigate immediately
         navigate(`/produto/${targetProductId}`, { replace: false });
-        
-        // Update current product in store
         setCurrentProduct(targetProductId);
         
         // Disable optimistic mode after a brief delay
@@ -48,14 +48,18 @@ export const useOptimizedPlatformNavigation = () => {
           setOptimisticUpdate(false);
         }, 100);
       } else {
-        console.log(`🔄 Standard navigation to ${targetProductId}`);
+        console.log(`📡 [useOptimizedPlatformNavigation] Navegação padrão para ${targetProductId}`);
         
         // Standard navigation without optimistic update
         navigate(`/produto/${targetProductId}`, { replace: false });
         setCurrentProduct(targetProductId);
       }
     } catch (error) {
-      console.error('Navigation error:', error);
+      console.error('❌ [useOptimizedPlatformNavigation] Erro na navegação:', error);
+      
+      // Fallback: navegação padrão
+      navigate(`/produto/${targetProductId}`, { replace: false });
+      setCurrentProduct(targetProductId);
     } finally {
       // Clear transition state after a brief delay
       setTimeout(() => {

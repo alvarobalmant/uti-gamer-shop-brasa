@@ -122,6 +122,7 @@ const Coins = lazy(() => import("./pages/Coins"));
 // Import direto para páginas críticas de auth
 import ConfirmarConta from "./pages/ConfirmarConta";
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module => ({ default: module.AdminAutoLogin })));
 import { EmailVerificationGuard } from "@/components/Auth/EmailVerificationGuard";
 const LoginPage = lazy(() => import("./components/Auth/LoginPage").then(module => ({ default: module.LoginPage })));
@@ -198,12 +199,13 @@ const App = () => {
                                  <Suspense fallback={<PageLoader />}>
                                    <AppContent>
                                      <Routes>
-                                       {/* Auth Routes - Outside EmailVerificationGuard */}
-                                       <Route path="/auth" element={<LoginPage />} />
-                                       <Route path="/cadastro" element={<RegisterPage />} />
-                                     
-                                     {/* Email Confirmation Route */}
-                                     <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
+                                        {/* Auth Routes - Outside EmailVerificationGuard */}
+                                        <Route path="/auth" element={<LoginPage />} />
+                                        <Route path="/cadastro" element={<RegisterPage />} />
+                                        <Route path="/reset-password" element={<ResetPassword />} />
+                                      
+                                        {/* Email Confirmation Route */}
+                                        <Route path="/confirmar-conta/:codigo" element={<ConfirmarConta />} />
 
                                      {/* All other routes protected by EmailVerificationGuard */}
                                      <Route path="/*" element={

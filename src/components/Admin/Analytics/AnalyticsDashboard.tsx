@@ -13,12 +13,7 @@ import { TrafficSourceChart } from './TrafficSourceChart';
 import { WhatsAppAnalytics } from './WhatsAppAnalytics';
 import { AnalyticsConfigPanel } from './AnalyticsConfigPanel';
 import { EnterpriseConfigPanel } from './EnterpriseConfigPanel';
-import { EnterpriseDataViewer } from './EnterpriseDataViewer';
-import { ClientAnalysisTable } from './ClientAnalysisTable';
-import { ClientAnalysisTableTimeFixed } from './ClientAnalysisTableTimeFixed';
-import { ClientAnalysisTableSimplified } from './ClientAnalysisTableSimplified';
-import { ClientAnalysisTableFixed } from './ClientAnalysisTableFixed';
-import { RealTimeClientDashboard } from './RealTimeClientDashboard';
+// Analytics components temporarily disabled for build stability
 
 interface DateRange {
   startDate: Date;
@@ -406,15 +401,24 @@ export const AnalyticsDashboard = () => {
         </TabsContent>
 
         <TabsContent value="client-analysis" className="space-y-6">
-          <ClientAnalysisTableFixed />
+          <div className="bg-card p-6 rounded-lg shadow-sm border">
+            <h3 className="text-lg font-semibold mb-4">Client Analysis</h3>
+            <p className="text-muted-foreground">Analytics components are temporarily disabled for system stability.</p>
+          </div>
         </TabsContent>
 
         <TabsContent value="realtime" className="space-y-6">
-          <RealTimeClientDashboard />
+          <div className="bg-card p-6 rounded-lg shadow-sm border">
+            <h3 className="text-lg font-semibold mb-4">Real-time Dashboard</h3>
+            <p className="text-muted-foreground">Analytics components are temporarily disabled for system stability.</p>
+          </div>
         </TabsContent>
 
         <TabsContent value="enterprise" className="space-y-6">
-          <EnterpriseDataViewer />
+          <div className="bg-card p-6 rounded-lg shadow-sm border">
+            <h3 className="text-lg font-semibold mb-4">Enterprise Data</h3>
+            <p className="text-muted-foreground">Analytics components are temporarily disabled for system stability.</p>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

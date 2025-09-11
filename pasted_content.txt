@@ -1,64 +1,75 @@
-Entendi perfeitamente! Vou analisar o código atual para entender melhor como implementar essa integração e te dar todas as informações necessárias para a outra IA.
+estamos com um bug que faz com que o carrinho nao abra em paginas prime. outra ia disse que isso precisa ser feito pra resolver: Resumo do que são “Páginas Prime” e por que o carrinho não abre nesse tipo de página
 
-Perfeito! Entendi exatamente o que precisa ser feito. Vou te explicar tudo que entendi e dar as informações completas para a outra IA implementar:
+O que são Páginas Prime
+- Arquitetura: são páginas 100% dinâmicas, definidas no banco (Supabase) nas tabelas prime_pages e prime_page_layout.
+- Hook central: o hook src/hooks/usePrimePages.ts busca a página ativa por slug (fetchPageBySlug) e carrega o layout (layout_items) com as seções e suas configs.
+- Renderização: src/pages/PrimePage.tsx usa PrimePageRenderer para traduzir cada section_type em componentes prontos (banners, seções de produtos, cards de serviços, etc.).
+- Diferença para “Platform Pages”: existe outro sistema em paralelo (PlatformPage), mas a rota /prime/:slug usa o sistema Prime. No seu caso (/prime/nintendo), é a página Prime.
 
-## O que entendi:
+Por que o modal de carrinho não abre nas Páginas Prime
+- Corrente de eventos do ícone até o modal:
+  - ProfessionalHeader → MainHeader → HeaderActionsEnhanced → GlobalCartIcon.
+  - Ao clicar no ícone, GlobalCartIcon chama a função recebida via onCartOpen (ou onCartClick) do ProfessionalHeader.
+  - Em src/pages/PrimePage.tsx, isso aciona o setShowCart(true/false) local.
+- Erro específico na PrimePage: o componente Cart foi montado de forma “condicional” e sem as props que controlam sua abertura.
+  - Em PrimePage.tsx, hoje está assim (trecho relevante):
+    - É feito {showCart && }, porém o Cart internamente abre via props showCart e setShowCart (Sheet open={showCart}), e essas props não estão sendo passadas.
+    - Resultado: mesmo quando o estado showCart vira true e o Cart é montado, o Sheet interno continua com open={false} (pois showCart não foi passado), então o modal não abre.
+- Observações adicionais:
+  - GlobalCartIcon está “hidden lg:flex”, então no mobile o ícone do carrinho nem aparece (isso é intencional no código atual). O problema que você descreveu é na página Prime ao clicar no ícone (desktop), então a causa é o wiring das props do Cart, como explicado.
 
-1. **Substituir o componente atual** `UTICoinsInfo` (primeiro print) por uma integração direta na seção de preços
-2. **Layout de preços profissional** seguindo o segundo print: preço riscado em cima, preço real embaixo, % OFF ao lado
-3. **Informações UTI Coins** embaixo dos preços:
-   - Cashback: quantidade EXATA de coins que ganha (não porcentagem)
-   - Desconto: porcentagem disponível para usar UTI Coins na compra
-4. **Dados reais do banco** usando os campos que já existem no produto
+Fluxo simplificado do clique até o modal
 
-## Informações técnicas para a outra IA:
+sequenceDiagram
+  participant UI as GlobalCartIcon
+  participant H as ProfessionalHeader
+  participant P as PrimePage.tsx
+  participant C as Cart (Sheet)
 
-### 1. Campos do banco de dados já disponíveis no produto:
-```typescript
-// No tipo Product (src/hooks/useProducts/types.ts)
-uti_coins_cashback_percentage?: number; // Porcentagem de cashback em UTI Coins
-uti_coins_discount_percentage?: number; // Porcentagem de desconto em UTI Coins
-```
+  UI->>H: onClick -> onCartOpen()
+  H->>P: chama handleCartToggle / setShowCart(true)
+  P->>P: showCart = true
+  Note over P: Cart é montado, mas sem showCart/setShowCart
+  P->>C:  (faltam showCart/setShowCart)
+  C->>C: Sheet open={showCart} (usa default false)
+  C-->>UI: Modal NÃO abre
 
-### 2. Arquivo principal a modificar:
-**`src/components/Product/Sidebar/ProductPricingCompact.tsx`** - É esse o componente que controla a seção de preços no desktop
+Correção sugerida (bem pequena e sem afetar desktop)
+- Em src/pages/PrimePage.tsx:
+  - Não renderizar o Cart condicionalmente.
+  - Passar explicitamente as props showCart e setShowCart para o componente Cart (que é como o Sheet interno espera).
+  - Opcional: abrir sempre com setShowCart(true) em vez de “toggle”, para evitar “fecha/abre” caso o usuário clique rápido duas vezes.
 
-### 3. Estrutura atual do ProductSidebar:
-O `ProductSidebar.tsx` atualmente importa o `UTICoinsInfo` na linha 93-96, que deve ser **removido** e a funcionalidade integrada diretamente no `ProductPricingCompact.tsx`
+Exemplo de como deve ficar em PrimePage.tsx
+- No header, pode manter como está (onCartClick) ou usar onCartOpen com setShowCart(true):
+   setShowCart(true)}    // ou manter onCartClick={handleCartToggle}
+    onAuthOpen={handleAuthModalToggle}
+  />
 
-### 4. Cálculos necessários:
-```typescript
-// Para calcular coins exatos de cashback (não porcentagem):
-const coinsEarned = Math.floor((product.price * (product.uti_coins_cashback_percentage || 0)) / 100 * 100);
-// Explicação: (preço × porcentagem ÷ 100) × 100 coins por real
+- No final da página, substitua o trecho do Cart:
+  ANTES:
+  {showCart && (
 
-// Para desconto máximo em reais:
-const maxDiscount = (product.price * (product.uti_coins_discount_percentage || 0)) / 100;
-```
+  )}
 
-### 5. Layout desejado (baseado nos prints):
-```
-[PREÇO RISCADO]     [X% OFF]
-[PREÇO REAL]
+  DEPOIS (controle correto):
 
-💰 Ganhe X UTI Coins nesta compra
-🎯 Até Y% OFF pagando com UTI Coins - Economize até R$ Z
-```
+Notas
+- O Cart já usa o contexto do carrinho (useCart) internamente. Não precisa passar items, updateQuantity, total etc. Essas props extras estão redundantes.
+- Essa mudança só afeta as Páginas Prime. O layout de desktop permanece intacto.
+- No mobile, o ícone do carrinho do header não aparece por design (hidden lg:flex). Se você quiser o carrinho também no mobile, eu posso incluir um ícone acionável no MobileMenu/Topbar, mas isso é opcional e separado.
 
-### 6. Hook de UTI Coins existente (se precisar do saldo do usuário):
-```typescript
-import { useUTICoins } from '@/hooks/useUTICoins';
-const { balance } = useUTICoins(); // Saldo atual do usuário
-```
+lov-plan
+1) Atualizar src/pages/PrimePage.tsx:
+- Ajustar o ProfessionalHeader para chamar setShowCart(true) (onCartOpen ou onCartClick).
+- Renderizar sempre o componente  e passar as props showCart={showCart} e setShowCart={setShowCart}.
+- Remover as props redundantes (items, onUpdateQuantity, onClose, total) já que o Cart lê esses dados do contexto.
 
-### 7. Remoção necessária:
-- **Remover** a importação e uso do `UTICoinsInfo` do `ProductSidebar.tsx`
-- **Integrar** toda funcionalidade diretamente no `ProductPricingCompact.tsx`
+2) Testes:
+- Desktop: clicar no ícone do carrinho deve abrir o modal imediatamente.
+- Mobile: comportamento atual do header permanece (ícone oculto). Opcional: adicionar gatilho de carrinho no menu mobile em uma próxima etapa.
 
-### 8. Exemplo de estrutura do componente modificado:
-O `ProductPricingCompact.tsx` já tem a estrutura base de preços, só precisa:
-- Adicionar os cálculos UTI Coins
-- Inserir a seção de cashback/desconto após a seção de preços atual
-- Usar styling profissional similar ao que já existe no arquivo
+3) Revisão rápida:
+- Conferir se não há outros lugares usando o Cart com a API antiga (isOpen/onClose). Se houver, alinhar numa etapa seguinte para padronizar.
 
-Essa é toda informação que a outra IA precisa para implementar perfeitamente a funcionalidade seguindo exatamente o que você quer!
+Fix the cart modal issue on Prime pages by updating cart handling to use the correct props and state management.

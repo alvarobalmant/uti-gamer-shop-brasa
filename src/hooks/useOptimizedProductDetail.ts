@@ -90,13 +90,16 @@ export const useOptimizedProductDetail = (productId: string | undefined) => {
     retryDelay: 1000
   });
 
-  // Optimistic navigation helper
+  // Optimistic navigation helper - CORRIGIDO para ser síncrono
   const getOptimisticData = useCallback((targetProductId: string) => {
-    // Try to get from global state first
+    console.log(`🔍 [getOptimisticData] Buscando dados otimistas para ${targetProductId}`);
+    
+    // PRIORIDADE 1: Estado global (SKU Navigation Store) - rápido e confiável
     const cachedSKUNav = getSKUNavigation(targetProductId);
     if (cachedSKUNav) {
       const targetSKU = cachedSKUNav.availableSKUs.find(sku => sku.id === targetProductId);
       if (targetSKU) {
+        console.log(`⚡ [getOptimisticData] Produto ${targetProductId} encontrado no estado global`);
         return {
           product: targetSKU,
           skuNavigation: {
@@ -107,15 +110,17 @@ export const useOptimizedProductDetail = (productId: string | undefined) => {
       }
     }
 
-    // Try local cache
+    // PRIORIDADE 2: Cache local (fallback)
     const cached = getCachedData(targetProductId);
     if (cached) {
+      console.log(`⚡ [getOptimisticData] Produto ${targetProductId} encontrado no cache local`);
       return {
         product: cached.product,
         skuNavigation: cached.skuNavigation
       };
     }
 
+    console.log(`❌ [getOptimisticData] Produto ${targetProductId} não encontrado em nenhum cache`);
     return null;
   }, [getSKUNavigation, getCachedData]);
 
@@ -192,15 +197,31 @@ export const useOptimizedProductDetail = (productId: string | undefined) => {
     }
   };
 
-  // Prefetch related SKUs
+  // Prefetch related SKUs - OTIMIZADO de forma segura
   const prefetchRelatedSKUs = useCallback(async (skuNavigation: SKUNavigation) => {
     const skuIds = skuNavigation.availableSKUs
       .map(sku => sku.id)
       .filter(id => id !== productId);
 
     if (skuIds.length > 0) {
-      console.log(`🚀 Prefetching ${skuIds.length} related SKUs`);
-      prefetchProducts(skuIds);
+      console.log(`🚀 [useOptimizedProductDetail] Preload de ${skuIds.length} variantes SKU`);
+      
+      // OTIMIZAÇÃO SEGURA: Preload em paralelo sem bloquear
+      Promise.all([
+        // PRINCIPAL: Prefetch tradicional (React Query) - sempre funciona
+        prefetchProducts(skuIds),
+        
+        // COMPLEMENTO: ProductCacheManager - melhoria adicional
+        import('@/utils/ProductCacheManager')
+          .then(({ productCache }) => productCache.preloadProducts(skuIds))
+          .catch(error => {
+            console.warn(`⚠️ [useOptimizedProductDetail] ProductCache preload falhou:`, error);
+          })
+      ]).then(() => {
+        console.log(`✅ [useOptimizedProductDetail] Preload de variantes concluído`);
+      }).catch(error => {
+        console.warn(`⚠️ [useOptimizedProductDetail] Erro no preload:`, error);
+      });
     }
   }, [productId, prefetchProducts]);
 

@@ -164,7 +164,7 @@ const SectionPage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartToggle}
+          onCartOpen={() => setShowCart(true)}
           onAuthOpen={handleAuthModalToggle}
           showNavigation={false}
         />
@@ -185,7 +185,7 @@ const SectionPage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartToggle}
+          onCartOpen={() => setShowCart(true)}
           onAuthOpen={handleAuthModalToggle}
           showNavigation={false}
         />
@@ -385,15 +385,11 @@ const SectionPage: React.FC = () => {
       <Footer />
 
       {/* Modais */}
-      {showCart && (
-        <Cart
-          items={items}
-          onUpdateQuantity={updateQuantity}
-          onClose={handleCartToggle}
-          onSendToWhatsApp={sendToWhatsApp}
-          total={getCartTotal()}
-        />
-      )}
+      <Cart
+        showCart={showCart}
+        setShowCart={setShowCart}
+        onSendToWhatsApp={sendToWhatsApp}
+      />
 
       {showAuthModal && (
         <AuthModal

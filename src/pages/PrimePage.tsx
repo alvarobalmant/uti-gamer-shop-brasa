@@ -88,7 +88,7 @@ const PrimePage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartToggle}
+          onCartOpen={() => setShowCart(true)}
           onAuthOpen={handleAuthModalToggle}
         />
         <div className="container mx-auto px-4 py-8">
@@ -119,7 +119,7 @@ const PrimePage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartToggle}
+          onCartOpen={() => setShowCart(true)}
           onAuthOpen={handleAuthModalToggle}
         />
         <LoadingState />
@@ -135,7 +135,7 @@ const PrimePage: React.FC = () => {
         <ProfessionalHeader
           user={user}
           cartItemsCount={getCartItemsCount()}
-          onCartOpen={handleCartToggle}
+          onCartOpen={() => setShowCart(true)}
           onAuthOpen={handleAuthModalToggle}
         />
         <div className="container mx-auto px-4 py-8">
@@ -196,15 +196,11 @@ const PrimePage: React.FC = () => {
       <Footer />
 
       {/* Modais */}
-      {showCart && (
-        <Cart
-          items={items}
-          onUpdateQuantity={updateQuantity}
-          onClose={handleCartToggle}
-          onSendToWhatsApp={sendToWhatsApp}
-          total={getCartTotal()}
-        />
-      )}
+      <Cart
+        showCart={showCart}
+        setShowCart={setShowCart}
+        onSendToWhatsApp={sendToWhatsApp}
+      />
 
       {showAuthModal && (
         <AuthModal
