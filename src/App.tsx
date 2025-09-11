@@ -189,8 +189,8 @@ const App = () => {
                       <Toaster />
                       <Sonner />
                       <BrowserRouter>
-                        <AnalyticsProvider>
-                          <EnterpriseTrackingProvider>
+                        <EnterpriseTrackingProvider>
+                          <AnalyticsProvider>
                             <CartProvider>
                             <AppWithPreloader>
                               <GlobalNavigationProvider>
@@ -296,8 +296,8 @@ const App = () => {
                             </GlobalNavigationProvider>
                           </AppWithPreloader>
                          </CartProvider>
+                          </AnalyticsProvider>
                         </EnterpriseTrackingProvider>
-                       </AnalyticsProvider>
                     </BrowserRouter>
                   </TooltipProvider>
                  </LoadingProvider>
