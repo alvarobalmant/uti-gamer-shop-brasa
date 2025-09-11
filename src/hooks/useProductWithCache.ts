@@ -1,22 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useProductCache } from './useProductCache';
 import { useProducts } from './useProducts';
+import { Product } from './useProducts/types';
+import { CachedProduct } from '@/utils/ProductCacheManager';
 
-// Interface para produto com cache
+// Interface para produto com cache compatível com CachedProduct
 interface ProductWithCache {
   id: string;
   name: string;
   price: number;
-  proPrice?: number;
-  originalPrice?: number;
+  pro_price?: number;
+  list_price?: number;
   image: string;
-  gallery?: string[];
-  tags?: string[];
+  images?: string[];
+  tags?: { id: string; name: string; }[];
   platform?: string;
   genre?: string;
-  stock?: boolean;
+  stock?: number;
   rating?: number;
-  reviewCount?: number;
+  rating_count?: number;
   description?: string;
   fromCache?: boolean;
 }
@@ -35,8 +37,8 @@ export const useProductWithCache = (productId: string): UseProductWithCacheResul
   const [error, setError] = useState<string | null>(null);
   const [fromCache, setFromCache] = useState(false);
 
-  const { getProduct, setProduct: cacheProduct } = useProductCache();
-  const { products, loading: apiLoading, error: apiError } = useProducts();
+  const { product: cachedProduct, loading: cacheLoading } = useProductCache(productId);
+  const { products, loading: apiLoading } = useProducts();
 
   // Função para buscar produto
   const fetchProduct = useCallback(async () => {
@@ -50,20 +52,28 @@ export const useProductWithCache = (productId: string): UseProductWithCacheResul
 
     try {
       // 1. Tentar buscar no cache primeiro
-      const cachedProduct = getProduct(productId);
-      
-      if (cachedProduct) {
+      if (cachedProduct && !cacheLoading) {
         // Produto encontrado no cache e válido
-        setProduct({ ...cachedProduct, fromCache: true });
+        const productWithCache: ProductWithCache = {
+          id: cachedProduct.id,
+          name: cachedProduct.name,
+          price: cachedProduct.price,
+          pro_price: cachedProduct.pro_price,
+          list_price: cachedProduct.list_price,
+          image: cachedProduct.image,
+          images: [cachedProduct.image],
+          tags: cachedProduct.tags,
+          platform: cachedProduct.platform,
+          genre: '',
+          stock: cachedProduct.stock || 0,
+          rating: 0,
+          rating_count: 0,
+          description: '',
+          fromCache: true
+        };
+        setProduct(productWithCache);
         setFromCache(true);
         setLoading(false);
-        
-        // Opcional: Buscar na API em background para atualizar cache
-        // (estratégia stale-while-revalidate)
-        setTimeout(() => {
-          fetchFromAPI();
-        }, 100);
-        
         return;
       }
 
@@ -75,7 +85,7 @@ export const useProductWithCache = (productId: string): UseProductWithCacheResul
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
       setLoading(false);
     }
-  }, [productId, getProduct]);
+  }, [productId, cachedProduct, cacheLoading]);
 
   // Função para buscar da API
   const fetchFromAPI = useCallback(async () => {
@@ -83,10 +93,6 @@ export const useProductWithCache = (productId: string): UseProductWithCacheResul
       // Aguardar produtos carregarem se ainda estão loading
       if (apiLoading) {
         return;
-      }
-
-      if (apiError) {
-        throw new Error(apiError);
       }
 
       // Buscar produto na lista de produtos
@@ -97,28 +103,26 @@ export const useProductWithCache = (productId: string): UseProductWithCacheResul
       }
 
       // Transformar produto para formato do cache
-      const productForCache = {
+      const productForCache: ProductWithCache = {
         id: foundProduct.id,
         name: foundProduct.name,
         price: foundProduct.price,
-        proPrice: foundProduct.proPrice,
-        originalPrice: foundProduct.originalPrice,
+        pro_price: foundProduct.pro_price,
+        list_price: foundProduct.list_price,
         image: foundProduct.image,
-        gallery: foundProduct.gallery,
+        images: foundProduct.images,
         tags: foundProduct.tags,
         platform: foundProduct.platform,
         genre: foundProduct.genre,
-        stock: foundProduct.stock,
+        stock: foundProduct.stock || 0,
         rating: foundProduct.rating,
-        reviewCount: foundProduct.reviewCount,
-        description: foundProduct.description
+        rating_count: foundProduct.rating_count,
+        description: foundProduct.description,
+        fromCache: false
       };
 
-      // Salvar no cache
-      cacheProduct(productForCache);
-
       // Atualizar estado
-      setProduct({ ...productForCache, fromCache: false });
+      setProduct(productForCache);
       setFromCache(false);
       setLoading(false);
 
@@ -127,7 +131,7 @@ export const useProductWithCache = (productId: string): UseProductWithCacheResul
       setError(err instanceof Error ? err.message : 'Erro ao carregar produto');
       setLoading(false);
     }
-  }, [products, apiLoading, apiError, productId, cacheProduct]);
+  }, [products, apiLoading, productId]);
 
   // Função para forçar refetch
   const refetch = useCallback(() => {
@@ -155,8 +159,7 @@ export const useProductsWithCache = (productIds: string[]) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { getProduct, setProduct: cacheProduct, preloadProducts } = useProductCache();
-  const { products: allProducts, loading: apiLoading, error: apiError } = useProducts();
+  const { products: allProducts, loading: apiLoading } = useProducts();
 
   const fetchProducts = useCallback(async () => {
     if (!productIds.length) {
@@ -168,65 +171,34 @@ export const useProductsWithCache = (productIds: string[]) => {
     setError(null);
 
     try {
-      const results: ProductWithCache[] = [];
-      const missingIds: string[] = [];
-
-      // Verificar cache para cada produto
-      productIds.forEach(id => {
-        const cached = getProduct(id);
-        if (cached) {
-          results.push({ ...cached, fromCache: true });
-        } else {
-          missingIds.push(id);
-        }
-      });
-
-      // Se todos estão no cache, retornar
-      if (missingIds.length === 0) {
-        setProducts(results);
-        setLoading(false);
-        return;
-      }
-
       // Aguardar API se necessário
       if (apiLoading) {
         return;
       }
 
-      if (apiError) {
-        throw new Error(apiError);
-      }
-
-      // Buscar produtos faltantes na API
-      const missingProducts = allProducts.filter(p => missingIds.includes(p.id));
+      // Buscar produtos na API
+      const foundProducts = allProducts.filter(p => productIds.includes(p.id));
       
-      // Transformar e cachear produtos faltantes
-      const productsToCache = missingProducts.map(p => ({
+      // Transformar produtos
+      const transformedProducts: ProductWithCache[] = foundProducts.map(p => ({
         id: p.id,
         name: p.name,
         price: p.price,
-        proPrice: p.proPrice,
-        originalPrice: p.originalPrice,
+        pro_price: p.pro_price,
+        list_price: p.list_price,
         image: p.image,
-        gallery: p.gallery,
+        images: p.images,
         tags: p.tags,
         platform: p.platform,
         genre: p.genre,
-        stock: p.stock,
+        stock: p.stock || 0,
         rating: p.rating,
-        reviewCount: p.reviewCount,
-        description: p.description
+        rating_count: p.rating_count,
+        description: p.description,
+        fromCache: false
       }));
 
-      // Pré-carregar no cache
-      preloadProducts(productsToCache);
-
-      // Adicionar aos resultados
-      productsToCache.forEach(p => {
-        results.push({ ...p, fromCache: false });
-      });
-
-      setProducts(results);
+      setProducts(transformedProducts);
       setLoading(false);
 
     } catch (err) {
@@ -234,7 +206,7 @@ export const useProductsWithCache = (productIds: string[]) => {
       setError(err instanceof Error ? err.message : 'Erro ao carregar produtos');
       setLoading(false);
     }
-  }, [productIds, getProduct, allProducts, apiLoading, apiError, preloadProducts]);
+  }, [productIds, allProducts, apiLoading]);
 
   useEffect(() => {
     fetchProducts();
@@ -246,4 +218,3 @@ export const useProductsWithCache = (productIds: string[]) => {
     error
   };
 };
-
