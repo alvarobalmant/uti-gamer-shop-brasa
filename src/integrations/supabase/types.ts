@@ -3907,7 +3907,6 @@ export type Database = {
       get_current_bonus_period_brasilia: {
         Args: Record<PropertyKey, never>
         Returns: {
-          can_claim: boolean
           next_reset: string
           period_end: string
           period_start: string
@@ -3938,6 +3937,10 @@ export type Database = {
           p_start_date?: string
         }
         Returns: Json
+      }
+      get_next_brasilia_8pm: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_performance_correlation: {
         Args: { p_end_date?: string; p_start_date?: string }
