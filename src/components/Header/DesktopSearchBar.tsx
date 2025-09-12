@@ -4,12 +4,14 @@ import { Input } from '@/components/ui/input';
 import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import { cn } from '@/lib/utils';
+import { useWeightedSearch } from '@/hooks/useWeightedSearch';
 
 const DesktopSearchBar = () => {
   const { navigateToSearch } = useGlobalNavigationLinks();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const { search: weightedSearch } = useWeightedSearch();
 
   const handleSearchSubmit = async () => {
     if (searchQuery.trim()) {
