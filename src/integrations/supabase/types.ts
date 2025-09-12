@@ -165,6 +165,13 @@ export type Database = {
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
           },
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_products_search"
+            referencedColumns: ["id"]
+          },
         ]
       }
       coin_products: {
@@ -1607,6 +1614,13 @@ export type Database = {
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
           },
+          {
+            foreignKeyName: "product_faqs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_products_search"
+            referencedColumns: ["id"]
+          },
         ]
       }
       product_section_items: {
@@ -1743,6 +1757,13 @@ export type Database = {
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
           },
+          {
+            foreignKeyName: "product_specifications_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_products_search"
+            referencedColumns: ["id"]
+          },
         ]
       }
       product_tags: {
@@ -1778,6 +1799,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "fk_product_tags_product_id"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_products_search"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_product_tags_tag_id"
@@ -2050,6 +2078,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "products_parent_product_id_fkey"
+            columns: ["parent_product_id"]
+            isOneToOne: false
+            referencedRelation: "view_products_search"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3014,19 +3049,25 @@ export type Database = {
       }
       tags: {
         Row: {
+          category: string | null
           created_at: string
           id: string
           name: string
+          weight: number | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           id?: string
           name: string
+          weight?: number | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           id?: string
           name?: string
+          weight?: number | null
         }
         Relationships: []
       }
@@ -3209,6 +3250,13 @@ export type Database = {
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
           },
+          {
+            foreignKeyName: "user_favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_products_search"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_journey_detailed: {
@@ -3364,6 +3412,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "user_savings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "view_products_search"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3704,7 +3759,29 @@ export type Database = {
             referencedRelation: "view_product_with_tags"
             referencedColumns: ["product_id"]
           },
+          {
+            foreignKeyName: "products_parent_product_id_fkey"
+            columns: ["parent_product_id"]
+            isOneToOne: false
+            referencedRelation: "view_products_search"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      view_products_search: {
+        Row: {
+          description: string | null
+          id: string | null
+          image: string | null
+          is_active: boolean | null
+          name: string | null
+          price: number | null
+          slug: string | null
+          stock: number | null
+          tag_names: string | null
+          tags_with_weights: Json | null
+        }
+        Relationships: []
       }
     }
     Functions: {
@@ -3753,6 +3830,10 @@ export type Database = {
       cancelar_assinatura: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      categorize_existing_tags: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       check_email_confirmation_status: {
         Args: Record<PropertyKey, never>
@@ -4167,6 +4248,22 @@ export type Database = {
         Args: { meses: number; user_id: string }
         Returns: boolean
       }
+<<<<<<< HEAD
+=======
+      search_products_weighted: {
+        Args: { limit_count?: number; search_terms: string[] }
+        Returns: {
+          debug_info: Json
+          matched_tags: Json
+          product_id: string
+          product_image: string
+          product_name: string
+          product_price: number
+          product_slug: string
+          relevance_score: number
+        }[]
+      }
+>>>>>>> 8e37538e6a1190ba1a2f2e58a16b837b9f624d26
       spend_coins_for_discount: {
         Args: {
           p_amount: number
