@@ -180,27 +180,52 @@ export const useDailyCodes = () => {
     }
   }, [user, fetchCurrentCode, fetchStreakStatus]);
 
-  // Calcular timer até próximo código (lógica melhorada)
+  // Calcular timer usando dados do backend (corrigido para Brasília)
   const getTimeUntilNextCode = useCallback(() => {
-    const now = new Date();
-    const today8PM = new Date();
-    today8PM.setHours(20, 0, 0, 0);
-    
-    let targetTime: Date;
-    
-    // Antes das 20h: sempre mostra tempo até hoje às 20h
-    if (now.getHours() < 20) {
-      targetTime = today8PM;
-    } else {
-      // Depois das 20h: mostra tempo até amanhã às 20h
-      // (o timer só aparece quando já resgatou, então faz sentido mostrar próximo dia)
-      const tomorrow8PM = new Date();
-      tomorrow8PM.setDate(tomorrow8PM.getDate() + 1);
-      tomorrow8PM.setHours(20, 0, 0, 0);
-      targetTime = tomorrow8PM;
+    // Se temos dados do código atual com claimable_until, usar isso
+    if (currentCode?.claimable_until) {
+      const now = new Date();
+      const claimableUntil = new Date(currentCode.claimable_until);
+      const timeDiff = claimableUntil.getTime() - now.getTime();
+      
+      const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+      
+      return {
+        hours: Math.max(0, hours),
+        minutes: Math.max(0, minutes),
+        seconds: Math.max(0, seconds),
+        totalSeconds: Math.max(0, Math.floor(timeDiff / 1000))
+      };
     }
     
-    const timeDiff = targetTime.getTime() - now.getTime();
+    // Fallback: calcular próximas 20h Brasília em UTC
+    const now = new Date();
+    
+    // Converter para horário de Brasília (UTC-3)
+    const brasiliaOffset = -3 * 60; // -3 horas em minutos
+    const utcOffset = now.getTimezoneOffset(); // offset local em relação ao UTC
+    const brasiliaTime = new Date(now.getTime() + (utcOffset + brasiliaOffset) * 60000);
+    
+    // Calcular próximas 20h em Brasília
+    const today8PMBrasilia = new Date(brasiliaTime);
+    today8PMBrasilia.setHours(20, 0, 0, 0);
+    
+    let target8PMBrasilia: Date;
+    if (brasiliaTime.getHours() < 20) {
+      // Antes das 20h Brasília: usar hoje
+      target8PMBrasilia = today8PMBrasilia;
+    } else {
+      // Depois das 20h Brasília: usar amanhã
+      target8PMBrasilia = new Date(today8PMBrasilia);
+      target8PMBrasilia.setDate(target8PMBrasilia.getDate() + 1);
+    }
+    
+    // Converter de volta para UTC
+    const targetUTC = new Date(target8PMBrasilia.getTime() - (utcOffset + brasiliaOffset) * 60000);
+    const timeDiff = targetUTC.getTime() - now.getTime();
+    
     const hours = Math.floor(timeDiff / (1000 * 60 * 60));
     const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
@@ -211,7 +236,7 @@ export const useDailyCodes = () => {
       seconds: Math.max(0, seconds),
       totalSeconds: Math.max(0, Math.floor(timeDiff / 1000))
     };
-  }, []);
+  }, [currentCode]);
 
   // Carregar dados quando usuário logar
   useEffect(() => {

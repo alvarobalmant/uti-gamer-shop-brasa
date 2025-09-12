@@ -34,6 +34,7 @@ import {
 } from './BulkProductUpload/bulkEditUtils';
 import type { ImportedProduct, ValidationError } from './BulkProductUpload/types';
 import { SkippedProductsModal } from './BulkProductUpload/SkippedProductsModal';
+import { TagsExplanationCard } from './BulkProductUpload/TagsExplanationCard';
 
 const BulkProductBackupAndEdit: React.FC = () => {
   const { toast } = useToast();
@@ -425,6 +426,9 @@ const BulkProductBackupAndEdit: React.FC = () => {
               )}
             </CardContent>
           </Card>
+          
+          {/* Explicação sobre Tags */}
+          <TagsExplanationCard />
         </TabsContent>
       </Tabs>
 

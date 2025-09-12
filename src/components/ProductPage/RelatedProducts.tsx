@@ -20,21 +20,33 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
 
   useEffect(() => {
     if (allProducts.length > 0 && product) {
-      // Simple related logic: find products with at least one common tag (excluding self)
       const currentProductTags = product.tags?.map(t => t.id) || [];
-      const related = allProducts.filter(p => 
-        p.id !== product.id && 
-        p.tags?.some(tag => currentProductTags.includes(tag.id))
-      ).slice(0, 4);
-      
-      // If not enough tag-related products, fill with others (excluding self)
-      if (related.length < 4) {
-          const otherProducts = allProducts.filter(p => 
-              p.id !== product.id && 
-              !related.some(r => r.id === p.id)
-          );
-          related.push(...otherProducts.slice(0, 4 - related.length));
-      }
+
+      const scoredProducts = allProducts
+        .filter(p => p.id !== product.id) // Excluir o próprio produto
+        .map(p => {
+          const commonTags = p.tags?.filter(tag => currentProductTags.includes(tag.id)) || [];
+          const tagScore = commonTags.length; // Pontuação baseada no número de tags em comum
+          const priceDifference = Math.abs(p.price - product.price); // Diferença de preço
+          return { product: p, tagScore, priceDifference };
+        });
+
+      // Ordenar os produtos:
+      // 1. Pelo número de tags em comum (descendente)
+      // 2. Pela diferença de preço (ascendente)
+      // 3. Alfabeticamente pelo nome (ascendente)
+      scoredProducts.sort((a, b) => {
+        if (a.tagScore !== b.tagScore) {
+          return b.tagScore - a.tagScore; // Mais tags em comum primeiro
+        }
+        if (a.priceDifference !== b.priceDifference) {
+          return a.priceDifference - b.priceDifference; // Preço mais próximo primeiro
+        }
+        return a.product.name.localeCompare(b.product.name); // Ordem alfabética
+      });
+
+      // Limitar a 8 produtos
+      const related = scoredProducts.slice(0, 8).map(item => item.product);
 
       setRelatedProducts(related);
     }
@@ -48,7 +60,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ product }) => {
     // Find the product to get its data for analytics
     const clickedProduct = relatedProducts.find(p => p.id === productId);
     if (clickedProduct) {
-      trackProductView(productId, clickedProduct.name, clickedProduct.price);
+      trackProductView(productId, { name: clickedProduct.name, price: clickedProduct.price });
     }
     navigate(`/produto/${productId}`);
   };

@@ -406,6 +406,158 @@ export const fetchProductsByCriteria = async (config: CarouselConfig, includeAdm
   }
 };
 
+export const searchProductsWithWeights = async (
+  query: string,
+  limit: number = 20
+): Promise<{
+  products: Product[];
+  debug: {
+    searchTerms: string[];
+    totalResults: number;
+    responseTime: number;
+    detailedResults?: Array<{
+      id: string;
+      name: string;
+      relevance_score: number;
+      matched_tags: string[];
+      debug_info: any;
+    }>;
+  }
+}> => {
+  const startTime = Date.now();
+  
+  try {
+    console.log('[searchProductsWithWeights] 🚀 FORÇANDO busca RPC para:', query);
+    
+    // Tokenizar a query e normalizar para lidar com variações
+    const normalizedQuery = query
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^\w\s]/g, ' ') // Substitui pontuação por espaços
+      .replace(/\s+/g, ' ') // Normaliza espaços múltiplos
+      .trim();
+    
+    const searchTerms = normalizedQuery
+      .split(' ')
+      .filter(term => term.length >= 2) // Pelo menos 2 caracteres
+      .map(term => term.trim());
+    
+    // Adicionar variações dos termos para melhorar matching
+    const expandedTerms = [...searchTerms];
+    
+    // Para cada termo, adicionar variações sem espaços se contém múltiplas palavras
+    searchTerms.forEach(term => {
+      if (term.includes(' ')) {
+        expandedTerms.push(term.replace(/\s+/g, ''));
+      }
+    });
+    
+    // Se a query original tem espaços, adicionar versão sem espaços
+    if (query.includes(' ')) {
+      expandedTerms.push(query.replace(/\s+/g, '').toLowerCase());
+    }
+    
+    console.log('[searchProductsWithWeights] 📝 Termos expandidos:', expandedTerms);
+
+    if (expandedTerms.length === 0) {
+      console.log('[searchProductsWithWeights] ⚠️ Nenhum termo válido encontrado');
+      return {
+        products: [],
+        debug: {
+          searchTerms: [],
+          totalResults: 0,
+          responseTime: Date.now() - startTime
+        }
+      };
+    }
+
+    console.log('[searchProductsWithWeights] 📡 Chamando search_products_weighted com:', expandedTerms);
+
+    // FORÇA uso do RPC - SEM FALLBACK, e agora filtra produtos mestre
+    const { data: rpcData, error: rpcError } = await (supabase as any).rpc('search_products_weighted', {
+      search_terms: expandedTerms,
+      limit_count: limit * 2, // Buscar mais para depois filtrar
+      exclude_master_products: true // Novo parâmetro para filtrar produtos mestre
+    });
+
+    if (rpcError) {
+      console.error('[searchProductsWithWeights] ❌ RPC FALHOU:', rpcError);
+      throw new Error(`RPC search_products_weighted falhou: ${rpcError.message}`);
+    }
+
+    if (!Array.isArray(rpcData)) {
+      console.error('[searchProductsWithWeights] ❌ RPC retornou dados inválidos:', typeof rpcData, rpcData);
+      throw new Error('RPC retornou dados em formato inválido');
+    }
+
+    console.log(`[searchProductsWithWeights] ✅ RPC SUCCESS: ${rpcData.length} resultados`);
+    
+    // Log dos primeiros resultados para debug
+    rpcData.slice(0, 3).forEach((row, index) => {
+      console.log(`[searchProductsWithWeights] Resultado ${index + 1}:`, {
+        name: row.product_name,
+        score: row.relevance_score,
+        matchedTags: row.matched_tags,
+        debugInfo: row.debug_info
+      });
+    });
+
+    const products = rpcData
+      .filter((row: any) => row.product_type !== 'master') // Filtro adicional no frontend
+      .slice(0, limit) // Limitar após filtrar
+      .map((row: any) => {
+        const product = mapRowToProduct({
+          product_id: row.product_id,
+          product_name: row.product_name,
+          product_price: row.product_price,
+          product_image: row.product_image,
+          slug: row.product_slug,
+          // Campos mínimos para página de resultados
+          product_description: '',
+          product_stock: 0,
+          is_active: true,
+          is_featured: false,
+        });
+
+        // Adicionar informações de debug aos produtos
+        (product as any).relevance_score = row.relevance_score;
+        (product as any).matched_tags = row.matched_tags || [];
+        (product as any).debug_info = row.debug_info || {};
+
+        return product;
+      });
+
+    console.log(`[searchProductsWithWeights] ✅ FINALIZADO: ${products.length} produtos em ${Date.now() - startTime}ms`);
+
+    const detailedResults = rpcData
+      .filter((row: any) => row.product_type !== 'master')
+      .slice(0, limit)
+      .map((row: any) => ({
+        id: row.product_id,
+        name: row.product_name,
+        relevance_score: row.relevance_score || 0,
+        matched_tags: row.matched_tags || [],
+        debug_info: row.debug_info || {}
+      }));
+
+    return {
+      products,
+      debug: {
+        searchTerms: expandedTerms,
+        totalResults: products.length,
+        responseTime: Date.now() - startTime,
+        detailedResults
+      }
+    };
+
+  } catch (error) {
+    console.error('[searchProductsWithWeights] ❌ ERRO TOTAL:', error);
+    // NÃO fazer fallback - queremos ver se o RPC está funcionando
+    throw error;
+  }
+};
+
 export const fetchSingleProductFromDatabase = async (id: string): Promise<Product | null> => {
   try {
     // Buscar sempre diretamente na tabela products para garantir campos UTI Coins

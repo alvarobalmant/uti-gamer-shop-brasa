@@ -91,7 +91,7 @@ export const validateBulkEditData = (products: ImportedProduct[]): ValidationErr
     }
     
     // Validar formato de tags se fornecidas
-    if (product.tags?.trim()) {
+    if (product.tags && typeof product.tags === 'string' && product.tags.trim()) {
       const tagNames = product.tags.split(';').map(name => name.trim()).filter(name => name.length > 0);
       
       if (tagNames.length === 0) {
@@ -102,7 +102,7 @@ export const validateBulkEditData = (products: ImportedProduct[]): ValidationErr
           severity: 'warning'
         });
       } else {
-        // Verificar se alguma tag está muito longa ou tem caracteres inválidos
+        // Verificar se alguma tag está muito longa ou tem caracteres problemáticos
         tagNames.forEach(tagName => {
           if (tagName.length > 50) {
             errors.push({
@@ -113,7 +113,7 @@ export const validateBulkEditData = (products: ImportedProduct[]): ValidationErr
             });
           }
           
-          // Verificar caracteres especiais problemáticos
+          // Permitir caracteres acentuados e números
           if (/[<>{}[\]\\\/]/.test(tagName)) {
             errors.push({
               row,
@@ -313,7 +313,10 @@ export const processBulkEdit = async (
       const productFeatures = processJsonField(product.product_features);
       if (productFeatures) updateData.product_features = productFeatures;
       
-      // Apenas atualizar se há campos para atualizar
+      // Considera atualização quando há campos ou apenas tags
+      const hasTagsUpdate = typeof product.tags === 'string' && product.tags.trim().length > 0;
+
+      // Atualiza produto quando houver campos para atualizar
       if (Object.keys(updateData).length > 0) {
         updateData.updated_at = new Date().toISOString();
         
@@ -328,13 +331,23 @@ export const processBulkEdit = async (
         }
         
         result.updated++;
-        result.details.updated_products.push(product.sku_code!);
-        
-        // Processar tags se fornecidas
-        if (product.tags?.trim()) {
-          await updateProductTags(existingProduct.id, product.tags);
+        result.details.updated_products.push(identifier);
+      }
+      
+      // Processar tags independentemente
+      if (hasTagsUpdate) {
+        console.log(`[processBulkEdit] Processando tags para produto ${identifier}: "${product.tags}"`);
+        await updateProductTags(existingProduct.id, product.tags as string);
+
+        // Se foi apenas atualização de tags (sem outros campos), ainda contar como atualizado
+        if (Object.keys(updateData).length === 0) {
+          result.updated++;
+          result.details.updated_products.push(identifier);
         }
-      } else {
+      }
+
+      // Se nada foi atualizado
+      if (Object.keys(updateData).length === 0 && !hasTagsUpdate) {
         result.skipped++;
         result.details.skipped_skus.push(product.sku_code!);
         result.skipped_logs.push({
@@ -358,14 +371,18 @@ export const processBulkEdit = async (
   return result;
 };
 
-// Função auxiliar para atualizar tags do produto
+// Função auxiliar para atualizar tags do produto - VERSÃO CORRIGIDA
 const updateProductTags = async (productId: string, tagsString: string) => {
-  const tagNames = tagsString.split(';').map(name => name.trim()).filter(name => name.length > 0);
+  const tagNames = tagsString.split(';').map(name => name.trim()).filter(name => name.length > 0 && name.length <= 50);
   
-  if (tagNames.length === 0) return;
+  if (tagNames.length === 0) {
+    console.log(`[updateProductTags] Nenhuma tag válida encontrada para produto ${productId}`);
+    return;
+  }
   
   try {
-    console.log(`[updateProductTags] Atualizando tags para produto ${productId}: ${tagNames.join(', ')}`);
+    console.log(`[updateProductTags] 🏷️  Processando ${tagNames.length} tags para produto ${productId}`);
+    console.log(`[updateProductTags] Tags: ${tagNames.join(', ')}`);
     
     // Remover tags existentes do produto
     const { error: deleteError } = await supabase
@@ -374,39 +391,99 @@ const updateProductTags = async (productId: string, tagsString: string) => {
       .eq('product_id', productId);
     
     if (deleteError) {
-      console.error('[updateProductTags] Erro ao remover tags existentes:', deleteError);
+      console.error('[updateProductTags] ⚠️ Erro ao remover tags existentes:', deleteError);
+      // Não retornar aqui - continuar tentando adicionar as novas
+    } else {
+      console.log(`[updateProductTags] ✅ Tags existentes removidas para produto ${productId}`);
     }
     
+    let successCount = 0;
+    let errorCount = 0;
+    
+    
     // Processar cada tag
-    for (const tagName of tagNames) {
+    for (const tagNameWithWeight of tagNames) {
       try {
+        // Parse tag name, weight and category from format "tagname:weight:category", "tagname:weight" or just "tagname"
+        const tagParts = tagNameWithWeight.trim().split(':');
+        const tagName = tagParts[0].trim();
+        const weightProvided = tagParts.length > 1 && tagParts[1].trim() !== '';
+        const categoryProvided = tagParts.length > 2 && tagParts[2].trim() !== '';
+        
+        const parsedWeight = weightProvided ? parseInt(tagParts[1].trim()) : undefined;
+        const finalWeight = parsedWeight !== undefined && !isNaN(parsedWeight)
+          ? Math.max(1, Math.min(5, parsedWeight))
+          : 1;
+          
+        const finalCategory = categoryProvided ? tagParts[2].trim() : 'generic';
+        
+        // Normalizar nome da tag
+        const normalizedTagName = tagName.toLowerCase();
+        
+        console.log(`[updateProductTags] Processando tag: "${tagName}" com peso: ${finalWeight}, categoria: ${finalCategory}`);
+        
         // Buscar tag existente (case insensitive)
-        let { data: existingTag, error: findError } = await supabase
+        let { data: existingTag } = await supabase
           .from('tags')
-          .select('id, name')
+          .select('*')
           .ilike('name', tagName)
-          .single();
+          .maybeSingle(); // Use maybeSingle() para evitar erro se não encontrar
         
         let tagId = existingTag?.id;
         
         // Criar tag se não existir
         if (!existingTag) {
-          console.log(`[updateProductTags] Criando nova tag: ${tagName}`);
+          console.log(`[updateProductTags] ➕ Criando nova tag: "${tagName}" com peso: ${finalWeight}, categoria: ${finalCategory}`);
           const { data: newTag, error: createError } = await supabase
             .from('tags')
             .insert({ 
               name: tagName.trim(),
-              created_at: new Date().toISOString()
-            })
+              category: finalCategory,
+              weight: finalWeight
+            } as any)
             .select('id')
             .single();
           
           if (createError) {
-            console.error(`[updateProductTags] Erro ao criar tag ${tagName}:`, createError);
+            console.error(`[updateProductTags] ❌ Erro ao criar tag "${tagName}":`, createError);
+            errorCount++;
             continue;
           }
           
           tagId = newTag?.id;
+          console.log(`[updateProductTags] ✅ Nova tag criada: "${tagName}" com peso: ${finalWeight}, categoria: ${finalCategory} (ID: ${tagId})`);
+        } else {
+          console.log(`[updateProductTags] ✅ Tag existente encontrada: "${tagName}" (ID: ${tagId})`);
+          // Atualizar peso e categoria da tag se informado
+          const currentWeight = (existingTag as any)?.weight;
+          const currentCategory = (existingTag as any)?.category;
+          
+          const needsUpdate = (weightProvided && currentWeight !== finalWeight) || 
+                             (categoryProvided && currentCategory !== finalCategory);
+          
+          if (needsUpdate && tagId) {
+            const updateData: any = {};
+            if (weightProvided && currentWeight !== finalWeight) {
+              updateData.weight = finalWeight;
+            }
+            if (categoryProvided && currentCategory !== finalCategory) {
+              updateData.category = finalCategory;
+            }
+            
+            const { error: updateTagError } = await supabase
+              .from('tags')
+              .update(updateData)
+              .eq('id', tagId);
+              
+            if (updateTagError) {
+              console.error(`[updateProductTags] ❌ Erro ao atualizar tag "${tagName}":`, updateTagError);
+            } else {
+              const updates = [];
+              if (updateData.weight !== undefined) updates.push(`peso: ${finalWeight}`);
+              if (updateData.category !== undefined) updates.push(`categoria: ${finalCategory}`);
+              console.log(`[updateProductTags] 🔧 Tag "${tagName}" atualizada - ${updates.join(', ')}`);
+            }
+          }
         }
         
         // Associar tag ao produto se conseguiu obter o ID
@@ -419,20 +496,31 @@ const updateProductTags = async (productId: string, tagsString: string) => {
             });
           
           if (linkError) {
-            console.error(`[updateProductTags] Erro ao associar tag ${tagName} ao produto:`, linkError);
+            console.error(`[updateProductTags] ❌ Erro ao associar tag "${tagName}" ao produto:`, linkError);
+            errorCount++;
           } else {
-            console.log(`[updateProductTags] ✅ Tag ${tagName} associada com sucesso`);
+            console.log(`[updateProductTags] ✅ Tag "${tagName}" associada ao produto`);
+            successCount++;
           }
+        } else {
+          console.error(`[updateProductTags] ❌ Não foi possível obter ID da tag "${tagName}"`);
+          errorCount++;
         }
       } catch (tagError) {
-        console.error(`[updateProductTags] Erro ao processar tag ${tagName}:`, tagError);
+        console.error(`[updateProductTags] ❌ Erro geral ao processar tag "${tagNameWithWeight}":`, tagError);
+        errorCount++;
       }
     }
     
-    console.log(`[updateProductTags] ✅ Processamento de tags concluído para produto ${productId}`);
+    
+    console.log(`[updateProductTags] 📊 Resumo para produto ${productId}:`);
+    console.log(`[updateProductTags]   ✅ Tags processadas com sucesso: ${successCount}`);
+    console.log(`[updateProductTags]   ❌ Tags com erro: ${errorCount}`);
+    console.log(`[updateProductTags]   📝 Total de tags processadas: ${tagNames.length}`);
     
   } catch (error) {
-    console.error('[updateProductTags] Erro geral ao atualizar tags:', error);
+    console.error('[updateProductTags] ❌ Erro geral ao atualizar tags:', error);
+    throw error; // Re-throw para que seja capturado no processo principal
   }
 };
 
@@ -496,7 +584,55 @@ IMPORTANTE: LEIA TODAS AS INSTRUÇÕES ANTES DE USAR
 • Use o preview para verificar antes de aplicar
 • Mantenha sempre uma cópia da planilha original
 
-7. EXEMPLOS DE USO
+7. EXEMPLOS DE USO - TAGS
+-------------------------
+• Para adicionar múltiplas tags: "acao;aventura;ps4;sony"
+• Para tags com espaços: "far cry;grand theft auto;call of duty"
+• Para definir peso da tag: "acao:5;aventura:3;rpg:4"
+• Para definir peso e categoria: "acao:5:genre;aventura:3:genre;xbox:4:platform"
+• Misturando formatos: "acao:5:genre;aventura;rpg:3;ps4:4:platform"
+• Case insensitive: "Xbox" = "xbox" = "XBOX"
+• Tags novas são criadas automaticamente se não existirem
+• Peso padrão quando não especificado: 1
+• Peso válido: números de 1 a 5 (valores fora desse intervalo serão ajustados para o limite mais próximo)
+
+8. FORMATO TAGS COM PESO
+------------------------
+• Sintaxe: "nometag:peso" onde peso é número de 1 a 5
+• Exemplo: "acao:5" cria tag "acao" com peso 5
+• Exemplo completo: "acao:5:genre;aventura:3:genre;ps4:4:platform;indie:2"
+• Pesos e categorias são salvos globalmente em public.tags; se a tag já existir e valores forem informados, serão atualizados
+• Tags sem ":peso" mantêm o peso existente (ou usam 1 se for uma nova tag)
+• Tags sem ":categoria" mantêm a categoria existente (ou usam 'generic' se for uma nova tag)
+
+9. CAMPOS ESPECIAIS - TAGS
+--------------------------
+• Campo "tags": aceita nomes de tags separados por ponto e vírgula
+• Limite de 50 caracteres por tag individual
+• Caracteres permitidos: letras, números, espaços, acentos, hífens
+• Caracteres proibidos: < > { } [ ] \ /
+• Tags em branco ou muito longas são ignoradas
+• Tags duplicadas são automaticamente removidas
+
+9. RESUMO DE PROCESSO - TAGS
+----------------------------
+1. Extrair nomes das tags da planilha (coluna "tags")
+2. Dividir por ponto e vírgula e limpar espaços
+3. Validar cada nome (tamanho e caracteres)
+4. Buscar tags existentes no banco (case insensitive)
+5. Criar novas tags se não existirem
+6. Remover todas as tags antigas do produto
+7. Associar as novas tags ao produto
+8. Se informado peso/categoria para uma tag existente, atualizar os valores globais em public.tags
+9. Reportar sucessos e erros no log final
+
+IMPORTANTE: O sistema é tolerante a falhas - se uma tag falhar, as outras continuam sendo processadas.
+
+Exemplo de planilha com tags:
+sku_code | name | price | tags
+PROD001 | Far Cry 6 | 299.90 | acao;aventura;ps4;ubisoft
+PROD002 | FIFA 23 | 199.90 | esporte;fifa;ps4;ea sports
+PROD003 | God of War | 149.90 | acao;aventura;ps4;santa monica
 -----------------
 • Atualizar preços de uma categoria específica
 • Ativar/desativar produtos em massa

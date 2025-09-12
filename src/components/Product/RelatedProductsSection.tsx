@@ -2,8 +2,10 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useRelatedProducts } from '@/hooks/useProductCache';
 import { CachedProduct } from '@/utils/ProductCacheManager';
+import { Product } from '@/hooks/useProducts/types';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAnalytics } from '@/contexts/AnalyticsContext';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,6 +18,18 @@ import ProductCardInfo from '@/components/ProductCard/ProductCardInfo';
 import ProductCardPrice from '@/components/ProductCard/ProductCardPrice';
 import ProductCardBadge from '@/components/ProductCard/ProductCardBadge';
 
+// Convert CachedProduct to Product for analytics tracking
+const cachedToProduct = (cached: CachedProduct): Product => ({
+  ...cached,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  pro_price: cached.pro_price,
+  list_price: cached.list_price,
+  images: [cached.image],
+  tags: cached.tags || [],
+  rating_count: 0
+});
+
 interface RelatedProductsSectionProps {
   product: CachedProduct;
 }
@@ -25,6 +39,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   const { relatedProducts, loading } = useRelatedProducts(product, 8);
   
   const { addToCart } = useCart();
+  const { trackProductView, trackAddToCart } = useAnalytics();
   const navigate = useNavigate();
   const location = useLocation();
   const [animateProducts, setAnimateProducts] = useState(true);
@@ -39,13 +54,15 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
   // ✅ REMOVIDO: Lógica complexa de filtragem - agora é feita no cache manager
 
   const handleAddToCart = (product: CachedProduct) => {
-    addToCart(product);
+    trackProductView(product.id, cachedToProduct(product));
+    trackAddToCart(product.id, 1, product.price);
+    addToCart(cachedToProduct(product));
   };
 
   const handleProductClick = useCallback(async (productId: string) => {
     // Navegar para produto relacionado
     console.log('[RelatedProducts] Navegando para produto relacionado:', productId);
-    navigate(`/produto/${productId}`);
+    navigate(`/produto/${productId.toString()}`);
   }, [navigate]);
 
   const handleViewAllClick = () => {
@@ -169,7 +186,7 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
           )}
 
           <div
-            ref={scrollContainerRef}
+            ref={scrollContainerRef as any}
             className={cn(
               "w-full overflow-x-auto overflow-y-hidden pb-4 pt-2",
               "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300",
@@ -238,12 +255,12 @@ const RelatedProductsSection: React.FC<RelatedProductsSectionProps> = ({ product
                       <FavoriteButton productId={relatedProduct.id} size="sm" />
                     </div>
                     
-                    <ProductCardImage product={relatedProduct} isHovered={false} />
+                    <ProductCardImage product={cachedToProduct(relatedProduct)} isHovered={false} />
 
                     <div className="flex flex-1 flex-col justify-between p-3">
                       <div className="space-y-2">
-                        <ProductCardInfo product={relatedProduct} />
-                        <ProductCardPrice product={relatedProduct} />
+                        <ProductCardInfo product={cachedToProduct(relatedProduct)} />
+                        <ProductCardPrice product={cachedToProduct(relatedProduct)} />
                       </div>
                     </div>
                   </Card>

@@ -20,8 +20,8 @@ interface UsePaginatedProductsResult {
   setTagFilter: (tagId: string) => void;
   loadAllProducts: () => void;
   clearFilters: () => void;
-  addProduct: (productData: any) => Promise<Product | null>;
-  updateProduct: (id: string, updates: any) => Promise<Product | null>;
+  addProduct: (productData: any) => Promise<any>;
+  updateProduct: (id: string, updates: any) => Promise<any>;
   deleteProduct: (id: string) => Promise<void>;
 }
 

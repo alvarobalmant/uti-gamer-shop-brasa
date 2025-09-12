@@ -883,6 +883,8 @@ export type Database = {
           updated_at: string
           user_agent: string | null
           user_id: string | null
+          uti_coins_discount_amount: number | null
+          uti_coins_used: number | null
         }
         Insert: {
           browser_info?: Json | null
@@ -904,6 +906,8 @@ export type Database = {
           updated_at?: string
           user_agent?: string | null
           user_id?: string | null
+          uti_coins_discount_amount?: number | null
+          uti_coins_used?: number | null
         }
         Update: {
           browser_info?: Json | null
@@ -925,6 +929,8 @@ export type Database = {
           updated_at?: string
           user_agent?: string | null
           user_id?: string | null
+          uti_coins_discount_amount?: number | null
+          uti_coins_used?: number | null
         }
         Relationships: []
       }
@@ -1862,6 +1868,7 @@ export type Database = {
           trust_indicators: Json | null
           updated_at: string
           uti_coins_cashback_percentage: number | null
+          uti_coins_discount_percentage: number | null
           uti_pro_custom_price: number | null
           uti_pro_enabled: boolean | null
           uti_pro_price: number | null
@@ -1941,6 +1948,7 @@ export type Database = {
           trust_indicators?: Json | null
           updated_at?: string
           uti_coins_cashback_percentage?: number | null
+          uti_coins_discount_percentage?: number | null
           uti_pro_custom_price?: number | null
           uti_pro_enabled?: boolean | null
           uti_pro_price?: number | null
@@ -2020,6 +2028,7 @@ export type Database = {
           trust_indicators?: Json | null
           updated_at?: string
           uti_coins_cashback_percentage?: number | null
+          uti_coins_discount_percentage?: number | null
           uti_pro_custom_price?: number | null
           uti_pro_enabled?: boolean | null
           uti_pro_price?: number | null
@@ -3898,7 +3907,6 @@ export type Database = {
       get_current_bonus_period_brasilia: {
         Args: Record<PropertyKey, never>
         Returns: {
-          can_claim: boolean
           next_reset: string
           period_end: string
           period_start: string
@@ -3929,6 +3937,10 @@ export type Database = {
           p_start_date?: string
         }
         Returns: Json
+      }
+      get_next_brasilia_8pm: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_performance_correlation: {
         Args: { p_end_date?: string; p_start_date?: string }
@@ -4154,6 +4166,15 @@ export type Database = {
       remover_meses_assinatura: {
         Args: { meses: number; user_id: string }
         Returns: boolean
+      }
+      spend_coins_for_discount: {
+        Args: {
+          p_amount: number
+          p_discount_amount: number
+          p_order_code: string
+          p_user_id: string
+        }
+        Returns: Json
       }
       test_admin_access: {
         Args: Record<PropertyKey, never>

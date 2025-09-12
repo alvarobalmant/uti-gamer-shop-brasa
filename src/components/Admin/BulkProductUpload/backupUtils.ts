@@ -308,7 +308,9 @@ export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
             product.tags = product.tags || [];
             product.tags.push({
               id: pt.tags.id,
-              name: pt.tags.name
+              name: pt.tags.name,
+              weight: pt.tags.weight,
+              category: pt.tags.category
             });
           }
         }
@@ -454,9 +456,16 @@ export const convertProductsToExcelData = (products: Product[]) => {
     meta_title: product.meta_title || '',
     meta_description: product.meta_description || '',
     
-    // Tags
+    // Tags (incluindo pesos e categorias)
     tags: product.tags && product.tags.length > 0 
-      ? product.tags.map(tag => tag.name).join(';') 
+      ? product.tags.map((tag: any) => {
+          let tagString = tag.name;
+          // Sempre incluir peso (mesmo se for 1) e categoria (mesmo se for generic)
+          const weight = tag.weight || 1;
+          const category = tag.category || 'generic';
+          tagString += `:${weight}:${category}`;
+          return tagString;
+        }).join('; ') 
       : '',
     
     // Ratings
@@ -516,7 +525,7 @@ export const getBackupColumns = (): TemplateColumn[] => {
     { key: 'badge_color', label: 'Cor Badge', type: 'text', width: 12 },
     { key: 'meta_title', label: 'Meta Title', type: 'text', width: 30 },
     { key: 'meta_description', label: 'Meta Description', type: 'text', width: 40 },
-    { key: 'tags', label: 'Tags', type: 'text', width: 30,
-      instructions: 'Nomes das tags separados por ponto e vírgula (;)' }
+    { key: 'tags', label: 'Tags', type: 'text', width: 40,
+      instructions: 'Tags com formato: nome:peso:categoria separadas por ; Exemplo: acao:5:genre;ps4:4:platform;aventura:2' }
   ];
 };

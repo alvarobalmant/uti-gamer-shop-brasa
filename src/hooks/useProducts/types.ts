@@ -26,7 +26,7 @@ export interface Product {
   colors?: string[];
   stock?: number;
   category_id?: string;
-  tags?: { id: string; name: string; }[];
+  tags?: { id: string; name: string; weight?: number; category?: string; }[];
   tagIds?: string[];
   sku?: string;
   badge_text?: string;

@@ -85,7 +85,7 @@ const usePreventLayoutShift = () => {
 
 // Lazy loading para páginas menos críticas
 const SearchResults = lazy(() => import("./pages/SearchResultsFinal"));
-const SectionPage = lazy(() => import("./pages/SectionPage"));
+const UnifiedResultsPage = lazy(() => import("./pages/UnifiedResultsPage"));
 const PrimePage = lazy(() => import("./pages/PrimePage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -189,8 +189,8 @@ const App = () => {
                       <Toaster />
                       <Sonner />
                       <BrowserRouter>
-                        <AnalyticsProvider>
-                          <EnterpriseTrackingProvider>
+                        <EnterpriseTrackingProvider>
+                          <AnalyticsProvider>
                             <CartProvider>
                             <AppWithPreloader>
                               <GlobalNavigationProvider>
@@ -253,11 +253,11 @@ const App = () => {
                                              }
                                            />
 
-                                           {/* Special routes - MUST come before dynamic routes */}
-                                           <Route path="/servicos/assistencia" element={<AssistenciaTecnica />} />
-                                           <Route path="/busca" element={<SearchResults />} />
-                                           <Route path="/secao/:sectionKey" element={<SectionPage />} />
-                                           <Route path="/categoria/:category" element={<CategoryPage />} />
+                                            {/* Special routes - MUST come before dynamic routes */}
+                                            <Route path="/servicos/assistencia" element={<AssistenciaTecnica />} />
+                                            <Route path="/busca" element={<UnifiedResultsPage mode="search" />} />
+                                            <Route path="/secao/:sectionKey" element={<UnifiedResultsPage mode="section" />} />
+                                            <Route path="/categoria/:category" element={<CategoryPage />} />
                                            
                                            {/* Dynamic Carousel Page Route */}
                                            <Route 
@@ -296,8 +296,8 @@ const App = () => {
                             </GlobalNavigationProvider>
                           </AppWithPreloader>
                          </CartProvider>
+                          </AnalyticsProvider>
                         </EnterpriseTrackingProvider>
-                       </AnalyticsProvider>
                     </BrowserRouter>
                   </TooltipProvider>
                  </LoadingProvider>
