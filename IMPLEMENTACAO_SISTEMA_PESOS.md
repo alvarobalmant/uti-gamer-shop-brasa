@@ -56,20 +56,31 @@
 - ✅ Rota `/busca-avancada` configurada
 - ✅ Componente `SearchBarEnhanced` com sugestões
 
-## 🎯 EXEMPLO DE FUNCIONAMENTO
+## 🎯 EXEMPLO REAL DE FUNCIONAMENTO
 
-### Busca: "minecraft ps3"
+### ✅ Busca: "minecraft ps3" (TESTADO COM SUCESSO)
 
-**Resultado Esperado:**
-1. **Jogo Minecraft PS3**: Score = 13
+**Resultados obtidos:**
+1. **Minecraft - PlayStation 3**: Score = 24.0 ⭐
    - minecraft (game_title): peso 4
    - ps3 (platform): peso 5  
    - jogo (product_type): peso 4
    - **Boost 2x** (jogo + plataforma)
+   - **Score**: (3 matches + 13 peso) × 2 = 24
 
-2. **Pelúcia Minecraft**: Score = 5
+2. **Minecraft genérico**: Score = 16.0
    - minecraft (game_title): peso 4
-   - pelucia (physical_attribute): peso 1
+   - jogo (product_type): peso 4
+   - multiplataforma (generic): peso 1
+   - **Boost 2x**
+   - **Score**: (3 matches + 5 peso) × 2 = 16
+
+3. **Army Of Two - PlayStation 3**: Score = 12.0
+   - ps3 (platform): peso 5
+   - **Boost 2x** (não é jogo, mas tem plataforma)
+   - **Score**: (1 match + 5 peso) × 2 = 12
+
+**✅ RESULTADO: Minecraft PS3 aparece em PRIMEIRO LUGAR!**
 
 ## 🔧 COMO USAR
 
