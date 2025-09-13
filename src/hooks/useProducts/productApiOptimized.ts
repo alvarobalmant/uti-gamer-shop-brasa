@@ -376,7 +376,9 @@ export const fetchProductsFromDatabaseCached = async (): Promise<Product[]> => {
           product.tags = product.tags || [];
           product.tags.push({
             id: row.tag_id,
-            name: row.tag_name
+            name: row.tag_name,
+            weight: row.tag_weight || 1,
+            category: row.tag_category || 'generic'
           });
         }
       }

@@ -99,12 +99,24 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart,
                   )}
                 </div>
                 {breakdown && (
-                  <div className="grid grid-cols-2 gap-x-4">
-                    <div>Nome: <span className="font-mono">{breakdown.nameScore}</span></div>
-                    <div>Tags: <span className="font-mono">{breakdown.tagScore}</span></div>
-                    <div>Categoria: <span className="font-mono">{breakdown.categoryBonus}</span></div>
-                    <div>Exato: <span className="font-mono">{breakdown.exactBonus}</span></div>
-                    <div className="col-span-2 font-semibold">Total: <span className="font-mono">{breakdown.totalScore}</span></div>
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-x-4">
+                      <div>Nome: <span className="font-mono">{breakdown.nameScore}</span></div>
+                      <div>Tags: <span className="font-mono">{breakdown.tagScore}</span></div>
+                      <div>Categoria: <span className="font-mono">{breakdown.categoryBonus}</span></div>
+                      <div>Exato: <span className="font-mono">{breakdown.exactBonus}</span></div>
+                      <div className="col-span-2 font-semibold">Total: <span className="font-mono">{breakdown.totalScore}</span></div>
+                    </div>
+                    {breakdown.tagDetails && breakdown.tagDetails.length > 0 && (
+                      <div className="space-y-1">
+                        <div className="text-xs font-semibold text-gray-600">Detalhes das Tags:</div>
+                        {breakdown.tagDetails.map((detail: any, i: number) => (
+                          <div key={i} className="text-xs text-gray-600 bg-gray-50 p-1 rounded">
+                            {detail.description || `${detail.name}: ${detail.weight} × 10 = ${detail.contribution} pontos`}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
                 {tags.length > 0 && (
