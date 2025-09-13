@@ -374,11 +374,21 @@ export const fetchProductsFromDatabaseCached = async (): Promise<Product[]> => {
         
         if (!tagExists) {
           product.tags = product.tags || [];
+          const tagWeight = row.tag_weight ? Number(row.tag_weight) : 1;
+          const tagCategory = row.tag_category || 'generic';
+          
+          console.log('🏷️ Tag processada:', {
+            name: row.tag_name,
+            weight_raw: row.tag_weight,
+            weight_processed: tagWeight,
+            category: tagCategory
+          });
+          
           product.tags.push({
             id: row.tag_id,
             name: row.tag_name,
-            weight: row.tag_weight || 1,
-            category: row.tag_category || 'generic'
+            weight: tagWeight,
+            category: tagCategory
           });
         }
       }
