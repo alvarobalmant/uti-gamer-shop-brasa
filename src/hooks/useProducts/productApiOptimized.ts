@@ -239,8 +239,8 @@ export const fetchProductDetails = async (productId: string): Promise<Product | 
     const { data, error } = await supabase
       .from('view_product_with_tags')
       .select('*')
-      .eq('product_id', productId)
-      .single();
+      .eq('id', productId)  // Usar 'id' ao invés de 'product_id'
+      .limit(1);
 
     if (error) {
       console.error('Error fetching product details:', error);

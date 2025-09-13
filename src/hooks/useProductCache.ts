@@ -16,6 +16,8 @@ interface UseProductCacheResult {
   error: string | null;
   fromCache: boolean;
   retry: () => void;
+  getProduct: (productId: string) => Promise<CachedProduct | null>;
+  setProduct: (productId: string, product: CachedProduct) => void;
 }
 
 // Interface para resultado de múltiplos produtos
@@ -92,7 +94,9 @@ export const useProductCache = (productId: string): UseProductCacheResult => {
     loading,
     error,
     fromCache,
-    retry
+    retry,
+    getProduct: (productId: string) => productCache.getProduct(productId),
+    setProduct: () => {} // Placeholder function
   };
 };
 

@@ -180,7 +180,7 @@ const SectionPageEnhanced: React.FC = () => {
   }, [products, navigate]);
 
   const handleAddToCart = useCallback((product: any) => {
-    addToCart(product, 1);
+    addToCart(product, '1');
   }, [addToCart]);
 
   const handleCartToggle = () => {

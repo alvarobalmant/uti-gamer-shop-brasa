@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useProductPreloader } from '@/hooks/useProductPreloader';
+// import { useProductPreloader } from '@/hooks/useProductPreloader'; // Temporariamente desabilitado
 
 interface HomepageProductPreloaderProps {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ export const HomepageProductPreloader: React.FC<HomepageProductPreloaderProps> =
   children, 
   products = [] 
 }) => {
-  const { addHomepageProducts, addCategoryProducts, getStats } = useProductPreloader();
+  // const { addHomepageProducts, addCategoryProducts, getStats } = useProductPreloader(); // Temporariamente desabilitado
 
   useEffect(() => {
     if (products && products.length > 0) {
@@ -47,42 +47,17 @@ export const HomepageProductPreloader: React.FC<HomepageProductPreloaderProps> =
           .slice(0, 6)
           .map(p => p.id);
 
-        // Adicionar à fila de preload com prioridades
-        if (featuredProducts.length > 0) {
-          console.log(`📌 Adicionando ${featuredProducts.length} produtos em destaque ao preload`);
-          addHomepageProducts(featuredProducts);
-        }
-
-        if (popularProducts.length > 0) {
-          console.log(`⭐ Adicionando ${popularProducts.length} produtos populares ao preload`);
-          addHomepageProducts(popularProducts);
-        }
-
-        // Produtos por categoria (prioridade menor)
-        const categoryProducts = [
-          ...playstationProducts,
-          ...xboxProducts,
-          ...nintendoProducts
-        ];
-
-        if (categoryProducts.length > 0) {
-          console.log(`🎮 Adicionando ${categoryProducts.length} produtos por categoria ao preload`);
-          addCategoryProducts(categoryProducts);
-        }
-
-        // Log estatísticas após 5 segundos
-        setTimeout(() => {
-          const stats = getStats();
-          if (stats) {
-            console.log('📊 Estatísticas de preload de produtos:', stats);
-          }
-        }, 5000);
+        // Preload temporariamente desabilitado
+        const categoryProducts = [...playstationProducts, ...xboxProducts, ...nintendoProducts];
+        console.log(`📌 ${featuredProducts.length} produtos em destaque identificados`);
+        console.log(`⭐ ${popularProducts.length} produtos populares identificados`);
+        console.log(`🎮 ${categoryProducts.length} produtos por categoria identificados`);
 
       }, 2000); // Aguardar 2 segundos após produtos carregarem
 
       return () => clearTimeout(timer);
     }
-  }, [products, addHomepageProducts, addCategoryProducts, getStats]);
+  }, [products]);
 
   return <>{children}</>;
 };
