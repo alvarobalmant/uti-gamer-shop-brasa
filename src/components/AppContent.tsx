@@ -7,6 +7,7 @@ import { useCart } from '@/contexts/CartContext';
 import Cart from '@/components/Cart';
 import MobileSearchBar from '@/components/Header/MobileSearchBar';
 import { SimpleAuthModal } from '@/components/Auth/SimpleAuthModal';
+import { useUIState } from '@/contexts/UIStateContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,10 +33,10 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const cartContext = useCart();
+  const { isMobileSearchOpen, setIsMobileSearchOpen } = useUIState();
   
   // ✅ Estados locais 
   const [showCart, setShowCart] = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showFavoritesAlert, setShowFavoritesAlert] = useState(false);
   
@@ -43,8 +44,8 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
   usePageScrollRestoration();
   
   // Determina se deve mostrar a barra de navegação inferior
-  // Oculta apenas na página de busca (/busca)
-  const shouldShowBottomNav = !location.pathname.startsWith('/busca');
+  // Mostra em todas as páginas
+  const shouldShowBottomNav = true;
   
   // ✅ Handlers corrigidos como na versão antiga
   const handleSearchOpen = () => {
@@ -63,15 +64,15 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
     setShowFavoritesAlert(true);
   };
   
-  const toggleMobileSearch = () => {
-    setIsMobileSearchOpen(!isMobileSearchOpen);
+  const handleSearchClose = () => {
+    setIsMobileSearchOpen(false);
   };
   
   return (
     <>
       {children}
       
-      {/* Barra de navegação inferior global - visível em todas as páginas exceto busca */}
+      {/* Barra de navegação inferior global - visível em todas as páginas */}
       {shouldShowBottomNav && (
         <BottomNavigationBar 
           onSearchOpen={handleSearchOpen}
@@ -87,10 +88,10 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
         setShowCart={setShowCart}
       />
       
-      {/* ✅ Mobile search bar como na versão antiga */}
+      {/* ✅ Mobile search bar centralizado */}
       <MobileSearchBar 
         isOpen={isMobileSearchOpen} 
-        onClose={toggleMobileSearch} 
+        onClose={handleSearchClose} 
       />
 
       {/* Modal de autenticação */}

@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import DesktopSearchBar from './DesktopSearchBar';
 import HeaderActionsEnhanced from './HeaderActionsEnhanced';
-import MobileSearchBar from './MobileSearchBar';
 
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -28,16 +27,11 @@ const MainHeader = ({
   className
 }: MainHeaderProps) => {
   const location = useLocation();
-  const { isMobileSearchOpen, setIsMobileSearchOpen } = useUIState();
   const { siteInfo, loading, hasError } = useSiteSettingsOptimized();
   const { navigateToHome } = useGlobalNavigationLinks();
 
   // 🔧 CORREÇÃO: Sempre mostrar header, mesmo com erro de carregamento
   const shouldShowHeader = !loading || hasError;
-
-  const toggleMobileSearch = () => {
-    setIsMobileSearchOpen(!isMobileSearchOpen);
-  };
 
   const handleLogoClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -159,8 +153,6 @@ const MainHeader = ({
           </div>
         </div>
       </div>
-
-      <MobileSearchBar isOpen={isMobileSearchOpen} onClose={toggleMobileSearch} />
     </>
   );
 };

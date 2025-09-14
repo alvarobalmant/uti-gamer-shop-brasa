@@ -5,14 +5,24 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Star, Trash2, Plus, Upload, Link, Image, AlertCircle, Loader2, Clock, Palette } from 'lucide-react';
+import { Star, Trash2, Plus, Upload, Link, Image, AlertCircle, Loader2, Clock, Palette, DollarSign, Check, X } from 'lucide-react';
 import { Product } from '@/hooks/useProducts/types';
 import { ProductWithChanges } from '@/hooks/useLocalImageChanges';
+import { ProductWithPriceChanges } from '@/hooks/useLocalPriceChanges';
+
+// Tipo combinado que inclui tanto mudanças de imagem quanto de preço
+export type ProductWithAllChanges = ProductWithPriceChanges & {
+  localChanges?: {
+    hasChanges: boolean;
+  };
+};
 import ImageDropZone from './ImageDropZone';
 import { BackgroundRemovalModal } from '@/components/Admin/BackgroundRemovalModal';
+import { useProductPriceManager } from '@/hooks/useProductPriceManager';
+import { toast } from 'sonner';
 
 interface ProductImageCardProps {
-  product: ProductWithChanges;
+  product: ProductWithAllChanges;
   onImageDrop: (productId: string, imageUrl: string, isMainImage?: boolean) => void;
   onRemoveImage: (productId: string, imageUrl: string, isMainImage?: boolean) => void;
   onFileUpload: (files: FileList | null, productId?: string, isMainImage?: boolean) => void;
@@ -21,6 +31,7 @@ interface ProductImageCardProps {
   onToggleSelection: () => void;
   uploading: boolean;
   hasLocalChanges?: boolean;
+  onPriceChange: (productId: string, newPrice: number, originalPrice: number) => void;
 }
 
 const ProductImageCard: React.FC<ProductImageCardProps> = ({
@@ -32,12 +43,17 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
   isSelected,
   onToggleSelection,
   uploading,
-  hasLocalChanges = false
+  hasLocalChanges = false,
+  onPriceChange
 }) => {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlError, setUrlError] = useState('');
   const [showBackgroundModal, setShowBackgroundModal] = useState(false);
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
+  const [priceInput, setPriceInput] = useState('');
+  
+  // Não precisamos mais do hook useProductPriceManager aqui
 
   const handleUrlSubmit = async (isMainImage: boolean = false) => {
     const url = newImageUrl.trim();
@@ -88,6 +104,32 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
     setShowBackgroundModal(false);
   };
 
+  const handlePriceEdit = () => {
+    setIsEditingPrice(true);
+    // Usar o preço local se existir, senão o preço original
+    const currentPrice = product.localPrice !== undefined ? product.localPrice : (product.price || 0);
+    setPriceInput(currentPrice.toString());
+  };
+
+  const handlePriceSave = async () => {
+    const newPrice = parseFloat(priceInput);
+    if (isNaN(newPrice) || newPrice < 0) {
+      toast.error('Preço inválido');
+      return;
+    }
+
+    // Salvar localmente apenas
+    const originalPrice = product.price || 0;
+    onPriceChange(product.id, newPrice, originalPrice);
+    setIsEditingPrice(false);
+    toast.success('Preço alterado localmente! Clique em "Salvar Tudo" para enviar ao servidor.');
+  };
+
+  const handlePriceCancel = () => {
+    setIsEditingPrice(false);
+    setPriceInput('');
+  };
+
   const additionalImages = Array.isArray(product.additional_images) ? product.additional_images : [];
   
   // Função segura para truncar IDs
@@ -111,7 +153,7 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
               <CardTitle className="text-sm font-medium text-gray-900">
                 {product.name || 'Produto sem nome'}
               </CardTitle>
-              {hasLocalChanges && (
+              {hasLocalChanges || product.hasPriceChange && (
                 <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">
                   <Clock className="w-3 h-3 mr-1" />
                   Pendente
@@ -119,11 +161,60 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
               )}
             </div>
             <p className="text-xs text-gray-500 mt-1">ID: {truncateId(product.id)}</p>
-            {product.price && (
-              <p className="text-xs text-green-600 font-medium">
-                R$ {Number(product.price).toFixed(2)}
-              </p>
-            )}
+            {/* Preço editável */}
+            <div className="flex items-center gap-2 mt-1">
+              {!isEditingPrice ? (
+                <div className="flex items-center gap-2">
+                  <p className={`text-xs font-medium ${
+                    product.hasPriceChange ? 'text-orange-600' : 'text-green-600'
+                  }`}>
+                    R$ {Number(product.localPrice !== undefined ? product.localPrice : (product.price || 0)).toFixed(2)}
+                    {product.hasPriceChange && (
+                      <span className="ml-1 text-xs text-gray-500">
+                        (era R$ {Number(product.price || 0).toFixed(2)})
+                      </span>
+                    )}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handlePriceEdit}
+                    disabled={uploading}
+                    className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
+                  >
+                    <DollarSign className="w-3 h-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={priceInput}
+                    onChange={(e) => setPriceInput(e.target.value)}
+                    className="h-6 w-20 text-xs"
+                    placeholder="0.00"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handlePriceSave}
+                    className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+                  >
+                    <Check className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handlePriceCancel}
+                    className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {uploading && <Loader2 className="w-4 h-4 animate-spin text-blue-500" />}
@@ -135,10 +226,11 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
           </div>
         </div>
         
-        {hasLocalChanges && (
+        {(hasLocalChanges || product.hasPriceChange) && (
           <div className="mt-2 p-2 bg-amber-100 rounded-md">
             <p className="text-xs text-amber-800">
               ⚡ Este produto possui alterações não salvas
+              {product.hasPriceChange && ' (preço alterado)'}
             </p>
           </div>
         )}
@@ -254,7 +346,7 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
                   <img
                     src={imageUrl}
                     alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-white"
                     onError={(e) => {
                       console.warn('Erro ao carregar imagem:', imageUrl);
                       e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMiA4VjE2TTggMTJIMTYiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+';
@@ -325,7 +417,7 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
                   +{additionalImages.length}
                 </Badge>
               )}
-              {hasLocalChanges && (
+              {(hasLocalChanges || product.hasPriceChange) && (
                 <Badge variant="secondary" className="text-xs bg-amber-200 text-amber-800">
                   Pendente
                 </Badge>

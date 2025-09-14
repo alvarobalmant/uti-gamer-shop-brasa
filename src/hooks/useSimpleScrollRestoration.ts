@@ -36,7 +36,30 @@ export const useSimpleScrollRestoration = () => {
     const scrollPosition = { x: window.scrollX, y: window.scrollY };
     pageStateManager.saveScrollPosition(currentPath, scrollPosition);
     
-    // Lógica baseada no tipo de navegação
+    // PÁGINA DE BUSCA - SEMPRE vai para o topo, independente do tipo de navegação
+    if (location.pathname.startsWith('/busca')) {
+      console.log(`[SimpleScrollRestoration] 🔍 PÁGINA DE BUSCA - forçando scroll para topo SEMPRE`);
+      // Limpa posição salva da página de busca para evitar restauração futura
+      simpleScrollManager.clearPagePosition(currentPath);
+      horizontalScrollManager.clearPageHorizontalPositions(currentPath);
+      
+      // Força scroll para o topo com delay para aguardar o cache carregar
+      const forceTopScroll = () => {
+        window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+        console.log(`[SimpleScrollRestoration] ✅ Scroll forçado para topo na busca`);
+      };
+      
+      // Executa imediatamente
+      forceTopScroll();
+      
+      // E executa novamente após 100ms e 500ms para garantir (aguarda cache/produtos)
+      setTimeout(forceTopScroll, 100);
+      setTimeout(forceTopScroll, 500);
+      
+      return; // Sai da função sem fazer mais nada
+    }
+    
+    // Lógica baseada no tipo de navegação para outras páginas
     if (navigationType === NavigationType.Pop) {
       // VOLTAR - restaura posições obrigatoriamente (vertical + horizontal)
       console.log(`[SimpleScrollRestoration] ⬅️ VOLTAR detectado - restaurando posições RAPIDAMENTE`);

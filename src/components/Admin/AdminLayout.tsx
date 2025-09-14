@@ -15,7 +15,7 @@ const AdminLayout: React.FC = () => {
     { id: 'products', label: 'Produtos', icon: Package, path: '/admin/products' },
     { id: 'desktop-products', label: 'Produtos Desktop', icon: Monitor, path: '/admin/desktop-products' },
     { id: 'easy-manager', label: 'Gerenciamento Fácil', icon: Zap, path: '/admin/easy-manager' },
-    { id: 'images', label: 'Upload Fácil', icon: ImagePlus, path: '/admin/images' },
+    { id: 'images', label: 'Revisão Fácil', icon: ImagePlus, path: '/admin/images' },
     { id: 'storage', label: 'Storage Manager', icon: HardDrive, path: '/admin/storage' },
     { id: 'banners', label: 'Banners', icon: Image, path: '/admin/banners' },
     { id: 'spec-diagnostic', label: 'Diagnóstico Specs', icon: Wrench, path: '/admin/spec-diagnostic' },

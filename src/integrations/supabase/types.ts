@@ -163,7 +163,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "cart_items_product_id_fkey"
@@ -1612,7 +1612,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "product_faqs_product_id_fkey"
@@ -1755,7 +1755,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "product_specifications_product_id_fkey"
@@ -1798,7 +1798,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_product_tags_product_id"
@@ -2077,7 +2077,7 @@ export type Database = {
             columns: ["parent_product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "products_parent_product_id_fkey"
@@ -3248,7 +3248,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_favorites_product_id_fkey"
@@ -3411,7 +3411,7 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_savings_product_id_fkey"
@@ -3689,11 +3689,15 @@ export type Database = {
           condition: string | null
           created_at: string | null
           delivery_config: Json | null
+          description: string | null
           digital_price: number | null
           discount_percentage: number | null
           discount_price: number | null
           display_config: Json | null
           free_shipping: boolean | null
+          id: string | null
+          image: string | null
+          images: string[] | null
           inherit_from_master: Json | null
           installment_options: number | null
           is_active: boolean | null
@@ -3704,39 +3708,51 @@ export type Database = {
           master_slug: string | null
           meta_description: string | null
           meta_title: string | null
+          name: string | null
           new_price: number | null
           parent_product_id: string | null
           pix_discount_percentage: number | null
           platform: string | null
+          price: number | null
           pro_discount_percent: number | null
           pro_price: number | null
-          product_description: string | null
           product_descriptions: Json | null
           product_faqs: Json | null
           product_features: Json | null
           product_highlights: Json | null
-          product_id: string | null
-          product_image: string | null
-          product_name: string | null
-          product_price: number | null
-          product_stock: number | null
           product_type: string | null
           product_videos: Json | null
           promotional_price: number | null
+          rating: number | null
           rating_average: number | null
           rating_count: number | null
+          related_products: Json | null
+          related_products_auto: boolean | null
           reviews_config: Json | null
+          reviews_enabled: boolean | null
+          shipping_dimensions: Json | null
+          shipping_time_max: number | null
+          shipping_time_min: number | null
           shipping_weight: number | null
+          show_rating: boolean | null
+          show_stock: boolean | null
           sizes: string[] | null
           sku_code: string | null
           slug: string | null
           sort_order: number | null
           specifications: Json | null
+          stock: number | null
+          store_pickup_available: boolean | null
+          tag_category: string | null
           tag_id: string | null
           tag_name: string | null
+          tag_weight: number | null
           technical_specs: Json | null
+          title: string | null
           trust_indicators: Json | null
           updated_at: string | null
+          uti_coins_cashback_percentage: number | null
+          uti_coins_discount_percentage: number | null
           uti_pro_custom_price: number | null
           uti_pro_enabled: boolean | null
           uti_pro_price: number | null
@@ -3757,7 +3773,7 @@ export type Database = {
             columns: ["parent_product_id"]
             isOneToOne: false
             referencedRelation: "view_product_with_tags"
-            referencedColumns: ["product_id"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "products_parent_product_id_fkey"
@@ -4248,8 +4264,6 @@ export type Database = {
         Args: { meses: number; user_id: string }
         Returns: boolean
       }
-<<<<<<< HEAD
-=======
       search_products_weighted: {
         Args: { limit_count?: number; search_terms: string[] }
         Returns: {
@@ -4263,7 +4277,6 @@ export type Database = {
           relevance_score: number
         }[]
       }
->>>>>>> 8e37538e6a1190ba1a2f2e58a16b837b9f624d26
       spend_coins_for_discount: {
         Args: {
           p_amount: number

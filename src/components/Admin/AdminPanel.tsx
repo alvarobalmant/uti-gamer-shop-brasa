@@ -47,7 +47,7 @@ export const AdminPanel = () => {
     { id: 'desktop_products', label: 'Produtos Desktop', icon: Monitor },
     { id: 'bulk_upload', label: 'Importação em Massa', icon: Upload },
     { id: 'backup_edit', label: 'Backup & Edição', icon: FileText },
-    { id: 'image_upload', label: 'Upload Fácil', icon: ImagePlus },
+    { id: 'image_upload', label: 'Revisão Fácil', icon: ImagePlus },
     { id: 'storage', label: 'Gerenciar Storage', icon: HardDrive },
     { id: 'skus', label: 'Sistema de SKUs', icon: Layers },
     { id: 'platforms', label: 'Plataformas', icon: Settings },

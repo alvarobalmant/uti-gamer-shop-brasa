@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import MobileSearchBar from '@/components/Header/MobileSearchBar';
 import { useCart } from '@/contexts/CartContext';
 import ProductSkeleton from '@/components/ProductSkeleton';
 
@@ -29,7 +28,6 @@ const Index = React.memo(() => {
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const {
     products,
@@ -89,10 +87,6 @@ const Index = React.memo(() => {
   const handleCartOpen = useCallback(() => setShowCart(true), []);
   const handleAuthOpen = useCallback(() => setShowAuthModal(true), []);
   const handleAuthClose = useCallback(() => setShowAuthModal(false), []);
-  
-  const toggleMobileSearch = useCallback(() => {
-    setIsMobileSearchOpen(!isMobileSearchOpen);
-  }, [isMobileSearchOpen]);
 
   // Memoizar filtro de layout items visíveis
   const visibleLayoutItems = useMemo(() => 
@@ -222,8 +216,6 @@ const Index = React.memo(() => {
       />
 
       <AuthModal isOpen={showAuthModal} onClose={handleAuthClose} />
-      
-      <MobileSearchBar isOpen={isMobileSearchOpen} onClose={toggleMobileSearch} />
 
       {/* Notificação customizada de scroll coins */}
       <ScrollCoinsNotification

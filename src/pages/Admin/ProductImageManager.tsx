@@ -3,13 +3,15 @@ import { useProductsEnhanced } from '@/hooks/useProductsEnhanced';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useProductImageManager } from '@/hooks/useProductImageManager';
 import { useLocalImageChanges } from '@/hooks/useLocalImageChanges';
+import { useLocalPriceChanges } from '@/hooks/useLocalPriceChanges';
+import { useProductPriceManager } from '@/hooks/useProductPriceManager';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, Upload, Link, Trash2, Star, Plus, AlertTriangle, Save, RotateCcw } from 'lucide-react';
-import ProductImageCard from '@/components/Admin/ProductImageManager/ProductImageCard';
+import ProductImageCard, { ProductWithAllChanges } from '@/components/Admin/ProductImageManager/ProductImageCard';
 import ImageDropZone from '@/components/Admin/ProductImageManager/ImageDropZone';
 import BulkImageUpload from '@/components/Admin/ProductImageManager/BulkImageUpload';
 
@@ -17,28 +19,48 @@ const ProductImageManager: React.FC = () => {
   const { products, loading, refreshProducts } = useProductsEnhanced();
   const { uploadImage, downloadAndUploadFromUrl, deleteImage, uploading } = useImageUpload();
   const { updateProductImage, removeProductImage, loading: imageLoading } = useProductImageManager();
+  const { updateProductPrice, loading: priceLoading } = useProductPriceManager();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [processingProducts, setProcessingProducts] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
 
-  // Hook para gerenciar mudanças locais
+  // Hook para gerenciar mudanças locais de imagens
   const {
-    productsWithChanges,
-    pendingChanges,
+    productsWithChanges: productsWithImageChanges,
+    pendingChanges: pendingImageChanges,
     addLocalChange,
     removeLocalChange,
-    clearAllChanges,
-    hasChanges,
-    changedProductsCount
+    clearAllChanges: clearAllImageChanges,
+    hasChanges: hasImageChanges,
+    changedProductsCount: changedImageProductsCount
   } = useLocalImageChanges(products);
+
+  // Hook para gerenciar mudanças locais de preços
+  const {
+    productsWithPriceChanges,
+    pendingPriceChanges,
+    addPriceChange,
+    removePriceChange,
+    clearAllPriceChanges,
+    hasPriceChanges,
+    changedProductsCount: changedPriceProductsCount
+  } = useLocalPriceChanges(productsWithImageChanges);
+
+  // Combinar produtos com mudanças de imagem e preço
+  const finalProducts: ProductWithAllChanges[] = productsWithPriceChanges.map(product => ({
+    ...product,
+    localChanges: productsWithImageChanges.find(p => p.id === product.id)?.localChanges
+  }));
 
   console.log('ProductImageManager: Renderizando com', products.length, 'produtos');
 
-  const filteredProducts = productsWithChanges.filter(product => 
-    product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.id?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = finalProducts.filter(product => 
+    // Filtrar produtos mestre (is_master_product = true)
+    !product.is_master_product &&
+    (product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.id?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const addProcessingProduct = (productId: string) => {
@@ -179,46 +201,68 @@ const ProductImageManager: React.FC = () => {
 
   // Salvar todas as mudanças no servidor
   const handleSaveAllChanges = async () => {
-    if (!hasChanges) return;
+    const hasAnyChanges = hasImageChanges || hasPriceChanges;
+    if (!hasAnyChanges) return;
 
     setIsSaving(true);
     let successCount = 0;
     let errorCount = 0;
 
     try {
-      console.log('Salvando mudanças:', pendingChanges);
+      console.log('Salvando mudanças de imagens:', pendingImageChanges);
+      console.log('Salvando mudanças de preços:', pendingPriceChanges);
 
-      // Agrupar mudanças por produto
-      const changesByProduct = pendingChanges.reduce((acc, change) => {
-        if (!acc[change.productId]) {
-          acc[change.productId] = [];
-        }
-        acc[change.productId].push(change);
-        return acc;
-      }, {} as Record<string, typeof pendingChanges>);
-
-      // Processar cada produto
-      for (const [productId, changes] of Object.entries(changesByProduct)) {
-        addProcessingProduct(productId);
-        
-        try {
-          // Processar mudanças em ordem
-          for (const change of changes) {
-            if (change.type === 'add') {
-              await updateProductImage(productId, change.imageUrl, change.isMainImage);
-            } else if (change.type === 'remove') {
-              // Deletar imagem do storage se for nossa
-              await deleteImage(change.imageUrl);
-              // Remover do produto
-              await removeProductImage(productId, change.imageUrl, change.isMainImage);
-            }
+      // Salvar mudanças de preços primeiro
+      if (hasPriceChanges) {
+        for (const priceChange of pendingPriceChanges) {
+          addProcessingProduct(priceChange.productId);
+          
+          try {
+            await updateProductPrice(priceChange.productId, priceChange.price);
+            successCount++;
+          } catch (error) {
+            console.error(`Erro ao processar preço do produto ${priceChange.productId}:`, error);
+            errorCount++;
+          } finally {
+            removeProcessingProduct(priceChange.productId);
           }
-          successCount++;
-        } catch (error) {
-          console.error(`Erro ao processar produto ${productId}:`, error);
-          errorCount++;
-        } finally {
-          removeProcessingProduct(productId);
+        }
+      }
+
+      // Salvar mudanças de imagens
+      if (hasImageChanges) {
+        // Agrupar mudanças por produto
+        const changesByProduct = pendingImageChanges.reduce((acc, change) => {
+          if (!acc[change.productId]) {
+            acc[change.productId] = [];
+          }
+          acc[change.productId].push(change);
+          return acc;
+        }, {} as Record<string, typeof pendingImageChanges>);
+
+        // Processar cada produto
+        for (const [productId, changes] of Object.entries(changesByProduct)) {
+          addProcessingProduct(productId);
+          
+          try {
+            // Processar mudanças em ordem
+            for (const change of changes) {
+              if (change.type === 'add') {
+                await updateProductImage(productId, change.imageUrl, change.isMainImage);
+              } else if (change.type === 'remove') {
+                // Deletar imagem do storage se for nossa
+                await deleteImage(change.imageUrl);
+                // Remover do produto
+                await removeProductImage(productId, change.imageUrl, change.isMainImage);
+              }
+            }
+            successCount++;
+          } catch (error) {
+            console.error(`Erro ao processar produto ${productId}:`, error);
+            errorCount++;
+          } finally {
+            removeProcessingProduct(productId);
+          }
         }
       }
 
@@ -226,10 +270,11 @@ const ProductImageManager: React.FC = () => {
       await refreshProducts();
       
       // Limpar mudanças locais
-      clearAllChanges();
+      clearAllImageChanges();
+      clearAllPriceChanges();
 
       if (errorCount === 0) {
-        toast.success(`Todas as ${successCount} alterações foram salvas com sucesso!`);
+        toast.success(`Todas as alterações foram salvas com sucesso!`);
       } else {
         toast.warning(`${successCount} produtos salvos, ${errorCount} com erro. Verifique o console.`);
       }
@@ -277,9 +322,9 @@ const ProductImageManager: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Imagens</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Revisão Fácil</h1>
             <p className="text-gray-600 mt-1">
-              URLs são baixadas e convertidas para WebP automaticamente
+              Revisão e gerenciamento inteligente de imagens de produtos
             </p>
           </div>
           
@@ -311,7 +356,7 @@ const ProductImageManager: React.FC = () => {
         </div>
 
         {/* Save Panel */}
-        {hasChanges && (
+        {(hasImageChanges || hasPriceChanges) && (
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -319,7 +364,8 @@ const ProductImageManager: React.FC = () => {
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                   <div>
                     <span className="text-blue-800 font-medium">
-                      {changedProductsCount} produto{changedProductsCount !== 1 ? 's' : ''} com alterações ({pendingChanges.length} mudanças)
+                      {changedImageProductsCount + changedPriceProductsCount} produto{(changedImageProductsCount + changedPriceProductsCount) !== 1 ? 's' : ''} com alterações 
+                      ({pendingImageChanges.length} imagens, {pendingPriceChanges.length} preços)
                     </span>
                     <p className="text-blue-600 text-sm">
                       As alterações estão salvas localmente. Clique em "Salvar Tudo" para enviar ao servidor.
@@ -331,7 +377,10 @@ const ProductImageManager: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={clearAllChanges}
+                    onClick={() => {
+                      clearAllImageChanges();
+                      clearAllPriceChanges();
+                    }}
                     disabled={isSaving}
                     className="text-gray-600 hover:text-gray-800"
                   >
@@ -395,7 +444,7 @@ const ProductImageManager: React.FC = () => {
         {showBulkUpload && (
           <BulkImageUpload
             selectedProducts={selectedProducts}
-            products={productsWithChanges}
+            products={finalProducts}
             onClose={() => setShowBulkUpload(false)}
             onImageUpload={handleImageDrop}
           />
@@ -416,6 +465,7 @@ const ProductImageManager: React.FC = () => {
                 onToggleSelection={() => toggleProductSelection(product.id)}
                 uploading={uploading || processingProducts.has(product.id) || imageLoading}
                 hasLocalChanges={product.localChanges?.hasChanges || false}
+                onPriceChange={addPriceChange}
               />
             ))}
           </div>

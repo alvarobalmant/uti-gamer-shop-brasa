@@ -72,12 +72,12 @@ const usePreventLayoutShift = () => {
     }
 
     return () => {
-      if (observer) {
-        try {
+      try {
+        if (observer && typeof observer.disconnect === 'function') {
           observer.disconnect();
-        } catch (error) {
-          console.warn('Failed to disconnect MutationObserver:', error);
         }
+      } catch (error) {
+        console.warn('Failed to disconnect MutationObserver:', error);
       }
     };
   }, []);

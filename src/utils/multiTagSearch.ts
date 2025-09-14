@@ -24,9 +24,8 @@ export const tokenizeQuery = (query: string): string[] => {
 
 // Helpers
 const getTagWeight = (tag: any): number => {
-  return Number(
-    tag?.weight ?? tag?.groupWeight ?? tag?.group?.weight ?? tag?.peso ?? tag?.w ?? 1
-  ) || 1;
+  // Usar o peso diretamente da tag (vem do banco agora)
+  return typeof tag.weight === 'number' ? tag.weight : 1;
 };
 
 const includesLoosely = (hay: string, needle: string) => {
@@ -217,10 +216,17 @@ validProducts.forEach(p => {
           exactBonus,
           totalScore,
           tagDetails: originalMatchedTags.map(tagName => {
-            // Encontrar peso da tag
-            const tagData = match.matchedTags.find((t: any) => t === tagName);
-            const weight = 1; // fallback, mas deveria ser melhorado
-            return { name: tagName, weight, contribution: 10 * weight };
+            // Encontrar tag completa com peso e categoria
+            const tagData = product.tags?.find((t: any) => t.name === tagName);
+            const weight = getTagWeight(tagData);
+            const contribution = 10 * weight;
+            return { 
+              name: tagName, 
+              category: tagData?.category || 'generic',
+              weight, 
+              contribution,
+              description: `"${tagName}" (categoria: ${tagData?.category || 'generic'}, peso: ${weight}): ${weight} × 10 = ${contribution} pontos`
+            };
           })
         }
       }

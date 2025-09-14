@@ -128,7 +128,7 @@ const ImageDropZone: React.FC<ImageDropZoneProps> = ({
               <img
                 src={currentImage}
                 alt="Preview"
-                className="w-full h-full object-cover rounded"
+                className="w-full h-full object-contain bg-white rounded"
                 onError={handleImageError}
                 onLoad={handleImageLoad}
               />

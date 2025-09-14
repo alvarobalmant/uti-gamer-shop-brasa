@@ -123,7 +123,9 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
             tag_id,
             tags!left(
               id,
-              name
+              name,
+              weight,
+              category
             )
           )
         `);
@@ -181,7 +183,9 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
                   product.tags = product.tags || [];
                   product.tags.push({
                     id: pt.tags.id,
-                    name: pt.tags.name
+                    name: pt.tags.name,
+                    weight: pt.tags.weight || 1,
+                    category: pt.tags.category || 'generic'
                   });
                 }
               }
@@ -236,7 +240,9 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
           tag_id,
           tags!inner(
             id,
-            name
+            name,
+            weight,
+            category
           )
         `);
       
@@ -283,7 +289,9 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
               product.tags = product.tags || [];
               product.tags.push({
                 id: pt.tags.id,
-                name: pt.tags.name
+                name: pt.tags.name,
+                weight: pt.tags.weight || 1,
+                category: pt.tags.category || 'generic'
               });
             }
           }
@@ -348,7 +356,7 @@ export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): 
 
 export const fetchProductsByCriteria = async (config: CarouselConfig, includeAdmin: boolean = false): Promise<Product[]> => {
   try {
-    let query = supabase.from('view_product_with_tags')
+    let query: any = supabase.from('view_product_with_tags')
       .select('*');
     
     // Só filtrar produtos master se não for para admin
@@ -392,7 +400,9 @@ export const fetchProductsByCriteria = async (config: CarouselConfig, includeAdm
           product.tags = product.tags || [];
           product.tags.push({
             id: row.tag_id,
-            name: row.tag_name
+            name: row.tag_name,
+            weight: row.tag_weight || 1,
+            category: row.tag_category || 'generic'
           });
         }
       }
@@ -646,7 +656,9 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
         tag_id,
         tags!inner(
           id,
-          name
+          name,
+          weight,
+          category
         )
       `)
       .eq('product_id', id);
@@ -655,7 +667,9 @@ export const fetchSingleProductFromDatabase = async (id: string): Promise<Produc
     if (productTags && productTags.length > 0) {
       product.tags = productTags.map(pt => ({
         id: pt.tags.id,
-        name: pt.tags.name
+        name: pt.tags.name,
+        weight: pt.tags.weight || 1,
+        category: pt.tags.category || 'generic'
       }));
     }
 

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useGlobalNavigationLinks } from '@/hooks/useGlobalNavigationLinks';
+import { useNavigate } from 'react-router-dom';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -18,13 +18,18 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const { navigateToSearch } = useGlobalNavigationLinks();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { setIsMobileSearchOpen } = useUIState();
 
-  // Sincronizar estado com UIState
+  // Sincronizar estado com UIState e forçar fechamento correto
   useEffect(() => {
     setIsMobileSearchOpen(isOpen);
+    
+    // Se não está aberto, garantir que está fechado no contexto também
+    if (!isOpen) {
+      setIsMobileSearchOpen(false);
+    }
   }, [isOpen, setIsMobileSearchOpen]);
 
   // Focus input when the search bar opens
@@ -49,11 +54,18 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
     };
   }, [isOpen]);
 
-  const handleSearchSubmit = async () => {
+  const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
-      await navigateToSearch(searchQuery.trim());
+      const searchPath = `/busca?q=${encodeURIComponent(searchQuery.trim())}`;
+      
+      // Close search immediately to prevent stuck state
+      onClose();
       setShowSuggestions(false);
-      onClose(); // Close the search bar after submitting
+      
+      // Navigate after closing
+      setTimeout(() => {
+        navigate(searchPath);
+      }, 100);
     }
   };
 
@@ -65,22 +77,29 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
     }
   };
 
-  const handleSuggestionSelect = async (suggestion: string) => {
+  const handleSuggestionSelect = (suggestion: string) => {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
-    await navigateToSearch(suggestion);
-    onClose(); // Close after selecting suggestion
+    const searchPath = `/busca?q=${encodeURIComponent(suggestion)}`;
+    
+    // Close search immediately to prevent stuck state
+    onClose();
+    
+    // Navigate after closing
+    setTimeout(() => {
+      navigate(searchPath);
+    }, 100);
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 bg-white lg:hidden" // Funciona até desktop (lg)
+          className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-lg lg:hidden"
         >
           {/* Header */}
           <div className="flex items-center p-4 border-b border-gray-200 h-[72px]"> {/* Match header height */}
@@ -97,8 +116,7 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
                 }}
                 onKeyPress={handleSearchKeyPress}
                 onFocus={() => setShowSuggestions(searchQuery.length > 1)}
-                // Use timeout on blur to allow suggestion clicks
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} 
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)} 
                 className="pl-10 pr-4 h-12 bg-gray-50 border-gray-200 focus:bg-white w-full"
               />
             </div>

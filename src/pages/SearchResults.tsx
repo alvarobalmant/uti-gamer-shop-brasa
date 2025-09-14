@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useProducts } from '@/hooks/useProducts';
+import { useOptimizedCache, CacheKeys } from '@/hooks/useOptimizedCache';
+import { fetchProductsFromDatabase } from '@/hooks/useProducts/productApi';
 import ProductCard from '@/components/ProductCard';
 import ProductModal from '@/components/ProductModal';
 import { Product } from '@/hooks/useProducts';
@@ -20,7 +21,20 @@ const SearchResults = () => {
     setSearchTerm(params.get('q') || '');
   }, []);
   const query = searchTerm;
-  const { products, loading } = useProducts();
+  
+  // Cache agressivo para resultados de busca - evita recarregamento ao voltar da página do produto
+  const { data: products = [], isLoading: loading } = useOptimizedCache(
+    CacheKeys.products(['search-results']), // Cache específico para resultados de busca
+    () => fetchProductsFromDatabase(true), // Incluir produtos admin
+    'products', // Configuração de cache agressivo (5min stale, 15min gc)
+    {
+      staleTime: 10 * 60 * 1000, // 10 minutos - cache extra longo para resultados de busca
+      gcTime: 30 * 60 * 1000, // 30 minutos - mantém em cache por muito tempo
+      refetchOnWindowFocus: false, // NÃO refaz busca ao voltar do produto
+      refetchOnMount: false, // NÃO refaz busca ao montar novamente
+    }
+  );
+  
   const { user } = useAuth();
   const { addToCart } = useCart();
   

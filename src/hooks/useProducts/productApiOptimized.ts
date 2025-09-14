@@ -239,8 +239,8 @@ export const fetchProductDetails = async (productId: string): Promise<Product | 
     const { data, error } = await supabase
       .from('view_product_with_tags')
       .select('*')
-      .eq('product_id', productId)
-      .single();
+      .eq('id', productId)  // Usar 'id' ao invés de 'product_id'
+      .limit(1);
 
     if (error) {
       console.error('Error fetching product details:', error);
@@ -374,9 +374,21 @@ export const fetchProductsFromDatabaseCached = async (): Promise<Product[]> => {
         
         if (!tagExists) {
           product.tags = product.tags || [];
+          const tagWeight = row.tag_weight ? Number(row.tag_weight) : 1;
+          const tagCategory = row.tag_category || 'generic';
+          
+          console.log('🏷️ Tag processada:', {
+            name: row.tag_name,
+            weight_raw: row.tag_weight,
+            weight_processed: tagWeight,
+            category: tagCategory
+          });
+          
           product.tags.push({
             id: row.tag_id,
-            name: row.tag_name
+            name: row.tag_name,
+            weight: tagWeight,
+            category: tagCategory
           });
         }
       }
