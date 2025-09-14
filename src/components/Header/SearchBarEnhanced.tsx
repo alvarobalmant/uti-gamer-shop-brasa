@@ -24,40 +24,32 @@ export function SearchBarEnhanced({
   const [isLoading, setIsLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { search: weightedSearch, loading: searchLoading } = useWeightedSearch();
-  
   const debouncedQuery = useDebounce(query, 300);
+  const weightedSearchResult = useWeightedSearch(debouncedQuery);
 
-  // Fetch suggestions based on debounced query
+  // Update suggestions based on weighted search results
   useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (debouncedQuery && debouncedQuery.length >= 2) {
-        setIsLoading(true);
-        try {
-          // Usar busca com pesos para sugestões
-          const results = await weightedSearch(debouncedQuery, 5);
-          const formattedSuggestions = results.map(result => ({
-            id: result.product_id,
-            name: result.product_name,
-            type: 'product',
-            score: result.relevance_score,
-            matchedTags: result.matched_tags
-          }));
-          
-          setSuggestions(formattedSuggestions);
-        } catch (error) {
-          console.error('Error fetching suggestions:', error);
-          setSuggestions([]);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
+    if (debouncedQuery && debouncedQuery.length >= 2) {
+      setIsLoading(weightedSearchResult.isLoading);
+      
+      if (!weightedSearchResult.isLoading && weightedSearchResult.exactMatches.length > 0) {
+        const formattedSuggestions = weightedSearchResult.exactMatches.slice(0, 5).map(product => ({
+          id: product.id,
+          name: product.name,
+          type: 'product',
+          score: (product as any).relevance_score || 0,
+          matchedTags: (product as any).matched_tags || []
+        }));
+        
+        setSuggestions(formattedSuggestions);
+      } else if (!weightedSearchResult.isLoading) {
         setSuggestions([]);
       }
-    };
-
-    fetchSuggestions();
-  }, [debouncedQuery, weightedSearch]);
+    } else {
+      setSuggestions([]);
+      setIsLoading(false);
+    }
+  }, [debouncedQuery, weightedSearchResult]);
 
   // Close suggestions when clicking outside
   useEffect(() => {

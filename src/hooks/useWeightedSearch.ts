@@ -4,7 +4,7 @@ import { searchProductsWithWeights } from './useProducts/productApi';
 import { enhancedSmartSearch } from '@/utils/multiTagSearch';
 import { useProducts, Product } from './useProducts';
 
-interface WeightedSearchResult {
+export interface WeightedSearchResult {
   exactMatches: Product[];
   relatedProducts: Product[];
   tagSuggestions: string[];

@@ -6,15 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useWeightedSearch, WeightedSearchResult } from '@/hooks/useWeightedSearch';
+import { searchProductsWithWeights } from '@/hooks/useProducts/productApi';
 
 export default function SearchResultsWeighted() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const [searchQuery, setSearchQuery] = useState(query);
-  const [results, setResults] = useState<WeightedSearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [showDebug, setShowDebug] = useState(false);
-  
-  const { search, loading, error } = useWeightedSearch();
 
   useEffect(() => {
     if (query) {
@@ -25,8 +26,19 @@ export default function SearchResultsWeighted() {
   const performSearch = async (searchTerm: string) => {
     if (!searchTerm.trim()) return;
     
-    const searchResults = await search(searchTerm, 50);
-    setResults(searchResults);
+    setIsSearching(true);
+    setSearchError(null);
+    
+    try {
+      const results = await searchProductsWithWeights(searchTerm, 50);
+      setSearchResults(results.products || []);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchError(error instanceof Error ? error.message : 'Erro desconhecido na busca');
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleSearch = () => {
@@ -72,8 +84,8 @@ export default function SearchResultsWeighted() {
                 className="pl-10"
               />
             </div>
-            <Button onClick={handleSearch} disabled={loading}>
-              {loading ? 'Buscando...' : 'Buscar'}
+            <Button onClick={handleSearch} disabled={isSearching}>
+              {isSearching ? 'Buscando...' : 'Buscar'}
             </Button>
           </div>
           
@@ -81,7 +93,7 @@ export default function SearchResultsWeighted() {
             <div className="flex items-center justify-between">
               <p className="text-muted-foreground">
                 Resultados para: <span className="font-semibold">"{query}"</span>
-                {results.length > 0 && ` (${results.length} produtos encontrados)`}
+                {searchResults.length > 0 && ` (${searchResults.length} produtos encontrados)`}
               </p>
               <Button
                 variant="outline"
@@ -94,20 +106,20 @@ export default function SearchResultsWeighted() {
           )}
         </div>
 
-        {error && (
+        {searchError && (
           <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-destructive">Erro na busca: {error}</p>
+            <p className="text-destructive">Erro na busca: {searchError}</p>
           </div>
         )}
 
-        {loading && (
+        {isSearching && (
           <div className="text-center py-12">
             <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
             <p className="mt-4 text-muted-foreground">Buscando produtos...</p>
           </div>
         )}
 
-        {!loading && results.length === 0 && query && (
+        {!isSearching && searchResults.length === 0 && query && (
           <div className="text-center py-12">
             <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Nenhum produto encontrado</h3>
@@ -117,9 +129,9 @@ export default function SearchResultsWeighted() {
           </div>
         )}
 
-        {results.length > 0 && (
+        {searchResults.length > 0 && (
           <div className="space-y-6">
-            {results.map((result, index) => (
+            {searchResults.map((result, index) => (
               <motion.div
                 key={result.product_id}
                 initial={{ opacity: 0, y: 20 }}
