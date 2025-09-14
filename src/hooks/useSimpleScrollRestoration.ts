@@ -39,15 +39,7 @@ export const useSimpleScrollRestoration = () => {
     // PÁGINA DE BUSCA - SEMPRE vai para o topo, independente do tipo de navegação
     if (location.pathname.startsWith('/busca')) {
       console.log(`[SimpleScrollRestoration] 🔍 PÁGINA DE BUSCA - forçando scroll para topo SEMPRE`);
-      
-      // AGRESSIVAMENTE limpa TODAS as posições de busca existentes
-      const allBuscaPaths = ['/busca', '/busca/', '/busca?', '/busca/?'];
-      allBuscaPaths.forEach(path => {
-        simpleScrollManager.clearPagePosition(path);
-        horizontalScrollManager.clearPageHorizontalPositions(path);
-      });
-      
-      // Limpa posição salva da página de busca atual para evitar restauração futura
+      // Limpa posição salva da página de busca para evitar restauração futura
       simpleScrollManager.clearPagePosition(currentPath);
       horizontalScrollManager.clearPageHorizontalPositions(currentPath);
       
@@ -95,17 +87,8 @@ export const useSimpleScrollRestoration = () => {
     } else {
       // NOVA NAVEGAÇÃO - vai para topo/esquerda mas NÃO limpa posições salvas
       console.log(`[SimpleScrollRestoration] ➡️ NOVA navegação - indo para topo (mantendo posições salvas)`);
-      
-      // PROTEÇÃO EXTRA: Limpa todas as posições de busca se estivermos indo para homepage
-      if (currentPath === '/') {
-        console.log(`[SimpleScrollRestoration] 🧹 LIMPANDO todas as posições de busca ao ir para homepage`);
-        const allBuscaPaths = ['/busca', '/busca/', '/busca?', '/busca/?'];
-        allBuscaPaths.forEach(path => {
-          simpleScrollManager.clearPagePosition(path);
-          horizontalScrollManager.clearPageHorizontalPositions(path);
-        });
-      }
-      
+      // REMOVIDO: simpleScrollManager.clearPagePosition(currentPath);
+      // REMOVIDO: horizontalScrollManager.clearPageHorizontalPositions(currentPath);
       window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
     
