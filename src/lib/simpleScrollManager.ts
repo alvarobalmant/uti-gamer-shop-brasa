@@ -31,6 +31,12 @@ class SimpleScrollManager {
   private saveCurrentPosition(): void {
     if (this.isRestoring || !this.currentPath) return;
     
+    // NEVER save scroll positions for search pages
+    if (this.currentPath.startsWith('/busca')) {
+      console.log(`[SimpleScrollManager] 🚫 BLOQUEADO salvamento para página de busca: ${this.currentPath}`);
+      return;
+    }
+    
     const scrollY = window.scrollY;
     
     this.scrollPositions.set(this.currentPath, {
@@ -43,11 +49,22 @@ class SimpleScrollManager {
   setCurrentPage(path: string): void {
     console.log(`[SimpleScrollManager] 📄 Mudança de página: ${this.currentPath} → ${path}`);
     this.currentPath = path;
+    
+    // ALWAYS clear and prevent search page scroll positions
+    if (path.startsWith('/busca')) {
+      this.clearPagePosition(path);
+      console.log(`[SimpleScrollManager] 🧹 LIMPOU posição da página de busca: ${path}`);
+    }
   }
 
   // Obtém a posição salva de uma página (para restauração instantânea)
   getPagePosition(path: string): PageScrollData | undefined {
     return this.scrollPositions.get(path);
+  }
+
+  // Obtém o caminho atual
+  getCurrentPath(): string {
+    return this.currentPath;
   }
 
   // Restaura a posição da página atual com delay obrigatório
