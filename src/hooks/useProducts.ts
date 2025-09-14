@@ -234,6 +234,7 @@ export const useProducts = () => {
     updateProduct,
     deleteProduct,
     refetch: fetchProducts, // Keep refetch for general product list if needed elsewhere
+    refreshProducts: fetchProducts, // Add alias for refresh
     fetchProductsByConfig, // Expose the new function
     fetchSingleProduct, // Expose the new single product function
   };

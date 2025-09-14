@@ -5,23 +5,31 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { useProducts } from '@/hooks/useProducts';
 import { useProductSpecifications } from '@/hooks/useProductSpecifications';
-import { Search, Edit, Save, Plus, Monitor, Package, RotateCcw } from 'lucide-react';
+import { Search, Edit, Save, Plus, Monitor, Package, RotateCcw, Grid3X3, Grid2X2, Check, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import ProductDesktopEditor from '@/components/Admin/ProductDesktopManager/ProductDesktopEditor';
+import { supabase } from '@/integrations/supabase/client';
 
 const ProductDesktopManager: React.FC = () => {
-  const { products, loading, updateProduct } = useProducts();
+  const { products, loading, updateProduct, refreshProducts } = useProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [gridMode, setGridMode] = useState<'2x2' | '3x3'>('3x3');
+  const [showReviewed, setShowReviewed] = useState(true);
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesReviewFilter = showReviewed || !product.is_reviewed;
+    
+    return matchesSearch && matchesReviewFilter;
+  });
 
   const handleEditProduct = (product: any) => {
     setSelectedProduct(product);
@@ -37,6 +45,30 @@ const ProductDesktopManager: React.FC = () => {
     } catch (error) {
       toast.error('Erro ao atualizar produto');
       console.error('Erro ao salvar produto:', error);
+    }
+  };
+
+  const handleToggleReviewed = async (product: any) => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const newReviewedState = !product.is_reviewed;
+      
+      const { error } = await supabase
+        .from('products')
+        .update({
+          is_reviewed: newReviewedState,
+          reviewed_at: newReviewedState ? new Date().toISOString() : null,
+          reviewed_by: newReviewedState ? userData.user?.id : null
+        })
+        .eq('id', product.id);
+
+      if (error) throw error;
+      
+      await refreshProducts();
+      toast.success(newReviewedState ? 'Produto marcado como revisado!' : 'Marcação de revisão removida!');
+    } catch (error) {
+      toast.error('Erro ao atualizar status de revisão');
+      console.error('Erro ao marcar produto:', error);
     }
   };
 
@@ -63,42 +95,76 @@ const ProductDesktopManager: React.FC = () => {
         <div className="flex items-center gap-3">
           <Monitor className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Produtos Desktop</h1>
+            <h1 className="text-3xl font-bold text-foreground">Revisão Fácil - Produtos</h1>
             <p className="text-muted-foreground">
-              Configure informações detalhadas para a versão desktop do site
+              Revise e configure informações detalhadas dos produtos
             </p>
           </div>
         </div>
-        <Badge variant="secondary" className="text-sm">
-          {filteredProducts.length} produtos
-        </Badge>
+        <div className="flex items-center gap-4">
+          <Badge variant="secondary" className="text-sm">
+            {filteredProducts.length} produtos
+          </Badge>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={gridMode === '2x2' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setGridMode('2x2')}
+            >
+              <Grid2X2 className="h-4 w-4 mr-2" />
+              2x2
+            </Button>
+            <Button
+              variant={gridMode === '3x3' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setGridMode('3x3')}
+            >
+              <Grid3X3 className="h-4 w-4 mr-2" />
+              3x3
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Search */}
+      {/* Search and Filters */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Search className="h-5 w-5" />
-            Buscar Produtos
+            Buscar e Filtrar Produtos
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Input
-            placeholder="Buscar por nome, marca ou categoria..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-md"
-          />
+          <div className="flex items-center gap-4">
+            <Input
+              placeholder="Buscar por nome, marca ou categoria..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-md"
+            />
+            <div className="flex items-center gap-2">
+              {showReviewed ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+              <label className="text-sm font-medium">
+                Mostrar revisados
+              </label>
+              <Switch
+                checked={showReviewed}
+                onCheckedChange={setShowReviewed}
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Products Grid */}
-      <div className="grid gap-4">
+      <div className={`grid gap-4 ${gridMode === '2x2' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
         {filteredProducts.map((product) => (
           <ProductDesktopCard
             key={product.id}
             product={product}
             onEdit={handleEditProduct}
+            onToggleReviewed={handleToggleReviewed}
+            gridMode={gridMode}
           />
         ))}
       </div>
@@ -145,15 +211,28 @@ const ProductDesktopManager: React.FC = () => {
 const ProductDesktopCard: React.FC<{
   product: any;
   onEdit: (product: any) => void;
-}> = ({ product, onEdit }) => {
+  onToggleReviewed: (product: any) => void;
+  gridMode: '2x2' | '3x3';
+}> = ({ product, onEdit, onToggleReviewed, gridMode }) => {
   const { categorizedSpecs } = useProductSpecifications(product.id, 'desktop', product);
 
   return (
-    <Card className="transition-shadow hover:shadow-md">
-      <CardContent className="p-6">
-        <div className="flex items-start gap-4">
+    <Card className={`transition-all hover:shadow-md relative ${
+      product.is_reviewed ? 'border-green-500 border-2' : ''
+    }`}>
+      {/* Reviewed Indicator */}
+      {product.is_reviewed && (
+        <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-10">
+          <Check className="h-3 w-3" />
+        </div>
+      )}
+      
+      <CardContent className={gridMode === '2x2' ? 'p-4' : 'p-3'}>
+        <div className={gridMode === '2x2' ? 'flex items-start gap-4' : 'space-y-3'}>
           {/* Product Image */}
-          <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+          <div className={`bg-muted rounded-lg overflow-hidden flex-shrink-0 ${
+            gridMode === '2x2' ? 'w-20 h-20' : 'w-full h-32'
+          }`}>
             {product.image ? (
               <img
                 src={product.image}
@@ -162,65 +241,81 @@ const ProductDesktopCard: React.FC<{
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <Package className="h-8 w-8 text-muted-foreground" />
+                <Package className={`text-muted-foreground ${
+                  gridMode === '2x2' ? 'h-6 w-6' : 'h-8 w-8'
+                }`} />
               </div>
             )}
           </div>
 
           {/* Product Info */}
-          <div className="flex-1 min-w-0">
+          <div className={gridMode === '2x2' ? 'flex-1 min-w-0' : 'w-full'}>
             <div className="flex items-start justify-between mb-2">
-              <div>
-                <h3 className="font-semibold text-lg text-foreground truncate">
+              <div className="flex-1 min-w-0">
+                <h3 className={`font-semibold text-foreground truncate ${
+                  gridMode === '2x2' ? 'text-base' : 'text-sm'
+                }`}>
                   {product.name}
                 </h3>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1 mt-1 flex-wrap">
                   <Badge variant="outline" className="text-xs">
                     {product.category || 'Sem categoria'}
                   </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    Marca: {product.brand || 'A definir'}
-                  </span>
+                  {gridMode === '2x2' && (
+                    <span className="text-xs text-muted-foreground truncate">
+                      {product.brand || 'A definir'}
+                    </span>
+                  )}
                 </div>
               </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 mt-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onEdit(product)}
-                className="flex-shrink-0"
+                className="flex-1"
               >
-                <Edit className="h-4 w-4 mr-2" />
+                <Edit className="h-3 w-3 mr-1" />
                 Editar
+              </Button>
+              <Button
+                variant={product.is_reviewed ? "default" : "outline"}
+                size="sm"
+                onClick={() => onToggleReviewed(product)}
+                className={product.is_reviewed ? "bg-green-600 hover:bg-green-700" : ""}
+              >
+                <Check className="h-3 w-3" />
               </Button>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-sm font-medium text-foreground">
-                  {categorizedSpecs?.length || 0}
+            {/* Quick Stats - only in 2x2 mode */}
+            {gridMode === '2x2' && (
+              <div className="grid grid-cols-2 gap-2 mt-3">
+                <div className="text-center p-2 bg-muted/50 rounded text-xs">
+                  <div className="font-medium">
+                    R$ {Number(product.price || 0).toFixed(2)}
+                  </div>
+                  <div className="text-muted-foreground">Preço</div>
                 </div>
-                <div className="text-xs text-muted-foreground">Categorias</div>
-              </div>
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-sm font-medium text-foreground">
-                  {categorizedSpecs?.reduce((acc, cat) => acc + cat.items.length, 0) || 0}
+                <div className="text-center p-2 bg-muted/50 rounded text-xs">
+                  <div className="font-medium">
+                    {product.stock || 0}
+                  </div>
+                  <div className="text-muted-foreground">Estoque</div>
                 </div>
-                <div className="text-xs text-muted-foreground">Especificações</div>
               </div>
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-sm font-medium text-foreground">
-                  R$ {Number(product.price || 0).toFixed(2)}
-                </div>
-                <div className="text-xs text-muted-foreground">Preço</div>
+            )}
+
+            {/* Compact stats for 3x3 mode */}
+            {gridMode === '3x3' && (
+              <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                <span>R$ {Number(product.price || 0).toFixed(2)}</span>
+                <span>Est: {product.stock || 0}</span>
               </div>
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-sm font-medium text-foreground">
-                  {product.stock || 0}
-                </div>
-                <div className="text-xs text-muted-foreground">Estoque</div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </CardContent>

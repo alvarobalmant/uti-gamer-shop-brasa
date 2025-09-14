@@ -91,6 +91,11 @@ const mapRowToProduct = (row: any): Product => ({
   // UTI Coins Desconto
   uti_coins_discount_percentage: row.uti_coins_discount_percentage ? Number(row.uti_coins_discount_percentage) : undefined,
   
+  // Campos de revisão
+  is_reviewed: row.is_reviewed || false,
+  reviewed_at: row.reviewed_at || undefined,
+  reviewed_by: row.reviewed_by || undefined,
+  
   tags: [],
   created_at: row.created_at || new Date().toISOString(),
   updated_at: row.updated_at || new Date().toISOString()
