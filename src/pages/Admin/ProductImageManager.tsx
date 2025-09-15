@@ -10,10 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Upload, Link, Trash2, Star, Plus, AlertTriangle, Save, RotateCcw } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Search, Upload, Link, Trash2, Star, Plus, AlertTriangle, Save, RotateCcw, Grid3X3, Grid2X2, Check, Eye, EyeOff, Monitor } from 'lucide-react';
 import ProductImageCard, { ProductWithAllChanges } from '@/components/Admin/ProductImageManager/ProductImageCard';
 import ImageDropZone from '@/components/Admin/ProductImageManager/ImageDropZone';
 import BulkImageUpload from '@/components/Admin/ProductImageManager/BulkImageUpload';
+import { supabase } from '@/integrations/supabase/client';
 
 const ProductImageManager: React.FC = () => {
   const { products, loading, refreshProducts } = useProductsEnhanced();
@@ -25,6 +27,8 @@ const ProductImageManager: React.FC = () => {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [processingProducts, setProcessingProducts] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
+  const [gridMode, setGridMode] = useState<'2x2' | '3x3'>('3x3');
+  const [showReviewed, setShowReviewed] = useState(true);
 
   // Hook para gerenciar mudanças locais de imagens
   const {
@@ -56,12 +60,17 @@ const ProductImageManager: React.FC = () => {
 
   console.log('ProductImageManager: Renderizando com', products.length, 'produtos');
 
-  const filteredProducts = finalProducts.filter(product => 
+  const filteredProducts = finalProducts.filter(product => {
     // Filtrar produtos mestre (is_master_product = true)
-    !product.is_master_product &&
-    (product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.id?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+    if (product.is_master_product) return false;
+    
+    const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.id?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesReviewFilter = showReviewed || !product.is_reviewed;
+    
+    return matchesSearch && matchesReviewFilter;
+  });
 
   const addProcessingProduct = (productId: string) => {
     setProcessingProducts(prev => new Set([...prev, productId]));
@@ -287,6 +296,30 @@ const ProductImageManager: React.FC = () => {
     }
   };
 
+  const handleToggleReviewed = async (product: any) => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const newReviewedState = !product.is_reviewed;
+      
+      const { error } = await supabase
+        .from('products')
+        .update({
+          is_reviewed: newReviewedState,
+          reviewed_at: newReviewedState ? new Date().toISOString() : null,
+          reviewed_by: newReviewedState ? userData.user?.id : null
+        })
+        .eq('id', product.id);
+
+      if (error) throw error;
+      
+      await refreshProducts();
+      toast.success(newReviewedState ? 'Produto marcado como revisado!' : 'Marcação de revisão removida!');
+    } catch (error) {
+      toast.error('Erro ao atualizar status de revisão');
+      console.error('Erro ao marcar produto:', error);
+    }
+  };
+
   const toggleProductSelection = (productId: string) => {
     setSelectedProducts(prev => 
       prev.includes(productId) 
@@ -321,14 +354,40 @@ const ProductImageManager: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Revisão Fácil</h1>
-            <p className="text-gray-600 mt-1">
-              Revisão e gerenciamento inteligente de imagens de produtos
-            </p>
+          <div className="flex items-center gap-3">
+            <Monitor className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Revisão Fácil - Produtos</h1>
+              <p className="text-muted-foreground mt-1">
+                Revise e gerencie imagens de produtos com facilidade
+              </p>
+            </div>
           </div>
           
           <div className="flex flex-wrap gap-3">
+            <Badge variant="secondary" className="text-sm">
+              {filteredProducts.length} produtos
+            </Badge>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant={gridMode === '2x2' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setGridMode('2x2')}
+              >
+                <Grid2X2 className="h-4 w-4 mr-2" />
+                2x2
+              </Button>
+              <Button
+                variant={gridMode === '3x3' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setGridMode('3x3')}
+              >
+                <Grid3X3 className="h-4 w-4 mr-2" />
+                3x3
+              </Button>
+            </div>
+            
             <Button 
               onClick={() => setShowBulkUpload(!showBulkUpload)}
               variant="outline"
@@ -411,17 +470,32 @@ const ProductImageManager: React.FC = () => {
           </Card>
         )}
 
-        {/* Search */}
+        {/* Search and Filters */}
         <Card>
-          <CardContent className="p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Buscar e Filtrar Produtos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
               <Input
-                placeholder="Buscar produtos por nome ou ID..."
+                placeholder="Buscar por nome, ID ou categoria..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="max-w-md"
               />
+              <div className="flex items-center gap-2">
+                {showReviewed ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                <label className="text-sm font-medium">
+                  Mostrar revisados
+                </label>
+                <Switch
+                  checked={showReviewed}
+                  onCheckedChange={setShowReviewed}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -452,7 +526,7 @@ const ProductImageManager: React.FC = () => {
 
         {/* Products Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={`grid gap-6 ${gridMode === '2x2' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
             {filteredProducts.map((product) => (
               <ProductImageCard
                 key={product.id}
@@ -466,6 +540,8 @@ const ProductImageManager: React.FC = () => {
                 uploading={uploading || processingProducts.has(product.id) || imageLoading}
                 hasLocalChanges={product.localChanges?.hasChanges || false}
                 onPriceChange={addPriceChange}
+                onToggleReviewed={handleToggleReviewed}
+                gridMode={gridMode}
               />
             ))}
           </div>

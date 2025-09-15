@@ -32,6 +32,8 @@ interface ProductImageCardProps {
   uploading: boolean;
   hasLocalChanges?: boolean;
   onPriceChange: (productId: string, newPrice: number, originalPrice: number) => void;
+  onToggleReviewed?: (product: any) => void;
+  gridMode?: '2x2' | '3x3';
 }
 
 const ProductImageCard: React.FC<ProductImageCardProps> = ({
@@ -44,7 +46,9 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
   onToggleSelection,
   uploading,
   hasLocalChanges = false,
-  onPriceChange
+  onPriceChange,
+  onToggleReviewed,
+  gridMode = '3x3'
 }) => {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -141,11 +145,17 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
   const hasMainImage = product.image && product.image.trim() !== '';
 
   return (
-    <Card className={`transition-all duration-200 ${
+    <Card className={`relative transition-all duration-200 ${
       isSelected ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'
     } ${uploading ? 'opacity-75' : ''} ${
       hasLocalChanges ? 'ring-2 ring-amber-400 bg-amber-50' : ''
-    }`}>
+    } ${product.is_reviewed ? 'border-green-500 border-2' : ''}`}>
+      {/* Reviewed Indicator */}
+      {product.is_reviewed && (
+        <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-10">
+          <Check className="h-3 w-3" />
+        </div>
+      )}
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
@@ -223,6 +233,16 @@ const ProductImageCard: React.FC<ProductImageCardProps> = ({
               onCheckedChange={onToggleSelection}
               disabled={uploading}
             />
+            {onToggleReviewed && (
+              <Button
+                variant={product.is_reviewed ? "default" : "outline"}
+                size="sm"
+                onClick={() => onToggleReviewed(product)}
+                className={product.is_reviewed ? "bg-green-600 hover:bg-green-700" : ""}
+              >
+                <Check className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         </div>
         

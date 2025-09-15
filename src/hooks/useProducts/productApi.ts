@@ -94,6 +94,10 @@ const mapRowToProduct = (row: any): Product => ({
     social_proof_text: ''
   },
   
+  // Campos de revisão
+  is_reviewed: row.is_reviewed || false,
+  reviewed_at: row.reviewed_at || undefined,
+  reviewed_by: row.reviewed_by || undefined,
 
   
   tags: [],
