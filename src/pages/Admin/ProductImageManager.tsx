@@ -52,10 +52,14 @@ const ProductImageManager: React.FC = () => {
     changedProductsCount: changedPriceProductsCount
   } = useLocalPriceChanges(productsWithImageChanges);
 
-  // Combinar produtos com mudanças de imagem e preço
+  // Estado local para produtos revisados
+  const [localReviewedProducts, setLocalReviewedProducts] = useState<Set<string>>(new Set());
+
+  // Combinar produtos com mudanças de imagem, preço e revisão
   const finalProducts: ProductWithAllChanges[] = productsWithPriceChanges.map(product => ({
     ...product,
-    localChanges: productsWithImageChanges.find(p => p.id === product.id)?.localChanges
+    localChanges: productsWithImageChanges.find(p => p.id === product.id)?.localChanges,
+    is_reviewed: localReviewedProducts.has(product.id) ? true : product.is_reviewed
   }));
 
   console.log('ProductImageManager: Renderizando com', products.length, 'produtos');
@@ -210,7 +214,8 @@ const ProductImageManager: React.FC = () => {
 
   // Salvar todas as mudanças no servidor
   const handleSaveAllChanges = async () => {
-    const hasAnyChanges = hasImageChanges || hasPriceChanges;
+    const hasReviewedChanges = localReviewedProducts.size > 0;
+    const hasAnyChanges = hasImageChanges || hasPriceChanges || hasReviewedChanges;
     if (!hasAnyChanges) return;
 
     setIsSaving(true);
@@ -220,6 +225,7 @@ const ProductImageManager: React.FC = () => {
     try {
       console.log('Salvando mudanças de imagens:', pendingImageChanges);
       console.log('Salvando mudanças de preços:', pendingPriceChanges);
+      console.log('Salvando mudanças de revisão:', Array.from(localReviewedProducts));
 
       // Salvar mudanças de preços primeiro
       if (hasPriceChanges) {
@@ -275,12 +281,38 @@ const ProductImageManager: React.FC = () => {
         }
       }
 
+      // Salvar mudanças de revisão
+      if (hasReviewedChanges) {
+        try {
+          const { data: userData } = await supabase.auth.getUser();
+          
+          for (const productId of localReviewedProducts) {
+            const { error } = await supabase
+              .from('products')
+              .update({
+                is_reviewed: true,
+                reviewed_at: new Date().toISOString(),
+                reviewed_by: userData.user?.id
+              })
+              .eq('id', productId);
+
+            if (error) throw error;
+          }
+          
+          successCount += localReviewedProducts.size;
+        } catch (error) {
+          console.error('Erro ao salvar revisões:', error);
+          errorCount++;
+        }
+      }
+
       // Atualizar dados do servidor
       await refreshProducts();
       
       // Limpar mudanças locais
       clearAllImageChanges();
       clearAllPriceChanges();
+      setLocalReviewedProducts(new Set());
 
       if (errorCount === 0) {
         toast.success(`Todas as alterações foram salvas com sucesso!`);
@@ -296,28 +328,20 @@ const ProductImageManager: React.FC = () => {
     }
   };
 
-  const handleToggleReviewed = async (product: any) => {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const newReviewedState = !product.is_reviewed;
-      
-      const { error } = await supabase
-        .from('products')
-        .update({
-          is_reviewed: newReviewedState,
-          reviewed_at: newReviewedState ? new Date().toISOString() : null,
-          reviewed_by: newReviewedState ? userData.user?.id : null
-        })
-        .eq('id', product.id);
-
-      if (error) throw error;
-      
-      await refreshProducts();
-      toast.success(newReviewedState ? 'Produto marcado como revisado!' : 'Marcação de revisão removida!');
-    } catch (error) {
-      toast.error('Erro ao atualizar status de revisão');
-      console.error('Erro ao marcar produto:', error);
-    }
+  const handleToggleReviewed = (product: any) => {
+    const newReviewedState = !product.is_reviewed;
+    
+    setLocalReviewedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newReviewedState) {
+        newSet.add(product.id);
+      } else {
+        newSet.delete(product.id);
+      }
+      return newSet;
+    });
+    
+    toast.success(newReviewedState ? 'Produto marcado como revisado!' : 'Marcação de revisão removida!');
   };
 
   const toggleProductSelection = (productId: string) => {
@@ -415,7 +439,7 @@ const ProductImageManager: React.FC = () => {
         </div>
 
         {/* Save Panel */}
-        {(hasImageChanges || hasPriceChanges) && (
+        {(hasImageChanges || hasPriceChanges || localReviewedProducts.size > 0) && (
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -423,8 +447,8 @@ const ProductImageManager: React.FC = () => {
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                   <div>
                     <span className="text-blue-800 font-medium">
-                      {changedImageProductsCount + changedPriceProductsCount} produto{(changedImageProductsCount + changedPriceProductsCount) !== 1 ? 's' : ''} com alterações 
-                      ({pendingImageChanges.length} imagens, {pendingPriceChanges.length} preços)
+                      {changedImageProductsCount + changedPriceProductsCount + localReviewedProducts.size} produto{(changedImageProductsCount + changedPriceProductsCount + localReviewedProducts.size) !== 1 ? 's' : ''} com alterações 
+                      ({pendingImageChanges.length} imagens, {pendingPriceChanges.length} preços, {localReviewedProducts.size} revisões)
                     </span>
                     <p className="text-blue-600 text-sm">
                       As alterações estão salvas localmente. Clique em "Salvar Tudo" para enviar ao servidor.
@@ -439,6 +463,7 @@ const ProductImageManager: React.FC = () => {
                     onClick={() => {
                       clearAllImageChanges();
                       clearAllPriceChanges();
+                      setLocalReviewedProducts(new Set());
                     }}
                     disabled={isSaving}
                     className="text-gray-600 hover:text-gray-800"
