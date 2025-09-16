@@ -16,11 +16,14 @@ import { ProductProvider } from '@/contexts/ProductContext';
 import { UTICoinsProvider } from '@/contexts/UTICoinsContext';
 import { UIStateProvider } from '@/contexts/UIStateContext';
 import { LoadingProvider } from "@/contexts/LoadingContext";
+import { GlobalNavigationProvider } from "@/contexts/GlobalNavigationContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { EnterpriseTrackingProvider } from "@/contexts/EnterpriseTrackingContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import { setupErrorInterception } from "@/utils/errorCorrection";
+import GlobalNavigationOverlay from "@/components/GlobalNavigationOverlay";
 import { usePageResourcePreload } from '@/hooks/useResourceHints';
+import { usePageScrollRestoration } from '@/hooks/usePageScrollRestoration';
 import AppContent from '@/components/AppContent';
 import Index from "./pages/Index";
 import AssistenciaTecnica from "./pages/AssistenciaTecnica";
@@ -187,11 +190,13 @@ const App = () => {
                       <Sonner />
                       <BrowserRouter>
                         <EnterpriseTrackingProvider>
-                           <AnalyticsProvider>
-                             <CartProvider>
-                             <AppWithPreloader>
-                                  <LoadingOverlay />
-                                  <Suspense fallback={<PageLoader />}>
+                          <AnalyticsProvider>
+                            <CartProvider>
+                            <AppWithPreloader>
+                              <GlobalNavigationProvider>
+                                 <LoadingOverlay />
+                                 <GlobalNavigationOverlay />
+                                 <Suspense fallback={<PageLoader />}>
                                    <AppContent>
                                      <Routes>
                                         {/* Auth Routes - Outside EmailVerificationGuard */}
@@ -287,7 +292,8 @@ const App = () => {
                                      } />
                                    </Routes>
                                    </AppContent>
-                                  </Suspense>
+                                 </Suspense>
+                            </GlobalNavigationProvider>
                           </AppWithPreloader>
                          </CartProvider>
                           </AnalyticsProvider>
@@ -297,8 +303,9 @@ const App = () => {
                  </LoadingProvider>
                </ProductProviderOptimized>
               </UIStateProvider>
-              </UTICoinsProvider>
-            </AuthProvider>
+             </UTICoinsProvider>
+          {/* Security system removed */}
+        </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

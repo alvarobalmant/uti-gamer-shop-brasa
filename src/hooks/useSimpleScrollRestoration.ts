@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigationType, NavigationType } from 'react-router-dom';
 import simpleScrollManager from '@/lib/simpleScrollManager';
+import horizontalScrollManager from '@/lib/horizontalScrollManager';
+import pageStateManager from '@/lib/pageStateManager';
 
 /**
  * Hook simples e robusto para restauração de scroll
@@ -24,36 +26,69 @@ export const useSimpleScrollRestoration = () => {
   useEffect(() => {
     const currentPath = location.pathname + location.search;
     
-    console.log(`[SimpleScrollRestoration] 🚀 PÁGINA: ${currentPath} (${navigationType})`);
+    console.log(`[SimpleScrollRestoration] 🚀 NOVA PÁGINA: ${currentPath} (${navigationType})`);
     
-    // Define a página atual no manager unificado
+    // Define a página atual em ambos os managers
     simpleScrollManager.setCurrentPage(currentPath);
+    horizontalScrollManager.setCurrentPage(currentPath);
+    
+    // Sync with page state manager
+    const scrollPosition = { x: window.scrollX, y: window.scrollY };
+    pageStateManager.saveScrollPosition(currentPath, scrollPosition);
     
     // PÁGINA DE BUSCA - SEMPRE vai para o topo, independente do tipo de navegação
     if (location.pathname.startsWith('/busca')) {
-      console.log(`[SimpleScrollRestoration] 🔍 BUSCA - sempre topo`);
-      // Limpa posição salva da página de busca
+      console.log(`[SimpleScrollRestoration] 🔍 PÁGINA DE BUSCA - forçando scroll para topo SEMPRE`);
+      // Limpa posição salva da página de busca para evitar restauração futura
       simpleScrollManager.clearPagePosition(currentPath);
+      horizontalScrollManager.clearPageHorizontalPositions(currentPath);
       
-      // Scroll instantâneo para o topo
-      window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+      // Força scroll para o topo com delay para aguardar o cache carregar
+      const forceTopScroll = () => {
+        window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+        console.log(`[SimpleScrollRestoration] ✅ Scroll forçado para topo na busca`);
+      };
+      
+      // Executa imediatamente
+      forceTopScroll();
+      
+      // E executa novamente após 100ms e 500ms para garantir (aguarda cache/produtos)
+      setTimeout(forceTopScroll, 100);
+      setTimeout(forceTopScroll, 500);
       
       return; // Sai da função sem fazer mais nada
     }
     
     // Lógica baseada no tipo de navegação para outras páginas
     if (navigationType === NavigationType.Pop) {
-      // VOLTAR - restaura posição vertical
-      console.log(`[SimpleScrollRestoration] ⬅️ VOLTAR - restaurando posição`);
+      // VOLTAR - restaura posições obrigatoriamente (vertical + horizontal)
+      console.log(`[SimpleScrollRestoration] ⬅️ VOLTAR detectado - restaurando posições RAPIDAMENTE`);
       
-      // Aguarda DOM + restauração robusta
-      setTimeout(() => {
-        simpleScrollManager.restoreCurrentPagePosition();
-      }, 100);
+      // Restauração imediata para melhor UX
+      const savedPosition = simpleScrollManager.getPagePosition(currentPath);
+      if (savedPosition) {
+        // Restauração instantânea primeiro
+        window.scrollTo({
+          left: 0,
+          top: savedPosition.y,
+          behavior: 'auto'
+        });
+        console.log(`[SimpleScrollRestoration] ⚡ Restauração instantânea para ${savedPosition.y}px`);
+      }
+      
+      // Depois executa a restauração robusta em paralelo
+      Promise.all([
+        simpleScrollManager.restoreCurrentPagePosition(),
+        horizontalScrollManager.restoreCurrentPageHorizontalPositions()
+      ]).then(() => {
+        console.log(`[SimpleScrollRestoration] ✅ Restauração robusta finalizada para ${currentPath}`);
+      });
       
     } else {
-      // NOVA NAVEGAÇÃO - vai para topo mas mantém posições salvas
-      console.log(`[SimpleScrollRestoration] ➡️ NOVA navegação - topo`);
+      // NOVA NAVEGAÇÃO - vai para topo/esquerda mas NÃO limpa posições salvas
+      console.log(`[SimpleScrollRestoration] ➡️ NOVA navegação - indo para topo (mantendo posições salvas)`);
+      // REMOVIDO: simpleScrollManager.clearPagePosition(currentPath);
+      // REMOVIDO: horizontalScrollManager.clearPageHorizontalPositions(currentPath);
       window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
     }
     

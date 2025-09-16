@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSimpleScrollRestoration } from '@/hooks/useSimpleScrollRestoration';
+import { usePageScrollRestoration } from '@/hooks/usePageScrollRestoration';
 import { BottomNavigationBar } from '@/components/Mobile/BottomNavigationBar';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
@@ -40,8 +40,8 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showFavoritesAlert, setShowFavoritesAlert] = useState(false);
   
-  // Sistema unificado de scroll restoration
-  useSimpleScrollRestoration();
+  // Integra sistema simples de scroll horizontal com navegação
+  usePageScrollRestoration();
   
   // Determina se deve mostrar a barra de navegação inferior
   // Mostra em todas as páginas

@@ -6,10 +6,10 @@ const ScrollRestorationContext = createContext<null>(null);
 
 /**
  * Provedor que gerencia a restauração de scroll para toda a aplicação
- * Sistema UNIFICADO - apenas simpleScrollManager
+ * Sistema ULTRA SIMPLIFICADO - apenas o hook que funciona
  */
 const ScrollRestorationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Sistema unificado de scroll restoration
+  // Usa APENAS o hook que funciona - sem conflitos
   useSimpleScrollRestoration();
   
   return (

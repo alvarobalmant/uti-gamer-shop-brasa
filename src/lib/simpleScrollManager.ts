@@ -14,7 +14,7 @@ class SimpleScrollManager {
     this.initializeSaveInterval();
   }
 
-  // Inicia o salvamento automático
+  // Inicia o salvamento automático a cada 20ms
   private initializeSaveInterval(): void {
     if (this.saveInterval) {
       clearInterval(this.saveInterval);
@@ -22,9 +22,9 @@ class SimpleScrollManager {
     
     this.saveInterval = window.setInterval(() => {
       this.saveCurrentPosition();
-    }, 200); // Mais lento para evitar conflitos
+    }, 150);
     
-    console.log('[SimpleScrollManager] ✅ Sistema iniciado - salvamento a cada 200ms');
+    console.log('[SimpleScrollManager] ✅ Sistema iniciado - salvamento a cada 150ms');
   }
 
   // Salva a posição atual
@@ -41,10 +41,8 @@ class SimpleScrollManager {
 
   // Define a página atual
   setCurrentPage(path: string): void {
-    if (this.currentPath !== path) {
-      console.log(`[SimpleScrollManager] 📄 Página: ${this.currentPath} → ${path}`);
-      this.currentPath = path;
-    }
+    console.log(`[SimpleScrollManager] 📄 Mudança de página: ${this.currentPath} → ${path}`);
+    this.currentPath = path;
   }
 
   // Obtém a posição salva de uma página (para restauração instantânea)
@@ -115,22 +113,34 @@ class SimpleScrollManager {
     });
   }
 
-  // Aguarda DOM básico carregar
+  // Aguarda tempo mínimo + verifica se elementos essenciais carregaram
   private async waitForPageLoad(): Promise<void> {
     return new Promise((resolve) => {
-      // Verificação simples e rápida
-      const checkDOM = () => {
-        const hasBasicContent = document.body.children.length > 0 || 
-                               document.readyState === 'complete';
+      // Restauração rápida: apenas 200ms + verificação de elementos essenciais
+      setTimeout(() => {
+        // Verifica se elementos essenciais existem (header, main content)
+        const hasEssentialElements = document.querySelector('header') || 
+                                   document.querySelector('main') || 
+                                   document.querySelector('[data-testid="main-content"]') ||
+                                   document.body.children.length > 0;
         
-        if (hasBasicContent) {
+        if (hasEssentialElements) {
+          console.log('[SimpleScrollManager] ⚡ Restauração rápida - elementos essenciais detectados');
           resolve();
         } else {
-          setTimeout(checkDOM, 50);
+          // Fallback: aguarda mais um pouco se não encontrou elementos
+          const checkElements = () => {
+            const hasElements = document.body.children.length > 0;
+            if (hasElements || document.readyState === 'complete') {
+              console.log('[SimpleScrollManager] ⚡ Restauração fallback - elementos encontrados');
+              resolve();
+            } else {
+              setTimeout(checkElements, 50);
+            }
+          };
+          checkElements();
         }
-      };
-      
-      setTimeout(checkDOM, 100); // Delay mínimo
+      }, 200); // Apenas 200ms para restauração rápida
     });
   }
 
