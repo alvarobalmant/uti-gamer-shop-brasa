@@ -33,7 +33,7 @@ const MainHeader = ({
   // 🔧 CORREÇÃO: Sempre mostrar header, mesmo com erro de carregamento
   const shouldShowHeader = !loading || hasError;
 
-  const handleLogoClick = async (e: React.MouseEvent) => {
+  const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     
     // Se já estamos na homepage, tentar restaurar posição salva
@@ -41,8 +41,8 @@ const MainHeader = ({
       // Scroll suave para o topo usando comportamento nativo
       window.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
     } else {
-      // Se estamos em outra página, usar navegação global
-      await navigateToHome();
+      // Se estamos em outra página, usar navegação direta
+      navigateToHome();
     }
   };
 
