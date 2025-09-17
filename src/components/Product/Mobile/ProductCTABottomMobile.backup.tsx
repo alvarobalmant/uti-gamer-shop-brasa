@@ -18,7 +18,7 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
 
   const handleWhatsApp = () => {
     const message = `Olá! Quero comprar: ${product.name} - ${formatPrice(product.price)}`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/5527999771112?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -39,7 +39,7 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
       )}
 
       {/* CTA Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg">
         {/* Expanded Section */}
         {isExpanded && (
           <div className="p-4 border-b border-gray-200 bg-gray-50">

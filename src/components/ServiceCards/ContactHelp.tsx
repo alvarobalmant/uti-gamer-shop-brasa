@@ -21,7 +21,7 @@ const ContactHelp = () => {
                 className="mb-6"
               />
               <a
-                href="https://wa.me/5527996882090" // Direct link
+                href="https://wa.me/5527999771112" // Direct link
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-lg transition-all duration-300 hover:scale-105 text-sm group"
@@ -39,7 +39,7 @@ const ContactHelp = () => {
               <div className="space-y-3">
                 {[{
                     icon: Phone,
-                    label: "(27) 99688-2090",
+                    label: "(27) 99977-1112",
                     sublabel: "WhatsApp e Ligações",
                     color: "blue", // Keep color hints for potential styling
                   },

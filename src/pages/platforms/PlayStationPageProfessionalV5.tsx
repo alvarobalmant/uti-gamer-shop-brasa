@@ -6,7 +6,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Loader2, Zap, Play, Star, ShoppingCart, Gamepad2, Headphones, Camera, Trophy, Users, Download, Cloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import Cart from '@/components/Cart';
+import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import { usePlayStationData } from '@/hooks/usePlayStationData';
 

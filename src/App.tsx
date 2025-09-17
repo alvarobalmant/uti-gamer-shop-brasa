@@ -84,7 +84,6 @@ const usePreventLayoutShift = () => {
 };
 
 // Lazy loading para páginas menos críticas
-const SearchResults = lazy(() => import("./pages/SearchResultsFinal"));
 const UnifiedResultsPage = lazy(() => import("./pages/UnifiedResultsPage"));
 const PrimePage = lazy(() => import("./pages/PrimePage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));

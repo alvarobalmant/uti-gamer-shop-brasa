@@ -7,6 +7,8 @@ import ProductCardBadges from './ProductCardBadges';
 import ProductCardInfo from './ProductCardInfo';
 import ProductCardPrice from './ProductCardPrice';
 import ProductCardActions from './ProductCardActions';
+import { useUTICoins } from '@/contexts/UTICoinsContext';
+import { Coins } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +22,10 @@ interface ProductCardProps {
 const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default", index = 0, className }: ProductCardProps) => {
   const isGame = variant === "game";
   const isDeal = variant === "deal";
+  const { getCoinsForAction } = useUTICoins();
+  
+  // Calculate UTI Coins discount percentage  
+  const coinsDiscountPercentage = product.uti_coins_discount_percentage || 0;
   
   return (
     <motion.div
@@ -48,8 +54,8 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
       className={cn(
         "group relative bg-gray-900 rounded-xl overflow-hidden border border-transparent cursor-pointer",
         "p-1.5 md:p-6",
-        // Responsive aspect ratios - 15% menor no mobile
-        isGame ? "aspect-[3/3.8] md:aspect-[3/4.5]" : "aspect-[3/3.5] md:aspect-[4/6]",
+        // Responsive aspect ratios - aumentado para acomodar indicador UTI Coins
+        isGame ? "aspect-[3/4.2] md:aspect-[3/5]" : "aspect-[3/4] md:aspect-[4/6.5]",
         "transition-all duration-300 ease-out",
         "hover:bg-gray-800 hover:border-[#107C10]/50",
         "active:scale-95 md:active:scale-100",
@@ -104,6 +110,16 @@ const ProductCard = ({ product, onAddToCart, onProductClick, variant = "default"
             variant={variant}
             className="text-xs md:text-sm"
           />
+          
+          {/* UTI Coins Discount Indicator */}
+          {coinsDiscountPercentage > 0 && (
+            <div className="mt-1 md:mt-2 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border border-yellow-500/30 rounded-md p-1.5 md:p-2 flex items-center justify-center gap-1">
+              <Coins className="w-2.5 h-2.5 md:w-3 md:h-3 text-yellow-400" />
+              <span className="text-xs font-semibold text-yellow-300">
+                {coinsDiscountPercentage}% OFF com UTI Coins
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>

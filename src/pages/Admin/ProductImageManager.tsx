@@ -10,10 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Upload, Link, Trash2, Star, Plus, AlertTriangle, Save, RotateCcw } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Search, Upload, Link, Trash2, Star, Plus, AlertTriangle, Save, RotateCcw, Grid3X3, Grid2X2, Check, Eye, EyeOff, Monitor } from 'lucide-react';
 import ProductImageCard, { ProductWithAllChanges } from '@/components/Admin/ProductImageManager/ProductImageCard';
 import ImageDropZone from '@/components/Admin/ProductImageManager/ImageDropZone';
 import BulkImageUpload from '@/components/Admin/ProductImageManager/BulkImageUpload';
+import { supabase } from '@/integrations/supabase/client';
 
 const ProductImageManager: React.FC = () => {
   const { products, loading, refreshProducts } = useProductsEnhanced();
@@ -25,6 +27,8 @@ const ProductImageManager: React.FC = () => {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [processingProducts, setProcessingProducts] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
+  const [gridMode, setGridMode] = useState<'2x2' | '3x3'>('3x3');
+  const [showReviewed, setShowReviewed] = useState(true);
 
   // Hook para gerenciar mudanças locais de imagens
   const {
@@ -48,20 +52,29 @@ const ProductImageManager: React.FC = () => {
     changedProductsCount: changedPriceProductsCount
   } = useLocalPriceChanges(productsWithImageChanges);
 
-  // Combinar produtos com mudanças de imagem e preço
+  // Estado local para produtos revisados
+  const [localReviewedProducts, setLocalReviewedProducts] = useState<Set<string>>(new Set());
+
+  // Combinar produtos com mudanças de imagem, preço e revisão
   const finalProducts: ProductWithAllChanges[] = productsWithPriceChanges.map(product => ({
     ...product,
-    localChanges: productsWithImageChanges.find(p => p.id === product.id)?.localChanges
+    localChanges: productsWithImageChanges.find(p => p.id === product.id)?.localChanges,
+    is_reviewed: localReviewedProducts.has(product.id) ? true : product.is_reviewed
   }));
 
   console.log('ProductImageManager: Renderizando com', products.length, 'produtos');
 
-  const filteredProducts = finalProducts.filter(product => 
+  const filteredProducts = finalProducts.filter(product => {
     // Filtrar produtos mestre (is_master_product = true)
-    !product.is_master_product &&
-    (product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.id?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+    if (product.is_master_product) return false;
+    
+    const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.id?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesReviewFilter = showReviewed || !product.is_reviewed;
+    
+    return matchesSearch && matchesReviewFilter;
+  });
 
   const addProcessingProduct = (productId: string) => {
     setProcessingProducts(prev => new Set([...prev, productId]));
@@ -201,7 +214,8 @@ const ProductImageManager: React.FC = () => {
 
   // Salvar todas as mudanças no servidor
   const handleSaveAllChanges = async () => {
-    const hasAnyChanges = hasImageChanges || hasPriceChanges;
+    const hasReviewedChanges = localReviewedProducts.size > 0;
+    const hasAnyChanges = hasImageChanges || hasPriceChanges || hasReviewedChanges;
     if (!hasAnyChanges) return;
 
     setIsSaving(true);
@@ -211,6 +225,7 @@ const ProductImageManager: React.FC = () => {
     try {
       console.log('Salvando mudanças de imagens:', pendingImageChanges);
       console.log('Salvando mudanças de preços:', pendingPriceChanges);
+      console.log('Salvando mudanças de revisão:', Array.from(localReviewedProducts));
 
       // Salvar mudanças de preços primeiro
       if (hasPriceChanges) {
@@ -266,12 +281,38 @@ const ProductImageManager: React.FC = () => {
         }
       }
 
+      // Salvar mudanças de revisão
+      if (hasReviewedChanges) {
+        try {
+          const { data: userData } = await supabase.auth.getUser();
+          
+          for (const productId of localReviewedProducts) {
+            const { error } = await supabase
+              .from('products')
+              .update({
+                is_reviewed: true,
+                reviewed_at: new Date().toISOString(),
+                reviewed_by: userData.user?.id
+              })
+              .eq('id', productId);
+
+            if (error) throw error;
+          }
+          
+          successCount += localReviewedProducts.size;
+        } catch (error) {
+          console.error('Erro ao salvar revisões:', error);
+          errorCount++;
+        }
+      }
+
       // Atualizar dados do servidor
       await refreshProducts();
       
       // Limpar mudanças locais
       clearAllImageChanges();
       clearAllPriceChanges();
+      setLocalReviewedProducts(new Set());
 
       if (errorCount === 0) {
         toast.success(`Todas as alterações foram salvas com sucesso!`);
@@ -285,6 +326,22 @@ const ProductImageManager: React.FC = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleToggleReviewed = (product: any) => {
+    const newReviewedState = !product.is_reviewed;
+    
+    setLocalReviewedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newReviewedState) {
+        newSet.add(product.id);
+      } else {
+        newSet.delete(product.id);
+      }
+      return newSet;
+    });
+    
+    toast.success(newReviewedState ? 'Produto marcado como revisado!' : 'Marcação de revisão removida!');
   };
 
   const toggleProductSelection = (productId: string) => {
@@ -321,14 +378,40 @@ const ProductImageManager: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Revisão Fácil</h1>
-            <p className="text-gray-600 mt-1">
-              Revisão e gerenciamento inteligente de imagens de produtos
-            </p>
+          <div className="flex items-center gap-3">
+            <Monitor className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Revisão Fácil - Produtos</h1>
+              <p className="text-muted-foreground mt-1">
+                Revise e gerencie imagens de produtos com facilidade
+              </p>
+            </div>
           </div>
           
           <div className="flex flex-wrap gap-3">
+            <Badge variant="secondary" className="text-sm">
+              {filteredProducts.length} produtos
+            </Badge>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant={gridMode === '2x2' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setGridMode('2x2')}
+              >
+                <Grid2X2 className="h-4 w-4 mr-2" />
+                2x2
+              </Button>
+              <Button
+                variant={gridMode === '3x3' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setGridMode('3x3')}
+              >
+                <Grid3X3 className="h-4 w-4 mr-2" />
+                3x3
+              </Button>
+            </div>
+            
             <Button 
               onClick={() => setShowBulkUpload(!showBulkUpload)}
               variant="outline"
@@ -356,7 +439,7 @@ const ProductImageManager: React.FC = () => {
         </div>
 
         {/* Save Panel */}
-        {(hasImageChanges || hasPriceChanges) && (
+        {(hasImageChanges || hasPriceChanges || localReviewedProducts.size > 0) && (
           <Card className="border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -364,8 +447,8 @@ const ProductImageManager: React.FC = () => {
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                   <div>
                     <span className="text-blue-800 font-medium">
-                      {changedImageProductsCount + changedPriceProductsCount} produto{(changedImageProductsCount + changedPriceProductsCount) !== 1 ? 's' : ''} com alterações 
-                      ({pendingImageChanges.length} imagens, {pendingPriceChanges.length} preços)
+                      {changedImageProductsCount + changedPriceProductsCount + localReviewedProducts.size} produto{(changedImageProductsCount + changedPriceProductsCount + localReviewedProducts.size) !== 1 ? 's' : ''} com alterações 
+                      ({pendingImageChanges.length} imagens, {pendingPriceChanges.length} preços, {localReviewedProducts.size} revisões)
                     </span>
                     <p className="text-blue-600 text-sm">
                       As alterações estão salvas localmente. Clique em "Salvar Tudo" para enviar ao servidor.
@@ -380,6 +463,7 @@ const ProductImageManager: React.FC = () => {
                     onClick={() => {
                       clearAllImageChanges();
                       clearAllPriceChanges();
+                      setLocalReviewedProducts(new Set());
                     }}
                     disabled={isSaving}
                     className="text-gray-600 hover:text-gray-800"
@@ -411,17 +495,32 @@ const ProductImageManager: React.FC = () => {
           </Card>
         )}
 
-        {/* Search */}
+        {/* Search and Filters */}
         <Card>
-          <CardContent className="p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Buscar e Filtrar Produtos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
               <Input
-                placeholder="Buscar produtos por nome ou ID..."
+                placeholder="Buscar por nome, ID ou categoria..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="max-w-md"
               />
+              <div className="flex items-center gap-2">
+                {showReviewed ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                <label className="text-sm font-medium">
+                  Mostrar revisados
+                </label>
+                <Switch
+                  checked={showReviewed}
+                  onCheckedChange={setShowReviewed}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -452,7 +551,7 @@ const ProductImageManager: React.FC = () => {
 
         {/* Products Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={`grid gap-6 ${gridMode === '2x2' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
             {filteredProducts.map((product) => (
               <ProductImageCard
                 key={product.id}
@@ -466,6 +565,8 @@ const ProductImageManager: React.FC = () => {
                 uploading={uploading || processingProducts.has(product.id) || imageLoading}
                 hasLocalChanges={product.localChanges?.hasChanges || false}
                 onPriceChange={addPriceChange}
+                onToggleReviewed={handleToggleReviewed}
+                gridMode={gridMode}
               />
             ))}
           </div>

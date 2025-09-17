@@ -6,7 +6,7 @@ import { useProductDetail } from '@/hooks/useProductDetail';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
-import Cart from '@/components/Cart';
+import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useToast } from '@/hooks/use-toast';
@@ -217,9 +217,9 @@ const ProductPageSKU = () => {
       )}
 
       {/* Modais */}
-      <Cart 
-        showCart={showCart}
-        setShowCart={setShowCart}
+      <ProfessionalCartModal 
+        isOpen={showCart}
+        onClose={() => setShowCart(false)}
       />
 
       <AuthModal 

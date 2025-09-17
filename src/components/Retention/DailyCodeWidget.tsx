@@ -511,7 +511,7 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                 animate={{ opacity: isExiting ? 0 : 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="fixed inset-0 bg-black bg-opacity-50 z-[9999]"
+                className="fixed inset-0 bg-black bg-opacity-50 z-[9000]"
                 onClick={closeModal}
               >
                 <motion.div
@@ -527,7 +527,7 @@ export const DailyCodeWidget: React.FC<UTICoinsWidgetProps> = ({ className = '' 
                     duration: 0.3, 
                     ease: "easeInOut"
                   }}
-                  className="fixed bg-white rounded-xl shadow-2xl w-[calc(100vw-2rem)] sm:w-96 max-h-[80vh] overflow-y-auto z-[10000]"
+                  className="fixed bg-white rounded-xl shadow-2xl w-[calc(100vw-2rem)] sm:w-96 max-h-[80vh] overflow-y-auto z-[9001]"
                   style={{
                     top: `${Math.max(8, Math.min(modalPosition.top, window.innerHeight - 400))}px`,
                     left: window.innerWidth < 640 ? '1rem' : `${Math.max(16, Math.min(modalPosition.left, window.innerWidth - 400 - 16))}px`

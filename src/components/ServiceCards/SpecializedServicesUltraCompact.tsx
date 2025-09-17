@@ -53,7 +53,7 @@ const SpecializedServicesUltraCompact = memo(() => {
         <div className="absolute bottom-4 right-1/3 w-10 h-10 bg-gray-300 rounded-full opacity-20"></div>
       </div>
       
-      <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 relative z-10">
+      <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 relative z-[1]">
         {/* Header estilo GameStop */}
         <div className="flex items-center justify-between mb-2 px-4 md:px-0">
           <div className="flex-1 text-center">
@@ -110,7 +110,7 @@ const SpecializedServicesUltraCompact = memo(() => {
                           {String(index + 1).padStart(2, '0')}
                         </div>
                         
-                        <div className="relative z-10 flex flex-col h-full">
+                        <div className="relative z-[1] flex flex-col h-full">
                           {/* Ícone clean */}
                           <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
                             {card.image_url && !imageErrors[card.id] ? (

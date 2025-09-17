@@ -57,7 +57,7 @@ const SpecializedServicesRevolutionary = () => {
         </div>
       </div>
       
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-[1]">
         {/* Header REVOLUCIONÁRIO */}
         <div className="text-center mb-20 md:mb-24">
           {/* Badge animado */}
@@ -154,7 +154,7 @@ const SpecializedServicesRevolutionary = () => {
                         </div>
                         
                         {/* Conteúdo do card */}
-                        <div className="relative z-10">
+                        <div className="relative z-[1]">
                           <h3 className="text-3xl md:text-4xl font-black text-gray-900 mb-6 leading-tight group-hover:text-red-700 transition-colors duration-300">
                             {card.title}
                           </h3>

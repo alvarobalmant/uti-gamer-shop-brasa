@@ -11,6 +11,8 @@ import ProductCardImage from './ProductCard/ProductCardImage';
 import ProductCardInfo from './ProductCard/ProductCardInfo';
 import ProductCardPrice from './ProductCard/ProductCardPrice';
 import ProductCardBadge from './ProductCard/ProductCardBadge';
+import { useUTICoins } from '@/contexts/UTICoinsContext';
+import UTICoinsDiscountIndicator from '@/components/UTICoinsDiscountIndicator';
 
 export type { Product } from '@/hooks/useProducts';
 
@@ -24,6 +26,10 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
   const [isHovered, setIsHovered] = useState(false);
   const { handleMouseEnter: handlePrefetchMouseEnter, handleMouseLeave: handlePrefetchMouseLeave } = useProductHover(product.id);
   const { trackProductView } = useAnalytics();
+  const { getCoinsForAction } = useUTICoins();
+  
+  // Calculate UTI Coins discount percentage
+  const coinsDiscountPercentage = product.uti_coins_discount_percentage || 0;
 
   const handleCardClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -58,7 +64,7 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
         "shadow-none",
         "transition-all duration-200 ease-in-out",
         "cursor-pointer",
-        "w-[204px] h-[326px] md:w-[200px] md:h-[320px]",
+        "w-[204px] h-[360px] md:w-[200px] md:h-[360px]",
         "p-0",
         "product-card",
         isHovered && "md:shadow-md md:-translate-y-1"
@@ -75,7 +81,7 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
       />
 
       {/* Favorite Button */}
-      <div className="absolute top-2 right-2 z-10">
+      <div className="absolute top-2 right-2 z-[1]">
         <FavoriteButton productId={product.id} size="sm" />
       </div>
       
@@ -86,6 +92,14 @@ const ProductCard = React.memo(({ product, onCardClick, onAddToCart }: ProductCa
           <ProductCardInfo product={product} />
           <ProductCardPrice product={product} />
         </div>
+        
+        {/* UTI Coins Discount Indicator */}
+        {coinsDiscountPercentage > 0 && (
+          <UTICoinsDiscountIndicator
+            discountPercentage={coinsDiscountPercentage}
+            className="mt-2"
+          />
+        )}
       </div>
     </Card>
   );

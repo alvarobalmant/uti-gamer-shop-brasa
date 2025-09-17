@@ -37,7 +37,6 @@ export const useUTICoinsSettings = () => {
       }
 
       const newIsEnabled = data?.setting_value === 'true' || data?.setting_value === true;
-      console.log('[UTI COINS DEBUG] Settings loaded:', { data, newIsEnabled });
       setIsEnabled(newIsEnabled);
       
       // Atualizar cache global

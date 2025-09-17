@@ -129,7 +129,7 @@ export const ProductCarouselRenderer: React.FC<ProductCarouselRendererProps> = (
             <Button
               variant="outline"
               size="icon"
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-[5] bg-white/90 hover:bg-white shadow-lg"
               onClick={goToPrevious}
               disabled={!canGoPrevious}
             >
@@ -139,7 +139,7 @@ export const ProductCarouselRenderer: React.FC<ProductCarouselRendererProps> = (
             <Button
               variant="outline"
               size="icon"
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-[5] bg-white/90 hover:bg-white shadow-lg"
               onClick={goToNext}
               disabled={!canGoNext}
             >

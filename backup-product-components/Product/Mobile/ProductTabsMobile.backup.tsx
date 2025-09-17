@@ -327,7 +327,7 @@ const ProductTabsMobile: React.FC<ProductTabsMobileProps> = ({ product }) => {
         <Button
           onClick={() => {
             const message = `Olá! Tenho uma dúvida sobre o produto: ${product.name}`;
-            const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+            const whatsappUrl = `https://wa.me/5527999771112?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
           }}
           className="w-full bg-green-600 hover:bg-green-700 text-white"

@@ -61,7 +61,7 @@ const SpecializedServicesOptimized = () => {
         <div className="absolute bottom-10 right-1/3 w-18 h-18 bg-purple-100 rounded-full opacity-30"></div>
       </div>
       
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-[1]">
         {/* Header compacto mas impactante */}
         <div className="text-center mb-12 md:mb-16">
           {/* Badge otimizado */}
@@ -158,7 +158,7 @@ const SpecializedServicesOptimized = () => {
                         </div>
                         
                         {/* Conteúdo do card compacto */}
-                        <div className="relative z-10">
+                        <div className="relative z-[1]">
                           <h3 className="text-xl md:text-2xl font-black text-gray-900 mb-3 leading-tight group-hover:text-red-700 transition-colors duration-300">
                             {card.title}
                           </h3>

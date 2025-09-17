@@ -5,7 +5,7 @@ import { ProductGridSkeleton, ProductSectionSkeleton } from '@/components/Skelet
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, ShoppingCart, Eye } from 'lucide-react';
+import { Heart, ShoppingCart, Eye, Coins } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -157,6 +157,16 @@ const OptimizedProductCard = memo<{
             </div>
           )}
         </div>
+
+        {/* UTI Coins Discount Indicator */}
+        {(product.uti_coins_discount_percentage || 0) > 0 && (
+          <div className="mt-1 bg-gradient-to-r from-yellow-100 to-orange-100 border border-yellow-300 rounded-md p-2 flex items-center justify-center gap-1">
+            <Coins className="w-3 h-3 text-yellow-600" />
+            <span className="text-xs font-semibold text-yellow-700">
+              {product.uti_coins_discount_percentage}% OFF com UTI Coins
+            </span>
+          </div>
+        )}
 
         {/* Botão de compra (mobile) */}
         <Button

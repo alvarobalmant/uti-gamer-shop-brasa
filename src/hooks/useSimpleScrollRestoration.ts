@@ -36,27 +36,57 @@ export const useSimpleScrollRestoration = () => {
     const scrollPosition = { x: window.scrollX, y: window.scrollY };
     pageStateManager.saveScrollPosition(currentPath, scrollPosition);
     
-    // PÁGINA DE BUSCA - SEMPRE vai para o topo, independente do tipo de navegação
-    if (location.pathname.startsWith('/busca')) {
+    // NAVEGAÇÃO ENTRE TIPOS DE PÁGINA DIFERENTES - SEMPRE vai para o topo
+    const isHomePage = currentPath === '/' || currentPath === '';
+    const isSearchPage = currentPath.startsWith('/busca');
+    const isProductPage = currentPath.startsWith('/produto/');
+    
+    console.log(`[SimpleScrollRestoration] 📊 Análise de navegação:`, {
+      currentPath,
+      isHomePage,
+      isSearchPage,
+      isProductPage,
+      navigationType
+    });
+    
+    // Para páginas de busca, SEMPRE limpar e ir ao topo
+    if (isSearchPage) {
       console.log(`[SimpleScrollRestoration] 🔍 PÁGINA DE BUSCA - forçando scroll para topo SEMPRE`);
-      // Limpa posição salva da página de busca para evitar restauração futura
       simpleScrollManager.clearPagePosition(currentPath);
       horizontalScrollManager.clearPageHorizontalPositions(currentPath);
       
-      // Força scroll para o topo com delay para aguardar o cache carregar
       const forceTopScroll = () => {
         window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
         console.log(`[SimpleScrollRestoration] ✅ Scroll forçado para topo na busca`);
       };
       
-      // Executa imediatamente
       forceTopScroll();
-      
-      // E executa novamente após 100ms e 500ms para garantir (aguarda cache/produtos)
       setTimeout(forceTopScroll, 100);
       setTimeout(forceTopScroll, 500);
       
-      return; // Sai da função sem fazer mais nada
+      return;
+    }
+    
+    // Para navegação nova (não POP), limpar cache conflitante e avaliar se deve ir ao topo
+    if (navigationType !== NavigationType.Pop) {
+      console.log(`[SimpleScrollRestoration] ➡️ NOVA NAVEGAÇÃO - limpando cache conflitante`);
+      
+      // Limpar cache conflitante do useSmartScrollRestoration
+      try {
+        sessionStorage.removeItem('uti-scroll-cache');
+        console.log(`[SimpleScrollRestoration] 🧹 Cache conflitante limpo (uti-scroll-cache)`);
+      } catch (error) {
+        console.warn('[SimpleScrollRestoration] Erro ao limpar cache conflitante:', error);
+      }
+      
+      // Para homepage, sempre limpar cache e ir ao topo (evita scroll de outras páginas)
+      if (isHomePage) {
+        console.log(`[SimpleScrollRestoration] 🏠 HOMEPAGE - limpando e indo ao topo`);
+        simpleScrollManager.clearPagePosition(currentPath);
+        horizontalScrollManager.clearPageHorizontalPositions(currentPath);
+        window.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+        return;
+      }
     }
     
     // Lógica baseada no tipo de navegação para outras páginas

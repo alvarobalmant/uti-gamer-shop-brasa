@@ -298,19 +298,76 @@ const showWhatsAppFallback = (url: string) => {
   });
 };
 
-export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '5527996882090', trackWhatsAppClick?: (context?: string) => void, onLoadingStart?: () => void) => {
+export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '5527999771112', trackWhatsAppClick?: (context?: string) => void, onLoadingStart?: () => void, cartTotals?: any, utiCoinsUsed?: boolean, userCoinsBalance?: number) => {
   console.log('📦 sendToWhatsApp utils called with:', cartItems.length, 'items');
   
-  const itemsList = cartItems.map(item => 
-    `• ${item.product.name} (${item.size}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
-  ).join('\n');
+  // Calcular informações dos produtos com detalhes de preços e UTI Coins
+  const itemsDetails = cartItems.map(item => {
+    const originalPrice = item.product.price * item.quantity;
+    const discountPercentage = item.product.discount_percentage || 0;
+    const regularDiscount = originalPrice * (discountPercentage / 100);
+    const discountedPrice = originalPrice - regularDiscount;
+    
+    // UTI Coins - Cashback
+    const cashbackPercentage = item.product.uti_coins_cashback_percentage || 2;
+    const coinsEarned = Math.round((Math.ceil(discountedPrice) * cashbackPercentage) / 100 * 100);
+    
+    // UTI Coins - Desconto aplicado
+    const maxDiscountPercentage = item.product.uti_coins_discount_percentage || 0;
+    const maxCoinsDiscount = Math.floor((Math.ceil(discountedPrice) * maxDiscountPercentage) / 100 * 100);
+    let appliedCoinsDiscount = 0;
+    
+    if (utiCoinsUsed && maxCoinsDiscount > 0 && userCoinsBalance) {
+      const coinsToUse = Math.min(maxCoinsDiscount, userCoinsBalance);
+      appliedCoinsDiscount = coinsToUse / 100;
+    }
+    
+    const finalPrice = discountedPrice - appliedCoinsDiscount;
+    
+    let itemText = `📦 *${item.product.name}*`;
+    if (item.size) itemText += ` - Tamanho: ${item.size}`;
+    if (item.color) itemText += ` - Cor: ${item.color}`;
+    itemText += `\n   📊 Quantidade: ${item.quantity}`;
+    
+    if (discountPercentage > 0) {
+      itemText += `\n   💰 Preço original: R$ ${originalPrice.toFixed(2).replace('.', ',')}`;
+      itemText += `\n   🏷️ Desconto (${discountPercentage}%): -R$ ${regularDiscount.toFixed(2).replace('.', ',')}`;
+    }
+    
+    if (appliedCoinsDiscount > 0) {
+      itemText += `\n   🪙 Desconto UTI Coins: -R$ ${appliedCoinsDiscount.toFixed(2).replace('.', ',')}`;
+    }
+    
+    itemText += `\n   💵 *Valor final: R$ ${finalPrice.toFixed(2).replace('.', ',')}*`;
+    
+    if (!utiCoinsUsed && coinsEarned > 0) {
+      itemText += `\n   ✨ Você ganhará: ${coinsEarned.toLocaleString()} UTI Coins`;
+    }
+    
+    return {
+      text: itemText,
+      finalPrice,
+      coinsEarned: utiCoinsUsed ? 0 : coinsEarned,
+      appliedCoinsDiscount
+    };
+  });
   
-  const total = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  console.log('💰 Total calculated:', total);
+  const itemsList = itemsDetails.map(item => item.text).join('\n\n');
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  const totalRegularDiscount = itemsDetails.reduce((sum, item) => sum + ((item.finalPrice + item.appliedCoinsDiscount) - item.finalPrice), 0);
+  const totalCoinsDiscount = itemsDetails.reduce((sum, item) => sum + item.appliedCoinsDiscount, 0);
+  const finalTotal = itemsDetails.reduce((sum, item) => sum + item.finalPrice, 0);
+  const totalCoinsEarned = itemsDetails.reduce((sum, item) => sum + item.coinsEarned, 0);
+  
+  // Frete
+  const shippingCost = finalTotal >= 150 ? 0 : 15;
+  const totalWithShipping = finalTotal + shippingCost;
+  
+  console.log('💰 Total calculated:', totalWithShipping);
   
   // Gerar código de verificação do pedido
   console.log('🔐 Generating order code...');
-  const orderCode = await generateOrderVerificationCode(cartItems, total);
+  const orderCode = await generateOrderVerificationCode(cartItems, totalWithShipping);
   
   if (!orderCode) {
     console.error('❌ Failed to generate order code');
@@ -333,7 +390,61 @@ export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '55
     console.warn('📧 Email sending failed:', err);
   }
   
-  const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*\n\n🔐 *Código de Verificação:*\n${orderCode}\n\n📋 *Copie o código:*\n${orderCode}\n\nAguardo retorno! 🎮`;
+  // Montar mensagem detalhada
+  let message = `🎮 *PEDIDO UTI DOS GAMES* 🎮\n\n`;
+  message += `═════════════════════════\n`;
+  message += `📋 *PRODUTOS*\n`;
+  message += `═════════════════════════\n\n`;
+  message += itemsList;
+  
+  message += `\n\n═════════════════════════\n`;
+  message += `💰 *RESUMO FINANCEIRO*\n`;
+  message += `═════════════════════════\n`;
+  message += `💵 Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
+  
+  if (totalRegularDiscount > 0) {
+    message += `🏷️ Desconto produtos: -R$ ${totalRegularDiscount.toFixed(2).replace('.', ',')}\n`;
+  }
+  
+  if (totalCoinsDiscount > 0) {
+    message += `🪙 Desconto UTI Coins: -R$ ${totalCoinsDiscount.toFixed(2).replace('.', ',')}\n`;
+  }
+  
+  message += `🚚 Frete: ${shippingCost === 0 ? 'GRÁTIS' : 'R$ ' + shippingCost.toFixed(2).replace('.', ',')}\n`;
+  message += `💸 *TOTAL FINAL: R$ ${totalWithShipping.toFixed(2).replace('.', ',')}*\n`;
+  
+  // Informações UTI Coins
+  if (utiCoinsUsed || totalCoinsEarned > 0) {
+    message += `\n═════════════════════════\n`;
+    message += `🪙 *UTI COINS*\n`;
+    message += `═════════════════════════\n`;
+    
+    if (userCoinsBalance !== undefined) {
+      message += `💰 Seu saldo atual: ${userCoinsBalance.toLocaleString()} coins\n`;
+    }
+    
+    if (utiCoinsUsed && totalCoinsDiscount > 0) {
+      const coinsUsed = totalCoinsDiscount * 100;
+      message += `🎯 Coins utilizados: ${coinsUsed.toLocaleString()} coins\n`;
+      message += `💲 Desconto aplicado: R$ ${totalCoinsDiscount.toFixed(2).replace('.', ',')}\n`;
+      if (userCoinsBalance !== undefined) {
+        const remainingBalance = userCoinsBalance - coinsUsed;
+        message += `🔄 Saldo restante: ${remainingBalance.toLocaleString()} coins\n`;
+      }
+    }
+    
+    if (!utiCoinsUsed && totalCoinsEarned > 0) {
+      message += `✨ Coins que você ganhará: ${totalCoinsEarned.toLocaleString()} coins\n`;
+      message += `💰 Equivale a: R$ ${(totalCoinsEarned * 0.01).toFixed(2).replace('.', ',')} em futuras compras\n`;
+    }
+  }
+  
+  message += `\n═════════════════════════\n`;
+  message += `🔐 *CÓDIGO DE VERIFICAÇÃO*\n`;
+  message += `═════════════════════════\n`;
+  message += `${orderCode}\n\n`;
+  message += `📋 *Copie o código acima*\n\n`;
+  message += `Aguardo confirmação! 🎮`;
   
   // Track WhatsApp click if tracking function is provided
   if (trackWhatsAppClick) {
@@ -363,10 +474,16 @@ export const generateSingleProductCode = async (product: any, quantity: number =
     product: product,
     quantity: quantity,
     size: additionalInfo?.size,
-    color: additionalInfo?.color
+    color: additionalInfo?.color,
+    // Incluir informações de UTI Coins se disponíveis
+    useCoins: additionalInfo?.useCoins || false,
+    coinsDiscount: additionalInfo?.coinsDiscount || 0,
+    coinsEarned: additionalInfo?.coinsEarned || 0,
+    finalPrice: additionalInfo?.finalPrice || (product.price * quantity)
   }];
   
-  const total = product.price * quantity;
+  // Usar o preço final (com desconto de coins se aplicável)
+  const total = additionalInfo?.finalPrice || (product.price * quantity);
   console.log('📊 [MOBILE DEBUG] Cart items prepared:', cartItems);
   console.log('💰 [MOBILE DEBUG] Total calculated:', total);
   
@@ -410,20 +527,99 @@ export const sendSingleProductToWhatsApp = async (product: any, quantity: number
     console.warn('📧 Single product email failed:', err);
   }
   
-  const message = `Olá! Gostaria de comprar este produto da UTI DOS GAMES:
-
-📦 *${product.name}*
-💰 Preço: R$ ${product.price.toFixed(2)}
-📊 Quantidade: ${quantity}
-💵 *Total: R$ ${total.toFixed(2)}*
-
-🔐 *Código de Verificação:*
-${orderCode}
-
-📋 *Copie o código:*
-${orderCode}
-
-Aguardo retorno! 🎮`;
+  // Calcular informações detalhadas do produto
+  const originalPrice = product.price * quantity;
+  const discountPercentage = product.discount_percentage || 0;
+  const regularDiscount = originalPrice * (discountPercentage / 100);
+  let discountedPrice = originalPrice - regularDiscount;
+  
+  // UTI Coins - usar informações do modal se disponíveis
+  let coinsEarned, coinsDiscount = 0, finalPrice;
+  
+  if (additionalInfo?.finalPrice !== undefined) {
+    // Usar cálculos do modal
+    finalPrice = additionalInfo.finalPrice;
+    coinsDiscount = additionalInfo.coinsDiscount || 0;
+    coinsEarned = additionalInfo.coinsEarned || 0;
+    discountedPrice = additionalInfo.originalSubtotal || discountedPrice;
+  } else {
+    // Fallback para cálculos antigos
+    const cashbackPercentage = product.uti_coins_cashback_percentage || 2;
+    coinsEarned = Math.round((Math.ceil(discountedPrice) * cashbackPercentage) / 100 * 100);
+    finalPrice = discountedPrice;
+  }
+  
+  // Frete baseado no preço final (com desconto de coins se aplicável)
+  const shippingCost = finalPrice >= 150 ? 0 : 15;
+  const totalWithShipping = finalPrice + shippingCost;
+  
+  let message = `🎮 *COMPRA UTI DOS GAMES* 🎮\n\n`;
+  message += `═════════════════════════\n`;
+  message += `📦 *PRODUTO*\n`;
+  message += `═════════════════════════\n`;
+  message += `🎮 *${product.name}*\n`;
+  message += `📊 Quantidade: ${quantity}\n\n`;
+  
+  if (additionalInfo?.size) {
+    message += `📏 Tamanho: ${additionalInfo.size}\n`;
+  }
+  if (additionalInfo?.color) {
+    message += `🎨 Cor: ${additionalInfo.color}\n`;
+  }
+  
+  message += `═════════════════════════\n`;
+  message += `💰 *VALORES*\n`;
+  message += `═════════════════════════\n`;
+  
+  if (discountPercentage > 0) {
+    message += `💰 Preço original: R$ ${originalPrice.toFixed(2).replace('.', ',')}\n`;
+    message += `🏷️ Desconto (${discountPercentage}%): -R$ ${regularDiscount.toFixed(2).replace('.', ',')}\n`;
+    message += `💵 Preço com desconto: R$ ${discountedPrice.toFixed(2).replace('.', ',')}\n`;
+  } else {
+    message += `💰 Preço: R$ ${originalPrice.toFixed(2).replace('.', ',')}\n`;
+  }
+  
+  // Mostrar desconto de UTI Coins se aplicado
+  if (coinsDiscount > 0) {
+    message += `🪙 Desconto UTI Coins: -R$ ${coinsDiscount.toFixed(2).replace('.', ',')}\n`;
+  }
+  
+  message += `🚚 Frete: ${shippingCost === 0 ? 'GRÁTIS' : 'R$ ' + shippingCost.toFixed(2).replace('.', ',')}\n`;
+  message += `💸 *TOTAL: R$ ${totalWithShipping.toFixed(2).replace('.', ',')}*\n`;
+  
+  // UTI Coins info
+  if (coinsEarned > 0 || coinsDiscount > 0 || (additionalInfo?.useCoins !== undefined)) {
+    message += `\n═════════════════════════\n`;
+    message += `🪙 *UTI COINS*\n`;
+    message += `═════════════════════════\n`;
+    
+    if (additionalInfo?.useCoins) {
+      // Cliente escolheu usar coins
+      const coinsUsed = additionalInfo.coinsToUse || 0;
+      if (coinsUsed > 0) {
+        message += `🪙 Coins utilizados: ${coinsUsed.toLocaleString()}\n`;
+        message += `💰 Desconto aplicado: R$ ${coinsDiscount.toFixed(2).replace('.', ',')}\n`;
+        message += `💳 Saldo restante: ${(additionalInfo.coinsBalance - coinsUsed).toLocaleString()} coins\n`;
+      }
+    } else {
+      // Cliente não usou coins, mostrar cashback
+      if (coinsEarned > 0) {
+        message += `✨ Você ganhará: ${coinsEarned.toLocaleString()} coins\n`;
+        message += `💰 Equivale a: R$ ${(coinsEarned / 100).toFixed(2).replace('.', ',')} em futuras compras\n`;
+      }
+    }
+    
+    if (additionalInfo?.coinsBalance !== undefined) {
+      message += `💼 Saldo atual: ${additionalInfo.coinsBalance.toLocaleString()} coins\n`;
+    }
+  }
+  
+  message += `\n═════════════════════════\n`;
+  message += `🔐 *CÓDIGO DE VERIFICAÇÃO*\n`;
+  message += `═════════════════════════\n`;
+  message += `${orderCode}\n\n`;
+  message += `📋 *Copie o código acima*\n\n`;
+  message += `Aguardo confirmação! 🎮`;
   
   // Track WhatsApp click if tracking function is provided
   if (trackWhatsAppClick) {
@@ -431,15 +627,7 @@ Aguardo retorno! 🎮`;
     trackWhatsAppClick('single_product_purchase');
   }
 
-  const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
-  console.log('🚀 [MOBILE DEBUG] Opening single product WhatsApp:', {
-    urlLength: whatsappUrl.length,
-    messageIncludes: {
-      productName: message.includes(product.name),
-      verificationCode: message.includes(orderCode),
-      total: message.includes(total.toFixed(2))
-    }
-  });
+  const whatsappUrl = `https://wa.me/5527999771112?text=${encodeURIComponent(message)}`;
   
   // Usar função robusta para abrir WhatsApp com loading
   openWhatsApp(whatsappUrl, onLoadingStart);

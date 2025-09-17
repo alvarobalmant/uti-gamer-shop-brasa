@@ -577,7 +577,7 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
               animate={{ opacity: isExiting ? 0 : 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="fixed inset-0 bg-black bg-opacity-50 z-[9999]"
+              className="fixed inset-0 bg-black bg-opacity-50 z-[9000]"
               onClick={closeModal}
             >
               {/* Modal posicionado abaixo do widget */}
@@ -594,7 +594,7 @@ export const CoinAnimatedWidget: React.FC<UTICoinsWidgetProps> = ({ className = 
                   duration: 0.3, 
                   ease: "easeInOut"
                 }}
-                className="fixed bg-white rounded-xl shadow-2xl w-96 max-h-[80vh] overflow-y-auto z-[10000]"
+                className="fixed bg-white rounded-xl shadow-2xl w-96 max-h-[80vh] overflow-y-auto z-[9001]"
                 style={{
                   top: `${Math.max(8, Math.min(modalPosition.top, window.innerHeight - 400))}px`, // Garantir que não saia da tela
                   left: `${Math.max(16, Math.min(modalPosition.left, window.innerWidth - 400 - 16))}px` // Garantir que não saia da tela

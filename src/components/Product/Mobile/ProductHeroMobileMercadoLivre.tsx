@@ -90,7 +90,7 @@ const ProductHeroMobileMercadoLivre: React.FC<ProductHeroMobileMercadoLivreProps
     handleAddToCart();
     // Redirecionar para checkout ou WhatsApp
     const message = `Olá! Gostaria de comprar:\n\n${product.name}\nPreço: R$ ${product.price.toFixed(2).replace('.', ',')}\nQuantidade: ${quantity}`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/5527999771112?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -323,7 +323,7 @@ const ProductHeroMobileMercadoLivre: React.FC<ProductHeroMobileMercadoLivreProps
       </div>
 
       {/* Botões de Ação Fixos */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
         <div className="flex gap-3">
           <Button
             onClick={handleAddToCart}

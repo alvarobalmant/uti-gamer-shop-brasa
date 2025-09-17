@@ -28,7 +28,7 @@ const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
       className={cn(
         // 🎯 CORREÇÃO: Mostra apenas em desktop (lg+), tablets usam layout mobile
         'hidden lg:block bg-background border-t border-border/60',
-        'fixed top-[72px] left-0 right-0 z-40', // Fixo ao invés de sticky, posicionado abaixo do MainHeader
+        'fixed top-[72px] left-0 right-0 z-10', // Z-index menor para ficar atrás do MainHeader
         // 🎯 ANIMAÇÃO OTIMIZADA: Transições mais rápidas e responsivas
         'transition-transform duration-150 ease-in-out', // Reduzido de 200ms para 150ms
         {

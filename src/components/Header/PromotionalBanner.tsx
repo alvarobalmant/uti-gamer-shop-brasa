@@ -8,13 +8,13 @@ const PromotionalBanner = () => {
         {/* Added mx-auto for better centering if container width is fixed */}
         <div className="flex animate-marquee whitespace-nowrap text-xs sm:text-sm font-medium">
           {/* Adjusted text size slightly for smaller screens */}
-          <span className="mx-6 sm:mx-8">📱 WhatsApp: (27) 99688-2090</span>
+          <span className="mx-6 sm:mx-8">📱 WhatsApp: (27) 99977-1112</span>
           <span className="mx-6 sm:mx-8">🚚 Frete grátis acima de R$ 200</span>
           <span className="mx-6 sm:mx-8">💳 Parcelamento em até 12x sem juros</span>
           <span className="mx-6 sm:mx-8">⚡ +10 anos de tradição em Colatina</span>
           <span className="mx-6 sm:mx-8">🏪 Retire na loja física</span>
           {/* Added duplicate items to ensure smooth looping for marquee */}
-          <span className="mx-6 sm:mx-8">📱 WhatsApp: (27) 99688-2090</span>
+          <span className="mx-6 sm:mx-8">📱 WhatsApp: (27) 99977-1112</span>
           <span className="mx-6 sm:mx-8">🚚 Frete grátis acima de R$ 200</span>
           <span className="mx-6 sm:mx-8">💳 Parcelamento em até 12x sem juros</span>
           <span className="mx-6 sm:mx-8">⚡ +10 anos de tradição em Colatina</span>

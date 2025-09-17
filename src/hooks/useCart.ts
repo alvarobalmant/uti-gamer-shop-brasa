@@ -167,20 +167,32 @@ export const useCart = () => {
     return count;
   }, [cart]);
 
-  const sendToWhatsApp = useCallback(() => {
+  const sendToWhatsApp = useCallback(async () => {
     if (cart.length === 0) return;
 
-    const itemsList = cart.map(item => 
-      `• ${item.product.name} (${item.size || 'Padrão'}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
-    ).join('\n');
-    
-    const total = getTotal();
-    const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*`;
-    
-    // Usar função robusta de redirecionamento
-    import('@/utils/whatsapp').then(({ openWhatsAppDirect }) => {
-      openWhatsAppDirect('5527996882090', message);
-    });
+    try {
+      // Usar função detalhada do WhatsApp com código de verificação
+      const { sendToWhatsApp: sendToWhatsAppDetailed } = await import('@/utils/whatsapp');
+      
+      await sendToWhatsAppDetailed(
+        cart, 
+        '5527999771112', 
+        (context) => console.log('📊 Tracking context:', context)
+      );
+    } catch (error) {
+      console.error('❌ Error in sendToWhatsApp:', error);
+      
+      // Fallback para método simples se falhar
+      const itemsList = cart.map(item => 
+        `• ${item.product.name} (${item.size || 'Padrão'}${item.color ? `, ${item.color}` : ''}) - Qtd: ${item.quantity} - R$ ${(item.product.price * item.quantity).toFixed(2)}`
+      ).join('\n');
+      
+      const total = getTotal();
+      const message = `Olá! Gostaria de pedir os seguintes itens da UTI DOS GAMES:\n\n${itemsList}\n\n*Total: R$ ${total.toFixed(2)}*`;
+      
+      const { openWhatsAppDirect } = await import('@/utils/whatsapp');
+      openWhatsAppDirect('5527999771112', message);
+    }
   }, [cart, getTotal]);
 
   // Função para compatibilidade com updateQuantity usando productId, size, color

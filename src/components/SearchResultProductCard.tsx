@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
 import { Badge } from '@/components/ui/badge';
+import { Coins } from 'lucide-react';
 
 import SearchResultProductCardImage from './ProductCard/SearchResultProductCardImage';
 import SearchResultProductCardInfo from './ProductCard/SearchResultProductCardInfo';
@@ -53,7 +54,7 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart,
           "shadow-none",
           "transition-all duration-200 ease-in-out",
           "cursor-pointer",
-          "w-full h-[280px] sm:h-[300px] md:h-[340px] lg:h-[360px]",
+          "w-full h-[300px] sm:h-[320px] md:h-[360px] lg:h-[380px]",
           "p-0",
           "product-card",
           isHovered && "md:shadow-md md:-translate-y-1"
@@ -72,8 +73,20 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart,
         <SearchResultProductCardImage product={product} isHovered={isHovered} />
 
         <div className="flex flex-1 flex-col justify-between p-1.5 sm:p-2 md:p-2.5 lg:p-3 min-h-0">
-          <SearchResultProductCardInfo product={product} />
-          <ProductCardPrice product={product} />
+          <div className="space-y-2">
+            <SearchResultProductCardInfo product={product} />
+            <ProductCardPrice product={product} />
+          </div>
+          
+          {/* UTI Coins Discount Indicator */}
+          {(product.uti_coins_discount_percentage || 0) > 0 && (
+            <div className="mt-1 bg-gradient-to-r from-yellow-100 to-orange-100 border border-yellow-300 rounded-md p-2 flex items-center justify-center gap-1">
+              <Coins className="w-3 h-3 text-yellow-600" />
+              <span className="text-xs font-semibold text-yellow-700">
+                {product.uti_coins_discount_percentage}% OFF com UTI Coins
+              </span>
+            </div>
+          )}
         </div>
       </Card>
 

@@ -191,6 +191,10 @@ const SectionPageEnhanced: React.FC = () => {
     setShowAuthModal(!showAuthModal);
   };
 
+  const handleBack = async () => {
+    navigate(-1);
+  };
+
   const handlePriceFilter = () => {
     // Filtros já são aplicados automaticamente via useMemo
     setShowFilters(false);
@@ -265,11 +269,12 @@ const SectionPageEnhanced: React.FC = () => {
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            size="sm"
+            onClick={handleBack}
+            className="p-0 h-auto font-normal hover:text-red-600"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar para Home
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Voltar
           </Button>
         </div>
 

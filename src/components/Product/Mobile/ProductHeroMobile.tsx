@@ -300,10 +300,14 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         product={{
+          id: product.id,
           name: product.name,
           price: product.price,
           originalPrice: product.list_price,
-          image: product.images?.[0] || '/placeholder.svg'
+          image: product.additional_images?.[0] || product.image || '/placeholder.svg',
+          discount_percentage: product.discount_percentage,
+          uti_coins_cashback_percentage: product.uti_coins_cashback_percentage,
+          uti_coins_discount_percentage: product.uti_coins_discount_percentage
         }}
         quantity={quantity}
       />

@@ -75,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
 
               <div style="text-align: center; margin: 30px 0;">
-                <a href="https://wa.me/5527996882090" style="background: #25d366; color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
+                <a href="https://wa.me/5527999771112" style="background: #25d366; color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
                   💬 Falar no WhatsApp
                 </a>
               </div>
@@ -137,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <a href="https://utigames.com" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block; margin-right: 10px;">
                   🛍️ Continuar Comprando
                 </a>
-                <a href="https://wa.me/5527996882090" style="background: #25d366; color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
+                <a href="https://wa.me/5527999771112" style="background: #25d366; color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
                   💬 Suporte
                 </a>
               </div>

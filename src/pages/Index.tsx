@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
-import Cart from '@/components/Cart';
+import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
 import ProductSkeleton from '@/components/ProductSkeleton';
@@ -13,12 +13,10 @@ import SectionRenderer from '@/components/HomePage/SectionRenderer';
 import SpecialSectionRenderer from '@/components/SpecialSections/SpecialSectionRenderer';
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
-import { FloatingActionButton } from '@/components/Retention/FloatingActionButton';
+
 // Preloader removed - using cache system instead
 import { useScrollCoins } from '@/hooks/useScrollCoins';
 import { ScrollCoinsNotification } from '@/components/Mobile/ScrollCoinsNotification';
-import { useSmartScrollRestoration } from '@/hooks/useSmartScrollRestoration';
-
 // Lazy load AdminPanel para reduzir bundle inicial
 const AdminPanel = lazy(() => import('./Admin'));
 
@@ -44,9 +42,6 @@ const Index = React.memo(() => {
 
   // Ativar sistema de scroll coins
   const { notification, hideNotification } = useScrollCoins();
-
-  // Ativar sistema de scroll restoration inteligente
-  useSmartScrollRestoration();
 
   const handleAddToCart = useCallback((product: any, size?: string, color?: string) => {
     addToCart(product, size, color);
@@ -207,12 +202,9 @@ const Index = React.memo(() => {
 
       <Footer />
 
-      {/* Floating Action Button */}
-      <FloatingActionButton />
-
-      <Cart
-        showCart={showCart}
-        setShowCart={setShowCart}
+      <ProfessionalCartModal
+        isOpen={showCart}
+        onClose={() => setShowCart(false)}
       />
 
       <AuthModal isOpen={showAuthModal} onClose={handleAuthClose} />

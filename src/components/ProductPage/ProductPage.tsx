@@ -89,7 +89,7 @@ const ProductPage = () => {
 
   const handleWhatsAppContact = () => {
     const message = `Olá! Gostaria de mais informações sobre:\n\n${product.name}\nPreço: R$ ${getCurrentPrice().toFixed(2)}\nCondição: ${selectedCondition === 'new' ? 'Novo' : selectedCondition === 'digital' ? 'Digital' : 'Usado'}`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/5527999771112?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 

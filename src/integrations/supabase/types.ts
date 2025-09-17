@@ -1851,6 +1851,7 @@ export type Database = {
           is_active: boolean | null
           is_featured: boolean | null
           is_master_product: boolean | null
+          is_reviewed: boolean | null
           list_price: number | null
           manual_related_products: Json | null
           master_slug: string | null
@@ -1876,6 +1877,8 @@ export type Database = {
           rating_count: number | null
           related_products: Json | null
           related_products_auto: boolean | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           reviews_config: Json | null
           reviews_enabled: boolean | null
           shipping_dimensions: Json | null
@@ -1931,6 +1934,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           is_master_product?: boolean | null
+          is_reviewed?: boolean | null
           list_price?: number | null
           manual_related_products?: Json | null
           master_slug?: string | null
@@ -1956,6 +1960,8 @@ export type Database = {
           rating_count?: number | null
           related_products?: Json | null
           related_products_auto?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           reviews_config?: Json | null
           reviews_enabled?: boolean | null
           shipping_dimensions?: Json | null
@@ -2011,6 +2017,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           is_master_product?: boolean | null
+          is_reviewed?: boolean | null
           list_price?: number | null
           manual_related_products?: Json | null
           master_slug?: string | null
@@ -2036,6 +2043,8 @@ export type Database = {
           rating_count?: number | null
           related_products?: Json | null
           related_products_auto?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           reviews_config?: Json | null
           reviews_enabled?: boolean | null
           shipping_dimensions?: Json | null

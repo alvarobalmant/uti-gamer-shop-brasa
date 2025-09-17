@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { usePageScrollRestoration } from '@/hooks/usePageScrollRestoration';
+import { useSimpleScrollRestoration } from '@/hooks/useSimpleScrollRestoration';
 import { BottomNavigationBar } from '@/components/Mobile/BottomNavigationBar';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
-import Cart from '@/components/Cart';
+import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
 import MobileSearchBar from '@/components/Header/MobileSearchBar';
 import { SimpleAuthModal } from '@/components/Auth/SimpleAuthModal';
 import { useUIState } from '@/contexts/UIStateContext';
@@ -40,8 +40,8 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showFavoritesAlert, setShowFavoritesAlert] = useState(false);
   
-  // Integra sistema simples de scroll horizontal com navegação
-  usePageScrollRestoration();
+  // Integra sistema consolidado de scroll restoration
+  useSimpleScrollRestoration();
   
   // Determina se deve mostrar a barra de navegação inferior
   // Mostra em todas as páginas
@@ -82,10 +82,10 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
         />
       )}
       
-      {/* ✅ Cart modal como na versão antiga */}
-      <Cart
-        showCart={showCart}
-        setShowCart={setShowCart}
+      {/* ✅ Professional Cart modal */}
+      <ProfessionalCartModal
+        isOpen={showCart}
+        onClose={() => setShowCart(false)}
       />
       
       {/* ✅ Mobile search bar centralizado */}

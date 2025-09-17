@@ -317,7 +317,7 @@ export const BannerManager = () => {
                         id="button_link"
                         value={formData.button_link}
                         onChange={(e) => setFormData(prev => ({ ...prev, button_link: e.target.value }))}
-                        placeholder="Ex: /categoria/ofertas ou https://wa.me/5527996882090"
+                        placeholder="Ex: /categoria/ofertas ou https://wa.me/5527999771112"
                       />
                     </div>
                   </div>

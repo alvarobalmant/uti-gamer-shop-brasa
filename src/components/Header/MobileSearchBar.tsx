@@ -99,7 +99,7 @@ const MobileSearchBar = ({ isOpen, onClose }: MobileSearchBarProps) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.2 }}
-          className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-lg lg:hidden"
+          className="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md shadow-lg lg:hidden"
         >
           {/* Header */}
           <div className="flex items-center p-4 border-b border-gray-200 h-[72px]"> {/* Match header height */}

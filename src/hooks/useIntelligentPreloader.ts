@@ -242,8 +242,17 @@ export class IntelligentPreloader {
   }
 
   private async preloadSearchPage(): Promise<void> {
-    // Preload da página de busca
-    await import('../pages/SearchResultsFinal');
+    // Preload da página de busca (UnifiedResultsPage)
+    await import('../pages/UnifiedResultsPage');
+    
+    // Preload de componentes críticos da página de busca
+    await Promise.all([
+      import('../components/SearchResultProductCard'),
+      import('../components/Debug/SearchDebugPanel'),
+      import('../hooks/useWeightedSearch')
+    ]);
+    
+    console.log('✅ Preload completo: Página de busca (UnifiedResultsPage + componentes)');
   }
 
   private async preloadCartPage(): Promise<void> {

@@ -51,7 +51,7 @@ const SpecializedServices = () => {
         <div className="absolute bottom-20 right-1/3 w-28 h-28 bg-purple-100 rounded-full opacity-20"></div>
       </div>
       
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-[1]">
         {/* Header revolucionário */}
         <div className="text-center mb-16 md:mb-20">
           <div className="flex items-center justify-center mb-8">

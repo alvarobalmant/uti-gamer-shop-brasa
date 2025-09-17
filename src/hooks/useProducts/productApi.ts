@@ -94,6 +94,10 @@ const mapRowToProduct = (row: any): Product => ({
     social_proof_text: ''
   },
   
+  // Campos de revisão
+  is_reviewed: row.is_reviewed || false,
+  reviewed_at: row.reviewed_at || undefined,
+  reviewed_by: row.reviewed_by || undefined,
 
   
   tags: [],
@@ -570,16 +574,36 @@ export const searchProductsWithWeights = async (
 
 export const fetchSingleProductFromDatabase = async (id: string): Promise<Product | null> => {
   try {
-    // Buscar sempre diretamente na tabela products para garantir campos UTI Coins
-    const { data: directData, error: directError } = await supabase
+    let directData: any = null;
+    let directError: any = null;
+
+    // Primeiro, tentar buscar por ID
+    console.log(`[fetchSingleProductFromDatabase] Buscando produto por ID: ${id}`);
+    const { data: idData, error: idError } = await supabase
       .from('products')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (directError) {
-      console.error('Error fetching single product from products table:', directError);
-      return null;
+    if (idData && !idError) {
+      directData = idData;
+      console.log(`[fetchSingleProductFromDatabase] ✅ Produto encontrado por ID`);
+    } else {
+      // Se não encontrar por ID, tentar buscar por slug
+      console.log(`[fetchSingleProductFromDatabase] Produto não encontrado por ID, tentando por slug: ${id}`);
+      const { data: slugData, error: slugError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('slug', id)
+        .single();
+
+      if (slugData && !slugError) {
+        directData = slugData;
+        console.log(`[fetchSingleProductFromDatabase] ✅ Produto encontrado por slug`);
+      } else {
+        console.error(`[fetchSingleProductFromDatabase] Produto não encontrado nem por ID nem por slug:`, { idError, slugError });
+        return null;
+      }
     }
 
     if (!directData) {

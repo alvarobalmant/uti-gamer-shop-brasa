@@ -9,6 +9,8 @@ import { ComponentErrorBoundary, ProductErrorFallback } from '@/components/Error
 import { ProductCardSkeleton } from '@/components/skeletons/AdvancedSkeletons';
 import { Product } from '@/hooks/useProducts/types';
 import { cn } from '@/lib/utils';
+import { useUTICoins } from '@/contexts/UTICoinsContext';
+import UTICoinsDiscountIndicator from '@/components/UTICoinsDiscountIndicator';
 
 interface OptimizedProductCardProps {
   product: Product;
@@ -88,6 +90,10 @@ const OptimizedProductCardComponent: React.FC<OptimizedProductCardProps> = ({
 }) => {
   const { getProductHoverProps } = useProductPrefetch();
   const [isHovered, setIsHovered] = useState(false);
+  const { getCoinsForAction } = useUTICoins();
+  
+  // Calculate UTI Coins discount percentage
+  const coinsDiscountPercentage = product.uti_coins_discount_percentage || 0;
 
   // Props de hover para prefetch
   const hoverProps = getProductHoverProps(product.id);
@@ -211,7 +217,7 @@ const OptimizedProductCardComponent: React.FC<OptimizedProductCardProps> = ({
           {/* Badge */}
           {showBadge && product.badge_visible && product.badge_text && (
             <Badge 
-              className="absolute top-2 left-2 z-10"
+              className="absolute top-2 left-2 z-[1]"
               style={{ backgroundColor: product.badge_color }}
             >
               {product.badge_text}
@@ -221,7 +227,7 @@ const OptimizedProductCardComponent: React.FC<OptimizedProductCardProps> = ({
           {/* Quick actions */}
           {showQuickActions && (
             <div className={cn(
-              'absolute top-2 right-2 z-10 flex flex-col space-y-1 transition-opacity duration-200',
+              'absolute top-2 right-2 z-[1] flex flex-col space-y-1 transition-opacity duration-200',
               isHovered ? 'opacity-100' : 'opacity-0'
             )}>
               <Button
@@ -291,6 +297,14 @@ const OptimizedProductCardComponent: React.FC<OptimizedProductCardProps> = ({
               <ShoppingCart className="w-4 h-4 mr-2" />
               Adicionar
             </Button>
+          )}
+          
+          {/* UTI Coins Discount Indicator */}
+          {coinsDiscountPercentage > 0 && (
+            <UTICoinsDiscountIndicator
+              discountPercentage={coinsDiscountPercentage}
+              className="mt-3"
+            />
           )}
         </CardContent>
       </Link>

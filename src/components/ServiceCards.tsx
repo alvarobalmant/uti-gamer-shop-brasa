@@ -59,7 +59,7 @@ const ServiceCards = () => {
                   className="mb-6"
                 />
                 <a
-                  href="https://wa.me/5527996882090"
+                  href="https://wa.me/5527999771112"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
@@ -81,7 +81,7 @@ const ServiceCards = () => {
                 <div className="space-y-3">
                   {[{
                       icon: Phone,
-                      label: "(27) 99688-2090",
+                      label: "(27) 99977-1112",
                       sublabel: "WhatsApp e Ligações",
                       color: "blue",
                     },

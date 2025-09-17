@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import { useProductSections } from '@/hooks/useProductSections';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
@@ -157,6 +159,10 @@ const SectionPage: React.FC = () => {
     setShowAuthModal(!showAuthModal);
   };
 
+  const handleBack = async () => {
+    navigate(-1);
+  };
+
   // Loading state
   if (productsLoading || sectionsLoading) {
     return (
@@ -223,15 +229,15 @@ const SectionPage: React.FC = () => {
       <main className="container mx-auto px-4 py-6">
         {/* Botão de voltar */}
         <div className="mb-4">
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBack}
+            className="p-0 h-auto font-normal hover:text-red-600"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            <span className="text-sm font-medium">Voltar para Home</span>
-          </button>
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Voltar
+          </Button>
         </div>
 
         {/* Título da seção */}

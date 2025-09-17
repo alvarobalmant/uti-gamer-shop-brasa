@@ -36,13 +36,12 @@ const MainHeader = ({
   const handleLogoClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     
-    // Se já estamos na homepage, tentar restaurar posição salva
+    // Se já estamos na homepage, scroll suave para o topo
     if (location.pathname === '/') {
-      // Scroll suave para o topo usando comportamento nativo
       window.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
     } else {
-      // Se estamos em outra página, usar navegação global
-      await navigateToHome();
+      // Usar navegação direta simples (sem Global Navigation Context)
+      window.location.href = '/';
     }
   };
 
@@ -51,7 +50,7 @@ const MainHeader = ({
       <div className={cn(
         "w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border/80 shadow-sm",
         // Header fixo apenas no desktop (lg e acima)
-        "lg:fixed lg:top-0 lg:left-0 lg:right-0 lg:z-50",
+        "lg:fixed lg:top-0 lg:left-0 lg:right-0 lg:z-30",
         // No mobile, header é estático
         "relative",
         className

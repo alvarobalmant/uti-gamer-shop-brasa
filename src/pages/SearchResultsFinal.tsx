@@ -9,7 +9,7 @@ import { smartSearchProducts } from '@/utils/smartSearch';
 import { getAdvancedSpellCorrection, autoCorrectAdvanced } from '@/utils/advancedSpellCorrector';
 import SearchResultProductCard from '@/components/SearchResultProductCard';
 import Header from '@/components/Header';
-import Cart from '@/components/Cart';
+import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import {
   DropdownMenu,
@@ -569,9 +569,9 @@ const SearchResultsFinal = () => {
       </main>
 
       {/* Modal do carrinho */}
-      <Cart
-        showCart={showCart}
-        setShowCart={setShowCart}
+      <ProfessionalCartModal
+        isOpen={showCart}
+        onClose={() => setShowCart(false)}
       />
 
       {/* Modal de autenticação */}

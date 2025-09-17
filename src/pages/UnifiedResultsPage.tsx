@@ -264,8 +264,10 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
     setPriceRange({ min: '', max: '' });
   };
 
-  // Definir título e breadcrumb baseado no modo
-  const breadcrumbText = mode === 'search' ? 'Voltar' : 'Voltar para Home';
+  // Handler para voltar
+  const handleBack = async () => {
+    navigate(-1);
+  };
 
   // Loading state
   const isLoading = productsLoading || sectionsLoading || specialSectionsLoading || (mode === 'search' && searchLoading);
@@ -332,11 +334,12 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            size="sm"
+            onClick={handleBack}
+            className="p-0 h-auto font-normal hover:text-red-600"
           >
-            <ArrowLeft className="h-4 w-4" />
-            {breadcrumbText}
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Voltar
           </Button>
         </div>
 

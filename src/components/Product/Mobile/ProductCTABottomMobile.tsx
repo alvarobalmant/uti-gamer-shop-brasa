@@ -50,7 +50,7 @@ const ProductCTABottomMobile: React.FC<ProductCTABottomMobileProps> = ({
       )}
 
       {/* CTA Bottom - Design Melhorado */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white shadow-2xl">
         {/* Expanded Section - Melhor Layout */}
         {isExpanded && (
           <div className="bg-gray-50 border-b border-gray-200 animate-in slide-in-from-bottom duration-300">

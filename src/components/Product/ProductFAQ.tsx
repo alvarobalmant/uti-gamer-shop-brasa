@@ -141,7 +141,7 @@ const ProductFAQ: React.FC<ProductFAQProps> = ({ product }) => {
           <button
             onClick={() => {
               const message = `Olá! Tenho uma dúvida sobre o produto: ${product.name}`;
-              const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+              const whatsappUrl = `https://wa.me/5527999771112?text=${encodeURIComponent(message)}`;
               window.open(whatsappUrl, '_blank');
             }}
             className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"

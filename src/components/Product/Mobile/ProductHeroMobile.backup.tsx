@@ -38,7 +38,7 @@ const ProductHeroMobile: React.FC<ProductHeroMobileProps> = ({
 
   const handleWhatsAppContact = () => {
     const message = `Olá! Gostaria de mais informações sobre:\n\n${product.name}\nPreço: ${formatPrice(product.price)}`;
-    const whatsappUrl = `https://wa.me/5527996882090?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/5527999771112?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 

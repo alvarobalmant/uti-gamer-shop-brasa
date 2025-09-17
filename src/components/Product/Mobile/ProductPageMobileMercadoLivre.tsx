@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Product } from '@/hooks/useProducts';
 import { SKUNavigation } from '@/hooks/useProducts/types';
 import { ShoppingCart, Heart, Share2, Star, Truck, Shield, Clock, Check, Plus, Minus, ChevronRight, ChevronLeft, Zap, Coins, Tag, Gift } from 'lucide-react';
@@ -20,6 +19,7 @@ import GoogleReviewsMobile from '../Sidebar/GoogleReviewsMobile';
 import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 import { useWhatsAppLoading } from '@/hooks/useWhatsAppLoading';
 import WhatsAppLoadingOverlay from '@/components/ui/WhatsAppLoadingOverlay';
+import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
 
 interface ProductPageMobileMercadoLivreProps {
   product: Product;
@@ -32,15 +32,13 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
   skuNavigation,
   onAddToCart 
 }) => {
-  // Hook de navegação
-  const navigate = useNavigate();
-  
   // Estados para controle da interface
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [showAllSpecs, setShowAllSpecs] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Hooks do sistema
   const { addToCart } = useCart();
@@ -121,16 +119,16 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
   };
 
   const handleBuyNow = async () => {
-    // MESMA LÓGICA DO DESKTOP - usar função sendSingleProductToWhatsApp com loading
-    await sendSingleProductToWhatsApp(product, quantity, null, () => {
-      // Track analytics
-      trackEvent('buy_now_click', {
-        product_id: product.id,
-        product_name: product.name,
-        product_price: product.price,
-        quantity: quantity
-      });
-    }, showLoading); // Adicionar callback de loading
+    // Abrir modal de confirmação igual ao desktop
+    setIsModalOpen(true);
+    
+    // Track analytics
+    trackEvent('buy_now_click', {
+      product_id: product.id,
+      product_name: product.name,
+      product_price: product.price,
+      quantity: quantity
+    });
   };
 
   return (
@@ -250,57 +248,39 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
           Ver os meios de pagamento
         </Button>
 
+        {/* Card de Frete Dinâmico */}
+        <DynamicDeliveryMobile productPrice={product.price} />
+
+        {/* UTI Coins - Cashback (só aparece se tiver configurado) */}
+        {product.uti_coins_cashback_percentage && product.uti_coins_cashback_percentage > 0 && (
+          <>
+            <div className="text-sm text-gray-600 mb-1 flex items-center gap-1">
+              <Coins className="w-4 h-4 text-yellow-600" />
+              <span>Ganhe <span className="font-medium text-yellow-700">{Math.ceil((product.price * quantity * (product.uti_coins_cashback_percentage || 0)) / 100 * 100)} UTI Coins</span> nesta compra</span>
+            </div>
+            <div className="text-sm text-gray-500 mb-2">
+              = R$ {(Math.ceil((product.price * quantity * (product.uti_coins_cashback_percentage || 0)) / 100 * 100) * 0.01).toFixed(2)} para próximas compras
+            </div>
+          </>
+        )}
+
+        {/* UTI Coins - Desconto (só aparece se tiver configurado) */}
+        {product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0 && (
+          <div className="text-sm text-green-600 mb-4 flex items-center gap-1">
+            <Tag className="w-4 h-4 text-green-600" />
+            <span>
+              Até <span className="font-medium">{product.uti_coins_discount_percentage}% OFF</span> pagando com UTI Coins - 
+              Economize até <span className="font-medium">R$ {((product.price * (product.uti_coins_discount_percentage || 0)) / 100).toFixed(2).replace(".", ",")}</span>
+            </span>
+          </div>
+        )}
+
         {/* Espaçamento só se tiver alguma seção UTI Coins */}
         {((product.uti_coins_cashback_percentage && product.uti_coins_cashback_percentage > 0) || 
           (product.uti_coins_discount_percentage && product.uti_coins_discount_percentage > 0)) && (
           <div className="mb-2"></div>
         )}
       </div>
-
-      {/* SEÇÃO DE PLATAFORMAS - MOBILE OTIMIZADA */}
-      {skuNavigation && skuNavigation.platforms && skuNavigation.platforms.length > 1 && (
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
-          <label className="block text-xs font-medium text-gray-700 mb-2">
-            Plataforma:
-          </label>
-          
-          {/* Layout adaptativo para mobile - múltiplas linhas */}
-          <div className="flex flex-wrap gap-1.5">
-            {skuNavigation.platforms.map(({ platform, sku, available }, index) => {
-              const isCurrentPlatform = skuNavigation.currentSKU?.variant_attributes?.platform === platform;
-              
-              return (
-                <button
-                  key={`${platform}-${sku?.id || index}`}
-                  className={`px-3 py-2 rounded-md text-xs font-medium transition-all ${
-                    isCurrentPlatform 
-                      ? 'bg-red-600 text-white' 
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-red-300'
-                  } ${!available ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                  onClick={() => {
-                    if (available && sku && !isCurrentPlatform) {
-                      navigate(`/produto/${sku.id}`);
-                    }
-                  }}
-                  disabled={!available}
-                >
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm">🎮</span>
-                    <span className="whitespace-nowrap">{platform}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          
-          <p className="text-xs text-gray-500 mt-2">
-            💡 Preços podem variar entre plataformas
-          </p>
-        </div>
-      )}
-
-      {/* Card de Frete Dinâmico */}
-      <DynamicDeliveryMobile productPrice={product.price} />
 
       {/* Estoque e Quantidade - SEM CARD AMARELO */}
       <div className="px-4 pb-4">
@@ -470,6 +450,23 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
 
       {/* Loading Overlay para WhatsApp */}
       <WhatsAppLoadingOverlay isVisible={isWhatsAppLoading} />
+
+      {/* MODAL DE CONFIRMAÇÃO DE COMPRA - IGUAL AO DESKTOP */}
+      <PurchaseConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        product={{
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          originalPrice: product.list_price,
+          image: product.additional_images?.[0] || product.image || '/placeholder.svg',
+          discount_percentage: product.discount_percentage,
+          uti_coins_cashback_percentage: product.uti_coins_cashback_percentage,
+          uti_coins_discount_percentage: product.uti_coins_discount_percentage
+        }}
+        quantity={quantity}
+      />
     </div>
   );
 };

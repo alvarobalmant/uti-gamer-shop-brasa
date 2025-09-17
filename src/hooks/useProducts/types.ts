@@ -116,6 +116,11 @@ export interface Product {
   // Campos UTI Coins
   uti_coins_cashback_percentage?: number;
   uti_coins_discount_percentage?: number;
+  
+  // Campos de revisão
+  is_reviewed?: boolean;
+  reviewed_at?: string;
+  reviewed_by?: string;
 }
 
 // Tipos específicos para SKUs

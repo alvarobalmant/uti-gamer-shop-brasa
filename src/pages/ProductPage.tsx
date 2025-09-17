@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth/AuthModal';
-import Cart from '@/components/Cart';
+import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
 
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -534,14 +534,10 @@ const ProductPage: React.FC = () => {
         </div>
       </div>
       
-      {/* Cart Modal */}
-      <Cart 
+      {/* Professional Cart Modal */}
+      <ProfessionalCartModal 
         isOpen={showCart} 
         onClose={() => setShowCart(false)}
-        items={items}
-        updateQuantity={updateQuantity}
-        getCartTotal={getCartTotal}
-        getCartItemsCount={getCartItemsCount}
       />
       
       {/* Auth Modal */}

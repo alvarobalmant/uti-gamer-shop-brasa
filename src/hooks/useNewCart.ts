@@ -156,12 +156,22 @@ export const useNewCart = () => {
     }
 
     try {
-      // Importar e usar a função do utils que inclui o código de verificação
-      const { sendToWhatsApp: sendToWhatsAppWithCode } = await import('@/utils/whatsapp');
+      // Importar e usar a função detalhada do utils que inclui código de verificação e informações completas
+      const { sendToWhatsApp: sendToWhatsAppDetailed } = await import('@/utils/whatsapp');
       console.log('✅ WhatsApp function imported');
-      const result = await sendToWhatsAppWithCode(cart, '5527996882090', (context) => {
-        console.log('📊 Tracking context:', context);
-      });
+      
+      const result = await sendToWhatsAppDetailed(
+        cart, 
+        '5527999771112', 
+        (context) => {
+          console.log('📊 Tracking context:', context);
+        },
+        undefined, // onLoadingStart
+        undefined, // cartTotals - será calculado internamente na função
+        false, // utiCoinsUsed - valor padrão
+        undefined // userCoinsBalance - será obtido internamente na função
+      );
+      
       console.log('✅ WhatsApp result:', result);
       return result;
     } catch (error) {

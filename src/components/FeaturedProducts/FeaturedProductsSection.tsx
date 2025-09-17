@@ -212,7 +212,7 @@ const FeaturedProductsSection = ({
           <div className="relative group">
             {/* Sistema GameStop: Gradientes fixos nas extremidades */}
             {!isMobile && (
-              <div className="absolute inset-0 pointer-events-none z-20">
+              <div className="absolute inset-0 pointer-events-none z-[5]">
                 {/* Gradiente esquerdo fixo */}
                 <div 
                   className="absolute left-0 top-0 bottom-0 w-16 opacity-90"
@@ -236,7 +236,7 @@ const FeaturedProductsSection = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-30 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200 hidden lg:flex"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-[5] h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200 hidden lg:flex"
                 onClick={scrollLeft}
                 aria-label="Produtos anteriores"
               >
@@ -249,7 +249,7 @@ const FeaturedProductsSection = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-30 h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200 hidden lg:flex"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-[5] h-10 w-10 rounded-full bg-white/90 text-gray-700 hover:bg-white hover:text-gray-900 shadow-lg border border-gray-200 transition-opacity duration-200 hidden lg:flex"
                 onClick={scrollRight}
                 aria-label="Próximos produtos"
               >

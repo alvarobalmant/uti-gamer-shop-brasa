@@ -34,6 +34,7 @@ export const BottomNavigationBar = ({
     if (location.pathname === '/') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
+      // Usar navegação direta simples (sem Global Navigation Context)
       navigate('/');
     }
   };
@@ -69,7 +70,7 @@ export const BottomNavigationBar = ({
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg lg:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg lg:hidden">
       <div className="flex items-center justify-around h-16 px-2">
         
         {/* Home */}
