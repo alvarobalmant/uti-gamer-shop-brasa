@@ -117,7 +117,9 @@ export const fetchProductsFromDatabaseFixed = async (includeAdmin: boolean = fal
             tag_id,
             tags!left(
               id,
-              name
+              name,
+              category,
+              weight
             )
           )
         `);
@@ -172,7 +174,9 @@ export const fetchProductsFromDatabaseFixed = async (includeAdmin: boolean = fal
                   product.tags = product.tags || [];
                   product.tags.push({
                     id: pt.tags.id,
-                    name: pt.tags.name
+                    name: pt.tags.name,
+                    category: pt.tags.category,
+                    weight: pt.tags.weight
                   });
                 }
               }
@@ -227,7 +231,9 @@ export const fetchProductsFromDatabaseFixed = async (includeAdmin: boolean = fal
           tag_id,
           tags!inner(
             id,
-            name
+            name,
+            category,
+            weight
           )
         `);
       
@@ -266,7 +272,9 @@ export const fetchProductsFromDatabaseFixed = async (includeAdmin: boolean = fal
               product.tags = product.tags || [];
               product.tags.push({
                 id: pt.tags.id,
-                name: pt.tags.name
+                name: pt.tags.name,
+                category: pt.tags.category,
+                weight: pt.tags.weight
               });
             }
           }
@@ -344,7 +352,9 @@ export const fetchProductsByCriteriaFixed = async (config: CarouselConfig, inclu
           tag_id,
           tags!left(
             id,
-            name
+            name,
+            category,
+            weight
           )
         )
       `);
@@ -406,7 +416,9 @@ export const fetchProductsByCriteriaFixed = async (config: CarouselConfig, inclu
               product.tags = product.tags || [];
               product.tags.push({
                 id: pt.tags.id,
-                name: pt.tags.name
+                name: pt.tags.name,
+                category: pt.tags.category,
+                weight: pt.tags.weight
               });
             }
           }
@@ -437,7 +449,9 @@ export const fetchSingleProductFromDatabaseFixed = async (id: string): Promise<P
           tag_id,
           tags!left(
             id,
-            name
+            name,
+            category,
+            weight
           )
         )
       `)
@@ -464,7 +478,9 @@ export const fetchSingleProductFromDatabaseFixed = async (id: string): Promise<P
             product.tags = product.tags || [];
             product.tags.push({
               id: pt.tags.id,
-              name: pt.tags.name
+              name: pt.tags.name,
+              category: pt.tags.category,
+              weight: pt.tags.weight
             });
           }
         }
