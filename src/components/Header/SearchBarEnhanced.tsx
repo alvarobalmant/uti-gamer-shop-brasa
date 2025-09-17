@@ -124,11 +124,7 @@ export function SearchBarEnhanced({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-<<<<<<< HEAD
             className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-30 max-h-96 overflow-y-auto"
-=======
-            className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
->>>>>>> 5c16eb78d80db7ce5bfca464298174fa5037c292
           >
             {isLoading ? (
               <div className="p-4 text-center">
