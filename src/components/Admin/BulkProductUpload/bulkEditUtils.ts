@@ -584,61 +584,104 @@ IMPORTANTE: LEIA TODAS AS INSTRUÇÕES ANTES DE USAR
 • Use o preview para verificar antes de aplicar
 • Mantenha sempre uma cópia da planilha original
 
-7. EXEMPLOS DE USO - TAGS
--------------------------
-• Para adicionar múltiplas tags: "acao;aventura;ps4;sony"
-• Para tags com espaços: "far cry;grand theft auto;call of duty"
-• Para definir peso da tag: "acao:5;aventura:3;rpg:4"
-• Para definir peso e categoria: "acao:5:genre;aventura:3:genre;xbox:4:platform"
-• Misturando formatos: "acao:5:genre;aventura;rpg:3;ps4:4:platform"
+7. SISTEMA DE TAGS PONDERADO 🚀
+---------------------------------
+O sistema agora suporta tags com pesos e categorias para busca mais inteligente!
+
+📊 CATEGORIAS DISPONÍVEIS E PESOS RECOMENDADOS:
+• platform (peso 5): xbox, ps4, ps5, ps3, nintendo, pc, switch
+• product_type (peso 4): jogo, console, controle, acessorio  
+• game_title (peso 4): minecraft, fifa, gta, callofduty
+• brand (peso 3): sony, microsoft, nintendo, ubisoft
+• genre (peso 2): acao, aventura, rpg, fps, corrida
+• physical_attribute (peso 1): 30cm, verde, azul, pequeno
+• condition (peso 1): novo, usado, promocao, oficial
+• generic (peso 1): tags genéricas
+
+🎯 FORMATO DE TAGS:
+• Básico: "acao;aventura;ps4;sony"
+• Com peso: "acao:2;aventura:3;ps4:5;sony:3"
+• Completo: "acao:2:genre;aventura:3:genre;ps4:5:platform;sony:3:brand"
+• Misto: "acao:2:genre;aventura;ps4:5:platform;gamer"
+
+✨ EXEMPLOS PRÁTICOS:
+• Para tags com espaços: "far cry:4:game_title;grand theft auto:4:game_title"
 • Case insensitive: "Xbox" = "xbox" = "XBOX"
 • Tags novas são criadas automaticamente se não existirem
 • Peso padrão quando não especificado: 1
-• Peso válido: números de 1 a 5 (valores fora desse intervalo serão ajustados para o limite mais próximo)
+• Categoria padrão quando não especificada: "generic"
+• Peso válido: números de 1 a 5 (valores inválidos são ajustados)
 
-8. FORMATO TAGS COM PESO
-------------------------
-• Sintaxe: "nometag:peso" onde peso é número de 1 a 5
-• Exemplo: "acao:5" cria tag "acao" com peso 5
-• Exemplo completo: "acao:5:genre;aventura:3:genre;ps4:4:platform;indie:2"
-• Pesos e categorias são salvos globalmente em public.tags; se a tag já existir e valores forem informados, serão atualizados
-• Tags sem ":peso" mantêm o peso existente (ou usam 1 se for uma nova tag)
-• Tags sem ":categoria" mantêm a categoria existente (ou usam 'generic' se for uma nova tag)
+🚀 BENEFÍCIOS DO SISTEMA PONDERADO:
+• Busca mais inteligente e relevante
+• Produtos com tags de maior peso aparecem primeiro  
+• Boost automático para combinações plataforma + jogo
+• Categorização automática de tags conhecidas
 
-9. CAMPOS ESPECIAIS - TAGS
---------------------------
-• Campo "tags": aceita nomes de tags separados por ponto e vírgula
-• Limite de 50 caracteres por tag individual
-• Caracteres permitidos: letras, números, espaços, acentos, hífens
-• Caracteres proibidos: < > { } [ ] \ /
-• Tags em branco ou muito longas são ignoradas
-• Tags duplicadas são automaticamente removidas
+8. DETALHES TÉCNICOS - TAGS
+---------------------------
+• Formato interno: nome:peso:categoria (separados por ponto e vírgula)
+• Validação automática de peso (1-5) e categoria
+• Busca case-insensitive para evitar duplicatas
+• Atualização global: peso/categoria informados atualizam a tag para todos os produtos
+• Sistema inteligente categoriza automaticamente tags conhecidas
+• Backup agora inclui pesos e categorias das tags existentes
 
-9. RESUMO DE PROCESSO - TAGS
-----------------------------
+9. EXEMPLO COMPLETO COM TAGS PONDERADAS
+---------------------------------------
+SKU: GAME001
+Nome: FIFA 25 Ultimate Edition
+Tags: fifa:4:game_title;futebol:2:genre;ea:3:brand;ps5:5:platform;esporte:2:genre;ultimate:1:condition
+
+Como o sistema interpreta:
+• "fifa" com peso 4 na categoria "game_title" (muito relevante para busca)
+• "futebol" com peso 2 na categoria "genre" (relevante)  
+• "ea" com peso 3 na categoria "brand" (moderadamente relevante)
+• "ps5" com peso 5 na categoria "platform" (máxima relevância + boost)
+• "esporte" com peso 2 na categoria "genre" (relevante)
+• "ultimate" com peso 1 na categoria "condition" (pouco relevante)
+
+Resultado: Produto aparecerá no topo ao buscar "fifa ps5" devido aos pesos altos e boost de plataforma!
+
+10. RESUMO DE PROCESSO - TAGS
+-----------------------------
 1. Extrair nomes das tags da planilha (coluna "tags")
 2. Dividir por ponto e vírgula e limpar espaços
-3. Validar cada nome (tamanho e caracteres)
-4. Buscar tags existentes no banco (case insensitive)
-5. Criar novas tags se não existirem
-6. Remover todas as tags antigas do produto
-7. Associar as novas tags ao produto
-8. Se informado peso/categoria para uma tag existente, atualizar os valores globais em public.tags
-9. Reportar sucessos e erros no log final
+3. Parsear formato nome:peso:categoria
+4. Validar cada nome (tamanho e caracteres)
+5. Buscar tags existentes no banco (case insensitive)
+6. Criar novas tags com peso/categoria se não existirem
+7. Atualizar peso/categoria de tags existentes se informado
+8. Remover todas as tags antigas do produto
+9. Associar as novas tags ao produto
+10. Reportar sucessos e erros no log final
 
 IMPORTANTE: O sistema é tolerante a falhas - se uma tag falhar, as outras continuam sendo processadas.
 
-Exemplo de planilha com tags:
+11. EXEMPLO DE PLANILHA COM TAGS PONDERADAS
+------------------------------------------
 sku_code | name | price | tags
-PROD001 | Far Cry 6 | 299.90 | acao;aventura;ps4;ubisoft
-PROD002 | FIFA 23 | 199.90 | esporte;fifa;ps4;ea sports
-PROD003 | God of War | 149.90 | acao;aventura;ps4;santa monica
------------------
+PROD001 | Far Cry 6 | 299.90 | acao:2:genre;aventura:3:genre;ps4:5:platform;ubisoft:3:brand
+PROD002 | FIFA 23 | 199.90 | fifa:4:game_title;esporte:2:genre;ps4:5:platform;ea:3:brand
+PROD003 | God of War | 149.90 | acao:2:genre;aventura:3:genre;ps4:5:platform;santa monica:3:brand
+
+12. CASOS DE USO COMUNS
+----------------------
 • Atualizar preços de uma categoria específica
 • Ativar/desativar produtos em massa
-• Adicionar tags a vários produtos
+• Adicionar tags ponderadas a vários produtos
 • Corrigir informações de estoque
 • Atualizar descriptions/SEO em lote
+• Padronizar categorias e pesos de tags
+• Melhorar relevância na busca
+
+13. BENEFÍCIOS DO SISTEMA DE TAGS PONDERADO
+------------------------------------------
+✨ Busca mais inteligente e relevante
+🎯 Produtos com tags importantes aparecem primeiro
+🚀 Boost automático para combinações plataforma + jogo
+📊 Categorização automática de tags conhecidas
+💡 Sistema tolerante a falhas e flexível
 
 8. SOLUÇÃO DE PROBLEMAS
 ----------------------
