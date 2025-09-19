@@ -1,24 +1,37 @@
+/**
+ * EnhancedSectionPage - Página de Seção com Cache Inteligente
+ * 
+ * Melhorias implementadas:
+ * - Usa useEnhancedProducts() em vez de useProducts()
+ * - Renderização progressiva sem esperar imagens
+ * - Cache persistente de 15+ minutos
+ * - Loading instantâneo na maioria das navegações
+ * - Fallback inteligente para dados offline
+ */
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Filter, Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useGlobalProductCache } from '@/hooks/useGlobalProductCache';
-import { useGlobalProductSectionsCache } from '@/hooks/useGlobalSectionsCache';
+import { Badge } from '@/components/ui/badge';
+import { useEnhancedProducts } from '@/hooks/useEnhancedProducts';
+import { useProductSections } from '@/hooks/useProductSections';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
-import SearchResultProductCard from '@/components/SearchResultProductCard';
+import ProgressiveProductGrid from '@/components/ProgressiveProductGrid';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/hooks/useAuth';
-import { useAutoSectionScrollRestoration } from '@/hooks/useSectionScrollRestoration';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import Footer from '@/components/Footer';
 import { cn } from '@/lib/utils';
 
-const SectionPage: React.FC = () => {
+const EnhancedSectionPage: React.FC = () => {
   const { sectionKey } = useParams<{ sectionKey: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
+  
+  // Estados da UI
   const [showCart, setShowCart] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [sortBy, setSortBy] = useState<'relevance' | 'price_asc' | 'price_desc' | 'name'>('relevance');
@@ -27,12 +40,19 @@ const SectionPage: React.FC = () => {
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
   const [promotionFilter, setPromotionFilter] = useState('all');
 
-  // Hook para restauração inteligente de scroll
-  useAutoSectionScrollRestoration();
+  // Hooks para buscar dados - USANDO CACHE INTELIGENTE
+  const { 
+    products, 
+    loading: productsLoading, 
+    fromCache, 
+    cacheStats 
+  } = useEnhancedProducts();
+  
+  const { sections, loading: sectionsLoading } = useProductSections();
 
-  // Hooks para buscar dados - USANDO CACHE GLOBAL
-  const { products, loading: productsLoading, isCacheValid } = useGlobalProductCache();
-  const { sections, loading: sectionsLoading } = useGlobalProductSectionsCache();
+  // Debug info para desenvolvimento
+  const isAdmin = user?.email === 'admin@utidosgames.com';
+  const showDebug = isAdmin && process.env.NODE_ENV === 'development';
 
   // Encontrar a seção atual
   const currentSection = useMemo(() => {
@@ -48,11 +68,13 @@ const SectionPage: React.FC = () => {
     return sections.find(section => section.id === sectionKey);
   }, [sectionKey, sections]);
 
-  // Filtrar produtos da seção
+  // Filtrar produtos da seção - OTIMIZADO
   const sectionProducts = useMemo(() => {
-    if (!currentSection || !products) return [];
+    if (!currentSection || !products.length) return [];
     
-    // Usar a mesma lógica do SectionRenderer para consistência
+    console.log(`[EnhancedSectionPage] 🔍 Filtrando produtos para seção ${currentSection.title}`);
+    
+    // Usar Map para evitar duplicatas e melhor performance
     const productMap = new Map<string, any>();
     
     if (currentSection.items) {
@@ -60,14 +82,17 @@ const SectionPage: React.FC = () => {
         if (item.item_type === 'product') {
           // Encontrar produto específico por ID
           const product = products.find(p => p.id === item.item_id);
-          if (product && product.product_type !== 'master' && !productMap.has(product.id)) { // Filter master products
+          if (product && product.product_type !== 'master' && !productMap.has(product.id)) {
             productMap.set(product.id, product);
           }
         } else if (item.item_type === 'tag') {
-          // Encontrar produtos com esta tag, excluindo produtos master
+          // Encontrar produtos com esta tag
           const tagProducts = products.filter(p => 
-            p.product_type !== 'master' && // Filter master products
-            p.tags?.some(tag => tag.name.toLowerCase() === item.item_id.toLowerCase() || tag.id === item.item_id)
+            p.product_type !== 'master' && 
+            p.tags?.some(tag => 
+              tag.name.toLowerCase() === item.item_id.toLowerCase() || 
+              tag.id === item.item_id
+            )
           );
           tagProducts.forEach(product => {
             if (!productMap.has(product.id)) {
@@ -78,7 +103,9 @@ const SectionPage: React.FC = () => {
       }
     }
     
-    return Array.from(productMap.values());
+    const result = Array.from(productMap.values());
+    console.log(`[EnhancedSectionPage] ✅ ${result.length} produtos encontrados na seção`);
+    return result;
   }, [currentSection, products]);
 
   // Aplicar filtros de preço, disponibilidade e promoções
@@ -115,7 +142,6 @@ const SectionPage: React.FC = () => {
         } else if (promotionFilter === 'featured') {
           return product.is_featured;
         } else if (promotionFilter === 'new') {
-          // Considerar produtos criados nos últimos 30 dias como novos
           const thirtyDaysAgo = new Date();
           thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
           return new Date(product.created_at || '') > thirtyDaysAgo;
@@ -129,7 +155,7 @@ const SectionPage: React.FC = () => {
 
   // Ordenar produtos
   const sortedProducts = useMemo(() => {
-    if (!filteredProducts) return [];
+    if (!filteredProducts.length) return [];
     
     const sorted = [...filteredProducts];
     
@@ -147,28 +173,30 @@ const SectionPage: React.FC = () => {
   }, [filteredProducts, sortBy]);
 
   // Handlers
-  const handleAddToCart = (product: any, size?: string, color?: string) => {
+  const handleAddToCart = useCallback((product: any, size?: string, color?: string) => {
     addToCart(product, size, color);
-  };
+  }, [addToCart]);
 
-  const handleProductCardClick = (productId: string) => {
+  const handleProductCardClick = useCallback((productId: string) => {
     navigate(`/produto/${productId}`);
-  };
+  }, [navigate]);
 
-  const handleCartToggle = () => {
+  const handleCartToggle = useCallback(() => {
     setShowCart(!showCart);
-  };
+  }, [showCart]);
 
-  const handleAuthModalToggle = () => {
+  const handleAuthModalToggle = useCallback(() => {
     setShowAuthModal(!showAuthModal);
-  };
+  }, [showAuthModal]);
 
-  const handleBack = async () => {
+  const handleBack = useCallback(() => {
     navigate(-1);
-  };
+  }, [navigate]);
 
-  // Loading state
-  if (productsLoading || sectionsLoading) {
+  // Loading state - MUITO MAIS RÁPIDO com cache
+  const isLoading = productsLoading || sectionsLoading;
+  
+  if (isLoading && !fromCache) {
     return (
       <div className="min-h-screen bg-gray-50">
         <ProfessionalHeader
@@ -180,7 +208,16 @@ const SectionPage: React.FC = () => {
         />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-16 text-muted-foreground">
-            Carregando produtos...
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+              <span>Carregando produtos...</span>
+            </div>
+            {showDebug && (
+              <div className="text-xs text-gray-400">
+                Cache: {fromCache ? 'HIT' : 'MISS'} | 
+                Hit Rate: {cacheStats.hitRate.toFixed(1)}%
+              </div>
+            )}
           </div>
         </div>
         <Footer />
@@ -189,7 +226,7 @@ const SectionPage: React.FC = () => {
   }
 
   // Seção não encontrada
-  if (!currentSection) {
+  if (!currentSection && !isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <ProfessionalHeader
@@ -203,12 +240,12 @@ const SectionPage: React.FC = () => {
           <div className="text-center py-16">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Seção não encontrada</h1>
             <p className="text-muted-foreground mb-6">A seção que você está procurando não existe.</p>
-            <button
+            <Button
               onClick={() => navigate('/')}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               Voltar ao Início
-            </button>
+            </Button>
           </div>
         </div>
         <Footer />
@@ -216,7 +253,7 @@ const SectionPage: React.FC = () => {
     );
   }
 
-  const sectionTitle = currentSection.title || 'Produtos';
+  const sectionTitle = currentSection?.title || 'Produtos';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -244,17 +281,38 @@ const SectionPage: React.FC = () => {
           </Button>
         </div>
 
-        {/* Título da seção */}
+        {/* Título da seção com indicador de cache */}
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            Seção: {sectionTitle}
-          </h1>
-          <p className="text-gray-600">
-            {sortedProducts.length} {sortedProducts.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
-          </p>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+              Seção: {sectionTitle}
+            </h1>
+            
+            {/* Indicador de cache para debug */}
+            {showDebug && (
+              <Badge variant={fromCache ? "default" : "secondary"} className="text-xs">
+                {fromCache ? '⚡ Cache' : '🌐 API'}
+              </Badge>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-4 text-gray-600">
+            <p>
+              {sortedProducts.length} {sortedProducts.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
+            </p>
+            
+            {/* Stats de cache para debug */}
+            {showDebug && (
+              <div className="text-xs">
+                Hit Rate: {cacheStats.hitRate.toFixed(1)}% | 
+                Cache Size: {cacheStats.cacheSize} | 
+                Incremental: +{cacheStats.incrementalAdds}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Filtros e ordenação profissionais */}
+        {/* Filtros e ordenação */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4 mb-4">
             <div className="flex items-center gap-2">
@@ -271,17 +329,17 @@ const SectionPage: React.FC = () => {
               </select>
             </div>
             
-            <button
+            <Button
+              variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
-              </svg>
+              <Filter className="w-4 h-4" />
               Filtros
-            </button>
+            </Button>
           </div>
           
+          {/* Painel de filtros expandido */}
           {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
               {/* Filtro de Preço */}
@@ -343,52 +401,41 @@ const SectionPage: React.FC = () => {
               
               {/* Botões de Ação */}
               <div className="flex flex-col gap-2">
-                <button
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white"
                   onClick={() => {
-                    // Aplicar filtros (já aplicados automaticamente via useMemo)
+                    // Filtros já aplicados automaticamente via useMemo
                   }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
                 >
                   Aplicar Filtros
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setPriceRange({ min: '', max: '' });
                     setAvailabilityFilter('all');
                     setPromotionFilter('all');
                   }}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
                   Limpar Tudo
-                </button>
+                </Button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Grid de produtos */}
-        {sortedProducts.length === 0 ? (
-          <div className="text-center py-16">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Nenhum produto encontrado</h2>
-            <p className="text-gray-600 mb-6">Não há produtos disponíveis nesta seção no momento.</p>
-            <button
-              onClick={() => navigate('/')}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg"
-            >
-              Voltar ao Início
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">{sortedProducts.map((product) => (
-              <SearchResultProductCard
-                key={product.id}
-                product={product}
-                onCardClick={handleProductCardClick}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
-        )}
+        {/* Grid de produtos com renderização progressiva */}
+        <ProgressiveProductGrid
+          products={sortedProducts}
+          loading={isLoading}
+          error={null}
+          onProductClick={handleProductCardClick}
+          onAddToCart={handleAddToCart}
+          showDebug={showDebug}
+          priorityCount={8} // Primeiros 8 produtos com prioridade
+          itemsPerPage={20}
+          showLoadMore={true}
+        />
       </main>
 
       {/* Footer */}
@@ -411,5 +458,4 @@ const SectionPage: React.FC = () => {
   );
 };
 
-export default SectionPage;
-
+export default EnhancedSectionPage;

@@ -48,11 +48,11 @@ const UTICoinsDiscountIndicator: React.FC<UTICoinsDiscountIndicatorProps> = ({
         icon: Coins
       };
     } else {
-      // Desconto muito baixo - estilo mais sutil
+      // Desconto muito baixo - apenas texto e ícone, sem fundo
       return {
-        containerClass: "bg-gray-50 border border-yellow-100",
-        iconClass: "text-yellow-400",
-        textClass: "text-yellow-500 font-medium",
+        containerClass: "bg-transparent border-none",
+        iconClass: "text-yellow-500",
+        textClass: "text-yellow-600 font-medium",
         icon: Coins
       };
     }

@@ -243,13 +243,13 @@ export const useDailyCodes = () => {
     loadData();
   }, [loadData]);
 
-  // Atualizar dados a cada 30 segundos
+  // Atualizar dados a cada 5 minutos (reduzido de 30s para evitar re-renderizações excessivas)
   useEffect(() => {
     if (!user) return;
 
     const interval = setInterval(() => {
       loadData();
-    }, 30000);
+    }, 300000); // 5 minutos ao invés de 30 segundos
 
     return () => clearInterval(interval);
   }, [user, loadData]);

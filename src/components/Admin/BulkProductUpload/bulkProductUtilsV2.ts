@@ -272,11 +272,13 @@ export async function generateImportTutorial(): Promise<string> {
     
     if (mastersError) throw mastersError;
 
-    // Buscar tags existentes
+    // Buscar tags existentes com categorias e pesos
     const { data: tags, error: tagsError } = await supabase
       .from('tags')
-      .select('name')
-      .order('name');
+      .select('name, category, weight')
+      .order('category', { ascending: true })
+      .order('weight', { ascending: false, nullsFirst: false })
+      .order('name', { ascending: true });
     
     if (tagsError) throw tagsError;
 
@@ -399,12 +401,50 @@ ${masterProducts && masterProducts.length > 0
   : 'Nenhum produto mestre encontrado no site.'
 }
 
-## 🏷️ TAGS DISPONÍVEIS NO SITE
-Use essas tags existentes para evitar duplicatas:
+## 🏷️ SISTEMA DE TAGS PONDERADO
+O sistema agora suporta tags com pesos e categorias para busca mais inteligente!
+
+### 📊 TAGS EXISTENTES NO SITE (Com Pesos e Categorias):
 ${tags && tags.length > 0 
-  ? tags.map(t => `- ${t.name}`).join('\n')
+  ? tags.map(t => {
+      const category = t.category || 'generic';
+      const weight = t.weight || 1;
+      const categoryEmoji = category === 'platform' ? '🎮' : 
+                           category === 'game_title' ? '🎯' : 
+                           category === 'product_type' ? '📦' : 
+                           category === 'brand' ? '🏢' : 
+                           category === 'genre' ? '🎨' : '📝';
+      return `- ${t.name} ${categoryEmoji} (${category}, peso: ${weight})`;
+    }).join('\n')
   : 'Nenhuma tag encontrada no site.'
 }
+
+### 🎯 FORMATO DE TAGS:
+• **Básico**: nome_da_tag
+• **Com peso**: nome_da_tag:peso (peso de 1 a 5)
+• **Completo**: nome_da_tag:peso:categoria
+
+### 🏆 CATEGORIAS DISPONÍVEIS E PESOS RECOMENDADOS:
+• **platform** (peso 5): xbox, ps4, ps5, ps3, nintendo, pc, switch
+• **product_type** (peso 4): jogo, console, controle, acessorio
+• **game_title** (peso 4): minecraft, fifa, gta, callofduty
+• **brand** (peso 3): sony, microsoft, nintendo, ubisoft
+• **genre** (peso 2): acao, aventura, rpg, fps, corrida
+• **physical_attribute** (peso 1): 30cm, verde, azul, pequeno
+• **condition** (peso 1): novo, usado, promocao, oficial
+• **generic** (peso 1): tags genéricas
+
+### ✨ EXEMPLOS PRÁTICOS DE TAGS:
+• Simples: "fifa,acao,aventura"
+• Com pesos: "fifa:4,acao:2,ps5:5"
+• Completo: "fifa:4:game_title,acao:2:genre,ps5:5:platform"
+• Misto: "fifa:4:game_title,aventura,xbox:5:platform"
+
+### 🚀 BENEFÍCIOS DO SISTEMA PONDERADO:
+• Busca mais inteligente e relevante
+• Produtos com tags de maior peso aparecem primeiro
+• Boost automático para combinações plataforma + jogo
+• Categorização automática de tags conhecidas
 
 ## 🎮 PLATAFORMAS DISPONÍVEIS NO SITE
 Use essas plataformas existentes:
@@ -435,7 +475,7 @@ ${uniquePlatforms.length > 0
 - **brand**: Marca do produto
 - **category**: Categoria do produto
 - **platform**: Plataforma (veja lista acima)
-- **tags**: Tags separadas por vírgula (veja lista acima)
+- **tags**: Tags com sistema ponderado (veja detalhes acima)
 
 ### SEO
 - **meta_title**: Título para busca no Google
@@ -453,7 +493,7 @@ stock: 50
 brand: Logitech
 category: Periféricos
 platform: PC
-tags: mouse,gamer,rgb
+tags: mouse:2:genre,gamer:2:genre,rgb:1:physical_attribute,pc:5:platform
 specifications: [{"label":"DPI","value":"25600","icon":"","highlight":true}]
 technical_specs: {"dpi":"25600","buttons":"11","weight":"85g","connectivity":"USB-A"}
 meta_title: Mouse Gamer RGB Logitech - Alta Performance | UTI Games
@@ -473,7 +513,7 @@ is_master_product: TRUE
 sku_code: CAMISA-UTI-MASTER
 brand: UTI Games
 category: Vestuário
-tags: camiseta,oficial
+tags: camiseta:4:product_type,oficial:1:condition
 specifications: [{"label":"Material","value":"100% Algodão","icon":"","highlight":false}]
 meta_title: Camiseta UTI Games Oficial - Vestuário Gamer | UTI Games
 meta_description: Camiseta oficial UTI Games 100% algodão. Disponível em vários tamanhos.
@@ -644,6 +684,26 @@ O sistema verificará:
 - ✅ Consistência entre produtos mestres e variações
 - ⚠️ Produtos mestres inexistentes (aviso, não erro)
 
+## 🚀 BENEFÍCIOS DO SISTEMA DE TAGS PONDERADO
+
+### ✨ Como Funciona a Busca Inteligente:
+1. **Peso Baseado em Relevância**: Tags com peso maior (1-5) têm mais influência no resultado
+2. **Boost de Plataforma**: Produtos com plataforma específica recebem boost 2x quando busca inclui plataforma
+3. **Categorização Automática**: Sistema reconhece e categoriza automaticamente tags conhecidas
+4. **Scoring Inteligente**: Combina relevância por nome + peso das tags + boost por tipo
+
+### 🎯 Exemplo Real de Funcionamento:
+**Busca: "minecraft ps4"**
+- Minecraft PS4 (score: 24.0): minecraft:4 + ps4:5 + jogo:4 + boost 2x = PRIMEIRO
+- Minecraft genérico (score: 16.0): minecraft:4 + jogo:4 + boost 2x = segundo
+- Produto com apenas "ps4" (score: 12.0): ps4:5 + boost 2x = terceiro
+
+### 💡 Dicas para Maximizar Relevância:
+- Use pesos altos (4-5) para características principais do produto
+- Sempre inclua a plataforma específica se aplicável
+- Use categorias corretas para melhor organização
+- Combine tags de diferentes categorias para cobertura completa
+
 ## 📞 SUPORTE
 
 Em caso de dúvidas ou erros na importação:
@@ -651,6 +711,7 @@ Em caso de dúvidas ou erros na importação:
 2. Valide o formato JSON dos campos estruturados
 3. Certifique-se de que os SKUs são únicos
 4. Verifique se os produtos mestres existem (veja lista acima)
+5. **NOVO**: Teste o sistema de tags ponderado com exemplos fornecidos
 
 Última atualização: ${new Date().toLocaleString('pt-BR')}
 `;

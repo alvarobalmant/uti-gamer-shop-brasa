@@ -112,32 +112,88 @@ export const TagsExplanationCard: React.FC = () => {
           </AlertDescription>
         </Alert>
 
-        {/* Categorias Disponíveis */}
-        <div className="bg-purple-950/20 border border-purple-500/30 rounded-lg p-3">
-          <h5 className="font-medium text-purple-400 mb-3">📋 Categorias e Pesos Recomendados</h5>
-          <div className="grid md:grid-cols-2 gap-3 text-sm">
-            <div className="space-y-1">
-              <div className="text-purple-300 font-medium">🎮 Tipos de Jogo:</div>
-              <div className="text-purple-200 text-xs space-y-1">
-                <div>• <span className="text-orange-300">Título do Jogo (Peso: 4)</span></div>
-                <div>• <span className="text-purple-300">Tipo de Produto (Peso: 4)</span></div>
-                <div>• <span className="text-blue-300">Marca (Peso: 3)</span></div>
-                <div>• <span className="text-green-300">Gênero (Peso: 2)</span></div>
+        {/* Sistema de Categorias e Pesos */}
+        <div className="bg-purple-950/20 border border-purple-500/30 rounded-lg p-4">
+          <h5 className="font-medium text-purple-400 mb-4 flex items-center gap-2">
+            <Badge variant="outline" className="text-purple-400 border-purple-400">Sistema Ponderado</Badge>
+            📋 Categorias e Pesos Disponíveis
+          </h5>
+          
+          <div className="grid lg:grid-cols-2 gap-4 text-sm">
+            {/* Categorias de Alta Prioridade */}
+            <div className="space-y-3">
+              <div className="bg-red-900/30 rounded-lg p-3">
+                <div className="text-red-300 font-medium mb-2 flex items-center gap-2">
+                  🏆 ALTA PRIORIDADE
+                  <Badge variant="outline" className="text-red-300 border-red-400 text-xs">Peso 4-5</Badge>
+                </div>
+                <div className="text-red-200 text-xs space-y-1.5">
+                  <div>• <code className="bg-red-900/50 px-1 rounded">platform</code> <span className="text-red-300 font-medium">(Peso: 5)</span></div>
+                  <div className="text-red-200 ml-2">xbox, ps4, ps5, ps3, nintendo, pc, switch</div>
+                  <div>• <code className="bg-red-900/50 px-1 rounded">product_type</code> <span className="text-red-300 font-medium">(Peso: 4)</span></div>
+                  <div className="text-red-200 ml-2">jogo, console, controle, acessorio</div>
+                  <div>• <code className="bg-red-900/50 px-1 rounded">game_title</code> <span className="text-red-300 font-medium">(Peso: 4)</span></div>
+                  <div className="text-red-200 ml-2">minecraft, fifa, gta, callofduty</div>
+                </div>
+              </div>
+
+              <div className="bg-blue-900/30 rounded-lg p-3">
+                <div className="text-blue-300 font-medium mb-2 flex items-center gap-2">
+                  🎯 MÉDIA PRIORIDADE  
+                  <Badge variant="outline" className="text-blue-300 border-blue-400 text-xs">Peso 2-3</Badge>
+                </div>
+                <div className="text-blue-200 text-xs space-y-1.5">
+                  <div>• <code className="bg-blue-900/50 px-1 rounded">brand</code> <span className="text-blue-300 font-medium">(Peso: 3)</span></div>
+                  <div className="text-blue-200 ml-2">sony, microsoft, nintendo, ubisoft</div>
+                  <div>• <code className="bg-blue-900/50 px-1 rounded">genre</code> <span className="text-blue-300 font-medium">(Peso: 2)</span></div>
+                  <div className="text-blue-200 ml-2">acao, aventura, rpg, fps, corrida</div>
+                </div>
               </div>
             </div>
-            <div className="space-y-1">
-              <div className="text-purple-300 font-medium">🎯 Sistema e Estado:</div>
-              <div className="text-purple-200 text-xs space-y-1">
-                <div>• <span className="text-red-300">Plataforma (Peso: 5)</span></div>
-                <div>• <span className="text-gray-300">Condição (Peso: 1)</span></div>
-                <div>• <span className="text-yellow-300">Atributo Físico (Peso: 1)</span></div>
-                <div>• <span className="text-gray-300">Genérica (Peso: 1)</span></div>
+
+            {/* Categorias de Baixa Prioridade e Exemplos */}
+            <div className="space-y-3">
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <div className="text-gray-300 font-medium mb-2 flex items-center gap-2">
+                  📝 BAIXA PRIORIDADE
+                  <Badge variant="outline" className="text-gray-300 border-gray-400 text-xs">Peso 1</Badge>
+                </div>
+                <div className="text-gray-200 text-xs space-y-1.5">
+                  <div>• <code className="bg-gray-700/50 px-1 rounded">physical_attribute</code> <span className="text-gray-300 font-medium">(Peso: 1)</span></div>
+                  <div className="text-gray-200 ml-2">30cm, verde, azul, pequeno</div>
+                  <div>• <code className="bg-gray-700/50 px-1 rounded">condition</code> <span className="text-gray-300 font-medium">(Peso: 1)</span></div>
+                  <div className="text-gray-200 ml-2">novo, usado, promocao, oficial</div>
+                  <div>• <code className="bg-gray-700/50 px-1 rounded">generic</code> <span className="text-gray-300 font-medium">(Peso: 1)</span></div>
+                  <div className="text-gray-200 ml-2">outros termos não categorizados</div>
+                </div>
+              </div>
+
+              <div className="bg-green-900/30 rounded-lg p-3">
+                <div className="text-green-300 font-medium mb-2">✨ EXEMPLOS PRÁTICOS</div>
+                <div className="text-green-200 text-xs space-y-1.5">
+                  <div><strong>Básico:</strong> <code className="bg-green-900/50 px-1 rounded">fifa:4:game_title</code></div>
+                  <div><strong>Múltiplas:</strong> <code className="bg-green-900/50 px-1 rounded">fifa:4:game_title;ps5:5:platform;ea:3:brand</code></div>
+                  <div><strong>Misto:</strong> <code className="bg-green-900/50 px-1 rounded">acao:2:genre;aventura;xbox:5:platform</code></div>
+                  <div><strong>Case insensitive:</strong> PS5 = ps5 = Ps5</div>
+                </div>
               </div>
             </div>
           </div>
-          <div className="mt-3 text-xs text-purple-300">
-            📝 <strong>Como usar:</strong> nome_tag:peso:categoria (ex: fifa:4:titulo_jogo; ps5:5:plataforma)
-          </div>
+
+          <Alert className="mt-4 bg-yellow-950/30 border-yellow-500/30">
+            <Info className="h-4 w-4 text-yellow-400" />
+            <AlertDescription className="text-yellow-200">
+              <strong className="text-yellow-300">🚀 Sistema de Busca Inteligente:</strong>
+              <br />
+              • Quanto maior o peso, mais relevante na busca
+              <br />
+              • Produtos com plataforma específica têm boost 2x quando busca inclui plataforma
+              <br />
+              • Busca por "minecraft ps4" priorizará Minecraft para PS4 sobre versões genéricas
+              <br />
+              • Sistema automaticamente categoriza tags conhecidas se você não especificar categoria
+            </AlertDescription>
+          </Alert>
         </div>
 
         {/* Dicas Importantes */}

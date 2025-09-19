@@ -4,6 +4,7 @@ import './utils/n7ErrorSuppressor'; // ← NOVO: Supressor de erro n7.map
 import './styles/n7ErrorSuppression.css'; // ← NOVO: CSS para suprimir erro n7.map
 import './styles/mobile-improvements.css'; // ← NOVO: CSS para melhorias mobile
 import './utils/debugHelper'; // ← Debug helper para diagnosticar problemas
+import './utils/scrollTestHelper'; // ← NOVO: Helper para testar scroll restoration
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";

@@ -17,10 +17,12 @@ export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
         *,
         product_tags!left(
           tag_id,
-          tags!left(
-            id,
-            name
-          )
+            tags!left(
+              id,
+              name,
+              category,
+              weight
+            )
         )
       `)
       .order('created_at', { ascending: false });
@@ -143,10 +145,12 @@ export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
               const tagExists = product.tags?.some(tag => tag.id === pt.tags.id);
               if (!tagExists) {
                 product.tags = product.tags || [];
-                product.tags.push({
-                  id: pt.tags.id,
-                  name: pt.tags.name
-                });
+            product.tags.push({
+              id: pt.tags.id,
+              name: pt.tags.name,
+              category: pt.tags.category,
+              weight: pt.tags.weight
+            });
               }
             }
           });
@@ -193,10 +197,12 @@ export const fetchAllProductsForBackup = async (): Promise<Product[]> => {
       .select(`
         product_id,
         tag_id,
-        tags!inner(
-          id,
-          name
-        )
+          tags!inner(
+            id,
+            name,
+            category,
+            weight
+          )
       `);
     
     if (tagsError) {

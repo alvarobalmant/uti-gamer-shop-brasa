@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { useProducts } from '@/hooks/useProducts';
-import { useProductSections } from '@/hooks/useProductSections';
-import { useSpecialSections } from '@/hooks/useSpecialSections';
+import { useGlobalProductCache } from '@/hooks/useGlobalProductCache';
+import { useGlobalProductSectionsCache, useGlobalSpecialSectionsCache } from '@/hooks/useGlobalSectionsCache';
 import { useWeightedSearch } from '@/hooks/useWeightedSearch';
+import { useAutoSectionScrollRestoration } from '@/hooks/useSectionScrollRestoration';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import SearchResultProductCard from '@/components/SearchResultProductCard';
 import { useCart } from '@/contexts/CartContext';
@@ -25,6 +25,9 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
   const navigate = useNavigate();
   const searchQuery = searchParams.get('q') || '';
   
+  // Hook para restauração inteligente de scroll em páginas de seção
+  useAutoSectionScrollRestoration();
+  
   const { user } = useAuth();
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
   
@@ -38,10 +41,10 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [showCardDebug, setShowCardDebug] = useState(false);
 
-  // Hooks para buscar dados
-  const { products, loading: productsLoading } = useProducts();
-  const { sections, loading: sectionsLoading } = useProductSections();
-  const { specialSections, loading: specialSectionsLoading } = useSpecialSections();
+  // Hooks para buscar dados - USANDO CACHE GLOBAL
+  const { products, loading: productsLoading, isCacheValid } = useGlobalProductCache();
+  const { sections, loading: sectionsLoading } = useGlobalProductSectionsCache();
+  const { specialSections, loading: specialSectionsLoading } = useGlobalSpecialSectionsCache();
   
   // Hook para busca com pesos (apenas usado no modo search)
   const { exactMatches: backendMatches, relatedProducts: backendRelated, tagSuggestions, isLoading: searchLoading, debug } = useWeightedSearch(
