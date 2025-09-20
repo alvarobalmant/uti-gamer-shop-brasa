@@ -3056,9 +3056,52 @@ export type Database = {
         }
         Relationships: []
       }
+      tag_categories: {
+        Row: {
+          category_enum: Database["public"]["Enums"]["tag_category_enum"]
+          color: string | null
+          created_at: string | null
+          default_weight: number
+          description: string | null
+          display_order: number | null
+          icon_emoji: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          category_enum: Database["public"]["Enums"]["tag_category_enum"]
+          color?: string | null
+          created_at?: string | null
+          default_weight?: number
+          description?: string | null
+          display_order?: number | null
+          icon_emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          category_enum?: Database["public"]["Enums"]["tag_category_enum"]
+          color?: string | null
+          created_at?: string | null
+          default_weight?: number
+          description?: string | null
+          display_order?: number | null
+          icon_emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           category: string | null
+          category_enum: Database["public"]["Enums"]["tag_category_enum"] | null
           created_at: string
           id: string
           name: string
@@ -3066,6 +3109,9 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          category_enum?:
+            | Database["public"]["Enums"]["tag_category_enum"]
+            | null
           created_at?: string
           id?: string
           name: string
@@ -3073,6 +3119,9 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          category_enum?:
+            | Database["public"]["Enums"]["tag_category_enum"]
+            | null
           created_at?: string
           id?: string
           name?: string
@@ -4273,6 +4322,19 @@ export type Database = {
         Args: { meses: number; user_id: string }
         Returns: boolean
       }
+      search_products_enhanced: {
+        Args: { limit_count?: number; search_terms: string[] }
+        Returns: {
+          debug_info: Json
+          matched_tags: Json
+          product_id: string
+          product_image: string
+          product_name: string
+          product_price: number
+          product_slug: string
+          relevance_score: number
+        }[]
+      }
       search_products_weighted: {
         Args: { limit_count?: number; search_terms: string[] }
         Returns: {
@@ -4335,6 +4397,21 @@ export type Database = {
     }
     Enums: {
       section_item_type: "product" | "tag"
+      tag_category_enum:
+        | "platform"
+        | "product_type"
+        | "game_title"
+        | "console_model"
+        | "brand"
+        | "accessory_type"
+        | "collectible"
+        | "clothing"
+        | "genre"
+        | "feature"
+        | "edition"
+        | "condition"
+        | "physical_attribute"
+        | "generic"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4463,6 +4540,22 @@ export const Constants = {
   public: {
     Enums: {
       section_item_type: ["product", "tag"],
+      tag_category_enum: [
+        "platform",
+        "product_type",
+        "game_title",
+        "console_model",
+        "brand",
+        "accessory_type",
+        "collectible",
+        "clothing",
+        "genre",
+        "feature",
+        "edition",
+        "condition",
+        "physical_attribute",
+        "generic",
+      ],
     },
   },
 } as const

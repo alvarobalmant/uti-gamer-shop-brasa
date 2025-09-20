@@ -43,9 +43,9 @@ serve(async (req) => {
 
     console.log(`[search-weighted] Searching for terms: ${searchTerms.join(', ')}`);
 
-    // Chamar função SQL de busca com pesos
+    // Chamar função SQL de busca com pesos melhorada
     const { data: searchResults, error } = await supabase
-      .rpc('search_products_weighted', {
+      .rpc('search_products_enhanced', {
         search_terms: searchTerms,
         limit_count: limit
       });

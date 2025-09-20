@@ -7,6 +7,7 @@ export interface Tag {
   id: string;
   name: string;
   category?: string | null;
+  category_enum?: string | null;
   weight?: number | null;
   created_at: string;
 }
@@ -47,11 +48,28 @@ export const useTags = () => {
     }
   };
 
-  const addTag = async (name: string, category: string = 'generic', weight: number = 1) => {
+  const addTag = async (name: string, categoryEnum: any = 'generic', weight?: number) => {
     try {
+      // Se weight não for fornecido, buscar peso padrão da categoria
+      let finalWeight = weight;
+      if (!finalWeight) {
+        const { data: categoryData } = await supabase
+          .from('tag_categories')
+          .select('default_weight')
+          .eq('category_enum', categoryEnum)
+          .single();
+        
+        finalWeight = categoryData?.default_weight || 1;
+      }
+
       const { data, error } = await supabase
         .from('tags')
-        .insert([{ name, category, weight }])
+        .insert({ 
+          name, 
+          category: categoryEnum, // Compatibilidade
+          category_enum: categoryEnum,
+          weight: finalWeight
+        })
         .select()
         .single();
 
