@@ -237,6 +237,36 @@ Deno.serve(async (req) => {
       return latestCode;
     };
 
+    // Verificar disponibilidade no sistema de CÓDIGO DE 4 DIAS (daily_codes)
+    const checkDailyCodesAvailability = async (userId) => {
+      try {
+        // Usar a própria função daily-codes para garantir regras corretas e evitar problemas de RLS
+        const { data, error } = await supabase.functions.invoke('daily-codes', {
+          body: { action: 'get_current_code' }
+        });
+
+        if (error) {
+          console.error('[DAILY_CODES|CHECK] invoke error:', error);
+          return null;
+        }
+
+        if (!data?.success || !data?.data) return null;
+
+        const canClaim = data.data.can_claim === true;
+        return {
+          canClaim,
+          code: data.data.code,
+          claimable_until: data.data.claimable_until,
+          valid_until: data.data.valid_until,
+          already_claimed: data.data.already_claimed === true,
+          is_valid: data.data.is_valid === true
+        };
+      } catch (e) {
+        console.error('[DAILY_CODES|CHECK] exception:', e);
+        return null;
+      }
+    };
+
     // Função para calcular próximo bonus baseado no streak
     const calculateNextBonus = async (currentStreak, isForDisplay = false) => {
       console.log(`[CALCULATE_BONUS] currentStreak: ${currentStreak}, isForDisplay: ${isForDisplay}`);
