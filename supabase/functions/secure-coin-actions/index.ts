@@ -557,6 +557,7 @@ Deno.serve(async (req) => {
           alreadyClaimed: !canClaim && secondsUntilNextClaim > 0,
           message: canClaim ? 'Bonus available' : (isTestMode ? 'Aguarde ' + Math.ceil(secondsUntilNextClaim) + ' segundos' : 'Aguarde o próximo período')
         };
+        }
         
       } catch (error) {
         console.error('[NEW_SYSTEM] Exception checking bonus status:', error);
