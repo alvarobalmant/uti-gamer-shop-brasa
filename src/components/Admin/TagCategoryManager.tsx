@@ -53,10 +53,11 @@ export const TagCategoryManager = () => {
       } else {
         await addCategory(formData);
       }
+      
       setIsDialogOpen(false);
       resetForm();
     } catch (error) {
-      console.error('Erro ao salvar categoria:', error);
+      // Toast já foi mostrado pelo hook
     }
   };
 
@@ -75,31 +76,48 @@ export const TagCategoryManager = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (category: TagCategory) => {
-    if (window.confirm(`Tem certeza que deseja excluir a categoria "${category.name}"?`)) {
+  const handleDelete = async (id: string) => {
+    if (confirm('Tem certeza que deseja excluir esta categoria?')) {
       try {
-        await deleteCategory(category.id);
+        await deleteCategory(id);
       } catch (error) {
-        console.error('Erro ao excluir categoria:', error);
+        // Toast já foi mostrado pelo hook
       }
     }
   };
 
-  const toggleActive = async (category: TagCategory) => {
+  const categoryOptions: { value: TagCategoryEnum; label: string }[] = [
+    { value: 'platform', label: 'Plataforma' },
+    { value: 'product_type', label: 'Tipo de Produto' },
+    { value: 'game_title', label: 'Título do Jogo' },
+    { value: 'console_model', label: 'Modelo do Console' },
+    { value: 'brand', label: 'Marca' },
+    { value: 'accessory_type', label: 'Tipo de Acessório' },
+    { value: 'collectible', label: 'Colecionável' },
+    { value: 'clothing', label: 'Roupas' },
+    { value: 'genre', label: 'Gênero' },
+    { value: 'feature', label: 'Característica' },
+    { value: 'edition', label: 'Edição' },
+    { value: 'condition', label: 'Condição' },
+    { value: 'physical_attribute', label: 'Atributo Físico' },
+    { value: 'generic', label: 'Genérica' },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  const toggleCategoryStatus = async (category: TagCategory) => {
     try {
       await updateCategory(category.id, { is_active: !category.is_active });
     } catch (error) {
       console.error('Erro ao atualizar categoria:', error);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -266,7 +284,7 @@ export const TagCategoryManager = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => toggleActive(category)}
+                      onClick={() => toggleCategoryStatus(category)}
                       className="h-8 w-8 p-0"
                     >
                       {category.is_active ? (
@@ -286,7 +304,7 @@ export const TagCategoryManager = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(category)}
+                      onClick={() => handleDelete(category.id)}
                       className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />
