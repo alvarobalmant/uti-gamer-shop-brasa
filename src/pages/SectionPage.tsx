@@ -2,13 +2,12 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useGlobalProductCache } from '@/hooks/useGlobalProductCache';
-import { useGlobalProductSectionsCache } from '@/hooks/useGlobalSectionsCache';
+import { useProducts } from '@/hooks/useProducts';
+import { useProductSections } from '@/hooks/useProductSections';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import SearchResultProductCard from '@/components/SearchResultProductCard';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/hooks/useAuth';
-import { useAutoSectionScrollRestoration } from '@/hooks/useSectionScrollRestoration';
 import { AuthModal } from '@/components/Auth/AuthModal';
 import Cart from '@/components/Cart';
 import Footer from '@/components/Footer';
@@ -27,12 +26,9 @@ const SectionPage: React.FC = () => {
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
   const [promotionFilter, setPromotionFilter] = useState('all');
 
-  // Hook para restauração inteligente de scroll
-  useAutoSectionScrollRestoration();
-
-  // Hooks para buscar dados - USANDO CACHE GLOBAL
-  const { products, loading: productsLoading, isCacheValid } = useGlobalProductCache();
-  const { sections, loading: sectionsLoading } = useGlobalProductSectionsCache();
+  // Hooks para buscar dados
+  const { products, loading: productsLoading } = useProducts();
+  const { sections, loading: sectionsLoading } = useProductSections();
 
   // Encontrar a seção atual
   const currentSection = useMemo(() => {

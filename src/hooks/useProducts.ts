@@ -221,12 +221,11 @@ export const useProducts = () => {
     }
   };
 
-  // REMOVIDO: Fetch automático para melhorar performance
-  // Os produtos agora devem ser carregados explicitamente quando necessário
-  // useEffect(() => {
-  //   console.log('[useProducts] Initial fetch with ALL products including admin');
-  //   fetchProducts(true); 
-  // }, [fetchProducts]);
+  useEffect(() => {
+    // Initial fetch with admin products included to ensure ALL products are visible
+    console.log('[useProducts] Initial fetch with ALL products including admin');
+    fetchProducts(true); 
+  }, [fetchProducts]); // Corrected dependency array
 
   return {
     products,

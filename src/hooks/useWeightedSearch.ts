@@ -38,11 +38,11 @@ export const useWeightedSearch = (query: string, enableBackend: boolean = true):
     isLoading: backendLoading,
     error: backendError
   } = useQuery({
-    queryKey: ['enhancedSearch', query],
+    queryKey: ['weightedSearch', query],
     queryFn: () => searchProductsWithWeights(query, 20),
     enabled: forceBackend && query.trim().length > 0,
-    staleTime: 60000, // Cache por 1 minuto para resultados mais estáveis
-    retry: 1, // 1 retry para melhor confiabilidade
+    staleTime: 30000, // Cache por 30 segundos
+    retry: 0, // NÃO retry para ver erros imediatamente
     retryDelay: 1000
   });
 

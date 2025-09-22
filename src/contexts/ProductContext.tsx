@@ -248,12 +248,11 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     };
   }, []);
 
-  // REMOVIDO: Carregamento automático na inicialização para melhorar performance
-  // Os produtos agora são carregados sob demanda quando necessário
-  // useEffect(() => {
-  //   console.log('[ProductContext] Inicializando contexto de produtos...');
-  //   fetchProducts();
-  // }, [fetchProducts]);
+  // Carregar produtos na inicialização
+  useEffect(() => {
+    console.log('[ProductContext] Inicializando contexto de produtos...');
+    fetchProducts();
+  }, [fetchProducts]);
 
   // Auto-refresh a cada 5 minutos (opcional)
   useEffect(() => {

@@ -224,13 +224,12 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
     };
   }, []);
 
-  // REMOVIDO: Carregamento automático para melhorar performance inicial
-  // Os produtos agora são carregados sob demanda quando uma página específica precisar
-  // useEffect(() => {
-  //   if (productsLight.length === 0 && !loadingLight) {
-  //     loadMoreProducts();
-  //   }
-  // }, []);
+  // Carregamento inicial
+  useEffect(() => {
+    if (productsLight.length === 0 && !loadingLight) {
+      loadMoreProducts();
+    }
+  }, []);
 
   const value: ProductContextOptimizedType = {
     // Estado

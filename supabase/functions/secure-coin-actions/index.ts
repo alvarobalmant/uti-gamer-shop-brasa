@@ -237,36 +237,6 @@ Deno.serve(async (req) => {
       return latestCode;
     };
 
-    // Verificar disponibilidade no sistema de CÓDIGO DE 4 DIAS (daily_codes)
-    const checkDailyCodesAvailability = async (userId) => {
-      try {
-        // Usar a própria função daily-codes para garantir regras corretas e evitar problemas de RLS
-        const { data, error } = await supabase.functions.invoke('daily-codes', {
-          body: { action: 'get_current_code' }
-        });
-
-        if (error) {
-          console.error('[DAILY_CODES|CHECK] invoke error:', error);
-          return null;
-        }
-
-        if (!data?.success || !data?.data) return null;
-
-        const canClaim = data.data.can_claim === true;
-        return {
-          canClaim,
-          code: data.data.code,
-          claimable_until: data.data.claimable_until,
-          valid_until: data.data.valid_until,
-          already_claimed: data.data.already_claimed === true,
-          is_valid: data.data.is_valid === true
-        };
-      } catch (e) {
-        console.error('[DAILY_CODES|CHECK] exception:', e);
-        return null;
-      }
-    };
-
     // Função para calcular próximo bonus baseado no streak
     const calculateNextBonus = async (currentStreak, isForDisplay = false) => {
       console.log(`[CALCULATE_BONUS] currentStreak: ${currentStreak}, isForDisplay: ${isForDisplay}`);
@@ -455,35 +425,8 @@ Deno.serve(async (req) => {
       console.log(`[NEW_SYSTEM] Checking bonus status for user ${user.id}`);
       
       try {
-        // PRIORIDADE 1: Verificar sistema de códigos de 4 dias (daily_codes)
-        const dailyCodesStatus = await checkDailyCodesAvailability(user.id);
-        
-        if (dailyCodesStatus && dailyCodesStatus.canClaim && dailyCodesStatus.is_valid) {
-          console.log(`[DAILY_CODES|PRIORITY] Valid code found, allowing immediate claim`);
-          
-          // Se há um código válido para resgate, permitir imediatamente
-          result = {
-            success: true,
-            canClaim: true,
-            secondsUntilNextClaim: 0,
-            currentStreak: 0, // Será calculado na hora do resgate
-            validatedStreak: 0,
-            nextBonusAmount: 30, // Valor base
-            multiplier: 1.0,
-            nextReset: dailyCodesStatus.claimable_until,
-            lastClaim: null,
-            testMode: false,
-            totalStreakDays: 7,
-            alreadyClaimed: false,
-            message: 'Código diário disponível para resgate',
-            codeAvailable: true
-          };
-        } else {
-          // FALLBACK: Sistema antigo de bonus
-          console.log(`[DAILY_CODES|FALLBACK] No valid daily code, checking old bonus system`);
-          
-          // Verificar se existe código disponível
-          const availableCode = await checkAvailableBonus(user.id);
+        // Verificar se existe código disponível
+        const availableCode = await checkAvailableBonus(user.id);
         
         // Validar streak atual baseado em códigos resgatados
         const currentStreak = await validateCurrentStreak(user.id);
@@ -557,7 +500,6 @@ Deno.serve(async (req) => {
           alreadyClaimed: !canClaim && secondsUntilNextClaim > 0,
           message: canClaim ? 'Bonus available' : (isTestMode ? 'Aguarde ' + Math.ceil(secondsUntilNextClaim) + ' segundos' : 'Aguarde o próximo período')
         };
-        }
         
       } catch (error) {
         console.error('[NEW_SYSTEM] Exception checking bonus status:', error);

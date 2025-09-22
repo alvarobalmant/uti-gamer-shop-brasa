@@ -2,7 +2,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Product } from './types';
 import { CarouselConfig } from '@/types/specialSections';
 import { handleSupabaseRetry, invalidateSupabaseCache, startErrorMonitoring } from '@/utils/supabaseErrorHandler';
-import { preprocessSearchTerms } from '@/utils/exactNumberSearch';
 
 const mapRowToProduct = (row: any): Product => ({
   id: row.product_id,
@@ -442,17 +441,40 @@ export const searchProductsWithWeights = async (
   const startTime = Date.now();
   
   try {
-    console.log('[searchProductsWithWeights] 🚀 Busca com correção de números EXATOS para:', query);
+    console.log('[searchProductsWithWeights] 🚀 FORÇANDO busca RPC para:', query);
     
-    // USAR NOVA IMPLEMENTAÇÃO: Preprocessar termos preservando números EXATOS
-    const preservedTerms = preprocessSearchTerms(query);
+    // Tokenizar a query e normalizar para lidar com variações
+    const normalizedQuery = query
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^\w\s]/g, ' ') // Substitui pontuação por espaços
+      .replace(/\s+/g, ' ') // Normaliza espaços múltiplos
+      .trim();
     
-    console.log('[searchProductsWithWeights] 📝 Termos processados:', {
-      original: query,
-      preserved: preservedTerms
+    const searchTerms = normalizedQuery
+      .split(' ')
+      .filter(term => term.length >= 2) // Pelo menos 2 caracteres
+      .map(term => term.trim());
+    
+    // Adicionar variações dos termos para melhorar matching
+    const expandedTerms = [...searchTerms];
+    
+    // Para cada termo, adicionar variações sem espaços se contém múltiplas palavras
+    searchTerms.forEach(term => {
+      if (term.includes(' ')) {
+        expandedTerms.push(term.replace(/\s+/g, ''));
+      }
     });
+    
+    // Se a query original tem espaços, adicionar versão sem espaços
+    if (query.includes(' ')) {
+      expandedTerms.push(query.replace(/\s+/g, '').toLowerCase());
+    }
+    
+    console.log('[searchProductsWithWeights] 📝 Termos expandidos:', expandedTerms);
 
-    if (preservedTerms.length === 0) {
+    if (expandedTerms.length === 0) {
       console.log('[searchProductsWithWeights] ⚠️ Nenhum termo válido encontrado');
       return {
         products: [],
@@ -464,17 +486,18 @@ export const searchProductsWithWeights = async (
       };
     }
 
-    console.log('[searchProductsWithWeights] 📡 Chamando RPC com termos preservados:', preservedTerms);
+    console.log('[searchProductsWithWeights] 📡 Chamando search_products_weighted com:', expandedTerms);
 
-    // FORÇA uso do RPC com function aprimorada
-    const { data: rpcData, error: rpcError } = await (supabase as any).rpc('search_products_enhanced', {
-      search_terms: preservedTerms,
-      limit_count: limit
+    // FORÇA uso do RPC - SEM FALLBACK, e agora filtra produtos mestre
+    const { data: rpcData, error: rpcError } = await (supabase as any).rpc('search_products_weighted', {
+      search_terms: expandedTerms,
+      limit_count: limit * 2, // Buscar mais para depois filtrar
+      exclude_master_products: true // Novo parâmetro para filtrar produtos mestre
     });
 
     if (rpcError) {
       console.error('[searchProductsWithWeights] ❌ RPC FALHOU:', rpcError);
-      throw new Error(`RPC search_products_enhanced falhou: ${rpcError.message}`);
+      throw new Error(`RPC search_products_weighted falhou: ${rpcError.message}`);
     }
 
     if (!Array.isArray(rpcData)) {
@@ -535,7 +558,7 @@ export const searchProductsWithWeights = async (
     return {
       products,
       debug: {
-        searchTerms: preservedTerms,
+        searchTerms: expandedTerms,
         totalResults: products.length,
         responseTime: Date.now() - startTime,
         detailedResults
