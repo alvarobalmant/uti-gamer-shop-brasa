@@ -172,16 +172,57 @@ const SearchDebugPanel: React.FC<SearchDebugPanelProps> = ({
                     <CollapsibleContent className="mt-2 pt-2 border-t space-y-2">
                       {/* Score Breakdown */}
                       {product.debug_info?.scoreBreakdown && (
-                        <div className="bg-gray-50 p-2 rounded text-xs">
-                          <div className="font-semibold text-gray-700 mb-1">Score Breakdown:</div>
-                          <div className="space-y-1">
-                            <div>Nome: {product.debug_info.scoreBreakdown.nameScore}</div>
-                            <div>Tags: {product.debug_info.scoreBreakdown.tagScore}</div>
-                            <div>Categoria: {product.debug_info.scoreBreakdown.categoryBonus}</div>
-                            <div>Exato: {product.debug_info.scoreBreakdown.exactBonus}</div>
+                        <div>
+                          <div className="text-xs font-semibold text-gray-700 mb-1">Score Breakdown:</div>
+                          <div className="text-xs space-y-1 bg-gray-50 p-2 rounded">
+                            <div>Nome: {product.debug_info.scoreBreakdown.nameScore || 0}</div>
+                            <div>Tags: {product.debug_info.scoreBreakdown.tagScore || 0}</div>
+                            <div>Categoria: {product.debug_info.scoreBreakdown.categoryScore || product.debug_info.scoreBreakdown.categoryBonus || 0}</div>
+                            <div>Exato: {product.debug_info.scoreBreakdown.exactBonus || 0}</div>
                             <div className="font-semibold border-t pt-1">
-                              Total: {product.debug_info.scoreBreakdown.totalScore}</div>
+                              Total: {product.debug_info.scoreBreakdown.totalScore || product.relevance_score || 0}</div>
                           </div>
+                          
+                          {/* Detalhes das Tags (Novo Sistema) */}
+                          {product.debug_info.scoreBreakdown.tagDetails && product.debug_info.scoreBreakdown.tagDetails.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-xs font-semibold text-gray-700 mb-1">Detalhes das Tags:</div>
+                              <div className="text-xs space-y-1">
+                                {product.debug_info.scoreBreakdown.tagDetails.map((tagDetail: any, idx: number) => (
+                                  <div key={idx} className="bg-blue-50 p-2 rounded border-l-2 border-blue-300">
+                                    <div className="font-medium text-blue-800">{tagDetail.name}</div>
+                                    {tagDetail.compatibilityRatio !== undefined ? (
+                                      // Novo sistema de tokens
+                                      <div className="text-blue-700">
+                                        <div>Compatibilidade: {(tagDetail.compatibilityRatio * 100).toFixed(1)}%</div>
+                                        <div>Score base: {tagDetail.rawScore?.toFixed(1) || 0}</div>
+                                        <div>Score final: {tagDetail.finalScore?.toFixed(1) || 0}</div>
+                                        {tagDetail.matches && tagDetail.matches.length > 0 && (
+                                          <div className="mt-1">
+                                            <div className="font-medium">Matches:</div>
+                                            {tagDetail.matches.map((match: any, matchIdx: number) => (
+                                              <div key={matchIdx} className="ml-2 text-xs">
+                                                "{match.queryToken}" → "{match.tagToken}" ({(match.similarity * 100).toFixed(0)}%)
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      // Sistema antigo
+                                      <div className="text-blue-700">
+                                        <div>Peso: {tagDetail.weight || 'N/A'}</div>
+                                        <div>Contribuição: {tagDetail.contribution || 'N/A'} pontos</div>
+                                        {tagDetail.description && (
+                                          <div className="text-xs text-gray-600 mt-1">{tagDetail.description}</div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 

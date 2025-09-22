@@ -1,130 +1,138 @@
 import { Product } from '@/hooks/useProducts/types';
+import { searchProductsByMultipleTags } from './multiTagSearch';
 
 /**
- * Interface para resultado de produtos relacionados
+ * Interface para resultado de produtos relacionados baseado no sistema de busca
  */
 export interface RelatedProductsResult {
   products: Product[];
-  algorithm: 'tags' | 'fallback';
-  tagMatches: { [productId: string]: number };
+  algorithm: 'search_based' | 'fallback';
+  scores?: { [productId: string]: number };
+  debugInfo?: {
+    totalCandidates: number;
+    searchResults: number;
+    afterFiltering: number;
+    usedFallback: boolean;
+  };
 }
 
 /**
- * Calcula produtos relacionados baseado em tags em comum
- * @param currentProduct - Produto atual da página
- * @param allProducts - Todos os produtos disponíveis (do cache)
- * @param maxResults - Número máximo de produtos a retornar (padrão: 8)
- * @returns Array com exatamente maxResults produtos relacionados
+ * Configurações do algoritmo baseado na busca
+ */
+const SEARCH_ALGORITHM_CONFIG = {
+  MAX_RESULTS: 8,               // Número máximo de produtos a retornar
+  MIN_RESULTS_FOR_FALLBACK: 3   // Se tiver menos que isso, usa fallback
+};
+
+/**
+ * Calcula produtos relacionados usando EXATAMENTE o mesmo sistema da busca principal
+ * Usa o nome do produto atual como query para a função searchProductsByMultipleTags
  */
 export const getRelatedProducts = (
   currentProduct: Product,
   allProducts: Product[],
-  maxResults: number = 8
+  maxResults: number = SEARCH_ALGORITHM_CONFIG.MAX_RESULTS
 ): RelatedProductsResult => {
-  console.log(`[getRelatedProducts] Calculando produtos relacionados para: ${currentProduct.name}`);
-  console.log(`[getRelatedProducts] Total de produtos disponíveis: ${allProducts.length}`);
+  console.log(`[getRelatedProducts] 🔍 Usando sistema de busca para: ${currentProduct.name}`);
   
   // 1. Filtrar produtos válidos (excluir produto atual e produtos mestre)
   const validProducts = allProducts.filter(product => 
-    product.id !== currentProduct.id && // Excluir produto atual
-    product.product_type !== 'master' && // Excluir produtos mestre
-    product.is_active !== false // Apenas produtos ativos
+    product.id !== currentProduct.id &&
+    product.product_type !== 'master' &&
+    product.is_active !== false
   );
   
-  console.log(`[getRelatedProducts] Produtos válidos após filtros: ${validProducts.length}`);
+  console.log(`[getRelatedProducts] ✅ Produtos válidos para análise: ${validProducts.length}`);
   
-  // 2. Se não há tags no produto atual, usar fallback
-  if (!currentProduct.tags || currentProduct.tags.length === 0) {
-    console.log(`[getRelatedProducts] Produto atual sem tags, usando fallback aleatório`);
-    return {
-      products: getRandomProducts(validProducts, maxResults),
-      algorithm: 'fallback',
-      tagMatches: {}
-    };
-  }
+  // 2. Usar o nome do produto atual como query de busca
+  const searchQuery = currentProduct.name;
+  console.log(`[getRelatedProducts] 🎯 Query de busca: "${searchQuery}"`);
   
-  // 3. Calcular coincidências de tags
-  const currentTags = currentProduct.tags.map(tag => tag.id);
-  const productsWithMatches: { product: Product; matches: number }[] = [];
+  // 3. Usar EXATAMENTE a mesma função da busca principal
+  const searchResults = searchProductsByMultipleTags(validProducts, searchQuery);
   
-  validProducts.forEach(product => {
-    if (!product.tags || product.tags.length === 0) {
-      return; // Pular produtos sem tags
+  console.log(`[getRelatedProducts] 📊 Resultados da busca:`);
+  console.log(`- Matches exatos: ${searchResults.exactMatches.length}`);
+  console.log(`- Produtos relacionados: ${searchResults.relatedProducts.length}`);
+  
+  // 4. Combinar resultados exatos e relacionados
+  const allSearchResults = [
+    ...searchResults.exactMatches,
+    ...searchResults.relatedProducts
+  ];
+  
+  // 5. Ordenar por score (se disponível) e depois por preço
+  allSearchResults.sort((a, b) => {
+    // Primeiro por relevance_score (se existir)
+    const scoreA = a.relevance_score || 0;
+    const scoreB = b.relevance_score || 0;
+    
+    if (Math.abs(scoreA - scoreB) > 0.1) {
+      return scoreB - scoreA; // Maior score primeiro
     }
     
-    const productTags = product.tags.map(tag => tag.id);
-    const matches = currentTags.filter(tagId => productTags.includes(tagId)).length;
+    // Se scores similares, ordenar por preço (menor primeiro)
+    const priceA = a.price || 0;
+    const priceB = b.price || 0;
     
-    if (matches > 0) {
-      productsWithMatches.push({ product, matches });
+    if (Math.abs(priceA - priceB) > 0.01) {
+      return priceA - priceB;
     }
+    
+    // Se preços similares, ordenar alfabeticamente
+    return a.name.localeCompare(b.name);
   });
   
-  console.log(`[getRelatedProducts] Produtos com tags em comum: ${productsWithMatches.length}`);
+  // 6. Selecionar os melhores produtos
+  let finalProducts = allSearchResults.slice(0, maxResults);
+  let algorithm: RelatedProductsResult['algorithm'] = 'search_based';
+  let usedFallback = false;
   
-  // 4. Ordenar por número de coincidências (maior primeiro)
-  productsWithMatches.sort((a, b) => {
-    if (a.matches !== b.matches) {
-      return b.matches - a.matches; // Maior número de matches primeiro
-    }
-    // Se mesmo número de matches, ordem aleatória
-    return Math.random() - 0.5;
-  });
-  
-  // 5. Extrair produtos ordenados
-  const relatedProducts = productsWithMatches.map(item => item.product);
-  
-  // 6. Completar com produtos aleatórios se necessário
-  let finalProducts = relatedProducts.slice(0, maxResults);
-  
-  if (finalProducts.length < maxResults) {
-    const usedIds = new Set([
-      currentProduct.id,
-      ...finalProducts.map(p => p.id)
-    ]);
+  // 7. Fallback se não encontrou produtos suficientes
+  if (finalProducts.length < SEARCH_ALGORITHM_CONFIG.MIN_RESULTS_FOR_FALLBACK) {
+    console.log(`[getRelatedProducts] 🔄 Poucos produtos encontrados (${finalProducts.length}), aplicando fallback...`);
     
+    const usedIds = new Set(finalProducts.map(p => p.id));
     const remainingProducts = validProducts.filter(p => !usedIds.has(p.id));
-    const additionalProducts = getRandomProducts(remainingProducts, maxResults - finalProducts.length);
+    
+    // Embaralhar e pegar produtos aleatórios para completar
+    const shuffled = remainingProducts.sort(() => Math.random() - 0.5);
+    const additionalProducts = shuffled.slice(0, maxResults - finalProducts.length);
     
     finalProducts = [...finalProducts, ...additionalProducts];
+    algorithm = 'fallback';
+    usedFallback = true;
     
-    console.log(`[getRelatedProducts] Completado com ${additionalProducts.length} produtos aleatórios`);
+    console.log(`[getRelatedProducts] 🎲 Adicionados ${additionalProducts.length} produtos aleatórios`);
   }
   
-  // 7. Criar mapa de matches para debug
-  const tagMatches: { [productId: string]: number } = {};
-  productsWithMatches.forEach(item => {
-    tagMatches[item.product.id] = item.matches;
+  // 8. Criar mapa de scores para debug
+  const scores: { [productId: string]: number } = {};
+  allSearchResults.forEach(product => {
+    if (product.relevance_score) {
+      scores[product.id] = product.relevance_score;
+    }
   });
   
-  console.log(`[getRelatedProducts] Resultado final: ${finalProducts.length} produtos`);
-  console.log(`[getRelatedProducts] Distribuição de matches:`, 
-    Object.values(tagMatches).reduce((acc, matches) => {
-      acc[matches] = (acc[matches] || 0) + 1;
-      return acc;
-    }, {} as { [matches: number]: number })
-  );
+  // Log final
+  console.log(`[getRelatedProducts] 🎉 Resultado final (sistema de busca):`);
+  finalProducts.forEach((product, index) => {
+    const score = scores[product.id] || 0;
+    const method = score > 0 ? 'busca' : 'fallback';
+    console.log(`  ${index + 1}. ${product.name} (Score: ${score.toFixed(1)} - ${method})`);
+  });
   
   return {
     products: finalProducts,
-    algorithm: productsWithMatches.length > 0 ? 'tags' : 'fallback',
-    tagMatches
+    algorithm,
+    scores,
+    debugInfo: {
+      totalCandidates: validProducts.length,
+      searchResults: allSearchResults.length,
+      afterFiltering: finalProducts.length,
+      usedFallback
+    }
   };
-};
-
-/**
- * Seleciona produtos aleatórios de uma lista
- * @param products - Lista de produtos
- * @param count - Número de produtos a selecionar
- * @returns Array com produtos selecionados aleatoriamente
- */
-const getRandomProducts = (products: Product[], count: number): Product[] => {
-  if (products.length <= count) {
-    return [...products];
-  }
-  
-  const shuffled = [...products].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
 };
 
 /**
@@ -147,27 +155,37 @@ export const isMasterProduct = (product: Product): boolean => {
 };
 
 /**
- * Debug: Analisa a distribuição de tags nos produtos
- * @param products - Lista de produtos
+ * Debug: Analisa como a busca está funcionando para um produto específico
+ * @param currentProduct - Produto atual
+ * @param allProducts - Lista de todos os produtos
  */
-export const analyzeTagDistribution = (products: Product[]): void => {
-  const tagCounts: { [tagName: string]: number } = {};
-  const productsWithTags = products.filter(p => p.tags && p.tags.length > 0);
+export const analyzeSearchBasedRelated = (
+  currentProduct: Product,
+  allProducts: Product[]
+): void => {
+  const validProducts = allProducts.filter(product => 
+    product.id !== currentProduct.id &&
+    product.product_type !== 'master' &&
+    product.is_active !== false
+  );
   
-  productsWithTags.forEach(product => {
-    product.tags?.forEach(tag => {
-      tagCounts[tag.name] = (tagCounts[tag.name] || 0) + 1;
-    });
+  const searchQuery = currentProduct.name;
+  const searchResults = searchProductsByMultipleTags(validProducts, searchQuery);
+  
+  console.log('[analyzeSearchBasedRelated] Análise detalhada:');
+  console.log(`- Query: "${searchQuery}"`);
+  console.log(`- Produtos válidos: ${validProducts.length}`);
+  console.log(`- Matches exatos: ${searchResults.exactMatches.length}`);
+  console.log(`- Produtos relacionados: ${searchResults.relatedProducts.length}`);
+  
+  // Mostrar top 5 de cada categoria
+  console.log('- Top 5 matches exatos:');
+  searchResults.exactMatches.slice(0, 5).forEach((product, index) => {
+    console.log(`  ${index + 1}. ${product.name} (Score: ${product.relevance_score || 0})`);
   });
   
-  console.log('[analyzeTagDistribution] Análise de tags:');
-  console.log(`- Produtos com tags: ${productsWithTags.length}/${products.length}`);
-  console.log(`- Tags únicas: ${Object.keys(tagCounts).length}`);
-  console.log('- Top 10 tags mais usadas:', 
-    Object.entries(tagCounts)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 10)
-      .map(([tag, count]) => `${tag}: ${count}`)
-  );
+  console.log('- Top 5 relacionados:');
+  searchResults.relatedProducts.slice(0, 5).forEach((product, index) => {
+    console.log(`  ${index + 1}. ${product.name} (Score: ${product.relevance_score || 0})`);
+  });
 };
-

@@ -4,7 +4,6 @@ import './utils/n7ErrorSuppressor'; // ← NOVO: Supressor de erro n7.map
 import './styles/n7ErrorSuppression.css'; // ← NOVO: CSS para suprimir erro n7.map
 import './styles/mobile-improvements.css'; // ← NOVO: CSS para melhorias mobile
 import './utils/debugHelper'; // ← Debug helper para diagnosticar problemas
-import './utils/scrollTestHelper'; // ← NOVO: Helper para testar scroll restoration
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -119,6 +118,9 @@ const ClientArea = lazy(() => import("./pages/ClientArea"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const MeusCoins = lazy(() => import("./pages/MeusCoins"));
 const Coins = lazy(() => import("./pages/Coins"));
+
+// Lazy loading para páginas de teste e debug
+const AlgorithmTestPage = lazy(() => import("./pages/AlgorithmTestPage"));
 // Import direto para páginas críticas de auth
 import ConfirmarConta from "./pages/ConfirmarConta";
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
@@ -258,6 +260,7 @@ const App = () => {
                                             <Route path="/busca" element={<UnifiedResultsPage mode="search" />} />
                                             <Route path="/secao/:sectionKey" element={<UnifiedResultsPage mode="section" />} />
                                             <Route path="/categoria/:category" element={<CategoryPage />} />
+                                            <Route path="/teste-algoritmos" element={<AlgorithmTestPage />} />
                                            
                                            {/* Dynamic Carousel Page Route */}
                                            <Route 

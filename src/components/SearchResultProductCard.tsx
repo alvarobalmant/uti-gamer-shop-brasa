@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { useAnalytics } from '@/contexts/AnalyticsContext';
 import { Badge } from '@/components/ui/badge';
 import { Coins } from 'lucide-react';
+import { analyzeTag, getTypeIcon, getTokenColor } from '@/utils/tokenClassification';
 
 import SearchResultProductCardImage from './ProductCard/SearchResultProductCardImage';
 import SearchResultProductCardInfo from './ProductCard/SearchResultProductCardInfo';
@@ -114,20 +115,157 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart,
                 {breakdown && (
                   <div className="space-y-2">
                     <div className="grid grid-cols-2 gap-x-4">
-                      <div>Nome: <span className="font-mono">{breakdown.nameScore}</span></div>
-                      <div>Tags: <span className="font-mono">{breakdown.tagScore}</span></div>
-                      <div>Categoria: <span className="font-mono">{breakdown.categoryBonus}</span></div>
-                      <div>Exato: <span className="font-mono">{breakdown.exactBonus}</span></div>
-                      <div className="col-span-2 font-semibold">Total: <span className="font-mono">{breakdown.totalScore}</span></div>
+                      <div>Nome: <span className="font-mono">{breakdown.nameScore || 0}</span></div>
+                      <div>Tags: <span className="font-mono">{breakdown.tagScore || 0}</span></div>
+                      <div>Categoria: <span className="font-mono">{breakdown.categoryScore || breakdown.categoryBonus || 0}</span></div>
+                      <div>Exato: <span className="font-mono">{breakdown.exactBonus || 0}</span></div>
+                      <div className="col-span-2 font-semibold">Total: <span className="font-mono">{breakdown.totalScore || score || 0}</span></div>
                     </div>
                     {breakdown.tagDetails && breakdown.tagDetails.length > 0 && (
                       <div className="space-y-1">
                         <div className="text-xs font-semibold text-gray-600">Detalhes das Tags:</div>
-                        {breakdown.tagDetails.map((detail: any, i: number) => (
-                          <div key={i} className="text-xs text-gray-600 bg-gray-50 p-1 rounded">
-                            {detail.description || `${detail.name}: ${detail.weight} × 10 = ${detail.contribution} pontos`}
-                          </div>
-                        ))}
+                        {breakdown.tagDetails.map((detail: any, i: number) => {
+                          // Analisar a tag para obter classificação
+                          const tagAnalysis = analyzeTag(detail.name || '');
+                          
+                          return (
+                            <div key={i} className="text-xs text-gray-600 bg-gray-50 p-1.5 rounded border-l-2 border-blue-300">
+                              {detail.compatibilityRatio !== undefined ? (
+                                // Novo sistema de tokens
+                                <div className="space-y-1">
+                                  <div className="font-medium text-gray-800">{detail.name}</div>
+                                  
+                                  {/* Indicadores visuais da classificação */}
+                                  <div className="space-y-0.5">
+                                    {tagAnalysis.indicators.map((indicator, idx) => (
+                                      <div key={idx} className="text-[10px] text-gray-600">{indicator}</div>
+                                    ))}
+                                  </div>
+                                  
+                                  {/* Tokens da tag */}
+                                  <div className="space-y-1">
+                                    <div className="text-[10px] font-medium text-gray-700">🏷️ Tokens da Tag:</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {tagAnalysis.tokens.map((token, idx) => (
+                                        <span
+                                          key={idx}
+                                          className={`px-1 py-0.5 rounded text-[9px] border ${getTokenColor(token.type)}`}
+                                          title={`${token.type} - Importância: ${token.importance}`}
+                                        >
+                                          {getTypeIcon(token.type)} {token.token}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Tokens com compatibilidade */}
+                                  {detail.matches && detail.matches.length > 0 && (
+                                    <div className="space-y-1">
+                                      <div className="text-[10px] font-medium text-green-700">✅ Tokens com Compatibilidade:</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {detail.matches.map((match: any, idx: number) => {
+                                          // Analisar o token da tag para obter sua classificação correta
+                                          const tagTokenAnalysis = analyzeTag(match.tagToken);
+                                          const tagTokenType = tagTokenAnalysis.tokens[0]?.type || 'MAIN';
+                                          const queryTokenAnalysis = analyzeTag(match.queryToken);
+                                          const queryTokenType = queryTokenAnalysis.tokens[0]?.type || 'MAIN';
+                                          
+                                          return (
+                                            <span
+                                              key={idx}
+                                              className="px-1 py-0.5 rounded text-[9px] border bg-green-50 text-green-800 border-green-300"
+                                              title={`Match: "${match.queryToken}" (${queryTokenType}) → "${match.tagToken}" (${tagTokenType})`}
+                                            >
+                                              {getTypeIcon(queryTokenType)} "{match.queryToken}" → {getTypeIcon(tagTokenType)} "{match.tagToken}"
+                                            </span>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Informações de score */}
+                                  <div className="mt-1 pt-1 border-t border-gray-200">
+                                    <div>Compatibilidade: {(detail.compatibilityRatio * 100).toFixed(1)}%</div>
+                                    <div className="text-[10px] text-gray-600">
+                                      10 × {detail.weight || 'peso'} × {detail.debug?.foundTokens || 0}/{detail.debug?.maxTokens || 1} = {detail.rawScore?.toFixed(1) || 0}
+                                    </div>
+                                    <div>Score final: {detail.finalScore?.toFixed(1) || 0}</div>
+                                    {detail.rejectedByNumericOnlyRule && (
+                                      <div className="text-[10px] text-red-600 font-medium mt-1 bg-red-50 px-1 py-0.5 rounded">
+                                        ❌ REJEITADO: Compatibilidade apenas numérica
+                                      </div>
+                                    )}
+                                    {detail.matches && detail.matches.length > 0 && (
+                                      <div className="text-[10px] text-gray-500 mt-1">
+                                        Matches: {detail.matches.map((m: any) => `"${m.queryToken}"→"${m.tagToken}"`).join(', ')}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                // Sistema antigo (fallback) - também com classificação
+                                <div className="space-y-1">
+                                  <div className="font-medium text-gray-800">{detail.name}</div>
+                                  
+                                  {/* Indicadores visuais da classificação */}
+                                  <div className="space-y-0.5">
+                                    {tagAnalysis.indicators.map((indicator, idx) => (
+                                      <div key={idx} className="text-[10px] text-gray-600">{indicator}</div>
+                                    ))}
+                                  </div>
+                                  
+                                  {/* Tokens da tag */}
+                                  <div className="space-y-1">
+                                    <div className="text-[10px] font-medium text-gray-700">🏷️ Tokens da Tag:</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {tagAnalysis.tokens.map((token, idx) => (
+                                        <span
+                                          key={idx}
+                                          className={`px-1 py-0.5 rounded text-[9px] border ${getTokenColor(token.type)}`}
+                                          title={`${token.type} - Importância: ${token.importance}`}
+                                        >
+                                          {getTypeIcon(token.type)} {token.token}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Tokens com compatibilidade */}
+                                  {detail.matches && detail.matches.length > 0 && (
+                                    <div className="space-y-1">
+                                      <div className="text-[10px] font-medium text-green-700">✅ Tokens com Compatibilidade:</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {detail.matches.map((match: any, idx: number) => {
+                                          // Analisar o token da tag para obter sua classificação correta
+                                          const tagTokenAnalysis = analyzeTag(match.tagToken);
+                                          const tagTokenType = tagTokenAnalysis.tokens[0]?.type || 'MAIN';
+                                          const queryTokenAnalysis = analyzeTag(match.queryToken);
+                                          const queryTokenType = queryTokenAnalysis.tokens[0]?.type || 'MAIN';
+                                          
+                                          return (
+                                            <span
+                                              key={idx}
+                                              className="px-1 py-0.5 rounded text-[9px] border bg-green-50 text-green-800 border-green-300"
+                                              title={`Match: "${match.queryToken}" (${queryTokenType}) → "${match.tagToken}" (${tagTokenType})`}
+                                            >
+                                              {getTypeIcon(queryTokenType)} "{match.queryToken}" → {getTypeIcon(tagTokenType)} "{match.tagToken}"
+                                            </span>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Score do sistema antigo */}
+                                  <div className="mt-1 pt-1 border-t border-gray-200 text-[10px]">
+                                    {detail.description || `${detail.name}: ${detail.weight || 'N/A'} × 10 = ${detail.contribution || 'N/A'} pontos`}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

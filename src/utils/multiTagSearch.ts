@@ -34,11 +34,22 @@ const includesLoosely = (hay: string, needle: string) => {
   return hay.includes(needle) || a.includes(b);
 };
 
-// Busca produtos que correspondem a múltiplas tags
+// Cache para otimização de performance
+const searchCache = new Map<string, MultiTagSearchResult>();
+const CACHE_SIZE_LIMIT = 100;
+
+// Busca produtos que correspondem a múltiplas tags (otimizada)
 export const searchProductsByMultipleTags = (products: any[], query: string): MultiTagSearchResult => {
+  // Cache para queries repetidas
+  const cacheKey = `${query.trim().toLowerCase()}_${products.length}`;
+  if (searchCache.has(cacheKey)) {
+    console.log('🚀 Cache hit para query:', query);
+    return searchCache.get(cacheKey)!;
+  }
+
   if (!query.trim()) {
     const filteredProducts = products.filter(product => product.product_type !== 'master');
-    return { exactMatches: filteredProducts, relatedProducts: [], tagSuggestions: [] };
+    return { exactMatches: filteredProducts.slice(0, 50), relatedProducts: [], tagSuggestions: [] };
   }
 
   const tokens = tokenizeQuery(query);
@@ -253,7 +264,16 @@ validProducts.forEach(p => {
     tagSuggestions: tagSuggestions.length
   });
 
-  return { exactMatches, relatedProducts, tagSuggestions };
+  const result = { exactMatches, relatedProducts, tagSuggestions };
+  
+  // Adicionar ao cache (limitando o tamanho)
+  if (searchCache.size >= CACHE_SIZE_LIMIT) {
+    const firstKey = searchCache.keys().next().value;
+    searchCache.delete(firstKey);
+  }
+  searchCache.set(cacheKey, result);
+
+  return result;
 };
 
 // Calcula similaridade entre duas strings para matching fuzzy de tags
@@ -301,8 +321,30 @@ const generateTagSuggestions = (allTags: string[], searchTokens: string[]): stri
   return [...new Set(suggestions)]; // Remove duplicatas
 };
 
+// Importar o novo sistema
+import { searchProductsByTokenCompatibility } from './tokenCompatibilitySearch';
+
+// Flag para alternar entre sistemas (para testes)
+const USE_NEW_TOKEN_SYSTEM = true;
+
 // Função híbrida que combina busca por tags múltiplas com busca tradicional
 export const enhancedSmartSearch = (products: any[], query: string): MultiTagSearchResult => {
+  // NOVO: Usar sistema de compatibilidade de tokens se habilitado
+  if (USE_NEW_TOKEN_SYSTEM) {
+    console.log('🚀 Usando NOVO sistema de compatibilidade de tokens');
+    const newResults = searchProductsByTokenCompatibility(products, query);
+    
+    // Converter para o formato esperado
+    return {
+      exactMatches: newResults.exactMatches,
+      relatedProducts: newResults.relatedProducts,
+      tagSuggestions: newResults.tagSuggestions
+    };
+  }
+  
+  // Sistema original (mantido como fallback)
+  console.log('🔧 Usando sistema ORIGINAL de busca');
+  
   // Primeiro tentar busca por tags múltiplas
   const multiTagResults = searchProductsByMultipleTags(products, query);
   

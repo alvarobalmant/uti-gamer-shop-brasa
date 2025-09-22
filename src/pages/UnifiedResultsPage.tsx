@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { useGlobalProductCache } from '@/hooks/useGlobalProductCache';
-import { useGlobalProductSectionsCache, useGlobalSpecialSectionsCache } from '@/hooks/useGlobalSectionsCache';
+import { useProducts } from '@/hooks/useProducts';
+import { useProductSections } from '@/hooks/useProductSections';
+import { useSpecialSections } from '@/hooks/useSpecialSections';
 import { useWeightedSearch } from '@/hooks/useWeightedSearch';
-import { useAutoSectionScrollRestoration } from '@/hooks/useSectionScrollRestoration';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import SearchResultProductCard from '@/components/SearchResultProductCard';
 import { useCart } from '@/contexts/CartContext';
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Filter } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import SearchDebugPanel from '@/components/Debug/SearchDebugPanel';
+import { TokenCompatibilityDebug } from '@/components/Debug/TokenCompatibilityDebug';
 
 type PageMode = 'search' | 'section';
 
@@ -24,9 +25,6 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const searchQuery = searchParams.get('q') || '';
-  
-  // Hook para restauração inteligente de scroll em páginas de seção
-  useAutoSectionScrollRestoration();
   
   const { user } = useAuth();
   const { items, addToCart, updateQuantity, getCartTotal, getCartItemsCount, sendToWhatsApp } = useCart();
@@ -41,10 +39,10 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [showCardDebug, setShowCardDebug] = useState(false);
 
-  // Hooks para buscar dados - USANDO CACHE GLOBAL
-  const { products, loading: productsLoading, isCacheValid } = useGlobalProductCache();
-  const { sections, loading: sectionsLoading } = useGlobalProductSectionsCache();
-  const { specialSections, loading: specialSectionsLoading } = useGlobalSpecialSectionsCache();
+  // Hooks para buscar dados
+  const { products, loading: productsLoading } = useProducts();
+  const { sections, loading: sectionsLoading } = useProductSections();
+  const { specialSections, loading: specialSectionsLoading } = useSpecialSections();
   
   // Hook para busca com pesos (apenas usado no modo search)
   const { exactMatches: backendMatches, relatedProducts: backendRelated, tagSuggestions, isLoading: searchLoading, debug } = useWeightedSearch(
@@ -610,11 +608,16 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
           hasProducts: exactMatches.length > 0
         });
         return (
-          <SearchDebugPanel
-            products={exactMatches as any}
-            debug={debug}
-            query={searchQuery}
-          />
+          <>
+            <SearchDebugPanel
+              products={exactMatches as any}
+              debug={debug}
+              query={searchQuery}
+            />
+            <div className="mt-6">
+              <TokenCompatibilityDebug />
+            </div>
+          </>
         );
       })()}
     </div>
