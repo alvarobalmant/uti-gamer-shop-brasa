@@ -4240,6 +4240,10 @@ export type Database = {
           source_type: string
         }[]
       }
+      debug_daily_codes_issue: {
+        Args: { p_code: string; p_user_id: string }
+        Returns: Json
+      }
       delete_master_product_cascade: {
         Args: { p_master_product_id: string }
         Returns: Json
