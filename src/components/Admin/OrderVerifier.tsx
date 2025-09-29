@@ -304,6 +304,25 @@ const OrderVerifier = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* NOVA SEÇÃO: Preferência UTI Coins */}
+            <div className="p-4 rounded-lg border-2" style={{
+              backgroundColor: orderData.order_data.uti_coins_preference ? '#dcfce7' : '#fef3c7',
+              borderColor: orderData.order_data.uti_coins_preference ? '#16a34a' : '#d97706'
+            }}>
+              <div className="flex items-center gap-2 font-semibold text-lg" style={{
+                color: orderData.order_data.uti_coins_preference ? '#16a34a' : '#d97706'
+              }}>
+                <Coins className="w-6 h-6" />
+                {orderData.order_data.uti_coins_preference ? '✅ CLIENTE OPTOU POR USAR UTI COINS' : '❌ CLIENTE NÃO QUER USAR UTI COINS'}
+              </div>
+              <div className="text-sm mt-2 text-gray-700">
+                {orderData.order_data.uti_coins_preference 
+                  ? 'Desconto UTI Coins será aplicado na finalização (se tiver saldo suficiente)' 
+                  : 'Nenhum desconto será aplicado, cliente receberá cashback normal'
+                }
+              </div>
+            </div>
+
             {/* Informações básicas */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -317,7 +336,8 @@ const OrderVerifier = () => {
                   const userBalance = orderData.uti_coins_balance || 0;
                   const coinsUsage = calculateUTICoinsUsage(orderData.order_data.items, userBalance);
                   
-                  if (coinsUsage.hasDiscounts) {
+                  // Só mostrar divisão se o cliente OPTOU por usar coins E tem desconto disponível
+                  if (orderData.order_data.uti_coins_preference && coinsUsage.hasDiscounts) {
                     return (
                       <div className="space-y-2">
                         <p className="text-lg font-bold text-green-600">{formatCurrency(orderData.order_data.total_amount)}</p>
