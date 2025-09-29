@@ -42,7 +42,6 @@ Deno.serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authHeader)
     
     if (userError || !user) {
-      console.error('[DAILY_CODES] Auth error:', userError)
       return new Response(
         JSON.stringify({ success: false, message: 'Usuário não autenticado' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -80,19 +79,9 @@ Deno.serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('[DAILY_CODES] Main Error:', error)
-    console.error('[DAILY_CODES] Error Details:', {
-      message: error?.message,
-      stack: error?.stack,
-      code: error?.code,
-      details: error?.details
-    })
+    console.error('[DAILY_CODES] Error:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        message: 'Erro interno do servidor',
-        debug: error?.message || 'Unknown error'
-      }),
+      JSON.stringify({ success: false, message: 'Erro interno do servidor' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
@@ -120,43 +109,59 @@ async function getCurrentCode(supabase: any, userId?: string) {
     if (!codes || codes.length === 0) {
       console.log('[GET_CURRENT] No codes found')
       return new Response(
-        JSON.stringify({
-          success: true,
+        JSON.stringify({ 
+          success: true, 
           data: null,
-          message: 'Nenhum código disponível'
+          message: 'Nenhum código disponível ainda' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const currentCode = codes[0]
+    const currentCode: DailyCode = codes[0]
     const now = new Date()
     const claimableUntil = new Date(currentCode.claimable_until)
     const validUntil = new Date(currentCode.valid_until)
 
-    const canClaim = now <= claimableUntil
-    const isValid = now <= validUntil
+    // Verificar se usuário já resgatou este código
+    let userAlreadyClaimed = false
+    if (userId) {
+      const { data: existingCode } = await supabase
+        .from('user_daily_codes')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('code', currentCode.code)
+        .single()
+      
+      userAlreadyClaimed = !!existingCode
+    }
 
-    // Calcular tempo restante para resgatar
-    const timeUntilClaimExpires = Math.max(0, Math.floor((claimableUntil.getTime() - now.getTime()) / (1000 * 60 * 60)))
-    const timeUntilValidityExpires = Math.max(0, Math.floor((validUntil.getTime() - now.getTime()) / (1000 * 60 * 60)))
+    // Calcular horas até expiração
+    const hoursUntilClaimExpires = Math.max(0, Math.floor((claimableUntil.getTime() - now.getTime()) / (1000 * 60 * 60)))
+    const hoursUntilValidityExpires = Math.max(0, Math.floor((validUntil.getTime() - now.getTime()) / (1000 * 60 * 60)))
 
-    console.log(`[GET_CURRENT] Returning code: ${currentCode.code} can_claim: ${canClaim}`)
+    // O usuário pode resgatar se: código ainda está válido para resgate E usuário não resgatou ainda
+    const canClaim = (now <= claimableUntil) && !userAlreadyClaimed
 
+    const result = {
+      success: true,
+      data: {
+        code: currentCode.code,
+        created_at: currentCode.created_at,
+        claimable_until: currentCode.claimable_until,
+        valid_until: currentCode.valid_until,
+        can_claim: canClaim,
+        is_valid: now <= validUntil,
+        already_claimed: userAlreadyClaimed,
+        hours_until_claim_expires: hoursUntilClaimExpires,
+        hours_until_validity_expires: hoursUntilValidityExpires
+      }
+    }
+
+    console.log('[GET_CURRENT] Returning code:', result.data.code, 'can_claim:', result.data.can_claim)
+    
     return new Response(
-      JSON.stringify({
-        success: true,
-        data: {
-          code: currentCode.code,
-          created_at: currentCode.created_at,
-          claimable_until: currentCode.claimable_until,
-          valid_until: currentCode.valid_until,
-          can_claim: canClaim,
-          is_valid: isValid,
-          hours_until_claim_expires: timeUntilClaimExpires,
-          hours_until_validity_expires: timeUntilValidityExpires
-        }
-      }),
+      JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
@@ -173,86 +178,82 @@ async function claimCode(supabase: any, userId: string, code: string) {
   console.log(`[CLAIM_CODE] User ${userId} attempting to claim code: ${code}`)
   
   try {
-    // VERIFICAÇÃO INICIAL: usar função de debug para validar
-    console.log(`[CLAIM_CODE] Running validation for user ${userId} and code ${code}`)
-    
-    const { data: debugResult, error: debugError } = await supabase
-      .rpc('debug_daily_codes_issue', {
-        p_user_id: userId,
-        p_code: code
-      })
-    
-    if (debugError) {
-      console.error('[CLAIM_CODE] Debug validation error:', debugError)
-      return new Response(
-        JSON.stringify({ success: false, message: 'Erro ao validar código' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-    
-    console.log('[CLAIM_CODE] Validation result:', debugResult)
-    
-    // Verificar erros da validação
-    if (debugResult.error) {
-      const errorMsg = debugResult.error === 'code_not_found' 
-        ? 'Código não encontrado' 
-        : debugResult.error === 'code_already_claimed'
-        ? 'Código já foi resgatado anteriormente'
-        : 'Erro desconhecido na validação'
-      
-      console.log(`[CLAIM_CODE] Validation failed: ${debugResult.error}`)
-      return new Response(
-        JSON.stringify({ success: false, message: errorMsg }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-    
-    // Verificar se pode resgatar
-    if (!debugResult.can_claim) {
-      console.log('[CLAIM_CODE] Cannot claim - user already has code today')
-      return new Response(
-        JSON.stringify({ success: false, message: 'Já resgatou um código hoje' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-    
-    // Verificar se está dentro da janela de resgate
-    if (!debugResult.is_within_claim_window) {
-      console.log('[CLAIM_CODE] Outside claim window')
-      return new Response(
-        JSON.stringify({ success: false, message: 'Período de resgate expirado' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-    
-    // Carregar configurações do sistema para calcular recompensa
+    // Buscar configurações do sistema
+    console.log('[CLAIM_CODE] Loading system configurations')
     const { data: configData, error: configError } = await supabase
       .from('coin_system_config')
       .select('setting_key, setting_value')
       .in('setting_key', ['daily_bonus_base_amount', 'daily_bonus_max_amount', 'daily_bonus_streak_days', 'daily_bonus_increment_type', 'daily_bonus_fixed_increment'])
 
-    let baseAmount = 30
-    let maxAmount = 70
-    let streakDays = 7
-    let incrementType = 'calculated'
-    let fixedIncrement = 10
-
-    if (!configError && configData) {
-      const configMap: any = {}
-      configData.forEach(item => {
-        configMap[item.setting_key] = item.setting_value
-      })
-      
-      baseAmount = parseInt(configMap.daily_bonus_base_amount || '30')
-      maxAmount = parseInt(configMap.daily_bonus_max_amount || '70')
-      streakDays = parseInt(configMap.daily_bonus_streak_days || '7')
-      incrementType = configMap.daily_bonus_increment_type || 'calculated'
-      fixedIncrement = parseInt(configMap.daily_bonus_fixed_increment || '10')
+    if (configError) {
+      console.error('[CLAIM_CODE] Error loading config:', configError)
+      return new Response(
+        JSON.stringify({ success: false, message: 'Erro ao carregar configurações' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
+
+    // Processar configurações
+    const config: any = {}
+    configData?.forEach(item => {
+      config[item.setting_key] = item.setting_value
+    })
+
+    const baseAmount = parseInt(config.daily_bonus_base_amount || '10')
+    const maxAmount = parseInt(config.daily_bonus_max_amount || '100')
+    const streakDays = parseInt(config.daily_bonus_streak_days || '7')
+    const incrementType = config.daily_bonus_increment_type || 'calculated'
+    const fixedIncrement = parseInt(config.daily_bonus_fixed_increment || '10')
 
     console.log(`[CLAIM_CODE] Config loaded - Base: ${baseAmount}, Max: ${maxAmount}, Cycle: ${streakDays} days, Type: ${incrementType}`)
 
-    // Buscar códigos do usuário para calcular sequência
+    // Verificar se código existe e pode ser resgatado
+    const { data: codeData, error: codeError } = await supabase
+      .from('daily_codes')
+      .select('*')
+      .eq('code', code)
+      .single()
+
+    if (codeError || !codeData) {
+      console.log('[CLAIM_CODE] Code not found:', code)
+      return new Response(
+        JSON.stringify({ success: false, message: 'Código não encontrado' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const now = new Date()
+    const claimableUntil = new Date(codeData.claimable_until)
+
+    // Verificar se ainda pode ser resgatado (janela de 24h)
+    if (now > claimableUntil) {
+      console.log('[CLAIM_CODE] Code expired for claiming:', code)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Código não pode mais ser resgatado (período de 24h expirado)' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Verificar se usuário já possui este código
+    const { data: existingCode } = await supabase
+      .from('user_daily_codes')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('code', code)
+      .single()
+
+    if (existingCode) {
+      console.log('[CLAIM_CODE] Code already claimed by user:', userId, code)
+      return new Response(
+        JSON.stringify({ success: false, message: 'Código já foi resgatado anteriormente' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Buscar códigos do usuário para calcular sequência CORRETAMENTE
     const { data: userCodes, error: userCodesError } = await supabase
       .from('user_daily_codes')
       .select('*')
@@ -267,7 +268,7 @@ async function claimCode(supabase: any, userId: string, code: string) {
       )
     }
 
-    // Calcular próxima posição na sequência
+    // Calcular próxima posição na sequência com lógica de ciclo
     let nextPosition = 1
     if (userCodes && userCodes.length > 0) {
       const lastCode = userCodes[0]
@@ -287,6 +288,12 @@ async function claimCode(supabase: any, userId: string, code: string) {
         // Perdeu sequência - reinicia
         nextPosition = 1
         console.log(`[CLAIM_CODE] Streak broken (${daysDiff} days gap) - restarting at position 1`)
+      } else {
+        // Mesmo dia - não pode resgatar
+        return new Response(
+          JSON.stringify({ success: false, message: 'Já resgatou um código hoje' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
     }
 
@@ -316,7 +323,7 @@ async function claimCode(supabase: any, userId: string, code: string) {
       .insert({
         user_id: userId,
         code: code,
-        expires_at: debugResult.code_info.valid_until,
+        expires_at: codeData.valid_until,
         streak_position: nextPosition
       })
 
@@ -329,7 +336,7 @@ async function claimCode(supabase: any, userId: string, code: string) {
     }
 
     // Inserir transação de moedas
-    const { error: transactionError } = await supabase
+    await supabase
       .from('coin_transactions')
       .insert({
         user_id: userId,
@@ -353,22 +360,7 @@ async function claimCode(supabase: any, userId: string, code: string) {
         }
       })
 
-    if (transactionError) {
-      console.error('[CLAIM_CODE] Transaction error:', transactionError)
-      // Tentar remover código inserido se falhou
-      await supabase
-        .from('user_daily_codes')
-        .delete()
-        .eq('user_id', userId)
-        .eq('code', code)
-      
-      return new Response(
-        JSON.stringify({ success: false, message: 'Erro ao processar transação' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Atualizar saldo usando função RPC
+    // Atualizar saldo usando função RPC para garantir integridade
     console.log(`[CLAIM_CODE] Updating balance for user ${userId} with ${finalAmount} coins`)
     
     const { error: balanceError } = await supabase.rpc('update_user_balance', {
@@ -378,11 +370,21 @@ async function claimCode(supabase: any, userId: string, code: string) {
 
     if (balanceError) {
       console.error('[CLAIM_CODE] Balance update error:', balanceError)
+      // Remover transação se falhou ao atualizar saldo
+      await supabase
+        .from('coin_transactions')
+        .delete()
+        .eq('user_id', userId)
+        .eq('reason', 'daily_code_claim')
+        .eq('description', `Código resgatado: ${code} (Sequência ${nextPosition})`)
+      
       return new Response(
         JSON.stringify({ success: false, message: 'Erro ao atualizar saldo' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    console.log(`[CLAIM_CODE] Balance updated successfully for user ${userId}`)
 
     console.log(`[CLAIM_CODE] Success! User ${userId} claimed code ${code}, position ${nextPosition}, earned ${finalAmount} coins`)
 
@@ -406,51 +408,7 @@ async function claimCode(supabase: any, userId: string, code: string) {
     )
 
   } catch (error) {
-    console.error('[CLAIM_CODE] Critical Error:', error)
-    console.error('[CLAIM_CODE] Error Details:', {
-      message: error?.message,
-      stack: error?.stack,
-      code: error?.code,
-      details: error?.details
-    })
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        message: 'Erro interno do servidor',
-        debug: error?.message || 'Unknown error'
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
-}
-
-async function claimDailyBonus(supabase: any, userId: string) {
-  console.log(`[CLAIM_DAILY_BONUS] User ${userId} attempting to auto-claim today's code`)
-  
-  try {
-    // Buscar código atual
-    const { data: codes, error } = await supabase
-      .from('daily_codes')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1)
-
-    if (error || !codes || codes.length === 0) {
-      console.log('[CLAIM_DAILY_BONUS] No current code available')
-      return new Response(
-        JSON.stringify({ success: false, message: 'Nenhum código disponível para resgate automático' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const currentCode = codes[0].code
-    console.log(`[CLAIM_DAILY_BONUS] Auto-claiming current code: ${currentCode}`)
-    
-    // Usar a função de claim normal
-    return await claimCode(supabase, userId, currentCode)
-
-  } catch (error) {
-    console.error('[CLAIM_DAILY_BONUS] Error:', error)
+    console.error('[CLAIM_CODE] Error:', error)
     return new Response(
       JSON.stringify({ success: false, message: 'Erro interno' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -490,19 +448,19 @@ async function getStreakStatus(supabase: any, userId: string) {
     }) : []
 
     const result = {
-      has_active_streak: hasActiveStreak,
-      streak_count: streakCount,
-      valid_codes_count: codes.length,
-      codes: codes
+      success: true,
+      data: {
+        has_active_streak: hasActiveStreak,
+        streak_count: streakCount,
+        valid_codes_count: codes.length,
+        codes: codes
+      }
     }
 
     console.log(`[GET_STREAK] User ${userId} streak: ${streakCount}, valid codes: ${codes.length}`)
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        data: result
-      }),
+      JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
@@ -514,3 +472,240 @@ async function getStreakStatus(supabase: any, userId: string) {
     )
   }
 }
+
+async function claimDailyBonus(supabase: any, userId: string) {
+  console.log(`[CLAIM_DAILY_BONUS] User ${userId} attempting to claim daily bonus automatically`)
+  
+  try {
+    // 1. Buscar código do dia atual automaticamente
+    const now = new Date()
+    const { data: todayCode, error: codeError } = await supabase
+      .from('daily_codes')
+      .select('*')
+      .gte('claimable_until', now.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (codeError || !todayCode) {
+      console.log('[CLAIM_DAILY_BONUS] No code available today')
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Nenhuma recompensa disponível no momento' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log(`[CLAIM_DAILY_BONUS] Found today's code: ${todayCode.code}`)
+
+    // 2. Verificar se ainda pode ser resgatado (janela de 24h)
+    const claimableUntil = new Date(todayCode.claimable_until)
+    if (now > claimableUntil) {
+      console.log('[CLAIM_DAILY_BONUS] Code expired for claiming')
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Recompensa diária expirou (período de 24h passou)' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // 3. Verificar se usuário já resgatou este código
+    const { data: existingCode } = await supabase
+      .from('user_daily_codes')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('code', todayCode.code)
+      .single()
+
+    if (existingCode) {
+      console.log('[CLAIM_DAILY_BONUS] User already claimed today')
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Recompensa diária já foi resgatada hoje' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // 4. Usar a lógica existente de claimCode, mas com código automático
+    console.log(`[CLAIM_DAILY_BONUS] Processing automatic claim for code: ${todayCode.code}`)
+    
+    // Reutilizar toda a lógica de claimCode existente
+    return await processCodeClaim(supabase, userId, todayCode.code, todayCode)
+
+  } catch (error) {
+    console.error('[CLAIM_DAILY_BONUS] Error:', error)
+    return new Response(
+      JSON.stringify({ success: false, message: 'Erro interno do servidor' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+}
+
+async function processCodeClaim(supabase: any, userId: string, code: string, codeData: any) {
+  // Esta função contém toda a lógica de processamento que estava em claimCode
+  // Reutilizando para evitar duplicação de código
+  
+  console.log(`[PROCESS_CLAIM] Processing claim for user ${userId}, code: ${code}`)
+
+  // Buscar configuração do sistema
+  const { data: config } = await supabase
+    .from('daily_codes_config')
+    .select('*')
+    .single()
+
+  const baseAmount = config?.base_amount || 10
+  const maxAmount = config?.max_amount || 50
+  const streakDays = config?.streak_days || 7
+  const incrementType = config?.increment_type || 'progressive'
+  const fixedIncrement = config?.fixed_increment || 5
+
+  // Buscar códigos do usuário para calcular sequência
+  const { data: userCodes } = await supabase
+    .from('user_daily_codes')
+    .select('*')
+    .eq('user_id', userId)
+    .order('added_at', { ascending: false })
+    .limit(1)
+
+  // Calcular próxima posição na sequência
+  let nextPosition = 1
+  if (userCodes && userCodes.length > 0) {
+    const lastCode = userCodes[0]
+    const lastDate = new Date(lastCode.added_at)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    lastDate.setHours(0, 0, 0, 0)
+    
+    const daysDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
+    
+    if (daysDiff === 1) {
+      // Consecutivo - continua sequência com ciclo
+      const rawPosition = lastCode.streak_position + 1
+      nextPosition = ((rawPosition - 1) % streakDays) + 1
+      console.log(`[PROCESS_CLAIM] Consecutive day - raw position: ${rawPosition}, cycle position: ${nextPosition}`)
+    } else if (daysDiff > 1) {
+      // Perdeu sequência - reinicia
+      nextPosition = 1
+      console.log(`[PROCESS_CLAIM] Streak broken (${daysDiff} days gap) - restarting at position 1`)
+    } else {
+      // Mesmo dia - não pode resgatar
+      return new Response(
+        JSON.stringify({ success: false, message: 'Já resgatou uma recompensa hoje' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+  }
+
+  // Calcular quantidade de coins
+  let finalAmount: number
+  if (incrementType === 'fixed') {
+    finalAmount = Math.min(baseAmount + ((nextPosition - 1) * fixedIncrement), maxAmount)
+  } else {
+    if (streakDays > 1) {
+      finalAmount = baseAmount + Math.round(((maxAmount - baseAmount) * (nextPosition - 1)) / (streakDays - 1))
+    } else {
+      finalAmount = baseAmount
+    }
+  }
+  finalAmount = Math.min(finalAmount, maxAmount)
+
+  console.log(`[PROCESS_CLAIM] User ${userId} at cycle position ${nextPosition}/${streakDays}, earning ${finalAmount} coins`)
+
+  // Adicionar código à tabela pessoal
+  const { error: insertError } = await supabase
+    .from('user_daily_codes')
+    .insert({
+      user_id: userId,
+      code: code,
+      expires_at: codeData.valid_until,
+      streak_position: nextPosition
+    })
+
+  if (insertError) {
+    console.error('[PROCESS_CLAIM] Insert error:', insertError)
+    return new Response(
+      JSON.stringify({ success: false, message: 'Erro ao processar recompensa' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  // Inserir transação de moedas
+  await supabase
+    .from('coin_transactions')
+    .insert({
+      user_id: userId,
+      amount: finalAmount,
+      type: 'earned',
+      reason: 'daily_bonus_claim',
+      description: `Recompensa diária resgatada (Sequência ${nextPosition}/${streakDays})`,
+      metadata: {
+        code: code,
+        streak_position: nextPosition,
+        streak_days: streakDays,
+        increment_type: incrementType,
+        daily_bonus_claim: true,
+        auto_claimed: true,
+        config_used: {
+          base_amount: baseAmount,
+          max_amount: maxAmount,
+          streak_days: streakDays,
+          increment_type: incrementType,
+          fixed_increment: fixedIncrement
+        }
+      }
+    })
+
+  // Atualizar saldo usando função RPC
+  console.log(`[PROCESS_CLAIM] Updating balance for user ${userId} with ${finalAmount} coins`)
+  
+  const { error: balanceError } = await supabase.rpc('update_user_balance', {
+    p_user_id: userId,
+    p_amount: finalAmount
+  })
+
+  if (balanceError) {
+    console.error('[PROCESS_CLAIM] Balance update error:', balanceError)
+    // Remover transação se falhou ao atualizar saldo
+    await supabase
+      .from('coin_transactions')
+      .delete()
+      .eq('user_id', userId)
+      .eq('reason', 'daily_bonus_claim')
+      .eq('description', `Recompensa diária resgatada (Sequência ${nextPosition}/${streakDays})`)
+    
+    return new Response(
+      JSON.stringify({ success: false, message: 'Erro ao atualizar saldo' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  console.log(`[PROCESS_CLAIM] Success! User ${userId} claimed daily bonus, position ${nextPosition}, earned ${finalAmount} coins`)
+
+  // Calcular próxima recompensa
+  const nextBonusTime = new Date()
+  nextBonusTime.setDate(nextBonusTime.getDate() + 1)
+  nextBonusTime.setHours(20, 0, 0, 0)
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: 'Recompensa diária resgatada com sucesso!',
+      data: {
+        coins_earned: finalAmount,
+        streak_position: nextPosition,
+        streak_days: streakDays,
+        increment_type: incrementType,
+        next_bonus_at: nextBonusTime.toISOString(),
+        next_bonus_hours: Math.ceil((nextBonusTime.getTime() - Date.now()) / (1000 * 60 * 60))
+      }
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
+}
+
