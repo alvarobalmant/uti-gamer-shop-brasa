@@ -67,7 +67,7 @@ const CONNECTOR_BRASILEIRO = [
   'to', 'from', 'by', '&'
 ];
 
-const DESCRIPTIVE_BRASILEIRO = [
+export const DESCRIPTIVE_BRASILEIRO = [
   // Edições (PT + EN)
   'ultimate', 'deluxe', 'gold', 'premium', 'especial', 'limitada',
   'colecionador', 'colecionadores', 'aniversario', 'lendaria',

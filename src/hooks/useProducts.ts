@@ -132,6 +132,7 @@ export const useProducts = () => {
       if (updates.badge_text !== undefined) updateData.badge_text = updates.badge_text;
       if (updates.badge_color !== undefined) updateData.badge_color = updates.badge_color;
       if (updates.sku_code !== undefined) updateData.sku_code = updates.sku_code;
+      if (updates.category !== undefined) updateData.category = updates.category;
       
       // Campos JSON
       if (updates.additional_images !== undefined) updateData.additional_images = updates.additional_images;

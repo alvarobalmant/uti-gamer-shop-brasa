@@ -65,12 +65,14 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onChange }) => {
                   <SelectValue placeholder="Selecione a categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="consoles">Consoles</SelectItem>
-                  <SelectItem value="games">Jogos</SelectItem>
-                  <SelectItem value="acessorios">Acessórios</SelectItem>
-                  <SelectItem value="perifericos">Periféricos</SelectItem>
-                  <SelectItem value="headsets">Headsets</SelectItem>
-                  <SelectItem value="controles">Controles</SelectItem>
+                  <SelectItem value="Jogos">Jogos</SelectItem>
+                  <SelectItem value="Colecionáveis">Colecionáveis</SelectItem>
+                  <SelectItem value="Consoles">Consoles</SelectItem>
+                  <SelectItem value="Controles">Controles</SelectItem>
+                  <SelectItem value="Headsets">Headsets</SelectItem>
+                  <SelectItem value="Acessórios">Acessórios</SelectItem>
+                  <SelectItem value="Vestuário">Vestuário</SelectItem>
+                  <SelectItem value="Outros">Outros</SelectItem>
                 </SelectContent>
               </Select>
             </div>

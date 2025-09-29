@@ -1,4 +1,32 @@
 import { normalizeText } from './smartSearch';
+import { DESCRIPTIVE_BRASILEIRO } from './tokenClassification';
+
+// Tags relacionadas a consoles (para regra especial de priorização)
+const CONSOLE_TAGS = [
+  // PlayStation
+  'playstation', 'ps1', 'ps2', 'ps3', 'ps4', 'ps5', 'psx', 'psone', 'playstation1', 'playstation2', 
+  'playstation3', 'playstation4', 'playstation5', 'sony', 'psvr', 'psp', 'psvita', 'vita',
+  
+  // Xbox
+  'xbox', 'xbox360', 'xboxone', 'xboxseriesx', 'xboxseriess', 'x360', 'xone', 'xbox360', 
+  'xsx', 'xss', 'microsoft', 'gamepass',
+  
+  // Nintendo
+  'nintendo', 'switch', 'nintendoswitch', 'wii', 'wiiu', 'gamecube', 'n64', 'snes', 'nes',
+  'gameboy', 'gba', '3ds', 'ds', 'nds',
+  
+  // PC/Steam
+  'pc', 'steam', 'epic', 'origin', 'uplay', 'gog', 'windows',
+  
+  // Retro/Outros
+  'sega', 'dreamcast', 'saturn', 'genesis', 'megadrive', 'atari'
+];
+
+// Normalizar tags de console para comparação
+const NORMALIZED_CONSOLE_TAGS = CONSOLE_TAGS.map(tag => 
+  tag.toLowerCase().replace(/[áàâãä]/g, 'a').replace(/[éèêë]/g, 'e').replace(/[íìîï]/g, 'i')
+     .replace(/[óòôõö]/g, 'o').replace(/[úùûü]/g, 'u').replace(/ç/g, 'c').trim()
+);
 
 // Tipos para o novo sistema
 export interface TokenMatch {
@@ -10,7 +38,7 @@ export interface TokenMatch {
 
 export interface TokenAnalysis {
   token: string;
-  type: 'main' | 'descriptive' | 'numeric' | 'roman';
+  type: 'MAIN' | 'DESCRIPTIVE' | 'NUMERIC' | 'ROMAN';
   weight: number;
   isEssential: boolean;
 }
@@ -60,41 +88,43 @@ const ROMAN_TO_ARABIC: Record<string, string> = {
   'xii': '12'
 };
 
-// Detectar tipo de token
+// Detectar tipo de token - usando lista unificada do tokenClassification
 const detectTokenType = (token: string): TokenAnalysis['type'] => {
-  const normalized = token.toLowerCase();
+  const normalized = token.toLowerCase()
+    .replace(/[áàâãä]/g, 'a')
+    .replace(/[éèêë]/g, 'e')
+    .replace(/[íìîï]/g, 'i')
+    .replace(/[óòôõö]/g, 'o')
+    .replace(/[úùûü]/g, 'u')
+    .replace(/ç/g, 'c')
+    .replace(/ñ/g, 'n')
+    .trim();
   
   // Números
   if (/^\d+$/.test(normalized)) {
-    return 'numeric';
+    return 'NUMERIC';
   }
   
   // Números romanos
   if (ROMAN_TO_ARABIC[normalized]) {
-    return 'roman';
+    return 'ROMAN';
   }
   
-  // Palavras descritivas comuns
-  const descriptiveWords = [
-    'ultimate', 'edition', 'deluxe', 'gold', 'premium', 'special',
-    'complete', 'definitive', 'enhanced', 'remastered', 'collection',
-    'bundle', 'pack', 'set', 'version', 'release'
-  ];
-  
-  if (descriptiveWords.includes(normalized)) {
-    return 'descriptive';
+  // Usar a lista completa de palavras descritivas
+  if (DESCRIPTIVE_BRASILEIRO.includes(normalized)) {
+    return 'DESCRIPTIVE';
   }
   
-  return 'main';
+  return 'MAIN';
 };
 
 // Calcular peso do token baseado no tipo
 const getTokenWeight = (type: TokenAnalysis['type']): number => {
   switch (type) {
-    case 'main': return 1.0;
-    case 'numeric': return 1.5;  // Números são mais importantes
-    case 'roman': return 1.5;    // Números romanos também
-    case 'descriptive': return 0.3; // Palavras descritivas menos importantes
+    case 'MAIN': return 1.0;
+    case 'NUMERIC': return 1.5;  // Números são mais importantes
+    case 'ROMAN': return 1.5;    // Números romanos também
+    case 'DESCRIPTIVE': return 0.3; // Palavras descritivas menos importantes
     default: return 1.0;
   }
 };
@@ -108,7 +138,7 @@ const analyzeTokens = (text: string): TokenAnalysis[] => {
   return tokens.map(token => {
     const type = detectTokenType(token);
     const weight = getTokenWeight(type);
-    const isEssential = type === 'main' || type === 'numeric' || type === 'roman';
+    const isEssential = type === 'MAIN' || type === 'NUMERIC' || type === 'ROMAN';
     
     return { token, type, weight, isEssential };
   });
@@ -206,10 +236,10 @@ const findBestTokenMatch = (queryToken: TokenAnalysis, tagTokens: TokenAnalysis[
 // Determinar tipo de match
 const getMatchType = (queryToken: TokenAnalysis, tagToken: TokenAnalysis, similarity: number): TokenMatch['matchType'] => {
   if (similarity === 1.0) {
-    if (queryToken.type === 'numeric' && tagToken.type === 'numeric') {
+    if (queryToken.type === 'NUMERIC' && tagToken.type === 'NUMERIC') {
       return 'numeric';
     }
-    if (queryToken.type === 'roman' || tagToken.type === 'roman') {
+    if (queryToken.type === 'ROMAN' || tagToken.type === 'ROMAN') {
       return 'roman_numeral';
     }
     return 'exact';
@@ -233,8 +263,8 @@ const calculateSpecialBonuses = (
   }
   
   // 2. Tratamento especial para números
-  const queryNumbers = queryAnalysis.filter(t => t.type === 'numeric' || t.type === 'roman');
-  const tagNumbers = tagAnalysis.filter(t => t.type === 'numeric' || t.type === 'roman');
+  const queryNumbers = queryAnalysis.filter(t => t.type === 'NUMERIC' || t.type === 'ROMAN');
+  const tagNumbers = tagAnalysis.filter(t => t.type === 'NUMERIC' || t.type === 'ROMAN');
   
   if (queryNumbers.length > 0) {
     const numericMatches = matches.filter(m => 
@@ -264,10 +294,10 @@ const calculateSpecialBonuses = (
   bonus += essentialMatches.length * 3;
   
   // 4. Penalidade leve para muitos tokens descritivos não encontrados
-  const descriptiveTokens = queryAnalysis.filter(t => t.type === 'descriptive');
+  const descriptiveTokens = queryAnalysis.filter(t => t.type === 'DESCRIPTIVE');
   const descriptiveMatches = matches.filter(m => {
     const queryToken = queryAnalysis.find(t => t.token === m.queryToken);
-    return queryToken?.type === 'descriptive';
+    return queryToken?.type === 'DESCRIPTIVE';
   });
   
   if (descriptiveTokens.length > 0) {
@@ -276,6 +306,73 @@ const calculateSpecialBonuses = (
   }
   
   return bonus;
+};
+
+// Função para verificar se um produto É UM CONSOLE (não apenas tem tags de console)
+const isConsoleProduct = (product: any): boolean => {
+  if (!product) return false;
+
+  const category = String(product.category || '').toLowerCase();
+  const productType = String(product.product_type || '').toLowerCase();
+  const nameRaw = String(product.name || '');
+  const name = nameRaw.toLowerCase();
+
+  // 1) Blacklist explícito: qualquer coisa classificada como jogo NÃO é console
+  const gameCategories = ['jogo', 'jogos', 'game', 'games', 'software'];
+  if (gameCategories.some(cat => category.includes(cat))) return false;
+  if (productType.includes('game') || productType.includes('jogo')) return false;
+
+  // 2) Whitelist por categoria/tipo
+  const consoleCategories = ['console', 'consoles', 'videogame', 'video game', 'hardware', 'plataforma'];
+  if (consoleCategories.some(cat => category.includes(cat))) return true;
+  if (productType.includes('console') || productType.includes('hardware')) return true;
+
+  // 3) Heurística por nome: exigir padrões de console, evitando títulos de jogos
+  const hasConsoleWord = /\bconsole\b/.test(name);
+  if (hasConsoleWord) return true;
+
+  const stripped = name.replace(/[:\-–|]/g, ' ').replace(/\s+/g, ' ').trim();
+  const consolePatterns: RegExp[] = [
+    /^playstation\s*5(\s+(console|digital|slim|standard|disc|1tb|2tb))?$/i,
+    /^playstation\s*4(\s+(console|slim|pro))?$/i,
+    /^ps5(\s+(console|digital|slim|standard|disc|1tb|2tb))?$/i,
+    /^ps4(\s+(console|slim|pro))?$/i,
+    /^xbox\s*series\s*x(\s+(console|1tb|2tb))?$/i,
+    /^xbox\s*series\s*s(\s+(console|512gb|1tb))?$/i,
+    /^xbox\s*one(\s+(console|s|x))?$/i,
+    /^xbox\s*360(\s+(console))?$/i,
+    /^nintendo\s*switch(\s+(console|oled|lite))?$/i,
+  ];
+
+  return consolePatterns.some(re => re.test(stripped));
+};
+
+// Função para verificar se um produto tem tags relacionadas a consoles (MANTIDA PARA REFERÊNCIA)
+const hasConsoleTags = (product: any): boolean => {
+  if (!product.tags || !Array.isArray(product.tags)) return false;
+  
+  return product.tags.some((tag: any) => {
+    const tagName = (tag.name || tag).toLowerCase()
+      .replace(/[áàâãä]/g, 'a').replace(/[éèêë]/g, 'e').replace(/[íìîï]/g, 'i')
+      .replace(/[óòôõö]/g, 'o').replace(/[úùûü]/g, 'u').replace(/ç/g, 'c').trim();
+    
+    return NORMALIZED_CONSOLE_TAGS.includes(tagName);
+  });
+};
+
+// Função para verificar se a query contém apenas tokens DESCRIPTIVE
+const isOnlyDescriptiveQuery = (query: string): boolean => {
+  const tokens = query.toLowerCase().split(/\s+/).filter(token => token.length >= 2);
+  
+  if (tokens.length === 0) return false;
+  
+  return tokens.every(token => {
+    const normalizedToken = token.replace(/[áàâãä]/g, 'a').replace(/[éèêë]/g, 'e')
+      .replace(/[íìîï]/g, 'i').replace(/[óòôõö]/g, 'o').replace(/[úùûü]/g, 'u')
+      .replace(/ç/g, 'c').trim();
+    
+    return DESCRIPTIVE_BRASILEIRO.includes(normalizedToken);
+  });
 };
 
 // Função principal: calcular compatibilidade entre query e tag
@@ -302,13 +399,33 @@ export const calculateTokenCompatibility = (
   const totalQueryTokens = queryAnalysis.length;
   const totalTagTokens = tagAnalysis.length;
   const maxTokens = Math.max(totalQueryTokens, totalTagTokens);
-  const compatibilityRatio = foundTokens / maxTokens;
+  let compatibilityRatio = foundTokens / maxTokens;
+  
+  // REGRA ESPECIAL: Tags só com tokens DESCRIPTIVE sempre têm compatibilityRatio = 1.0
+  console.log(`🔍 [TOKEN-COMPAT] Tag: "${tagName}"`);
+  console.log(`🔍 [TOKEN-COMPAT] Análise tokens:`, tagAnalysis.map(t => `${t.token}(${t.type})`));
+  
+  const tagOnlyHasDescriptive = tagAnalysis.length > 0 && tagAnalysis.every(t => t.type === 'DESCRIPTIVE');
+  console.log(`🔍 [TOKEN-COMPAT] tagOnlyHasDescriptive: ${tagOnlyHasDescriptive}, foundTokens: ${foundTokens}`);
+  
+  // APLICAR REGRA ESPECIAL: Se tag só tem DESCRIPTIVE e há matches, forçar 100% compatibilidade
+  if (tagOnlyHasDescriptive && foundTokens > 0) {
+    compatibilityRatio = 1.0;
+    console.log(`🚀 [TOKEN-COMPAT] REGRA ESPECIAL APLICADA: Tag "${tagName}" só tem DESCRIPTIVE + tem matches → compatibilityRatio = 1.0`);
+  }
   
   // Score base proporcional: 10 × peso × (tokens compatíveis / tokens totais)
   const rawScore = 10 * tagWeight * compatibilityRatio;
   
   // Aplicar bônus e penalidades especiais
   const specialBonuses = calculateSpecialBonuses(matches, queryAnalysis, tagAnalysis);
+  
+  // Boost adicional para tags DESCRIPTIVE (além do compatibilityRatio = 1.0)
+  let descriptiveBoost = 0;
+  if (tagOnlyHasDescriptive && foundTokens > 0) {
+    descriptiveBoost = 20; // Boost adicional para garantir alta pontuação
+    console.log(`🚀 [TOKEN-COMPAT] BOOST ADICIONAL: +${descriptiveBoost} pontos para tag DESCRIPTIVE "${tagName}"`);
+  }
   
   // REGRA ANTI-FALSO-POSITIVO: Rejeitar se a única compatibilidade for por tokens numéricos
   let rejectedByNumericOnlyRule = false;
@@ -318,34 +435,42 @@ export const calculateTokenCompatibility = (
       const queryToken = queryAnalysis.find(t => t.token === match.queryToken);
       const tagToken = tagAnalysis.find(t => t.token === match.tagToken);
       
-      return (queryToken?.type === 'numeric' || queryToken?.type === 'roman') &&
-             (tagToken?.type === 'numeric' || tagToken?.type === 'roman');
+      return (queryToken?.type === 'NUMERIC' || queryToken?.type === 'ROMAN') &&
+             (tagToken?.type === 'NUMERIC' || tagToken?.type === 'ROMAN');
     });
     
     // Se todos os matches são numéricos E existem tokens não-numéricos na query que não foram encontrados
-    const hasNonNumericQueryTokens = queryAnalysis.some(t => t.type !== 'numeric' && t.type !== 'roman');
+    const hasNonNumericQueryTokens = queryAnalysis.some(t => t.type !== 'NUMERIC' && t.type !== 'ROMAN');
     
     if (allMatchesAreNumeric && hasNonNumericQueryTokens) {
       rejectedByNumericOnlyRule = true;
     }
   }
   
-  // Score final (mínimo 0, ou 0 se rejeitado pela regra)
-  const finalScore = rejectedByNumericOnlyRule ? 0 : Math.max(0, rawScore + specialBonuses);
+  // Score final
+  const finalScore = rejectedByNumericOnlyRule ? 0 : Math.max(0, rawScore + specialBonuses + descriptiveBoost);
+  
+  console.log(`🎯 [TOKEN-COMPAT] RESULTADO FINAL Tag "${tagName}":`, {
+    compatibilityRatio: compatibilityRatio,
+    rawScore: rawScore,
+    specialBonuses: specialBonuses,
+    descriptiveBoost: descriptiveBoost,
+    finalScore: finalScore,
+    tagOnlyHasDescriptive: tagOnlyHasDescriptive,
+    foundTokens: foundTokens
+  });
   
   return {
     queryTokens: queryAnalysis.map(t => t.token),
     tagTokens: tagAnalysis.map(t => t.token),
     matches,
-    compatibilityRatio,
-    rawScore,
-    finalScore,
-    rejectedByNumericOnlyRule, // Adicionar flag para debug
+    compatibilityRatio, // Este agora reflete a modificação da regra especial
+    rawScore, // Score base com compatibilityRatio correto
+    finalScore, // Score final com todos os ajustes
+    rejectedByNumericOnlyRule,
     debug: {
       foundTokens,
       totalQueryTokens,
-      totalTagTokens,
-      maxTokens,
       specialBonuses,
       penalties: specialBonuses < 0 ? Math.abs(specialBonuses) : 0
     }
@@ -359,11 +484,18 @@ export const searchProductsByTokenCompatibility = (products: any[], query: strin
     return { exactMatches: filteredProducts.slice(0, 50), relatedProducts: [], tagSuggestions: [] };
   }
   
+  // 🎮 REGRA ESPECIAL: Query só tem DESCRIPTIVE? Priorizar consoles!
+  const isDescriptiveOnlyQuery = isOnlyDescriptiveQuery(query);
+  if (isDescriptiveOnlyQuery) {
+    console.log(`🎮 REGRA ESPECIAL ATIVADA: Query "${query}" contém apenas tokens DESCRIPTIVE - priorizando CONSOLES!`);
+  }
+  
   const results: Array<{
     product: any;
     totalScore: number;
     tagScores: Array<{
       tagName: string;
+      tagWeight: number;
       compatibility: CompatibilityResult;
     }>;
     nameScore: number;
@@ -412,7 +544,16 @@ export const searchProductsByTokenCompatibility = (products: any[], query: strin
     const exactBonus = exactQueryInName ? 25 : 0;
     
     // Score total
-    const totalScore = totalTagScore + nameScore + categoryScore + exactBonus;
+    let totalScore = totalTagScore + nameScore + categoryScore + exactBonus;
+    
+    // 🎮 REGRA ESPECIAL: Se query só tem DESCRIPTIVE E produto É UM CONSOLE, dar BOOST!
+    let consoleBoost = 0;
+    const hasTokenCompatibility = totalTagScore > 0; // só consoles com compatibilidade recebem boost
+    if (isDescriptiveOnlyQuery && isConsoleProduct(product) && hasTokenCompatibility) {
+      consoleBoost = 500; // Boost MASSIVO apenas para CONSOLES com match
+      totalScore += consoleBoost;
+      console.log(`🎮 CONSOLE BOOST APLICADO! +${consoleBoost} | Produto: "${product.name}" | categoria: ${product.category} | compat: ${hasTokenCompatibility}`);
+    }
     
     if (totalScore > 0) {
       results.push({

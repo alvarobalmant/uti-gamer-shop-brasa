@@ -73,7 +73,7 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart,
         
         <SearchResultProductCardImage product={product} isHovered={isHovered} />
 
-        <div className="flex flex-1 flex-col justify-between p-1.5 sm:p-2 md:p-2.5 lg:p-3 min-h-0">
+        <div className="flex flex-1 flex-col justify-between p-1 sm:p-2 md:p-2.5 lg:p-3 min-h-0">
           <div className="space-y-2">
             <SearchResultProductCardInfo product={product} />
             <ProductCardPrice product={product} />
@@ -81,10 +81,10 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart,
           
           {/* UTI Coins Discount Indicator */}
           {(product.uti_coins_discount_percentage || 0) > 0 && (
-            <div className="mt-1 bg-gradient-to-r from-yellow-100 to-orange-100 border border-yellow-300 rounded-md p-2 flex items-center justify-center gap-1">
+            <div className="mt-1 bg-gradient-to-r from-yellow-100 to-orange-100 border border-yellow-300 rounded-md p-1 sm:p-2 flex items-center justify-center gap-1">
               <Coins className="w-3 h-3 text-yellow-600" />
               <span className="text-xs font-semibold text-yellow-700">
-                {product.uti_coins_discount_percentage}% OFF com UTI Coins
+                {product.uti_coins_discount_percentage}% OFF
               </span>
             </div>
           )}
@@ -110,6 +110,11 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart,
                   )}
                   {p.debug_info?.partialMatch && (
                     <Badge variant="secondary" className="h-5 py-0">Parcial</Badge>
+                  )}
+                  {product.category && (
+                    <Badge variant="outline" className="h-5 py-0 text-blue-700 border-blue-300">
+                      {product.category}
+                    </Badge>
                   )}
                 </div>
                 {breakdown && (
@@ -187,6 +192,26 @@ const SearchResultProductCard = React.memo(({ product, onCardClick, onAddToCart,
                                   {/* Informações de score */}
                                   <div className="mt-1 pt-1 border-t border-gray-200">
                                     <div>Compatibilidade: {(detail.compatibilityRatio * 100).toFixed(1)}%</div>
+                                    
+                                    {/* DEBUG: Verificar se a regra especial deveria ser aplicada */}
+                                    {(() => {
+                                      const tagOnlyHasDescriptive = tagAnalysis.tokens.length > 0 && 
+                                        tagAnalysis.tokens.every(t => t.type === 'DESCRIPTIVE');
+                                      const hasMatches = detail.matches && detail.matches.length > 0;
+                                      
+                                      if (tagOnlyHasDescriptive) {
+                                        return (
+                                          <div className="text-[10px] bg-yellow-50 text-yellow-800 px-1 py-0.5 rounded mt-1">
+                                            🔍 REGRA ESPECIAL: Tag só tem DESCRIPTIVE {hasMatches ? '✅ COM matches' : '❌ SEM matches'}
+                                            {hasMatches && detail.compatibilityRatio < 1.0 && (
+                                              <span className="text-red-600 font-bold"> - DEVERIA SER 100%!</span>
+                                            )}
+                                          </div>
+                                        );
+                                      }
+                                      return null;
+                                    })()}
+                                    
                                     <div className="text-[10px] text-gray-600">
                                       10 × {detail.weight || 'peso'} × {detail.debug?.foundTokens || 0}/{detail.debug?.maxTokens || 1} = {detail.rawScore?.toFixed(1) || 0}
                                     </div>

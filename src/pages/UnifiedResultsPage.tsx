@@ -46,8 +46,7 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
   
   // Hook para busca com pesos (apenas usado no modo search)
   const { exactMatches: backendMatches, relatedProducts: backendRelated, tagSuggestions, isLoading: searchLoading, debug } = useWeightedSearch(
-    mode === 'search' ? searchQuery : '', 
-    mode === 'search'
+    mode === 'search' ? searchQuery : ''
   );
 
   // Encontrar a seção atual (apenas no modo section)
@@ -536,7 +535,7 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {sortedProducts.map((product) => (
               <SearchResultProductCard
                 key={product.id}
@@ -560,7 +559,7 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
                 Produtos relacionados à sua busca por "{searchQuery}"
               </p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {relatedProducts.slice(0, 8).map((product) => (
                   <SearchResultProductCard
                     key={`related-${product.id}`}

@@ -33,7 +33,7 @@ const MasterProductManager: React.FC = () => {
     name: '',
     description: '',
     image: '',
-    category_id: '',
+    category: '',
     is_active: true,
     is_featured: false,
     available_variants: {
@@ -69,7 +69,7 @@ const MasterProductManager: React.FC = () => {
       name: '',
       description: '',
       image: '',
-      category_id: '',
+      category: '',
       is_active: true,
       is_featured: false,
       available_variants: {
@@ -84,7 +84,7 @@ const MasterProductManager: React.FC = () => {
         name: formData.name,
         description: formData.description,
         image: formData.image,
-        category_id: formData.category_id || undefined,
+        category: formData.category || undefined,
         is_active: formData.is_active,
         is_featured: formData.is_featured,
         available_variants: formData.available_variants,
@@ -243,15 +243,19 @@ const MasterProductManager: React.FC = () => {
 
                 <div>
                   <Label htmlFor="category">Categoria</Label>
-                  <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
+                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="jogos">Jogos</SelectItem>
-                      <SelectItem value="consoles">Consoles</SelectItem>
-                      <SelectItem value="acessorios">Acessórios</SelectItem>
-                      <SelectItem value="retro">Retro Gaming</SelectItem>
+                      <SelectItem value="Jogos">Jogos</SelectItem>
+                      <SelectItem value="Colecionáveis">Colecionáveis</SelectItem>
+                      <SelectItem value="Consoles">Consoles</SelectItem>
+                      <SelectItem value="Controles">Controles</SelectItem>
+                      <SelectItem value="Headsets">Headsets</SelectItem>
+                      <SelectItem value="Acessórios">Acessórios</SelectItem>
+                      <SelectItem value="Vestuário">Vestuário</SelectItem>
+                      <SelectItem value="Outros">Outros</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

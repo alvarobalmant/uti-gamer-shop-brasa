@@ -19,11 +19,8 @@ const AlgorithmTestPage: React.FC = () => {
       product_type: 'simple',
       is_active: true,
       price: 199.99,
-      image: '/placeholder-game.jpg',
       image_url: '/placeholder-game.jpg',
-      description: 'Remake do clássico jogo de survival horror',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      description: 'Remake do clássico jogo de survival horror'
     },
     {
       id: '2',
@@ -38,11 +35,8 @@ const AlgorithmTestPage: React.FC = () => {
       product_type: 'simple',
       is_active: true,
       price: 149.99,
-      image: '/placeholder-game.jpg',
       image_url: '/placeholder-game.jpg',
-      description: 'Remake do segundo jogo da série',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      description: 'Remake do segundo jogo da série'
     },
     {
       id: '3',
@@ -56,11 +50,8 @@ const AlgorithmTestPage: React.FC = () => {
       product_type: 'simple',
       is_active: true,
       price: 179.99,
-      image: '/placeholder-game.jpg',
       image_url: '/placeholder-game.jpg',
-      description: 'Remake do clássico jogo de terror espacial',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      description: 'Remake do clássico jogo de terror espacial'
     },
     {
       id: '4',
@@ -73,11 +64,8 @@ const AlgorithmTestPage: React.FC = () => {
       product_type: 'simple',
       is_active: true,
       price: 39.99,
-      image: '/placeholder-accessory.jpg',
       image_url: '/placeholder-accessory.jpg',
-      description: 'Pantufa temática do Garfield',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      description: 'Pantufa temática do Garfield'
     },
     {
       id: '5',
@@ -91,11 +79,8 @@ const AlgorithmTestPage: React.FC = () => {
       product_type: 'simple',
       is_active: true,
       price: 249.99,
-      image: '/placeholder-game.jpg',
       image_url: '/placeholder-game.jpg',
-      description: 'Jogo de futebol mais recente da série FIFA',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      description: 'Jogo de futebol mais recente da série FIFA'
     },
     {
       id: '6',
@@ -110,11 +95,8 @@ const AlgorithmTestPage: React.FC = () => {
       product_type: 'simple',
       is_active: true,
       price: 159.99,
-      image: '/placeholder-game.jpg',
       image_url: '/placeholder-game.jpg',
-      description: 'Sequência do aclamado jogo pós-apocalíptico',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      description: 'Sequência do aclamado jogo pós-apocalíptico'
     },
     {
       id: '7',
@@ -127,11 +109,8 @@ const AlgorithmTestPage: React.FC = () => {
       product_type: 'simple',
       is_active: true,
       price: 89.99,
-      image: '/placeholder-accessory.jpg',
       image_url: '/placeholder-accessory.jpg',
-      description: 'Mouse gamer com iluminação RGB',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      description: 'Mouse gamer com iluminação RGB'
     },
     {
       id: '8',
@@ -146,11 +125,8 @@ const AlgorithmTestPage: React.FC = () => {
       product_type: 'simple',
       is_active: true,
       price: 139.99,
-      image: '/placeholder-game.jpg',
       image_url: '/placeholder-game.jpg',
-      description: 'Remake do terceiro jogo da série',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      description: 'Remake do terceiro jogo da série'
     },
     {
       id: '9',
@@ -165,11 +141,8 @@ const AlgorithmTestPage: React.FC = () => {
       product_type: 'simple',
       is_active: true,
       price: 199.99,
-      image: '/placeholder-game.jpg',
       image_url: '/placeholder-game.jpg',
-      description: 'Mais recente jogo da série Street Fighter',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      description: 'Mais recente jogo da série Street Fighter'
     },
     {
       id: '10',
@@ -182,11 +155,8 @@ const AlgorithmTestPage: React.FC = () => {
       product_type: 'simple',
       is_active: true,
       price: 49.99,
-      image: '/placeholder-clothing.jpg',
       image_url: '/placeholder-clothing.jpg',
-      description: 'Camiseta oficial da franquia Resident Evil',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      description: 'Camiseta oficial da franquia Resident Evil'
     }
   ];
 

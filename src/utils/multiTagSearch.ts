@@ -34,9 +34,9 @@ const includesLoosely = (hay: string, needle: string) => {
   return hay.includes(needle) || a.includes(b);
 };
 
-// Cache para otimização de performance
+// Cache para otimização de performance (TEMPORARIAMENTE DESABILITADO PARA DEBUG)
 const searchCache = new Map<string, MultiTagSearchResult>();
-const CACHE_SIZE_LIMIT = 100;
+const CACHE_SIZE_LIMIT = 0; // DESABILITAR CACHE PARA DEBUG
 
 // Busca produtos que correspondem a múltiplas tags (otimizada)
 export const searchProductsByMultipleTags = (products: any[], query: string): MultiTagSearchResult => {

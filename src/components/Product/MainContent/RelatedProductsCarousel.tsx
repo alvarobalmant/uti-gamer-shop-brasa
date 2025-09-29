@@ -44,8 +44,8 @@ const RelatedProductsCarousel: React.FC<RelatedProductsCarouselProps> = ({
       console.log(`[RelatedProductsCarousel] Algoritmo usado: ${result.algorithm}`);
       console.log(`[RelatedProductsCarousel] Produtos encontrados: ${result.products.length}`);
       
-      if (result.algorithm === 'tags') {
-        console.log('[RelatedProductsCarousel] Distribuição de matches por tags:', result.tagMatches);
+      if (result.algorithm === 'search_based') {
+        console.log('[RelatedProductsCarousel] Algoritmo baseado em busca usado');
       }
       
       setProducts(result.products);

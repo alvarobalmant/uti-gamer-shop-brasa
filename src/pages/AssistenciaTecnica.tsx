@@ -50,20 +50,20 @@ function TrustIndicators() {
   ];
 
   return (
-    <section className="py-12 bg-gray-50">
+    <section className="py-6 sm:py-12 bg-gray-50">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8">Por que escolher a UTI DOS GAMES?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8">Por que escolher a UTI DOS GAMES?</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {indicators.map((item, index) => {
             const Icon = item.icon;
             return (
               <Card key={index} className="text-center hover:shadow-lg transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon className="h-6 w-6 text-purple-600" />
+                <CardContent className="pt-4 sm:pt-6 p-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                   </div>
-                  <h3 className="font-semibold mb-2">{item.title}</h3>
-                  <p className="text-sm text-gray-600">{item.description}</p>
+                  <h3 className="font-semibold mb-2 text-sm sm:text-base">{item.title}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">{item.description}</p>
                 </CardContent>
               </Card>
             );
@@ -296,81 +296,122 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
   };
 
   return (
-    <section id="assistance-form" className="py-8 px-4 min-h-screen">
+    <section id="assistance-form" className="py-4 px-4 min-h-screen">
       <div className="w-full max-w-4xl mx-auto">
-        <Card className="shadow-xl w-full min-h-[600px] max-h-[80vh] flex flex-col transition-all duration-300">
-          <CardHeader className="text-center px-4 sm:px-6 flex-shrink-0">
-            <CardTitle className="text-xl sm:text-2xl font-bold">Solicite sua Assistência Técnica</CardTitle>
-            <CardDescription className="text-sm sm:text-base">
+        {/* Card adaptável para mobile */}
+        <Card className="shadow-xl w-full min-h-[600px] flex flex-col transition-all duration-300">
+          <CardHeader className="text-center px-3 sm:px-6 py-4 flex-shrink-0">
+            <CardTitle className="text-lg sm:text-2xl font-bold">Solicite sua Assistência Técnica</CardTitle>
+            <CardDescription className="text-sm">
               Preencha os dados abaixo e entraremos em contato rapidamente
             </CardDescription>
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-xs sm:text-sm font-medium">Etapa {currentStep} de {totalSteps}</span>
-              <span className="text-xs sm:text-sm text-gray-500">{Math.round(progress)}% concluído</span>
+            
+            {/* Progress bar mobile-first */}
+            <div className="mt-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-medium">Etapa {currentStep} de {totalSteps}</span>
+                <span className="text-xs text-gray-500">{Math.round(progress)}% concluído</span>
+              </div>
+              <Progress value={progress} className="h-2" />
             </div>
-            <Progress value={progress} className="mt-2" />
           </CardHeader>
 
-          <CardContent className="px-4 sm:px-6 flex-1 flex flex-col min-h-0">
-            <div 
-              ref={scrollContainerRef}
-              className="flex-1 overflow-y-auto space-y-6 px-4 py-12" 
-              onScroll={handleScroll}
-              style={{
-                scrollBehavior: 'smooth',
-                paddingTop: '3rem',
-                paddingBottom: '3rem'
-              }}
-            >
-            {/* Etapa 2: Marca do Console */}
-            {currentStep === 2 && (
+          <CardContent className="px-3 sm:px-6 flex-1 flex flex-col min-h-0">
+            {/* Conteúdo mobile-optimized */}
+            <div className="flex-1 overflow-y-auto py-4 space-y-4">
+
+            {/* Etapa 1: Tipo de Serviço - Mobile First */}
+            {currentStep === 1 && (
               <div className="space-y-4">
-                <h3 className="text-lg sm:text-xl font-semibold">Qual é a marca do seu console?</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                <h3 className="text-lg sm:text-xl font-semibold text-center">Que tipo de serviço você precisa?</h3>
+                <div className="space-y-3">
+                  {serviceTypes.map((service) => {
+                    const Icon = service.icon;
+                    return (
+                      <div
+                        key={service.id}
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                          formData.serviceType === service.name
+                            ? 'border-purple-500 bg-purple-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => {
+                          setFormData({ ...formData, serviceType: service.name });
+                        }}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2">
+                              <h4 className="font-semibold text-sm sm:text-lg">{service.name}</h4>
+                              {service.popular && (
+                                <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
+                                  Popular
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-gray-600 text-xs sm:text-sm mt-1">{service.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Etapa 2: Marca e Modelo - Mobile Optimized */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-center">Qual é a marca do seu console?</h3>
+                
+                {/* Grid de marcas - Mobile First */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {consoleBrands.map((brand) => (
                     <Button
                       key={brand.id}
                       variant="outline"
-                      className={`h-16 sm:h-20 flex flex-col items-center justify-center p-2 text-xs sm:text-sm transition-all ${
+                      className={`h-20 sm:h-24 flex flex-col items-center justify-center p-2 text-xs transition-all ${
                         formData.consoleBrand === brand.name 
-                          ? 'ring-2 ring-red-500 border-red-500 text-red-600' 
+                          ? 'ring-2 ring-red-500 border-red-500 text-red-600 bg-red-50' 
                           : 'hover:border-gray-400'
                       }`}
                       onClick={() => {
                         setFormData({ 
                           ...formData, 
                           consoleBrand: brand.name,
-                          consoleModel: '' // Reset model when brand changes
+                          consoleModel: ''
                         });
                       }}
                     >
-                      <span className="text-lg sm:text-xl mb-1">{brand.icon}</span>
-                      <span className="font-semibold text-center leading-tight">{brand.name}</span>
+                      <span className="text-2xl mb-1">{brand.icon}</span>
+                      <span className="font-semibold text-center leading-tight text-xs">{brand.name}</span>
                     </Button>
                   ))}
                 </div>
 
-                {/* Seleção de Modelo (aparece dinamicamente) */}
+                {/* Modelos - Lista mobile-friendly */}
                 {formData.consoleBrand && consoleModels[formData.consoleBrand] && (
-                  <div className="space-y-4 mt-6">
-                    <h3 className="text-lg sm:text-xl font-semibold">Qual modelo específico?</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-center">Qual modelo específico?</h3>
+                    <div className="space-y-2">
                       {consoleModels[formData.consoleBrand].map((model) => (
-                        <Button
+                        <div
                           key={model.id}
-                          variant="outline"
-                          className={`h-auto p-3 sm:p-4 text-left flex flex-col items-start justify-start min-h-[60px] transition-all ${
+                          className={`border-2 rounded-lg p-3 cursor-pointer transition-all ${
                             formData.consoleModel === model.name 
-                              ? 'ring-2 ring-red-500 border-red-500 text-red-600' 
-                              : 'hover:border-gray-400'
+                              ? 'border-red-500 bg-red-50' 
+                              : 'border-gray-200 hover:border-gray-300'
                           }`}
                           onClick={() => {
                             setFormData({ ...formData, consoleModel: model.name });
                           }}
                         >
-                          <span className="font-semibold text-sm sm:text-base">{model.name}</span>
-                          <span className="text-xs sm:text-sm text-gray-600 mt-1">{model.description}</span>
-                        </Button>
+                          <div className="text-sm font-semibold">{model.name}</div>
+                          <div className="text-xs text-gray-600 mt-1">{model.description}</div>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -378,214 +419,186 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
               </div>
             )}
 
-            {/* Etapa 1: Tipo de Serviço */}
-            {currentStep === 1 && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold">Que tipo de serviço você precisa?</h3>
-                <div className="space-y-4">
-                  {serviceTypes.map((service) => {
-                    const Icon = service.icon;
-                    return (
-                      <Card
-                        key={service.id}
-                        className={`cursor-pointer transition-all hover:shadow-lg ${
-                          formData.serviceType === service.name
-                            ? 'ring-2 ring-purple-500 border-purple-500'
-                            : 'hover:bg-gray-50'
-                        }`}
-                        onClick={() => {
-                          setFormData({ ...formData, serviceType: service.name });
-                        }}
-                      >
-                        <CardContent className="p-6">
-                          <div className="flex items-start space-x-4">
-                            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                              <Icon className="h-6 w-6 text-purple-600" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-2">
-                                <h4 className="font-semibold text-lg">{service.name}</h4>
-                                {service.popular && (
-                                  <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                                    Mais Popular
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-gray-600 mt-1">{service.description}</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Etapa 3: Problemas (apenas para Diagnóstico + Reparo) */}
+            {/* Etapa 3: Problemas - Mobile Lista */}
             {currentStep === 3 && formData.serviceType === 'Diagnóstico + Reparo' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold">Qual o problema?</h3>
+                <h3 className="text-lg font-semibold text-center">Qual o problema?</h3>
                 <div className="space-y-3">
-                  {problemCategories.map((problem, index) => (
-                    <Button
+                  {problemCategories.map((problem) => (
+                    <div
                       key={problem.id}
-                      variant="outline"
-                      className={`w-full h-auto p-4 text-left flex flex-col items-start justify-start transition-all ${
+                      className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                         formData.problemCategory === problem.name 
-                          ? 'ring-2 ring-red-500 border-red-500 text-red-600' 
-                          : 'hover:border-gray-400'
+                          ? 'border-red-500 bg-red-50' 
+                          : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => {
                         setFormData({ ...formData, problemCategory: problem.name });
                       }}
                     >
-                      <span className="font-semibold">{problem.name}</span>
-                      <span className="text-sm text-gray-600 mt-1">{problem.description}</span>
-                    </Button>
+                      <div className="font-semibold text-sm">{problem.name}</div>
+                      <div className="text-xs text-gray-600 mt-1">{problem.description}</div>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Etapa 3: Pular para próxima se não for Diagnóstico + Reparo */}
+            {/* Etapa 3: Skip automático para outros serviços */}
             {currentStep === 3 && formData.serviceType !== 'Diagnóstico + Reparo' && (
               <div className="text-center py-8">
-                <h3 className="text-xl font-semibold mb-4">Serviço selecionado: {formData.serviceType}</h3>
-                <p className="text-gray-600">Vamos prosseguir para as próximas etapas.</p>
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Serviço selecionado</h3>
+                <p className="text-sm text-gray-600">{formData.serviceType}</p>
+                <p className="text-xs text-gray-500 mt-2">Vamos prosseguir para as próximas etapas</p>
               </div>
             )}
 
-            {/* Etapa 4: Urgência (para todos os serviços exceto Avaliação para Venda) */}
+            {/* Etapa 4: Urgência - Cards mobile */}
             {currentStep === 4 && formData.serviceType !== 'Avaliação para Venda' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold">Qual a urgência?</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button
-                    variant="outline"
-                    className={`h-24 flex flex-col items-center justify-center space-y-2 transition-all ${
+                <h3 className="text-lg font-semibold text-center">Qual a urgência?</h3>
+                <div className="space-y-3">
+                  <div
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                       formData.urgency === 'normal' 
-                        ? 'ring-2 ring-red-500 border-red-500 text-red-600' 
-                        : 'hover:border-gray-400'
+                        ? 'border-red-500 bg-red-50' 
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                     onClick={() => setFormData({ ...formData, urgency: 'normal' })}
                   >
-                    <Clock className="h-6 w-6" />
-                    <div className="text-center">
-                      <div className="font-semibold">Normal</div>
-                      <div className="text-sm">3-5 dias úteis</div>
+                    <div className="flex items-center space-x-3">
+                      <Clock className="h-6 w-6 text-blue-600 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold">Normal</div>
+                        <div className="text-sm text-gray-600">3-5 dias úteis</div>
+                      </div>
                     </div>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className={`h-24 flex flex-col items-center justify-center space-y-2 transition-all ${
+                  </div>
+                  
+                  <div
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                       formData.urgency === 'express' 
-                        ? 'ring-2 ring-red-500 border-red-500 text-red-600' 
-                        : 'hover:border-gray-400'
+                        ? 'border-red-500 bg-red-50' 
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                     onClick={() => setFormData({ ...formData, urgency: 'express' })}
                   >
-                    <Star className="h-6 w-6" />
-                    <div className="text-center">
-                      <div className="font-semibold">Express</div>
-                      <div className="text-sm">24-48 horas</div>
-                      <div className="text-xs text-gray-600 mt-1">Taxa adicional</div>
+                    <div className="flex items-center space-x-3">
+                      <Star className="h-6 w-6 text-yellow-600 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold">Express</div>
+                        <div className="text-sm text-gray-600">24-48 horas</div>
+                        <div className="text-xs text-orange-600 font-medium">Taxa adicional</div>
+                      </div>
                     </div>
-                  </Button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Etapa 4: Pular urgência para Avaliação para Venda */}
+            {/* Etapa 4: Skip para Avaliação */}
             {currentStep === 4 && formData.serviceType === 'Avaliação para Venda' && (
               <div className="text-center py-8">
-                <h3 className="text-xl font-semibold mb-4">Avaliação para Venda</h3>
-                <p className="text-gray-600">Para avaliação, vamos direto para a logística.</p>
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Avaliação para Venda</h3>
+                <p className="text-sm text-gray-600">Para avaliações, vamos direto para a logística</p>
               </div>
             )}
 
-            {/* Etapa 5: Logística */}
+            {/* Etapa 5: Logística - Cards mobile */}
             {currentStep === 5 && (
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold">Como prefere a logística?</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button
-                    variant="outline"
-                    className={`h-24 flex flex-col items-center justify-center space-y-2 transition-all ${
+                <h3 className="text-lg font-semibold text-center">Como prefere a logística?</h3>
+                <div className="space-y-3">
+                  <div
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                       formData.logistics === 'levar-loja' 
-                        ? 'ring-2 ring-red-500 border-red-500 text-red-600' 
-                        : 'hover:border-gray-400'
+                        ? 'border-red-500 bg-red-50' 
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                     onClick={() => setFormData({ ...formData, logistics: 'levar-loja' })}
                   >
-                    <MapPin className="h-6 w-6" />
-                    <div className="text-center">
-                      <div className="font-semibold">Levar na Loja</div>
-                      <div className="text-sm">Você leva o console até nós</div>
+                    <div className="flex items-center space-x-3">
+                      <MapPin className="h-6 w-6 text-green-600 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold">Levar na Loja</div>
+                        <div className="text-sm text-gray-600">Você leva o console até nós</div>
+                        <div className="text-xs text-green-600 font-medium">Sem taxa adicional</div>
+                      </div>
                     </div>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className={`h-24 flex flex-col items-center justify-center space-y-2 transition-all ${
+                  </div>
+                  
+                  <div
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                       formData.logistics === 'buscar-casa' 
-                        ? 'ring-2 ring-red-500 border-red-500 text-red-600' 
-                        : 'hover:border-gray-400'
+                        ? 'border-red-500 bg-red-50' 
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                     onClick={() => setFormData({ ...formData, logistics: 'buscar-casa' })}
                   >
-                    <Truck className="h-6 w-6" />
-                    <div className="text-center">
-                      <div className="font-semibold">Buscar em Casa</div>
-                      <div className="text-sm">Buscamos na sua residência</div>
-                      <div className="text-xs text-gray-600 mt-1">Frete a calcular</div>
+                    <div className="flex items-center space-x-3">
+                      <Truck className="h-6 w-6 text-blue-600 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold">Buscar em Casa</div>
+                        <div className="text-sm text-gray-600">Buscamos na sua residência</div>
+                        <div className="text-xs text-orange-600 font-medium">Frete a calcular</div>
+                      </div>
                     </div>
-                  </Button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Etapa 6: Dados Pessoais e Resumo */}
+            {/* Etapa 6: Dados Pessoais - Mobile Form */}
             {currentStep === 6 && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold">Seus dados para contato</h3>
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-center">Seus dados para contato</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Formulário mobile-first */}
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Nome Completo *</label>
                     <input
                       type="text"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Seu nome completo"
                     />
                   </div>
+                  
                   <div>
                     <label className="block text-sm font-medium mb-2">WhatsApp *</label>
                     <input
                       type="tel"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
                       value={formData.whatsapp}
                       onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
                       placeholder="(27) 99999-9999"
                     />
                   </div>
+                  
                   <div>
-                    <label className="block text-sm font-medium mb-2">Email</label>
+                    <label className="block text-sm font-medium mb-2">Email (opcional)</label>
                     <input
                       type="email"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="seu@email.com"
                     />
                   </div>
+                  
                   {formData.logistics === 'buscar-casa' && (
                     <div>
                       <label className="block text-sm font-medium mb-2">Endereço Completo *</label>
-                      <input
-                        type="text"
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      <textarea
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm h-20 resize-none"
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Rua, número, bairro, cidade"
@@ -594,39 +607,50 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
                   )}
                 </div>
 
-                {/* Resumo da Solicitação - Compacto */}
-                <Card className="bg-gray-50 mt-4">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Resumo da solicitação:</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-1 text-sm">
-                      <p><strong>Console:</strong> {formData.consoleModel}</p>
-                      {formData.serviceType === 'Diagnóstico + Reparo' && formData.problemCategory && (
-                        <p><strong>Problema:</strong> {formData.problemCategory}</p>
-                      )}
-                      <p><strong>Serviço:</strong> {formData.serviceType}</p>
-                      {(formData.serviceType === 'Diagnóstico + Reparo' || formData.serviceType === 'Manutenção Preventiva') && formData.urgency && (
-                        <p><strong>Urgência:</strong> {formData.urgency === 'normal' ? 'Normal (3-5 dias)' : 'Express (24-48h)'}</p>
-                      )}
-                      <p><strong>Entrega:</strong> {formData.logistics === 'levar-loja' ? 'Levar na loja' : 'Buscar em casa'}</p>
+                {/* Resumo compacto */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-sm mb-3">📋 Resumo da solicitação</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Console:</span>
+                      <span className="font-medium">{formData.consoleModel}</span>
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Serviço:</span>
+                      <span className="font-medium">{formData.serviceType}</span>
+                    </div>
+                    {formData.serviceType === 'Diagnóstico + Reparo' && formData.problemCategory && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Problema:</span>
+                        <span className="font-medium">{formData.problemCategory}</span>
+                      </div>
+                    )}
+                    {(formData.serviceType === 'Diagnóstico + Reparo' || formData.serviceType === 'Manutenção Preventiva') && formData.urgency && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Urgência:</span>
+                        <span className="font-medium">{formData.urgency === 'normal' ? 'Normal' : 'Express'}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Logística:</span>
+                      <span className="font-medium">{formData.logistics === 'levar-loja' ? 'Levar na loja' : 'Buscar em casa'}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
             </div>
 
-            {/* Botões de Navegação Fixos */}
-            <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4 border-t flex-shrink-0 mt-4">
+            {/* Botões mobile-optimized */}
+            <div className="flex gap-3 pt-4 border-t flex-shrink-0">
               <Button
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="flex items-center justify-center space-x-2 order-2 sm:order-1"
+                className="flex-1 h-12"
               >
-                <span>Voltar</span>
+                Voltar
               </Button>
 
               {currentStep < totalSteps ? (
@@ -639,19 +663,19 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
                     (currentStep === 4 && formData.serviceType !== 'Avaliação para Venda' && !formData.urgency) ||
                     (currentStep === 5 && !formData.logistics)
                   }
-                  className="flex items-center justify-center space-x-2 order-1 sm:order-2"
+                  className="flex-1 h-12 bg-purple-600 hover:bg-purple-700"
                 >
                   <span>Próximo</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : (
                 <Button
                   onClick={handleSubmit}
                   disabled={!formData.name || !formData.whatsapp || (formData.logistics === 'buscar-casa' && !formData.address)}
-                  className="bg-green-600 hover:bg-green-700 flex items-center justify-center space-x-2 order-1 sm:order-2"
+                  className="flex-1 h-12 bg-green-600 hover:bg-green-700"
                 >
-                  <Phone className="h-4 w-4" />
-                  <span>Enviar via WhatsApp</span>
+                  <Phone className="h-4 w-4 mr-2" />
+                  <span>Enviar WhatsApp</span>
                 </Button>
               )}
             </div>
@@ -684,11 +708,11 @@ const AssistenciaTecnica: React.FC = () => {
         showNavigation={false}
       />
       
-      {/* Título da Página */}
-      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white py-8">
+      {/* Título da Página - Mobile Optimized */}
+      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white py-6 sm:py-8">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold mb-2">Assistência Técnica Especializada</h1>
-          <p className="text-lg opacity-90">Diagnóstico gratuito e reparo profissional para seu console</p>
+          <h1 className="text-xl sm:text-3xl font-bold mb-2">Assistência Técnica Especializada</h1>
+          <p className="text-sm sm:text-lg opacity-90">Diagnóstico gratuito e reparo profissional para seu console</p>
         </div>
       </div>
       

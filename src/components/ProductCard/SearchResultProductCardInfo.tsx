@@ -154,19 +154,19 @@ const SearchResultProductCardInfo: React.FC<SearchResultProductCardInfoProps> = 
         <div className="flex flex-wrap gap-1 w-full">
           {platform && (
             <span className={cn(
-              "inline-flex items-center px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0",
+              "inline-flex items-center px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded text-xs font-medium whitespace-nowrap flex-shrink-0",
               getPlatformColor(platform)
             )}>
               {platform}
             </span>
           )}
           
-          <span className="inline-flex items-center px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap flex-shrink-0">
+          <span className="inline-flex items-center px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap flex-shrink-0">
             {category}
           </span>
           
           <span className={cn(
-            "inline-flex items-center px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0",
+            "inline-flex items-center px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded text-xs font-medium whitespace-nowrap flex-shrink-0",
             getStatusColor(status)
           )}>
             {status}
