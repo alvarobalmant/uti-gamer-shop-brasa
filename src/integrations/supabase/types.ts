@@ -891,6 +891,7 @@ export type Database = {
           user_agent: string | null
           user_id: string | null
           uti_coins_discount_amount: number | null
+          uti_coins_preference: boolean | null
           uti_coins_used: number | null
         }
         Insert: {
@@ -914,6 +915,7 @@ export type Database = {
           user_agent?: string | null
           user_id?: string | null
           uti_coins_discount_amount?: number | null
+          uti_coins_preference?: boolean | null
           uti_coins_used?: number | null
         }
         Update: {
@@ -937,6 +939,7 @@ export type Database = {
           user_agent?: string | null
           user_id?: string | null
           uti_coins_discount_amount?: number | null
+          uti_coins_preference?: boolean | null
           uti_coins_used?: number | null
         }
         Relationships: []
@@ -2097,6 +2100,258 @@ export type Database = {
           },
         ]
       }
+      products_backup: {
+        Row: {
+          additional_images: string[] | null
+          available_variants: Json | null
+          badge_color: string | null
+          badge_text: string | null
+          badge_visible: boolean | null
+          brand: string | null
+          breadcrumb_config: Json | null
+          category: string | null
+          colors: string[] | null
+          condition: string | null
+          created_at: string | null
+          delivery_config: Json | null
+          description: string | null
+          digital_price: number | null
+          discount_percentage: number | null
+          discount_price: number | null
+          display_config: Json | null
+          free_shipping: boolean | null
+          id: string | null
+          image: string | null
+          images: string[] | null
+          inherit_from_master: Json | null
+          installment_options: number | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          is_master_product: boolean | null
+          is_reviewed: boolean | null
+          list_price: number | null
+          manual_related_products: Json | null
+          master_slug: string | null
+          meta_description: string | null
+          meta_title: string | null
+          name: string | null
+          new_price: number | null
+          parent_product_id: string | null
+          pix_discount_percentage: number | null
+          platform: string | null
+          price: number | null
+          pro_discount_percent: number | null
+          pro_price: number | null
+          product_descriptions: Json | null
+          product_faqs: Json | null
+          product_features: Json | null
+          product_highlights: Json | null
+          product_type: string | null
+          product_videos: Json | null
+          promotional_price: number | null
+          rating: number | null
+          rating_average: number | null
+          rating_count: number | null
+          related_products: Json | null
+          related_products_auto: boolean | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviews_config: Json | null
+          reviews_enabled: boolean | null
+          shipping_dimensions: Json | null
+          shipping_time_max: number | null
+          shipping_time_min: number | null
+          shipping_weight: number | null
+          show_rating: boolean | null
+          show_stock: boolean | null
+          sizes: string[] | null
+          sku_code: string | null
+          slug: string | null
+          sort_order: number | null
+          specifications: Json | null
+          stock: number | null
+          store_pickup_available: boolean | null
+          technical_specs: Json | null
+          title: string | null
+          trust_indicators: Json | null
+          updated_at: string | null
+          uti_coins_cashback_percentage: number | null
+          uti_coins_discount_percentage: number | null
+          uti_pro_custom_price: number | null
+          uti_pro_enabled: boolean | null
+          uti_pro_price: number | null
+          uti_pro_type: string | null
+          uti_pro_value: number | null
+          variant_attributes: Json | null
+        }
+        Insert: {
+          additional_images?: string[] | null
+          available_variants?: Json | null
+          badge_color?: string | null
+          badge_text?: string | null
+          badge_visible?: boolean | null
+          brand?: string | null
+          breadcrumb_config?: Json | null
+          category?: string | null
+          colors?: string[] | null
+          condition?: string | null
+          created_at?: string | null
+          delivery_config?: Json | null
+          description?: string | null
+          digital_price?: number | null
+          discount_percentage?: number | null
+          discount_price?: number | null
+          display_config?: Json | null
+          free_shipping?: boolean | null
+          id?: string | null
+          image?: string | null
+          images?: string[] | null
+          inherit_from_master?: Json | null
+          installment_options?: number | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_master_product?: boolean | null
+          is_reviewed?: boolean | null
+          list_price?: number | null
+          manual_related_products?: Json | null
+          master_slug?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          name?: string | null
+          new_price?: number | null
+          parent_product_id?: string | null
+          pix_discount_percentage?: number | null
+          platform?: string | null
+          price?: number | null
+          pro_discount_percent?: number | null
+          pro_price?: number | null
+          product_descriptions?: Json | null
+          product_faqs?: Json | null
+          product_features?: Json | null
+          product_highlights?: Json | null
+          product_type?: string | null
+          product_videos?: Json | null
+          promotional_price?: number | null
+          rating?: number | null
+          rating_average?: number | null
+          rating_count?: number | null
+          related_products?: Json | null
+          related_products_auto?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviews_config?: Json | null
+          reviews_enabled?: boolean | null
+          shipping_dimensions?: Json | null
+          shipping_time_max?: number | null
+          shipping_time_min?: number | null
+          shipping_weight?: number | null
+          show_rating?: boolean | null
+          show_stock?: boolean | null
+          sizes?: string[] | null
+          sku_code?: string | null
+          slug?: string | null
+          sort_order?: number | null
+          specifications?: Json | null
+          stock?: number | null
+          store_pickup_available?: boolean | null
+          technical_specs?: Json | null
+          title?: string | null
+          trust_indicators?: Json | null
+          updated_at?: string | null
+          uti_coins_cashback_percentage?: number | null
+          uti_coins_discount_percentage?: number | null
+          uti_pro_custom_price?: number | null
+          uti_pro_enabled?: boolean | null
+          uti_pro_price?: number | null
+          uti_pro_type?: string | null
+          uti_pro_value?: number | null
+          variant_attributes?: Json | null
+        }
+        Update: {
+          additional_images?: string[] | null
+          available_variants?: Json | null
+          badge_color?: string | null
+          badge_text?: string | null
+          badge_visible?: boolean | null
+          brand?: string | null
+          breadcrumb_config?: Json | null
+          category?: string | null
+          colors?: string[] | null
+          condition?: string | null
+          created_at?: string | null
+          delivery_config?: Json | null
+          description?: string | null
+          digital_price?: number | null
+          discount_percentage?: number | null
+          discount_price?: number | null
+          display_config?: Json | null
+          free_shipping?: boolean | null
+          id?: string | null
+          image?: string | null
+          images?: string[] | null
+          inherit_from_master?: Json | null
+          installment_options?: number | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_master_product?: boolean | null
+          is_reviewed?: boolean | null
+          list_price?: number | null
+          manual_related_products?: Json | null
+          master_slug?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          name?: string | null
+          new_price?: number | null
+          parent_product_id?: string | null
+          pix_discount_percentage?: number | null
+          platform?: string | null
+          price?: number | null
+          pro_discount_percent?: number | null
+          pro_price?: number | null
+          product_descriptions?: Json | null
+          product_faqs?: Json | null
+          product_features?: Json | null
+          product_highlights?: Json | null
+          product_type?: string | null
+          product_videos?: Json | null
+          promotional_price?: number | null
+          rating?: number | null
+          rating_average?: number | null
+          rating_count?: number | null
+          related_products?: Json | null
+          related_products_auto?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviews_config?: Json | null
+          reviews_enabled?: boolean | null
+          shipping_dimensions?: Json | null
+          shipping_time_max?: number | null
+          shipping_time_min?: number | null
+          shipping_weight?: number | null
+          show_rating?: boolean | null
+          show_stock?: boolean | null
+          sizes?: string[] | null
+          sku_code?: string | null
+          slug?: string | null
+          sort_order?: number | null
+          specifications?: Json | null
+          stock?: number | null
+          store_pickup_available?: boolean | null
+          technical_specs?: Json | null
+          title?: string | null
+          trust_indicators?: Json | null
+          updated_at?: string | null
+          uti_coins_cashback_percentage?: number | null
+          uti_coins_discount_percentage?: number | null
+          uti_pro_custom_price?: number | null
+          uti_pro_enabled?: boolean | null
+          uti_pro_price?: number | null
+          uti_pro_type?: string | null
+          uti_pro_value?: number | null
+          variant_attributes?: Json | null
+        }
+        Relationships: []
+      }
       promotional_ribbon_config: {
         Row: {
           background_color: string | null
@@ -3056,9 +3311,52 @@ export type Database = {
         }
         Relationships: []
       }
+      tag_categories: {
+        Row: {
+          category_enum: Database["public"]["Enums"]["tag_category_enum"]
+          color: string | null
+          created_at: string | null
+          default_weight: number
+          description: string | null
+          display_order: number | null
+          icon_emoji: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          category_enum: Database["public"]["Enums"]["tag_category_enum"]
+          color?: string | null
+          created_at?: string | null
+          default_weight?: number
+          description?: string | null
+          display_order?: number | null
+          icon_emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          category_enum?: Database["public"]["Enums"]["tag_category_enum"]
+          color?: string | null
+          created_at?: string | null
+          default_weight?: number
+          description?: string | null
+          display_order?: number | null
+          icon_emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           category: string | null
+          category_enum: Database["public"]["Enums"]["tag_category_enum"] | null
           created_at: string
           id: string
           name: string
@@ -3066,6 +3364,9 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          category_enum?:
+            | Database["public"]["Enums"]["tag_category_enum"]
+            | null
           created_at?: string
           id?: string
           name: string
@@ -3073,6 +3374,9 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          category_enum?:
+            | Database["public"]["Enums"]["tag_category_enum"]
+            | null
           created_at?: string
           id?: string
           name?: string
@@ -3918,17 +4222,26 @@ export type Database = {
         Returns: Json
       }
       create_order_verification_code: {
-        Args: {
-          p_browser_info?: Json
-          p_customer_info: Json
-          p_discount_info?: Json
-          p_ip_address?: unknown
-          p_items: Json
-          p_shipping_info?: Json
-          p_total_amount: number
-          p_user_agent?: string
-          p_user_id: string
-        }
+        Args:
+          | {
+              p_browser_info: Json
+              p_customer_info: Json
+              p_items: Json
+              p_total_amount: number
+              p_use_uti_coins?: boolean
+              p_user_id: string
+            }
+          | {
+              p_browser_info?: Json
+              p_customer_info: Json
+              p_discount_info?: Json
+              p_ip_address?: unknown
+              p_items: Json
+              p_shipping_info?: Json
+              p_total_amount: number
+              p_user_agent?: string
+              p_user_id: string
+            }
         Returns: Json
       }
       debug_column_references: {
@@ -3938,6 +4251,10 @@ export type Database = {
           source_name: string
           source_type: string
         }[]
+      }
+      debug_daily_codes_issue: {
+        Args: { p_code: string; p_user_id: string }
+        Returns: Json
       }
       delete_master_product_cascade: {
         Args: { p_master_product_id: string }
@@ -4273,6 +4590,19 @@ export type Database = {
         Args: { meses: number; user_id: string }
         Returns: boolean
       }
+      search_products_enhanced: {
+        Args: { limit_count?: number; search_terms: string[] }
+        Returns: {
+          debug_info: Json
+          matched_tags: Json
+          product_id: string
+          product_image: string
+          product_name: string
+          product_price: number
+          product_slug: string
+          relevance_score: number
+        }[]
+      }
       search_products_weighted: {
         Args: { limit_count?: number; search_terms: string[] }
         Returns: {
@@ -4335,6 +4665,21 @@ export type Database = {
     }
     Enums: {
       section_item_type: "product" | "tag"
+      tag_category_enum:
+        | "platform"
+        | "product_type"
+        | "game_title"
+        | "console_model"
+        | "brand"
+        | "accessory_type"
+        | "collectible"
+        | "clothing"
+        | "genre"
+        | "feature"
+        | "edition"
+        | "condition"
+        | "physical_attribute"
+        | "generic"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4463,6 +4808,22 @@ export const Constants = {
   public: {
     Enums: {
       section_item_type: ["product", "tag"],
+      tag_category_enum: [
+        "platform",
+        "product_type",
+        "game_title",
+        "console_model",
+        "brand",
+        "accessory_type",
+        "collectible",
+        "clothing",
+        "genre",
+        "feature",
+        "edition",
+        "condition",
+        "physical_attribute",
+        "generic",
+      ],
     },
   },
 } as const

@@ -2,8 +2,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { sendOrderCreatedEmail } from './orderEmailService';
 
-export const generateOrderVerificationCode = async (cartItems: any[], total: number) => {
-  console.log('🔐 generateOrderVerificationCode called with items:', cartItems.length, 'total:', total);
+export const generateOrderVerificationCode = async (cartItems: any[], total: number, useUTICoins: boolean = false) => {
+  console.log('🔐 generateOrderVerificationCode called with items:', cartItems.length, 'total:', total, 'useUTICoins:', useUTICoins);
   
   try {
     // Preparar dados dos itens
@@ -30,14 +30,15 @@ export const generateOrderVerificationCode = async (cartItems: any[], total: num
     const { data: { user } } = await supabase.auth.getUser();
     console.log('👤 User:', user?.id || 'not logged in');
 
-    // Chamar função do Supabase
+    // Chamar função do Supabase com preferência de UTI Coins
     console.log('📞 Calling supabase RPC create_order_verification_code...');
     const { data, error } = await supabase.rpc('create_order_verification_code', {
       p_user_id: user?.id || null,
       p_items: items,
       p_total_amount: total,
       p_customer_info: customerInfo,
-      p_browser_info: { userAgent: navigator.userAgent }
+      p_browser_info: { userAgent: navigator.userAgent },
+      p_use_uti_coins: useUTICoins
     });
 
     if (error) {
@@ -367,7 +368,7 @@ export const sendToWhatsApp = async (cartItems: any[], phoneNumber: string = '55
   
   // Gerar código de verificação do pedido
   console.log('🔐 Generating order code...');
-  const orderCode = await generateOrderVerificationCode(cartItems, totalWithShipping);
+  const orderCode = await generateOrderVerificationCode(cartItems, totalWithShipping, utiCoinsUsed);
   
   if (!orderCode) {
     console.error('❌ Failed to generate order code');
@@ -487,7 +488,9 @@ export const generateSingleProductCode = async (product: any, quantity: number =
   console.log('📊 [MOBILE DEBUG] Cart items prepared:', cartItems);
   console.log('💰 [MOBILE DEBUG] Total calculated:', total);
   
-  return await generateOrderVerificationCode(cartItems, total);
+  // Incluir informação de UTI Coins na geração do código
+  const useCoins = additionalInfo?.useCoins || false;
+  return await generateOrderVerificationCode(cartItems, total, useCoins);
 };
 
 // Função para compra direta com código de verificação
