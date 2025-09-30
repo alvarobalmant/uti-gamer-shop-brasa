@@ -25,6 +25,7 @@ export interface ImportedProduct {
   uti_pro_value?: number;
   uti_pro_type?: string;
   uti_coins_cashback_percentage?: number;
+  uti_coins_discount_percentage?: number;
   
   // Mídia e conteúdo
   product_videos?: string;

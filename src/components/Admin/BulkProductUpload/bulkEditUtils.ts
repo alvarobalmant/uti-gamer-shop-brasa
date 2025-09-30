@@ -60,6 +60,19 @@ export const validateBulkEditData = (products: ImportedProduct[]): ValidationErr
       });
     }
     
+    // Validar desconto UTI Coins se fornecido
+    if (product.uti_coins_discount_percentage !== undefined && product.uti_coins_discount_percentage !== null && String(product.uti_coins_discount_percentage) !== '') {
+      const discountValue = Number(product.uti_coins_discount_percentage);
+      if (isNaN(discountValue) || discountValue < 0 || discountValue > 5) {
+        errors.push({
+          row,
+          field: 'uti_coins_discount_percentage',
+          message: 'Desconto UTI Coins deve ser um número entre 0 e 5 (%)',
+          severity: 'error'
+        });
+      }
+    }
+    
     // Validar valores booleanos
     const booleanFields = ['is_active', 'is_featured', 'badge_visible', 'free_shipping', 'uti_pro_enabled', 'is_master_product'];
     booleanFields.forEach(field => {
@@ -272,6 +285,11 @@ export const processBulkEdit = async (
       // Campo UTI Coins Cashback
       if (product.uti_coins_cashback_percentage !== undefined && product.uti_coins_cashback_percentage !== null && String(product.uti_coins_cashback_percentage) !== '') {
         updateData.uti_coins_cashback_percentage = Number(product.uti_coins_cashback_percentage);
+      }
+      
+      // Campo UTI Coins Discount
+      if (product.uti_coins_discount_percentage !== undefined && product.uti_coins_discount_percentage !== null && String(product.uti_coins_discount_percentage) !== '') {
+        updateData.uti_coins_discount_percentage = Number(product.uti_coins_discount_percentage);
       }
       
       // Campos booleanos

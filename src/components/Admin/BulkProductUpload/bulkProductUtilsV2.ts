@@ -99,6 +99,16 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     width: 15
   },
   
+  // === UTI COINS ===
+  {
+    key: 'uti_coins_discount_percentage',
+    label: 'Desconto UTI Coins (%)',
+    instructions: 'Percentual de desconto máximo usando UTI Coins (0-5%)',
+    type: 'number',
+    example: 2.5,
+    width: 15
+  },
+  
   // === MÍDIA ===
   {
     key: 'additional_images',
@@ -330,6 +340,7 @@ Configure até 3 preços por produto para maximizar conversões:
 - **price**: Preço principal de venda (obrigatório)
 - **list_price**: Preço original "de" para mostrar desconto (opcional)
 - **pro_price**: Preço especial para membros UTI Pro (opcional)
+- **uti_coins_discount_percentage**: Percentual de desconto máximo com UTI Coins (0-5%)
 
 ### 💡 Exemplo Prático:
 \`\`\`
@@ -349,6 +360,33 @@ UTI Pro: R$ 49,99 (economia adicional de R$ 10,00)
 - **Percepção de valor** com desconto visível
 - **Incentivo** ao programa UTI Pro
 - **Maior conversão** com estratégia de preços
+
+## 🪙 SISTEMA UTI COINS - DESCONTOS
+
+Configure descontos em UTI Coins para seus produtos:
+
+### 💰 Campo UTI Coins:
+- **uti_coins_discount_percentage**: Percentual de desconto máximo (0-5%)
+
+### 🎯 Como Funciona:
+- Clientes podem usar UTI Coins para obter desconto
+- 100 UTI Coins = R$ 1,00 de desconto
+- Desconto máximo limitado pelo percentual configurado
+- Se ativado, cliente NÃO recebe cashback (só desconto OU cashback)
+
+### 💡 Exemplo Prático:
+\`\`\`
+Produto: R$ 100,00
+uti_coins_discount_percentage: 5
+
+Desconto máximo: R$ 5,00 (5% de R$ 100,00)
+UTI Coins necessários: 500 coins (500 coins = R$ 5,00)
+\`\`\`
+
+### ✅ Recomendações:
+- **0-2%**: Produtos de alto valor ou margens baixas
+- **3-5%**: Produtos com margens maiores ou estratégicos
+- **Deixar vazio**: Produto não participará do sistema UTI Coins
 
 ## 📊 CATEGORIZAÇÃO AUTOMÁTICA DESKTOP
 
@@ -469,7 +507,8 @@ ${uniquePlatforms.length > 0
 - **price**: Preço principal de venda (obrigatório)
 - **list_price**: Preço original "de" para mostrar desconto (opcional)
 - **pro_price**: Preço especial para membros UTI Pro (opcional)
-- **Benefícios**: Percepção de valor, incentivo UTI Pro, maior conversão
+- **uti_coins_discount_percentage**: Percentual de desconto máximo com UTI Coins (0-5%)
+- **Benefícios**: Percepção de valor, incentivo UTI Pro, maior conversão, estratégia UTI Coins
 
 ### Categorização
 - **brand**: Marca do produto
@@ -905,6 +944,7 @@ export function generateProductTemplate(): ProductTemplate {
       'price': 299.99,
       'list_price': 399.99,
       'pro_price': 249.99,
+      'uti_coins_discount_percentage': 2.5,
       'stock': 50,
       'image': 'https://exemplo.com/mouse-gamer-rgb.jpg',
       'is_master_product': false,
@@ -1086,6 +1126,19 @@ export function validateProductData(products: ImportedProduct[]): ValidationErro
         });
       }
     });
+
+    // Validação de UTI Coins Discount Percentage
+    if (product.uti_coins_discount_percentage !== undefined && product.uti_coins_discount_percentage !== null) {
+      const discountValue = Number(product.uti_coins_discount_percentage);
+      if (isNaN(discountValue) || discountValue < 0 || discountValue > 5) {
+        errors.push({
+          row,
+          field: 'uti_coins_discount_percentage',
+          message: 'Desconto UTI Coins deve ser um número entre 0 e 5 (%)',
+          severity: 'error'
+        });
+      }
+    }
 
     // Validações de URLs
     if (product.image && !isValidURL(product.image)) {
@@ -1298,6 +1351,9 @@ function convertImportedProductToDatabase(product: ImportedProduct): any {
     // Preços
     pro_price: product.pro_price ? Number(product.pro_price) : null,
     list_price: product.list_price ? Number(product.list_price) : null,
+    
+    // UTI Coins
+    uti_coins_discount_percentage: product.uti_coins_discount_percentage ? Number(product.uti_coins_discount_percentage) : null,
     
     // Especificações
     specifications: parseJsonField(product.specifications) || [],
