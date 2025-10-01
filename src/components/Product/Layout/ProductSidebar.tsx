@@ -10,8 +10,6 @@ import { cn } from '@/lib/utils';
 import DeliveryInfo from '../Sidebar/DeliveryInfo';
 import QuantitySelector from '../Sidebar/QuantitySelector';
 import ActionButtons from '../Sidebar/ActionButtons';
-
-import TrustBadges from '../Sidebar/TrustBadges';
 import DynamicDelivery from '../Sidebar/DynamicDelivery';
 
 import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
@@ -113,9 +111,6 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
           </div>
         </div>
       </div>
-
-      {/* TRUST BADGES */}
-      <TrustBadges />
 
       {/* MODAL DE CONFIRMAÇÃO DE COMPRA */}
       <PurchaseConfirmationModal
