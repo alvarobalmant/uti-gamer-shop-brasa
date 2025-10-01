@@ -53,7 +53,7 @@ const ProductDescriptionExpandable: React.FC<ProductDescriptionExpandableProps> 
               <Button 
                 size="sm" 
                 className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1"
-                onClick={() => window.open('https://wa.me/5527999999999?text=Olá! Tenho dúvidas sobre o produto: ' + encodeURIComponent(product.name), '_blank')}
+                onClick={() => window.open('https://wa.me/5527999771112?text=Olá! Tenho dúvidas sobre o produto: ' + encodeURIComponent(product.name), '_blank')}
               >
                 <span className="text-sm">📱</span>
                 WhatsApp
@@ -62,7 +62,7 @@ const ProductDescriptionExpandable: React.FC<ProductDescriptionExpandableProps> 
                 size="sm" 
                 variant="outline" 
                 className="border-blue-300 text-blue-600 hover:bg-blue-50 flex items-center gap-1"
-                onClick={() => window.open('tel:+5527999999999', '_self')}
+                onClick={() => window.open('tel:+5527999771112', '_self')}
               >
                 <span className="text-sm">📞</span>
                 Ligar Agora
