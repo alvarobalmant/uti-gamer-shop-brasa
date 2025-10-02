@@ -10,7 +10,7 @@ import { getAdvancedSpellCorrection, autoCorrectAdvanced } from '@/utils/advance
 import SearchResultProductCard from '@/components/SearchResultProductCard';
 import Header from '@/components/Header';
 import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
-import { AuthModal } from '@/components/Auth';
+import { AuthModal } from '@/components/Auth/AuthModal';
 import {
   DropdownMenu,
   DropdownMenuContent,

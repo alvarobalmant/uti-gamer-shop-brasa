@@ -58,8 +58,8 @@ export const SimpleAuthModal = ({ isOpen, onClose }: SimpleAuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border text-foreground max-w-md shadow-2xl sm:max-w-md w-[calc(100vw-4rem)] max-h-[calc(100vh-4rem)] mx-auto my-auto overflow-y-auto p-4 sm:p-6">
-        <DialogHeader className="text-center relative pb-2">
+      <DialogContent className="bg-card border-border text-foreground max-w-md shadow-2xl sm:max-w-md w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] mx-auto my-auto overflow-y-auto">
+        <DialogHeader className="text-center relative">
           <Button
             variant="ghost"
             onClick={onClose}
@@ -68,50 +68,50 @@ export const SimpleAuthModal = ({ isOpen, onClose }: SimpleAuthModalProps) => {
             <X className="w-4 h-4" />
           </Button>
           
-          <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+          <div className="flex items-center justify-center space-x-3 mb-4">
             <LogoImage 
               src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
               alt="UTI DOS GAMES" 
-              className="w-12 h-12 sm:w-16 sm:h-16"
+              className="w-16 h-16"
               priority={true}
             />
             <div>
-              <DialogTitle className="text-xl sm:text-2xl font-bold text-primary">
+              <DialogTitle className="text-2xl font-bold text-primary">
                 UTI DOS GAMES
               </DialogTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground">Faça login em sua conta</p>
+              <p className="text-sm text-muted-foreground">Faça login em sua conta</p>
             </div>
           </div>
         </DialogHeader>
         
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-muted rounded-lg p-1 h-12">
+          <TabsList className="grid w-full grid-cols-2 bg-muted rounded-lg p-1">
             <TabsTrigger 
               value="login" 
-              className="text-sm sm:text-base text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium rounded-md transition-all duration-200"
+              className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium rounded-md transition-all duration-200"
             >
-              <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
+              <LogIn className="w-4 h-4 mr-2" />
               Entrar
             </TabsTrigger>
             <TabsTrigger 
               value="signup" 
-              className="text-sm sm:text-base text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium rounded-md transition-all duration-200"
+              className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium rounded-md transition-all duration-200"
             >
-              <UserPlus className="w-4 h-4 mr-1 sm:mr-2" />
+              <UserPlus className="w-4 h-4 mr-2" />
               Cadastrar
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="login" className="mt-4 sm:mt-6">
+          <TabsContent value="login" className="mt-6">
             <LoginForm onSubmit={handleSignIn} loading={loading} />
           </TabsContent>
           
-          <TabsContent value="signup" className="mt-4 sm:mt-6">
+          <TabsContent value="signup" className="mt-6">
             <SignUpForm onSubmit={handleSignUp} loading={loading} />
           </TabsContent>
         </Tabs>
         
-        <div className="text-center text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
+        <div className="text-center text-sm text-muted-foreground mt-4 pt-4 border-t border-border">
           <p>Ao fazer login, você concorda com nossos termos de uso.</p>
         </div>
       </DialogContent>

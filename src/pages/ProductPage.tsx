@@ -12,7 +12,7 @@ import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthModal } from '@/components/Auth';
+import { AuthModal } from '@/components/Auth/AuthModal';
 import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
 
 const ProductPage: React.FC = () => {

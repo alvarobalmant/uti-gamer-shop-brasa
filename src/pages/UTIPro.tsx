@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthModal } from '@/components/Auth';
+import { AuthModal } from '@/components/Auth/AuthModal';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import Footer from '@/components/Footer';
 import { ArrowLeft, Check, Crown, Star, Zap, Shield, Gift, ChevronDown, Loader2 } from 'lucide-react';

@@ -7,7 +7,7 @@ import { Loader2, Zap, Play, Star, ShoppingCart, Gamepad2, Headphones, Camera, T
 import { Button } from '@/components/ui/button';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
-import { AuthModal } from '@/components/Auth';
+import { AuthModal } from '@/components/Auth/AuthModal';
 import { usePlayStationData } from '@/hooks/usePlayStationData';
 
 // Componente de cartão de produto otimizado para PlayStation V5
