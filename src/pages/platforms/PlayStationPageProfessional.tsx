@@ -7,7 +7,7 @@ import { Loader2, Zap, Play, ChevronRight, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import Cart from '@/components/Cart';
-import { AuthModal } from '@/components/Auth';
+import { AuthModal } from '@/components/Auth/AuthModal';
 
 // Componente de cartão de produto isolado para PlayStation
 const ProductCard = ({ product, index }) => {

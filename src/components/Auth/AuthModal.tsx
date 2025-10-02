@@ -106,7 +106,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-white border-0 text-gray-900 sm:max-w-md w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] shadow-2xl rounded-2xl overflow-hidden p-0 mx-auto my-auto overflow-y-auto">
+      <DialogContent className="bg-white border-0 text-gray-900 max-w-md shadow-2xl rounded-2xl overflow-hidden p-0">
         <AnimatePresence mode="wait">
           {modalState === 'auth' && (
             <motion.div
@@ -117,7 +117,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               transition={{ duration: 0.3 }}
             >
               {/* Header minimalista */}
-              <DialogHeader className="relative bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6 border-b border-gray-100">
+              <DialogHeader className="relative bg-gradient-to-br from-gray-50 to-gray-100 p-6 border-b border-gray-100">
                 <Button
                   variant="ghost"
                   onClick={handleClose}
@@ -128,35 +128,35 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                 
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-3">
-                     <LogoImage 
+                    <LogoImage 
                       src="/lovable-uploads/a514a032-d79a-4bc4-a10e-3c9f0f9cde73.png" 
                       alt="UTI DOS GAMES" 
-                      className="w-10 h-10 sm:w-12 sm:h-12"
+                      className="w-12 h-12"
                       priority={true}
                     />
                   </div>
-                   <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-800 mb-1">
+                  <DialogTitle className="text-xl font-semibold text-gray-800 mb-1">
                     Bem-vindo
                   </DialogTitle>
-                  <p className="text-xs sm:text-sm text-gray-500">Entre na sua conta ou crie uma nova</p>
+                  <p className="text-sm text-gray-500">Entre na sua conta ou crie uma nova</p>
                 </div>
               </DialogHeader>
               
-              <div className="p-4 sm:p-6">
+              <div className="p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                   <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-xl p-1 mb-4 sm:mb-6 h-11 sm:h-auto">
+                  <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-xl p-1 mb-6">
                     <TabsTrigger 
                       value="login" 
-                      className="text-sm sm:text-base text-gray-600 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm font-medium rounded-lg transition-all duration-200"
+                      className="text-gray-600 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm font-medium rounded-lg transition-all duration-200"
                     >
-                      <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
+                      <LogIn className="w-4 h-4 mr-2" />
                       Entrar
                     </TabsTrigger>
                     <TabsTrigger 
                       value="signup" 
-                      className="text-sm sm:text-base text-gray-600 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm font-medium rounded-lg transition-all duration-200"
+                      className="text-gray-600 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm font-medium rounded-lg transition-all duration-200"
                     >
-                      <UserPlus className="w-4 h-4 mr-1 sm:mr-2" />
+                      <UserPlus className="w-4 h-4 mr-2" />
                       Cadastrar
                     </TabsTrigger>
                   </TabsList>
@@ -268,7 +268,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                 </Tabs>
               </div>
               
-              <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="px-6 pb-6">
                 <div className="text-center text-xs text-gray-400 pt-4 border-t border-gray-100">
                   <p>Ao continuar, você concorda com nossos termos de uso</p>
                 </div>

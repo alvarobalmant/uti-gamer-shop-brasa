@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import Footer from '@/components/Footer';
 import Cart from '@/components/Cart';
-import { AuthModal } from '@/components/Auth';
+import { AuthModal } from '@/components/Auth/AuthModal';
 import PrimePageRenderer from '@/components/PrimePages/PrimePageRenderer';
 import LoadingState from '@/components/HomePage/LoadingState';
 import ErrorState from '@/components/HomePage/ErrorState';
