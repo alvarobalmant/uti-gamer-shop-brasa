@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { AdminPanel } from '@/components/Admin/AdminPanel';
-import { SimpleAuthModal } from '@/components/Auth/SimpleAuthModal';
+import { AuthModal } from '@/components/Auth';
 
 const Admin = () => {
   const { user, isAdmin, loading } = useAuth();
@@ -15,7 +15,7 @@ const Admin = () => {
   }
 
   if (!user) {
-    return <SimpleAuthModal isOpen={true} onClose={() => {}} />;
+    return <AuthModal isOpen={true} onClose={() => {}} />;
   }
 
   if (!isAdmin) {

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useProductDetail } from '@/hooks/useProductDetail';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthModal } from '@/components/Auth/AuthModal';
+import { AuthModal } from '@/components/Auth';
 import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useMediaQuery } from '@/hooks/useMediaQuery';

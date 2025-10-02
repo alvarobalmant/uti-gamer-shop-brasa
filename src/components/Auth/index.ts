@@ -1,5 +1,5 @@
-// Export do modal simples como padrão (fallback, AuthModalFinal removido)
-export { SimpleAuthModal as AuthModal } from './SimpleAuthModal';
+// Export do AuthModalImproved como padrão
+export { AuthModalImproved as AuthModal } from './AuthModalImproved';
 
 // Exports dos componentes auxiliares
 export { 
@@ -30,12 +30,7 @@ export {
   Glow
 } from './AnimatedElements';
 
-// Manter exports dos componentes antigos para compatibilidade
-export { AuthModal as AuthModalLegacy } from './AuthModal';
+// Exports auxiliares (mantendo apenas o que é usado)
 export { AuthModalImproved } from './AuthModalImproved';
-export { SimpleAuthModal } from './SimpleAuthModal';
 export { EmailVerificationGuard } from './EmailVerificationGuard';
-export { LoginForm } from './LoginForm';
-export { SignUpForm } from './SignUpForm';
-export { LoginPage } from './LoginPage';
 

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthModal } from '@/components/Auth/AuthModal';
+import { AuthModal } from '@/components/Auth';
 import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';

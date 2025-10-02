@@ -127,7 +127,7 @@ const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module => ({ default: module.AdminAutoLogin })));
 import { EmailVerificationGuard } from "@/components/Auth/EmailVerificationGuard";
-const LoginPage = lazy(() => import("./components/Auth/LoginPage").then(module => ({ default: module.LoginPage })));
+
 
 // Lazy loading para páginas de UTI Coins (legacy)
 const CoinsShop = lazy(() => import("./pages/CoinsShop"));
@@ -202,7 +202,7 @@ const App = () => {
                                    <AppContent>
                                      <Routes>
                                         {/* Auth Routes - Outside EmailVerificationGuard */}
-                                        <Route path="/auth" element={<LoginPage />} />
+                                        
                                         <Route path="/cadastro" element={<RegisterPage />} />
                                         <Route path="/reset-password" element={<ResetPassword />} />
                                       

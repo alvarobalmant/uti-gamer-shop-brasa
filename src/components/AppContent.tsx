@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
 import MobileSearchBar from '@/components/Header/MobileSearchBar';
-import { SimpleAuthModal } from '@/components/Auth/SimpleAuthModal';
+import { AuthModal } from '@/components/Auth';
 import { useUIState } from '@/contexts/UIStateContext';
 import {
   AlertDialog,
@@ -95,7 +95,7 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
       />
 
       {/* Modal de autenticação */}
-      <SimpleAuthModal 
+      <AuthModal 
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
