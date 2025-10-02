@@ -1,6 +1,3 @@
-// Export do SimpleAuthModal como padrão para AuthModal
-export { SimpleAuthModal as AuthModal } from './SimpleAuthModal';
-
 // Exports dos componentes auxiliares
 export { 
   ProfessionalInput,
@@ -31,13 +28,13 @@ export {
 } from './AnimatedElements';
 
 // Exports individuais para uso direto
-export { SimpleAuthModal } from './SimpleAuthModal';
+export { AuthModal } from './AuthModal';
+export { AuthModalImproved } from './AuthModalImproved';
 export { EmailVerificationGuard } from './EmailVerificationGuard';
 export { LoginForm } from './LoginForm';
 export { SignUpForm } from './SignUpForm';
 export { LoginPage } from './LoginPage';
 
-// Manter exports dos componentes antigos para compatibilidade (deprecated)
-export { AuthModal as AuthModalLegacy } from './AuthModal';
-export { AuthModalImproved } from './AuthModalImproved';
+// Deprecated - usar AuthModal
+export { SimpleAuthModal } from './SimpleAuthModal';
 
