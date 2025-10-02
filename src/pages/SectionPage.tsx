@@ -8,7 +8,7 @@ import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import SearchResultProductCard from '@/components/SearchResultProductCard';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthModal } from '@/components/Auth/AuthModal';
+import { AuthModal } from '@/components/Auth';
 import Cart from '@/components/Cart';
 import Footer from '@/components/Footer';
 import { cn } from '@/lib/utils';

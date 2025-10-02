@@ -12,7 +12,7 @@ import ProductCard from '@/components/Xbox4/ProductCard';
 import Xbox4GameHighCard from '@/components/Xbox4/Xbox4GameHighCard';
 import NewsCard from '@/components/Xbox4/NewsCard';
 import Cart from '@/components/Cart';
-import { AuthModal } from '@/components/Auth/AuthModal';
+import { AuthModal } from '@/components/Auth';
 
 const XboxPage4 = () => {
   const { consoles, games, accessories, deals, newsArticles, loading, error } = useXbox4Data();

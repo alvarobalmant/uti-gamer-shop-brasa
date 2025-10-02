@@ -7,7 +7,7 @@ import { Loader2, Zap, Play, ChevronRight, Gamepad2, Star, ShoppingCart } from '
 import { Button } from '@/components/ui/button';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import Cart from '@/components/Cart';
-import { AuthModal } from '@/components/Auth/AuthModal';
+import { AuthModal } from '@/components/Auth';
 
 // Componente de cartão de produto otimizado para PlayStation V4
 const ProductCard = ({ product, index }) => {

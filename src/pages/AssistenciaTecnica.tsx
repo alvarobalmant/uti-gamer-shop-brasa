@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthModal } from '@/components/Auth/AuthModal';
+import { AuthModal } from '@/components/Auth';
 import Cart from '@/components/Cart';
 import ProfessionalHeader from '@/components/Header/ProfessionalHeader';
 import { useCart } from '@/contexts/CartContext';
