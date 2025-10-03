@@ -74,7 +74,7 @@ const HeroQuickLinks = React.memo(() => {
         </h2>
         
         {/* Grid de Cards - Scroll horizontal no mobile, grid centralizado no desktop */}
-        <div className="flex md:grid overflow-x-auto md:overflow-x-visible md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 md:justify-items-center md:justify-center scrollbar-hide pb-2">
+        <div className="flex overflow-x-auto md:overflow-x-visible gap-3 md:gap-6 justify-start md:justify-center md:flex md:flex-wrap scrollbar-hide pb-2">
           {loading && skeletonItems}
 
           {!loading && quickLinks.length === 0 && (
