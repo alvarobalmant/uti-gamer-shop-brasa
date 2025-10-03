@@ -30,7 +30,7 @@ const HeroQuickLinks = React.memo(() => {
   // Memoizar skeleton loading
   const skeletonItems = useMemo(() => 
     [...Array(6)].map((_, i) => (
-      <div key={`skeleton-${i}`} className="w-32 h-32 md:w-36 md:h-36 rounded-lg bg-gray-100 animate-pulse" />
+      <div key={`skeleton-${i}`} className="min-w-[120px] w-[120px] h-32 md:w-36 md:h-36 rounded-lg bg-gray-100 animate-pulse" />
     )), 
     []
   );
@@ -41,14 +41,15 @@ const HeroQuickLinks = React.memo(() => {
       onClick={() => handleQuickLinkClick(link.path)}
       className={cn(
         "flex flex-col items-center justify-center",
-        "w-32 h-32 md:w-36 md:h-36",
+        "min-w-[120px] w-[120px] h-32 md:w-36 md:h-36",
         "bg-white border border-gray-200",
         "rounded-lg",
         "hover:border-gray-300 hover:shadow-sm",
         "transition-all duration-200",
         "text-gray-700 hover:text-gray-900",
         "group",
-        "p-4"
+        "p-4",
+        "flex-shrink-0"
       )}
     >
       <img
@@ -72,12 +73,12 @@ const HeroQuickLinks = React.memo(() => {
           Do que Você Precisa?
         </h2>
         
-        {/* Grid de Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 justify-items-center">
+        {/* Grid de Cards - Scroll horizontal no mobile, grid no desktop */}
+        <div className="flex md:grid overflow-x-auto md:overflow-x-visible md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 md:justify-items-center scrollbar-hide pb-2">
           {loading && skeletonItems}
 
           {!loading && quickLinks.length === 0 && (
-            <p className="text-center text-muted-foreground py-4 col-span-full text-sm">
+            <p className="text-center text-muted-foreground py-4 w-full text-sm">
               Nenhum link rápido configurado.
             </p>
           )}
