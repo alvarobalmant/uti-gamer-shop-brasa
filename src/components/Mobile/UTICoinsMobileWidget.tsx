@@ -35,12 +35,16 @@ export const UTICoinsMobileWidget = ({ onClick, className }: UTICoinsMobileWidge
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
     setIsDragging(true);
     dragStartX.current = e.touches[0].clientX;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
     
     const currentX = e.touches[0].clientX;
     const diff = currentX - dragStartX.current;
@@ -51,7 +55,8 @@ export const UTICoinsMobileWidget = ({ onClick, className }: UTICoinsMobileWidge
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
     setIsDragging(false);
     
     // Se arrastou mais de 60px, minimiza
@@ -62,13 +67,14 @@ export const UTICoinsMobileWidget = ({ onClick, className }: UTICoinsMobileWidge
     setDragOffset(0);
   };
 
-  const handleExpand = () => {
+  const handleExpand = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
     setIsMinimized(false);
   };
 
   const handleWidgetClick = (e: React.MouseEvent) => {
-    // Só chama onClick se não estiver minimizado e não estiver arrastando
-    if (!isMinimized && !isDragging && onClick) {
+    // Só chama onClick se não estiver minimizado e não arrastou
+    if (!isMinimized && dragOffset === 0 && onClick) {
       onClick();
     }
   };
@@ -83,20 +89,19 @@ export const UTICoinsMobileWidget = ({ onClick, className }: UTICoinsMobileWidge
       style={{
         transform: isDragging ? `translateX(${dragOffset}px)` : isMinimized ? 'translateX(calc(100% - 44px))' : 'translateX(0)',
         transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        touchAction: 'none',
       }}
       className={cn(
-        "flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full shadow-sm cursor-pointer touch-none",
+        "flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full shadow-sm cursor-pointer select-none",
         className
       )}
     >
       {isMinimized ? (
         <>
-          <Coins className="w-4 h-4 text-white" />
+          <Coins className="w-4 h-4 text-white flex-shrink-0" />
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleExpand();
-            }}
+            onClick={handleExpand}
+            onTouchEnd={handleExpand}
             className="flex items-center justify-center w-5 h-5 -mr-1 transition-transform duration-200 active:scale-90"
           >
             <ChevronLeft className="w-4 h-4 text-white" />
@@ -104,7 +109,7 @@ export const UTICoinsMobileWidget = ({ onClick, className }: UTICoinsMobileWidge
         </>
       ) : (
         <>
-          <Coins className="w-4 h-4 text-white" />
+          <Coins className="w-4 h-4 text-white flex-shrink-0" />
           <span className="text-sm font-semibold whitespace-nowrap">
             {loading ? '...' : formatCoins(coins.balance || 0)}
           </span>
