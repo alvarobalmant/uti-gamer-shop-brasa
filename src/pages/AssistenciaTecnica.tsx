@@ -29,7 +29,7 @@ function TrustIndicators() {
   const indicators = [
     {
       icon: Shield,
-      title: "10+ Anos de Tradição",
+      title: "15+ Anos de Tradição",
       description: "Referência consolidada em games na região de Colatina"
     },
     {
@@ -78,6 +78,7 @@ function TrustIndicators() {
 function AssistanceForm() {
   const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [formData, setFormData] = useState({
     consoleBrand: '',
     consoleModel: '',
@@ -249,6 +250,11 @@ function AssistanceForm() {
 
   const nextStep = () => {
     if (currentStep < totalSteps) {
+      // Ativar fullscreen após primeira interação (step 1 -> 2)
+      if (currentStep === 1) {
+        setIsFullscreen(true);
+      }
+      
       setCurrentStep(currentStep + 1);
       // Scroll do card interno para o topo quando avançar etapa
       if (scrollContainerRef.current) {
@@ -296,10 +302,10 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
   };
 
   return (
-    <section id="assistance-form" className="py-4 px-4 min-h-screen">
-      <div className="w-full max-w-4xl mx-auto">
+    <section id="assistance-form" className={`py-4 px-4 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-50 bg-background flex items-center justify-center' : 'min-h-screen'}`}>
+      <div className={`w-full mx-auto transition-all duration-300 ${isFullscreen ? 'max-w-4xl h-[95vh]' : 'max-w-4xl'}`}>
         {/* Card adaptável para mobile */}
-        <Card className="shadow-xl w-full min-h-[600px] flex flex-col transition-all duration-300">
+        <Card className={`shadow-xl w-full flex flex-col transition-all duration-300 ${isFullscreen ? 'h-full' : 'min-h-[600px]'}`}>
           <CardHeader className="text-center px-3 sm:px-6 py-4 flex-shrink-0">
             <CardTitle className="text-lg sm:text-2xl font-bold">Solicite sua Assistência Técnica</CardTitle>
             <CardDescription className="text-sm">
@@ -316,9 +322,13 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
             </div>
           </CardHeader>
 
-          <CardContent className="px-3 sm:px-6 flex-1 flex flex-col min-h-0">
-            {/* Conteúdo mobile-optimized */}
-            <div className="flex-1 overflow-y-auto py-4 space-y-4">
+          <CardContent className="px-3 sm:px-6 flex-1 flex flex-col min-h-0 overflow-hidden">
+            {/* Conteúdo com scroll interno */}
+            <div 
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              className="flex-1 overflow-y-auto py-4 space-y-4"
+            >
 
             {/* Etapa 1: Tipo de Serviço - Mobile First */}
             {currentStep === 1 && (
