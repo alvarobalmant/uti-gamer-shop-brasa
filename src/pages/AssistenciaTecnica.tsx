@@ -21,7 +21,8 @@ import {
   Gamepad2,
   Wrench,
   Calendar,
-  Truck
+  Truck,
+  X
 } from 'lucide-react';
 
 // Componente de Indicadores de Confiança
@@ -307,6 +308,17 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
         {/* Card adaptável para mobile */}
         <Card className={`shadow-xl w-full flex flex-col transition-all duration-300 ${isFullscreen ? 'h-full' : 'min-h-[600px]'}`}>
           <CardHeader className="text-center px-3 sm:px-6 py-4 flex-shrink-0">
+            {/* Botão de fechar quando em fullscreen */}
+            {isFullscreen && (
+              <button
+                onClick={() => setIsFullscreen(false)}
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                aria-label="Fechar"
+              >
+                <X className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />
+              </button>
+            )}
+            
             <CardTitle className="text-lg sm:text-2xl font-bold">Solicite sua Assistência Técnica</CardTitle>
             <CardDescription className="text-sm">
               Preencha os dados abaixo e entraremos em contato rapidamente
