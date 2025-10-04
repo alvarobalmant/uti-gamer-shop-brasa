@@ -516,11 +516,7 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
                 <h3 className="text-lg font-semibold text-center">Como prefere a logística?</h3>
                 <div className="space-y-3">
                   <div
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                      formData.logistics === 'levar-loja' 
-                        ? 'border-red-500 bg-red-50' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    className="border-2 rounded-lg p-4 cursor-pointer transition-all border-red-500 bg-red-50"
                     onClick={() => setFormData({ ...formData, logistics: 'levar-loja' })}
                   >
                     <div className="flex items-center space-x-3">
@@ -529,24 +525,6 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
                         <div className="font-semibold">Levar na Loja</div>
                         <div className="text-sm text-gray-600">Você leva o console até nós</div>
                         <div className="text-xs text-green-600 font-medium">Sem taxa adicional</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                      formData.logistics === 'buscar-casa' 
-                        ? 'border-red-500 bg-red-50' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    onClick={() => setFormData({ ...formData, logistics: 'buscar-casa' })}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Truck className="h-6 w-6 text-blue-600 flex-shrink-0" />
-                      <div>
-                        <div className="font-semibold">Buscar em Casa</div>
-                        <div className="text-sm text-gray-600">Buscamos na sua residência</div>
-                        <div className="text-xs text-orange-600 font-medium">Frete a calcular</div>
                       </div>
                     </div>
                   </div>
