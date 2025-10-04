@@ -85,7 +85,7 @@ function AssistanceForm() {
     problemDescription: '',
     serviceType: '',
     urgency: '',
-    logistics: '',
+    logistics: 'levar-loja',
     name: '',
     whatsapp: '',
     email: '',
@@ -284,7 +284,7 @@ Serviço: ${formData.serviceType}`;
       message += `\nUrgência: ${formData.urgency === 'normal' ? 'Normal (3-5 dias)' : 'Express (24-48h)'}`;
     }
 
-    message += `\nLogística: ${formData.logistics === 'levar-loja' ? 'Levar na loja' : 'Buscar em casa'}
+    message += `\nLogística: Levar na loja
 
 Nome: ${formData.name}
 WhatsApp: ${formData.whatsapp}
@@ -633,7 +633,7 @@ ${formData.address ? `Endereço: ${formData.address}` : ''}`;
                     )}
                     <div className="flex justify-between">
                       <span className="text-gray-600">Logística:</span>
-                      <span className="font-medium">{formData.logistics === 'levar-loja' ? 'Levar na loja' : 'Buscar em casa'}</span>
+                      <span className="font-medium">Levar na loja</span>
                     </div>
                   </div>
                 </div>
