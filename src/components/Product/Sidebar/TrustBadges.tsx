@@ -1,12 +1,15 @@
 import React from 'react';
 import { Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface TrustBadgesProps {
   className?: string;
 }
 
 const TrustBadges: React.FC<TrustBadgesProps> = ({ className }) => {
+  const navigate = useNavigate();
+  
   return (
     <div className={cn("space-y-4", className)}>
       {/* Certificações */}
@@ -46,13 +49,22 @@ const TrustBadges: React.FC<TrustBadgesProps> = ({ className }) => {
 
       {/* Links Úteis */}
       <div className="space-y-1">
-        <button className="w-full text-left text-xs text-blue-600 hover:underline">
+        <button 
+          onClick={() => navigate('/ajuda/privacidade')}
+          className="w-full text-left text-xs text-blue-600 hover:underline"
+        >
           📜 Política de Privacidade
         </button>
-        <button className="w-full text-left text-xs text-blue-600 hover:underline">
+        <button 
+          onClick={() => navigate('/ajuda/trocas')}
+          className="w-full text-left text-xs text-blue-600 hover:underline"
+        >
           🔄 Política de Trocas
         </button>
-        <button className="w-full text-left text-xs text-blue-600 hover:underline">
+        <button 
+          onClick={() => navigate('/ajuda/contato')}
+          className="w-full text-left text-xs text-blue-600 hover:underline"
+        >
           📞 Central de Atendimento
         </button>
       </div>
