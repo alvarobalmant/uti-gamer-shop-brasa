@@ -50,7 +50,7 @@ const FaleConosco: React.FC = () => {
     }
   };
 
-  const whatsappNumber = '5527999999999';
+  const whatsappNumber = '5527999771112';
   const whatsappLink = `https://wa.me/${whatsappNumber}`;
 
   return (
@@ -74,7 +74,7 @@ const FaleConosco: React.FC = () => {
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="bg-card border rounded-lg p-6 hover:border-primary transition-colors">
                 <MessageSquare className="h-8 w-8 text-primary mb-3" />
                 <h3 className="font-semibold mb-2">WhatsApp</h3>
-                <p className="text-sm text-muted-foreground">(27) 99999-9999</p>
+                <p className="text-sm text-muted-foreground">(27) 99977-1112</p>
               </a>
               
               <div className="bg-card border rounded-lg p-6">
@@ -83,11 +83,11 @@ const FaleConosco: React.FC = () => {
                 <p className="text-sm text-muted-foreground">contato@utidosgames.com.br</p>
               </div>
               
-              <div className="bg-card border rounded-lg p-6">
+              <a href={`tel:+${whatsappNumber}`} className="bg-card border rounded-lg p-6 hover:border-primary transition-colors">
                 <Phone className="h-8 w-8 text-primary mb-3" />
-                <h3 className="font-semibold mb-2">Telefone</h3>
-                <p className="text-sm text-muted-foreground">(27) 3722-0000</p>
-              </div>
+                <h3 className="font-semibold mb-2">Celular</h3>
+                <p className="text-sm text-muted-foreground">(27) 99977-1112</p>
+              </a>
               
               <div className="bg-card border rounded-lg p-6">
                 <Clock className="h-8 w-8 text-primary mb-3" />
@@ -114,7 +114,6 @@ const FaleConosco: React.FC = () => {
             {/* Contact Form */}
             <div className="max-w-2xl mx-auto">
               <div className="bg-card border rounded-lg p-6 md:p-8">
-                <h2 className="text-2xl font-bold mb-6">Envie sua mensagem</h2>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium mb-2">Nome completo</label>
