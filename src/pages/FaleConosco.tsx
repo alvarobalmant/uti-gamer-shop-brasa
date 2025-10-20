@@ -15,7 +15,6 @@ import { useMetaTags } from '@/hooks/useMetaTags';
 const contactSchema = z.object({
   name: z.string().trim().min(3, 'Nome deve ter pelo menos 3 caracteres').max(100),
   email: z.string().trim().email('Email inválido').max(255),
-  subject: z.string().min(1, 'Selecione um assunto'),
   message: z.string().trim().min(10, 'Mensagem deve ter pelo menos 10 caracteres').max(1000),
 });
 
@@ -125,22 +124,6 @@ const FaleConosco: React.FC = () => {
                     <label className="block text-sm font-medium mb-2">Email</label>
                     <Input {...register('email')} type="email" placeholder="seu@email.com" />
                     {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Assunto</label>
-                    <Select onValueChange={(value) => setValue('subject', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o assunto" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="duvida">Dúvida sobre produto</SelectItem>
-                        <SelectItem value="pedido">Problema com pedido</SelectItem>
-                        <SelectItem value="sugestao">Sugestão</SelectItem>
-                        <SelectItem value="outro">Outro</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.subject && <p className="text-destructive text-sm mt-1">{errors.subject.message}</p>}
                   </div>
 
                   <div>
