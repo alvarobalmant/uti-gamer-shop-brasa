@@ -101,10 +101,10 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
     const allResults = [...backendMatches].filter(p => p.product_type !== 'master');
     
     // NOVA LÓGICA: Separar por pontuação, não por quantidade
-    // Produtos com score > 100 são "Resultados Principais"
-    // Produtos com score > 0 e <= 100 são "Produtos Relacionados"
-    const exact = allResults.filter(p => (p.relevance_score || 0) > 100);
-    const related = allResults.filter(p => (p.relevance_score || 0) > 0 && (p.relevance_score || 0) <= 100);
+    // Produtos com score > 70 são "Resultados Principais"
+    // Produtos com score > 0 e <= 70 são "Produtos Relacionados"
+    const exact = allResults.filter(p => (p.relevance_score || 0) > 70);
+    const related = allResults.filter(p => (p.relevance_score || 0) > 0 && (p.relevance_score || 0) <= 70);
     
     // Adicionar produtos relacionados do frontend se não temos muitos do backend
     if (related.length < 8 && backendRelated.length > 0) {
