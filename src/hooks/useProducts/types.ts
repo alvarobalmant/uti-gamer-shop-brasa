@@ -121,6 +121,9 @@ export interface Product {
   is_reviewed?: boolean;
   reviewed_at?: string;
   reviewed_by?: string;
+
+  // Campo de relevância para busca
+  relevance_score?: number;
 }
 
 // Tipos específicos para SKUs
