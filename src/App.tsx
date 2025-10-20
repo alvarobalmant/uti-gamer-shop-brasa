@@ -289,10 +289,10 @@ const App = () => {
                                             <Route path="/prime/:slug" element={<PrimePage />} />
 
                                             {/* Institutional Pages */}
-                                            <Route path="/fale-conosco" element={<FaleConosco />} />
-                                            <Route path="/faq" element={<FAQ />} />
-                                            <Route path="/politica-trocas" element={<PoliticaTrocas />} />
-                                            <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
+                                            <Route path="/ajuda/contato" element={<FaleConosco />} />
+                                            <Route path="/ajuda/faq" element={<FAQ />} />
+                                            <Route path="/ajuda/trocas" element={<PoliticaTrocas />} />
+                                            <Route path="/ajuda/privacidade" element={<PoliticaPrivacidade />} />
 
                                             {/* Dynamic Page Route - MUST be last before catch-all */}
                                            <Route 
