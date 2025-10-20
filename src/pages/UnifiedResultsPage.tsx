@@ -708,29 +708,6 @@ const UnifiedResultsPage: React.FC<{ mode: PageMode }> = ({ mode }) => {
         />
       )}
 
-      {/* Debug Panel - Apenas para Admins */}
-      {isAdmin && mode === 'search' && searchQuery && (() => {
-        console.log('[UnifiedResultsPage] Debug Info:', {
-          isAdmin,
-          mode,
-          searchQuery,
-          exactMatches: exactMatches.length,
-          debug,
-          hasProducts: exactMatches.length > 0
-        });
-        return (
-          <>
-            <SearchDebugPanel
-              products={exactMatches as any}
-              debug={debug}
-              query={searchQuery}
-            />
-            <div className="mt-6">
-              <TokenCompatibilityDebug />
-            </div>
-          </>
-        );
-      })()}
     </div>
   );
 };
