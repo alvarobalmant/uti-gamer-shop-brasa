@@ -13,7 +13,7 @@ const PoliticaTrocas: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 pt-0 lg:pt-[72px]">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary/20 via-background to-background py-12 md:py-16">
           <div className="container mx-auto px-4">
