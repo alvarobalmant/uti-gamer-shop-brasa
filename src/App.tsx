@@ -90,6 +90,12 @@ const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const UTIPro = lazy(() => import("./pages/UTIPro"));
 
+// Lazy loading para páginas institucionais
+const FaleConosco = lazy(() => import("./pages/FaleConosco"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+const PoliticaTrocas = lazy(() => import("./pages/PoliticaTrocas"));
+const PoliticaPrivacidade = lazy(() => import("./pages/PoliticaPrivacidade"));
+
 // Lazy loading para páginas de plataforma
 const PlayStationPageProfessionalV2 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV2"));
 const PlayStationPageProfessionalV3 = lazy(() => import("./pages/platforms/PlayStationPageProfessionalV3"));
@@ -279,10 +285,16 @@ const App = () => {
                                            <Route path="/retro-gaming" element={<RetroGamingPage />} />
                                            <Route path="/area-geek" element={<AreaGeekPage />} />
 
-                                           {/* Prime Pages Route - MUST come before dynamic routes */}
-                                           <Route path="/prime/:slug" element={<PrimePage />} />
+                                            {/* Prime Pages Route - MUST come before dynamic routes */}
+                                            <Route path="/prime/:slug" element={<PrimePage />} />
 
-                                           {/* Dynamic Page Route - MUST be last before catch-all */}
+                                            {/* Institutional Pages */}
+                                            <Route path="/fale-conosco" element={<FaleConosco />} />
+                                            <Route path="/faq" element={<FAQ />} />
+                                            <Route path="/politica-trocas" element={<PoliticaTrocas />} />
+                                            <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
+
+                                            {/* Dynamic Page Route - MUST be last before catch-all */}
                                            <Route 
                                              path="/:slug" 
                                              element={<PlatformPage slug={window.location.pathname.substring(1)} />} 
