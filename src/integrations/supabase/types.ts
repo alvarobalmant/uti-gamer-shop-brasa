@@ -363,7 +363,7 @@ export type Database = {
           event_data: Json
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           location_data: Json | null
           page_url: string | null
           product_id: string | null
@@ -378,7 +378,7 @@ export type Database = {
           event_data?: Json
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           location_data?: Json | null
           page_url?: string | null
           product_id?: string | null
@@ -393,7 +393,7 @@ export type Database = {
           event_data?: Json
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           location_data?: Json | null
           page_url?: string | null
           product_id?: string | null
@@ -880,7 +880,7 @@ export type Database = {
           discount_info: Json | null
           expires_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           items: Json
           rewards_given: Json | null
           rewards_processed: boolean | null
@@ -904,7 +904,7 @@ export type Database = {
           discount_info?: Json | null
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           items: Json
           rewards_given?: Json | null
           rewards_processed?: boolean | null
@@ -928,7 +928,7 @@ export type Database = {
           discount_info?: Json | null
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           items?: Json
           rewards_given?: Json | null
           rewards_processed?: boolean | null
@@ -4119,7 +4119,7 @@ export type Database = {
         Returns: boolean
       }
       analyze_index_usage: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           index_name: string
           index_scans: number
@@ -4132,10 +4132,7 @@ export type Database = {
         Args: { p_page_url?: string; p_session_id: string }
         Returns: number
       }
-      can_claim_code: {
-        Args: { p_code: string }
-        Returns: boolean
-      }
+      can_claim_code: { Args: { p_code: string }; Returns: boolean }
       can_claim_daily_bonus_brasilia: {
         Args: { p_user_id: string }
         Returns: {
@@ -4156,16 +4153,10 @@ export type Database = {
           period_start: string
         }[]
       }
-      cancelar_assinatura: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
-      categorize_existing_tags: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      cancelar_assinatura: { Args: { user_id: string }; Returns: boolean }
+      categorize_existing_tags: { Args: never; Returns: number }
       check_email_confirmation_status: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           email: string
           email_confirmed_at: string
@@ -4181,49 +4172,25 @@ export type Database = {
         Args: { p_retention_days?: number }
         Returns: Json
       }
-      cleanup_old_bonus_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      cleanup_old_daily_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      cleanup_old_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_invalidated_sessions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_security_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_orphaned_data: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      cleanup_uti_coins_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_old_bonus_codes: { Args: never; Returns: number }
+      cleanup_old_daily_codes: { Args: never; Returns: number }
+      cleanup_old_data: { Args: never; Returns: undefined }
+      cleanup_old_invalidated_sessions: { Args: never; Returns: undefined }
+      cleanup_old_security_logs: { Args: never; Returns: undefined }
+      cleanup_orphaned_data: { Args: never; Returns: Json }
+      cleanup_uti_coins_data: { Args: never; Returns: undefined }
       complete_order_verification: {
         Args: { p_admin_id: string; p_code: string }
         Returns: Json
       }
-      create_admin_link: {
-        Args: { duration_minutes: number }
-        Returns: Json
-      }
+      create_admin_link: { Args: { duration_minutes: number }; Returns: Json }
       create_admin_link_secure: {
         Args: { duration_minutes: number }
         Returns: Json
       }
-      create_order_verification_code: {
-        Args:
-          | {
+      create_order_verification_code:
+        | {
+            Args: {
               p_browser_info: Json
               p_customer_info: Json
               p_items: Json
@@ -4231,7 +4198,10 @@ export type Database = {
               p_use_uti_coins?: boolean
               p_user_id: string
             }
-          | {
+            Returns: Json
+          }
+        | {
+            Args: {
               p_browser_info?: Json
               p_customer_info: Json
               p_discount_info?: Json
@@ -4242,10 +4212,10 @@ export type Database = {
               p_user_agent?: string
               p_user_id: string
             }
-        Returns: Json
-      }
+            Returns: Json
+          }
       debug_column_references: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           has_problematic_ref: boolean
           source_name: string
@@ -4264,10 +4234,7 @@ export type Database = {
         Args: { p_page_url: string; p_session_id: string }
         Returns: Json
       }
-      diagnose_product_data: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      diagnose_product_data: { Args: never; Returns: Json }
       earn_coins: {
         Args: {
           p_action: string
@@ -4278,30 +4245,15 @@ export type Database = {
         }
         Returns: Json
       }
-      generate_admin_token: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_daily_code: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      generate_order_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_admin_token: { Args: never; Returns: string }
+      generate_daily_code: { Args: never; Returns: Json }
+      generate_order_code: { Args: never; Returns: string }
       generate_redemption_code: {
         Args: { p_cost: number; p_product_id: string; p_user_id: string }
         Returns: Json
       }
-      generate_unique_4digit_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_unique_daily_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_unique_4digit_code: { Args: never; Returns: string }
+      generate_unique_daily_code: { Args: never; Returns: string }
       get_abandonment_analysis_by_sector: {
         Args: { p_end_date?: string; p_start_date?: string }
         Returns: Json
@@ -4328,7 +4280,7 @@ export type Database = {
         Returns: Json
       }
       get_current_bonus_period_brasilia: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           next_reset: string
           period_end: string
@@ -4361,10 +4313,7 @@ export type Database = {
         }
         Returns: Json
       }
-      get_next_brasilia_8pm: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_next_brasilia_8pm: { Args: never; Returns: string }
       get_performance_correlation: {
         Args: { p_end_date?: string; p_start_date?: string }
         Returns: Json
@@ -4452,18 +4401,9 @@ export type Database = {
           variant_attributes: Json
         }[]
       }
-      get_real_time_alerts: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      get_realtime_dashboard: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      get_realtime_dashboard_data: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_real_time_alerts: { Args: never; Returns: Json }
+      get_realtime_dashboard: { Args: never; Returns: Json }
+      get_realtime_dashboard_data: { Args: never; Returns: Json }
       get_top_products_analytics: {
         Args: { end_date: string; limit_count?: number; start_date: string }
         Returns: {
@@ -4481,10 +4421,7 @@ export type Database = {
         Args: { p_include_interactions?: boolean; p_session_id: string }
         Returns: Json
       }
-      get_user_role: {
-        Args: { user_id: string }
-        Returns: string
-      }
+      get_user_role: { Args: { user_id: string }; Returns: string }
       get_user_total_savings: {
         Args: { p_user_id: string }
         Returns: {
@@ -4494,38 +4431,14 @@ export type Database = {
           uti_pro_savings: number
         }[]
       }
-      has_active_subscription: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
-      has_admin_users: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_admin_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_code_valid: {
-        Args: { p_code: string }
-        Returns: boolean
-      }
-      is_email_confirmed: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_user_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_user_flagged: {
-        Args: { p_user_id: string }
-        Returns: boolean
-      }
+      has_active_subscription: { Args: { user_id: string }; Returns: boolean }
+      has_admin_users: { Args: never; Returns: boolean }
+      is_admin: { Args: never; Returns: boolean }
+      is_admin_user: { Args: never; Returns: boolean }
+      is_code_valid: { Args: { p_code: string }; Returns: boolean }
+      is_email_confirmed: { Args: never; Returns: boolean }
+      is_user_admin: { Args: never; Returns: boolean }
+      is_user_flagged: { Args: { p_user_id: string }; Returns: boolean }
       log_admin_action: {
         Args: {
           p_action_type: string
@@ -4542,7 +4455,7 @@ export type Database = {
         Returns: undefined
       }
       monitor_query_performance: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           avg_duration_ms: number
           query_type: string
@@ -4550,26 +4463,14 @@ export type Database = {
           total_calls: number
         }[]
       }
-      process_analytics_batch: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      process_daily_login: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
+      process_analytics_batch: { Args: never; Returns: undefined }
+      process_daily_login: { Args: { p_user_id: string }; Returns: Json }
       process_daily_login_brasilia: {
         Args: { p_user_id: string }
         Returns: Json
       }
-      process_daily_login_test: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
-      promote_user_to_admin: {
-        Args: { user_email: string }
-        Returns: boolean
-      }
+      process_daily_login_test: { Args: { p_user_id: string }; Returns: Json }
+      promote_user_to_admin: { Args: { user_email: string }; Returns: boolean }
       redeem_code_admin: {
         Args: { p_admin_id: string; p_code: string }
         Returns: Json
@@ -4582,10 +4483,7 @@ export type Database = {
         Args: { p_code_id: string; p_end_date: string; p_user_id: string }
         Returns: Json
       }
-      refresh_materialized_views: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      refresh_materialized_views: { Args: never; Returns: Json }
       remover_meses_assinatura: {
         Args: { meses: number; user_id: string }
         Returns: boolean
@@ -4626,7 +4524,7 @@ export type Database = {
         Returns: Json
       }
       test_admin_access: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           can_read_profiles: boolean
           current_user_id: string
@@ -4644,7 +4542,7 @@ export type Database = {
         Returns: Json
       }
       validate_product_integrity: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           integrity_issues: string[]
           invalid_tag_references: number
@@ -4654,14 +4552,8 @@ export type Database = {
           total_products: number
         }[]
       }
-      verify_order_code: {
-        Args: { p_code: string }
-        Returns: Json
-      }
-      verify_redemption_code: {
-        Args: { p_code: string }
-        Returns: Json
-      }
+      verify_order_code: { Args: { p_code: string }; Returns: Json }
+      verify_redemption_code: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {
       section_item_type: "product" | "tag"

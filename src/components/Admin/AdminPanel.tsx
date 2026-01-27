@@ -11,7 +11,6 @@ import ProductSectionManagerUltraSimple from './ProductSectionManagerUltraSimple
 import PageManager from './PageManager';
 import { QuickLinkManager } from './QuickLinkManager';
 import SpecialSectionManager from './SpecialSectionManager';
-import Xbox4AdminPage from './Xbox4AdminPage';
 import { NavigationManager } from './NavigationManager';
 import MasterProductManager from './MasterProductManager';
 import PlatformManager from './PlatformManager';
@@ -42,7 +41,6 @@ export const AdminPanel = () => {
     { id: 'prime_pages', label: 'PÁGINAS PRIME', icon: FileText },
     { id: 'product_sections', label: 'Seções Produtos', icon: ListChecks },
     { id: 'special_sections', label: 'Seções Especiais', icon: Star },
-    { id: 'xbox4_customization', label: 'Xbox 4 - Personalização', icon: Gamepad2 },
     { id: 'products', label: 'Produtos', icon: Package },
     { id: 'desktop_products', label: 'Produtos Desktop', icon: Monitor },
     { id: 'bulk_upload', label: 'Importação em Massa', icon: Upload },
@@ -181,10 +179,6 @@ export const AdminPanel = () => {
 
               <TabsContent value="special_sections" className="mt-0">
                 <SpecialSectionManager />
-              </TabsContent>
-
-              <TabsContent value="xbox4_customization" className="mt-0">
-                <Xbox4AdminPage />
               </TabsContent>
 
               <TabsContent value="products" className="mt-0">
