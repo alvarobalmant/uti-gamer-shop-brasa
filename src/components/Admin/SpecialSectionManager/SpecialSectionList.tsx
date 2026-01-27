@@ -49,7 +49,7 @@ const SpecialSectionList: React.FC<SpecialSectionListProps> = ({ sections, onEdi
               </Badge>
             </TableCell>
             <TableCell className="text-right space-x-2">
-              <Button variant="outline" size="sm" onClick={() => onEdit(section)} className="text-white border-gray-600 hover:bg-gray-700 hover:text-white">
+              <Button variant="outline" size="sm" onClick={() => onEdit(section)} className="bg-gray-700 text-white border-gray-600 hover:bg-gray-600 hover:text-white">
                 <Edit className="w-4 h-4 mr-1" /> Editar
               </Button>
               <Button variant="destructive" size="sm" onClick={() => onDelete(section.id)}>
