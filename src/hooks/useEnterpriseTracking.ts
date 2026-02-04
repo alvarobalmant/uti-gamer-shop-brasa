@@ -414,38 +414,38 @@ export const useEnterpriseTracking = () => {
     };
   }, [trackEvent, flushEvents]);
 
-  // HEARTBEAT SISTEMA - Atualizar atividade em tempo real
+  // HEARTBEAT SISTEMA - Registrar atividade em eventos do cliente
   useEffect(() => {
-    const updateRealTimeActivity = async () => {
+    const updateActivityTracking = async () => {
       if (!user) return;
       
       try {
-      const activityData = {
-        session_id: sessionIdRef.current,
-        user_id: user.id,
-        current_page_url: window.location.href,
-        current_page_start_time: new Date().toISOString(),
-        session_start_time: new Date().toISOString(),
-        activity_status: document.hidden ? 'idle' : 'active',
-        last_heartbeat: new Date().toISOString(),
-        engagement_score: calculateCurrentEngagementScore(),
-        time_on_site_seconds: Math.floor(performance.now() / 1000),
-        device_info: getBrowserInfo(),
-        updated_at: new Date().toISOString()
-      };
+        // Registrar atividade via customer_events em vez de realtime_activity
+        const eventData = {
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          event_type: 'heartbeat',
+          page_url: window.location.href,
+          event_data: {
+            activity_status: document.hidden ? 'idle' : 'active',
+            engagement_score: calculateCurrentEngagementScore(),
+            time_on_site_seconds: Math.floor(performance.now() / 1000),
+            device_info: getBrowserInfo()
+          }
+        };
 
         await supabase
-          .from('realtime_activity')
-          .upsert(activityData, { onConflict: 'session_id' });
+          .from('customer_events')
+          .insert(eventData);
           
       } catch (error) {
-        console.error('[ENTERPRISE TRACKING] Error updating realtime activity:', error);
+        console.error('[ENTERPRISE TRACKING] Error updating activity:', error);
       }
     };
 
-    // Atualizar a cada 10 segundos
-    updateRealTimeActivity();
-    heartbeatRef.current = setInterval(updateRealTimeActivity, 10000);
+    // Atualizar a cada 30 segundos (menos frequente para não poluir customer_events)
+    updateActivityTracking();
+    heartbeatRef.current = setInterval(updateActivityTracking, 30000);
 
     return () => {
       if (heartbeatRef.current) {

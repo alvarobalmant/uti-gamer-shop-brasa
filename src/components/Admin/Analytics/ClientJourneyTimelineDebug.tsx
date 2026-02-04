@@ -51,7 +51,6 @@ interface ClientSession {
 interface DebugInfo {
   clientId: string;
   journeyRecords: number;
-  realtimeRecords: number;
   interactionRecords: number;
   uniqueUserIds: string[];
   uniqueSessionIds: string[];
@@ -70,7 +69,6 @@ export const ClientJourneyTimelineDebug: React.FC<ClientJourneyTimelineDebugProp
   const [debugInfo, setDebugInfo] = useState<DebugInfo>({
     clientId,
     journeyRecords: 0,
-    realtimeRecords: 0,
     interactionRecords: 0,
     uniqueUserIds: [],
     uniqueSessionIds: [],
@@ -85,7 +83,6 @@ export const ClientJourneyTimelineDebug: React.FC<ClientJourneyTimelineDebugProp
       const debug: DebugInfo = {
         clientId,
         journeyRecords: 0,
-        realtimeRecords: 0,
         interactionRecords: 0,
         uniqueUserIds: [],
         uniqueSessionIds: [],
@@ -162,46 +159,7 @@ export const ClientJourneyTimelineDebug: React.FC<ClientJourneyTimelineDebugProp
       const journeyData = Array.from(allJourneyData.values());
       debug.journeyRecords = journeyData.length;
 
-      // BUSCA 2: Atividade em tempo real - múltiplas estratégias
-      console.log('📊 [JOURNEY DEBUG] Realtime Strategy 1: Direct user_id match');
-      const { data: realtimeData1, error: realtimeError1 } = await supabase
-        .from('realtime_activity')
-        .select('*')
-        .eq('user_id', clientId)
-        .order('last_heartbeat', { ascending: false });
-
-      console.log('📊 [JOURNEY DEBUG] Realtime Strategy 2: Direct session_id match');
-      const { data: realtimeData2, error: realtimeError2 } = await supabase
-        .from('realtime_activity')
-        .select('*')
-        .eq('session_id', clientId)
-        .order('last_heartbeat', { ascending: false });
-
-      console.log('📊 [JOURNEY DEBUG] Realtime Strategy 3: OR condition');
-      const { data: realtimeData3, error: realtimeError3 } = await supabase
-        .from('realtime_activity')
-        .select('*')
-        .or(`user_id.eq.${clientId},session_id.eq.${clientId}`)
-        .order('last_heartbeat', { ascending: false });
-
-      // Combinar dados de realtime
-      const allRealtimeData = new Map();
-      
-      [realtimeData1, realtimeData2, realtimeData3].forEach((data, index) => {
-        if (data) {
-          console.log(`📊 [JOURNEY DEBUG] Realtime query ${index + 1} returned ${data.length} records`);
-          data.forEach(record => {
-            if (!allRealtimeData.has(record.session_id)) {
-              allRealtimeData.set(record.session_id, record);
-            }
-          });
-        }
-      });
-
-      const realtimeData = Array.from(allRealtimeData.values());
-      debug.realtimeRecords = realtimeData.length;
-
-      // BUSCA 3: Interações de página
+      // BUSCA 2: Interações de página
       console.log('📊 [JOURNEY DEBUG] Interactions search');
       const { data: interactionsData, error: interactionsError } = await supabase
         .from('page_interactions')
@@ -224,18 +182,13 @@ export const ClientJourneyTimelineDebug: React.FC<ClientJourneyTimelineDebugProp
         if (record.session_id) sessionIds.add(record.session_id);
       });
 
-      realtimeData.forEach(record => {
-        if (record.user_id) userIds.add(record.user_id);
-        if (record.session_id) sessionIds.add(record.session_id);
-      });
-
       debug.uniqueUserIds = Array.from(userIds);
       debug.uniqueSessionIds = Array.from(sessionIds);
+
 
       console.log('🔍 [JOURNEY DEBUG] Debug summary:', {
         clientId,
         journeyRecords: debug.journeyRecords,
-        realtimeRecords: debug.realtimeRecords,
         interactionRecords: debug.interactionRecords,
         uniqueUserIds: debug.uniqueUserIds,
         uniqueSessionIds: debug.uniqueSessionIds,
@@ -289,16 +242,6 @@ export const ClientJourneyTimelineDebug: React.FC<ClientJourneyTimelineDebugProp
             conversion_step: step.conversion_step || false,
             engagement_score: step.engagement_score || 0
           });
-        });
-
-        // Adicionar informações de realtime
-        realtimeData.forEach(activity => {
-          const sessionId = activity.session_id;
-          if (sessionMap.has(sessionId)) {
-            const session = sessionMap.get(sessionId)!;
-            session.device_info = activity.device_info || {};
-            session.total_duration = activity.time_on_site_seconds || 0;
-          }
         });
 
         // Ordenar steps dentro de cada sessão
@@ -424,15 +367,12 @@ export const ClientJourneyTimelineDebug: React.FC<ClientJourneyTimelineDebugProp
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
             <div>
               <strong>Client ID:</strong> {debugInfo.clientId}
             </div>
             <div>
               <strong>Journey Records:</strong> {debugInfo.journeyRecords}
-            </div>
-            <div>
-              <strong>Realtime Records:</strong> {debugInfo.realtimeRecords}
             </div>
             <div>
               <strong>Interaction Records:</strong> {debugInfo.interactionRecords}

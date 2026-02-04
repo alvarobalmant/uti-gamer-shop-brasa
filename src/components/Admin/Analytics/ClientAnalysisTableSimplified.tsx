@@ -57,24 +57,20 @@ export const ClientAnalysisTableSimplified: React.FC = () => {
       setLoading(true);
       console.log('🔍 [SIMPLIFIED] Fetching all available data...');
 
-      // Buscar TODOS os dados disponíveis
-      const [realtimeResult, journeyResult, interactionsResult] = await Promise.all([
-        supabase.from('realtime_activity').select('*').order('last_heartbeat', { ascending: false }),
+      // Buscar dados disponíveis (sem realtime_activity que foi removida)
+      const [journeyResult, interactionsResult] = await Promise.all([
         supabase.from('user_journey_detailed').select('*').order('step_start_time', { ascending: false }),
         supabase.from('page_interactions').select('*').order('created_at', { ascending: false })
       ]);
 
-      const { data: realtimeActivity, error: realtimeError } = realtimeResult;
       const { data: journeyData, error: journeyError } = journeyResult;
       const { data: interactions, error: interactionsError } = interactionsResult;
 
       // Log de debug
       const debug = {
-        realtimeActivity: realtimeActivity?.length || 0,
         journeyData: journeyData?.length || 0,
         interactions: interactions?.length || 0,
         errors: {
-          realtime: realtimeError?.message,
           journey: journeyError?.message,
           interactions: interactionsError?.message
         }
@@ -83,57 +79,12 @@ export const ClientAnalysisTableSimplified: React.FC = () => {
       setDebugInfo(debug);
       console.log('📊 [SIMPLIFIED] Raw data:', debug);
 
-      if (realtimeError || journeyError || interactionsError) {
-        console.error('❌ [SIMPLIFIED] Errors:', { realtimeError, journeyError, interactionsError });
+      if (journeyError || interactionsError) {
+        console.error('❌ [SIMPLIFIED] Errors:', { journeyError, interactionsError });
       }
 
       // Processar dados de forma mais permissiva
       const clientMap = new Map<string, ClientAnalysis>();
-
-      // 1. Processar atividade em tempo real
-      realtimeActivity?.forEach(activity => {
-        const userId = activity.user_id || activity.session_id || `anonymous_${activity.session_id}`;
-        
-        if (!clientMap.has(userId)) {
-          clientMap.set(userId, {
-            user_id: userId,
-            email: null,
-            first_session: activity.last_heartbeat || new Date().toISOString(),
-            last_session: activity.last_heartbeat || new Date().toISOString(),
-            total_sessions: 0,
-            total_time_spent: 0,
-            total_pages_visited: 0,
-            total_products_viewed: 0,
-            total_cart_additions: 0,
-            total_purchases: 0,
-            total_spent: 0,
-            avg_session_duration: 0,
-            conversion_rate: 0,
-            favorite_categories: [],
-            device_preference: 'Desktop',
-            sessions: []
-          });
-        }
-
-        const client = clientMap.get(userId)!;
-        
-        // Somar tempo (mesmo que seja 0)
-        if ((activity as any).time_on_site_seconds) {
-          client.total_time_spent += (activity as any).time_on_site_seconds;
-        }
-
-        // Atualizar datas
-        if (activity.last_heartbeat) {
-          if (activity.last_heartbeat < client.first_session) {
-            client.first_session = activity.last_heartbeat;
-          }
-          if (activity.last_heartbeat > client.last_session) {
-            client.last_session = activity.last_heartbeat;
-          }
-        }
-
-        console.log(`👤 [SIMPLIFIED] Client ${userId}: time=${(activity as any).time_on_site_seconds || 0}s`);
-      });
 
       // 2. Processar jornada detalhada
       journeyData?.forEach(journey => {
@@ -199,10 +150,10 @@ export const ClientAnalysisTableSimplified: React.FC = () => {
         // Contar sessões únicas de forma mais permissiva
         const uniqueSessions = new Set();
         
-        realtimeActivity?.forEach(activity => {
-          const activityUserId = activity.user_id || activity.session_id || `anonymous_${activity.session_id}`;
-          if (activityUserId === client.user_id) {
-            uniqueSessions.add(activity.session_id);
+        journeyData?.forEach(journey => {
+          const journeyUserId = journey.user_id || journey.session_id || `anonymous_${journey.session_id}`;
+          if (journeyUserId === client.user_id) {
+            uniqueSessions.add(journey.session_id);
           }
         });
         
@@ -344,18 +295,15 @@ export const ClientAnalysisTableSimplified: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Debug Info */}
       <Card className="bg-blue-50 border-blue-200">
         <CardHeader>
           <CardTitle className="text-sm text-blue-800">Debug Info</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-xs text-blue-700 space-y-1">
-            <div>Realtime Activity: {debugInfo.realtimeActivity} registros</div>
             <div>Journey Data: {debugInfo.journeyData} registros</div>
             <div>Interactions: {debugInfo.interactions} registros</div>
             <div>Total Clientes Processados: {clients.length}</div>
-            {debugInfo.errors?.realtime && <div className="text-red-600">Erro Realtime: {debugInfo.errors.realtime}</div>}
             {debugInfo.errors?.journey && <div className="text-red-600">Erro Journey: {debugInfo.errors.journey}</div>}
             {debugInfo.errors?.interactions && <div className="text-red-600">Erro Interactions: {debugInfo.errors.interactions}</div>}
             {debugInfo.fetchError && <div className="text-red-600">Erro Fetch: {debugInfo.fetchError}</div>}

@@ -221,44 +221,9 @@ export const useAnalyticsData = () => {
         const mockData = getMockCustomerSegments();
         setCustomerSegments(mockData);
       } else {
-        // Buscar dados reais do banco
-        const { data, error } = await supabase
-          .from('customer_ltv')
-          .select('segment, total_spent, total_purchases')
-          .not('segment', 'is', null);
-
-        if (error) throw error;
-
-        // Processar dados de segmentação
-        const segmentMap = new Map();
-        let totalCustomers = 0;
-
-        data?.forEach(customer => {
-          const segment = customer.segment || 'unknown';
-          if (!segmentMap.has(segment)) {
-            segmentMap.set(segment, {
-              count: 0,
-              total_revenue: 0,
-              total_orders: 0
-            });
-          }
-
-          const segmentData = segmentMap.get(segment);
-          segmentData.count++;
-          segmentData.total_revenue += customer.total_spent || 0;
-          segmentData.total_orders += customer.total_purchases || 0;
-          totalCustomers++;
-        });
-
-        const segments: CustomerSegment[] = Array.from(segmentMap.entries()).map(([segment, data]) => ({
-          segment,
-          count: data.count,
-          percentage: totalCustomers > 0 ? (data.count / totalCustomers) * 100 : 0,
-          avg_order_value: data.total_orders > 0 ? data.total_revenue / data.total_orders : 0,
-          total_revenue: data.total_revenue
-        }));
-
-        setCustomerSegments(segments);
+        // Sem tabela customer_ltv, usar dados mock por padrão
+        const mockData = getMockCustomerSegments();
+        setCustomerSegments(mockData);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao buscar segmentação de clientes');

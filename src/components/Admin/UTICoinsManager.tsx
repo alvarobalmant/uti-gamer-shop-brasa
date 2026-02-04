@@ -52,18 +52,7 @@ interface CoinRule {
   cooldown_minutes: number;
 }
 
-interface CoinProduct {
-  id: string;
-  name: string;
-  description?: string;
-  cost: number;
-  product_type: 'discount' | 'freebie' | 'exclusive_access' | 'physical_product';
-  product_data: any;
-  stock?: number;
-  is_active: boolean;
-  display_order: number;
-  image_url?: string;
-}
+// CoinProduct interface removida - tabela coin_products foi excluída
 
 interface SystemConfig {
   setting_key: string;
@@ -86,15 +75,12 @@ const UTICoinsManager = () => {
   
   // States para cada aba
   const [rules, setRules] = useState<CoinRule[]>([]);
-  const [products, setProducts] = useState<CoinProduct[]>([]);
   const [configs, setConfigs] = useState<SystemConfig[]>([]);
   const [users, setUsers] = useState<UserCoins[]>([]);
   
   // States para edição
   const [editingRule, setEditingRule] = useState<CoinRule | null>(null);
-  const [editingProduct, setEditingProduct] = useState<CoinProduct | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
-  const [showNewProduct, setShowNewProduct] = useState(false);
   
   // State para adicionar moedas manualmente
   const [manualCoins, setManualCoins] = useState({ userId: '', amount: 0, description: '' });
@@ -113,21 +99,7 @@ const UTICoinsManager = () => {
     }
   };
 
-  const loadProducts = async () => {
-    const { data, error } = await supabase
-      .from('coin_products')
-      .select('*')
-      .order('display_order');
-    
-    if (error) {
-      toast({ title: 'Erro', description: 'Erro ao carregar produtos', variant: 'destructive' });
-    } else {
-      setProducts((data || []).map(p => ({
-        ...p,
-        product_type: p.product_type as 'discount' | 'freebie' | 'exclusive_access' | 'physical_product'
-      })));
-    }
-  };
+  // loadProducts removido - tabela coin_products foi excluída
 
   const loadConfigs = async () => {
     try {
@@ -197,7 +169,6 @@ const UTICoinsManager = () => {
 
   useEffect(() => {
     loadRules();
-    loadProducts();
     loadConfigs();
     loadUsers();
   }, []);
@@ -265,72 +236,7 @@ const UTICoinsManager = () => {
     }
   };
 
-  // Funções para produtos
-  const saveProduct = async (product: CoinProduct) => {
-    setLoading(true);
-    try {
-      if (product.id) {
-        const { error } = await supabase
-          .from('coin_products')
-          .update({
-            name: product.name,
-            description: product.description,
-            cost: product.cost,
-            product_type: product.product_type,
-            product_data: product.product_data || {},
-            stock: product.stock,
-            is_active: product.is_active,
-            display_order: product.display_order,
-            image_url: product.image_url
-          })
-          .eq('id', product.id);
-        
-        if (error) throw error;
-        toast({ title: 'Sucesso', description: 'Produto atualizado!' });
-      } else {
-        const { error } = await supabase
-          .from('coin_products')
-          .insert({
-            name: product.name,
-            description: product.description,
-            cost: product.cost,
-            product_type: product.product_type,
-            product_data: product.product_data || {},
-            stock: product.stock,
-            is_active: product.is_active,
-            display_order: product.display_order || 0,
-            image_url: product.image_url
-          });
-        
-        if (error) throw error;
-        toast({ title: 'Sucesso', description: 'Produto criado!' });
-      }
-      
-      setEditingProduct(null);
-      setShowNewProduct(false);
-      loadProducts();
-    } catch (error) {
-      toast({ title: 'Erro', description: 'Erro ao salvar produto', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteProduct = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este produto?')) return;
-    
-    const { error } = await supabase
-      .from('coin_products')
-      .delete()
-      .eq('id', id);
-    
-    if (error) {
-      toast({ title: 'Erro', description: 'Erro ao excluir produto', variant: 'destructive' });
-    } else {
-      toast({ title: 'Sucesso', description: 'Produto excluído!' });
-      loadProducts();
-    }
-  };
+  // Funções de produtos removidas - tabela coin_products foi excluída
 
   // Função para adicionar moedas manualmente
   const addManualCoins = async () => {
@@ -371,7 +277,7 @@ const UTICoinsManager = () => {
       </div>
 
       <Tabs defaultValue="rules" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="config" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Sistema
@@ -379,10 +285,6 @@ const UTICoinsManager = () => {
           <TabsTrigger value="rules" className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
             Regras
-          </TabsTrigger>
-          <TabsTrigger value="products" className="flex items-center gap-2">
-            <Gift className="w-4 h-4" />
-            Produtos
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
@@ -515,82 +417,7 @@ const UTICoinsManager = () => {
           </Card>
         </TabsContent>
 
-        {/* Aba de Produtos */}
-        <TabsContent value="products">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Produtos Resgatáveis</CardTitle>
-                <Button onClick={() => {
-                  setEditingProduct({
-                    id: '',
-                    name: '',
-                    description: '',
-                    cost: 0,
-                    product_type: 'discount',
-                    product_data: {},
-                    is_active: true,
-                    display_order: 0,
-                    image_url: ''
-                  });
-                  setShowNewProduct(true);
-                }}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Novo Produto
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Custo</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Estoque</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell>{product.cost} coins</TableCell>
-                      <TableCell className="capitalize">{product.product_type.replace('_', ' ')}</TableCell>
-                      <TableCell>{product.stock || 'Ilimitado'}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {product.is_active ? 'Ativo' : 'Inativo'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => setEditingProduct(product)}
-                          >
-                            <Edit className="w-3 h-3" />
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => deleteProduct(product.id)}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* Aba de Produtos removida - tabela coin_products foi excluída */}
 
         {/* Aba de Usuários */}
         <TabsContent value="users">
@@ -770,104 +597,7 @@ const UTICoinsManager = () => {
           </Card>
         </div>
       )}
-
-      {/* Modal para editar/criar produto */}
-      {(editingProduct || showNewProduct) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle>
-                {editingProduct ? 'Editar Produto' : 'Novo Produto'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Nome</Label>
-                <Input
-                  value={editingProduct?.name || ''}
-                  onChange={(e) => setEditingProduct(prev => ({ ...prev!, name: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label>Descrição</Label>
-                <Textarea
-                  value={editingProduct?.description || ''}
-                  onChange={(e) => setEditingProduct(prev => ({ ...prev!, description: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label>Custo (moedas)</Label>
-                <Input
-                  type="number"
-                  value={editingProduct?.cost || 0}
-                  onChange={(e) => setEditingProduct(prev => ({ ...prev!, cost: parseInt(e.target.value) }))}
-                />
-              </div>
-              <div>
-                <Label>Tipo</Label>
-                <Select
-                  value={editingProduct?.product_type || 'discount'}
-                  onValueChange={(value) => setEditingProduct(prev => ({ ...prev!, product_type: value as any }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="discount">Desconto</SelectItem>
-                    <SelectItem value="freebie">Brinde</SelectItem>
-                    <SelectItem value="exclusive_access">Acesso Exclusivo</SelectItem>
-                    <SelectItem value="physical_product">Produto Físico</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Estoque</Label>
-                <Input
-                  type="number"
-                  value={editingProduct?.stock || ''}
-                  onChange={(e) => setEditingProduct(prev => ({ ...prev!, stock: e.target.value ? parseInt(e.target.value) : undefined }))}
-                  placeholder="Deixe vazio para ilimitado"
-                />
-              </div>
-              <div>
-                <Label>URL da Imagem</Label>
-                <Input
-                  value={editingProduct?.image_url || ''}
-                  onChange={(e) => setEditingProduct(prev => ({ ...prev!, image_url: e.target.value }))}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={editingProduct?.is_active || false}
-                  onCheckedChange={(checked) => setEditingProduct(prev => ({ ...prev!, is_active: checked }))}
-                />
-                <Label>Ativo</Label>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => saveProduct(editingProduct!)}
-                  disabled={loading}
-                  className="flex-1"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Salvar
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setEditingProduct(null);
-                    setShowNewProduct(false);
-                  }}
-                  className="flex-1"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Cancelar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {/* Modal de produto removido - tabela coin_products foi excluída */}
     </div>
   );
 };
