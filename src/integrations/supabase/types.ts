@@ -119,61 +119,6 @@ export type Database = {
         }
         Relationships: []
       }
-      cart_items: {
-        Row: {
-          color: string | null
-          created_at: string
-          id: string
-          product_id: string
-          quantity: number
-          size: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          color?: string | null
-          created_at?: string
-          id?: string
-          product_id: string
-          quantity?: number
-          size?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          color?: string | null
-          created_at?: string
-          id?: string
-          product_id?: string
-          quantity?: number
-          size?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cart_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cart_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cart_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_products_search"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       coin_rules: {
         Row: {
           action: string
@@ -537,6 +482,296 @@ export type Database = {
           is_visible?: boolean
           section_key?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      integra_cart_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string | null
+          quantity: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          quantity?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          quantity?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integra_cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "integra_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integra_product_tags: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string | null
+          tag_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          tag_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          tag_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integra_product_tags_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "integra_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integra_product_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "integra_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integra_products: {
+        Row: {
+          badge_color: string | null
+          badge_text: string | null
+          category: string | null
+          codigo_barra: string | null
+          codigo_fiscal: string | null
+          created_at: string | null
+          descricao: string
+          fornecedor: number | null
+          foto: string | null
+          grupo: string | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          last_sync_at: string | null
+          marca: number | null
+          matricula: number
+          platform: string | null
+          preco_custo: number | null
+          preco_promocao: number | null
+          preco_venda: number | null
+          promocao: string | null
+          referencia: string | null
+          saldo_atual: number | null
+          slug: string | null
+          suspensa: string | null
+          sync_status: string | null
+          tipo: string | null
+          tipo_item: string | null
+          unidade: string | null
+          updated_at: string | null
+          uti_coins_cashback_percentage: number | null
+          uti_coins_discount_percentage: number | null
+          uti_pro_price: number | null
+        }
+        Insert: {
+          badge_color?: string | null
+          badge_text?: string | null
+          category?: string | null
+          codigo_barra?: string | null
+          codigo_fiscal?: string | null
+          created_at?: string | null
+          descricao: string
+          fornecedor?: number | null
+          foto?: string | null
+          grupo?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          last_sync_at?: string | null
+          marca?: number | null
+          matricula: number
+          platform?: string | null
+          preco_custo?: number | null
+          preco_promocao?: number | null
+          preco_venda?: number | null
+          promocao?: string | null
+          referencia?: string | null
+          saldo_atual?: number | null
+          slug?: string | null
+          suspensa?: string | null
+          sync_status?: string | null
+          tipo?: string | null
+          tipo_item?: string | null
+          unidade?: string | null
+          updated_at?: string | null
+          uti_coins_cashback_percentage?: number | null
+          uti_coins_discount_percentage?: number | null
+          uti_pro_price?: number | null
+        }
+        Update: {
+          badge_color?: string | null
+          badge_text?: string | null
+          category?: string | null
+          codigo_barra?: string | null
+          codigo_fiscal?: string | null
+          created_at?: string | null
+          descricao?: string
+          fornecedor?: number | null
+          foto?: string | null
+          grupo?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          last_sync_at?: string | null
+          marca?: number | null
+          matricula?: number
+          platform?: string | null
+          preco_custo?: number | null
+          preco_promocao?: number | null
+          preco_venda?: number | null
+          promocao?: string | null
+          referencia?: string | null
+          saldo_atual?: number | null
+          slug?: string | null
+          suspensa?: string | null
+          sync_status?: string | null
+          tipo?: string | null
+          tipo_item?: string | null
+          unidade?: string | null
+          updated_at?: string | null
+          uti_coins_cashback_percentage?: number | null
+          uti_coins_discount_percentage?: number | null
+          uti_pro_price?: number | null
+        }
+        Relationships: []
+      }
+      integra_sync_config: {
+        Row: {
+          api_url: string
+          cnpj: string
+          created_at: string | null
+          current_token: string | null
+          funcionario: number
+          id: string
+          is_active: boolean | null
+          last_products_sync: string | null
+          last_stock_sync: string | null
+          senha_hash: string | null
+          sync_interval_minutes: number | null
+          token_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          api_url: string
+          cnpj: string
+          created_at?: string | null
+          current_token?: string | null
+          funcionario: number
+          id?: string
+          is_active?: boolean | null
+          last_products_sync?: string | null
+          last_stock_sync?: string | null
+          senha_hash?: string | null
+          sync_interval_minutes?: number | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          api_url?: string
+          cnpj?: string
+          created_at?: string | null
+          current_token?: string | null
+          funcionario?: number
+          id?: string
+          is_active?: boolean | null
+          last_products_sync?: string | null
+          last_stock_sync?: string | null
+          senha_hash?: string | null
+          sync_interval_minutes?: number | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      integra_sync_log: {
+        Row: {
+          completed_at: string | null
+          details: Json | null
+          error_message: string | null
+          id: string
+          records_created: number | null
+          records_failed: number | null
+          records_processed: number | null
+          records_updated: number | null
+          started_at: string | null
+          status: string | null
+          sync_type: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          details?: Json | null
+          error_message?: string | null
+          id?: string
+          records_created?: number | null
+          records_failed?: number | null
+          records_processed?: number | null
+          records_updated?: number | null
+          started_at?: string | null
+          status?: string | null
+          sync_type?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          details?: Json | null
+          error_message?: string | null
+          id?: string
+          records_created?: number | null
+          records_failed?: number | null
+          records_processed?: number | null
+          records_updated?: number | null
+          started_at?: string | null
+          status?: string | null
+          sync_type?: string | null
+        }
+        Relationships: []
+      }
+      integra_tags: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -1164,159 +1399,6 @@ export type Database = {
         }
         Relationships: []
       }
-      product_analytics: {
-        Row: {
-          add_to_cart_count: number | null
-          cart_abandonment_rate: number | null
-          checkout_starts: number | null
-          conversion_rate: number | null
-          date: string
-          id: string
-          product_id: string
-          purchase_value: number | null
-          purchases_count: number | null
-          remove_from_cart_count: number | null
-          unique_views: number | null
-          updated_at: string
-          views_count: number | null
-          whatsapp_clicks: number | null
-          whatsapp_conversions: number | null
-        }
-        Insert: {
-          add_to_cart_count?: number | null
-          cart_abandonment_rate?: number | null
-          checkout_starts?: number | null
-          conversion_rate?: number | null
-          date: string
-          id?: string
-          product_id: string
-          purchase_value?: number | null
-          purchases_count?: number | null
-          remove_from_cart_count?: number | null
-          unique_views?: number | null
-          updated_at?: string
-          views_count?: number | null
-          whatsapp_clicks?: number | null
-          whatsapp_conversions?: number | null
-        }
-        Update: {
-          add_to_cart_count?: number | null
-          cart_abandonment_rate?: number | null
-          checkout_starts?: number | null
-          conversion_rate?: number | null
-          date?: string
-          id?: string
-          product_id?: string
-          purchase_value?: number | null
-          purchases_count?: number | null
-          remove_from_cart_count?: number | null
-          unique_views?: number | null
-          updated_at?: string
-          views_count?: number | null
-          whatsapp_clicks?: number | null
-          whatsapp_conversions?: number | null
-        }
-        Relationships: []
-      }
-      product_faqs: {
-        Row: {
-          active: boolean | null
-          answer: string
-          category: string | null
-          created_at: string | null
-          helpful_count: number | null
-          id: string
-          order_index: number | null
-          product_id: string | null
-          question: string
-          tags: Json | null
-          updated_at: string | null
-        }
-        Insert: {
-          active?: boolean | null
-          answer: string
-          category?: string | null
-          created_at?: string | null
-          helpful_count?: number | null
-          id?: string
-          order_index?: number | null
-          product_id?: string | null
-          question: string
-          tags?: Json | null
-          updated_at?: string | null
-        }
-        Update: {
-          active?: boolean | null
-          answer?: string
-          category?: string | null
-          created_at?: string | null
-          helpful_count?: number | null
-          id?: string
-          order_index?: number | null
-          product_id?: string | null
-          question?: string
-          tags?: Json | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_faqs_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_faqs_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_faqs_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_products_search"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_section_items: {
-        Row: {
-          created_at: string | null
-          display_order: number | null
-          id: number
-          item_id: string
-          item_type: Database["public"]["Enums"]["section_item_type"]
-          section_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: number
-          item_id: string
-          item_type: Database["public"]["Enums"]["section_item_type"]
-          section_id: string
-        }
-        Update: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: number
-          item_id?: string
-          item_type?: Database["public"]["Enums"]["section_item_type"]
-          section_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_section_items_section_id_fkey"
-            columns: ["section_id"]
-            isOneToOne: false
-            referencedRelation: "product_sections"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       product_sections: {
         Row: {
           created_at: string | null
@@ -1360,398 +1442,6 @@ export type Database = {
             columns: ["page_id"]
             isOneToOne: false
             referencedRelation: "prime_pages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_specifications: {
-        Row: {
-          category: string
-          created_at: string | null
-          highlight: boolean | null
-          icon: string | null
-          id: string
-          label: string
-          order_index: number | null
-          product_id: string | null
-          updated_at: string | null
-          value: string
-        }
-        Insert: {
-          category: string
-          created_at?: string | null
-          highlight?: boolean | null
-          icon?: string | null
-          id?: string
-          label: string
-          order_index?: number | null
-          product_id?: string | null
-          updated_at?: string | null
-          value: string
-        }
-        Update: {
-          category?: string
-          created_at?: string | null
-          highlight?: boolean | null
-          icon?: string | null
-          id?: string
-          label?: string
-          order_index?: number | null
-          product_id?: string | null
-          updated_at?: string | null
-          value?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_specifications_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_specifications_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_specifications_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_products_search"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_tags: {
-        Row: {
-          created_at: string
-          id: string
-          product_id: string
-          tag_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          product_id: string
-          tag_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          product_id?: string
-          tag_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_product_tags_product_id"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_product_tags_product_id"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_product_tags_product_id"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_products_search"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_product_tags_tag_id"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_product_tags_tag_id"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["tag_id"]
-          },
-        ]
-      }
-      products: {
-        Row: {
-          additional_images: string[] | null
-          available_variants: Json | null
-          badge_color: string | null
-          badge_text: string | null
-          badge_visible: boolean | null
-          brand: string | null
-          breadcrumb_config: Json | null
-          category: string | null
-          colors: string[] | null
-          condition: string | null
-          created_at: string
-          delivery_config: Json | null
-          description: string | null
-          digital_price: number | null
-          discount_percentage: number | null
-          discount_price: number | null
-          display_config: Json | null
-          free_shipping: boolean | null
-          id: string
-          image: string | null
-          images: string[] | null
-          inherit_from_master: Json | null
-          installment_options: number | null
-          is_active: boolean | null
-          is_featured: boolean | null
-          is_master_product: boolean | null
-          is_reviewed: boolean | null
-          list_price: number | null
-          manual_related_products: Json | null
-          master_slug: string | null
-          meta_description: string | null
-          meta_title: string | null
-          name: string
-          new_price: number | null
-          parent_product_id: string | null
-          pix_discount_percentage: number | null
-          platform: string | null
-          price: number
-          pro_discount_percent: number | null
-          pro_price: number | null
-          product_descriptions: Json | null
-          product_faqs: Json | null
-          product_features: Json | null
-          product_highlights: Json | null
-          product_type: string | null
-          product_videos: Json | null
-          promotional_price: number | null
-          rating: number | null
-          rating_average: number | null
-          rating_count: number | null
-          related_products: Json | null
-          related_products_auto: boolean | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          reviews_config: Json | null
-          reviews_enabled: boolean | null
-          shipping_dimensions: Json | null
-          shipping_time_max: number | null
-          shipping_time_min: number | null
-          shipping_weight: number | null
-          show_rating: boolean | null
-          show_stock: boolean | null
-          sizes: string[] | null
-          sku_code: string | null
-          slug: string | null
-          sort_order: number | null
-          specifications: Json | null
-          stock: number | null
-          store_pickup_available: boolean | null
-          technical_specs: Json | null
-          title: string | null
-          trust_indicators: Json | null
-          updated_at: string
-          uti_coins_cashback_percentage: number | null
-          uti_coins_discount_percentage: number | null
-          uti_pro_custom_price: number | null
-          uti_pro_enabled: boolean | null
-          uti_pro_price: number | null
-          uti_pro_type: string | null
-          uti_pro_value: number | null
-          variant_attributes: Json | null
-        }
-        Insert: {
-          additional_images?: string[] | null
-          available_variants?: Json | null
-          badge_color?: string | null
-          badge_text?: string | null
-          badge_visible?: boolean | null
-          brand?: string | null
-          breadcrumb_config?: Json | null
-          category?: string | null
-          colors?: string[] | null
-          condition?: string | null
-          created_at?: string
-          delivery_config?: Json | null
-          description?: string | null
-          digital_price?: number | null
-          discount_percentage?: number | null
-          discount_price?: number | null
-          display_config?: Json | null
-          free_shipping?: boolean | null
-          id?: string
-          image?: string | null
-          images?: string[] | null
-          inherit_from_master?: Json | null
-          installment_options?: number | null
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          is_master_product?: boolean | null
-          is_reviewed?: boolean | null
-          list_price?: number | null
-          manual_related_products?: Json | null
-          master_slug?: string | null
-          meta_description?: string | null
-          meta_title?: string | null
-          name: string
-          new_price?: number | null
-          parent_product_id?: string | null
-          pix_discount_percentage?: number | null
-          platform?: string | null
-          price: number
-          pro_discount_percent?: number | null
-          pro_price?: number | null
-          product_descriptions?: Json | null
-          product_faqs?: Json | null
-          product_features?: Json | null
-          product_highlights?: Json | null
-          product_type?: string | null
-          product_videos?: Json | null
-          promotional_price?: number | null
-          rating?: number | null
-          rating_average?: number | null
-          rating_count?: number | null
-          related_products?: Json | null
-          related_products_auto?: boolean | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          reviews_config?: Json | null
-          reviews_enabled?: boolean | null
-          shipping_dimensions?: Json | null
-          shipping_time_max?: number | null
-          shipping_time_min?: number | null
-          shipping_weight?: number | null
-          show_rating?: boolean | null
-          show_stock?: boolean | null
-          sizes?: string[] | null
-          sku_code?: string | null
-          slug?: string | null
-          sort_order?: number | null
-          specifications?: Json | null
-          stock?: number | null
-          store_pickup_available?: boolean | null
-          technical_specs?: Json | null
-          title?: string | null
-          trust_indicators?: Json | null
-          updated_at?: string
-          uti_coins_cashback_percentage?: number | null
-          uti_coins_discount_percentage?: number | null
-          uti_pro_custom_price?: number | null
-          uti_pro_enabled?: boolean | null
-          uti_pro_price?: number | null
-          uti_pro_type?: string | null
-          uti_pro_value?: number | null
-          variant_attributes?: Json | null
-        }
-        Update: {
-          additional_images?: string[] | null
-          available_variants?: Json | null
-          badge_color?: string | null
-          badge_text?: string | null
-          badge_visible?: boolean | null
-          brand?: string | null
-          breadcrumb_config?: Json | null
-          category?: string | null
-          colors?: string[] | null
-          condition?: string | null
-          created_at?: string
-          delivery_config?: Json | null
-          description?: string | null
-          digital_price?: number | null
-          discount_percentage?: number | null
-          discount_price?: number | null
-          display_config?: Json | null
-          free_shipping?: boolean | null
-          id?: string
-          image?: string | null
-          images?: string[] | null
-          inherit_from_master?: Json | null
-          installment_options?: number | null
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          is_master_product?: boolean | null
-          is_reviewed?: boolean | null
-          list_price?: number | null
-          manual_related_products?: Json | null
-          master_slug?: string | null
-          meta_description?: string | null
-          meta_title?: string | null
-          name?: string
-          new_price?: number | null
-          parent_product_id?: string | null
-          pix_discount_percentage?: number | null
-          platform?: string | null
-          price?: number
-          pro_discount_percent?: number | null
-          pro_price?: number | null
-          product_descriptions?: Json | null
-          product_faqs?: Json | null
-          product_features?: Json | null
-          product_highlights?: Json | null
-          product_type?: string | null
-          product_videos?: Json | null
-          promotional_price?: number | null
-          rating?: number | null
-          rating_average?: number | null
-          rating_count?: number | null
-          related_products?: Json | null
-          related_products_auto?: boolean | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          reviews_config?: Json | null
-          reviews_enabled?: boolean | null
-          shipping_dimensions?: Json | null
-          shipping_time_max?: number | null
-          shipping_time_min?: number | null
-          shipping_weight?: number | null
-          show_rating?: boolean | null
-          show_stock?: boolean | null
-          sizes?: string[] | null
-          sku_code?: string | null
-          slug?: string | null
-          sort_order?: number | null
-          specifications?: Json | null
-          stock?: number | null
-          store_pickup_available?: boolean | null
-          technical_specs?: Json | null
-          title?: string | null
-          trust_indicators?: Json | null
-          updated_at?: string
-          uti_coins_cashback_percentage?: number | null
-          uti_coins_discount_percentage?: number | null
-          uti_pro_custom_price?: number | null
-          uti_pro_enabled?: boolean | null
-          uti_pro_price?: number | null
-          uti_pro_type?: string | null
-          uti_pro_value?: number | null
-          variant_attributes?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "products_parent_product_id_fkey"
-            columns: ["parent_product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_parent_product_id_fkey"
-            columns: ["parent_product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_parent_product_id_fkey"
-            columns: ["parent_product_id"]
-            isOneToOne: false
-            referencedRelation: "view_products_search"
             referencedColumns: ["id"]
           },
         ]
@@ -2527,37 +2217,6 @@ export type Database = {
         }
         Relationships: []
       }
-      tags: {
-        Row: {
-          category: string | null
-          category_enum: Database["public"]["Enums"]["tag_category_enum"] | null
-          created_at: string
-          id: string
-          name: string
-          weight: number | null
-        }
-        Insert: {
-          category?: string | null
-          category_enum?:
-            | Database["public"]["Enums"]["tag_category_enum"]
-            | null
-          created_at?: string
-          id?: string
-          name: string
-          weight?: number | null
-        }
-        Update: {
-          category?: string | null
-          category_enum?:
-            | Database["public"]["Enums"]["tag_category_enum"]
-            | null
-          created_at?: string
-          id?: string
-          name?: string
-          weight?: number | null
-        }
-        Relationships: []
-      }
       top_deal_items: {
         Row: {
           created_at: string | null
@@ -2722,29 +2381,7 @@ export type Database = {
           product_id?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_favorites_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_favorites_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_favorites_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_products_search"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_journey_detailed: {
         Row: {
@@ -2885,29 +2522,7 @@ export type Database = {
           savings_type?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_savings_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_savings_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_savings_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "view_products_search"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_sessions: {
         Row: {
@@ -3146,130 +2761,6 @@ export type Database = {
         }
         Relationships: []
       }
-      view_product_with_tags: {
-        Row: {
-          additional_images: string[] | null
-          available_variants: Json | null
-          badge_color: string | null
-          badge_text: string | null
-          badge_visible: boolean | null
-          brand: string | null
-          breadcrumb_config: Json | null
-          category: string | null
-          colors: string[] | null
-          condition: string | null
-          created_at: string | null
-          delivery_config: Json | null
-          description: string | null
-          digital_price: number | null
-          discount_percentage: number | null
-          discount_price: number | null
-          display_config: Json | null
-          free_shipping: boolean | null
-          id: string | null
-          image: string | null
-          images: string[] | null
-          inherit_from_master: Json | null
-          installment_options: number | null
-          is_active: boolean | null
-          is_featured: boolean | null
-          is_master_product: boolean | null
-          list_price: number | null
-          manual_related_products: Json | null
-          master_slug: string | null
-          meta_description: string | null
-          meta_title: string | null
-          name: string | null
-          new_price: number | null
-          parent_product_id: string | null
-          pix_discount_percentage: number | null
-          platform: string | null
-          price: number | null
-          pro_discount_percent: number | null
-          pro_price: number | null
-          product_descriptions: Json | null
-          product_faqs: Json | null
-          product_features: Json | null
-          product_highlights: Json | null
-          product_type: string | null
-          product_videos: Json | null
-          promotional_price: number | null
-          rating: number | null
-          rating_average: number | null
-          rating_count: number | null
-          related_products: Json | null
-          related_products_auto: boolean | null
-          reviews_config: Json | null
-          reviews_enabled: boolean | null
-          shipping_dimensions: Json | null
-          shipping_time_max: number | null
-          shipping_time_min: number | null
-          shipping_weight: number | null
-          show_rating: boolean | null
-          show_stock: boolean | null
-          sizes: string[] | null
-          sku_code: string | null
-          slug: string | null
-          sort_order: number | null
-          specifications: Json | null
-          stock: number | null
-          store_pickup_available: boolean | null
-          tag_category: string | null
-          tag_id: string | null
-          tag_name: string | null
-          tag_weight: number | null
-          technical_specs: Json | null
-          title: string | null
-          trust_indicators: Json | null
-          updated_at: string | null
-          uti_coins_cashback_percentage: number | null
-          uti_coins_discount_percentage: number | null
-          uti_pro_custom_price: number | null
-          uti_pro_enabled: boolean | null
-          uti_pro_price: number | null
-          uti_pro_type: string | null
-          uti_pro_value: number | null
-          variant_attributes: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "products_parent_product_id_fkey"
-            columns: ["parent_product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_parent_product_id_fkey"
-            columns: ["parent_product_id"]
-            isOneToOne: false
-            referencedRelation: "view_product_with_tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_parent_product_id_fkey"
-            columns: ["parent_product_id"]
-            isOneToOne: false
-            referencedRelation: "view_products_search"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      view_products_search: {
-        Row: {
-          description: string | null
-          id: string | null
-          image: string | null
-          is_active: boolean | null
-          name: string | null
-          price: number | null
-          slug: string | null
-          stock: number | null
-          tag_names: string | null
-          tags_with_weights: Json | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       adicionar_meses_assinatura: {
@@ -3392,7 +2883,6 @@ export type Database = {
         Args: { p_page_url: string; p_session_id: string }
         Returns: Json
       }
-      diagnose_product_data: { Args: never; Returns: Json }
       earn_coins: {
         Args: {
           p_action: string
@@ -3475,85 +2965,6 @@ export type Database = {
       get_predictive_conversion_score: {
         Args: { p_session_id: string }
         Returns: Json
-      }
-      get_product_intelligence: {
-        Args: { p_end_date?: string; p_start_date?: string }
-        Returns: Json
-      }
-      get_products_with_tags_corrected: {
-        Args: {
-          include_admin?: boolean
-          limit_count?: number
-          tag_filter?: string[]
-        }
-        Returns: {
-          additional_images: string[]
-          available_variants: Json
-          badge_color: string
-          badge_text: string
-          badge_visible: boolean
-          brand: string
-          breadcrumb_config: Json
-          category: string
-          colors: string[]
-          condition: string
-          created_at: string
-          delivery_config: Json
-          digital_price: number
-          discount_percentage: number
-          discount_price: number
-          display_config: Json
-          free_shipping: boolean
-          inherit_from_master: Json
-          installment_options: number
-          is_active: boolean
-          is_featured: boolean
-          is_master_product: boolean
-          list_price: number
-          manual_related_products: Json
-          master_slug: string
-          meta_description: string
-          meta_title: string
-          new_price: number
-          parent_product_id: string
-          pix_discount_percentage: number
-          platform: string
-          pro_discount_percent: number
-          pro_price: number
-          product_description: string
-          product_descriptions: Json
-          product_faqs: Json
-          product_features: Json
-          product_highlights: Json
-          product_id: string
-          product_image: string
-          product_name: string
-          product_price: number
-          product_stock: number
-          product_type: string
-          product_videos: Json
-          promotional_price: number
-          rating_average: number
-          rating_count: number
-          reviews_config: Json
-          shipping_weight: number
-          sizes: string[]
-          sku_code: string
-          slug: string
-          sort_order: number
-          specifications: Json
-          tag_id: string
-          tag_name: string
-          technical_specs: Json
-          trust_indicators: Json
-          updated_at: string
-          uti_pro_custom_price: number
-          uti_pro_enabled: boolean
-          uti_pro_price: number
-          uti_pro_type: string
-          uti_pro_value: number
-          variant_attributes: Json
-        }[]
       }
       get_real_time_alerts: { Args: never; Returns: Json }
       get_realtime_dashboard: { Args: never; Returns: Json }
@@ -3642,32 +3053,6 @@ export type Database = {
         Args: { meses: number; user_id: string }
         Returns: boolean
       }
-      search_products_enhanced: {
-        Args: { limit_count?: number; search_terms: string[] }
-        Returns: {
-          debug_info: Json
-          matched_tags: Json
-          product_id: string
-          product_image: string
-          product_name: string
-          product_price: number
-          product_slug: string
-          relevance_score: number
-        }[]
-      }
-      search_products_weighted: {
-        Args: { limit_count?: number; search_terms: string[] }
-        Returns: {
-          debug_info: Json
-          matched_tags: Json
-          product_id: string
-          product_image: string
-          product_name: string
-          product_price: number
-          product_slug: string
-          relevance_score: number
-        }[]
-      }
       spend_coins_for_discount: {
         Args: {
           p_amount: number
@@ -3694,17 +3079,6 @@ export type Database = {
       validate_admin_token: {
         Args: { p_ip?: string; p_token: string }
         Returns: Json
-      }
-      validate_product_integrity: {
-        Args: never
-        Returns: {
-          integrity_issues: string[]
-          invalid_tag_references: number
-          orphaned_product_tags: number
-          products_with_tags: number
-          products_without_tags: number
-          total_products: number
-        }[]
       }
       verify_order_code: { Args: { p_code: string }; Returns: Json }
       verify_redemption_code: { Args: { p_code: string }; Returns: Json }
