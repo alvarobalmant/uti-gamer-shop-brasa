@@ -65,30 +65,29 @@ export const ClientJourneyTimelineFixed: React.FC<ClientJourneyTimelineFixedProp
       setLoading(true);
       console.log('🔧 [JOURNEY FIXED] Starting intelligent search for client:', clientId);
 
-      // ESTRATÉGIA 1: Buscar mapeamento de IDs via realtime_activity
-      console.log('🔍 [JOURNEY FIXED] Step 1: Finding ID mappings...');
-      const { data: realtimeData, error: realtimeError } = await supabase
-        .from('realtime_activity')
-        .select('session_id, user_id')
-        .or(`user_id.eq.${clientId},session_id.eq.${clientId}`);
+      // Buscar sessões do usuário diretamente da jornada
+      console.log('🔍 [JOURNEY FIXED] Step 1: Searching journey data...');
+      
+      const { data: journeyData, error: journeyError } = await supabase
+        .from('user_journey_detailed')
+        .select('*')
+        .or(`user_id.eq.${clientId},session_id.eq.${clientId}`)
+        .order('step_start_time', { ascending: true });
 
-      if (realtimeError) {
-        console.error('❌ [JOURNEY FIXED] Realtime mapping error:', realtimeError);
+      if (journeyError) {
+        console.error('❌ [JOURNEY FIXED] Journey mapping error:', journeyError);
       }
 
       // Extrair todos os IDs relacionados ao cliente
       const relatedIds = new Set<string>();
       relatedIds.add(clientId); // ID original
 
-      realtimeData?.forEach(record => {
+      journeyData?.forEach(record => {
         if (record.user_id) relatedIds.add(record.user_id);
         if (record.session_id) relatedIds.add(record.session_id);
       });
 
       console.log('🆔 [JOURNEY FIXED] Related IDs found:', Array.from(relatedIds));
-
-      // ESTRATÉGIA 2: Buscar sessões usando TODOS os IDs relacionados
-      console.log('🔍 [JOURNEY FIXED] Step 2: Searching journey data...');
       
       const journeyPromises = Array.from(relatedIds).map(async (id) => {
         const { data, error } = await supabase

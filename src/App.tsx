@@ -135,8 +135,7 @@ const AdminAutoLogin = lazy(() => import("./pages/AdminAutoLogin").then(module =
 import { EmailVerificationGuard } from "@/components/Auth/EmailVerificationGuard";
 
 
-// Lazy loading para páginas de UTI Coins (legacy)
-const CoinsShop = lazy(() => import("./pages/CoinsShop"));
+// Lazy loading para páginas de UTI Coins
 const CoinsHistory = lazy(() => import("./pages/CoinsHistory"));
 
 // Otimizar QueryClient com cache mais agressivo mas seguro

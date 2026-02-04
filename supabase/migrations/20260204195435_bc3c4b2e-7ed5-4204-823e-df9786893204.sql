@@ -1,0 +1,27 @@
+-- =============================================
+-- LIMPEZA DO BANCO DE DADOS - UTI GAMES
+-- =============================================
+
+-- GRUPO 1: REMOVER TABELAS DO SISTEMA DE LOJA DE COINS (Obsoleto)
+DROP TABLE IF EXISTS redemption_codes CASCADE;
+DROP TABLE IF EXISTS coin_redemptions CASCADE;
+DROP TABLE IF EXISTS coin_products CASCADE;
+
+-- GRUPO 2: REMOVER BACKUPS
+DROP TABLE IF EXISTS products_backup CASCADE;
+DROP TABLE IF EXISTS storage_stats_backup CASCADE;
+
+-- GRUPO 3: REMOVER TRACKING NÃO UTILIZADO
+DROP TABLE IF EXISTS mouse_tracking CASCADE;
+DROP TABLE IF EXISTS scroll_behavior CASCADE;
+DROP TABLE IF EXISTS navigation_flow CASCADE;
+DROP TABLE IF EXISTS customer_ltv CASCADE;
+DROP TABLE IF EXISTS realtime_activity CASCADE;
+DROP TABLE IF EXISTS product_affinity CASCADE;
+DROP TABLE IF EXISTS performance_vitals CASCADE;
+
+-- REMOVER FUNÇÕES RPC OBSOLETAS
+DROP FUNCTION IF EXISTS redeem_product_v2 CASCADE;
+DROP FUNCTION IF EXISTS generate_redemption_code CASCADE;
+DROP FUNCTION IF EXISTS admin_redeem_code CASCADE;
+DROP FUNCTION IF EXISTS get_admin_redemptions CASCADE;
