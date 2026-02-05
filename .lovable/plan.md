@@ -1,121 +1,176 @@
 
-# Plano: Adicionar Produtos de Teste e Corrigir Erros Restantes
+# Plano: Substituir Produtos de Teste por Produtos Reais
 
 ## Resumo
 
-Vamos inserir produtos de teste na tabela `integra_products` para visualizar os cards funcionando, e em paralelo corrigir os erros de build restantes nos componentes de admin.
+Vou apagar todos os produtos de teste atuais e cadastrar 10 produtos reais identificados nas fotos, com preços pesquisados no mercado brasileiro e as imagens que você forneceu.
 
 ---
 
-## Fase 1: Inserir Produtos de Teste
+## Produtos Identificados e Precos Pesquisados
 
-### 1.1 Estrutura dos Dados
-Vou inserir 9 produtos de teste variados (jogos PS5, Xbox, Nintendo, acessórios):
+| # | Produto | Categoria | Preco (R$) | Plataforma |
+|---|---------|-----------|------------|------------|
+| 1 | DualShock 4 - Controle PS4 Preto | Controles | 299,90 | PS4 |
+| 2 | JBL Flip 7 - Caixa de Som Bluetooth | Audio | 759,00 | Universal |
+| 3 | Xbox Wireless Controller Pulse Cipher (Vermelho) | Controles | 590,00 | Xbox Series |
+| 4 | DualSense PS5 - Midnight Black | Controles | 349,90 | PS5 |
+| 5 | DualSense PS5 - Starlight Blue | Controles | 399,90 | PS5 |
+| 6 | PlayStation PULSE Elite - Headset Sem Fio | Audio | 799,90 | PS5/PC |
+| 7 | JBL Quantum 100 M2 - Headset Gamer | Audio | 199,90 | Universal |
+| 8 | JBL Xtreme 4 - Caixa de Som 100W | Audio | 2.199,00 | Universal |
+| 9 | Logitech G29 Driving Force - Volante | Acessorios | 1.799,00 | PS5/PS4/PC |
+| 10 | DualSense Edge PS5 - Controle Pro | Controles | 1.199,00 | PS5 |
 
-| Campo | Descrição |
-|-------|-----------|
-| `matricula` | ID numérico sequencial (1001-1009) |
-| `descricao` | Nome do produto |
-| `grupo` | Categoria (Jogos, Acessórios) |
-| `platform` | Plataforma (PS5, Xbox, Switch, PC) |
-| `foto` | URL de imagem do Unsplash |
-| `preco_venda` | Preço normal |
-| `preco_promocao` | Preço promocional (alguns produtos) |
-| `saldo_atual` | Estoque |
-| `badge_text` / `badge_color` | Badges visuais |
-| `is_active` | true |
+---
 
-### 1.2 Produtos a Inserir
+## Fase 1: Upload das Imagens
+
+Vou copiar as 10 imagens para a pasta `public/products/`:
 
 ```text
-1. God of War Ragnarök - PS5          R$ 249,90 (estoque: 15)
-2. Spider-Man 2 - PS5                 R$ 299,90 → R$ 229,90 (PROMOÇÃO)
-3. Halo Infinite - Xbox               R$ 179,90 (estoque: 8)
-4. Forza Horizon 5 - Xbox             R$ 199,90 (estoque: 12)
-5. Zelda: Tears of the Kingdom        R$ 349,90 (estoque: 20)
-6. Mario Kart 8 Deluxe - Switch       R$ 279,90 (estoque: 25)
-7. DualSense Controller - PS5         R$ 449,90 (estoque: 30)
-8. Xbox Elite Controller Series 2     R$ 899,90 → R$ 749,90 (PROMOÇÃO)
-9. Cyberpunk 2077 - PC                R$ 149,90 (estoque: 0, ESGOTADO)
+public/products/
+  dualshock4-preto.jpeg
+  jbl-flip7.jpeg
+  xbox-pulse-cipher.jpeg
+  dualsense-preto.jpeg
+  dualsense-azul.jpeg
+  pulse-elite.jpeg
+  jbl-quantum-100.jpeg
+  jbl-xtreme4.jpeg
+  logitech-g29.jpeg
+  dualsense-edge.jpeg
 ```
 
 ---
 
-## Fase 2: Corrigir Erros de Build
+## Fase 2: Limpar Produtos de Teste
 
-### 2.1 Componentes Admin a Corrigir
+Executar SQL para remover produtos de teste:
 
-| Arquivo | Problema | Solução |
-|---------|----------|---------|
-| `MasterProductManager.tsx` | Usa `useSKUs` com argumentos | Deletar (SKUs via ERP) |
-| `SKUManager.tsx` | Usa `useSKUs` com argumentos | Deletar (SKUs via ERP) |
-| `TagManager.tsx` | Usa `useTags` com argumentos | Adaptar para `integra_tags` |
-| `DatabaseHealthMonitor.tsx` | Interface incorreta | Corrigir interface `DatabaseHealth` |
-| `ProductFormTabs.tsx` | Props incorretas no FAQTab | Ajustar props do stub |
-| `SpecificationDiagnosticPanel.tsx` | Usa Promise incorretamente | Usar await no resultado |
-| `ProductContextOptimized.tsx` | Argumentos incorretos | Ajustar chamadas |
-| `ProductDesktopManager.tsx` | Referencia tabela `products` | Usar `integra_products` |
-| `ProductImageManager.tsx` | Funções inexistentes | Ajustar para usar stubs |
-
-### 2.2 Arquivos a Deletar (Obsoletos)
-Estes arquivos gerenciam funcionalidades que agora são centralizadas no ERP:
-
-```text
-- src/components/Admin/MasterProductManager.tsx
-- src/components/Admin/SKUManager.tsx
-- src/components/Admin/SpecificationDiagnosticPanel.tsx
-- src/pages/Admin/ProductDesktopManager.tsx
-- src/pages/Admin/ProductImageManager.tsx
-```
-
-### 2.3 Arquivos a Corrigir
-
-```text
-- src/components/Admin/TagManager.tsx → Adaptar para integra_tags
-- src/components/Admin/ProductManager/DatabaseHealthMonitor.tsx → Corrigir interface
-- src/components/Admin/ProductManager/ProductFormTabs.tsx → Ajustar FAQTab
-- src/contexts/ProductContextOptimized.tsx → Corrigir chamadas
+```sql
+DELETE FROM integra_product_tags WHERE product_id IN (
+  SELECT id FROM integra_products WHERE matricula BETWEEN 1001 AND 1009
+);
+DELETE FROM integra_products WHERE matricula BETWEEN 1001 AND 1009;
 ```
 
 ---
 
-## Fase 3: Atualizar AdminPanel
+## Fase 3: Inserir Produtos Reais
 
-Remover tabs obsoletas do painel admin:
+Inserir os 10 produtos na tabela `integra_products` com:
+
+- `matricula`: IDs sequenciais (2001-2010)
+- `descricao`: Nome completo do produto
+- `preco_venda`: Preco normal
+- `preco_promocao`: Alguns com preco promocional
+- `foto`: URL local das imagens
+- `grupo`: Categoria (Controles, Audio, Acessorios)
+- `platform`: Plataforma compativel
+- `saldo_atual`: Estoque disponivel
+- `is_active`: true
+- `is_featured`: true (para aparecer nas secoes)
+- `badge_text` / `badge_color`: Badges visuais para alguns produtos
+
+---
+
+## Fase 4: Associar Tags
+
+Criar tags e associar aos produtos:
 
 ```text
-Tabs a MANTER:
-- Gerenciador de Produtos (básico)
-- Tags (adaptado)
-- Configurações
-- Pedidos
-
-Tabs a REMOVER:
-- SKUs
-- Master Products
-- Diagnóstico de Especificações
-- Desktop Manager
-- Image Manager
+Tags a criar/usar:
+- Controles
+- Audio
+- PlayStation
+- Xbox
+- PS5
+- PS4
+- JBL
+- Sony
+- Logitech
+- Microsoft
+- Headset
+- Caixa de Som
+- Volante
 ```
 
 ---
 
-## Ordem de Execução
+## Exemplo de Dados para Insert
 
-1. Inserir 9 produtos de teste no banco
-2. Deletar arquivos admin obsoletos
-3. Corrigir TagManager para usar integra_tags
-4. Corrigir DatabaseHealthMonitor
-5. Corrigir ProductFormTabs
-6. Corrigir ProductContextOptimized
-7. Atualizar AdminPanel removendo tabs deletadas
-8. Testar compilação
+```text
+Produto 1 - DualShock 4:
+  matricula: 2001
+  descricao: "Controle Sony DualShock 4 PS4 Sem Fio - Preto"
+  preco_venda: 299.90
+  foto: "/products/dualshock4-preto.jpeg"
+  grupo: "Controles"
+  platform: "PS4"
+  saldo_atual: 25
+  is_featured: true
+  badge_text: "Original"
+  badge_color: "#003087"
+
+Produto 6 - PULSE Elite:
+  matricula: 2006
+  descricao: "PlayStation PULSE Elite Headset Sem Fio"
+  preco_venda: 899.90
+  preco_promocao: 799.90
+  foto: "/products/pulse-elite.jpeg"
+  grupo: "Audio"
+  platform: "PS5"
+  saldo_atual: 10
+  is_featured: true
+  badge_text: "Lancamento"
+  badge_color: "#22c55e"
+```
 
 ---
 
 ## Resultado Esperado
 
-- ✅ 9 produtos visíveis nos cards
-- ✅ 0 erros de build
-- ✅ Admin simplificado (gestão via ERP)
-- ✅ Cards funcionando com dados de integra_products
+- 0 produtos de teste restantes
+- 10 produtos reais cadastrados
+- Imagens reais das fotos fornecidas
+- Precos atualizados do mercado brasileiro
+- Produtos visíveis nas secoes "Produtos em Destaque"
+- Cards funcionando com fotos de alta qualidade
+
+---
+
+## Secao Tecnica
+
+### Mapeamento de Arquivos de Imagem
+
+| Arquivo Original | Destino |
+|-----------------|---------|
+| WhatsApp_Image_2026-02-05_at_17.16.16_3.jpeg | dualshock4-preto.jpeg |
+| WhatsApp_Image_2026-02-05_at_17.16.16_2.jpeg | jbl-flip7.jpeg |
+| WhatsApp_Image_2026-02-05_at_17.16.16_1.jpeg | xbox-pulse-cipher.jpeg |
+| WhatsApp_Image_2026-02-05_at_17.16.16.jpeg | dualsense-preto.jpeg |
+| WhatsApp_Image_2026-02-05_at_17.16.15_3.jpeg | dualsense-azul.jpeg |
+| WhatsApp_Image_2026-02-05_at_17.16.15_2.jpeg | pulse-elite.jpeg |
+| WhatsApp_Image_2026-02-05_at_17.16.15_1.jpeg | jbl-quantum-100.jpeg |
+| WhatsApp_Image_2026-02-05_at_17.16.15.jpeg | jbl-xtreme4.jpeg |
+| WhatsApp_Image_2026-02-05_at_17.16.14_4.jpeg | logitech-g29.jpeg |
+| WhatsApp_Image_2026-02-05_at_17.16.14_3.jpeg | dualsense-edge.jpeg |
+
+### Campos do integra_products
+
+```text
+id (uuid) - gerado automaticamente
+matricula (integer) - codigo interno 2001-2010
+descricao (text) - nome do produto
+preco_venda (numeric) - preco cheio
+preco_promocao (numeric) - preco promocional (opcional)
+foto (text) - URL da imagem
+grupo (text) - categoria
+platform (text) - plataforma
+saldo_atual (integer) - estoque
+is_active (boolean) - ativo
+is_featured (boolean) - destaque
+badge_text (text) - texto do badge
+badge_color (text) - cor do badge
+```
