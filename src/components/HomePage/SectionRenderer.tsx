@@ -79,41 +79,56 @@ export const SectionRenderer: React.FC<SectionRendererProps> = ({
             return null;
           }
           
-          // --- BUG FIX: Deduplicate products and filter master products --- 
-          const productMap = new Map<string, Product>(); // Use a Map to store unique products by ID
+          // Safety check: Ensure products array exists
+          if (!products || !Array.isArray(products)) {
+            console.warn(`[SectionRenderer] Products not available for ${sectionKey}`);
+            return null;
+          }
           
-          if (section.items && Array.isArray(section.items)) {
-            for (const item of section.items) {
+          // --- IMPROVED: Use products with is_featured or all products if no items configured ---
+          const productMap = new Map<string, Product>();
+          
+          // Check if section has specific items configured
+          const hasConfiguredItems = section.items && Array.isArray(section.items) && section.items.length > 0;
+          
+          if (hasConfiguredItems) {
+            // Use configured items (legacy behavior)
+            for (const item of section.items!) {
               if (item.item_type === 'product') {
-                // Safety check: Ensure products array exists
-                if (!products || !Array.isArray(products)) continue;
-                
-                // Find specific product by ID
                 const product = products.find(p => p.id === item.item_id);
-                if (product && product.product_type !== 'master' && !productMap.has(product.id)) { // Filter master products
+                if (product && product.product_type !== 'master' && !productMap.has(product.id)) {
                   productMap.set(product.id, product);
                 }
               } else if (item.item_type === 'tag') {
-                // Safety check: Ensure products array exists
-                if (!products || !Array.isArray(products)) continue;
-                
-                // Find products with this tag, excluding master products
                 const tagProducts = products.filter(p => 
-                  p.product_type !== 'master' && // Filter master products
+                  p.product_type !== 'master' &&
                   p.tags?.some(tag => tag.name.toLowerCase() === item.item_id.toLowerCase() || tag.id === item.item_id)
                 );
-                // Add tag products to the map, overwriting duplicates (which is fine)
                 tagProducts.forEach(product => {
-                  if (!productMap.has(product.id)) { // Check if not already added
+                  if (!productMap.has(product.id)) {
                      productMap.set(product.id, product);
                   }
                 });
               }
             }
+          } else {
+            // Fallback: Use featured products or all products (limited to 12)
+            const featuredProducts = products.filter(p => 
+              p.product_type !== 'master' && p.is_featured
+            );
+            
+            // If we have featured products, use them; otherwise use first 12 products
+            const productsToShow = featuredProducts.length > 0 
+              ? featuredProducts.slice(0, 12) 
+              : products.filter(p => p.product_type !== 'master').slice(0, 12);
+            
+            productsToShow.forEach(product => {
+              productMap.set(product.id, product);
+            });
           }
           
-          const uniqueSectionProducts = Array.from(productMap.values()); // Get unique products from the map
-          // --- END BUG FIX ---
+          const uniqueSectionProducts = Array.from(productMap.values());
+          // --- END IMPROVED ---
           
           return (
             <div data-section={sectionKey} data-testid="section-renderer">
