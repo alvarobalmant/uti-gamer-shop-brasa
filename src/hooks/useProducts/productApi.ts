@@ -230,18 +230,28 @@
    }
  };
  
- // Stub functions for legacy compatibility
- export const addProductToDatabase = async (productData: any) => {
-   console.warn('[addProductToDatabase] Not implemented for integra_products - use ERP sync');
-   throw new Error('Use ERP sync to add products');
- };
- 
- export const updateProductInDatabase = async (id: string, updates: any) => {
-   console.warn('[updateProductInDatabase] Not implemented for integra_products - use ERP sync');
-   throw new Error('Use ERP sync to update products');
- };
- 
- export const deleteProductFromDatabase = async (id: string) => {
-   console.warn('[deleteProductFromDatabase] Not implemented for integra_products - use ERP sync');
-   throw new Error('Use ERP sync to delete products');
- };
+// Stub functions for legacy compatibility
+export const addProductToDatabase = async (productData: any) => {
+  console.warn('[addProductToDatabase] Not implemented for integra_products - use ERP sync');
+  throw new Error('Use ERP sync to add products');
+};
+
+export const updateProductInDatabase = async (id: string, updates: any) => {
+  console.warn('[updateProductInDatabase] Not implemented for integra_products - use ERP sync');
+  throw new Error('Use ERP sync to update products');
+};
+
+export const deleteProductFromDatabase = async (id: string) => {
+  console.warn('[deleteProductFromDatabase] Not implemented for integra_products - use ERP sync');
+  throw new Error('Use ERP sync to delete products');
+};
+
+// Stub for weighted search - returns object with products array
+export const searchProductsWithWeights = async (query: string, options?: any): Promise<{ products: Product[] }> => {
+  const products = await fetchProductsFromDatabase(true);
+  // Simple filter by name
+  const filtered = query 
+    ? products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
+    : products;
+  return { products: filtered };
+};

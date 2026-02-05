@@ -91,6 +91,7 @@ export interface CarouselConfig {
   product_ids?: string[];
   showTitle?: boolean;
   titleAlignment?: 'left' | 'center' | 'right';
+  limit?: number;
 }
 
 // New type for Carousel Row (similar to BannerRowConfig)

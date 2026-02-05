@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// Stub: product_specifications table removed - use product.specifications from integra_products
+import { useState, useEffect, useMemo } from 'react';
 
 export interface ProductSpecification {
   id: string;
@@ -9,7 +9,7 @@ export interface ProductSpecification {
   value: string;
   highlight: boolean;
   order_index: number;
-  icon?: string; // Emoji, Lucide icon name, ou URL
+  icon?: string;
 }
 
 export interface SpecificationCategory {
@@ -18,168 +18,53 @@ export interface SpecificationCategory {
 }
 
 export const useProductSpecifications = (productId: string, viewType: 'mobile' | 'desktop' = 'desktop', product?: any) => {
-  const [specifications, setSpecifications] = useState<ProductSpecification[]>([]);
-  const [categorizedSpecs, setCategorizedSpecs] = useState<SpecificationCategory[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (productId) {
-      loadSpecifications();
+  // Extract specifications from product object (from integra_products via mapper)
+  const specifications = useMemo<ProductSpecification[]>(() => {
+    if (!product) return [];
+
+    // Try to get specs from product.specifications array
+    const specs = product.specifications || [];
+    
+    if (Array.isArray(specs)) {
+      return specs.map((spec: any, index: number) => ({
+        id: `${productId}-spec-${index}`,
+        product_id: productId,
+        category: spec.category || 'Informações Gerais',
+        label: spec.label || spec.name || '',
+        value: spec.value || '',
+        highlight: spec.highlight || false,
+        order_index: spec.order_index || index,
+        icon: spec.icon,
+      }));
     }
-  }, [productId, viewType]);
 
-  const loadSpecifications = async () => {
-    try {
-      setLoading(true);
-      
-      const { data, error } = await supabase
-        .from('product_specifications')
-        .select('*')
-        .eq('product_id', productId)
-        .order('category', { ascending: true })
-        .order('order_index', { ascending: true });
+    return [];
+  }, [product, productId]);
 
-      if (error) throw error;
-
-      const filteredData = filterSpecificationsByViewType(data || [], viewType);
-      setSpecifications(filteredData);
-      
-      // Categorizar especificações
-      const categories = groupSpecificationsByCategory(filteredData);
-      setCategorizedSpecs(categories);
-    } catch (error) {
-      console.error('Erro ao carregar especificações:', error);
-      setSpecifications([]);
-      setCategorizedSpecs([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const detectTechnicalProduct = (product?: any): boolean => {
-    if (!product) return true; // Default para técnico se não há produto
-    
-    const technicalCategories = [
-      'games', 'jogos', 'consoles', 'periféricos', 
-      'eletrônicos', 'computadores', 'smartphones',
-      'acessórios gaming', 'hardware'
-    ];
-    
-    const technicalKeywords = [
-      'playstation', 'xbox', 'nintendo', 'pc', 'gamer', 
-      'gaming', 'console', 'mouse', 'teclado', 'headset',
-      'monitor', 'placa', 'processador', 'smartphone'
-    ];
-    
-    const category = (product.category || '').toLowerCase();
-    const name = (product.name || product.product_name || '').toLowerCase();
-    
-    // Verificar categoria
-    if (technicalCategories.some(cat => category.includes(cat))) {
-      return true;
-    }
-    
-    // Verificar palavras-chave no nome
-    if (technicalKeywords.some(keyword => name.includes(keyword))) {
-      return true;
-    }
-    
-    return false;
-  };
-
-  const filterSpecificationsByViewType = (specs: ProductSpecification[], type: 'mobile' | 'desktop'): ProductSpecification[] => {
-    if (type === 'mobile') {
-      // Mobile: apenas especificações básicas (categoria "Informações Gerais")
-      return specs.filter(spec => spec.category === 'Informações Gerais');
-    } else {
-      // Desktop: detectar se é produto técnico
-      const isTechnicalProduct = detectTechnicalProduct(product);
-      
-      if (isTechnicalProduct) {
-        // Produtos técnicos: usar especificações técnicas específicas
-        const desktopCategories = [
-          '⚙️ Especificações Técnicas',
-          '🚀 Performance', 
-          '💾 Armazenamento',
-          '🔌 Conectividade'
-        ];
-        return specs.filter(spec => desktopCategories.includes(spec.category));
-      } else {
-        // Produtos não-técnicos: usar as mesmas especificações do mobile
-        return specs.filter(spec => spec.category === 'Informações Gerais');
-      }
-    }
-  };
-
-  const groupSpecificationsByCategory = (specs: ProductSpecification[]): SpecificationCategory[] => {
+  // Group by category
+  const categorizedSpecs = useMemo<SpecificationCategory[]>(() => {
     const categoryMap = new Map<string, ProductSpecification[]>();
     
-    specs.forEach((spec) => {
+    specifications.forEach((spec) => {
       if (!categoryMap.has(spec.category)) {
         categoryMap.set(spec.category, []);
       }
       categoryMap.get(spec.category)!.push(spec);
     });
 
-    const result = Array.from(categoryMap.entries()).map(([category, items]) => ({
+    return Array.from(categoryMap.entries()).map(([category, items]) => ({
       category,
       items: items.sort((a, b) => a.order_index - b.order_index)
     }));
-    
-    return result;
-  };
+  }, [specifications]);
 
-  const addSpecification = async (spec: Omit<ProductSpecification, 'id'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('product_specifications')
-        .insert([spec])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      await loadSpecifications();
-      return { success: true, data };
-    } catch (error) {
-      console.error('Erro ao adicionar especificação:', error);
-      return { success: false, error };
-    }
-  };
-
-  const updateSpecification = async (id: string, updates: Partial<ProductSpecification>) => {
-    try {
-      const { error } = await supabase
-        .from('product_specifications')
-        .update(updates)
-        .eq('id', id);
-
-      if (error) throw error;
-
-      await loadSpecifications();
-      return { success: true };
-    } catch (error) {
-      console.error('Erro ao atualizar especificação:', error);
-      return { success: false, error };
-    }
-  };
-
-  const deleteSpecification = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('product_specifications')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      await loadSpecifications();
-      return { success: true };
-    } catch (error) {
-      console.error('Erro ao deletar especificação:', error);
-      return { success: false, error };
-    }
-  };
+  // Stub functions - specs are managed via ERP
+  const addSpecification = async () => ({ success: false, error: 'Use ERP' });
+  const updateSpecification = async () => ({ success: false, error: 'Use ERP' });
+  const deleteSpecification = async () => ({ success: false, error: 'Use ERP' });
+  const refreshSpecifications = async () => {};
 
   return {
     specifications,
@@ -188,6 +73,6 @@ export const useProductSpecifications = (productId: string, viewType: 'mobile' |
     addSpecification,
     updateSpecification,
     deleteSpecification,
-    refreshSpecifications: loadSpecifications
+    refreshSpecifications
   };
 };
