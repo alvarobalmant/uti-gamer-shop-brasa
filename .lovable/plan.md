@@ -1,278 +1,199 @@
 
-## Plano: Adaptar Frontend para Nova Estrutura IntegraAPI
+# Plano: Corrigir Erros de Build Restantes (Fase Final)
 
-### Contexto
-O banco de dados foi migrado de `products` para `integra_products` com campos diferentes. Os componentes visuais (cards, etc) devem ser MANTIDOS e ADAPTADOS, nao deletados.
+## Resumo Executivo
 
----
-
-## Problema Atual
-
-### Estrutura Antiga (products)
-| Campo | Tipo |
-|-------|------|
-| name | TEXT |
-| price | DECIMAL |
-| list_price | DECIMAL |
-| pro_price | DECIMAL |
-| image | TEXT |
-| stock | INTEGER |
-| badge_visible | BOOLEAN |
-
-### Estrutura Nova (integra_products)
-| Campo ERP | Campo Site | Tipo |
-|-----------|------------|------|
-| descricao | → name | TEXT |
-| preco_venda | → price | DECIMAL |
-| preco_promocao | → list_price | DECIMAL |
-| uti_pro_price | → pro_price | DECIMAL |
-| foto | → image | TEXT |
-| saldo_atual | → stock | DECIMAL |
-| (novo campo) | badge_visible | BOOLEAN (falta) |
+Os **cards de produto foram 100% preservados** ✅. O problema atual são arquivos auxiliares que ainda referenciam tabelas deletadas. Precisamos criar stubs ou adaptar esses arquivos para usar `integra_products`.
 
 ---
 
-## Fase 1: Adicionar Campo Faltante no Banco
+## Diagnóstico: O Que Foi Preservado
 
-### 1.1 Migration SQL
-Adicionar `badge_visible` na tabela `integra_products`:
+| Componente | Status |
+|------------|--------|
+| `ProductCard.tsx` | ✅ Intacto |
+| `ProductCardImage.tsx` | ✅ Intacto |
+| `ProductCardInfo.tsx` | ✅ Intacto |
+| `ProductCardPrice.tsx` | ✅ Intacto |
+| `ProductCardBadge.tsx` | ✅ Intacto |
+| `ProductCardProPrice.tsx` | ✅ Intacto |
+| `ProductCardStock.tsx` | ✅ Intacto |
+| `productApi.ts` (mapper) | ✅ Adaptado para integra_products |
+
+---
+
+## Erros Restantes por Categoria
+
+### Categoria 1: Tabelas Deletadas (Precisam de Stubs)
+
+| Arquivo | Tabela Referenciada | Solução |
+|---------|---------------------|---------|
+| `useCartPersistence.ts` | `cart_items` | Usar apenas localStorage |
+| `useCartSync.ts` | `cart_items` | Usar apenas localStorage |
+| `useProductFAQs.ts` | `product_faqs` | Retornar FAQs mock |
+| `ProductFAQ.tsx` | `products.product_faqs` | Usar FAQs mock |
+| `ProductManagerNew.tsx` | `product_specifications`, `product_faqs` | Remover inserções |
+| `ProductManagerOptimizedNew.tsx` | `product_specifications`, `product_faqs` | Remover inserções |
+
+### Categoria 2: Views Deletadas
+
+| Arquivo | View Referenciada | Solução |
+|---------|-------------------|---------|
+| `useProductDetail.ts` | `view_product_with_tags` | Usar `integra_products` direto |
+| `useOptimizedProductDetail.ts` | `view_product_with_tags` | Usar `integra_products` direto |
+| `dataFetchers.ts` | `view_product_with_tags` | Usar `integra_products` direto |
+
+### Categoria 3: Outros
+
+| Arquivo | Problema | Solução |
+|---------|----------|---------|
+| `ProductContext.tsx` | Funções add/update/delete usam stubs | Ajustar para não tentar CRUD |
+| `FavoritesList.tsx` | Referencia `products` | Usar `integra_products` |
+| `RelatedProductsMobile.tsx` | Referencia `products` | Usar `integra_products` |
+| `ProductTabsEnhanced.tsx` | Referencia `products` | Usar `integra_products` |
+| `ProductTabsMobile.backup.tsx` | Referencia `products` | Deletar arquivo backup |
+
+---
+
+## Fase 1: Criar Stubs para Hooks de Carrinho
+
+### 1.1 useCartPersistence.ts
+Adaptar para usar APENAS localStorage (sem banco):
 
 ```text
-ALTER TABLE integra_products 
-ADD COLUMN badge_visible BOOLEAN DEFAULT false;
+// Remover todas as referências a supabase.from('cart_items')
+// Manter apenas loadFromLocalStorage e saveToLocalStorage
+// loadFromDatabase retorna array vazio
+// saveToDatabase apenas chama saveToLocalStorage
 ```
 
----
-
-## Fase 2: Atualizar Interface Product (types.ts)
-
-### 2.1 Manter Campos Antigos como Aliases
-O type `Product` deve continuar tendo os mesmos campos que os componentes esperam (`name`, `price`, `image`, etc) para nao quebrar nada.
-
-Os hooks de busca farao o mapeamento:
-- `descricao` → `name`
-- `preco_venda` → `price`
-- `preco_promocao` → `promotional_price`/`list_price`
-- `foto` → `image`
-- `saldo_atual` → `stock`
+### 1.2 useCartSync.ts
+Mesmo tratamento - remover referências a `cart_items`.
 
 ---
 
-## Fase 3: Atualizar productApi.ts
+## Fase 2: Criar Stub para FAQs
 
-### 3.1 Buscar de integra_products
-Alterar todas as queries de `products` para `integra_products`.
-
-### 3.2 Mapeamento de Campos
-```text
-const mapIntegraToProduct = (row: any): Product => ({
-  id: row.id,
-  name: row.descricao,           // ERP → Frontend
-  price: row.preco_venda,        // ERP → Frontend  
-  image: row.foto,               // ERP → Frontend
-  stock: row.saldo_atual,        // ERP → Frontend
-  promotional_price: row.preco_promocao,
-  slug: row.slug,
-  badge_text: row.badge_text,
-  badge_color: row.badge_color,
-  badge_visible: row.badge_visible ?? false,
-  is_active: row.is_active,
-  is_featured: row.is_featured,
-  category: row.category,
-  platform: row.platform,
-  pro_price: row.uti_pro_price,
-  uti_coins_cashback_percentage: row.uti_coins_cashback_percentage,
-  uti_coins_discount_percentage: row.uti_coins_discount_percentage,
-  created_at: row.created_at,
-  updated_at: row.updated_at,
-  // Campos extras nao presentes no ERP
-  list_price: row.preco_promocao || row.preco_venda,
-  description: row.descricao,
-  tags: [],
-});
-```
-
----
-
-## Fase 4: Atualizar productApiOptimized.ts
-
-### 4.1 Mesma Logica de Mapeamento
-Alterar queries para `integra_products` e usar mesma funcao de mapeamento.
-
----
-
-## Fase 5: Atualizar useFavorites.ts
-
-### 5.1 Mudar JOIN para integra_products
-A query de favoritos faz join com `products`, precisa mudar para `integra_products`:
+### 2.1 useProductFAQs.ts
+Transformar em stub que retorna FAQs mock:
 
 ```text
-.from('user_favorites')
-.select(`
-  id,
-  user_id,
-  product_id,
-  created_at,
-  product:integra_products (
-    id,
-    descricao,
-    preco_venda,
-    foto,
-    slug,
-    preco_promocao,
-    uti_pro_price
-  )
-`)
-```
-
-E mapear os campos na resposta.
-
----
-
-## Fase 6: Atualizar useProductSpecifications.ts
-
-### 6.1 Criar Stub ou Adaptar
-A tabela `product_specifications` foi deletada. Opcoes:
-- Criar stub vazio que retorna array vazio
-- Usar campo JSON em `integra_products` para especificacoes
-
-Recomendo criar stub que retorna vazio ate termos especificacoes no ERP.
-
----
-
-## Fase 7: Verificar Componentes que Usam Campos Especificos
-
-### 7.1 ProductCardBadge.tsx
-Usa: `badge_text`, `badge_color`, `badge_visible`
-Acao: Campos existem em `integra_products`, OK.
-
-### 7.2 ProductCardPrice.tsx
-Usa: `price`, `list_price`, `pro_price`
-Acao: Mapeamento garante esses campos.
-
-### 7.3 ProductCardImage.tsx
-Usa: `image`, `name`
-Acao: Mapeamento garante esses campos.
-
-### 7.4 ProductCardInfo.tsx
-Usa: `name`
-Acao: Mapeamento garante esse campo.
-
-### 7.5 FavoriteButton.tsx
-Usa: `useFavorites` hook
-Acao: Atualizar hook (Fase 5).
-
----
-
-## Fase 8: Arquivos a Modificar
-
-| Arquivo | Acao |
-|---------|------|
-| `src/hooks/useProducts/types.ts` | Manter interface, adicionar campos ERP como opcionais |
-| `src/hooks/useProducts/productApi.ts` | Mudar para integra_products + mapeamento |
-| `src/hooks/useProducts/productApiOptimized.ts` | Mudar para integra_products + mapeamento |
-| `src/hooks/useFavorites.ts` | Mudar JOIN para integra_products |
-| `src/hooks/useProductSpecifications.ts` | Criar stub vazio |
-| `src/contexts/ProductContext.tsx` | Nenhuma mudanca (usa productApi) |
-| `src/contexts/ProductContextOptimized.tsx` | Nenhuma mudanca (usa productApiOptimized) |
-
----
-
-## Fase 9: Arquivos que NAO Precisam Mudar
-
-| Arquivo | Motivo |
-|---------|--------|
-| `src/components/ProductCard.tsx` | Usa interface Product normalizada |
-| `src/components/ProductCard/*.tsx` | Usam interface Product normalizada |
-| `src/components/Xbox4/ProductCard.tsx` | Usa interface Product normalizada |
-| Todos componentes de UI | Dependem da interface, nao do banco |
-
----
-
-## Ordem de Execucao
-
-1. Adicionar campo `badge_visible` na tabela `integra_products`
-2. Atualizar `productApi.ts` com funcao de mapeamento
-3. Atualizar `productApiOptimized.ts` com funcao de mapeamento
-4. Atualizar `useFavorites.ts` para usar `integra_products`
-5. Criar stub para `useProductSpecifications.ts`
-6. Testar compilacao
-7. Verificar funcionamento dos cards
-
----
-
-## Secao Tecnica
-
-### Funcao de Mapeamento Central
-
-Criar arquivo `src/hooks/useProducts/integraMapper.ts`:
-
-```text
-import { Product } from './types';
-
-export const mapIntegraRowToProduct = (row: any): Product => {
+export const useProductFAQs = (productId: string) => {
+  const mockFaqs = [
+    { id: '1', question: 'O jogo vem lacrado?', answer: 'Sim, todos originais.' },
+    { id: '2', question: 'Qual prazo de entrega?', answer: '2-5 dias úteis.' },
+    // ... mais FAQs padrão
+  ];
+  
   return {
-    // IDs
-    id: row.id,
-    
-    // Campos mapeados do ERP
-    name: row.descricao || '',
-    description: row.descricao || '',
-    price: Number(row.preco_venda) || 0,
-    image: row.foto || '',
-    stock: Number(row.saldo_atual) || 0,
-    
-    // Campos promocionais
-    list_price: row.preco_promocao ? Number(row.preco_promocao) : undefined,
-    promotional_price: row.preco_promocao ? Number(row.preco_promocao) : undefined,
-    
-    // Campos do site
-    slug: row.slug || '',
-    category: row.category || '',
-    platform: row.platform || '',
-    is_active: row.is_active !== false,
-    is_featured: row.is_featured || false,
-    
-    // Badges
-    badge_text: row.badge_text || '',
-    badge_color: row.badge_color || '#22c55e',
-    badge_visible: row.badge_visible || false,
-    
-    // Precos especiais
-    pro_price: row.uti_pro_price ? Number(row.uti_pro_price) : undefined,
-    uti_pro_price: row.uti_pro_price ? Number(row.uti_pro_price) : undefined,
-    
-    // UTI Coins
-    uti_coins_cashback_percentage: row.uti_coins_cashback_percentage || 0,
-    uti_coins_discount_percentage: row.uti_coins_discount_percentage || 0,
-    
-    // Timestamps
-    created_at: row.created_at || new Date().toISOString(),
-    updated_at: row.updated_at || new Date().toISOString(),
-    
-    // Campos extras vazios (compatibilidade)
-    tags: [],
-    additional_images: [],
-    sizes: [],
-    colors: [],
+    faqs: mockFaqs,
+    categorizedFaqs: [{ category: 'Geral', faqs: mockFaqs }],
+    loading: false,
+    // Funções stub
+    addFAQ: async () => ({ success: false }),
+    updateFAQ: async () => ({ success: false }),
+    deleteFAQ: async () => ({ success: false }),
+    incrementHelpfulCount: async () => ({ success: false }),
+    refreshFAQs: async () => {},
   };
 };
 ```
 
-### Campos que Precisam ser Adicionados ao Banco
+### 2.2 ProductFAQ.tsx
+Remover query ao banco, usar apenas FAQs mock.
 
-| Campo | Tipo | Default | Motivo |
-|-------|------|---------|--------|
-| badge_visible | BOOLEAN | false | Cards usam esse campo |
+---
 
-Campos que JA EXISTEM e funcionam:
-- badge_text ✓
-- badge_color ✓
-- slug ✓
-- category ✓
-- platform ✓
-- is_active ✓
-- is_featured ✓
-- uti_pro_price ✓
-- uti_coins_cashback_percentage ✓
-- uti_coins_discount_percentage ✓
+## Fase 3: Adaptar useProductDetail.ts
+
+### 3.1 Remover Referência a view_product_with_tags
+A função `fetchSKUNavigationOptimized` usa `view_product_with_tags`. Como o sistema de SKUs foi simplificado, podemos:
+
+1. Remover a busca de navegação de SKUs (produtos do ERP são simples)
+2. Ou adaptar para usar `integra_products` diretamente
+
+---
+
+## Fase 4: Corrigir ProductContext.tsx
+
+### 4.1 Ajustar Funções CRUD
+As funções `addProduct`, `updateProduct`, `deleteProduct` chamam stubs que lançam erro. Precisamos:
+
+1. Fazer essas funções retornarem silenciosamente (ou mostrar toast informando que CRUD é via ERP)
+2. Manter apenas `fetchProducts` funcionando
+
+---
+
+## Fase 5: Corrigir Componentes de Produto
+
+### 5.1 FavoritesList.tsx
+Mudar query de `products` para `integra_products`.
+
+### 5.2 RelatedProductsMobile.tsx
+Mudar query de `products` para `integra_products`.
+
+### 5.3 ProductTabsEnhanced.tsx
+Mudar query de `products` para `integra_products`.
+
+### 5.4 ProductTabsMobile.backup.tsx
+Deletar arquivo (é backup, não usado).
+
+---
+
+## Fase 6: Limpar Admin Managers
+
+### 6.1 ProductManagerNew.tsx
+Remover código que insere em `product_specifications` e `product_faqs`.
+
+### 6.2 ProductManagerOptimizedNew.tsx
+Mesmo tratamento.
+
+---
+
+## Arquivos a Modificar
+
+| Arquivo | Ação |
+|---------|------|
+| `src/hooks/useCartPersistence.ts` | Remover referências a cart_items |
+| `src/hooks/useCartSync.ts` | Remover referências a cart_items |
+| `src/hooks/useProductFAQs.ts` | Transformar em stub com mock |
+| `src/hooks/useProductDetail.ts` | Adaptar para integra_products |
+| `src/hooks/useOptimizedProductDetail.ts` | Adaptar para integra_products |
+| `src/hooks/usePlayStationData/dataFetchers.ts` | Adaptar para integra_products |
+| `src/contexts/ProductContext.tsx` | Ajustar funções CRUD |
+| `src/components/Product/ProductFAQ.tsx` | Usar apenas mock FAQs |
+| `src/components/Product/ProductTabsEnhanced.tsx` | Adaptar para integra_products |
+| `src/components/Product/Mobile/RelatedProductsMobile.tsx` | Adaptar para integra_products |
+| `src/components/Profile/FavoritesList.tsx` | Adaptar para integra_products |
+| `src/components/Admin/ProductManagerNew.tsx` | Remover inserções em tabelas deletadas |
+| `src/components/Admin/ProductManager/ProductManagerOptimizedNew.tsx` | Remover inserções em tabelas deletadas |
+
+## Arquivos a Deletar
+
+| Arquivo | Motivo |
+|---------|--------|
+| `src/components/Product/Mobile/ProductTabsMobile.backup.tsx` | Arquivo backup obsoleto |
+
+---
+
+## Ordem de Execução
+
+1. Corrigir hooks de carrinho (useCartPersistence, useCartSync)
+2. Criar stub para useProductFAQs
+3. Corrigir ProductFAQ.tsx
+4. Adaptar useProductDetail.ts e relacionados
+5. Corrigir ProductContext.tsx
+6. Adaptar componentes (FavoritesList, RelatedProducts, etc)
+7. Limpar Admin Managers
+8. Deletar arquivo backup
+9. Testar compilação
+
+---
+
+## Resultado Esperado
+
+- ✅ 0 erros de build
+- ✅ Cards de produto funcionando normalmente
+- ✅ Dados vindos de integra_products
+- ✅ Carrinho funcionando via localStorage
+- ✅ FAQs usando dados mock
