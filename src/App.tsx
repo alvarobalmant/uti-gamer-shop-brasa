@@ -89,6 +89,7 @@ const PrimePage = lazy(() => import("./pages/PrimePage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const UTIPro = lazy(() => import("./pages/UTIPro"));
+const UTICare = lazy(() => import("./pages/UTICare"));
 
 // Lazy loading para páginas institucionais
 const FaleConosco = lazy(() => import("./pages/FaleConosco"));
@@ -262,6 +263,7 @@ const App = () => {
 
                                             {/* Special routes - MUST come before dynamic routes */}
                                             <Route path="/servicos/assistencia" element={<AssistenciaTecnica />} />
+                                            <Route path="/care" element={<UTICare />} />
                                             <Route path="/busca" element={<UnifiedResultsPage mode="search" />} />
                                             <Route path="/secao/:sectionKey" element={<UnifiedResultsPage mode="section" />} />
                                             <Route path="/categoria/:category" element={<CategoryPage />} />
