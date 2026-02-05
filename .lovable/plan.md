@@ -1,199 +1,121 @@
 
-# Plano: Corrigir Erros de Build Restantes (Fase Final)
+# Plano: Adicionar Produtos de Teste e Corrigir Erros Restantes
 
-## Resumo Executivo
+## Resumo
 
-Os **cards de produto foram 100% preservados** ✅. O problema atual são arquivos auxiliares que ainda referenciam tabelas deletadas. Precisamos criar stubs ou adaptar esses arquivos para usar `integra_products`.
-
----
-
-## Diagnóstico: O Que Foi Preservado
-
-| Componente | Status |
-|------------|--------|
-| `ProductCard.tsx` | ✅ Intacto |
-| `ProductCardImage.tsx` | ✅ Intacto |
-| `ProductCardInfo.tsx` | ✅ Intacto |
-| `ProductCardPrice.tsx` | ✅ Intacto |
-| `ProductCardBadge.tsx` | ✅ Intacto |
-| `ProductCardProPrice.tsx` | ✅ Intacto |
-| `ProductCardStock.tsx` | ✅ Intacto |
-| `productApi.ts` (mapper) | ✅ Adaptado para integra_products |
+Vamos inserir produtos de teste na tabela `integra_products` para visualizar os cards funcionando, e em paralelo corrigir os erros de build restantes nos componentes de admin.
 
 ---
 
-## Erros Restantes por Categoria
+## Fase 1: Inserir Produtos de Teste
 
-### Categoria 1: Tabelas Deletadas (Precisam de Stubs)
+### 1.1 Estrutura dos Dados
+Vou inserir 9 produtos de teste variados (jogos PS5, Xbox, Nintendo, acessórios):
 
-| Arquivo | Tabela Referenciada | Solução |
-|---------|---------------------|---------|
-| `useCartPersistence.ts` | `cart_items` | Usar apenas localStorage |
-| `useCartSync.ts` | `cart_items` | Usar apenas localStorage |
-| `useProductFAQs.ts` | `product_faqs` | Retornar FAQs mock |
-| `ProductFAQ.tsx` | `products.product_faqs` | Usar FAQs mock |
-| `ProductManagerNew.tsx` | `product_specifications`, `product_faqs` | Remover inserções |
-| `ProductManagerOptimizedNew.tsx` | `product_specifications`, `product_faqs` | Remover inserções |
+| Campo | Descrição |
+|-------|-----------|
+| `matricula` | ID numérico sequencial (1001-1009) |
+| `descricao` | Nome do produto |
+| `grupo` | Categoria (Jogos, Acessórios) |
+| `platform` | Plataforma (PS5, Xbox, Switch, PC) |
+| `foto` | URL de imagem do Unsplash |
+| `preco_venda` | Preço normal |
+| `preco_promocao` | Preço promocional (alguns produtos) |
+| `saldo_atual` | Estoque |
+| `badge_text` / `badge_color` | Badges visuais |
+| `is_active` | true |
 
-### Categoria 2: Views Deletadas
+### 1.2 Produtos a Inserir
 
-| Arquivo | View Referenciada | Solução |
-|---------|-------------------|---------|
-| `useProductDetail.ts` | `view_product_with_tags` | Usar `integra_products` direto |
-| `useOptimizedProductDetail.ts` | `view_product_with_tags` | Usar `integra_products` direto |
-| `dataFetchers.ts` | `view_product_with_tags` | Usar `integra_products` direto |
+```text
+1. God of War Ragnarök - PS5          R$ 249,90 (estoque: 15)
+2. Spider-Man 2 - PS5                 R$ 299,90 → R$ 229,90 (PROMOÇÃO)
+3. Halo Infinite - Xbox               R$ 179,90 (estoque: 8)
+4. Forza Horizon 5 - Xbox             R$ 199,90 (estoque: 12)
+5. Zelda: Tears of the Kingdom        R$ 349,90 (estoque: 20)
+6. Mario Kart 8 Deluxe - Switch       R$ 279,90 (estoque: 25)
+7. DualSense Controller - PS5         R$ 449,90 (estoque: 30)
+8. Xbox Elite Controller Series 2     R$ 899,90 → R$ 749,90 (PROMOÇÃO)
+9. Cyberpunk 2077 - PC                R$ 149,90 (estoque: 0, ESGOTADO)
+```
 
-### Categoria 3: Outros
+---
+
+## Fase 2: Corrigir Erros de Build
+
+### 2.1 Componentes Admin a Corrigir
 
 | Arquivo | Problema | Solução |
 |---------|----------|---------|
-| `ProductContext.tsx` | Funções add/update/delete usam stubs | Ajustar para não tentar CRUD |
-| `FavoritesList.tsx` | Referencia `products` | Usar `integra_products` |
-| `RelatedProductsMobile.tsx` | Referencia `products` | Usar `integra_products` |
-| `ProductTabsEnhanced.tsx` | Referencia `products` | Usar `integra_products` |
-| `ProductTabsMobile.backup.tsx` | Referencia `products` | Deletar arquivo backup |
+| `MasterProductManager.tsx` | Usa `useSKUs` com argumentos | Deletar (SKUs via ERP) |
+| `SKUManager.tsx` | Usa `useSKUs` com argumentos | Deletar (SKUs via ERP) |
+| `TagManager.tsx` | Usa `useTags` com argumentos | Adaptar para `integra_tags` |
+| `DatabaseHealthMonitor.tsx` | Interface incorreta | Corrigir interface `DatabaseHealth` |
+| `ProductFormTabs.tsx` | Props incorretas no FAQTab | Ajustar props do stub |
+| `SpecificationDiagnosticPanel.tsx` | Usa Promise incorretamente | Usar await no resultado |
+| `ProductContextOptimized.tsx` | Argumentos incorretos | Ajustar chamadas |
+| `ProductDesktopManager.tsx` | Referencia tabela `products` | Usar `integra_products` |
+| `ProductImageManager.tsx` | Funções inexistentes | Ajustar para usar stubs |
 
----
-
-## Fase 1: Criar Stubs para Hooks de Carrinho
-
-### 1.1 useCartPersistence.ts
-Adaptar para usar APENAS localStorage (sem banco):
-
-```text
-// Remover todas as referências a supabase.from('cart_items')
-// Manter apenas loadFromLocalStorage e saveToLocalStorage
-// loadFromDatabase retorna array vazio
-// saveToDatabase apenas chama saveToLocalStorage
-```
-
-### 1.2 useCartSync.ts
-Mesmo tratamento - remover referências a `cart_items`.
-
----
-
-## Fase 2: Criar Stub para FAQs
-
-### 2.1 useProductFAQs.ts
-Transformar em stub que retorna FAQs mock:
+### 2.2 Arquivos a Deletar (Obsoletos)
+Estes arquivos gerenciam funcionalidades que agora são centralizadas no ERP:
 
 ```text
-export const useProductFAQs = (productId: string) => {
-  const mockFaqs = [
-    { id: '1', question: 'O jogo vem lacrado?', answer: 'Sim, todos originais.' },
-    { id: '2', question: 'Qual prazo de entrega?', answer: '2-5 dias úteis.' },
-    // ... mais FAQs padrão
-  ];
-  
-  return {
-    faqs: mockFaqs,
-    categorizedFaqs: [{ category: 'Geral', faqs: mockFaqs }],
-    loading: false,
-    // Funções stub
-    addFAQ: async () => ({ success: false }),
-    updateFAQ: async () => ({ success: false }),
-    deleteFAQ: async () => ({ success: false }),
-    incrementHelpfulCount: async () => ({ success: false }),
-    refreshFAQs: async () => {},
-  };
-};
+- src/components/Admin/MasterProductManager.tsx
+- src/components/Admin/SKUManager.tsx
+- src/components/Admin/SpecificationDiagnosticPanel.tsx
+- src/pages/Admin/ProductDesktopManager.tsx
+- src/pages/Admin/ProductImageManager.tsx
 ```
 
-### 2.2 ProductFAQ.tsx
-Remover query ao banco, usar apenas FAQs mock.
+### 2.3 Arquivos a Corrigir
+
+```text
+- src/components/Admin/TagManager.tsx → Adaptar para integra_tags
+- src/components/Admin/ProductManager/DatabaseHealthMonitor.tsx → Corrigir interface
+- src/components/Admin/ProductManager/ProductFormTabs.tsx → Ajustar FAQTab
+- src/contexts/ProductContextOptimized.tsx → Corrigir chamadas
+```
 
 ---
 
-## Fase 3: Adaptar useProductDetail.ts
+## Fase 3: Atualizar AdminPanel
 
-### 3.1 Remover Referência a view_product_with_tags
-A função `fetchSKUNavigationOptimized` usa `view_product_with_tags`. Como o sistema de SKUs foi simplificado, podemos:
+Remover tabs obsoletas do painel admin:
 
-1. Remover a busca de navegação de SKUs (produtos do ERP são simples)
-2. Ou adaptar para usar `integra_products` diretamente
+```text
+Tabs a MANTER:
+- Gerenciador de Produtos (básico)
+- Tags (adaptado)
+- Configurações
+- Pedidos
 
----
-
-## Fase 4: Corrigir ProductContext.tsx
-
-### 4.1 Ajustar Funções CRUD
-As funções `addProduct`, `updateProduct`, `deleteProduct` chamam stubs que lançam erro. Precisamos:
-
-1. Fazer essas funções retornarem silenciosamente (ou mostrar toast informando que CRUD é via ERP)
-2. Manter apenas `fetchProducts` funcionando
-
----
-
-## Fase 5: Corrigir Componentes de Produto
-
-### 5.1 FavoritesList.tsx
-Mudar query de `products` para `integra_products`.
-
-### 5.2 RelatedProductsMobile.tsx
-Mudar query de `products` para `integra_products`.
-
-### 5.3 ProductTabsEnhanced.tsx
-Mudar query de `products` para `integra_products`.
-
-### 5.4 ProductTabsMobile.backup.tsx
-Deletar arquivo (é backup, não usado).
-
----
-
-## Fase 6: Limpar Admin Managers
-
-### 6.1 ProductManagerNew.tsx
-Remover código que insere em `product_specifications` e `product_faqs`.
-
-### 6.2 ProductManagerOptimizedNew.tsx
-Mesmo tratamento.
-
----
-
-## Arquivos a Modificar
-
-| Arquivo | Ação |
-|---------|------|
-| `src/hooks/useCartPersistence.ts` | Remover referências a cart_items |
-| `src/hooks/useCartSync.ts` | Remover referências a cart_items |
-| `src/hooks/useProductFAQs.ts` | Transformar em stub com mock |
-| `src/hooks/useProductDetail.ts` | Adaptar para integra_products |
-| `src/hooks/useOptimizedProductDetail.ts` | Adaptar para integra_products |
-| `src/hooks/usePlayStationData/dataFetchers.ts` | Adaptar para integra_products |
-| `src/contexts/ProductContext.tsx` | Ajustar funções CRUD |
-| `src/components/Product/ProductFAQ.tsx` | Usar apenas mock FAQs |
-| `src/components/Product/ProductTabsEnhanced.tsx` | Adaptar para integra_products |
-| `src/components/Product/Mobile/RelatedProductsMobile.tsx` | Adaptar para integra_products |
-| `src/components/Profile/FavoritesList.tsx` | Adaptar para integra_products |
-| `src/components/Admin/ProductManagerNew.tsx` | Remover inserções em tabelas deletadas |
-| `src/components/Admin/ProductManager/ProductManagerOptimizedNew.tsx` | Remover inserções em tabelas deletadas |
-
-## Arquivos a Deletar
-
-| Arquivo | Motivo |
-|---------|--------|
-| `src/components/Product/Mobile/ProductTabsMobile.backup.tsx` | Arquivo backup obsoleto |
+Tabs a REMOVER:
+- SKUs
+- Master Products
+- Diagnóstico de Especificações
+- Desktop Manager
+- Image Manager
+```
 
 ---
 
 ## Ordem de Execução
 
-1. Corrigir hooks de carrinho (useCartPersistence, useCartSync)
-2. Criar stub para useProductFAQs
-3. Corrigir ProductFAQ.tsx
-4. Adaptar useProductDetail.ts e relacionados
-5. Corrigir ProductContext.tsx
-6. Adaptar componentes (FavoritesList, RelatedProducts, etc)
-7. Limpar Admin Managers
-8. Deletar arquivo backup
-9. Testar compilação
+1. Inserir 9 produtos de teste no banco
+2. Deletar arquivos admin obsoletos
+3. Corrigir TagManager para usar integra_tags
+4. Corrigir DatabaseHealthMonitor
+5. Corrigir ProductFormTabs
+6. Corrigir ProductContextOptimized
+7. Atualizar AdminPanel removendo tabs deletadas
+8. Testar compilação
 
 ---
 
 ## Resultado Esperado
 
+- ✅ 9 produtos visíveis nos cards
 - ✅ 0 erros de build
-- ✅ Cards de produto funcionando normalmente
-- ✅ Dados vindos de integra_products
-- ✅ Carrinho funcionando via localStorage
-- ✅ FAQs usando dados mock
+- ✅ Admin simplificado (gestão via ERP)
+- ✅ Cards funcionando com dados de integra_products
