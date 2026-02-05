@@ -5,11 +5,25 @@ import { useProductSectionsOptimized } from '@/hooks/useProductSectionsOptimized
 import { useSpecialSectionsOptimized } from '@/hooks/useSpecialSectionsOptimized';
 
 export const useIndexPageOptimized = () => {
-  // Usar hooks otimizados com React Query
-  const { data: products, isLoading: productsLoading, refetch } = useHomepageProducts();
-  const { data: layoutItems, isLoading: layoutLoading } = useHomepageLayoutOptimized();
-  const { data: sections, isLoading: sectionsLoading } = useProductSectionsOptimized();
-  const { data: specialSections, isLoading: specialSectionsLoading } = useSpecialSectionsOptimized();
+  // Use hooks - handle both React Query and regular hook return formats
+  const homepageProducts = useHomepageProducts() as any;
+  const homepageLayout = useHomepageLayoutOptimized() as any;
+  const productSections = useProductSectionsOptimized() as any;
+  const specialSectionsHook = useSpecialSectionsOptimized() as any;
+
+  // Extract data with fallbacks for different hook return formats
+  const products = homepageProducts?.data ?? homepageProducts?.products ?? [];
+  const productsLoading = homepageProducts?.isLoading ?? homepageProducts?.loading ?? false;
+  const refetch = homepageProducts?.refetch ?? (() => {});
+
+  const layoutItems = homepageLayout?.data ?? homepageLayout?.layoutItems ?? [];
+  const layoutLoading = homepageLayout?.isLoading ?? homepageLayout?.loading ?? false;
+
+  const sections = productSections?.data ?? productSections?.sections ?? [];
+  const sectionsLoading = productSections?.isLoading ?? productSections?.loading ?? false;
+
+  const specialSections = specialSectionsHook?.data ?? specialSectionsHook?.sections ?? [];
+  const specialSectionsLoading = specialSectionsHook?.isLoading ?? specialSectionsHook?.loading ?? false;
 
   // Memoizar banner data (dados estáticos)
   const bannerData = useMemo(() => ({
