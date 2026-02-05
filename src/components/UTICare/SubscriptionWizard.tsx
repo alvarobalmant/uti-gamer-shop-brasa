@@ -1,31 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, ArrowRight, Check, Gamepad2, Monitor, Headphones, Loader2 } from 'lucide-react';
+import { X, ArrowLeft, ArrowRight, Check, Loader2, Monitor, Gamepad2, Headphones, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
-import EquipmentSelector from './EquipmentSelector';
-import PriceSummary from './PriceSummary';
 
 interface SubscriptionWizardProps {
   isOpen: boolean;
   onClose: () => void;
-  initialPlan?: string | null;
 }
 
-interface Product {
+// Equipamentos do PDF com preços mensais
+const equipmentCatalog = {
+  consoles: [
+    { id: 'ps5', name: 'PlayStation 5', price: 25, icon: '🎮' },
+    { id: 'ps5-slim', name: 'PlayStation 5 Slim', price: 25, icon: '🎮' },
+    { id: 'ps4', name: 'PlayStation 4', price: 25, icon: '🎮' },
+    { id: 'ps4-slim', name: 'PlayStation 4 Slim', price: 25, icon: '🎮' },
+    { id: 'ps4-pro', name: 'PlayStation 4 Pro', price: 25, icon: '🎮' },
+    { id: 'xbox-series-x', name: 'Xbox Series X', price: 25, icon: '🎮' },
+    { id: 'xbox-series-s', name: 'Xbox Series S', price: 25, icon: '🎮' },
+    { id: 'xbox-one', name: 'Xbox One', price: 25, icon: '🎮' },
+    { id: 'xbox-one-s', name: 'Xbox One S', price: 25, icon: '🎮' },
+    { id: 'xbox-one-x', name: 'Xbox One X', price: 25, icon: '🎮' },
+    { id: 'nintendo-switch', name: 'Nintendo Switch', price: 25, icon: '🎮' },
+    { id: 'nintendo-switch-lite', name: 'Nintendo Switch Lite', price: 25, icon: '🎮' },
+    { id: 'nintendo-switch-oled', name: 'Nintendo Switch OLED', price: 25, icon: '🎮' },
+  ],
+  controllers: [
+    { id: 'dualsense', name: 'DualSense (PS5)', price: 8, icon: '🕹️' },
+    { id: 'dualsense-edge', name: 'DualSense Edge (PS5)', price: 8, icon: '🕹️' },
+    { id: 'dualshock4', name: 'DualShock 4 (PS4)', price: 8, icon: '🕹️' },
+    { id: 'xbox-series-controller', name: 'Controle Xbox Series', price: 8, icon: '🕹️' },
+    { id: 'xbox-elite', name: 'Xbox Elite Controller', price: 8, icon: '🕹️' },
+    { id: 'xbox-one-controller', name: 'Controle Xbox One', price: 8, icon: '🕹️' },
+    { id: 'joy-con', name: 'Joy-Con (Par)', price: 8, icon: '🕹️' },
+    { id: 'pro-controller', name: 'Pro Controller (Switch)', price: 8, icon: '🕹️' },
+    { id: 'scuf', name: 'SCUF Controller', price: 8, icon: '🕹️' },
+  ],
+  headsets: [
+    { id: 'pulse-3d', name: 'Pulse 3D (PS5)', price: 10, icon: '🎧' },
+    { id: 'pulse-elite', name: 'Pulse Elite (PS5)', price: 10, icon: '🎧' },
+    { id: 'gold-wireless', name: 'Gold Wireless (PS4)', price: 10, icon: '🎧' },
+    { id: 'xbox-wireless-headset', name: 'Xbox Wireless Headset', price: 10, icon: '🎧' },
+    { id: 'astro-a50', name: 'Astro A50', price: 10, icon: '🎧' },
+    { id: 'steelseries-arctis', name: 'SteelSeries Arctis', price: 10, icon: '🎧' },
+    { id: 'hyperx-cloud', name: 'HyperX Cloud', price: 10, icon: '🎧' },
+    { id: 'razer-kraken', name: 'Razer Kraken', price: 10, icon: '🎧' },
+  ]
+};
+
+interface SelectedItem {
   id: string;
-  descricao: string;
-  foto: string | null;
-  platform: string | null;
-  grupo: string | null;
-}
-
-interface SelectedEquipment {
-  console?: Product | null;
-  controllers: { product: Product; quantity: number }[];
+  name: string;
+  price: number;
+  quantity: number;
+  category: 'console' | 'controller' | 'headset';
 }
 
 interface CustomerInfo {
@@ -34,140 +65,60 @@ interface CustomerInfo {
   email: string;
 }
 
-const plans = [
-  {
-    id: 'controle',
-    name: 'UTI Care Controle',
-    basePrice: 19.90,
-    description: 'Proteção para controles',
-    icon: Gamepad2,
-    color: 'from-blue-500 to-blue-600',
-    includesConsole: false,
-    includesController: true,
-    maxControllers: 4
-  },
-  {
-    id: 'console',
-    name: 'UTI Care Console',
-    basePrice: 39.90,
-    description: 'Proteção para console',
-    icon: Monitor,
-    color: 'from-purple-500 to-purple-600',
-    includesConsole: true,
-    includesController: false,
-    maxControllers: 0
-  },
-  {
-    id: 'gamer-pro',
-    name: 'UTI Care Gamer Pro',
-    basePrice: 54.90,
-    description: 'Console + Controle',
-    icon: Headphones,
-    color: 'from-primary to-purple-600',
-    includesConsole: true,
-    includesController: true,
-    maxControllers: 4,
-    extraControllerPrice: 15.90
-  }
-];
+const steps = ['Equipamentos', 'Resumo', 'Contato'];
 
-const steps = ['Plano', 'Equipamentos', 'Resumo', 'Contato'];
-
-const SubscriptionWizard: React.FC<SubscriptionWizardProps> = ({ isOpen, onClose, initialPlan }) => {
+const SubscriptionWizard: React.FC<SubscriptionWizardProps> = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(initialPlan || null);
-  const [selectedEquipment, setSelectedEquipment] = useState<SelectedEquipment>({
-    console: null,
-    controllers: []
-  });
+  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     name: '',
     whatsapp: '',
     email: ''
   });
-  const [products, setProducts] = useState<{ consoles: Product[]; controllers: Product[] }>({
-    consoles: [],
-    controllers: []
-  });
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-
-  const selectedPlan = plans.find(p => p.id === selectedPlanId);
-
-  // Load products from database
-  useEffect(() => {
-    const loadProducts = async () => {
-      setLoading(true);
-      try {
-        const { data: allProducts, error } = await supabase
-          .from('integra_products')
-          .select('id, descricao, foto, platform, grupo')
-          .eq('is_active', true)
-          .in('grupo', ['Consoles', 'Controles']);
-
-        if (error) throw error;
-
-        const consoles = allProducts?.filter(p => p.grupo === 'Consoles') || [];
-        const controllers = allProducts?.filter(p => p.grupo === 'Controles') || [];
-
-        setProducts({ consoles, controllers });
-      } catch (error) {
-        console.error('Error loading products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (isOpen) {
-      loadProducts();
-    }
-  }, [isOpen]);
 
   // Reset state when opening
   useEffect(() => {
     if (isOpen) {
-      if (initialPlan) {
-        setSelectedPlanId(initialPlan);
-        setCurrentStep(1);
-      } else {
-        setCurrentStep(0);
-      }
-      setSelectedEquipment({ console: null, controllers: [] });
+      setCurrentStep(0);
+      setSelectedItems([]);
       setCustomerInfo({ name: '', whatsapp: '', email: '' });
     }
-  }, [isOpen, initialPlan]);
+  }, [isOpen]);
 
-  const calculatePrice = () => {
-    if (!selectedPlan) return 0;
-
-    let total = selectedPlan.basePrice;
-
-    if (selectedPlan.id === 'controle') {
-      // R$ 19,90 per controller
-      const totalControllers = selectedEquipment.controllers.reduce((sum, c) => sum + c.quantity, 0);
-      total = selectedPlan.basePrice * Math.max(1, totalControllers);
-    } else if (selectedPlan.id === 'gamer-pro') {
-      // Base includes 1 console + 1 controller, extras are +R$ 15,90 each
-      const totalControllers = selectedEquipment.controllers.reduce((sum, c) => sum + c.quantity, 0);
-      const extraControllers = Math.max(0, totalControllers - 1);
-      total = selectedPlan.basePrice + (extraControllers * (selectedPlan.extraControllerPrice || 0));
-    }
-
-    return total;
+  const calculateTotal = () => {
+    return selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   };
+
+  const toggleItem = (item: { id: string; name: string; price: number }, category: 'console' | 'controller' | 'headset') => {
+    const existing = selectedItems.find(i => i.id === item.id);
+    
+    if (existing) {
+      setSelectedItems(selectedItems.filter(i => i.id !== item.id));
+    } else {
+      setSelectedItems([...selectedItems, { ...item, quantity: 1, category }]);
+    }
+  };
+
+  const updateQuantity = (itemId: string, delta: number) => {
+    setSelectedItems(selectedItems.map(item => {
+      if (item.id === itemId) {
+        const newQuantity = Math.max(1, item.quantity + delta);
+        return { ...item, quantity: newQuantity };
+      }
+      return item;
+    }));
+  };
+
+  const isSelected = (itemId: string) => selectedItems.some(i => i.id === itemId);
 
   const canProceed = () => {
     switch (currentStep) {
       case 0:
-        return !!selectedPlanId;
+        return selectedItems.length > 0;
       case 1:
-        if (!selectedPlan) return false;
-        if (selectedPlan.includesConsole && !selectedEquipment.console) return false;
-        if (selectedPlan.includesController && selectedEquipment.controllers.length === 0) return false;
         return true;
       case 2:
-        return true;
-      case 3:
         return customerInfo.name.trim() && customerInfo.whatsapp.trim() && customerInfo.email.trim();
       default:
         return false;
@@ -187,34 +138,42 @@ const SubscriptionWizard: React.FC<SubscriptionWizardProps> = ({ isOpen, onClose
   };
 
   const handleSubmit = async () => {
-    if (!selectedPlan || !canProceed()) return;
+    if (!canProceed()) return;
 
     setSubmitting(true);
 
     try {
-      // Build WhatsApp message
-      const controllersText = selectedEquipment.controllers
-        .map(c => `${c.product.descricao} (${c.quantity}x)`)
+      const consolesText = selectedItems
+        .filter(i => i.category === 'console')
+        .map(i => `${i.name} (${i.quantity}x)`)
+        .join(', ');
+      
+      const controllersText = selectedItems
+        .filter(i => i.category === 'controller')
+        .map(i => `${i.name} (${i.quantity}x)`)
+        .join(', ');
+      
+      const headsetsText = selectedItems
+        .filter(i => i.category === 'headset')
+        .map(i => `${i.name} (${i.quantity}x)`)
         .join(', ');
 
       const message = encodeURIComponent(
         `🎮 *Nova Assinatura UTI Care*\n\n` +
-        `*Plano:* ${selectedPlan.name}\n` +
-        `*Valor Mensal:* R$ ${calculatePrice().toFixed(2).replace('.', ',')}\n\n` +
+        `*Valor Mensal:* R$ ${calculateTotal().toFixed(2).replace('.', ',')}\n\n` +
         `*Equipamentos:*\n` +
-        (selectedEquipment.console ? `Console: ${selectedEquipment.console.descricao}\n` : '') +
+        (consolesText ? `Consoles: ${consolesText}\n` : '') +
         (controllersText ? `Controles: ${controllersText}\n` : '') +
+        (headsetsText ? `Headsets: ${headsetsText}\n` : '') +
         `\n*Cliente:*\n` +
         `Nome: ${customerInfo.name}\n` +
         `WhatsApp: ${customerInfo.whatsapp}\n` +
         `Email: ${customerInfo.email}`
       );
 
-      // Open WhatsApp with the message
       const whatsappUrl = `https://wa.me/5511999999999?text=${message}`;
       window.open(whatsappUrl, '_blank');
 
-      // Close wizard
       onClose();
     } catch (error) {
       console.error('Error submitting:', error);
@@ -234,13 +193,24 @@ const SubscriptionWizard: React.FC<SubscriptionWizardProps> = ({ isOpen, onClose
         className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-y-auto"
       >
         <div className="min-h-screen py-8 px-4">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold">Assinar UTI Care</h2>
+              <div>
+                <h2 className="text-2xl font-bold">Monte seu Plano UTI Care</h2>
+                <p className="text-muted-foreground">Selecione os equipamentos que deseja proteger</p>
+              </div>
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="w-6 h-6" />
               </Button>
+            </div>
+
+            {/* Running Total */}
+            <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
+              <span className="font-medium">Valor mensal:</span>
+              <span className="text-2xl font-bold text-primary">
+                R$ {calculateTotal().toFixed(2).replace('.', ',')}
+              </span>
             </div>
 
             {/* Progress Steps */}
@@ -281,71 +251,340 @@ const SubscriptionWizard: React.FC<SubscriptionWizardProps> = ({ isOpen, onClose
                 transition={{ duration: 0.2 }}
                 className="min-h-[400px]"
               >
-                {/* Step 1: Select Plan */}
+                {/* Step 1: Equipment Selection */}
                 {currentStep === 0 && (
-                  <div className="space-y-4">
-                    <h3 className="text-xl font-semibold mb-6">Escolha seu plano</h3>
-                    <div className="grid gap-4">
-                      {plans.map((plan) => {
-                        const Icon = plan.icon;
-                        return (
-                          <div
-                            key={plan.id}
-                            onClick={() => setSelectedPlanId(plan.id)}
-                            className={cn(
-                              "p-4 rounded-xl border cursor-pointer transition-all",
-                              selectedPlanId === plan.id
-                                ? "border-primary bg-primary/5"
-                                : "border-border hover:border-primary/50"
-                            )}
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className={cn(
-                                "w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br",
-                                plan.color
-                              )}>
-                                <Icon className="w-6 h-6 text-white" />
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-semibold">{plan.name}</h4>
-                                <p className="text-sm text-muted-foreground">{plan.description}</p>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-xl font-bold">
-                                  R$ {plan.basePrice.toFixed(2).replace('.', ',')}
+                  <div className="space-y-8">
+                    {/* Consoles */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Monitor className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Consoles</h3>
+                        <span className="text-sm text-muted-foreground">R$ 25,00/mês cada</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {equipmentCatalog.consoles.map((item) => {
+                          const selected = isSelected(item.id);
+                          const selectedItem = selectedItems.find(i => i.id === item.id);
+                          
+                          return (
+                            <div
+                              key={item.id}
+                              className={cn(
+                                "p-3 rounded-lg border transition-all",
+                                selected
+                                  ? "border-primary bg-primary/5"
+                                  : "border-border hover:border-primary/50 cursor-pointer"
+                              )}
+                              onClick={() => !selected && toggleItem(item, 'console')}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xl">{item.icon}</span>
+                                  <span className="font-medium text-sm">{item.name}</span>
                                 </div>
-                                <div className="text-xs text-muted-foreground">/mês</div>
+                                {selected ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 text-destructive hover:text-destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleItem(item, 'console');
+                                    }}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
+                                ) : (
+                                  <Plus className="w-4 h-4 text-muted-foreground" />
+                                )}
                               </div>
+                              {selected && selectedItem && (
+                                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border">
+                                  <span className="text-xs text-muted-foreground">Quantidade:</span>
+                                  <div className="flex items-center gap-1">
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateQuantity(item.id, -1);
+                                      }}
+                                      disabled={selectedItem.quantity <= 1}
+                                    >
+                                      <Minus className="w-3 h-3" />
+                                    </Button>
+                                    <span className="w-6 text-center text-sm font-medium">
+                                      {selectedItem.quantity}
+                                    </span>
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateQuantity(item.id, 1);
+                                      }}
+                                    >
+                                      <Plus className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Controllers */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Gamepad2 className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Controles</h3>
+                        <span className="text-sm text-muted-foreground">R$ 8,00/mês cada</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {equipmentCatalog.controllers.map((item) => {
+                          const selected = isSelected(item.id);
+                          const selectedItem = selectedItems.find(i => i.id === item.id);
+                          
+                          return (
+                            <div
+                              key={item.id}
+                              className={cn(
+                                "p-3 rounded-lg border transition-all",
+                                selected
+                                  ? "border-primary bg-primary/5"
+                                  : "border-border hover:border-primary/50 cursor-pointer"
+                              )}
+                              onClick={() => !selected && toggleItem(item, 'controller')}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xl">{item.icon}</span>
+                                  <span className="font-medium text-sm">{item.name}</span>
+                                </div>
+                                {selected ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 text-destructive hover:text-destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleItem(item, 'controller');
+                                    }}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
+                                ) : (
+                                  <Plus className="w-4 h-4 text-muted-foreground" />
+                                )}
+                              </div>
+                              {selected && selectedItem && (
+                                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border">
+                                  <span className="text-xs text-muted-foreground">Quantidade:</span>
+                                  <div className="flex items-center gap-1">
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateQuantity(item.id, -1);
+                                      }}
+                                      disabled={selectedItem.quantity <= 1}
+                                    >
+                                      <Minus className="w-3 h-3" />
+                                    </Button>
+                                    <span className="w-6 text-center text-sm font-medium">
+                                      {selectedItem.quantity}
+                                    </span>
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateQuantity(item.id, 1);
+                                      }}
+                                    >
+                                      <Plus className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Headsets */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Headphones className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Headsets</h3>
+                        <span className="text-sm text-muted-foreground">R$ 10,00/mês cada</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {equipmentCatalog.headsets.map((item) => {
+                          const selected = isSelected(item.id);
+                          const selectedItem = selectedItems.find(i => i.id === item.id);
+                          
+                          return (
+                            <div
+                              key={item.id}
+                              className={cn(
+                                "p-3 rounded-lg border transition-all",
+                                selected
+                                  ? "border-primary bg-primary/5"
+                                  : "border-border hover:border-primary/50 cursor-pointer"
+                              )}
+                              onClick={() => !selected && toggleItem(item, 'headset')}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xl">{item.icon}</span>
+                                  <span className="font-medium text-sm">{item.name}</span>
+                                </div>
+                                {selected ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 text-destructive hover:text-destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleItem(item, 'headset');
+                                    }}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </Button>
+                                ) : (
+                                  <Plus className="w-4 h-4 text-muted-foreground" />
+                                )}
+                              </div>
+                              {selected && selectedItem && (
+                                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border">
+                                  <span className="text-xs text-muted-foreground">Quantidade:</span>
+                                  <div className="flex items-center gap-1">
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateQuantity(item.id, -1);
+                                      }}
+                                      disabled={selectedItem.quantity <= 1}
+                                    >
+                                      <Minus className="w-3 h-3" />
+                                    </Button>
+                                    <span className="w-6 text-center text-sm font-medium">
+                                      {selectedItem.quantity}
+                                    </span>
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateQuantity(item.id, 1);
+                                      }}
+                                    >
+                                      <Plus className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* Step 2: Select Equipment */}
+                {/* Step 2: Summary */}
                 {currentStep === 1 && (
-                  <EquipmentSelector
-                    plan={selectedPlan!}
-                    products={products}
-                    selectedEquipment={selectedEquipment}
-                    onEquipmentChange={setSelectedEquipment}
-                    loading={loading}
-                  />
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-semibold">Resumo da Assinatura</h3>
+
+                    <div className="space-y-4">
+                      {selectedItems.filter(i => i.category === 'console').length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium flex items-center gap-2">
+                            <Monitor className="w-4 h-4" /> Consoles
+                          </h4>
+                          {selectedItems.filter(i => i.category === 'console').map(item => (
+                            <div key={item.id} className="flex justify-between p-3 rounded-lg bg-card border border-border">
+                              <span>{item.name} × {item.quantity}</span>
+                              <span className="font-medium">R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {selectedItems.filter(i => i.category === 'controller').length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium flex items-center gap-2">
+                            <Gamepad2 className="w-4 h-4" /> Controles
+                          </h4>
+                          {selectedItems.filter(i => i.category === 'controller').map(item => (
+                            <div key={item.id} className="flex justify-between p-3 rounded-lg bg-card border border-border">
+                              <span>{item.name} × {item.quantity}</span>
+                              <span className="font-medium">R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {selectedItems.filter(i => i.category === 'headset').length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium flex items-center gap-2">
+                            <Headphones className="w-4 h-4" /> Headsets
+                          </h4>
+                          {selectedItems.filter(i => i.category === 'headset').map(item => (
+                            <div key={item.id} className="flex justify-between p-3 rounded-lg bg-card border border-border">
+                              <span>{item.name} × {item.quantity}</span>
+                              <span className="font-medium">R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold">Total Mensal</span>
+                        <span className="text-2xl font-bold text-primary">
+                          R$ {calculateTotal().toFixed(2).replace('.', ',')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                      <h4 className="font-medium mb-3">O que está incluso:</h4>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-primary" /> Reparos ilimitados
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-primary" /> Manutenção preventiva
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-primary" /> Atendimento prioritário
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-primary" /> Sem fidelidade - cancele quando quiser
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 )}
 
-                {/* Step 3: Summary */}
+                {/* Step 3: Contact Info */}
                 {currentStep === 2 && (
-                  <PriceSummary
-                    plan={selectedPlan!}
-                    selectedEquipment={selectedEquipment}
-                    monthlyPrice={calculatePrice()}
-                  />
-                )}
-
-                {/* Step 4: Contact Info */}
-                {currentStep === 3 && (
                   <div className="space-y-6">
                     <h3 className="text-xl font-semibold mb-6">Seus dados</h3>
                     
