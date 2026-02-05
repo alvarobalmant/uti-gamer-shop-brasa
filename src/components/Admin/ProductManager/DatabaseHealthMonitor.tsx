@@ -12,7 +12,7 @@ import {
   TrendingUp,
   Info
 } from 'lucide-react';
-import { analyzeDatabasePerformance } from '@/hooks/useProducts/optimizedQueries';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DatabaseHealth {
   productCount: number;
@@ -29,13 +29,35 @@ export const DatabaseHealthMonitor: React.FC = () => {
   const checkHealth = async () => {
     setIsLoading(true);
     try {
-      const result = await analyzeDatabasePerformance();
+      // Simple count query for integra_products
+      const { count, error } = await supabase
+        .from('integra_products')
+        .select('*', { count: 'exact', head: true });
+
+      const productCount = count || 0;
+      const recommendations: string[] = [];
+
+      if (productCount > 2000) {
+        recommendations.push('Considere implementar paginação para melhor performance');
+      }
+      if (productCount > 5000) {
+        recommendations.push('Recomendado criar índices adicionais para buscas frequentes');
+      }
+
       setHealth({
-        ...result,
+        productCount,
+        indexStatus: error ? 'error' : 'ok',
+        recommendations,
         lastChecked: new Date()
       });
     } catch (error) {
       console.error('[DatabaseHealthMonitor] Health check failed:', error);
+      setHealth({
+        productCount: 0,
+        indexStatus: 'error',
+        recommendations: ['Erro ao verificar saúde do banco'],
+        lastChecked: new Date()
+      });
     } finally {
       setIsLoading(false);
     }
