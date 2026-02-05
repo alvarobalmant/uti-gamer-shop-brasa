@@ -13,17 +13,13 @@ import { QuickLinkManager } from './QuickLinkManager';
 import SpecialSectionManager from './SpecialSectionManager';
 import { NavigationManager } from './NavigationManager';
 import PlatformManager from './PlatformManager';
-import ProductImageManager from '@/pages/Admin/ProductImageManager';
 import StorageManager from './StorageManager';
 import { SettingsManager } from './SettingsManager';
 import PrimePagesAdmin from './PrimePagesAdmin';
 import UTICoinsManager from './UTICoinsManager';
 import { EmailManager } from './EmailManager/EmailManager';
 import OrderVerifier from './OrderVerifier';
-// Admin login system removed
-import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
-// import { AnalyticsDashboard } from './Analytics/AnalyticsDashboard';
- import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Settings, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor, ClipboardCheck } from 'lucide-react';
+import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Menu, X, Home, ArrowLeft, Navigation, Settings, HardDrive, Cog, FileText, Coins, Mail, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -39,8 +35,6 @@ export const AdminPanel = () => {
     { id: 'product_sections', label: 'Seções Produtos', icon: ListChecks },
     { id: 'special_sections', label: 'Seções Especiais', icon: Star },
     { id: 'products', label: 'Produtos', icon: Package },
-    { id: 'desktop_products', label: 'Produtos Desktop', icon: Monitor },
-    { id: 'image_upload', label: 'Revisão Fácil', icon: ImagePlus },
     { id: 'storage', label: 'Gerenciar Storage', icon: HardDrive },
     { id: 'platforms', label: 'Plataformas', icon: Settings },
     { id: 'banners', label: 'Banners', icon: Image },
@@ -49,7 +43,6 @@ export const AdminPanel = () => {
     { id: 'tags', label: 'Tags', icon: Tag },
     { id: 'uti_coins', label: 'UTI Coins', icon: Coins },
     { id: 'emails', label: 'Emails', icon: Mail },
-    // Admin login removed
     { id: 'users', label: 'Usuários/PRO', icon: Users },
     { id: 'settings', label: 'Configurações', icon: Cog },
   ];
@@ -178,14 +171,6 @@ export const AdminPanel = () => {
                 <ProductManagerOptimized />
               </TabsContent>
 
-              <TabsContent value="desktop_products" className="mt-0">
-                <ProductDesktopManager />
-              </TabsContent>
-
-              <TabsContent value="image_upload" className="mt-0">
-                <ProductImageManager />
-              </TabsContent>
-
               <TabsContent value="storage" className="mt-0">
                 <StorageManager />
               </TabsContent>
@@ -225,8 +210,6 @@ export const AdminPanel = () => {
               <TabsContent value="emails" className="mt-0">
                 <EmailManager />
               </TabsContent>
-
-              {/* Admin login removed */}
 
               <TabsContent value="users" className="mt-0">
                 <SimpleUserManager />

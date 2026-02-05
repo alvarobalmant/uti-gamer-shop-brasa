@@ -2,15 +2,20 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Product } from '@/hooks/useProducts/types';
 import { 
-  fetchProductsLightPaginated,
-  fetchProductDetails,
-  fetchProductsByCriteriaOptimized,
-  invalidateProductCache,
-  preloadCriticalImages,
-  ProductLight
-} from '@/hooks/useProducts/productApiOptimized';
+  fetchProductsFromDatabase,
+  fetchSingleProductFromDatabase
+} from '@/hooks/useProducts/productApi';
 import { handleProductError } from '@/hooks/useProducts/productErrorHandler';
 import { toast } from 'sonner';
+
+// Type for lightweight product data
+export interface ProductLight {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  slug: string;
+}
 
 interface ProductContextOptimizedType {
   // Estado para listagem (versão light)
@@ -79,26 +84,33 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
     try {
       setLoadingLight(true);
       
-      const result = await fetchProductsLightPaginated(currentPage, 20);
+      const products = await fetchProductsFromDatabase(true);
+      const pageSize = 20;
+      const start = currentPage * pageSize;
+      const slice = products.slice(start, start + pageSize);
+      
+      const lightProducts: ProductLight[] = slice.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        image: p.image,
+        slug: p.slug || p.id
+      }));
       
       if (currentPage === 0) {
-        // Primeira carga - substituir
-        setProductsLight(result.products);
-        // Pré-carregar imagens críticas
-        preloadCriticalImages(result.products, 6);
+        setProductsLight(lightProducts);
       } else {
-        // Cargas subsequentes - adicionar
-        setProductsLight(prev => [...prev, ...result.products]);
+        setProductsLight(prev => [...prev, ...lightProducts]);
       }
       
-      setHasMore(result.hasMore);
-      setTotalProducts(result.total);
+      setHasMore(start + pageSize < products.length);
+      setTotalProducts(products.length);
       setCurrentPage(prev => prev + 1);
       
       // Notificar subscribers
-      notifySubscribers(currentPage === 0 ? result.products : [...productsLight, ...result.products]);
+      notifySubscribers(currentPage === 0 ? lightProducts : [...productsLight, ...lightProducts]);
       
-      console.log(`[loadMoreProducts] Carregados ${result.products.length} produtos, página ${currentPage}`);
+      console.log(`[loadMoreProducts] Carregados ${lightProducts.length} produtos, página ${currentPage}`);
     } catch (error) {
       console.error('Error loading more products:', error);
       const errorMessage = handleProductError(error, 'ao carregar produtos');
@@ -116,7 +128,6 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
       setCurrentPage(0);
       setHasMore(true);
       setProductsLight([]);
-      invalidateProductCache();
       
       await loadMoreProducts();
     } catch (error) {
@@ -154,7 +165,7 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
       // Marcar como carregando
       setLoadingDetails(prev => new Set([...prev, id]));
       
-      const product = await fetchProductDetails(id);
+      const product = await fetchSingleProductFromDatabase(id);
       
       if (product) {
         // Adicionar ao cache
@@ -185,9 +196,16 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
     limit: number = 12
   ): Promise<ProductLight[]> => {
     try {
-      const products = await fetchProductsByCriteriaOptimized(config, limit);
-      console.log(`[loadProductsForSection] Carregados ${products.length} produtos para seção`);
-      return products;
+      const products = await fetchProductsFromDatabase(true);
+      const lightProducts: ProductLight[] = products.slice(0, limit).map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        image: p.image,
+        slug: p.slug || p.id
+      }));
+      console.log(`[loadProductsForSection] Carregados ${lightProducts.length} produtos para seção`);
+      return lightProducts;
     } catch (error) {
       console.error('Error loading products for section:', error);
       const errorMessage = handleProductError(error, 'ao carregar produtos da seção');
@@ -200,14 +218,18 @@ export const ProductProviderOptimized: React.FC<ProductProviderOptimizedProps> =
 
   // Invalidar cache
   const invalidateCache = useCallback(() => {
-    invalidateProductCache();
     setProductDetails(new Map());
     console.log('[ProductContextOptimized] Cache invalidado');
   }, []);
 
   // Pré-carregar imagens
   const preloadImages = useCallback((count: number = 6) => {
-    preloadCriticalImages(productsLight, count);
+    productsLight.slice(0, count).forEach(p => {
+      if (p.image) {
+        const img = new Image();
+        img.src = p.image;
+      }
+    });
   }, [productsLight]);
 
   // Sistema de subscription

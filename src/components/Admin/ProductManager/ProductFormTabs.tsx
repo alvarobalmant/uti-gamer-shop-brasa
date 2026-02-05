@@ -385,7 +385,7 @@ const ProductFormTabs: React.FC<ProductFormTabsProps> = ({
       case 'specs':
         return <SpecificationsTab {...commonProps} />;
       case 'faq':
-        return <FAQTab {...commonProps} />;
+        return <FAQTab productId={product?.id} />;
       case 'reviews':
         return <ReviewsTab {...commonProps} />;
       case 'trust':

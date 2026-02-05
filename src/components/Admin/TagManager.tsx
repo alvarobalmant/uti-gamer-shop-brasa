@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 export const TagManager = () => {
   const { tags, loading, addTag, updateTag, deleteTag } = useTags();
@@ -47,15 +48,12 @@ export const TagManager = () => {
     
     if (!newTagName.trim()) return;
 
-    try {
-      await addTag(newTagName.trim(), newTagCategory, newTagWeight);
-      setNewTagName('');
-      setNewTagCategory('generic');
-      setNewTagWeight(1);
-      setIsDialogOpen(false);
-    } catch (error) {
-      // Error handled in useTags
-    }
+    // Tags are managed via ERP - show info message
+    toast.info('Gerenciamento de tags desabilitado. Use o ERP para adicionar tags.');
+    setNewTagName('');
+    setNewTagCategory('generic');
+    setNewTagWeight(1);
+    setIsDialogOpen(false);
   };
 
   const handleEdit = (tag: any) => {
@@ -71,26 +69,18 @@ export const TagManager = () => {
     
     if (!editingTag || !newTagName.trim()) return;
 
-    try {
-      await updateTag(editingTag.id, {
-        name: newTagName.trim(),
-        category: newTagCategory,
-        weight: newTagWeight
-      });
-      setEditingTag(null);
-      setNewTagName('');
-      setNewTagCategory('generic');
-      setNewTagWeight(1);
-      setIsDialogOpen(false);
-    } catch (error) {
-      // Error handled in useTags
-    }
+    // Tags are managed via ERP - show info message
+    toast.info('Gerenciamento de tags desabilitado. Use o ERP para editar tags.');
+    setEditingTag(null);
+    setNewTagName('');
+    setNewTagCategory('generic');
+    setNewTagWeight(1);
+    setIsDialogOpen(false);
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (window.confirm(`Tem certeza que deseja excluir a tag "${name}"?`)) {
-      await deleteTag(id);
-    }
+    // Tags are managed via ERP - show info message
+    toast.info('Gerenciamento de tags desabilitado. Use o ERP para remover tags.');
   };
 
   const resetDialog = () => {
@@ -119,7 +109,7 @@ export const TagManager = () => {
             <Alert className="mt-3 bg-[#1A1A2E] border-[#343A40] text-gray-300">
               <Info className="h-4 w-4 text-[#007BFF]" />
               <AlertDescription>
-                Tags são usadas para categorizar produtos e criar seções dinâmicas. Exemplos: Ação, RPG, Aventura, Promoção.
+                Tags são sincronizadas do ERP. Visualização apenas - edite no sistema IntegraAPI.
               </AlertDescription>
             </Alert>
           </div>
@@ -130,6 +120,7 @@ export const TagManager = () => {
                 onClick={() => setIsDialogOpen(true)}
                 size="sm"
                 className="bg-[#007BFF] hover:bg-[#0056B3] text-white"
+                disabled
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Nova Tag
@@ -179,25 +170,6 @@ export const TagManager = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tagWeight" className="text-gray-300 flex items-center">
-                    <Weight className="mr-2 h-4 w-4" />
-                    Peso (1-5)
-                  </Label>
-                  <Input
-                    id="tagWeight"
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={newTagWeight}
-                    onChange={(e) => setNewTagWeight(Number(e.target.value))}
-                    className="bg-[#1A1A2E] border-[#343A40] text-white"
-                  />
-                  <p className="text-xs text-gray-400">
-                    Maior peso = maior relevância na busca
-                  </p>
                 </div>
 
                 <DialogFooter className="pt-4">
@@ -256,28 +228,6 @@ export const TagManager = () => {
                           <Tag className="w-3 h-3 mr-1" />
                           {tag.name}
                         </Badge>
-                        {tag.weight && (
-                          <Badge variant="outline" className="text-xs text-gray-400 border-gray-600">
-                            {tag.weight}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <div className="flex gap-1">
-                        <Button
-                          onClick={() => handleEdit(tag)}
-                          size="sm"
-                          className="bg-[#007BFF] hover:bg-[#0056B3] text-white h-6 w-6 p-0"
-                        >
-                          <Pencil className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(tag.id, tag.name)}
-                          size="sm"
-                          className="bg-[#DC3545] hover:bg-[#C82333] text-white h-6 w-6 p-0"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
                       </div>
                     </div>
                   ))}
