@@ -560,6 +560,7 @@ export type Database = {
         Row: {
           badge_color: string | null
           badge_text: string | null
+          badge_visible: boolean | null
           category: string | null
           codigo_barra: string | null
           codigo_fiscal: string | null
@@ -595,6 +596,7 @@ export type Database = {
         Insert: {
           badge_color?: string | null
           badge_text?: string | null
+          badge_visible?: boolean | null
           category?: string | null
           codigo_barra?: string | null
           codigo_fiscal?: string | null
@@ -630,6 +632,7 @@ export type Database = {
         Update: {
           badge_color?: string | null
           badge_text?: string | null
+          badge_visible?: boolean | null
           category?: string | null
           codigo_barra?: string | null
           codigo_fiscal?: string | null

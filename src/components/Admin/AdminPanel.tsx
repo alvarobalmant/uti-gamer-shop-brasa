@@ -12,10 +12,7 @@ import PageManager from './PageManager';
 import { QuickLinkManager } from './QuickLinkManager';
 import SpecialSectionManager from './SpecialSectionManager';
 import { NavigationManager } from './NavigationManager';
-import MasterProductManager from './MasterProductManager';
 import PlatformManager from './PlatformManager';
-import BulkProductUpload from './BulkProductUpload';
-import BulkProductBackupAndEdit from './BulkProductBackupAndEdit';
 import ProductImageManager from '@/pages/Admin/ProductImageManager';
 import StorageManager from './StorageManager';
 import { SettingsManager } from './SettingsManager';
@@ -26,7 +23,7 @@ import OrderVerifier from './OrderVerifier';
 // Admin login system removed
 import ProductDesktopManager from '@/pages/Admin/ProductDesktopManager';
 // import { AnalyticsDashboard } from './Analytics/AnalyticsDashboard';
-import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Layers, Settings, Upload, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor, ClipboardCheck, BarChart3 } from 'lucide-react';
+ import { Package, Image, Briefcase, Tag, Users, LayoutList, ListChecks, Globe, Link, Star, Gamepad2, Menu, X, Home, ArrowLeft, Navigation, Settings, ImagePlus, HardDrive, Cog, FileText, Coins, Mail, Shield, Monitor, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const AdminPanel = () => {
@@ -43,17 +40,13 @@ export const AdminPanel = () => {
     { id: 'special_sections', label: 'Seções Especiais', icon: Star },
     { id: 'products', label: 'Produtos', icon: Package },
     { id: 'desktop_products', label: 'Produtos Desktop', icon: Monitor },
-    { id: 'bulk_upload', label: 'Importação em Massa', icon: Upload },
-    { id: 'backup_edit', label: 'Backup & Edição', icon: FileText },
     { id: 'image_upload', label: 'Revisão Fácil', icon: ImagePlus },
     { id: 'storage', label: 'Gerenciar Storage', icon: HardDrive },
-    { id: 'skus', label: 'Sistema de SKUs', icon: Layers },
     { id: 'platforms', label: 'Plataformas', icon: Settings },
     { id: 'banners', label: 'Banners', icon: Image },
     { id: 'quick_links', label: 'Links Rápidos', icon: Link },
     { id: 'services', label: 'Serviços', icon: Briefcase },
     { id: 'tags', label: 'Tags', icon: Tag },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'uti_coins', label: 'UTI Coins', icon: Coins },
     { id: 'emails', label: 'Emails', icon: Mail },
     // Admin login removed
@@ -189,24 +182,12 @@ export const AdminPanel = () => {
                 <ProductDesktopManager />
               </TabsContent>
 
-              <TabsContent value="bulk_upload" className="mt-0">
-                <BulkProductUpload />
-              </TabsContent>
-
-              <TabsContent value="backup_edit" className="mt-0">
-                <BulkProductBackupAndEdit />
-              </TabsContent>
-
               <TabsContent value="image_upload" className="mt-0">
                 <ProductImageManager />
               </TabsContent>
 
               <TabsContent value="storage" className="mt-0">
                 <StorageManager />
-              </TabsContent>
-
-              <TabsContent value="skus" className="mt-0">
-                <MasterProductManager />
               </TabsContent>
 
               <TabsContent value="platforms" className="mt-0">
