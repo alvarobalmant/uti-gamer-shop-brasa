@@ -63,9 +63,9 @@ const OrderVerifier = () => {
       console.log('🔍 Fazendo query no Supabase para Names:', productNames);
       
       const { data: products, error } = await supabase
-        .from('products')
-        .select('id, name, uti_coins_cashback_percentage, uti_coins_discount_percentage')
-        .in('name', productNames);
+         .from('integra_products')
+         .select('id, descricao, uti_coins_cashback_percentage, uti_coins_discount_percentage')
+         .in('descricao', productNames);
 
       console.log('📊 Resultado da query:', { products, error });
 
@@ -78,10 +78,10 @@ const OrderVerifier = () => {
       const discountMap: {[key: string]: number} = {};
       
       products?.forEach(product => {
-        console.log('💰 Produto encontrado:', product.name, 'cashback:', product.uti_coins_cashback_percentage, 'discount:', product.uti_coins_discount_percentage);
+         console.log('💰 Produto encontrado:', product.descricao, 'cashback:', product.uti_coins_cashback_percentage, 'discount:', product.uti_coins_discount_percentage);
         // Usar o NOME como chave ao invés do ID
-        cashbackMap[product.name] = product.uti_coins_cashback_percentage || 0;
-        discountMap[product.name] = product.uti_coins_discount_percentage || 0;
+         cashbackMap[product.descricao] = product.uti_coins_cashback_percentage || 0;
+         discountMap[product.descricao] = product.uti_coins_discount_percentage || 0;
       });
 
       console.log('🗺️ Mapa final de cashbacks:', cashbackMap);

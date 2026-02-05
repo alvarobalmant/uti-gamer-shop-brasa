@@ -48,15 +48,14 @@ export const useFavorites = () => {
           user_id,
           product_id,
           created_at,
-          product:products (
+           product:integra_products (
             id,
-            name,
-            price,
-            image,
+             descricao,
+             preco_venda,
+             foto,
             slug,
-            promotional_price,
-            uti_pro_price,
-            description
+             preco_promocao,
+             uti_pro_price
           )
         `)
         .eq('user_id', user.id)
@@ -69,7 +68,23 @@ export const useFavorites = () => {
         throw error;
       }
 
-      return data as UserFavorite[];
+       // Mapear para o formato esperado
+       const mapped = data?.map((item: any) => ({
+         id: item.id,
+         user_id: item.user_id,
+         product_id: item.product_id,
+         created_at: item.created_at,
+         product: item.product ? {
+           id: item.product.id,
+           name: item.product.descricao || '',
+           price: Number(item.product.preco_venda) || 0,
+           image: item.product.foto || '',
+           slug: item.product.slug || '',
+           promotional_price: item.product.preco_promocao ? Number(item.product.preco_promocao) : undefined,
+           uti_pro_price: item.product.uti_pro_price ? Number(item.product.uti_pro_price) : undefined,
+         } : null
+       })) || [];
+       return mapped as UserFavorite[];
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutos
