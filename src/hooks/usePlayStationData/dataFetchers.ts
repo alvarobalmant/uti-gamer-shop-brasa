@@ -5,7 +5,7 @@ export const fetchPlayStationPage = async () => {
     .from('pages')
     .select('*')
     .eq('slug', 'playstation')
-    .single();
+    .maybeSingle();
 
   if (pageError || !page) {
     console.log('Página PlayStation não encontrada, usando dados fallback');
@@ -32,15 +32,15 @@ export const fetchPlayStationSections = async (pageId: string) => {
 };
 
 export const fetchAllProducts = async () => {
-  const { data: allProducts, error: productsError } = await supabase
-    .from('view_product_with_tags')
-    .select('*');
+  const { data: products, error: productsError } = await supabase
+    .from('integra_products')
+    .select('*')
+    .eq('is_active', true);
 
   if (productsError) {
     console.error('Erro ao carregar produtos:', productsError);
     throw new Error('Erro ao carregar produtos');
   }
 
-  return allProducts;
+  return products;
 };
-

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const fetchXbox4Page = async () => {
@@ -6,7 +5,7 @@ export const fetchXbox4Page = async () => {
     .from('pages')
     .select('*')
     .eq('slug', 'xbox4')
-    .single();
+    .maybeSingle();
 
   if (pageError || !page) {
     console.log('Página Xbox4 não encontrada, usando dados fallback');
@@ -33,24 +32,15 @@ export const fetchXbox4Sections = async (pageId: string) => {
 };
 
 export const fetchAllProducts = async () => {
-  const { data: allProducts, error: productsError } = await supabase
-    .from('view_product_with_tags')
-    .select('*');
+  const { data: products, error: productsError } = await supabase
+    .from('integra_products')
+    .select('*')
+    .eq('is_active', true);
 
   if (productsError) {
     console.error('Erro ao carregar produtos:', productsError);
-    // Fallback to products table if view fails
-    const { data: fallbackProducts, error: fallbackError } = await supabase
-      .from('products')
-      .select('*')
-      .eq('is_active', true);
-    
-    if (fallbackError) {
-      throw new Error('Erro ao carregar produtos');
-    }
-    
-    return fallbackProducts;
+    throw new Error('Erro ao carregar produtos');
   }
 
-  return allProducts;
+  return products;
 };
