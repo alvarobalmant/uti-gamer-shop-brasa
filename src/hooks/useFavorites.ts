@@ -48,13 +48,13 @@ export const useFavorites = () => {
           user_id,
           product_id,
           created_at,
-           product:integra_products (
+           product:products (
             id,
-             descricao,
-             preco_venda,
-             foto,
+             name,
+             price,
+             image,
             slug,
-             preco_promocao,
+             promotional_price,
              uti_pro_price
           )
         `)
@@ -76,11 +76,11 @@ export const useFavorites = () => {
          created_at: item.created_at,
          product: item.product ? {
            id: item.product.id,
-           name: item.product.descricao || '',
-           price: Number(item.product.preco_venda) || 0,
-           image: item.product.foto || '',
+           name: item.product.name || '',
+           price: Number(item.product.price) || 0,
+           image: item.product.image || '',
            slug: item.product.slug || '',
-           promotional_price: item.product.preco_promocao ? Number(item.product.preco_promocao) : undefined,
+           promotional_price: item.product.promotional_price ? Number(item.product.promotional_price) : undefined,
            uti_pro_price: item.product.uti_pro_price ? Number(item.product.uti_pro_price) : undefined,
          } : null
        })) || [];

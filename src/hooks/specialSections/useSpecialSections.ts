@@ -170,7 +170,7 @@ export const useSpecialSections = (options: UseSectionsOptions = {}): UseSection
       const { id, ...updateData } = data;
       const { data: updatedSection, error: updateError } = await supabase
         .from('special_sections')
-        .update(updateData)
+        .update(updateData as any)
         .eq('id', id)
         .select()
         .single();

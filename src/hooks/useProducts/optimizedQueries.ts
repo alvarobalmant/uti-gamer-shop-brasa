@@ -37,7 +37,7 @@ export interface PerformanceResult {
 export const analyzeDatabasePerformance = async (): Promise<PerformanceResult> => {
   try {
     const { count, error } = await supabase
-      .from('integra_products')
+      .from('products')
       .select('*', { count: 'exact', head: true });
 
     const productCount = count || 0;

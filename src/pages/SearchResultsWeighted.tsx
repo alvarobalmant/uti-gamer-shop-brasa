@@ -30,7 +30,7 @@ export default function SearchResultsWeighted() {
     setSearchError(null);
     
     try {
-      const results = await searchProductsWithWeights(searchTerm, 50);
+      const results = await searchProductsWithWeights(searchTerm);
       setSearchResults(results.products || []);
     } catch (error) {
       console.error('Search error:', error);

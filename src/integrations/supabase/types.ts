@@ -119,6 +119,41 @@ export type Database = {
         }
         Relationships: []
       }
+      cart_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string | null
+          quantity: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coin_rules: {
         Row: {
           action: string
@@ -482,278 +517,6 @@ export type Database = {
           is_visible?: boolean
           section_key?: string
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      integra_cart_items: {
-        Row: {
-          created_at: string | null
-          id: string
-          product_id: string | null
-          quantity: number | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          product_id?: string | null
-          quantity?: number | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          product_id?: string | null
-          quantity?: number | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "integra_cart_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "integra_products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      integra_product_tags: {
-        Row: {
-          created_at: string | null
-          id: string
-          product_id: string | null
-          tag_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          product_id?: string | null
-          tag_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          product_id?: string | null
-          tag_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "integra_product_tags_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "integra_products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "integra_product_tags_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "integra_tags"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      integra_products: {
-        Row: {
-          badge_color: string | null
-          badge_text: string | null
-          badge_visible: boolean | null
-          category: string | null
-          codigo_barra: string | null
-          codigo_fiscal: string | null
-          created_at: string | null
-          descricao: string
-          fornecedor: number | null
-          foto: string | null
-          grupo: string | null
-          id: string
-          is_active: boolean | null
-          is_featured: boolean | null
-          last_sync_at: string | null
-          marca: number | null
-          matricula: number
-          platform: string | null
-          preco_custo: number | null
-          preco_promocao: number | null
-          preco_venda: number | null
-          promocao: string | null
-          referencia: string | null
-          saldo_atual: number | null
-          slug: string | null
-          suspensa: string | null
-          sync_status: string | null
-          tipo: string | null
-          tipo_item: string | null
-          unidade: string | null
-          updated_at: string | null
-          uti_coins_cashback_percentage: number | null
-          uti_coins_discount_percentage: number | null
-          uti_pro_price: number | null
-        }
-        Insert: {
-          badge_color?: string | null
-          badge_text?: string | null
-          badge_visible?: boolean | null
-          category?: string | null
-          codigo_barra?: string | null
-          codigo_fiscal?: string | null
-          created_at?: string | null
-          descricao: string
-          fornecedor?: number | null
-          foto?: string | null
-          grupo?: string | null
-          id?: string
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          last_sync_at?: string | null
-          marca?: number | null
-          matricula: number
-          platform?: string | null
-          preco_custo?: number | null
-          preco_promocao?: number | null
-          preco_venda?: number | null
-          promocao?: string | null
-          referencia?: string | null
-          saldo_atual?: number | null
-          slug?: string | null
-          suspensa?: string | null
-          sync_status?: string | null
-          tipo?: string | null
-          tipo_item?: string | null
-          unidade?: string | null
-          updated_at?: string | null
-          uti_coins_cashback_percentage?: number | null
-          uti_coins_discount_percentage?: number | null
-          uti_pro_price?: number | null
-        }
-        Update: {
-          badge_color?: string | null
-          badge_text?: string | null
-          badge_visible?: boolean | null
-          category?: string | null
-          codigo_barra?: string | null
-          codigo_fiscal?: string | null
-          created_at?: string | null
-          descricao?: string
-          fornecedor?: number | null
-          foto?: string | null
-          grupo?: string | null
-          id?: string
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          last_sync_at?: string | null
-          marca?: number | null
-          matricula?: number
-          platform?: string | null
-          preco_custo?: number | null
-          preco_promocao?: number | null
-          preco_venda?: number | null
-          promocao?: string | null
-          referencia?: string | null
-          saldo_atual?: number | null
-          slug?: string | null
-          suspensa?: string | null
-          sync_status?: string | null
-          tipo?: string | null
-          tipo_item?: string | null
-          unidade?: string | null
-          updated_at?: string | null
-          uti_coins_cashback_percentage?: number | null
-          uti_coins_discount_percentage?: number | null
-          uti_pro_price?: number | null
-        }
-        Relationships: []
-      }
-      integra_sync_config: {
-        Row: {
-          api_url: string
-          cnpj: string
-          created_at: string | null
-          current_token: string | null
-          funcionario: number
-          id: string
-          is_active: boolean | null
-          last_products_sync: string | null
-          last_stock_sync: string | null
-          senha_hash: string | null
-          sync_interval_minutes: number | null
-          token_expires_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          api_url: string
-          cnpj: string
-          created_at?: string | null
-          current_token?: string | null
-          funcionario: number
-          id?: string
-          is_active?: boolean | null
-          last_products_sync?: string | null
-          last_stock_sync?: string | null
-          senha_hash?: string | null
-          sync_interval_minutes?: number | null
-          token_expires_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          api_url?: string
-          cnpj?: string
-          created_at?: string | null
-          current_token?: string | null
-          funcionario?: number
-          id?: string
-          is_active?: boolean | null
-          last_products_sync?: string | null
-          last_stock_sync?: string | null
-          senha_hash?: string | null
-          sync_interval_minutes?: number | null
-          token_expires_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      integra_sync_log: {
-        Row: {
-          completed_at: string | null
-          details: Json | null
-          error_message: string | null
-          id: string
-          records_created: number | null
-          records_failed: number | null
-          records_processed: number | null
-          records_updated: number | null
-          started_at: string | null
-          status: string | null
-          sync_type: string | null
-        }
-        Insert: {
-          completed_at?: string | null
-          details?: Json | null
-          error_message?: string | null
-          id?: string
-          records_created?: number | null
-          records_failed?: number | null
-          records_processed?: number | null
-          records_updated?: number | null
-          started_at?: string | null
-          status?: string | null
-          sync_type?: string | null
-        }
-        Update: {
-          completed_at?: string | null
-          details?: Json | null
-          error_message?: string | null
-          id?: string
-          records_created?: number | null
-          records_failed?: number | null
-          records_processed?: number | null
-          records_updated?: number | null
-          started_at?: string | null
-          status?: string | null
-          sync_type?: string | null
         }
         Relationships: []
       }
@@ -1448,6 +1211,141 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_tags: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_tags_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "integra_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          additional_images: Json
+          badge_color: string | null
+          badge_text: string | null
+          badge_visible: boolean
+          barcode: string | null
+          brand: string | null
+          category: string | null
+          cost_price: number | null
+          created_at: string
+          description: string | null
+          id: string
+          image: string | null
+          is_active: boolean
+          is_featured: boolean
+          meta_description: string | null
+          meta_title: string | null
+          name: string
+          platform: string | null
+          price: number
+          promotional_price: number | null
+          short_description: string | null
+          sku: string | null
+          slug: string | null
+          sort_order: number
+          stock: number
+          updated_at: string
+          uti_coins_cashback_percentage: number
+          uti_coins_discount_percentage: number
+          uti_pro_enabled: boolean
+          uti_pro_price: number | null
+        }
+        Insert: {
+          additional_images?: Json
+          badge_color?: string | null
+          badge_text?: string | null
+          badge_visible?: boolean
+          barcode?: string | null
+          brand?: string | null
+          category?: string | null
+          cost_price?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          is_active?: boolean
+          is_featured?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          name: string
+          platform?: string | null
+          price?: number
+          promotional_price?: number | null
+          short_description?: string | null
+          sku?: string | null
+          slug?: string | null
+          sort_order?: number
+          stock?: number
+          updated_at?: string
+          uti_coins_cashback_percentage?: number
+          uti_coins_discount_percentage?: number
+          uti_pro_enabled?: boolean
+          uti_pro_price?: number | null
+        }
+        Update: {
+          additional_images?: Json
+          badge_color?: string | null
+          badge_text?: string | null
+          badge_visible?: boolean
+          barcode?: string | null
+          brand?: string | null
+          category?: string | null
+          cost_price?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          is_active?: boolean
+          is_featured?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          name?: string
+          platform?: string | null
+          price?: number
+          promotional_price?: number | null
+          short_description?: string | null
+          sku?: string | null
+          slug?: string | null
+          sort_order?: number
+          stock?: number
+          updated_at?: string
+          uti_coins_cashback_percentage?: number
+          uti_coins_discount_percentage?: number
+          uti_pro_enabled?: boolean
+          uti_pro_price?: number | null
+        }
+        Relationships: []
       }
       promotional_ribbon_config: {
         Row: {
@@ -3001,7 +2899,9 @@ export type Database = {
       }
       has_active_subscription: { Args: { user_id: string }; Returns: boolean }
       has_admin_users: { Args: never; Returns: boolean }
-      is_admin: { Args: never; Returns: boolean }
+      is_admin:
+        | { Args: never; Returns: boolean }
+        | { Args: { _user_id: string }; Returns: boolean }
       is_admin_user: { Args: never; Returns: boolean }
       is_code_valid: { Args: { p_code: string }; Returns: boolean }
       is_email_confirmed: { Args: never; Returns: boolean }

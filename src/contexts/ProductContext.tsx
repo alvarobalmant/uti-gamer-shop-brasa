@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Product } from '@/hooks/useProducts/types';
-import { fetchProductsFromDatabase } from '@/hooks/useProducts/productApi';
+import {
+  fetchProductsFromDatabase,
+  addProductToDatabase,
+  updateProductInDatabase,
+  deleteProductFromDatabase,
+} from '@/hooks/useProducts/productApi';
 import { handleProductError } from '@/hooks/useProducts/productErrorHandler';
 import { useToast } from '@/hooks/use-toast';
 
@@ -77,31 +82,45 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     fetchProducts();
   }, [fetchProducts]);
 
-  // Stub: Products managed via ERP
   const addProduct = useCallback(async (productData: any): Promise<Product | null> => {
-    toast({
-      title: "Gerenciado via ERP",
-      description: "Adicione produtos através do IntegraAPI.",
-    });
-    return null;
+    try {
+      const created = await addProductToDatabase(productData);
+      if (created) {
+        setProducts(prev => [created, ...prev]);
+        toast({ title: 'Produto criado', description: created.name });
+      }
+      return created;
+    } catch (error: any) {
+      toast({ title: 'Erro ao criar produto', description: error.message, variant: 'destructive' });
+      return null;
+    }
   }, [toast]);
 
-  // Stub: Products managed via ERP
   const updateProduct = useCallback(async (id: string, updates: Partial<Product>): Promise<Product | null> => {
-    toast({
-      title: "Gerenciado via ERP",
-      description: "Atualize produtos através do IntegraAPI.",
-    });
-    return null;
-  }, [toast]);
+    try {
+      const updated = await updateProductInDatabase(id, updates);
+      if (updated) {
+        setProducts(prev => prev.map(p => (p.id === id ? updated : p)));
+        notifySubscribers(products.map(p => (p.id === id ? updated : p)));
+        toast({ title: 'Produto atualizado', description: updated.name });
+      }
+      return updated;
+    } catch (error: any) {
+      toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' });
+      return null;
+    }
+  }, [toast, products, notifySubscribers]);
 
-  // Stub: Products managed via ERP
   const deleteProduct = useCallback(async (id: string): Promise<boolean> => {
-    toast({
-      title: "Gerenciado via ERP",
-      description: "Remova produtos através do IntegraAPI.",
-    });
-    return false;
+    try {
+      await deleteProductFromDatabase(id);
+      setProducts(prev => prev.filter(p => p.id !== id));
+      toast({ title: 'Produto removido' });
+      return true;
+    } catch (error: any) {
+      toast({ title: 'Erro ao remover', description: error.message, variant: 'destructive' });
+      return false;
+    }
   }, [toast]);
 
   const getProductById = useCallback((id: string): Product | undefined => {

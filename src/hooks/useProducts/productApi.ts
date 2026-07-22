@@ -1,257 +1,212 @@
- import { supabase } from '@/integrations/supabase/client';
- import { Product } from './types';
- import { CarouselConfig } from '@/types/specialSections';
- 
- // Mapper para integra_products -> Product
- const mapIntegraRowToProduct = (row: any, tags: any[] = []): Product => {
-   const price = Number(row.preco_venda) || 0;
-   const promoPrice = Number(row.preco_promocao) || 0;
-   const isOnSale = promoPrice > 0 && promoPrice < price;
- 
-   return {
-     id: row.id,
-     name: row.descricao || '',
-     brand: '',
-     category: row.category || row.grupo || '',
-     description: row.descricao || '',
-     price: isOnSale ? promoPrice : price,
-     list_price: isOnSale ? price : undefined,
-     pro_price: row.uti_pro_price ? Number(row.uti_pro_price) : undefined,
-     image: row.foto || '',
-     additional_images: [],
-     sizes: [],
-     colors: [],
-     stock: Number(row.saldo_atual) || 0,
-     badge_text: row.badge_text || '',
-     badge_color: row.badge_color || '#22c55e',
-     badge_visible: row.badge_visible || false,
-     specifications: [],
-     technical_specs: {},
-     product_features: {},
-     free_shipping: false,
-     meta_title: '',
-     meta_description: '',
-     slug: row.slug || '',
-     is_active: row.is_active !== false && row.suspensa !== 'S',
-     is_featured: row.is_featured || false,
-     uti_coins_cashback_percentage: row.uti_coins_cashback_percentage ? Number(row.uti_coins_cashback_percentage) : undefined,
-     uti_coins_discount_percentage: row.uti_coins_discount_percentage ? Number(row.uti_coins_discount_percentage) : undefined,
-     sku_code: row.referencia || row.codigo_barra || undefined,
-     product_type: 'simple',
-     tags: tags,
-     created_at: row.created_at || new Date().toISOString(),
-     updated_at: row.updated_at || new Date().toISOString()
-   };
- };
- 
- export const fetchProductsFromDatabase = async (includeAdmin: boolean = false): Promise<Product[]> => {
-   console.log(`[fetchProductsFromDatabase] Fetching from integra_products (includeAdmin: ${includeAdmin})`);
- 
-   try {
-     // Query integra_products com tags
-     let query = supabase
-       .from('integra_products')
-       .select(`
-         *,
-         integra_product_tags!left(
-           tag_id,
-           integra_tags!left(id, name, category)
-         )
-       `);
- 
-     // Aplicar filtros
-     if (!includeAdmin) {
-       query = query.eq('is_active', true).neq('suspensa', 'S');
-     }
- 
-     const { data, error } = await query;
- 
-     if (error) {
-       console.error('[fetchProductsFromDatabase] Error:', error);
-       throw error;
-     }
- 
-     if (!data || data.length === 0) {
-       console.warn('[fetchProductsFromDatabase] No products found');
-       return [];
-     }
- 
-     // Processar produtos com tags
-     const productsMap = new Map<string, Product>();
- 
-     data.forEach((row: any) => {
-       if (!row.id) return;
- 
-       // Extrair tags do JOIN
-       const tags: any[] = [];
-       if (row.integra_product_tags && Array.isArray(row.integra_product_tags)) {
-         row.integra_product_tags.forEach((pt: any) => {
-           if (pt.integra_tags) {
-             tags.push({
-               id: pt.integra_tags.id,
-               name: pt.integra_tags.name,
-               weight: 1,
-               category: pt.integra_tags.category || 'generic'
-             });
-           }
-         });
-       }
- 
-       productsMap.set(row.id, mapIntegraRowToProduct(row, tags));
-     });
- 
-     const finalProducts = Array.from(productsMap.values());
-     console.log(`[fetchProductsFromDatabase] Loaded ${finalProducts.length} products from integra_products`);
-     return finalProducts;
-   } catch (error) {
-     console.error('[fetchProductsFromDatabase] Error:', error);
-     throw error;
-   }
- };
- 
- export const fetchProductsByCriteria = async (config: CarouselConfig, includeAdmin: boolean = false): Promise<Product[]> => {
-   try {
-     let query = supabase
-       .from('integra_products')
-       .select(`
-         *,
-         integra_product_tags!left(
-           tag_id,
-           integra_tags!left(id, name, category)
-         )
-       `);
- 
-     if (!includeAdmin) {
-       query = query.eq('is_active', true).neq('suspensa', 'S');
-     }
- 
-     if (config.product_ids && config.product_ids.length > 0) {
-       query = query.in('id', config.product_ids);
-     }
-     if (config.limit) {
-       query = query.limit(config.limit);
-     }
- 
-     const { data, error } = await query;
- 
-     if (error) {
-       console.error('Error fetching products by criteria:', error);
-       throw error;
-     }
- 
-     const productsMap = new Map<string, Product>();
- 
-     data?.forEach((row: any) => {
-       if (!row.id) return;
- 
-       const tags: any[] = [];
-       if (row.integra_product_tags && Array.isArray(row.integra_product_tags)) {
-         row.integra_product_tags.forEach((pt: any) => {
-           if (pt.integra_tags) {
-             tags.push({
-               id: pt.integra_tags.id,
-               name: pt.integra_tags.name,
-               weight: 1,
-               category: pt.integra_tags.category || 'generic'
-             });
-           }
-         });
-       }
-       productsMap.set(row.id, mapIntegraRowToProduct(row, tags));
-     });
- 
-     console.log(`[fetchProductsByCriteria] Loaded ${productsMap.size} products by criteria`);
-     return Array.from(productsMap.values());
-   } catch (error) {
-     console.error('Error in fetchProductsByCriteria:', error);
-     throw error;
-   }
- };
- 
- export const fetchSingleProductFromDatabase = async (id: string): Promise<Product | null> => {
-   try {
-     console.log(`[fetchSingleProductFromDatabase] Fetching product: ${id}`);
- 
-     // Buscar por ID primeiro
-     let { data, error } = await supabase
-       .from('integra_products')
-       .select(`
-         *,
-         integra_product_tags!left(
-           tag_id,
-           integra_tags!left(id, name, category)
-         )
-       `)
-       .eq('id', id)
-       .single();
- 
-     if (error || !data) {
-       // Tentar por slug
-       const { data: slugData, error: slugError } = await supabase
-         .from('integra_products')
-         .select(`
-           *,
-           integra_product_tags!left(
-             tag_id,
-             integra_tags!left(id, name, category)
-           )
-         `)
-         .eq('slug', id)
-         .single();
- 
-       if (slugError || !slugData) {
-         console.warn(`[fetchSingleProductFromDatabase] Product not found: ${id}`);
-         return null;
-       }
-       data = slugData;
-     }
- 
-     // Extrair tags
-     const tags: any[] = [];
-     if (data.integra_product_tags && Array.isArray(data.integra_product_tags)) {
-       data.integra_product_tags.forEach((pt: any) => {
-         if (pt.integra_tags) {
-           tags.push({
-             id: pt.integra_tags.id,
-             name: pt.integra_tags.name,
-             weight: 1,
-             category: pt.integra_tags.category || 'generic'
-           });
-         }
-       });
-     }
- 
-     const product = mapIntegraRowToProduct(data, tags);
-     console.log(`[fetchSingleProductFromDatabase] Found product: ${product.name}`);
-     return product;
-   } catch (error) {
-     console.error('[fetchSingleProductFromDatabase] Error:', error);
-     throw error;
-   }
- };
- 
-// Stub functions for legacy compatibility
-export const addProductToDatabase = async (productData: any) => {
-  console.warn('[addProductToDatabase] Not implemented for integra_products - use ERP sync');
-  throw new Error('Use ERP sync to add products');
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from './types';
+import { CarouselConfig } from '@/types/specialSections';
+
+// Skip select-string type parsing (see performance guidance)
+const sel = (s: string): string => s;
+
+const PRODUCT_SELECT = sel(`
+  *,
+  product_tags!left(
+    tag_id,
+    integra_tags!left(id, name, category)
+  )
+`);
+
+const mapRowToProduct = (row: any, tags: any[] = []): Product => {
+  const price = Number(row.price) || 0;
+  const promoPrice = row.promotional_price != null ? Number(row.promotional_price) : 0;
+  const isOnSale = promoPrice > 0 && promoPrice < price;
+
+  return {
+    id: row.id,
+    name: row.name || '',
+    brand: row.brand || '',
+    category: row.category || '',
+    description: row.description || '',
+    price: isOnSale ? promoPrice : price,
+    list_price: isOnSale ? price : undefined,
+    promotional_price: promoPrice || undefined,
+    pro_price: row.uti_pro_price ? Number(row.uti_pro_price) : undefined,
+    uti_pro_price: row.uti_pro_price ? Number(row.uti_pro_price) : undefined,
+    uti_pro_enabled: row.uti_pro_enabled || false,
+    image: row.image || '',
+    additional_images: Array.isArray(row.additional_images) ? row.additional_images : [],
+    sizes: [],
+    colors: [],
+    stock: Number(row.stock) || 0,
+    badge_text: row.badge_text || '',
+    badge_color: row.badge_color || '#22c55e',
+    badge_visible: row.badge_visible || false,
+    specifications: [],
+    technical_specs: {},
+    product_features: {},
+    free_shipping: false,
+    meta_title: row.meta_title || '',
+    meta_description: row.meta_description || '',
+    slug: row.slug || '',
+    platform: row.platform || '',
+    is_active: row.is_active !== false,
+    is_featured: row.is_featured || false,
+    is_on_sale: isOnSale,
+    uti_coins_cashback_percentage: row.uti_coins_cashback_percentage
+      ? Number(row.uti_coins_cashback_percentage) : 0,
+    uti_coins_discount_percentage: row.uti_coins_discount_percentage
+      ? Number(row.uti_coins_discount_percentage) : 0,
+    sku: row.sku || '',
+    sku_code: row.sku || undefined,
+    product_type: 'simple',
+    tags,
+    created_at: row.created_at || new Date().toISOString(),
+    updated_at: row.updated_at || new Date().toISOString(),
+  };
 };
 
-export const updateProductInDatabase = async (id: string, updates: any) => {
-  console.warn('[updateProductInDatabase] Not implemented for integra_products - use ERP sync');
-  throw new Error('Use ERP sync to update products');
+const extractTags = (row: any): any[] => {
+  const out: any[] = [];
+  if (row?.product_tags && Array.isArray(row.product_tags)) {
+    row.product_tags.forEach((pt: any) => {
+      if (pt.integra_tags) {
+        out.push({
+          id: pt.integra_tags.id,
+          name: pt.integra_tags.name,
+          weight: 1,
+          category: pt.integra_tags.category || 'generic',
+        });
+      }
+    });
+  }
+  return out;
 };
 
-export const deleteProductFromDatabase = async (id: string) => {
-  console.warn('[deleteProductFromDatabase] Not implemented for integra_products - use ERP sync');
-  throw new Error('Use ERP sync to delete products');
+export const fetchProductsFromDatabase = async (
+  includeAdmin: boolean = false
+): Promise<Product[]> => {
+  try {
+    let query = (supabase.from('products') as any).select(PRODUCT_SELECT);
+    if (!includeAdmin) query = query.eq('is_active', true);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    if (!data) return [];
+
+    return (data as any[]).map((row) => mapRowToProduct(row, extractTags(row)));
+  } catch (error) {
+    console.error('[fetchProductsFromDatabase] Error:', error);
+    throw error;
+  }
 };
 
-// Stub for weighted search - returns object with products array
-export const searchProductsWithWeights = async (query: string, options?: any): Promise<{ products: Product[] }> => {
+export const fetchProductsByCriteria = async (
+  config: CarouselConfig,
+  includeAdmin: boolean = false
+): Promise<Product[]> => {
+  try {
+    let query = (supabase.from('products') as any).select(PRODUCT_SELECT);
+    if (!includeAdmin) query = query.eq('is_active', true);
+    if (config.product_ids && config.product_ids.length > 0) {
+      query = query.in('id', config.product_ids);
+    }
+    if (config.limit) query = query.limit(config.limit);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return (data as any[] | null)?.map((row) => mapRowToProduct(row, extractTags(row))) || [];
+  } catch (error) {
+    console.error('[fetchProductsByCriteria] Error:', error);
+    throw error;
+  }
+};
+
+export const fetchSingleProductFromDatabase = async (
+  id: string
+): Promise<Product | null> => {
+  try {
+    let { data, error } = await (supabase.from('products') as any)
+      .select(PRODUCT_SELECT)
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error || !data) {
+      const res = await (supabase.from('products') as any)
+        .select(PRODUCT_SELECT)
+        .eq('slug', id)
+        .maybeSingle();
+      if (res.error || !res.data) return null;
+      data = res.data;
+    }
+
+    return mapRowToProduct(data as any, extractTags(data));
+  } catch (error) {
+    console.error('[fetchSingleProductFromDatabase] Error:', error);
+    throw error;
+  }
+};
+
+// ---------- Write operations ----------
+
+const mapProductToRow = (p: any): any => {
+  const row: any = {};
+  const copy = [
+    'name', 'slug', 'description', 'short_description', 'sku', 'barcode',
+    'price', 'promotional_price', 'cost_price', 'stock', 'image',
+    'additional_images', 'category', 'platform', 'brand',
+    'is_active', 'is_featured', 'badge_text', 'badge_color', 'badge_visible',
+    'uti_pro_enabled', 'uti_pro_price',
+    'uti_coins_cashback_percentage', 'uti_coins_discount_percentage',
+    'meta_title', 'meta_description', 'sort_order',
+  ];
+  copy.forEach((k) => {
+    if (p[k] !== undefined) row[k] = p[k];
+  });
+  // Backward-compat: some callers may still send image_url
+  if (p.image_url && !row.image) row.image = p.image_url;
+  return row;
+};
+
+export const addProductToDatabase = async (productData: any): Promise<Product | null> => {
+  const row = mapProductToRow(productData);
+  if (!row.name) throw new Error('Nome é obrigatório');
+  if (!row.slug) {
+    row.slug = row.name.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now();
+  }
+  const { data, error } = await (supabase.from('products') as any)
+    .insert(row)
+    .select(PRODUCT_SELECT)
+    .single();
+  if (error) throw error;
+  return mapRowToProduct(data as any, extractTags(data));
+};
+
+export const updateProductInDatabase = async (
+  id: string,
+  updates: any
+): Promise<Product | null> => {
+  const row = mapProductToRow(updates);
+  const { data, error } = await (supabase.from('products') as any)
+    .update(row)
+    .eq('id', id)
+    .select(PRODUCT_SELECT)
+    .single();
+  if (error) throw error;
+  return mapRowToProduct(data as any, extractTags(data));
+};
+
+export const deleteProductFromDatabase = async (id: string): Promise<boolean> => {
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) throw error;
+  return true;
+};
+
+// Simple weighted-search stub for backward compatibility
+export const searchProductsWithWeights = async (
+  query: string
+): Promise<{ products: Product[] }> => {
   const products = await fetchProductsFromDatabase(true);
-  // Simple filter by name
-  const filtered = query 
-    ? products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
+  const filtered = query
+    ? products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))
     : products;
   return { products: filtered };
 };

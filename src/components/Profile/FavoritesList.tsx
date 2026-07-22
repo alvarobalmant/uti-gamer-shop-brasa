@@ -26,7 +26,7 @@ const FavoritesList: React.FC = () => {
     try {
       const productIds = favorites.map(fav => fav.product_id);
       const { data, error } = await supabase
-        .from('integra_products')
+        .from('products')
         .select('*')
         .in('id', productIds);
 

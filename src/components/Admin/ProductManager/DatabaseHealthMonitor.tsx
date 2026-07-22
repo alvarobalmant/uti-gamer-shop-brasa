@@ -31,7 +31,7 @@ export const DatabaseHealthMonitor: React.FC = () => {
     try {
       // Simple count query for integra_products
       const { count, error } = await supabase
-        .from('integra_products')
+        .from('products')
         .select('*', { count: 'exact', head: true });
 
       const productCount = count || 0;
