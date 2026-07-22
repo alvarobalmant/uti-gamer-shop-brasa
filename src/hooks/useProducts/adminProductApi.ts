@@ -18,7 +18,7 @@ export const fetchAllProductsForAdmin = async (): Promise<Product[]> => {
       .from('products')
       .select(`
         *,
-        integra_product_tags (
+        product_tags (
           tag_id,
           integra_tags (
             id,
@@ -39,8 +39,8 @@ export const fetchAllProductsForAdmin = async (): Promise<Product[]> => {
       const product = mapIntegraRowToProduct(row);
       
       // Extract tags from joined data
-      if (row.integra_product_tags) {
-        product.tags = row.integra_product_tags
+      if (row.product_tags) {
+        product.tags = row.product_tags
           .filter((pt: any) => pt.integra_tags)
           .map((pt: any) => ({
             id: pt.integra_tags.id,
