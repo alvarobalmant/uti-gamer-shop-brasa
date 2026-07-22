@@ -123,15 +123,13 @@ export const fetchSingleProductFromDatabase = async (
   id: string
 ): Promise<Product | null> => {
   try {
-    let { data, error } = await supabase
-      .from('products')
+    let { data, error } = await (supabase.from('products') as any)
       .select(PRODUCT_SELECT)
       .eq('id', id)
       .maybeSingle();
 
     if (error || !data) {
-      const res = await supabase
-        .from('products')
+      const res = await (supabase.from('products') as any)
         .select(PRODUCT_SELECT)
         .eq('slug', id)
         .maybeSingle();
@@ -174,8 +172,7 @@ export const addProductToDatabase = async (productData: any): Promise<Product | 
     row.slug = row.name.toLowerCase()
       .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now();
   }
-  const { data, error } = await supabase
-    .from('products')
+  const { data, error } = await (supabase.from('products') as any)
     .insert(row)
     .select(PRODUCT_SELECT)
     .single();
@@ -188,8 +185,7 @@ export const updateProductInDatabase = async (
   updates: any
 ): Promise<Product | null> => {
   const row = mapProductToRow(updates);
-  const { data, error } = await supabase
-    .from('products')
+  const { data, error } = await (supabase.from('products') as any)
     .update(row)
     .eq('id', id)
     .select(PRODUCT_SELECT)
