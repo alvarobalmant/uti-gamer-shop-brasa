@@ -83,8 +83,8 @@ export const fetchProductsFromDatabase = async (
   includeAdmin: boolean = false
 ): Promise<Product[]> => {
   try {
-    let query = supabase.from('products').select(PRODUCT_SELECT);
-    if (!includeAdmin) query = query.eq('is_active' as any, true as any);
+    let query = (supabase.from('products') as any).select(PRODUCT_SELECT);
+    if (!includeAdmin) query = query.eq('is_active', true);
 
     const { data, error } = await query;
     if (error) throw error;
@@ -102,8 +102,8 @@ export const fetchProductsByCriteria = async (
   includeAdmin: boolean = false
 ): Promise<Product[]> => {
   try {
-    let query = supabase.from('products').select(PRODUCT_SELECT);
-    if (!includeAdmin) query = query.eq('is_active' as any, true as any);
+    let query = (supabase.from('products') as any).select(PRODUCT_SELECT);
+    if (!includeAdmin) query = query.eq('is_active', true);
     if (config.product_ids && config.product_ids.length > 0) {
       query = query.in('id', config.product_ids);
     }
@@ -133,7 +133,7 @@ export const fetchSingleProductFromDatabase = async (
       const res = await supabase
         .from('products')
         .select(PRODUCT_SELECT)
-        .eq('slug' as any, id as any)
+        .eq('slug', id)
         .maybeSingle();
       if (res.error || !res.data) return null;
       data = res.data;
