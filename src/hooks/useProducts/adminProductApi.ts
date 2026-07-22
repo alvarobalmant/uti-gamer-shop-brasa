@@ -14,8 +14,7 @@ export const fetchAllProductsForAdmin = async (): Promise<Product[]> => {
   try {
     console.log('[fetchAllProductsForAdmin] Fetching from integra_products...');
     
-    const { data, error } = await supabase
-      .from('products')
+    const { data, error } = await (supabase.from('products') as any)
       .select(`
         *,
         product_tags (
@@ -27,7 +26,6 @@ export const fetchAllProductsForAdmin = async (): Promise<Product[]> => {
           )
         )
       `)
-      .eq('suspensa', 'N')
       .order('created_at', { ascending: false });
 
     if (error) {
