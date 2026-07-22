@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Product } from '@/hooks/useProducts/types';
-import { fetchProductsFromDatabase } from '@/hooks/useProducts/productApi';
+import {
+  fetchProductsFromDatabase,
+  addProductToDatabase,
+  updateProductInDatabase,
+  deleteProductFromDatabase,
+} from '@/hooks/useProducts/productApi';
 import { handleProductError } from '@/hooks/useProducts/productErrorHandler';
 import { useToast } from '@/hooks/use-toast';
 
