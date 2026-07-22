@@ -15,7 +15,7 @@ export const fetchAllProductsForAdmin = async (): Promise<Product[]> => {
     console.log('[fetchAllProductsForAdmin] Fetching from integra_products...');
     
     const { data, error } = await supabase
-      .from('integra_products')
+      .from('products')
       .select(`
         *,
         integra_product_tags (

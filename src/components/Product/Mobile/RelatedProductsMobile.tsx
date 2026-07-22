@@ -24,7 +24,7 @@ const RelatedProductsMobile: React.FC<RelatedProductsMobileProps> = ({ product }
     const fetchRelatedProducts = async () => {
       try {
         const { data, error } = await supabase
-          .from('integra_products')
+          .from('products')
           .select('*')
           .neq('id', product.id)
           .eq('is_active', true)

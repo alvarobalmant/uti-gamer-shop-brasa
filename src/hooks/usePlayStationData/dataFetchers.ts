@@ -33,7 +33,7 @@ export const fetchPlayStationSections = async (pageId: string) => {
 
 export const fetchAllProducts = async () => {
   const { data: products, error: productsError } = await supabase
-    .from('integra_products')
+    .from('products')
     .select('*')
     .eq('is_active', true);
 
