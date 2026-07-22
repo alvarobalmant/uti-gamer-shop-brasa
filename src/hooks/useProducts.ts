@@ -69,33 +69,45 @@ export const useProducts = () => {
     }
   }, [toast]);
 
-  // Stub: Products are managed via ERP
   const addProduct = async (productData: any) => {
-    toast({
-      title: "Gerenciado via ERP",
-      description: "Adicione produtos através do sistema IntegraAPI.",
-      variant: "default",
-    });
-    return null;
+    try {
+      const created = await addProductToDatabase(productData);
+      if (created) {
+        setProducts(prev => [created, ...prev]);
+        toast({ title: 'Produto criado', description: created.name });
+      }
+      return created;
+    } catch (error: any) {
+      console.error('[useProducts] addProduct error:', error);
+      toast({ title: 'Erro ao criar produto', description: error.message, variant: 'destructive' });
+      return null;
+    }
   };
 
-  // Stub: Products are managed via ERP
   const updateProduct = async (id: string, updates: any) => {
-    toast({
-      title: "Gerenciado via ERP",
-      description: "Atualize produtos através do sistema IntegraAPI.",
-      variant: "default",
-    });
-    return null;
+    try {
+      const updated = await updateProductInDatabase(id, updates);
+      if (updated) {
+        setProducts(prev => prev.map(p => (p.id === id ? updated : p)));
+        toast({ title: 'Produto atualizado', description: updated.name });
+      }
+      return updated;
+    } catch (error: any) {
+      console.error('[useProducts] updateProduct error:', error);
+      toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' });
+      return null;
+    }
   };
 
-  // Stub: Products are managed via ERP
   const deleteProduct = async (id: string) => {
-    toast({
-      title: "Gerenciado via ERP",
-      description: "Remova produtos através do sistema IntegraAPI.",
-      variant: "default",
-    });
+    try {
+      await deleteProductFromDatabase(id);
+      setProducts(prev => prev.filter(p => p.id !== id));
+      toast({ title: 'Produto removido' });
+    } catch (error: any) {
+      console.error('[useProducts] deleteProduct error:', error);
+      toast({ title: 'Erro ao remover', description: error.message, variant: 'destructive' });
+    }
   };
 
   const fetchSingleProduct = async (id: string): Promise<Product | null> => {
