@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils';
 // Importar componentes especializados
 import DeliveryInfo from '../Sidebar/DeliveryInfo';
 import QuantitySelector from '../Sidebar/QuantitySelector';
-import ActionButtons from '../Sidebar/ActionButtons';
 
 import TrustBadges from '../Sidebar/TrustBadges';
 import DynamicDelivery from '../Sidebar/DynamicDelivery';

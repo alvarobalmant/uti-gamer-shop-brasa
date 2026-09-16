@@ -19,7 +19,6 @@ import GoogleReviewsMobile from '../Sidebar/GoogleReviewsMobile';
 import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 import { useWhatsAppLoading } from '@/hooks/useWhatsAppLoading';
 import WhatsAppLoadingOverlay from '@/components/ui/WhatsAppLoadingOverlay';
-import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
 
 interface ProductPageMobileMercadoLivreProps {
   product: Product;
