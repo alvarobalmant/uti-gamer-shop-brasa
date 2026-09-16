@@ -481,6 +481,17 @@ const ProfessionalCartModal: React.FC<ProfessionalCartModalProps> = ({
               {/* Botões de Ação - Fixos no bottom */}
               <div className="sticky bottom-0 p-3 sm:p-6 border-t bg-background rounded-b-xl">
                 <Button
+                  onClick={() => {
+                    onClose();
+                    navigate('/checkout');
+                  }}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 mb-3 text-sm sm:text-base rounded-lg"
+                  size="lg"
+                >
+                  Pagar com Mercado Pago
+                </Button>
+
+                <Button
                   onClick={handleCheckout}
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 mb-3 text-sm sm:text-base rounded-lg"
                   size="lg"
