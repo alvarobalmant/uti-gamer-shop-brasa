@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProductDetail } from '@/hooks/useProductDetail';
 import { useCart } from '@/contexts/CartContext';
+import { Product } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/Auth';
 import ProfessionalCartModal from '@/components/Cart/ProfessionalCartModal';
@@ -100,7 +101,7 @@ const ProductPageSKU = () => {
 
   // "Comprar agora": adiciona ao carrinho com a quantidade selecionada e
   // redireciona para o carrinho. Não inicia pagamento nem cria pedido aqui.
-  const handleBuyNow = async (product: any, quantity: number) => {
+  const handleBuyNow = async (product: Product, quantity: number) => {
     try {
       const added = addToCart(product, undefined, undefined, quantity);
       if (!added) {
