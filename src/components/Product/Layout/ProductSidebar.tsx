@@ -109,11 +109,12 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
         {/* Comprar Agora - Botão Primário Ultra Profissional */}
         <Button 
           onClick={handleBuyNow}
-          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold text-base rounded-lg h-12 border-0 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out tracking-wide"
+          disabled={isBuyingNow}
+          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold text-base rounded-lg h-12 border-0 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out tracking-wide disabled:opacity-70"
           size="lg"
         >
           <Zap className="w-4 h-4 mr-2" />
-          Comprar agora
+          {isBuyingNow ? 'Adicionando...' : 'Comprar agora'}
         </Button>
         
         {/* Adicionar ao Carrinho - Botão Secundário Ultra Profissional */}
@@ -157,23 +158,6 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
 
       {/* TRUST BADGES */}
       <TrustBadges />
-
-      {/* MODAL DE CONFIRMAÇÃO DE COMPRA */}
-      <PurchaseConfirmationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        product={{
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          originalPrice: product.list_price,
-          image: product.additional_images?.[0] || product.image || '/placeholder.svg',
-          discount_percentage: product.discount_percentage,
-          uti_coins_cashback_percentage: product.uti_coins_cashback_percentage,
-          uti_coins_discount_percentage: product.uti_coins_discount_percentage
-        }}
-        quantity={quantity}
-      />
     </div>
   );
 };
