@@ -40,7 +40,7 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
   const [showAllSpecs, setShowAllSpecs] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
 
   // Hooks do sistema
   const { addToCart } = useCart();
@@ -334,11 +334,11 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
             <Button
               onClick={handleBuyNow}
               size="lg"
-              disabled={product.stock === 0}
-              className="w-full font-bold text-lg h-12 rounded-lg shadow-lg transition-all duration-300 bg-red-600 hover:bg-red-700 text-white hover:shadow-xl active:scale-[0.98]"
+              disabled={product.stock === 0 || isBuyingNow}
+              className="w-full font-bold text-lg h-12 rounded-lg shadow-lg transition-all duration-300 bg-red-600 hover:bg-red-700 text-white hover:shadow-xl active:scale-[0.98] disabled:opacity-70"
             >
               <Zap className="w-5 h-5 mr-2" />
-              Comprar agora
+              {isBuyingNow ? 'Adicionando...' : 'Comprar agora'}
             </Button>
 
             {/* Botão Adicionar ao Carrinho */}
@@ -467,23 +467,6 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
 
       {/* Loading Overlay para WhatsApp */}
       <WhatsAppLoadingOverlay isVisible={isWhatsAppLoading} />
-
-      {/* MODAL DE CONFIRMAÇÃO DE COMPRA - IGUAL AO DESKTOP */}
-      <PurchaseConfirmationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        product={{
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          originalPrice: product.list_price,
-          image: product.additional_images?.[0] || product.image || '/placeholder.svg',
-          discount_percentage: product.discount_percentage,
-          uti_coins_cashback_percentage: product.uti_coins_cashback_percentage,
-          uti_coins_discount_percentage: product.uti_coins_discount_percentage
-        }}
-        quantity={quantity}
-      />
     </div>
   );
 };
