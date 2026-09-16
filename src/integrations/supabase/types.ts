@@ -3033,6 +3033,16 @@ export type Database = {
         Returns: Json
       }
       get_next_brasilia_8pm: { Args: never; Returns: string }
+      get_order_public_status: {
+        Args: { p_reference: string }
+        Returns: {
+          created_at: string
+          order_number: string
+          payment_status: string
+          status: string
+          total_amount: number
+        }[]
+      }
       get_performance_correlation: {
         Args: { p_end_date?: string; p_start_date?: string }
         Returns: Json
