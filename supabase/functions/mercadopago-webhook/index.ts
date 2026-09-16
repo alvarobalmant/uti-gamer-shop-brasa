@@ -159,11 +159,7 @@ Deno.serve(async (req) => {
     }
 
     // ---- Sync status (always written, so a failed retry is never lost) ----
-    if (
-      internal.payment_status !== mapped.payment_status ||
-      internal.status !== mapped.status ||
-      (mpPaymentId && true)
-    ) {
+    {
       const { error: updateError } = await supabase
         .from('orders')
         .update({
