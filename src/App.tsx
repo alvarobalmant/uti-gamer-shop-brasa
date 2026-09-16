@@ -91,6 +91,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const UTIPro = lazy(() => import("./pages/UTIPro"));
 const UTICare = lazy(() => import("./pages/UTICare"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const CartPage = lazy(() => import("./pages/CartPage"));
 const CheckoutStatusPage = lazy(() => import("./pages/CheckoutStatusPage"));
 
 // Lazy loading para páginas institucionais
@@ -263,8 +264,9 @@ const App = () => {
                                              }
                                            />
 
-                                             {/* Special routes - MUST come before dynamic routes */}
-                                             <Route path="/checkout" element={<CheckoutPage />} />
+                                              {/* Special routes - MUST come before dynamic routes */}
+                                              <Route path="/carrinho" element={<CartPage />} />
+                                              <Route path="/checkout" element={<CheckoutPage />} />
                                              <Route path="/checkout/success" element={<CheckoutStatusPage />} />
                                              <Route path="/checkout/pending" element={<CheckoutStatusPage />} />
                                              <Route path="/checkout/failure" element={<CheckoutStatusPage />} />
