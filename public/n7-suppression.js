@@ -124,22 +124,26 @@
   // Interceptar MutationObserver para capturar novos elementos com erro
   const originalMutationObserver = window.MutationObserver;
   window.MutationObserver = function(callback) {
-    const wrappedCallback = function(mutations) {
-      mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node;
-            if (element.textContent && isN7MapError(element.textContent)) {
-              console.log('🔇 [N7PreemptiveScript] Novo elemento DOM com erro n7.map detectado e removido');
-              element.style.display = 'none';
+    const wrappedCallback = function(mutations, observer) {
+      try {
+        mutations.forEach(mutation => {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const element = node;
+              if (element.textContent && isN7MapError(element.textContent)) {
+                element.style.display = 'none';
+              }
             }
-          }
+          });
         });
-      });
-      return callback(mutations);
+      } catch (e) {
+        // ignore
+      }
+      return callback.call(this, mutations, observer);
     };
     return new originalMutationObserver(wrappedCallback);
   };
+  window.MutationObserver.prototype = originalMutationObserver.prototype;
   
   console.log('✅ [N7PreemptiveScript] Supressão de erro n7.map na origem ativada');
   
