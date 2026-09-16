@@ -44,6 +44,7 @@ const CheckoutPage: React.FC = () => {
   const [email, setEmail] = useState<string>(user?.email ?? '');
   const [phone, setPhone] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
 
   const totals = useMemo(() => {
     const subtotal = cart.reduce((acc, item) => acc + effPrice(item.product) * item.quantity, 0);
