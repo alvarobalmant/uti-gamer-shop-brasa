@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +44,7 @@ const CheckoutPage: React.FC = () => {
   const [email, setEmail] = useState<string>(user?.email ?? '');
   const [phone, setPhone] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
 
   const totals = useMemo(() => {
     const subtotal = cart.reduce((acc, item) => acc + effPrice(item.product) * item.quantity, 0);
@@ -68,7 +69,10 @@ const CheckoutPage: React.FC = () => {
       toast({ title: 'Atenção', description: validationError, variant: 'destructive' });
       return;
     }
-    if (loading) return; // double-click guard
+    // Double-click guard: the ref blocks synchronous repeat clicks before the
+    // state update lands. The server also deduplicates identical carts.
+    if (loading || submittingRef.current) return;
+    submittingRef.current = true;
     setLoading(true);
 
     try {
@@ -89,6 +93,7 @@ const CheckoutPage: React.FC = () => {
       if (error || !data?.checkout_url) {
         const message = data?.error ?? 'Não foi possível iniciar o pagamento. Tente novamente.';
         toast({ title: 'Erro no pagamento', description: message, variant: 'destructive' });
+        submittingRef.current = false;
         setLoading(false);
         return;
       }
@@ -103,6 +108,7 @@ const CheckoutPage: React.FC = () => {
         description: 'Falha de conexão. Verifique sua internet e tente novamente.',
         variant: 'destructive',
       });
+      submittingRef.current = false;
       setLoading(false);
     }
   };

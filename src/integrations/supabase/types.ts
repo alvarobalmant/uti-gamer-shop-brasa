@@ -781,6 +781,7 @@ export type Database = {
       orders: {
         Row: {
           checkout_url: string | null
+          client_ip: string | null
           created_at: string
           currency: string
           customer_email: string
@@ -790,6 +791,7 @@ export type Database = {
           discount_total: number
           external_reference: string
           id: string
+          items_signature: string | null
           mercadopago_order_id: string | null
           mercadopago_payment_id: string | null
           metadata: Json
@@ -806,6 +808,7 @@ export type Database = {
         }
         Insert: {
           checkout_url?: string | null
+          client_ip?: string | null
           created_at?: string
           currency?: string
           customer_email: string
@@ -815,6 +818,7 @@ export type Database = {
           discount_total?: number
           external_reference: string
           id?: string
+          items_signature?: string | null
           mercadopago_order_id?: string | null
           mercadopago_payment_id?: string | null
           metadata?: Json
@@ -831,6 +835,7 @@ export type Database = {
         }
         Update: {
           checkout_url?: string | null
+          client_ip?: string | null
           created_at?: string
           currency?: string
           customer_email?: string
@@ -840,6 +845,7 @@ export type Database = {
           discount_total?: number
           external_reference?: string
           id?: string
+          items_signature?: string | null
           mercadopago_order_id?: string | null
           mercadopago_payment_id?: string | null
           metadata?: Json
@@ -3136,10 +3142,12 @@ export type Database = {
         Returns: Json
       }
       refresh_materialized_views: { Args: never; Returns: Json }
+      release_order_stock: { Args: { p_order_id: string }; Returns: boolean }
       remover_meses_assinatura: {
         Args: { meses: number; user_id: string }
         Returns: boolean
       }
+      reserve_order_stock: { Args: { p_order_id: string }; Returns: Json }
       spend_coins_for_discount: {
         Args: {
           p_amount: number

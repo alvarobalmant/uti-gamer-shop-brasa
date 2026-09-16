@@ -16,6 +16,13 @@ const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const MP_ACCESS_TOKEN = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN') ?? '';
 
+// Abuse limits for this public endpoint.
+const RATE_WINDOW_MINUTES = 10;
+const MAX_ORDERS_PER_EMAIL = 8;
+const MAX_ORDERS_PER_IP = 15;
+// Window in which an identical cart from the same customer reuses the order.
+const REUSE_WINDOW_MINUTES = 30;
+
 const ItemSchema = z.object({
   product_id: z.string().uuid(),
   quantity: z.number().int().min(1).max(99),
@@ -47,6 +54,17 @@ function json(body: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
+}
+
+function clientIpFrom(req: Request): string {
+  const fwd = req.headers.get('x-forwarded-for') ?? '';
+  const ip = fwd.split(',')[0]?.trim() || req.headers.get('cf-connecting-ip') || '';
+  return ip.slice(0, 60);
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 Deno.serve(async (req) => {
@@ -93,11 +111,71 @@ Deno.serve(async (req) => {
     }
   }
 
-  // ---- Look up real products/prices/stock (server is the source of truth) ----
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   });
 
+  const clientIp = clientIpFrom(req);
+  const email = parsedBody.customer.email.toLowerCase();
+  const windowStart = new Date(Date.now() - RATE_WINDOW_MINUTES * 60_000).toISOString();
+
+  // ---- Rate limiting (public endpoint) ----
+  const [emailCount, ipCount] = await Promise.all([
+    supabase
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('customer_email', email)
+      .gte('created_at', windowStart),
+    clientIp
+      ? supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('client_ip', clientIp)
+          .gte('created_at', windowStart)
+      : Promise.resolve({ count: 0 }),
+  ]);
+
+  if (
+    (emailCount.count ?? 0) >= MAX_ORDERS_PER_EMAIL ||
+    ((ipCount as { count?: number }).count ?? 0) >= MAX_ORDERS_PER_IP
+  ) {
+    return json(
+      { error: 'Muitas tentativas de pagamento. Aguarde alguns minutos e tente novamente.' },
+      429,
+    );
+  }
+
+  // ---- Deduplicate retries: identical cart from same customer reuses the order ----
+  const signatureSource = [
+    email,
+    ...[...qtyByProduct.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([id, q]) => `${id}x${q}`),
+  ].join('|');
+  const itemsSignature = await sha256Hex(signatureSource);
+
+  const { data: existing } = await supabase
+    .from('orders')
+    .select('id, order_number, external_reference, total_amount, checkout_url, payment_status')
+    .eq('customer_email', email)
+    .eq('items_signature', itemsSignature)
+    .eq('payment_status', 'pending')
+    .eq('status', 'pending')
+    .gte('created_at', new Date(Date.now() - REUSE_WINDOW_MINUTES * 60_000).toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existing?.checkout_url) {
+    return json({
+      order_id: existing.id,
+      order_number: existing.order_number,
+      external_reference: existing.external_reference,
+      total_amount: existing.total_amount,
+      checkout_url: existing.checkout_url,
+      reused: true,
+    });
+  }
+
+  // ---- Look up real products/prices/stock (server is the source of truth) ----
   const { data: products, error: productsError } = await supabase
     .from('products')
     .select('id, name, price, promotional_price, stock, is_active')
@@ -145,14 +223,21 @@ Deno.serve(async (req) => {
     .slice(0, 8)
     .toUpperCase()}`;
 
+  const baseMetadata = {
+    source: 'checkout',
+    item_count: lines.reduce((a, l) => a + l.qty, 0),
+  };
+
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({
       external_reference: externalReference,
       customer_id: customerId,
       customer_name: parsedBody.customer.name,
-      customer_email: parsedBody.customer.email,
+      customer_email: email,
       customer_phone: parsedBody.customer.phone ?? null,
+      client_ip: clientIp || null,
+      items_signature: itemsSignature,
       subtotal: toBRL(subtotalCents),
       shipping_cost: toBRL(shippingCents),
       discount_total: '0.00',
@@ -162,13 +247,13 @@ Deno.serve(async (req) => {
       payment_status: 'pending',
       payment_provider: 'mercadopago',
       shipping_info: parsedBody.shipping ?? null,
-      metadata: { source: 'checkout', item_count: lines.reduce((a, l) => a + l.qty, 0) },
+      metadata: baseMetadata,
     })
     .select('id, order_number, external_reference')
     .single();
 
   if (orderError || !order) {
-    console.error('order insert failed', orderError);
+    console.error('order insert failed', orderError?.message);
     return json({ error: 'Erro ao registrar o pedido' }, 500);
   }
 
@@ -183,10 +268,44 @@ Deno.serve(async (req) => {
     })),
   );
   if (itemsError) {
-    console.error('order_items insert failed', itemsError);
+    console.error('order_items insert failed', itemsError.message);
     await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id);
     return json({ error: 'Erro ao registrar os itens do pedido' }, 500);
   }
+
+  // ---- Atomic stock reservation (prevents oversell under concurrency) ----
+  const { data: reservation, error: reservationError } = await supabase.rpc('reserve_order_stock', {
+    p_order_id: order.id,
+  });
+
+  if (reservationError || !(reservation as { ok?: boolean } | null)?.ok) {
+    const detail = (reservation as { detail?: string } | null)?.detail;
+    if (reservationError) console.error('reserve_order_stock failed', reservationError.message);
+    await supabase
+      .from('orders')
+      .update({ status: 'cancelled', payment_status: 'cancelled' })
+      .eq('id', order.id);
+    return json(
+      {
+        error: detail
+          ? `Estoque insuficiente para "${detail}". Ajuste a quantidade no carrinho.`
+          : 'Não foi possível reservar o estoque. Tente novamente.',
+      },
+      409,
+    );
+  }
+
+  const releaseAndCancel = async (reason: string, mpStatus?: number) => {
+    await supabase.rpc('release_order_stock', { p_order_id: order.id });
+    await supabase
+      .from('orders')
+      .update({
+        status: 'cancelled',
+        payment_status: 'cancelled',
+        metadata: { ...baseMetadata, cancel_reason: reason, ...(mpStatus ? { mp_error: mpStatus } : {}) },
+      })
+      .eq('id', order.id);
+  };
 
   // ---- Build Mercado Pago Order (Checkout Pro / Orders API) ----
   // Sum of items[].total_amount must equal total_amount exactly — shipping is
@@ -218,7 +337,7 @@ Deno.serve(async (req) => {
     total_amount: toBRL(totalCents),
     external_reference: externalReference,
     description: `Pedido ${order.order_number} - UTI Gamer Shop Brasa`.slice(0, 250),
-    payer: { email: parsedBody.customer.email },
+    payer: { email },
     items: mpItems,
     config: {
       notification_url: `${SUPABASE_URL}/functions/v1/mercadopago-webhook`,
@@ -231,9 +350,11 @@ Deno.serve(async (req) => {
     },
   };
 
-  const clientIdempotencyKey = req.headers.get('x-idempotency-key');
-  const idempotencyKey =
-    clientIdemKeyIsValid(clientIdempotencyKey) ?? crypto.randomUUID();
+  // Idempotency key is derived server-side — clients cannot influence it.
+  const idempotencyKey = await sha256Hex(`mp-order:${externalReference}`).then(
+    (hex) =>
+      `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`,
+  );
 
   let mpResponse: Response;
   try {
@@ -243,7 +364,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify(mpPayload),
     });
   } catch (e) {
-    console.error('mercado pago fetch failed', e);
+    console.error('mercado pago fetch failed', e instanceof Error ? e.message : 'unknown');
+    await releaseAndCancel('gateway_unreachable');
     return json({ error: 'Falha de conexão com o gateway de pagamento' }, 502);
   }
 
@@ -251,10 +373,7 @@ Deno.serve(async (req) => {
 
   if (!mpResponse.ok || !mpJson?.id) {
     console.error('mercado pago create failed', mpResponse.status);
-    await supabase
-      .from('orders')
-      .update({ status: 'cancelled', metadata: { source: 'checkout', mp_error: mpResponse.status } })
-      .eq('id', order.id);
+    await releaseAndCancel('gateway_rejected', mpResponse.status);
     return json({ error: 'Não foi possível iniciar o pagamento. Tente novamente.' }, 502);
   }
 
@@ -264,7 +383,7 @@ Deno.serve(async (req) => {
     .update({
       mercadopago_order_id: String(mpJson.id),
       checkout_url: checkoutUrl ?? null,
-      metadata: { source: 'checkout', idempotency_key: idempotencyKey },
+      metadata: { ...baseMetadata, idempotency_key: idempotencyKey },
     })
     .eq('id', order.id);
 
@@ -276,10 +395,3 @@ Deno.serve(async (req) => {
     checkout_url: checkoutUrl,
   });
 });
-
-function clientIdemKeyIsValid(value: string | null): string | null {
-  if (!value) return null;
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
-    ? value
-    : null;
-}

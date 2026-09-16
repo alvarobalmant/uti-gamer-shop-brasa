@@ -45,20 +45,20 @@ Deno.serve(async (req) => {
     url.searchParams.get('topic') ?? url.searchParams.get('type') ?? body?.type ?? body?.topic ?? 'unknown';
   const eventId = String(body?.id ?? `manual-${dataId ?? 'unknown'}`);
 
-  // ---- Signature validation (manifest: id, request-id, ts) ----
-  if (MP_WEBHOOK_SECRET) {
-    const valid = await verifyWebhookSignature(
-      MP_WEBHOOK_SECRET,
-      req.headers.get('x-signature'),
-      req.headers.get('x-request-id'),
-      dataId ? String(dataId) : null,
-    );
-    if (!valid) {
-      console.error('webhook signature invalid');
-      return json({ error: 'Assinatura inválida' }, 401);
-    }
-  } else {
-    console.warn('MERCADOPAGO_WEBHOOK_SECRET not configured — signature NOT validated');
+  // ---- Signature validation (manifest: id, request-id, ts) — fail closed ----
+  if (!MP_WEBHOOK_SECRET) {
+    console.error('MERCADOPAGO_WEBHOOK_SECRET not configured — rejecting notification');
+    return json({ error: 'Webhook não configurado' }, 401);
+  }
+  const validSignature = await verifyWebhookSignature(
+    MP_WEBHOOK_SECRET,
+    req.headers.get('x-signature'),
+    req.headers.get('x-request-id'),
+    dataId ? String(dataId) : null,
+  );
+  if (!validSignature) {
+    console.error('webhook signature invalid');
+    return json({ error: 'Assinatura inválida' }, 401);
   }
 
   if (!dataId) return json({ received: true, ignored: 'no data.id' });
@@ -158,8 +158,8 @@ Deno.serve(async (req) => {
       return json({ received: true, duplicate: true });
     }
 
-    // ---- Sync status ----
-    if (internal.payment_status !== mapped.payment_status) {
+    // ---- Sync status (always written, so a failed retry is never lost) ----
+    {
       const { error: updateError } = await supabase
         .from('orders')
         .update({
@@ -169,18 +169,30 @@ Deno.serve(async (req) => {
         })
         .eq('id', internal.id);
       if (updateError) {
-        console.error('order update failed', updateError);
+        console.error('order update failed', updateError.message);
         return json({ error: 'update failed' }, 500);
       }
+    }
 
-      // Definitive server-side confirmation only — apply stock exactly once.
-      if (mapped.payment_status === 'approved' && !internal.stock_applied) {
-        const { data: stockOk, error: stockError } = await supabase.rpc('apply_order_stock', {
-          p_order_id: internal.id,
-        });
-        if (stockError) console.error('apply_order_stock failed', stockError);
-        else if (stockOk === false) console.warn('stock already applied for order', internal.id);
+    // ---- Stock reconciliation (independent of the status transition) ----
+    // Stock is reserved when the order is created; here we only make sure the
+    // reservation matches the definitive payment outcome.
+    if (mapped.payment_status === 'approved' && !internal.stock_applied) {
+      const { data: reserved, error: reserveError } = await supabase.rpc('reserve_order_stock', {
+        p_order_id: internal.id,
+      });
+      if (reserveError) console.error('reserve_order_stock failed', reserveError.message);
+      else if (!(reserved as { ok?: boolean } | null)?.ok) {
+        console.error('paid order without available stock', internal.id);
       }
+    } else if (
+      ['rejected', 'cancelled', 'refunded'].includes(mapped.payment_status) &&
+      internal.stock_applied
+    ) {
+      const { error: releaseError } = await supabase.rpc('release_order_stock', {
+        p_order_id: internal.id,
+      });
+      if (releaseError) console.error('release_order_stock failed', releaseError.message);
     }
 
     await supabase
@@ -191,7 +203,7 @@ Deno.serve(async (req) => {
 
     return json({ received: true, payment_status: mapped.payment_status });
   } catch (e) {
-    console.error('webhook processing error', e);
+    console.error('webhook processing error', e instanceof Error ? e.message : 'unknown');
     // Return 500 so Mercado Pago retries this notification.
     return json({ error: 'processing error' }, 500);
   }
