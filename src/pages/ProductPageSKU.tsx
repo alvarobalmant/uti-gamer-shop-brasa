@@ -98,6 +98,26 @@ const ProductPageSKU = () => {
     }
   };
 
+  // "Comprar agora": adiciona ao carrinho com a quantidade selecionada e
+  // redireciona para o carrinho. Não inicia pagamento nem cria pedido aqui.
+  const handleBuyNow = async (product: any, quantity: number) => {
+    try {
+      const added = addToCart(product, undefined, undefined, quantity);
+      if (!added) {
+        // Estoque insuficiente ou quantidade inválida: não redireciona
+        return;
+      }
+      navigate('/carrinho');
+    } catch (error) {
+      console.error('Erro ao comprar agora:', error);
+      toast({
+        title: "Erro ao adicionar",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Determinar se deve mostrar componentes de SKU
   const shouldShowSKUComponents = () => {
     if (!product) return false;
