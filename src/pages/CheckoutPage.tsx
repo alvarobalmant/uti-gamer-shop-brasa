@@ -37,7 +37,7 @@ const effPrice = (
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { cart, clearCart } = useCart();
+  const { cart } = useCart();
   const { user } = useAuth();
 
   const [name, setName] = useState<string>(user?.user_metadata?.name ?? '');
