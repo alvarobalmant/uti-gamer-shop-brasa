@@ -25,7 +25,13 @@ Deno.serve(async (req) => {
   }
 
   const url = new URL(req.url);
-  let body: any = null;
+  interface WebhookBody {
+    id?: number | string;
+    type?: string;
+    topic?: string;
+    data?: { id?: number | string };
+  }
+  let body: WebhookBody | null = null;
   if (req.method === 'POST') {
     try {
       body = await req.json();
@@ -101,7 +107,13 @@ Deno.serve(async (req) => {
     }
 
     // ---- Locate internal order ----
-    let internal: any = null;
+    interface InternalOrder {
+      id: string;
+      status: string;
+      payment_status: string;
+      stock_applied: boolean;
+    }
+    let internal: InternalOrder | null = null;
     const byMpId = await supabase
       .from('orders')
       .select('id, status, payment_status, stock_applied')
