@@ -63,6 +63,7 @@ const QuantitySelector: React.FC<QuantitySelectorProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={handleDecrease}
+                aria-label="Diminuir quantidade"
                 disabled={quantity <= 1}
                 className="h-10 w-10 p-0 hover:bg-gray-100 disabled:opacity-50"
               >
@@ -77,6 +78,7 @@ const QuantitySelector: React.FC<QuantitySelectorProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={handleIncrease}
+                aria-label="Aumentar quantidade"
                 disabled={quantity >= maxQuantity}
                 className="h-10 w-10 p-0 hover:bg-gray-100 disabled:opacity-50"
               >
