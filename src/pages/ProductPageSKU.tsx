@@ -206,6 +206,7 @@ const ProductPageSKU = () => {
                   product={product}
                   skuNavigation={skuNavigation}
                   onAddToCart={handleAddToCart}
+                  onBuyNow={handleBuyNow}
                 />
               </Suspense>
             ) : (
@@ -218,6 +219,7 @@ const ProductPageSKU = () => {
                   product={product}
                   skuNavigation={skuNavigation}
                   onAddToCart={handleAddToCart}
+                  onBuyNow={handleBuyNow}
                 />
               </Suspense>
             );
