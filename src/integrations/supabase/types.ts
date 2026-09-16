@@ -652,6 +652,57 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          product_id: string | null
+          product_image: string | null
+          product_name: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          product_id?: string | null
+          product_image?: string | null
+          product_name: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          product_id?: string | null
+          product_image?: string | null
+          product_name?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_verification_codes: {
         Row: {
           browser_info: Json | null
@@ -724,6 +775,84 @@ export type Database = {
           uti_coins_discount_amount?: number | null
           uti_coins_preference?: boolean | null
           uti_coins_used?: number | null
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          checkout_url: string | null
+          created_at: string
+          currency: string
+          customer_email: string
+          customer_id: string | null
+          customer_name: string
+          customer_phone: string | null
+          discount_total: number
+          external_reference: string
+          id: string
+          mercadopago_order_id: string | null
+          mercadopago_payment_id: string | null
+          metadata: Json
+          order_number: string
+          payment_provider: string
+          payment_status: string
+          shipping_cost: number
+          shipping_info: Json | null
+          status: string
+          stock_applied: boolean
+          subtotal: number
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          customer_email: string
+          customer_id?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          discount_total?: number
+          external_reference: string
+          id?: string
+          mercadopago_order_id?: string | null
+          mercadopago_payment_id?: string | null
+          metadata?: Json
+          order_number?: string
+          payment_provider?: string
+          payment_status?: string
+          shipping_cost?: number
+          shipping_info?: Json | null
+          status?: string
+          stock_applied?: boolean
+          subtotal?: number
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          customer_email?: string
+          customer_id?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          discount_total?: number
+          external_reference?: string
+          id?: string
+          mercadopago_order_id?: string | null
+          mercadopago_payment_id?: string | null
+          metadata?: Json
+          order_number?: string
+          payment_provider?: string
+          payment_status?: string
+          shipping_cost?: number
+          shipping_info?: Json | null
+          status?: string
+          stock_applied?: boolean
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -946,6 +1075,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      payment_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_type: string | null
+          id: string
+          order_id: string | null
+          payload: Json | null
+          processed_at: string | null
+          provider: string
+          provider_order_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_type?: string | null
+          id?: string
+          order_id?: string | null
+          payload?: Json | null
+          processed_at?: string | null
+          provider?: string
+          provider_order_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_type?: string | null
+          id?: string
+          order_id?: string | null
+          payload?: Json | null
+          processed_at?: string | null
+          provider?: string
+          provider_order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       period_analytics: {
         Row: {
@@ -2678,6 +2851,7 @@ export type Database = {
           tuples_read: number
         }[]
       }
+      apply_order_stock: { Args: { p_order_id: string }; Returns: boolean }
       calculate_engagement_score: {
         Args: { p_page_url?: string; p_session_id: string }
         Returns: number
