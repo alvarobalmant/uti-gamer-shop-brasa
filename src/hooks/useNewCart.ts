@@ -49,46 +49,74 @@ export const useNewCart = () => {
     return `${product.id}-${size || 'default'}-${color || 'default'}`;
   }, []);
 
-  const addToCart = useCallback((product: Product, size?: string, color?: string) => {
-    console.log('addToCart chamado para:', product.name, 'size:', size, 'color:', color);
-    
+  const addToCart = useCallback((product: Product, size?: string, color?: string, quantity: number = 1): boolean => {
+    console.log('addToCart chamado para:', product.name, 'size:', size, 'color:', color, 'quantity:', quantity);
+
+    // Validação de quantidade
+    const qty = Math.floor(Number(quantity));
+    if (!Number.isFinite(qty) || qty < 1) {
+      toast({
+        title: "Quantidade inválida",
+        description: "Selecione uma quantidade válida antes de adicionar ao carrinho.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     const itemId = generateItemId(product, size, color);
-    let isNewItem = false;
-    let finalQuantity = 1;
-    
+    const existingItem = cart.find(item => item.id === itemId);
+    const resultingQuantity = (existingItem?.quantity || 0) + qty;
+
+    // Validação de estoque: não adicionar se exceder o disponível
+    const stock = typeof product.stock === 'number' ? product.stock : undefined;
+    if (stock !== undefined) {
+      if (stock <= 0) {
+        toast({
+          title: "Produto esgotado",
+          description: `${product.name} está fora de estoque no momento.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      if (resultingQuantity > stock) {
+        toast({
+          title: "Estoque insuficiente",
+          description: `Temos apenas ${stock} unidade(s) de ${product.name} disponíveis${existingItem ? ` e seu carrinho já contém ${existingItem.quantity}` : ''}.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+
     setCart(prev => {
       const existingItemIndex = prev.findIndex(item => item.id === itemId);
-      
+
       if (existingItemIndex >= 0) {
-        // Atualizar item existente
+        // Atualizar item existente acumulando a quantidade (sem duplicar item)
         const newCart = [...prev];
         newCart[existingItemIndex] = {
           ...newCart[existingItemIndex],
-          quantity: newCart[existingItemIndex].quantity + 1
+          quantity: newCart[existingItemIndex].quantity + qty
         };
-        finalQuantity = newCart[existingItemIndex].quantity;
-        isNewItem = false;
-        console.log('Item existente atualizado. Nova quantidade:', finalQuantity);
+        console.log('Item existente atualizado. Nova quantidade:', newCart[existingItemIndex].quantity);
         return newCart;
       } else {
-        // Adicionar novo item
+        // Adicionar novo item com a quantidade selecionada
         const newItem: CartItem = {
           id: itemId,
           product,
           size,
           color,
-          quantity: 1,
+          quantity: qty,
           addedAt: new Date()
         };
-        isNewItem = true;
-        finalQuantity = 1;
         console.log('Novo item adicionado:', newItem);
         return [...prev, newItem];
       }
     });
 
     // Track analytics with differentiation
-    trackAddToCart(product.id, 1, product.price);
+    trackAddToCart(product.id, qty, product.price);
 
     toast({
       title: "✅ Produto adicionado!",
@@ -96,7 +124,8 @@ export const useNewCart = () => {
       duration: 2000,
       className: "bg-green-50 border-green-200 text-green-800",
     });
-  }, [generateItemId, toast, trackAddToCart]);
+    return true;
+  }, [cart, generateItemId, toast, trackAddToCart]);
 
   const removeFromCart = useCallback((itemId: string) => {
     console.log('removeFromCart chamado para:', itemId);
