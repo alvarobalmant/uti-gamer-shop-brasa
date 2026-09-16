@@ -37,7 +37,7 @@ const effPrice = (
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { cart, clearCart } = useCart();
+  const { cart } = useCart();
   const { user } = useAuth();
 
   const [name, setName] = useState<string>(user?.user_metadata?.name ?? '');
@@ -98,8 +98,9 @@ const CheckoutPage: React.FC = () => {
         return;
       }
 
-      // Order created successfully — only now clear the cart and redirect.
-      await clearCart();
+      // Cart is intentionally kept until the payment is confirmed (the status
+      // page clears it once the order is approved), so a failed payment does
+      // not make the customer lose the items.
       window.location.href = data.checkout_url;
     } catch (e) {
       console.error('checkout error', e);

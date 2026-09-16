@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { useCart } from '@/contexts/CartContext';
 import {
   CheckCircle2,
   XCircle,
@@ -47,6 +48,7 @@ const CheckoutStatusPage: React.FC = () => {
       ? 'pending'
       : 'success';
 
+  const { clearCart } = useCart();
   const ref = new URLSearchParams(location.search).get('ref');
   const [order, setOrder] = useState<OrderStatus | null>(null);
   const [loading, setLoading] = useState(Boolean(ref));
@@ -87,6 +89,12 @@ const CheckoutStatusPage: React.FC = () => {
     }, 5000);
     return () => clearTimeout(t);
   }, [order, fetchStatus]);
+
+  // The cart is only emptied once the database (fed by the webhook) confirms
+  // the payment — a failed or abandoned payment keeps the items.
+  useEffect(() => {
+    if (order?.payment_status === 'approved') clearCart();
+  }, [order?.payment_status, clearCart]);
 
   const paymentStatus = order?.payment_status ?? null;
   const isApproved = paymentStatus === 'approved';
