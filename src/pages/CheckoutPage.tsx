@@ -93,6 +93,7 @@ const CheckoutPage: React.FC = () => {
       if (error || !data?.checkout_url) {
         const message = data?.error ?? 'Não foi possível iniciar o pagamento. Tente novamente.';
         toast({ title: 'Erro no pagamento', description: message, variant: 'destructive' });
+        submittingRef.current = false;
         setLoading(false);
         return;
       }
@@ -107,6 +108,7 @@ const CheckoutPage: React.FC = () => {
         description: 'Falha de conexão. Verifique sua internet e tente novamente.',
         variant: 'destructive',
       });
+      submittingRef.current = false;
       setLoading(false);
     }
   };

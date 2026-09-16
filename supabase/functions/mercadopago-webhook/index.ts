@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
 
     return json({ received: true, payment_status: mapped.payment_status });
   } catch (e) {
-    console.error('webhook processing error', e);
+    console.error('webhook processing error', e instanceof Error ? e.message : 'unknown');
     // Return 500 so Mercado Pago retries this notification.
     return json({ error: 'processing error' }, 500);
   }
