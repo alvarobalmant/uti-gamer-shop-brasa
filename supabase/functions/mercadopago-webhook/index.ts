@@ -158,8 +158,12 @@ Deno.serve(async (req) => {
       return json({ received: true, duplicate: true });
     }
 
-    // ---- Sync status ----
-    if (internal.payment_status !== mapped.payment_status) {
+    // ---- Sync status (always written, so a failed retry is never lost) ----
+    if (
+      internal.payment_status !== mapped.payment_status ||
+      internal.status !== mapped.status ||
+      (mpPaymentId && true)
+    ) {
       const { error: updateError } = await supabase
         .from('orders')
         .update({
@@ -169,18 +173,30 @@ Deno.serve(async (req) => {
         })
         .eq('id', internal.id);
       if (updateError) {
-        console.error('order update failed', updateError);
+        console.error('order update failed', updateError.message);
         return json({ error: 'update failed' }, 500);
       }
+    }
 
-      // Definitive server-side confirmation only — apply stock exactly once.
-      if (mapped.payment_status === 'approved' && !internal.stock_applied) {
-        const { data: stockOk, error: stockError } = await supabase.rpc('apply_order_stock', {
-          p_order_id: internal.id,
-        });
-        if (stockError) console.error('apply_order_stock failed', stockError);
-        else if (stockOk === false) console.warn('stock already applied for order', internal.id);
+    // ---- Stock reconciliation (independent of the status transition) ----
+    // Stock is reserved when the order is created; here we only make sure the
+    // reservation matches the definitive payment outcome.
+    if (mapped.payment_status === 'approved' && !internal.stock_applied) {
+      const { data: reserved, error: reserveError } = await supabase.rpc('reserve_order_stock', {
+        p_order_id: internal.id,
+      });
+      if (reserveError) console.error('reserve_order_stock failed', reserveError.message);
+      else if (!(reserved as { ok?: boolean } | null)?.ok) {
+        console.error('paid order without available stock', internal.id);
       }
+    } else if (
+      ['rejected', 'cancelled', 'refunded'].includes(mapped.payment_status) &&
+      internal.stock_applied
+    ) {
+      const { error: releaseError } = await supabase.rpc('release_order_stock', {
+        p_order_id: internal.id,
+      });
+      if (releaseError) console.error('release_order_stock failed', releaseError.message);
     }
 
     await supabase
