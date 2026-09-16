@@ -334,6 +334,9 @@ Deno.serve(async (req) => {
   const mpPayload = {
     type: 'online',
     processing_mode: 'manual',
+    // Explicit capture behaviour: approved payments are captured immediately,
+    // so an approved webhook always means the money was captured.
+    capture_mode: 'automatic',
     total_amount: toBRL(totalCents),
     external_reference: externalReference,
     description: `Pedido ${order.order_number} - UTI Gamer Shop Brasa`.slice(0, 250),
