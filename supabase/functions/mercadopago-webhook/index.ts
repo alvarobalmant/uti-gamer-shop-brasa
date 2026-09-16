@@ -45,20 +45,20 @@ Deno.serve(async (req) => {
     url.searchParams.get('topic') ?? url.searchParams.get('type') ?? body?.type ?? body?.topic ?? 'unknown';
   const eventId = String(body?.id ?? `manual-${dataId ?? 'unknown'}`);
 
-  // ---- Signature validation (manifest: id, request-id, ts) ----
-  if (MP_WEBHOOK_SECRET) {
-    const valid = await verifyWebhookSignature(
-      MP_WEBHOOK_SECRET,
-      req.headers.get('x-signature'),
-      req.headers.get('x-request-id'),
-      dataId ? String(dataId) : null,
-    );
-    if (!valid) {
-      console.error('webhook signature invalid');
-      return json({ error: 'Assinatura inválida' }, 401);
-    }
-  } else {
-    console.warn('MERCADOPAGO_WEBHOOK_SECRET not configured — signature NOT validated');
+  // ---- Signature validation (manifest: id, request-id, ts) — fail closed ----
+  if (!MP_WEBHOOK_SECRET) {
+    console.error('MERCADOPAGO_WEBHOOK_SECRET not configured — rejecting notification');
+    return json({ error: 'Webhook não configurado' }, 401);
+  }
+  const validSignature = await verifyWebhookSignature(
+    MP_WEBHOOK_SECRET,
+    req.headers.get('x-signature'),
+    req.headers.get('x-request-id'),
+    dataId ? String(dataId) : null,
+  );
+  if (!validSignature) {
+    console.error('webhook signature invalid');
+    return json({ error: 'Assinatura inválida' }, 401);
   }
 
   if (!dataId) return json({ received: true, ignored: 'no data.id' });
