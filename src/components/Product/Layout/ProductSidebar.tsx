@@ -9,17 +9,17 @@ import { cn } from '@/lib/utils';
 // Importar componentes especializados
 import DeliveryInfo from '../Sidebar/DeliveryInfo';
 import QuantitySelector from '../Sidebar/QuantitySelector';
-import ActionButtons from '../Sidebar/ActionButtons';
 
 import TrustBadges from '../Sidebar/TrustBadges';
 import DynamicDelivery from '../Sidebar/DynamicDelivery';
 
-import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductSidebarProps {
   product: Product;
   skuNavigation?: SKUNavigation;
   onAddToCart: (product: Product) => void;
+  onBuyNow?: (product: Product, quantity: number) => void | Promise<void>;
   className?: string;
 }
 
@@ -27,18 +27,58 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
   product,
   skuNavigation,
   onAddToCart,
+  onBuyNow,
   className
 }) => {
   const [quantity, setQuantity] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
+  const { toast } = useToast();
 
   const handleAddToCart = () => {
     onAddToCart(product);
   };
 
-  const handleBuyNow = () => {
-    // Abrir modal de confirmação de compra
-    setIsModalOpen(true);
+  const handleBuyNow = async () => {
+    // Guarda contra duplo clique
+    if (isBuyingNow) return;
+
+    const stock = typeof product.stock === 'number' ? product.stock : undefined;
+    if (stock !== undefined && stock <= 0) {
+      toast({
+        title: "Produto esgotado",
+        description: "Este produto está fora de estoque no momento.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (stock !== undefined && quantity > stock) {
+      toast({
+        title: "Estoque insuficiente",
+        description: `Temos apenas ${stock} unidade(s) disponíveis.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // "Comprar agora": adiciona ao carrinho com a quantidade selecionada
+    // e só então redireciona para o carrinho (via onBuyNow da página)
+    if (onBuyNow) {
+      try {
+        setIsBuyingNow(true);
+        await onBuyNow(product, quantity);
+      } catch (error) {
+        console.error('Erro ao comprar agora:', error);
+        toast({
+          title: "Não foi possível adicionar ao carrinho",
+          description: "Tente novamente em instantes.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsBuyingNow(false);
+      }
+    } else {
+      onAddToCart(product);
+    }
   };
 
   return (
@@ -68,11 +108,12 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
         {/* Comprar Agora - Botão Primário Ultra Profissional */}
         <Button 
           onClick={handleBuyNow}
-          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold text-base rounded-lg h-12 border-0 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out tracking-wide"
+          disabled={isBuyingNow}
+          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold text-base rounded-lg h-12 border-0 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out tracking-wide disabled:opacity-70"
           size="lg"
         >
           <Zap className="w-4 h-4 mr-2" />
-          Comprar agora
+          {isBuyingNow ? 'Adicionando...' : 'Comprar agora'}
         </Button>
         
         {/* Adicionar ao Carrinho - Botão Secundário Ultra Profissional */}
@@ -116,23 +157,6 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
 
       {/* TRUST BADGES */}
       <TrustBadges />
-
-      {/* MODAL DE CONFIRMAÇÃO DE COMPRA */}
-      <PurchaseConfirmationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        product={{
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          originalPrice: product.list_price,
-          image: product.additional_images?.[0] || product.image || '/placeholder.svg',
-          discount_percentage: product.discount_percentage,
-          uti_coins_cashback_percentage: product.uti_coins_cashback_percentage,
-          uti_coins_discount_percentage: product.uti_coins_discount_percentage
-        }}
-        quantity={quantity}
-      />
     </div>
   );
 };

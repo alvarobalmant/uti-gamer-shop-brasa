@@ -19,18 +19,19 @@ import GoogleReviewsMobile from '../Sidebar/GoogleReviewsMobile';
 import { sendSingleProductToWhatsApp } from '@/utils/whatsapp';
 import { useWhatsAppLoading } from '@/hooks/useWhatsAppLoading';
 import WhatsAppLoadingOverlay from '@/components/ui/WhatsAppLoadingOverlay';
-import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
 
 interface ProductPageMobileMercadoLivreProps {
   product: Product;
   skuNavigation?: SKUNavigation;
   onAddToCart: (product: Product) => void;
+  onBuyNow?: (product: Product, quantity: number) => void | Promise<void>;
 }
 
 const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps> = ({ 
   product, 
   skuNavigation,
-  onAddToCart 
+  onAddToCart,
+  onBuyNow
 }) => {
   // Estados para controle da interface
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -38,7 +39,7 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
   const [showAllSpecs, setShowAllSpecs] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
 
   // Hooks do sistema
   const { addToCart } = useCart();
@@ -95,10 +96,9 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
 
   const handleAddToCart = async () => {
     try {
-      // Adicionar múltiplas vezes baseado na quantidade
-      for (let i = 0; i < quantity; i++) {
-        await addToCart(product);
-      }
+      // Adiciona de uma vez com a quantidade selecionada (acumula no item existente)
+      const added = addToCart(product, undefined, undefined, quantity);
+      if (!added) return;
       
       trackEvent('add_to_cart', {
         product_id: product.id,
@@ -119,9 +119,9 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
   };
 
   const handleBuyNow = async () => {
-    // Abrir modal de confirmação igual ao desktop
-    setIsModalOpen(true);
-    
+    // Guarda contra duplo clique
+    if (isBuyingNow) return;
+
     // Track analytics
     trackEvent('buy_now_click', {
       product_id: product.id,
@@ -129,6 +129,22 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
       product_price: product.price,
       quantity: quantity
     });
+
+    // "Comprar agora": adiciona ao carrinho com a quantidade selecionada e
+    // redireciona para o carrinho (via onBuyNow da página). Sem pagamento aqui.
+    if (onBuyNow) {
+      try {
+        setIsBuyingNow(true);
+        await onBuyNow(product, quantity);
+      } catch (error) {
+        console.error('Erro ao comprar agora:', error);
+      } finally {
+        setIsBuyingNow(false);
+      }
+    } else {
+      const added = addToCart(product, undefined, undefined, quantity);
+      if (added) onAddToCart(product);
+    }
   };
 
   return (
@@ -317,11 +333,11 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
             <Button
               onClick={handleBuyNow}
               size="lg"
-              disabled={product.stock === 0}
-              className="w-full font-bold text-lg h-12 rounded-lg shadow-lg transition-all duration-300 bg-red-600 hover:bg-red-700 text-white hover:shadow-xl active:scale-[0.98]"
+              disabled={product.stock === 0 || isBuyingNow}
+              className="w-full font-bold text-lg h-12 rounded-lg shadow-lg transition-all duration-300 bg-red-600 hover:bg-red-700 text-white hover:shadow-xl active:scale-[0.98] disabled:opacity-70"
             >
               <Zap className="w-5 h-5 mr-2" />
-              Comprar agora
+              {isBuyingNow ? 'Adicionando...' : 'Comprar agora'}
             </Button>
 
             {/* Botão Adicionar ao Carrinho */}
@@ -450,23 +466,6 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
 
       {/* Loading Overlay para WhatsApp */}
       <WhatsAppLoadingOverlay isVisible={isWhatsAppLoading} />
-
-      {/* MODAL DE CONFIRMAÇÃO DE COMPRA - IGUAL AO DESKTOP */}
-      <PurchaseConfirmationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        product={{
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          originalPrice: product.list_price,
-          image: product.additional_images?.[0] || product.image || '/placeholder.svg',
-          discount_percentage: product.discount_percentage,
-          uti_coins_cashback_percentage: product.uti_coins_cashback_percentage,
-          uti_coins_discount_percentage: product.uti_coins_discount_percentage
-        }}
-        quantity={quantity}
-      />
     </div>
   );
 };

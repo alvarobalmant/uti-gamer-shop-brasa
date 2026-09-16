@@ -9,6 +9,7 @@ interface ProductLayoutProps {
   product: Product;
   skuNavigation?: SKUNavigation;
   onAddToCart: (product: Product) => void;
+  onBuyNow?: (product: Product, quantity: number) => void | Promise<void>;
   className?: string;
 }
 
@@ -16,6 +17,7 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
   product,
   skuNavigation,
   onAddToCart,
+  onBuyNow,
   className
 }) => {
   return (
@@ -91,6 +93,7 @@ const ProductLayout: React.FC<ProductLayoutProps> = ({
               product={product}
               skuNavigation={skuNavigation}
               onAddToCart={onAddToCart}
+              onBuyNow={onBuyNow}
             />
           </div>
         </div>
