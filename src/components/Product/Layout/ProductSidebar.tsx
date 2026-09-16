@@ -14,12 +14,13 @@ import ActionButtons from '../Sidebar/ActionButtons';
 import TrustBadges from '../Sidebar/TrustBadges';
 import DynamicDelivery from '../Sidebar/DynamicDelivery';
 
-import { PurchaseConfirmationModal } from '@/components/Product/PurchaseConfirmationModal';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductSidebarProps {
   product: Product;
   skuNavigation?: SKUNavigation;
   onAddToCart: (product: Product) => void;
+  onBuyNow?: (product: Product, quantity: number) => void | Promise<void>;
   className?: string;
 }
 
@@ -27,18 +28,58 @@ const ProductSidebar: React.FC<ProductSidebarProps> = ({
   product,
   skuNavigation,
   onAddToCart,
+  onBuyNow,
   className
 }) => {
   const [quantity, setQuantity] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
+  const { toast } = useToast();
 
   const handleAddToCart = () => {
     onAddToCart(product);
   };
 
-  const handleBuyNow = () => {
-    // Abrir modal de confirmação de compra
-    setIsModalOpen(true);
+  const handleBuyNow = async () => {
+    // Guarda contra duplo clique
+    if (isBuyingNow) return;
+
+    const stock = typeof product.stock === 'number' ? product.stock : undefined;
+    if (stock !== undefined && stock <= 0) {
+      toast({
+        title: "Produto esgotado",
+        description: "Este produto está fora de estoque no momento.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (stock !== undefined && quantity > stock) {
+      toast({
+        title: "Estoque insuficiente",
+        description: `Temos apenas ${stock} unidade(s) disponíveis.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // "Comprar agora": adiciona ao carrinho com a quantidade selecionada
+    // e só então redireciona para o carrinho (via onBuyNow da página)
+    if (onBuyNow) {
+      try {
+        setIsBuyingNow(true);
+        await onBuyNow(product, quantity);
+      } catch (error) {
+        console.error('Erro ao comprar agora:', error);
+        toast({
+          title: "Não foi possível adicionar ao carrinho",
+          description: "Tente novamente em instantes.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsBuyingNow(false);
+      }
+    } else {
+      onAddToCart(product);
+    }
   };
 
   return (
