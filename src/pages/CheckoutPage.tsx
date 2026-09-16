@@ -26,7 +26,9 @@ import {
 const FREE_SHIPPING_THRESHOLD = 150;
 const STANDARD_SHIPPING = 15;
 
-const effPrice = (p: any): number => {
+const effPrice = (
+  p: { price?: number | string; promotional_price?: number | string; promotionalPrice?: number | string } | null | undefined,
+): number => {
   const price = Number(p?.price ?? 0);
   const promo = Number(p?.promotional_price ?? p?.promotionalPrice ?? 0);
   return promo > 0 && promo < price ? promo : price;
