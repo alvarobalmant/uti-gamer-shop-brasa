@@ -25,12 +25,14 @@ interface ProductPageMobileMercadoLivreProps {
   product: Product;
   skuNavigation?: SKUNavigation;
   onAddToCart: (product: Product) => void;
+  onBuyNow?: (product: Product, quantity: number) => void | Promise<void>;
 }
 
 const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps> = ({ 
   product, 
   skuNavigation,
-  onAddToCart 
+  onAddToCart,
+  onBuyNow
 }) => {
   // Estados para controle da interface
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -95,10 +97,9 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
 
   const handleAddToCart = async () => {
     try {
-      // Adicionar múltiplas vezes baseado na quantidade
-      for (let i = 0; i < quantity; i++) {
-        await addToCart(product);
-      }
+      // Adiciona de uma vez com a quantidade selecionada (acumula no item existente)
+      const added = addToCart(product, undefined, undefined, quantity);
+      if (!added) return;
       
       trackEvent('add_to_cart', {
         product_id: product.id,
@@ -119,9 +120,9 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
   };
 
   const handleBuyNow = async () => {
-    // Abrir modal de confirmação igual ao desktop
-    setIsModalOpen(true);
-    
+    // Guarda contra duplo clique
+    if (isBuyingNow) return;
+
     // Track analytics
     trackEvent('buy_now_click', {
       product_id: product.id,
@@ -129,6 +130,22 @@ const ProductPageMobileMercadoLivre: React.FC<ProductPageMobileMercadoLivreProps
       product_price: product.price,
       quantity: quantity
     });
+
+    // "Comprar agora": adiciona ao carrinho com a quantidade selecionada e
+    // redireciona para o carrinho (via onBuyNow da página). Sem pagamento aqui.
+    if (onBuyNow) {
+      try {
+        setIsBuyingNow(true);
+        await onBuyNow(product, quantity);
+      } catch (error) {
+        console.error('Erro ao comprar agora:', error);
+      } finally {
+        setIsBuyingNow(false);
+      }
+    } else {
+      const added = addToCart(product, undefined, undefined, quantity);
+      if (added) onAddToCart(product);
+    }
   };
 
   return (
