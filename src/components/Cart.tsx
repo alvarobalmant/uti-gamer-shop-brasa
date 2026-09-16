@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, X, Trash2, Plus, Minus, ShoppingBag, CreditCard, Gift } from 'lucide-react';
 import { CartItem } from '@/types/cart';
@@ -30,6 +31,7 @@ interface CartSheetProps {
 }
 
 const Cart = ({ showCart = false, setShowCart }: CartSheetProps) => {
+  const navigate = useNavigate();
   const { 
     items: cart, 
     updateQuantity, 
@@ -310,6 +312,21 @@ const Cart = ({ showCart = false, setShowCart }: CartSheetProps) => {
 
             {/* Action Buttons Simplificados */}
             <div className="space-y-3">
+              <SheetClose asChild>
+                <Button
+                  onClick={() => navigate('/checkout')}
+                  className="w-full bg-gradient-to-r from-red-600 via-red-600 to-red-700 hover:from-red-700 hover:via-red-700 hover:to-red-800 text-white font-bold py-4 rounded-xl transition-all duration-200 text-base shadow-lg"
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                      <CreditCard className="w-4 h-4" />
+                    </div>
+                    <span>Pagar com Mercado Pago</span>
+                    <div className="text-lg">💳</div>
+                  </div>
+                </Button>
+              </SheetClose>
+
               <Button
                 onClick={sendToWhatsApp}
                 className="w-full bg-gradient-to-r from-green-600 via-green-600 to-green-700 hover:from-green-700 hover:via-green-700 hover:to-green-800 text-white font-bold py-4 rounded-xl transition-all duration-200 text-base shadow-lg"

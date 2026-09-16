@@ -90,6 +90,8 @@ const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const UTIPro = lazy(() => import("./pages/UTIPro"));
 const UTICare = lazy(() => import("./pages/UTICare"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const CheckoutStatusPage = lazy(() => import("./pages/CheckoutStatusPage"));
 
 // Lazy loading para páginas institucionais
 const FaleConosco = lazy(() => import("./pages/FaleConosco"));
@@ -261,8 +263,12 @@ const App = () => {
                                              }
                                            />
 
-                                            {/* Special routes - MUST come before dynamic routes */}
-                                            <Route path="/servicos/assistencia" element={<AssistenciaTecnica />} />
+                                             {/* Special routes - MUST come before dynamic routes */}
+                                             <Route path="/checkout" element={<CheckoutPage />} />
+                                             <Route path="/checkout/success" element={<CheckoutStatusPage />} />
+                                             <Route path="/checkout/pending" element={<CheckoutStatusPage />} />
+                                             <Route path="/checkout/failure" element={<CheckoutStatusPage />} />
+                                             <Route path="/servicos/assistencia" element={<AssistenciaTecnica />} />
                                             <Route path="/care" element={<UTICare />} />
                                             <Route path="/busca" element={<UnifiedResultsPage mode="search" />} />
                                             <Route path="/secao/:sectionKey" element={<UnifiedResultsPage mode="section" />} />

@@ -51,3 +51,9 @@ verify_jwt = false
 
 [functions.admin-auto-login]
 verify_jwt = false
+
+[functions.create-mercadopago-order]
+verify_jwt = false
+
+[functions.mercadopago-webhook]
+verify_jwt = false
