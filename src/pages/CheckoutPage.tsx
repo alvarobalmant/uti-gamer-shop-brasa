@@ -68,7 +68,10 @@ const CheckoutPage: React.FC = () => {
       toast({ title: 'Atenção', description: validationError, variant: 'destructive' });
       return;
     }
-    if (loading) return; // double-click guard
+    // Double-click guard: the ref blocks synchronous repeat clicks before the
+    // state update lands. The server also deduplicates identical carts.
+    if (loading || submittingRef.current) return;
+    submittingRef.current = true;
     setLoading(true);
 
     try {
