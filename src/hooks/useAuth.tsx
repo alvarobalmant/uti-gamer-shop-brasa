@@ -104,9 +104,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, newSession) => {
         if (!mounted) return;
         
+        // SEGURANÇA: não registrar identificadores de usuário nos logs.
         console.log(`[AUTH] Auth state change: ${event}`, {
           hasSession: !!newSession,
-          userId: newSession?.user?.id
         });
         
         // Handle specific events
