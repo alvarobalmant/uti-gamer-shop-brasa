@@ -162,6 +162,27 @@ const mapProductToRow = (p: any): any => {
   });
   // Backward-compat: some callers may still send image_url
   if (p.image_url && !row.image) row.image = p.image_url;
+
+  // The UI works with "effective price" (price) + "list price" (original),
+  // which is the inverse of the DB layout (price + promotional_price).
+  // Convert back so that editing the sale price actually changes what is shown.
+  if (p.price !== undefined && p.promotional_price === undefined) {
+    const effective = Number(p.price) || 0;
+    const list = p.list_price != null ? Number(p.list_price) || 0 : 0;
+    if (list > effective) {
+      row.price = list;
+      row.promotional_price = effective;
+    } else {
+      row.price = effective;
+      row.promotional_price = null;
+    }
+  }
+
+  // UI field pro_price maps to the uti_pro_price column
+  if (p.pro_price !== undefined && p.uti_pro_price === undefined) {
+    row.uti_pro_price = p.pro_price != null && Number(p.pro_price) > 0 ? Number(p.pro_price) : null;
+  }
+
   return row;
 };
 
