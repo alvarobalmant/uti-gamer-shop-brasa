@@ -2,6 +2,10 @@
 
 Auditoria somente de leitura. Nada foi alterado: nenhuma tabela, bucket, campo, regra de acesso, produto, layout ou design.
 
+## Resposta à pergunta: "por que meu produto novo não aparece na seção?"
+
+A página da seção (ex.: "Lacrados e com 3 anos de garantia") só mostra produtos que foram **vinculados manualmente àquela seção** — mas a tabela que guardava esses vínculos não existe mais no banco. Por isso a página sempre abre vazia ("Nenhum produto encontrado nesta categoria"), e não existe hoje, no painel, nenhum lugar para vincular produtos a uma seção. Cadastrar o produto no menu Produtos não basta. A correção está no item I.3 abaixo.
+
 ## A. Como os produtos são armazenados
 
 - Ficam na tabela `products` do banco do projeto. Hoje existem **20 produtos**, todos marcados como "destaque".
