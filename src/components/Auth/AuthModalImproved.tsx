@@ -33,7 +33,7 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
 
-  // Turnstile (CAPTCHA nativo do Supabase) — um par de estados por aba
+  // Turnstile (validado no servidor pela função verify-turnstile) — um par de estados por aba
   const [loginCaptchaToken, setLoginCaptchaToken] = useState<string | null>(null);
   const [loginCaptchaStatus, setLoginCaptchaStatus] = useState<CaptchaStatus>('loading');
   const [signupCaptchaToken, setSignupCaptchaToken] = useState<string | null>(null);

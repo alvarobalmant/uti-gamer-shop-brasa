@@ -2,7 +2,8 @@ import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 
 // Site Key pública do Cloudflare Turnstile (pode ficar no frontend).
-// A Secret Key fica APENAS no painel do Supabase (Bot and Abuse Protection).
+// A Secret Key fica APENAS no cofre do servidor (secret TURNSTILE_SECRET_KEY),
+// usada pela validação server-side existente que consulta a Cloudflare.
 export const TURNSTILE_SITE_KEY = '0x4AAAAAAE6ZxbpyLt9wf2lZ';
 
 export type CaptchaStatus = 'loading' | 'pending' | 'ready' | 'expired' | 'error';
