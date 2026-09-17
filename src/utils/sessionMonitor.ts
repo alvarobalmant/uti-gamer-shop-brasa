@@ -7,8 +7,6 @@ export interface SessionInfo {
   sessionValid: boolean;
   tokenExpiry: Date | null;
   refreshTokenExpiry: Date | null;
-  userId: string | null;
-  userEmail: string | null;
   clockDrift: number;
   timeChecked: Date;
 }
