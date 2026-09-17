@@ -1,4 +1,4 @@
-// Stub: product_section_items table removed - uses product_sections table only
+// Sections + items: product_sections holds display metadata, product_section_items holds product/tag links
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -58,6 +58,27 @@ export const useProductSections = () => {
 
       if (fetchError) throw fetchError;
 
+      // Load section items (product/tag links) in one query
+      const { data: itemsData, error: itemsError } = await (supabase
+        .from('product_section_items' as any) as any)
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (itemsError) throw itemsError;
+
+      const itemsBySection = new Map<string, ProductSectionItem[]>();
+      (itemsData || []).forEach((item: any) => {
+        const list = itemsBySection.get(item.section_id) || [];
+        list.push({
+          id: item.id,
+          section_id: item.section_id,
+          item_type: item.item_type,
+          item_id: item.item_id,
+          display_order: item.display_order,
+        });
+        itemsBySection.set(item.section_id, list);
+      });
+
       const mapped: ProductSection[] = (data || []).map(row => ({
         id: row.id,
         title: row.title,
@@ -66,7 +87,7 @@ export const useProductSections = () => {
         title_color1: row.title_color1 || undefined,
         title_color2: row.title_color2 || undefined,
         view_all_link: row.view_all_link || undefined,
-        items: [], // Items are managed separately or via ERP
+        items: itemsBySection.get(row.id) || [],
         created_at: row.created_at,
         updated_at: row.updated_at,
       }));
