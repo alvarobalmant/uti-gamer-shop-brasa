@@ -67,8 +67,6 @@ export class SessionMonitor {
         sessionValid: false,
         tokenExpiry: null,
         refreshTokenExpiry: null,
-        userId: null,
-        userEmail: null,
         clockDrift: 0,
         timeChecked
       };
