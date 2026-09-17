@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,8 @@ import {
 import { LogIn, UserPlus, X, Mail, CheckCircle, AlertCircle } from 'lucide-react';
 import { LogoImage } from '@/components/OptimizedImage/LogoImage';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TurnstileWidget, type CaptchaStatus, type TurnstileWidgetHandle } from '@/components/Auth/TurnstileWidget';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -29,6 +31,15 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
   const [modalState, setModalState] = useState<ModalState>('auth');
   const [activeTab, setActiveTab] = useState('login');
   const { signIn, signUp, user } = useAuth();
+  const { toast } = useToast();
+
+  // Turnstile (CAPTCHA nativo do Supabase) — um par de estados por aba
+  const [loginCaptchaToken, setLoginCaptchaToken] = useState<string | null>(null);
+  const [loginCaptchaStatus, setLoginCaptchaStatus] = useState<CaptchaStatus>('loading');
+  const [signupCaptchaToken, setSignupCaptchaToken] = useState<string | null>(null);
+  const [signupCaptchaStatus, setSignupCaptchaStatus] = useState<CaptchaStatus>('loading');
+  const loginCaptchaRef = useRef<TurnstileWidgetHandle>(null);
+  const signupCaptchaRef = useRef<TurnstileWidgetHandle>(null);
 
   // Close modal automatically when user becomes logged in (only for login, not signup)
   useEffect(() => {
@@ -43,6 +54,10 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
     if (isOpen) {
       setModalState('auth');
       setActiveTab('login');
+      setLoginCaptchaToken(null);
+      setSignupCaptchaToken(null);
+      setLoginCaptchaStatus('loading');
+      setSignupCaptchaStatus('loading');
     }
   }, [isOpen]);
 
@@ -56,52 +71,86 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
   const handleClose = () => {
     resetForm();
     setModalState('auth');
+    setLoginCaptchaToken(null);
+    setSignupCaptchaToken(null);
     onClose();
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Token nunca é reaproveitado entre fluxos
+    loginCaptchaRef.current?.reset();
+    signupCaptchaRef.current?.reset();
+  };
+
+  const missingCaptchaToast = () => {
+    toast({
+      title: 'Verificação de segurança',
+      description: 'Conclua a verificação de segurança antes de continuar.',
+      variant: 'destructive',
+    });
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!loginCaptchaToken) {
+      missingCaptchaToast();
+      return;
+    }
+
     setLoading(true);
-    
+
     try {
       console.log('[AUTH MODAL] Attempting login...');
-      await signIn(email, password);
+      await signIn(email, password, loginCaptchaToken);
       console.log('[AUTH MODAL] Login successful');
-      
+
       // Reset form fields
       resetForm();
-      
+
       // Modal will close automatically via useEffect when user state updates
-      
+
     } catch (error) {
-      console.error('[AUTH MODAL] Login failed:', error);
+      console.error('[AUTH MODAL] Login failed');
       setLoading(false);
+    } finally {
+      // Token de uso único: sempre reseta o widget após a tentativa
+      loginCaptchaRef.current?.reset();
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!signupCaptchaToken) {
+      missingCaptchaToast();
+      return;
+    }
+
     setLoading(true);
-    
+
     try {
       console.log('[AUTH MODAL] Attempting signup...');
-      const result = await signUp(email, password, name);
-      console.log('[AUTH MODAL] Signup result:', result);
-      
+      await signUp(email, password, name, signupCaptchaToken);
+
       // Check if email verification is needed
       // Supabase typically returns user but requires email confirmation
       setModalState('email-verification');
       setLoading(false);
-      
+
     } catch (error) {
-      console.error('[AUTH MODAL] Signup failed:', error);
+      console.error('[AUTH MODAL] Signup failed');
       setLoading(false);
+    } finally {
+      signupCaptchaRef.current?.reset();
     }
   };
 
   const handleBackToAuth = () => {
     setModalState('auth');
     resetForm();
+    loginCaptchaRef.current?.reset();
   };
 
   return (
@@ -143,7 +192,7 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
               </DialogHeader>
               
               <div className="p-4 sm:p-6">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                   <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-xl p-1 mb-4 sm:mb-6">
                     <TabsTrigger 
                       value="login" 
@@ -188,10 +237,17 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
                           required
                         />
                       </div>
-                      
+
+                      <TurnstileWidget
+                        ref={loginCaptchaRef}
+                        status={loginCaptchaStatus}
+                        onStatusChange={setLoginCaptchaStatus}
+                        onToken={setLoginCaptchaToken}
+                      />
+
                       <Button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !loginCaptchaToken}
                         className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 h-11 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-sm"
                       >
                         {loading ? (
@@ -248,10 +304,17 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
                         />
                         <p className="text-xs text-gray-500">Mínimo de 6 caracteres</p>
                       </div>
-                      
+
+                      <TurnstileWidget
+                        ref={signupCaptchaRef}
+                        status={signupCaptchaStatus}
+                        onStatusChange={setSignupCaptchaStatus}
+                        onToken={setSignupCaptchaToken}
+                      />
+
                       <Button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !signupCaptchaToken}
                         className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 h-11 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-sm"
                       >
                         {loading ? (
