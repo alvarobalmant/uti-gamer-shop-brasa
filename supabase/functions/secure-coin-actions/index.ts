@@ -36,6 +36,14 @@ Deno.serve(async (req) => {
       }
     );
 
+    // Cliente com privilégio de serviço, usado APENAS para ler/gravar os códigos
+    // de bônus (daily_bonus_codes). Esses códigos não podem ser expostos ao
+    // cliente, por isso a tabela não é mais legível pelo público.
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
