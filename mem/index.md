@@ -1,0 +1,1 @@
+- [Vínculo seção ↔ produtos](mem://funcionalidades/vinculo-secao-produtos) — product_section_items recriada; seções voltam a ter curadoria pelo painel.
