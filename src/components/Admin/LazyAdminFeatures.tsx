@@ -8,11 +8,6 @@ interface BackgroundRemovalModule {
   loadImage: (file: Blob) => Promise<HTMLImageElement>;
 }
 
-interface ExcelModule {
-  utils: any;
-  writeFile: (workbook: any, filename: string) => void;
-  read: (data: ArrayBuffer, options?: any) => any;
-}
 
 // Component para carregar remoção de background apenas para admins
 export const LazyBackgroundRemoval: React.FC<{
@@ -42,33 +37,6 @@ export const LazyBackgroundRemoval: React.FC<{
   );
 };
 
-// Component para carregar Excel apenas para admins
-export const LazyExcelFeatures: React.FC<{
-  onModuleLoad?: (module: ExcelModule) => void;
-  children: (module: ExcelModule | null, loading: boolean) => React.ReactNode;
-}> = ({ onModuleLoad, children }) => {
-  const { module, loading, error } = useAdminImport<ExcelModule>(
-    () => import('xlsx'),
-    1500 // Delay para não afetar carregamento inicial
-  );
-
-  React.useEffect(() => {
-    if (module && onModuleLoad) {
-      onModuleLoad(module);
-    }
-  }, [module, onModuleLoad]);
-
-  if (error) {
-    console.warn('Failed to load Excel features:', error);
-    return null;
-  }
-
-  return (
-    <AdminErrorBoundary fallback={() => <div>Erro ao carregar funcionalidades Excel</div>}>
-      {children(module, loading)}
-    </AdminErrorBoundary>
-  );
-};
 
 // Component para carregar transformers AI apenas para admins
 export const LazyAIFeatures: React.FC<{
