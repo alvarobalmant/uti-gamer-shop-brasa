@@ -304,10 +304,17 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
                         />
                         <p className="text-xs text-gray-500">Mínimo de 6 caracteres</p>
                       </div>
-                      
+
+                      <TurnstileWidget
+                        ref={signupCaptchaRef}
+                        status={signupCaptchaStatus}
+                        onStatusChange={setSignupCaptchaStatus}
+                        onToken={setSignupCaptchaToken}
+                      />
+
                       <Button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !signupCaptchaToken}
                         className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 h-11 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-sm"
                       >
                         {loading ? (
