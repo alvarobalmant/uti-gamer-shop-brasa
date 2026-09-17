@@ -254,13 +254,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, name: string, captchaToken?: string) => {
     try {
+      await verifyCaptcha(captchaToken);
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { name },
           emailRedirectTo: `${window.location.origin}/`,
-          ...(captchaToken ? { captchaToken } : {}),
         },
       });
       
