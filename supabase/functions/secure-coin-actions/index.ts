@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
       const { data: uniqueCode } = await supabase.rpc('generate_unique_daily_code');
       
       // Inserir código na tabela (bonus_amount será calculado no momento do resgate)
-      const { data: newCode, error } = await supabase
+      const { data: newCode, error } = await supabaseAdmin
         .from('daily_bonus_codes')
         .insert({
           code: uniqueCode,
@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
       console.log(`[VALIDATE_STREAK] Validating streak for user ${userId}`);
       
       // Buscar últimos resgates do usuário em ordem decrescente
-      const { data: userClaims } = await supabase
+      const { data: userClaims } = await supabaseAdmin
         .from('user_bonus_claims')
         .select(`
           *,
@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
       console.log(`[CHECK_AVAILABLE] Checking available bonus for user ${userId}`);
       
       // Buscar código válido não expirado mais recente
-      const { data: availableCodes } = await supabase
+      const { data: availableCodes } = await supabaseAdmin
         .from('daily_bonus_codes')
         .select('*')
         .gt('expires_at', new Date().toISOString())
@@ -309,7 +309,7 @@ Deno.serve(async (req) => {
       console.log(`[ADMIN] Generating daily code`);
       
       // Verificar se existe código válido ativo
-      const { data: existingCodes } = await supabase
+      const { data: existingCodes } = await supabaseAdmin
         .from('daily_bonus_codes')
         .select('*')
         .gt('expires_at', new Date().toISOString())
