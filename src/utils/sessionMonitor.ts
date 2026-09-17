@@ -57,8 +57,6 @@ export class SessionMonitor {
         sessionValid,
         tokenExpiry,
         refreshTokenExpiry,
-        userId: session.user?.id || null,
-        userEmail: session.user?.email || null,
         clockDrift,
         timeChecked
       };
