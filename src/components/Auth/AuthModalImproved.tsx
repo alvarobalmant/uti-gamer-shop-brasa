@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,8 @@ import {
 import { LogIn, UserPlus, X, Mail, CheckCircle, AlertCircle } from 'lucide-react';
 import { LogoImage } from '@/components/OptimizedImage/LogoImage';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TurnstileWidget, type CaptchaStatus, type TurnstileWidgetHandle } from '@/components/Auth/TurnstileWidget';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -29,6 +31,15 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
   const [modalState, setModalState] = useState<ModalState>('auth');
   const [activeTab, setActiveTab] = useState('login');
   const { signIn, signUp, user } = useAuth();
+  const { toast } = useToast();
+
+  // Turnstile (CAPTCHA nativo do Supabase) — um par de estados por aba
+  const [loginCaptchaToken, setLoginCaptchaToken] = useState<string | null>(null);
+  const [loginCaptchaStatus, setLoginCaptchaStatus] = useState<CaptchaStatus>('loading');
+  const [signupCaptchaToken, setSignupCaptchaToken] = useState<string | null>(null);
+  const [signupCaptchaStatus, setSignupCaptchaStatus] = useState<CaptchaStatus>('loading');
+  const loginCaptchaRef = useRef<TurnstileWidgetHandle>(null);
+  const signupCaptchaRef = useRef<TurnstileWidgetHandle>(null);
 
   // Close modal automatically when user becomes logged in (only for login, not signup)
   useEffect(() => {
@@ -43,6 +54,10 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
     if (isOpen) {
       setModalState('auth');
       setActiveTab('login');
+      setLoginCaptchaToken(null);
+      setSignupCaptchaToken(null);
+      setLoginCaptchaStatus('loading');
+      setSignupCaptchaStatus('loading');
     }
   }, [isOpen]);
 
@@ -56,52 +71,86 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
   const handleClose = () => {
     resetForm();
     setModalState('auth');
+    setLoginCaptchaToken(null);
+    setSignupCaptchaToken(null);
     onClose();
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Token nunca é reaproveitado entre fluxos
+    loginCaptchaRef.current?.reset();
+    signupCaptchaRef.current?.reset();
+  };
+
+  const missingCaptchaToast = () => {
+    toast({
+      title: 'Verificação de segurança',
+      description: 'Conclua a verificação de segurança antes de continuar.',
+      variant: 'destructive',
+    });
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!loginCaptchaToken) {
+      missingCaptchaToast();
+      return;
+    }
+
     setLoading(true);
-    
+
     try {
       console.log('[AUTH MODAL] Attempting login...');
-      await signIn(email, password);
+      await signIn(email, password, loginCaptchaToken);
       console.log('[AUTH MODAL] Login successful');
-      
+
       // Reset form fields
       resetForm();
-      
+
       // Modal will close automatically via useEffect when user state updates
-      
+
     } catch (error) {
-      console.error('[AUTH MODAL] Login failed:', error);
+      console.error('[AUTH MODAL] Login failed');
       setLoading(false);
+    } finally {
+      // Token de uso único: sempre reseta o widget após a tentativa
+      loginCaptchaRef.current?.reset();
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!signupCaptchaToken) {
+      missingCaptchaToast();
+      return;
+    }
+
     setLoading(true);
-    
+
     try {
       console.log('[AUTH MODAL] Attempting signup...');
-      const result = await signUp(email, password, name);
-      console.log('[AUTH MODAL] Signup result:', result);
-      
+      await signUp(email, password, name, signupCaptchaToken);
+
       // Check if email verification is needed
       // Supabase typically returns user but requires email confirmation
       setModalState('email-verification');
       setLoading(false);
-      
+
     } catch (error) {
-      console.error('[AUTH MODAL] Signup failed:', error);
+      console.error('[AUTH MODAL] Signup failed');
       setLoading(false);
+    } finally {
+      signupCaptchaRef.current?.reset();
     }
   };
 
   const handleBackToAuth = () => {
     setModalState('auth');
     resetForm();
+    loginCaptchaRef.current?.reset();
   };
 
   return (
