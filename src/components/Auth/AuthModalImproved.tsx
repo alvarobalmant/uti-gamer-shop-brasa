@@ -102,9 +102,8 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
     setLoading(true);
 
     try {
-      console.log('[AUTH MODAL] Attempting login...');
+      // SEGURANÇA: nenhum dado de autenticação (e-mail, senha, captchaToken) é registrado.
       await signIn(email, password, loginCaptchaToken);
-      console.log('[AUTH MODAL] Login successful');
 
       // Reset form fields
       resetForm();

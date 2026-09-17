@@ -7,8 +7,6 @@ export interface SessionInfo {
   sessionValid: boolean;
   tokenExpiry: Date | null;
   refreshTokenExpiry: Date | null;
-  userId: string | null;
-  userEmail: string | null;
   clockDrift: number;
   timeChecked: Date;
 }
@@ -38,8 +36,6 @@ export class SessionMonitor {
           sessionValid: false,
           tokenExpiry: null,
           refreshTokenExpiry: null,
-          userId: null,
-          userEmail: null,
           clockDrift: 0,
           timeChecked
         };
@@ -61,8 +57,6 @@ export class SessionMonitor {
         sessionValid,
         tokenExpiry,
         refreshTokenExpiry,
-        userId: session.user?.id || null,
-        userEmail: session.user?.email || null,
         clockDrift,
         timeChecked
       };
@@ -73,8 +67,6 @@ export class SessionMonitor {
         sessionValid: false,
         tokenExpiry: null,
         refreshTokenExpiry: null,
-        userId: null,
-        userEmail: null,
         clockDrift: 0,
         timeChecked
       };
@@ -203,28 +195,34 @@ export class SessionMonitor {
     };
   }
 
-  // Get relevant data from browser storage
+  // Get relevant data from browser storage.
+  // SEGURANÇA: nunca expor o conteúdo das chaves (contêm access/refresh token).
+  // Apenas indicamos presença e tamanho, sem qualquer trecho do valor.
   private getStorageData() {
     const data: any = {};
-    
+
     try {
-      // Check localStorage for Supabase data
       Object.keys(localStorage).forEach(key => {
         if (key.includes('supabase') || key.includes('sb-')) {
-          data[`localStorage.${key}`] = localStorage.getItem(key)?.substring(0, 100) + '...';
+          data[`localStorage.${key}`] = {
+            present: true,
+            length: localStorage.getItem(key)?.length ?? 0,
+          };
         }
       });
-      
-      // Check sessionStorage for Supabase data
+
       Object.keys(sessionStorage).forEach(key => {
         if (key.includes('supabase') || key.includes('sb-')) {
-          data[`sessionStorage.${key}`] = sessionStorage.getItem(key)?.substring(0, 100) + '...';
+          data[`sessionStorage.${key}`] = {
+            present: true,
+            length: sessionStorage.getItem(key)?.length ?? 0,
+          };
         }
       });
     } catch (error) {
       data.storageError = 'Unable to access storage';
     }
-    
+
     return data;
   }
 }

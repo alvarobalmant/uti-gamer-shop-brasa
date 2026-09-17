@@ -104,9 +104,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, newSession) => {
         if (!mounted) return;
         
+        // SEGURANÇA: não registrar identificadores de usuário nos logs.
         console.log(`[AUTH] Auth state change: ${event}`, {
           hasSession: !!newSession,
-          userId: newSession?.user?.id
         });
         
         // Handle specific events
@@ -205,6 +205,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [checkAdminRole, validateSession, clearAuthCache]);
 
+  // Validação server-side do Turnstile (edge function `verify-turnstile`).
+  // A Secret Key permanece exclusivamente no cofre do servidor.
   const verifyCaptcha = async (captchaToken?: string) => {
     if (!captchaToken) return;
 
@@ -217,13 +219,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Mensagens genéricas: não revelam se o e-mail existe na base.
+  const mapSignInError = (error: any): string => {
+    const raw = typeof error?.message === 'string' ? error.message : '';
+
+    if (/email not confirmed/i.test(raw)) {
+      return 'Email não confirmado. Verifique sua caixa de entrada.';
+    }
+    if (/invalid login credentials|invalid credentials|invalid email or password/i.test(raw)) {
+      return 'Email ou senha inválidos.';
+    }
+    if (/verificação de segurança/i.test(raw)) {
+      return raw;
+    }
+    if (/too many requests|rate limit/i.test(raw)) {
+      return 'Muitas tentativas. Aguarde alguns instantes e tente novamente.';
+    }
+    return 'Não foi possível entrar. Tente novamente.';
+  };
+
   const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
+      // Turnstile obrigatório no login: sem token, não há tentativa de autenticação.
+      if (!captchaToken) {
+        throw new Error('Conclua a verificação de segurança antes de continuar.');
+      }
+
       await verifyCaptcha(captchaToken);
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: { captchaToken },
       });
       
       if (error) throw error;
@@ -245,7 +272,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error: any) {
       toast({
         title: "Erro no login",
-        description: error.message,
+        description: mapSignInError(error),
         variant: "destructive",
       });
       throw error;
