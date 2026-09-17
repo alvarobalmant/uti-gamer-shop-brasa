@@ -192,7 +192,7 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
               </DialogHeader>
               
               <div className="p-4 sm:p-6">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                   <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-xl p-1 mb-4 sm:mb-6">
                     <TabsTrigger 
                       value="login" 
@@ -237,10 +237,17 @@ export const AuthModalImproved = ({ isOpen, onClose }: AuthModalProps) => {
                           required
                         />
                       </div>
-                      
+
+                      <TurnstileWidget
+                        ref={loginCaptchaRef}
+                        status={loginCaptchaStatus}
+                        onStatusChange={setLoginCaptchaStatus}
+                        onToken={setLoginCaptchaToken}
+                      />
+
                       <Button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !loginCaptchaToken}
                         className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 h-11 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-sm"
                       >
                         {loading ? (
