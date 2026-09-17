@@ -272,7 +272,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error: any) {
       toast({
         title: "Erro no login",
-        description: error.message,
+        description: mapSignInError(error),
         variant: "destructive",
       });
       throw error;
