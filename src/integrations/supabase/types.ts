@@ -1344,6 +1344,41 @@ export type Database = {
         }
         Relationships: []
       }
+      product_section_items: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: number
+          item_id: string
+          item_type: string
+          section_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: never
+          item_id: string
+          item_type?: string
+          section_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: never
+          item_id?: string
+          item_type?: string
+          section_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_section_items_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "product_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_sections: {
         Row: {
           created_at: string | null
