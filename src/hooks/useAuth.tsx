@@ -205,12 +205,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [checkAdminRole, validateSession, clearAuthCache]);
 
+  const verifyCaptcha = async (captchaToken?: string) => {
+    if (!captchaToken) return;
+
+    const { data, error } = await supabase.functions.invoke('verify-turnstile', {
+      body: { token: captchaToken },
+    });
+
+    if (error || !data?.success) {
+      throw new Error('Não foi possível concluir a verificação de segurança. Tente novamente.');
+    }
+  };
+
   const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
+      await verifyCaptcha(captchaToken);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        ...(captchaToken ? { options: { captchaToken } } : {}),
       });
       
       if (error) throw error;
