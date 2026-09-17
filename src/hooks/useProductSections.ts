@@ -148,6 +148,7 @@ export const useProductSections = () => {
 
       if (insertError) throw insertError;
 
+      await saveSectionItems(data.id, input.items);
       await fetchSections();
       return { success: true, data: data as ProductSection };
     } catch (err: any) {
@@ -191,6 +192,7 @@ export const useProductSections = () => {
 
       if (updateError) throw updateError;
 
+      await saveSectionItems(sectionId, updateData.items);
       await fetchSections();
       return { success: true };
     } catch (err: any) {
