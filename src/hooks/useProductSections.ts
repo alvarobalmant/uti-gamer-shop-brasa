@@ -106,6 +106,31 @@ export const useProductSections = () => {
     fetchSections();
   }, [fetchSections]);
 
+  // Replace all item links of a section with the provided list
+  const saveSectionItems = async (
+    sectionId: string,
+    items?: { type: SectionItemType; id: string }[]
+  ): Promise<void> => {
+    const { error: deleteError } = await (supabase
+      .from('product_section_items' as any) as any)
+      .delete()
+      .eq('section_id', sectionId);
+    if (deleteError) throw deleteError;
+
+    if (items && items.length > 0) {
+      const rows = items.map((item, index) => ({
+        section_id: sectionId,
+        item_type: item.type,
+        item_id: item.id,
+        display_order: index,
+      }));
+      const { error: insertError } = await (supabase
+        .from('product_section_items' as any) as any)
+        .insert(rows);
+      if (insertError) throw insertError;
+    }
+  };
+
   const createSection = async (input: ProductSectionInput): Promise<{ success: boolean; data?: ProductSection }> => {
     try {
       const { data, error: insertError } = await supabase
